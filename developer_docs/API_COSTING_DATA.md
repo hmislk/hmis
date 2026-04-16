@@ -243,6 +243,7 @@ Returns a single bill object with the same structure as the Get Last Bill endpoi
 | billFinanceDetailsId | Long | Reference to bill finance details |
 | billFinanceDetails | Object | Bill finance details object |
 | billItems | Array | Array of bill items |
+| payments | Array | Array of payment details (optional, may be empty) |
 
 ### Bill Finance Details (BillFinanceDetailsDTO)
 | Field | Type | Description |
@@ -311,6 +312,108 @@ Returns a single bill object with the same structure as the Get Last Bill endpoi
 | purchaseValue | Double | Purchase value |
 | retailValue | Double | Retail value |
 | costValue | Double | Cost value |
+
+### Payment Details (PaymentDTO)
+| Field | Type | Description |
+|-------|------|-------------|
+| id | Long | Unique payment identifier |
+| billId | Long | Reference to parent bill |
+| paymentMethod | String | Payment method (e.g., "Cash", "Card", "PatientDeposit") |
+| paidValue | Double | Amount paid |
+| createdAt | DateTime | Payment creation timestamp |
+| paymentDate | DateTime | Payment date |
+| bankId | Long | Bank ID (for bank payments) |
+| bankName | String | Bank name (for bank payments) |
+| creditCompanyId | Long | Credit company ID (for credit payments) |
+| creditCompanyName | String | Credit company name (for credit payments) |
+| toStaffId | Long | Staff ID (for staff welfare payments) |
+| toStaffName | String | Staff name (for staff welfare payments) |
+| referenceNo | String | Payment reference number |
+| policyNo | String | Policy number (for insurance) |
+| chequeRefNo | String | Cheque reference number |
+| chequeDate | DateTime | Cheque date |
+| comments | String | Payment comments |
+| retired | Boolean | Payment retirement status |
+
+## Payment Details in Bill Response
+
+Starting from the 2026-01-21 update, bill responses now include a `payments` array containing all payment details for the bill. This provides complete payment information beyond the single `paymentMethod` string field.
+
+### Example Response with Payments
+```json
+{
+  "status": "success",
+  "code": 200,
+  "data": {
+    "id": 5661712,
+    "dtype": "BilledBill",
+    "billTypeAtomic": "PHARMACY_RETAIL_SALE_WITH_PAYMENT",
+    "netTotal": 1500.00,
+    "paymentMethod": "Cash",
+    "payments": [
+      {
+        "id": 123456,
+        "billId": 5661712,
+        "paymentMethod": "Cash",
+        "paidValue": 1000.00,
+        "createdAt": "2025-10-10 19:08:35",
+        "paymentDate": "2025-10-10 19:08:35",
+        "bankId": null,
+        "bankName": null,
+        "creditCompanyId": null,
+        "creditCompanyName": null,
+        "toStaffId": null,
+        "toStaffName": null,
+        "referenceNo": null,
+        "policyNo": null,
+        "chequeRefNo": null,
+        "chequeDate": null,
+        "comments": null,
+        "retired": false
+      },
+      {
+        "id": 123457,
+        "billId": 5661712,
+        "paymentMethod": "Card",
+        "paidValue": 500.00,
+        "createdAt": "2025-10-10 19:08:36",
+        "paymentDate": "2025-10-10 19:08:36",
+        "bankId": 45,
+        "bankName": "Commercial Bank",
+        "creditCompanyId": null,
+        "creditCompanyName": null,
+        "toStaffId": null,
+        "toStaffName": null,
+        "referenceNo": "TXN-2025-001",
+        "policyNo": null,
+        "chequeRefNo": null,
+        "chequeDate": null,
+        "comments": "Card payment",
+        "retired": false
+      }
+    ],
+    "billItems": [...]
+  }
+}
+```
+
+### Backward Compatibility
+- The existing `paymentMethod` string field is maintained for backward compatibility
+- For bills with multiple payment methods, `paymentMethod` will show the first payment's method
+- New API consumers should use the `payments` array for complete payment information
+- The `payments` array may be empty for bills without payments (e.g., transfers, issues)
+
+### Payment Method Values
+Common payment method values include:
+- `Cash` - Cash payment
+- `Card` - Credit/debit card payment
+- `Cheque` - Cheque payment
+- `Slip` - Bank slip payment
+- `ewallet` - E-wallet payment
+- `PatientDeposit` - Patient deposit deduction
+- `Credit` - Credit company payment
+- `Staff_Welfare` - Staff welfare payment
+- `Agent` - Agent/collecting centre payment
 
 ## Error Responses
 

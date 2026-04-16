@@ -2,9 +2,11 @@ package com.divudi.core.light.common;
 
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.Title;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.entity.PaymentScheme;
+import com.divudi.core.entity.inward.AdmissionType;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.Objects;
@@ -22,7 +24,9 @@ public class BillLight {
     private String institutionName;
     private String departmentName;
     private String userName;
+    private Title patientTitle;
     private String patientName;
+    private String patientNameWithTitle;
     private String patientAge;
     private String patientPhone;
     private Double grossValue;
@@ -47,6 +51,8 @@ public class BillLight {
     private PaymentMethod paymentMethod;
     private PatientEncounter patientEncounter;
     private PaymentScheme paymentScheme;
+    private AdmissionType admissionType;
+    private String paymentSchemeName;
     private String billItemNames;
 
     public BillLight() {
@@ -138,6 +144,18 @@ public class BillLight {
         this.ccTotal = ccTotal;
         this.hospitalTotal = hospitalTotal;
     }
+    
+    //Collecting Centre Payment
+    public BillLight(Long id, String billNo, String referenceNumber, Date billDate, Title patientTitle, String patientName, Double ccTotal, Double hospitalTotal) {
+        this.id = id;
+        this.billNo = billNo;
+        this.referenceNumber = referenceNumber;
+        this.billDate = billDate;
+        this.patientTitle = patientTitle;
+        this.patientName = patientName;
+        this.ccTotal = ccTotal;
+        this.hospitalTotal = hospitalTotal;
+    }
 
     //Use 9B Report
     public BillLight(Long id, BillTypeAtomic billTypeAtomic, Double netValue) {
@@ -155,6 +173,35 @@ public class BillLight {
         this.billTypeAtomic = billTypeAtomic;
         this.total = total;
         this.netTotal = netTotal;
+        this.discount = discount;
+        this.margin = margin;
+        this.serviceCharge = serviceCharge;
+        this.totalCostValue = totalCostValue;
+        this.totalPurchaseValue = totalPurchaseValue;
+        this.totalRetailSaleValue = totalRetailSaleValue;
+        this.paymentMethod = paymentMethod;
+        this.patientEncounter = patientEncounter;
+    }
+
+    // Constructor for adjustment bills that also receives bfd.grossTotal and bfd.netTotal.
+    // When bill.total = 0 but bfd.grossTotal is non-zero, the BFD value is used instead.
+    // This handles the case where adjustment bills have bill.total=0 due to JPA persistence
+    // issues in legacy save paths, but BillFinanceDetails values are correctly populated.
+    public BillLight(Long id, BillTypeAtomic billTypeAtomic, Double total, Double netTotal,
+                     Double discount, Double margin, Double serviceCharge,
+                     BigDecimal totalCostValue, BigDecimal totalPurchaseValue, BigDecimal totalRetailSaleValue,
+                     PaymentMethod paymentMethod, PatientEncounter patientEncounter,
+                     BigDecimal bfdGrossTotal, BigDecimal bfdNetTotal) {
+        this.id = id;
+        this.billTypeAtomic = billTypeAtomic;
+        // Prefer bfd.grossTotal when bill.total is zero but BFD has a non-zero value.
+        // This handles adjustment bills where bill.total was not persisted but bfd.grossTotal is correct.
+        double bfdGross = (bfdGrossTotal != null) ? bfdGrossTotal.doubleValue() : 0.0;
+        double bfdNet = (bfdNetTotal != null) ? bfdNetTotal.doubleValue() : 0.0;
+        double billTotal = (total != null) ? total : 0.0;
+        double billNetTotal = (netTotal != null) ? netTotal : 0.0;
+        this.total = (billTotal == 0.0 && bfdGross != 0.0) ? bfdGross : billTotal;
+        this.netTotal = (billNetTotal == 0.0 && bfdNet != 0.0) ? bfdNet : billNetTotal;
         this.discount = discount;
         this.margin = margin;
         this.serviceCharge = serviceCharge;
@@ -183,6 +230,31 @@ public class BillLight {
         this.paymentMethod = paymentMethod;
         this.patientEncounter = patientEncounter;
         this.paymentScheme = paymentScheme;
+    }
+
+    /**
+     * Constructor that avoids entity object joins in JPQL by accepting
+     * AdmissionType and paymentSchemeName as scalar/enum values.
+     * Use this in constructor queries where bills may have null patientEncounter
+     * or null paymentScheme (e.g. pharmacy retail sales).
+     */
+    public BillLight(Long id, BillTypeAtomic billTypeAtomic, Double total, Double netTotal,
+                     Double discount, Double margin, Double serviceCharge,
+                     BigDecimal totalCostValue, BigDecimal totalPurchaseValue, BigDecimal totalRetailSaleValue,
+                     PaymentMethod paymentMethod, AdmissionType admissionType, String paymentSchemeName) {
+        this.id = id;
+        this.billTypeAtomic = billTypeAtomic;
+        this.total = total;
+        this.netTotal = netTotal;
+        this.discount = discount;
+        this.margin = margin;
+        this.serviceCharge = serviceCharge;
+        this.totalCostValue = totalCostValue;
+        this.totalPurchaseValue = totalPurchaseValue;
+        this.totalRetailSaleValue = totalRetailSaleValue;
+        this.paymentMethod = paymentMethod;
+        this.admissionType = admissionType;
+        this.paymentSchemeName = paymentSchemeName;
     }
 
     public Long getId() {
@@ -469,6 +541,46 @@ public class BillLight {
 
     public void setPaymentScheme(PaymentScheme paymentScheme) {
         this.paymentScheme = paymentScheme;
+    }
+
+    public AdmissionType getAdmissionType() {
+        return admissionType;
+    }
+
+    public void setAdmissionType(AdmissionType admissionType) {
+        this.admissionType = admissionType;
+    }
+
+    public String getPaymentSchemeName() {
+        return paymentSchemeName;
+    }
+
+    public void setPaymentSchemeName(String paymentSchemeName) {
+        this.paymentSchemeName = paymentSchemeName;
+    }
+
+    public Title getPatientTitle() {
+        return patientTitle;
+    }
+
+    public void setPatientTitle(Title patientTitle) {
+        this.patientTitle = patientTitle;
+    }
+
+    public String getPatientNameWithTitle() {
+        String temT;
+        Title t = getPatientTitle();
+        if (t != null) {
+            temT = t.getLabel();
+        } else {
+            temT = "";
+        }
+        patientNameWithTitle = temT + " " + getPatientName();
+        return patientNameWithTitle;
+    }
+
+    public void setPatientNameWithTitle(String patientNameWithTitle) {
+        this.patientNameWithTitle = patientNameWithTitle;
     }
 
 }

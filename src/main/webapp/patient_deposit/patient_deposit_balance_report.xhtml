@@ -26,31 +26,6 @@
                                               styleClass="w-100"/>
                             </h:panelGroup>
                         </h:panelGroup>
-
-                        <!-- Patient Filter -->
-                        <h:panelGroup layout="block" styleClass="col-lg-3 col-md-6 col-sm-12 mb-2">
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputLabel value="Patient (MRN/Name)" styleClass="mb-1 d-block"/>
-                                <p:autoComplete id="patientAc"
-                                                value="#{patientDepositBalanceReportController.patient}"
-                                                completeMethod="#{patientController.completePatient}"
-                                                var="pt"
-                                                itemLabel="#{pt.person.name} - #{pt.phn}"
-                                                itemValue="#{pt}"
-                                                converter="#{patientConverter}"
-                                                forceSelection="true"
-                                                dropdown="true"
-                                                cache="true"
-                                                styleClass="w-100">
-                                    <p:column>
-                                        <h:outputText value="#{pt.person.name}"/>
-                                    </p:column>
-                                    <p:column>
-                                        <h:outputText value="#{pt.phn}"/>
-                                    </p:column>
-                                </p:autoComplete>
-                            </h:panelGroup>
-                        </h:panelGroup>
                     </h:panelGroup>
 
                     <h:panelGroup layout="block" styleClass="row">

@@ -212,7 +212,7 @@ public class PatientReportBean {
                         val.setPatientReport(ptReport);
                     }
                 }
-            } else if (ii.getIxItemType() == InvestigationItemType.WorningFlag && !ii.isRetired()) {
+            } else if (ii.getIxItemType() == InvestigationItemType.WarningFlag && !ii.isRetired()) {
                 val = new PatientReportItemValue();
                 
                 val.setStrValue(ii.getHtmltext());
@@ -250,6 +250,7 @@ public class PatientReportBean {
 
             if (val != null) {
                 if(val.getId() == null){
+                    val.setAllowToExportChart(ii.isAllowToExportChart());
                     getPtRivFacade().create(val);
                     ptReport.getPatientReportItemValues().add(val);
                 }
@@ -277,11 +278,14 @@ public class PatientReportBean {
                 if (ptReport.getId() == null || ptReport.getId() == 0) {
 
                     val = new PatientReportItemValue();
-                    if (ii.getIxItemValueType() == InvestigationItemValueType.Varchar) {
+                    if (ii.getIxItemType() == InvestigationItemType.Html) {
+                        // Html items always store their content as lobValue regardless of ixItemValueType
+                        val.setLobValue(getDefaultMemoValue((InvestigationItem) ii, ptReport.getPatientInvestigation().getPatient()));
+                    } else if (ii.getIxItemValueType() == InvestigationItemValueType.Varchar) {
                         val.setStrValue(getDefaultVarcharValue((InvestigationItem) ii, ptReport.getPatientInvestigation().getPatient()));
                     } else if (ii.getIxItemValueType() == InvestigationItemValueType.Memo) {
                         val.setLobValue(getDefaultMemoValue((InvestigationItem) ii, ptReport.getPatientInvestigation().getPatient()));
-                    }  else if (ii.getIxItemValueType() == InvestigationItemValueType.Double) {
+                    } else if (ii.getIxItemValueType() == InvestigationItemValueType.Double) {
                         val.setDoubleValue(getDefaultDoubleValue((InvestigationItem) ii, ptReport.getPatientInvestigation().getPatient()));
                     } else if (ii.getIxItemValueType() == InvestigationItemValueType.Image) {
                         val.setBaImage(getDefaultImageValue((InvestigationItem) ii, ptReport.getPatientInvestigation().getPatient()));
@@ -290,8 +294,6 @@ public class PatientReportBean {
                     val.setPatient(ptReport.getPatientInvestigation().getPatient());
                     val.setPatientEncounter(ptReport.getPatientInvestigation().getEncounter());
                     val.setPatientReport(ptReport);
-                    // ptReport.getPatientReportItemValues().add(val);
-                    ////// // System.out.println("New value added to pr teport" + ptReport);
 
                 } else {
                     sql = "select i from PatientReportItemValue i where i.patientReport=:ptRp"
@@ -301,9 +303,11 @@ public class PatientReportBean {
                     hm.put("inv", ii);
                     val = getPtRivFacade().findFirstByJpql(sql, hm);
                     if (val == null) {
-                        ////// // System.out.println("val is null");
                         val = new PatientReportItemValue();
-                        if (ii.getIxItemValueType() == InvestigationItemValueType.Varchar) {
+                        if (ii.getIxItemType() == InvestigationItemType.Html) {
+                            // Html items always store their content as lobValue regardless of ixItemValueType
+                            val.setLobValue(getDefaultMemoValue((InvestigationItem) ii, ptReport.getPatientInvestigation().getPatient()));
+                        } else if (ii.getIxItemValueType() == InvestigationItemValueType.Varchar) {
                             val.setStrValue(getDefaultVarcharValue((InvestigationItem) ii, ptReport.getPatientInvestigation().getPatient()));
                         } else if (ii.getIxItemValueType() == InvestigationItemValueType.Memo) {
                             val.setLobValue(getDefaultMemoValue((InvestigationItem) ii, ptReport.getPatientInvestigation().getPatient()));
@@ -316,9 +320,6 @@ public class PatientReportBean {
                         val.setPatient(ptReport.getPatientInvestigation().getPatient());
                         val.setPatientEncounter(ptReport.getPatientInvestigation().getEncounter());
                         val.setPatientReport(ptReport);
-                        //ptReport.getPatientReportItemValues().add(val);
-                        ////// // System.out.println("value added to pr teport" + ptReport);
-
                     }
 
                 }
@@ -509,7 +510,7 @@ public class PatientReportBean {
         String sql;
         dl = ii.getName();
         long ageInDays = CommonFunctions.calculateAgeInDays(p.getPerson().getDob(), Calendar.getInstance().getTime());
-        sql = "select f from InvestigationItemValueFlag f where f.retired=false and f.fromAge < " + ageInDays + " and f.toAge > " + ageInDays + " and f.investigationItemOfLabelType.id = " + ii.getId();
+        sql = "select f from InvestigationItemValueFlag f where f.retired=false and f.fromAge <= " + ageInDays + " and f.toAge >= " + ageInDays + " and f.investigationItemOfLabelType.id = " + ii.getId();
         List<InvestigationItemValueFlag> fs = iivfFacade.findByJpql(sql);
         for (InvestigationItemValueFlag f : fs) {
             if (f.getSex() == p.getPerson().getSex()) {

@@ -11,6 +11,8 @@ import com.divudi.core.data.MessageType;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.Sms;
 import com.divudi.core.entity.channel.SessionInstance;
+import com.divudi.core.entity.lab.PatientReport;
+import com.divudi.core.facade.PatientReportFacade;
 import com.divudi.core.facade.SessionInstanceFacade;
 import com.divudi.core.facade.SmsFacade;
 import com.divudi.core.util.CommonFunctions;
@@ -56,11 +58,16 @@ public class SmsManagerEjb {
     private SessionInstanceFacade sessionInstanceFacade;
     @EJB
     private ChannelBean channelBean;
+    @EJB 
+    PatientReportFacade patientReportFacade;
 
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
     @Inject
     private SessionController sessionController;
+    @EJB
+    LabTestHistoryService labTestHistoryService;
+
 
     private static final boolean doNotSendAnySms = false;
 
@@ -119,10 +126,12 @@ public class SmsManagerEjb {
         minCreatedAt.add(Calendar.HOUR_OF_DAY, -24);
 
         String jpql = "Select e from Sms e where e.pending=true and e.retired=false "
-                + "and e.smsType = :smsType and e.createdAt between :from and :to";
+                + " and e.smsType = :smsType and e.sendingFailed =:failed "
+                + " and e.createdAt between :from and :to";
         Map<String, Object> params = new HashMap<>();
         params.put("from", minCreatedAt.getTime());
         params.put("to", delayThreshold.getTime());
+        params.put("failed", false);
         params.put("smsType", MessageType.LabReport);
 
         List<Sms> smses = smsFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
@@ -143,15 +152,39 @@ public class SmsManagerEjb {
                 }
 
                 boolean success = sendSms(sms);
-                sms.setSentSuccessfully(success);
-                sms.setPending(!success);
+
                 if (success) {
+                    sms.setSentSuccessfully(success);
+                    sms.setPending(false);
                     sms.setSentAt(new Date());
+
+                    smsFacade.edit(sms);
+                    
+                    System.out.println(sms.getPatientInvestigation().getInvestigation().getName() + "Report Link Send to = " + sms.getReceipientNumber());
+
+                    PatientReport currentPr = patientReportFacade.findWithoutCache(sms.getPatientReport().getId());
+
+                    if(!currentPr.getSendSMSComplete()){
+                        currentPr.setSendSMSComplete(true);
+                        patientReportFacade.edit(currentPr);
+                        System.out.println("The SMS was successfully sent and it was updated in the LAB Report. ---> " + currentPr.getSendSMSComplete());
+                    }
+                    
+                    if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
+                        labTestHistoryService.addReportSentSMSToPatientHistory(sms.getPatientInvestigation(), sms.getPatientReport(), sms);
+                    }
+
+                }else{
+                    sms.setSendingFailed(true);
+                    smsFacade.edit(sms);
+                    
+                    if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
+                        labTestHistoryService.addSentSMSFailureHistory(sms.getPatientInvestigation(), sms.getPatientReport(), sms, sms.getReceivedMessage());
+                    }
                 }
-                smsFacade.edit(sms);
+
             } catch (Exception e) {
-                Logger.getLogger(SmsManagerEjb.class.getName()).log(Level.SEVERE,
-                        "Failed to process SMS ID: " + (sms != null ? sms.getId() : "unknown"), e);
+                Logger.getLogger(SmsManagerEjb.class.getName()).log(Level.SEVERE,"Failed to process SMS ID: " + (sms != null ? sms.getId() : "unknown"), e);
             }
         }
     }

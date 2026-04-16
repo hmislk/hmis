@@ -121,7 +121,13 @@ public class PatientDepositSearchController implements Serializable {
         jpql.append("i.id, ");
         jpql.append("i.name, ");
         jpql.append("b.cancelled, ");
-        jpql.append("b.refunded");
+        jpql.append("b.refunded, ");
+        jpql.append("cb.id, ");
+        jpql.append("cb.deptId, ");
+        jpql.append("cb.createdAt, ");
+        jpql.append("cbc.name, ");
+        jpql.append("cb.comments, ");
+        jpql.append("rb.comments");
         jpql.append(") ");
         jpql.append("FROM Bill b ");
         jpql.append("LEFT JOIN b.patient p ");
@@ -130,6 +136,9 @@ public class PatientDepositSearchController implements Serializable {
         jpql.append("LEFT JOIN b.department d ");
         jpql.append("LEFT JOIN b.site s ");
         jpql.append("LEFT JOIN b.institution i ");
+        jpql.append("LEFT JOIN b.cancelledBill cb ");
+        jpql.append("LEFT JOIN cb.creater cbc ");
+        jpql.append("LEFT JOIN b.refundedBill rb ");
         jpql.append("WHERE b.billType = :billType ");
         jpql.append("AND b.retired = :ret ");
         jpql.append("AND b.createdAt BETWEEN :fromDate AND :toDate ");
@@ -247,6 +256,14 @@ public class PatientDepositSearchController implements Serializable {
      */
     public String navigateToCancelReprintBill(Long billId) {
         selectedBill = findBillById(billId);
+        return "/patient_deposit/view/patient_deposit_cancel_reprint?faces-redirect=true";
+    }
+
+    /**
+     * Navigate to view the cancelled bill (for bills that have been cancelled).
+     */
+    public String navigateToViewCancelledBill(Long cancelledBillId) {
+        selectedBill = findBillById(cancelledBillId);
         return "/patient_deposit/view/patient_deposit_cancel_reprint?faces-redirect=true";
     }
 

@@ -36,11 +36,13 @@ import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.dataStructure.PaymentMethodData;
 import com.divudi.core.entity.Payment;
 import com.divudi.service.PaymentService;
+import com.divudi.bean.common.AuditEventController;
 import com.divudi.bean.common.PageMetadataRegistry;
 import com.divudi.core.data.OptionScope;
 import com.divudi.core.data.admin.ConfigOptionInfo;
 import com.divudi.core.data.admin.PageMetadata;
 import com.divudi.core.data.admin.PrivilegeInfo;
+import com.divudi.core.entity.AuditEvent;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -108,6 +110,8 @@ public class GrnReturnWorkflowController implements Serializable {
     UserSettingsController userSettingsController;
     @Inject
     PageMetadataRegistry pageMetadataRegistry;
+    @Inject
+    private AuditEventController auditEventController;
 
     // Main properties
     private Bill currentBill;
@@ -460,6 +464,129 @@ public class GrnReturnWorkflowController implements Serializable {
         return "/pharmacy/returns_and_cancellations_index?faces-redirect=true";
     }
 
+    /**
+     * Cancels a GRN Return directly from the list table without opening the
+     * record. Called by the Cancel button in pharmacy_grn_return_list_to_finalize.xhtml.
+     * Writes a before/after audit log entry to the audit database.
+     */
+    public void cancelGrnReturnFromList() {
+        // Guard: privilege check before any write or audit operation
+        if (!isAuthorized("CANCEL", "FinalizeGrnReturn")) {
+            return;
+        }
+        // Guard: bill must be selected and persisted
+        if (currentBill == null || currentBill.getId() == null) {
+            JsfUtil.addErrorMessage("Cannot cancel: No valid GRN Return found.");
+            return;
+        }
+        // Reload authoritative state from DB to avoid merging stale session data
+        Bill freshBill = billFacade.find(currentBill.getId());
+        if (freshBill == null) {
+            JsfUtil.addErrorMessage("Cannot cancel: GRN Return no longer exists.");
+            return;
+        }
+        // Guard: bill must belong to the current session department
+        if (freshBill.getDepartment() == null
+                || sessionController.getDepartment() == null
+                || !freshBill.getDepartment().getId().equals(sessionController.getDepartment().getId())) {
+            JsfUtil.addErrorMessage("Not authorized to cancel a GRN Return from another department.");
+            return;
+        }
+        // Guard: reject invalid states (checked against DB-fresh data)
+        if (freshBill.getCheckedBy() != null) {
+            JsfUtil.addErrorMessage("Cannot cancel: GRN Return " + freshBill.getDeptId() + " has already been finalized.");
+            return;
+        }
+        if (freshBill.isCancelled()) {
+            JsfUtil.addErrorMessage("Cannot cancel: GRN Return " + freshBill.getDeptId() + " is already cancelled.");
+            return;
+        }
+        if (freshBill.isRefunded()) {
+            JsfUtil.addErrorMessage("Cannot cancel: GRN Return " + freshBill.getDeptId() + " has already been refunded.");
+            return;
+        }
+        if (freshBill.isReactivated()) {
+            JsfUtil.addErrorMessage("Cannot cancel: GRN Return " + freshBill.getDeptId() + " has been reactivated.");
+            return;
+        }
+        if (freshBill.isRetired()) {
+            JsfUtil.addErrorMessage("Cannot cancel: GRN Return " + freshBill.getDeptId() + " is retired.");
+            return;
+        }
+        if (freshBill.isCompleted()) {
+            JsfUtil.addErrorMessage("Cannot cancel: GRN Return " + freshBill.getDeptId() + " is completed.");
+            return;
+        }
+        if (freshBill.isPaymentCompleted()) {
+            JsfUtil.addErrorMessage("Cannot cancel: GRN Return " + freshBill.getDeptId() + " payment is completed.");
+            return;
+        }
+        // Capture state before cancellation for audit log
+        String beforeJson = buildGrnReturnAuditJson(freshBill);
+        AuditEvent auditEvent = auditEventController.createNewAuditEvent(
+                "Cancel GRN Return from List",
+                beforeJson,
+                freshBill.getId()
+        );
+        try {
+            // Mark as cancelled and record who did it
+            freshBill.setCancelled(true);
+            freshBill.setEditedAt(new Date());
+            freshBill.setEditor(sessionController.getLoggedUser());
+            billFacade.edit(freshBill);
+            // Capture state after cancellation and complete the audit log entry
+            auditEventController.completeAuditEvent(auditEvent, buildGrnReturnAuditJson(freshBill));
+            // Remove the cancelled row from the backing lists so it disappears from the table
+            // (the query filters cancelled=false, so this row no longer belongs in the list)
+            if (grnReturnsToFinalize != null) {
+                grnReturnsToFinalize.remove(currentBill);
+            }
+            if (filteredGrnReturnsToFinalize != null) {
+                filteredGrnReturnsToFinalize.remove(currentBill);
+            }
+            JsfUtil.addSuccessMessage("GRN Return " + freshBill.getDeptId() + " cancelled successfully.");
+        } catch (Exception e) {
+            auditEventController.failAuditEvent(auditEvent, "Cancellation failed: " + e.getMessage());
+            JsfUtil.addErrorMessage("Error cancelling GRN Return " + freshBill.getDeptId() + ": " + e.getMessage());
+        }
+    }
+
+    /**
+     * Builds a JSON snapshot of a GRN Return bill for audit logging.
+     * String fields are escaped via jsonStr() so quotes, backslashes and
+     * control characters cannot break the JSON structure.
+     * Numbers and booleans are emitted unquoted so they stay typed.
+     */
+    private String buildGrnReturnAuditJson(Bill bill) {
+        String supplier = bill.getToInstitution() != null ? bill.getToInstitution().getName() : null;
+        String department = bill.getDepartment() != null ? bill.getDepartment().getName() : null;
+        String editor = (bill.getEditor() != null && bill.getEditor().getWebUserPerson() != null)
+                ? bill.getEditor().getWebUserPerson().getName() : null;
+        return "{"
+                + "\"id\":" + bill.getId()
+                + ",\"deptId\":" + jsonStr(bill.getDeptId())
+                + ",\"cancelled\":" + bill.isCancelled()
+                + ",\"supplier\":" + jsonStr(supplier)
+                + ",\"department\":" + jsonStr(department)
+                + ",\"netTotal\":" + bill.getNetTotal()
+                + ",\"editor\":" + jsonStr(editor)
+                + "}";
+    }
+
+    /** Escapes a string value for safe embedding in JSON, or emits null. */
+    private String jsonStr(String value) {
+        if (value == null) {
+            return "null";
+        }
+        return "\"" + value
+                .replace("\\", "\\\\")
+                .replace("\"", "\\\"")
+                .replace("\n", "\\n")
+                .replace("\r", "\\r")
+                .replace("\t", "\\t")
+                + "\"";
+    }
+
     // Core workflow methods
     public void saveRequest() {
         if (!isAuthorized("CREATE", "CreateGrnReturn")) {
@@ -570,6 +697,8 @@ public class GrnReturnWorkflowController implements Serializable {
             currentBill.setCompleted(true);
             currentBill.setCompletedBy(sessionController.getLoggedUser());
             currentBill.setCompletedAt(new Date());
+            currentBill.setApproveAt(new Date());
+            currentBill.setApproveUser(sessionController.getLoggedUser());
 
             // Save the bill with completed status
             try {
@@ -658,8 +787,14 @@ public class GrnReturnWorkflowController implements Serializable {
                 totalReturnQty = qty + freeQty;
             }
 
+            // Also check quantityByUnits and totalQuantity as a safety net
+            // to prevent retiring items that have non-zero unit quantities
+            // (protects against quantity/quantityByUnits mismatch from validation side-effects)
+            double qtyByUnits = fd.getQuantityByUnits() != null ? Math.abs(fd.getQuantityByUnits().doubleValue()) : 0.0;
+            double totalQty = fd.getTotalQuantity() != null ? Math.abs(fd.getTotalQuantity().doubleValue()) : 0.0;
+
             // If no return quantity, mark for retirement (use == 0.0 since we use absolute values)
-            if (totalReturnQty == 0.0) {
+            if (totalReturnQty == 0.0 && qtyByUnits == 0.0 && totalQty == 0.0) {
                 itemsToRetire.add(bi);
             }
         }
@@ -1926,8 +2061,25 @@ public class GrnReturnWorkflowController implements Serializable {
         double remainingQty = getRemainingQtyToReturn(billItem.getReferanceBillItem());
         double remainingFreeQty = getRemainingFreeQtyToReturn(billItem.getReferanceBillItem());
 
+        // Save original quantities before stock validation to prevent JPA auto-flush
+        // from persisting validation side-effects on managed entities
+        BigDecimal savedQuantity = fd.getQuantity();
+        BigDecimal savedFreeQuantity = fd.getFreeQuantity();
+        BigDecimal savedQuantityByUnits = fd.getQuantityByUnits();
+        BigDecimal savedFreeQuantityByUnits = fd.getFreeQuantityByUnits();
+        BigDecimal savedTotalQuantityByUnits = fd.getTotalQuantityByUnits();
+        BigDecimal savedTotalQuantity = fd.getTotalQuantity();
+
         // Validate stock availability - critical check
         if (!validateStockAvailability(billItem, true)) {
+            // Restore original quantities to prevent JPA auto-flush from
+            // persisting the reset values (which would corrupt the entity)
+            fd.setQuantity(savedQuantity);
+            fd.setFreeQuantity(savedFreeQuantity);
+            fd.setQuantityByUnits(savedQuantityByUnits);
+            fd.setFreeQuantityByUnits(savedFreeQuantityByUnits);
+            fd.setTotalQuantityByUnits(savedTotalQuantityByUnits);
+            fd.setTotalQuantity(savedTotalQuantity);
             isValid = false;
         }
 
@@ -2053,11 +2205,20 @@ public class GrnReturnWorkflowController implements Serializable {
 
                 if (isAmppItem) {
                     double availableInPacks = availableForThisItem / unitsPerPack;
+                    double availableInUnits = availableForThisItem;
                     fd.setQuantity(BigDecimal.valueOf(availableInPacks));
                     fd.setFreeQuantity(BigDecimal.ZERO);
+                    fd.setQuantityByUnits(BigDecimal.valueOf(availableInUnits).negate());
+                    fd.setFreeQuantityByUnits(BigDecimal.ZERO);
+                    fd.setTotalQuantityByUnits(BigDecimal.valueOf(availableInUnits).negate());
+                    fd.setTotalQuantity(BigDecimal.valueOf(availableInPacks).negate());
                 } else {
                     fd.setQuantity(BigDecimal.valueOf(availableForThisItem));
                     fd.setFreeQuantity(BigDecimal.ZERO);
+                    fd.setQuantityByUnits(BigDecimal.valueOf(availableForThisItem).negate());
+                    fd.setFreeQuantityByUnits(BigDecimal.ZERO);
+                    fd.setTotalQuantityByUnits(BigDecimal.valueOf(availableForThisItem).negate());
+                    fd.setTotalQuantity(BigDecimal.valueOf(availableForThisItem).negate());
                 }
             }
             return false;
@@ -2151,11 +2312,11 @@ public class GrnReturnWorkflowController implements Serializable {
                 continue;
             }
 
-            // Skip items with zero quantities
-            double returnQty = fd.getQuantity() != null ? fd.getQuantity().doubleValue() : 0.0;
-            double returnFreeQty = fd.getFreeQuantity() != null ? fd.getFreeQuantity().doubleValue() : 0.0;
+            // Skip items with zero quantities (use Math.abs since quantities are negated after finalization)
+            double returnQty = fd.getQuantity() != null ? Math.abs(fd.getQuantity().doubleValue()) : 0.0;
+            double returnFreeQty = fd.getFreeQuantity() != null ? Math.abs(fd.getFreeQuantity().doubleValue()) : 0.0;
 
-            if (returnQty <= 0 && returnFreeQty <= 0) {
+            if (returnQty == 0 && returnFreeQty == 0) {
                 continue;
             }
 

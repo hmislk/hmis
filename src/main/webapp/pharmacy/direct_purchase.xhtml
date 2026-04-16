@@ -60,11 +60,11 @@
                         </div>
                     </div>
 
-                    <div class="row" >
+<!--                    <div class="row" >
                         <div class="col-12" >
                             <p:messages id="pageMessages" ></p:messages>
                         </div>
-                    </div>
+                    </div>-->
 
                     <div class="row">
                         <div class="col-8">
@@ -88,7 +88,7 @@
                                             id="acItem"
                                             value="#{pharmacyDirectPurchaseController.currentBillItem.item}"
                                             forceSelection="true"
-                                            completeMethod="#{itemController.completeAmpAndAmppItemForLoggedDepartment}"
+                                            completeMethod="#{pharmacyDirectPurchaseController.completeItemsFilteredByDepartmentType}"
                                             var="vt"
                                             maxResults="20"
                                             itemLabel="#{vt.name}"
@@ -125,8 +125,7 @@
                                                 update="txtLineDiscountValue txtPurchaseValueMinusLineDiscountValue
                                                 txtRetailValue txtCostValue
                                                 txtPurchaseValue txtUnitsPerPack txtPackOrUnit @this
-                                                :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId}
-                                                :#{p:resolveFirstComponentWithId('pageMessages', view).clientId}" />
+                                                :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId} msg" />
                                         </p:inputText>
                                     </div>
                                     <div class="col-1">
@@ -143,8 +142,7 @@
                                                 event="blur"
                                                 process="@this"
                                                 update="txtLineDiscountValue txtPurchaseValueMinusLineDiscountValue txtRetailValue txtCostValue @this
-                                                :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId}
-                                                :#{p:resolveFirstComponentWithId('pageMessages', view).clientId}"
+                                                :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId} msg"
                                                 listener="#{pharmacyDirectPurchaseController.onFreeQuantityChange}" />
                                         </p:inputText>
                                     </div>
@@ -253,8 +251,8 @@
                                             class="ui-button-success w-100"
                                             icon="fas fa-plus"
                                             action="#{pharmacyDirectPurchaseController.addItem}"
-                                            process="@this" 
-                                            update="itemList itemselectgrid tot focusItem :#{p:resolveFirstComponentWithId('lblGrossTotal',view).clientId} :#{p:resolveFirstComponentWithId('saleValue',view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId} msg"/>
+                                            process="@this :#{p:resolveFirstComponentWithId('selDepartmentType',view).clientId}"
+                                            update="itemList itemselectgrid tot focusItem :#{p:resolveFirstComponentWithId('lblGrossTotal',view).clientId} :#{p:resolveFirstComponentWithId('saleValue',view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId} :#{p:resolveFirstComponentWithId('selDepartmentType',view).clientId} msg"/>
                                     </div>
 
                                     <div class="col-1 text-end">
@@ -489,9 +487,111 @@
                                 </p:column>
 
                                 <p:column>
-                                    <p:commandButton class="mr-4 ui-button-danger" icon="fas fa-trash" ajax="false" action="#{pharmacyDirectPurchaseController.removeItem(ph)}" />
+                                    <p:commandButton
+                                        styleClass="ui-button-warning"
+                                        style="margin-right:10px"
+                                        icon="fas fa-edit"
+                                        title="Edit Item"
+                                        process="@this"
+                                        update=":bill:dlgEditBillItem"
+                                        oncomplete="PF('dlgEditBillItem').show()"
+                                        action="#{pharmacyDirectPurchaseController.prepareEditBillItem(ph)}" />
+                                    <p:commandButton styleClass="ui-button-danger" icon="fas fa-trash" title="Delete Item" ajax="false" action="#{pharmacyDirectPurchaseController.removeItem(ph)}" />
                                 </p:column>
                             </p:dataTable>
+
+                            <p:dialog
+                                id="dlgEditBillItem"
+                                header="Edit Item"
+                                widgetVar="dlgEditBillItem"
+                                modal="true"
+                                resizable="false"
+                                closable="true"
+                                dynamic="true"
+                                style="width:520px">
+                                <h:panelGroup rendered="#{pharmacyDirectPurchaseController.editingBillItem != null}">
+                                    <p:outputLabel value="#{pharmacyDirectPurchaseController.editingBillItem.item.name}" styleClass="font-weight-bold d-block mb-2"/>
+                                    <p:panelGrid columns="2" class="w-100" columnClasses="col-5,col-7">
+                                        <p:outputLabel for="editQty" value="Quantity" />
+                                        <p:inputText
+                                            id="editQty"
+                                            class="w-100 text-end"
+                                            autocomplete="off"
+                                            onfocus="this.select()"
+                                            value="#{pharmacyDirectPurchaseController.editingBillItem.billItemFinanceDetails.quantity}" />
+
+                                        <p:outputLabel for="editFreeQty" value="Free Quantity" />
+                                        <p:inputText
+                                            id="editFreeQty"
+                                            class="w-100 text-end"
+                                            autocomplete="off"
+                                            onfocus="this.select()"
+                                            value="#{pharmacyDirectPurchaseController.editingBillItem.billItemFinanceDetails.freeQuantity}" />
+
+                                        <p:outputLabel for="editPRate" value="Purchase Rate" />
+                                        <p:inputText
+                                            id="editPRate"
+                                            class="w-100 text-end"
+                                            autocomplete="off"
+                                            onfocus="this.select()"
+                                            value="#{pharmacyDirectPurchaseController.editingBillItem.billItemFinanceDetails.lineGrossRate}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </p:inputText>
+
+                                        <p:outputLabel for="editDisRate" value="Discount Rate" />
+                                        <p:inputText
+                                            id="editDisRate"
+                                            class="w-100 text-end"
+                                            autocomplete="off"
+                                            onfocus="this.select()"
+                                            value="#{pharmacyDirectPurchaseController.editingBillItem.billItemFinanceDetails.lineDiscountRate}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </p:inputText>
+
+                                        <p:outputLabel for="editRR" value="Retail Rate" />
+                                        <p:inputText
+                                            id="editRR"
+                                            class="w-100 text-end"
+                                            autocomplete="off"
+                                            onfocus="this.select()"
+                                            value="#{pharmacyDirectPurchaseController.editingBillItem.billItemFinanceDetails.retailSaleRate}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </p:inputText>
+
+                                        <p:outputLabel for="editDoe" value="Date of Expiry" />
+                                        <p:calendar
+                                            id="editDoe"
+                                            inputStyleClass="w-100"
+                                            pattern="dd MM yy"
+                                            value="#{pharmacyDirectPurchaseController.editingBillItem.pharmaceuticalBillItem.doe}" />
+
+                                        <p:outputLabel for="editBatch" value="Batch No" />
+                                        <p:inputText
+                                            id="editBatch"
+                                            class="w-100"
+                                            autocomplete="off"
+                                            value="#{pharmacyDirectPurchaseController.editingBillItem.pharmaceuticalBillItem.stringValue}" />
+                                    </p:panelGrid>
+                                    <p:defaultCommand target="btnSave" />
+                                    <div class="d-flex justify-content-end mt-3 gap-2">
+                                        <p:commandButton
+                                            id="btnSave"
+                                            value="Save"
+                                            icon="fas fa-save"
+                                            styleClass="ui-button-success mr-2"
+                                            process=":bill:dlgEditBillItem"
+                                            update=":bill:itemList :bill:tot :bill:billFinanceDetails :bill:dlgEditBillItem"
+                                            oncomplete="if (!args.validationFailed) PF('dlgEditBillItem').hide()"
+                                            action="#{pharmacyDirectPurchaseController.updateBillItem()}" />
+                                        <p:commandButton
+                                            value="Cancel"
+                                            icon="fas fa-times"
+                                            styleClass="ui-button-danger"
+                                            onclick="PF('dlgEditBillItem').hide(); return false;"
+                                            type="button" />
+                                    </div>
+                                </h:panelGroup>
+                            </p:dialog>
 
 
 
@@ -624,6 +724,20 @@
                                     <h:outputText class="mx-4" value="Purchasing Details"/>
                                 </f:facet>
                                 <h:panelGrid class="w-100">
+                                    <h:outputLabel value="Department Type" for="selDepartmentType"/>
+                                    <p:selectOneMenu
+                                        id="selDepartmentType"
+                                        value="#{pharmacyDirectPurchaseController.bill.departmentType}"
+                                        class="w-100 my-2"
+                                        disabled="#{not empty pharmacyDirectPurchaseController.billItems and pharmacyDirectPurchaseController.billItems.size() > 0}">
+                                        <f:selectItem itemLabel="Select Department Type" itemValue="#{null}"/>
+                                        <f:selectItems value="#{sessionController.availableDepartmentTypesForPharmacyTransactions}"
+                                                       var="dt"
+                                                       itemLabel="#{dt.label}"
+                                                       itemValue="#{dt}"/>
+                                        <p:ajax process="@this" update="acItem" event="change"/>
+                                    </p:selectOneMenu>
+
                                     <p:outputLabel value="Select Supplier"/>
                                     <p:autoComplete
                                         class=" w-100 my-2"
@@ -699,12 +813,12 @@
                                                 value="#{pharmacyDirectPurchaseController.bill.tax}">
                                                 <p:ajax 
                                                     process="tx" 
-                                                    update=":#{p:resolveFirstComponentWithId('lblNetTotal', view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId} :#{p:resolveFirstComponentWithId('billExpensesTotal', view).clientId} :#{p:resolveFirstComponentWithId('expensesConsidered', view).clientId} :#{p:resolveFirstComponentWithId('expensesNotConsidered', view).clientId} :#{p:resolveFirstComponentWithId('saleValue', view).clientId} :#{p:resolveFirstComponentWithId('itemList', view).clientId}" 
+                                                    update=":#{p:resolveFirstComponentWithId('lblNetTotal', view).clientId} :#{p:resolveFirstComponentWithId('totalBillValue', view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId} :#{p:resolveFirstComponentWithId('billExpensesTotal', view).clientId} :#{p:resolveFirstComponentWithId('expensesConsidered', view).clientId} :#{p:resolveFirstComponentWithId('expensesNotConsidered', view).clientId} :#{p:resolveFirstComponentWithId('saleValue', view).clientId} :#{p:resolveFirstComponentWithId('itemList', view).clientId}" 
                                                     event="keyup"
                                                     listener="#{pharmacyDirectPurchaseController.billDiscountChangedByUser()}" />
                                                 <p:ajax 
                                                     process="tx" 
-                                                    update=":#{p:resolveFirstComponentWithId('lblNetTotal', view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId} :#{p:resolveFirstComponentWithId('billExpensesTotal', view).clientId} :#{p:resolveFirstComponentWithId('expensesConsidered', view).clientId} :#{p:resolveFirstComponentWithId('expensesNotConsidered', view).clientId} :#{p:resolveFirstComponentWithId('saleValue', view).clientId} :#{p:resolveFirstComponentWithId('itemList', view).clientId}" 
+                                                    update=":#{p:resolveFirstComponentWithId('lblNetTotal', view).clientId} :#{p:resolveFirstComponentWithId('totalBillValue', view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId} :#{p:resolveFirstComponentWithId('billExpensesTotal', view).clientId} :#{p:resolveFirstComponentWithId('expensesConsidered', view).clientId} :#{p:resolveFirstComponentWithId('expensesNotConsidered', view).clientId} :#{p:resolveFirstComponentWithId('saleValue', view).clientId} :#{p:resolveFirstComponentWithId('itemList', view).clientId}" 
                                                     event="blur"
                                                     listener="#{pharmacyDirectPurchaseController.billDiscountChangedByUser()}" />
                                                 <f:convertNumber pattern="#,##0.00" />
@@ -718,12 +832,12 @@
                                                 value="#{pharmacyDirectPurchaseController.bill.discount}">
                                                 <p:ajax 
                                                     process="dis" 
-                                                    update=":#{p:resolveFirstComponentWithId('lblNetTotal', view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId} :#{p:resolveFirstComponentWithId('billExpensesTotal', view).clientId} :#{p:resolveFirstComponentWithId('expensesConsidered', view).clientId} :#{p:resolveFirstComponentWithId('expensesNotConsidered', view).clientId} :#{p:resolveFirstComponentWithId('saleValue', view).clientId} :#{p:resolveFirstComponentWithId('itemList', view).clientId}" 
+                                                    update=":#{p:resolveFirstComponentWithId('lblNetTotal', view).clientId} :#{p:resolveFirstComponentWithId('totalBillValue', view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId} :#{p:resolveFirstComponentWithId('billExpensesTotal', view).clientId} :#{p:resolveFirstComponentWithId('expensesConsidered', view).clientId} :#{p:resolveFirstComponentWithId('expensesNotConsidered', view).clientId} :#{p:resolveFirstComponentWithId('saleValue', view).clientId} :#{p:resolveFirstComponentWithId('itemList', view).clientId}" 
                                                     event="keyup"
                                                     listener="#{pharmacyDirectPurchaseController.billDiscountChangedByUser()}" />
                                                 <p:ajax 
                                                     process="dis" 
-                                                    update=":#{p:resolveFirstComponentWithId('lblNetTotal', view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId} :#{p:resolveFirstComponentWithId('billExpensesTotal', view).clientId} :#{p:resolveFirstComponentWithId('expensesConsidered', view).clientId} :#{p:resolveFirstComponentWithId('expensesNotConsidered', view).clientId} :#{p:resolveFirstComponentWithId('saleValue', view).clientId} :#{p:resolveFirstComponentWithId('itemList', view).clientId}" 
+                                                    update=":#{p:resolveFirstComponentWithId('lblNetTotal', view).clientId} :#{p:resolveFirstComponentWithId('totalBillValue', view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId} :#{p:resolveFirstComponentWithId('billExpensesTotal', view).clientId} :#{p:resolveFirstComponentWithId('expensesConsidered', view).clientId} :#{p:resolveFirstComponentWithId('expensesNotConsidered', view).clientId} :#{p:resolveFirstComponentWithId('saleValue', view).clientId} :#{p:resolveFirstComponentWithId('itemList', view).clientId}" 
                                                     event="blur"
                                                     listener="#{pharmacyDirectPurchaseController.billDiscountChangedByUser()}" />
                                                 <f:convertNumber pattern="#,##0.00" />
@@ -745,6 +859,14 @@
                                                 value="#{pharmacyDirectPurchaseController.bill.netTotal}">
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </h:outputLabel>
+
+                                            <p:outputLabel value="Total Bill Value" />
+                                            <p:outputLabel
+                                                id="totalBillValue"
+                                                class="w-100 text-end ui-inputfield bg-dark text-white"
+                                                value="#{0 - pharmacyDirectPurchaseController.bill.netTotal + pharmacyDirectPurchaseController.bill.expensesTotalNotConsideredForCosting}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </p:outputLabel>
 
                                             <p:outputLabel value="Bill Expenses (Not Considered for Costing)" />
                                             <h:outputLabel 

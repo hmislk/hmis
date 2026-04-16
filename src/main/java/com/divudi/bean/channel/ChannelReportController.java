@@ -4,8 +4,12 @@
  */
 package com.divudi.bean.channel;
 
+import com.divudi.bean.channel.analytics.ReportTemplateController;
+import com.divudi.bean.common.ExcelController;
 import com.divudi.bean.common.InstitutionController;
+import com.divudi.bean.common.PdfController;
 import com.divudi.bean.common.ReportTimerController;
+import com.divudi.bean.common.SearchController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.core.data.BillClassType;
 
@@ -22,6 +26,7 @@ import com.divudi.core.data.channel.PaymentEnum;
 import com.divudi.core.data.dataStructure.BillsTotals;
 import com.divudi.core.data.dataStructure.ChannelDoctor;
 import com.divudi.core.data.dataStructure.WebUserBillsTotal;
+import com.divudi.core.data.dto.ChannelServiceCategorywiseDetailsWrapperDTO;
 import com.divudi.core.data.hr.ReportKeyWord;
 import com.divudi.core.data.reports.PharmacyReports;
 import com.divudi.core.data.table.String1Value1;
@@ -70,6 +75,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -79,6 +85,12 @@ import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
+
+import org.primefaces.model.StreamedContent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import java.io.IOException;
+import com.itextpdf.kernel.geom.PageSize;
 
 @Named
 @SessionScoped
@@ -162,6 +174,10 @@ public class ChannelReportController implements Serializable {
     private ChannelBean channelBean;
     @Inject
     SessionController sessionController;
+    @Inject
+    PdfController pdfController;
+    @Inject
+    ExcelController excelController;
 
     @EJB
     DepartmentFacade departmentFacade;
@@ -178,12 +194,15 @@ public class ChannelReportController implements Serializable {
     private ReportTimerController reportTimerController;
     @Inject
     private InstitutionController institutionController;
+    @Inject
+    private ReportTemplateController reportTemplateController;
 
     private Speciality speciality;
 
     private List<SessionInstance> sessioninstances;
     private PaymentMethod paymentMethod;
     private List<PaymentMethod> paymentMethods;
+    private List<Bill> shiftStartBills;
 
     private String reportStatus;
 
@@ -191,6 +210,8 @@ public class ChannelReportController implements Serializable {
     ChannelService channelService;
 
     private ReportTemplateRowBundle dataBundle;
+
+    private static final Logger logger = LoggerFactory.getLogger(ChannelReportController.class);
 
     public Institution getInstitution() {
         return institution;
@@ -386,6 +407,64 @@ public class ChannelReportController implements Serializable {
         makeNull();
         return "/channel/income_with_summery_by_user?faces-redirect=true";
     }
+    
+    public String navigateToServiceCategoryWiseIncomeForChanneling() {
+        makeNull();
+        return "/channel/service_category_list_by_user_shift?faces-redirect=true";
+    }
+
+    public List<Bill> getShiftStartBills() {
+        return shiftStartBills;
+    }
+
+    public void setShiaftStartBills(List<Bill> shiftStartBills) {
+        this.shiftStartBills = shiftStartBills;
+    }
+    
+    private ChannelServiceCategorywiseDetailsWrapperDTO categorywiseDetailsWrapperDTO;
+
+    public ChannelServiceCategorywiseDetailsWrapperDTO getCategorywiseDetailsWrapperDTO() {
+        return categorywiseDetailsWrapperDTO;
+    }
+
+    public void setCategorywiseDetailsWrapperDTO(ChannelServiceCategorywiseDetailsWrapperDTO categorywiseDetailsWrapperDTO) {
+        this.categorywiseDetailsWrapperDTO = categorywiseDetailsWrapperDTO;
+    }
+
+    public void generateChannelCategorywiseDetailsForShitEndFromChannelReportController(Long shiftStartBillId){
+        categorywiseDetailsWrapperDTO = reportTemplateController.generateChannelCategorywiseDetailsForShitEnd(shiftStartBillId);
+    }
+    
+    
+    public void listShiftStartBills() {
+        
+        categorywiseDetailsWrapperDTO = null;
+        
+        String jpql = "select b "
+                + " from Bill b "
+                + " where b.retired=:ret"
+                + " and b.billTypeAtomic=:bta "
+                + " and b.createdAt between :fd and :td ";
+
+        Map params = new HashMap<>();
+        params.put("ret", false);
+        params.put("bta", BillTypeAtomic.FUND_SHIFT_START_BILL);
+        params.put("fd", fromDate);
+        params.put("td", toDate);
+
+        if(webUser != null){
+             jpql += " and b.creater = :webUser";
+             params.put("webUser", webUser);
+        }
+
+        if (getDepartment() != null) {
+            jpql += " and b.department =:dept";
+            params.put("dept", getDepartment());
+        }
+        jpql += " order by b.createdAt ";
+
+        shiftStartBills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+    }
 
     private List<Payment> paymentsFromCardAppoinments;
 
@@ -475,6 +554,7 @@ public class ChannelReportController implements Serializable {
 
         private long bsId;
         private long billId;
+        private BillTypeAtomic billTypeAtomic;
         private Date appoinmentDate;
         private Date billedDate;
         private String billedBy;
@@ -488,9 +568,10 @@ public class ChannelReportController implements Serializable {
         private boolean isCancelled;
         private boolean isRefunded;
 
-        public ChannelIncomeDetailDto(long bsId, long billId, Date appoinmentDate, Date billedDate, String billedBy, String patientName, String patientPhone, PaymentMethod paymentMethod, double doctorFee, double hosFee, double totalAppoinmentFee, String remark, boolean isCancelled, boolean isRefunded) {
+        public ChannelIncomeDetailDto(long bsId, long billId, BillTypeAtomic billTypeAtomic, Date appoinmentDate, Date billedDate, String billedBy, String patientName, String patientPhone, PaymentMethod paymentMethod, double doctorFee, double hosFee, double totalAppoinmentFee, String remark, boolean isCancelled, boolean isRefunded) {
             this.bsId = bsId;
             this.billId = billId;
+            this.billTypeAtomic = billTypeAtomic;
             this.appoinmentDate = appoinmentDate;
             this.billedDate = billedDate;
             this.billedBy = billedBy;
@@ -503,6 +584,14 @@ public class ChannelReportController implements Serializable {
             this.remark = remark;
             this.isCancelled = isCancelled;
             this.isRefunded = isRefunded;
+        }
+
+        public BillTypeAtomic getBillTypeAtomic() {
+            return billTypeAtomic;
+        }
+
+        public void setBillTypeAtomic(BillTypeAtomic billTypeAtomic) {
+            this.billTypeAtomic = billTypeAtomic;
         }
 
         public boolean isIsCancelled() {
@@ -3916,6 +4005,9 @@ public class ChannelReportController implements Serializable {
         valueList = null;
         dataBundle = null;
         categoryList = null;
+        webUser = null;
+        shiftStartBills = null;
+        categorywiseDetailsWrapperDTO = null;
     }
 
     List<BillSession> nurseViewSessions;
@@ -4895,6 +4987,81 @@ public class ChannelReportController implements Serializable {
 
     public void setCategory(Category category) {
         this.category = category;
+    }
+
+    // PDF Export: Channel Scanning Income Report
+    public StreamedContent getChannelScanningIncomeReportAsPdf() {
+        if (dataBundle == null || dataBundle.getReportTemplateRows() == null || dataBundle.getReportTemplateRows().isEmpty()) {
+            JsfUtil.addErrorMessage("Please generate the Channel Scanning Income report before exporting.");
+            return null;
+        }
+
+        StreamedContent pdfSc = null;
+        try {
+            String fileName = "Channel_Scanning_Income_Report";
+            
+            String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
+            if (dates != null && !dates.isEmpty()) {
+                fileName += "_" + dates;
+            }
+
+            // set bundleType and bundleName
+            dataBundle.setBundleType("channelIncomeScanning");
+            dataBundle.setName("Channel Scanning Income Report");
+            
+            pdfSc = pdfController.createPdfForReportTemplateRows(dataBundle, PageSize.A4.rotate(), true, getFiltersForChannelScanningIncomeReport(), fileName);
+        } catch (IOException e) {
+            logger.error("getChannelScanningIncomeReportAsPdf: Error creating pdfSc via pdfController.createPdfForReportTemplateRows", e);
+            pdfSc = null;
+            JsfUtil.addErrorMessage("Failed to generate Channel Scanning Income Report PDF file. Please try again.");
+        }
+        return pdfSc;
+    }
+
+    // Excel Export: Channel Scanning Income Report
+    public StreamedContent getChannelScanningIncomeReportAsExcel() {
+        if (dataBundle == null || dataBundle.getReportTemplateRows() == null || dataBundle.getReportTemplateRows().isEmpty()) {
+            JsfUtil.addErrorMessage("Please generate the Channel Scanning Income Report before exporting.");
+            return null;
+        }
+
+        StreamedContent downloadingExcel = null;
+        try {
+            String fileName = "Channel_Scanning_Income_Report";
+            String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
+            if (dates != null && !dates.isEmpty()) {
+                fileName += "_" + dates;
+            }
+            // set bundleType and bundleName
+            dataBundle.setBundleType("channelIncomeScanning");
+            dataBundle.setName("Channel Scanning Income Report");
+            
+            downloadingExcel = excelController.createExcelForReportTemplateRows(dataBundle, getFiltersForChannelScanningIncomeReport(), fileName);
+        } catch (IOException e) {
+            logger.error("getChannelScanningIncomeReportAsExcel: Error creating downloadingExcel via excelController.createExcelForReportTemplateRows", e);
+            downloadingExcel = null;
+            JsfUtil.addErrorMessage("Failed to generate Channel Scanning Income Report Excel file. Please try again.");
+        }
+        return downloadingExcel;
+    }
+
+    // Filters for Channel Scanning Income report
+    public Map<String, Object> getFiltersForChannelScanningIncomeReport() {
+        Map<String, Object> params = new LinkedHashMap<>();
+        String dateTimeFormat = sessionController.getApplicationPreference().getLongDateTimeFormat();
+        String formattedFromDate = fromDate != null ? new SimpleDateFormat(dateTimeFormat).format(fromDate) : "Not available";
+        String formattedToDate = toDate != null ? new SimpleDateFormat(dateTimeFormat).format(toDate) : "Not available";
+        String reportStatusString = "Details View";
+        if (reportStatus != null && !reportStatus.isEmpty() && reportStatus.equals("Summery")) {
+            reportStatusString = "Summary View";
+        }
+
+        params.put("From Date", formattedFromDate);
+        params.put("To Date", formattedToDate);
+        params.put("Institution", institution != null ? institution.getName() : "All Institutions");
+        params.put("Report Status: ", reportStatusString);
+
+        return params;
     }
 
     public class ChannelReportColumnModelBundle implements Serializable {

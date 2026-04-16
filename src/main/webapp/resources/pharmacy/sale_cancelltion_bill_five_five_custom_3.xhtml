@@ -148,7 +148,7 @@
                                     </h:outputLabel>
                                 </td>
                                 <td style="text-align: right">
-                                    <h:outputLabel value="#{item.grossValue}">
+                                    <h:outputLabel value="#{commonFunctionsProxy.abs(item.grossValue)}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </td>
@@ -165,7 +165,7 @@
                     <tr>
                         <td >Total:</td>
                         <td  style="text-align: right;">
-                            <h:outputLabel value="#{cc.attrs.bill.total}" >
+                            <h:outputLabel value="#{commonFunctionsProxy.abs(cc.attrs.bill.total)}" >
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
                         </td>
@@ -175,7 +175,7 @@
                         <tr>
                             <td >Discount:</td>
                             <td  style="text-align: right;">
-                                <h:outputLabel  value="#{-cc.attrs.bill.discount}">
+                                <h:outputLabel  value="#{commonFunctionsProxy.abs(cc.attrs.bill.discount)}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </td>
@@ -183,7 +183,7 @@
                         <tr>
                             <td >Net Total:</td>
                             <td style="text-align: right;">
-                                <h:outputLabel value="#{cc.attrs.bill.netTotal}">
+                                <h:outputLabel value="#{commonFunctionsProxy.abs(cc.attrs.bill.netTotal)}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </td>
@@ -217,7 +217,7 @@
                                             <h:outputText style="font-size: 8pt; width: 2cm;"  value=" (#{ps.creditCardRefNo})" rendered="#{ps.paymentMethod eq 'Card'}"/>
                                         </td>
                                         <td style="width: 2cm; text-align: end">
-                                            <h:outputText style="font-size: 8pt; width: 2cm;"  value="#{ps.paidValue}">
+                                            <h:outputText style="font-size: 8pt; width: 2cm;"  value="#{commonFunctionsProxy.abs(ps.paidValue)}">
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </h:outputText>
                                         </td>

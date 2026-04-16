@@ -28,6 +28,17 @@
                                                 action="#{admissionTypeController.navigateToManageAdmissionItemsAndFees()}"  ></p:commandButton>
                                         </div>
                                     </p:tab>
+                                    
+                                    <p:tab title="Surgery Types">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton ajax="false" 
+                                                             value="Surgery Types" 
+                                                             class="w-100" 
+                                                             action="/inward/inward_surgery_type?faces-redirect=true"  >
+                                            </p:commandButton>
+                                           
+                                        </div>
+                                    </p:tab>
 
 
 
@@ -79,6 +90,31 @@
                                                 action="#{uploadController.toListDiagnosisCardUploads()}" >
                                             </p:commandButton>
 
+                                        </div>
+                                    </p:tab>
+
+                                    <p:tab title="Appointment Schedules">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton ajax="false"
+                                                             value="Appointment Schedule Templates"
+                                                             class="w-100"
+                                                             icon="fa fa-calendar"
+                                                             action="#{appointmentScheduleTemplateController.navigateToManageTemplates()}" />
+                                            <p:commandButton ajax="false"
+                                                             value="Appointment Date Overrides"
+                                                             class="w-100"
+                                                             icon="fa fa-calendar-times-o"
+                                                             action="#{appointmentScheduleTemplateController.navigateToManageDateOverrides()}" />
+                                        </div>
+                                    </p:tab>
+
+                                    <p:tab title="Charge Type Labels">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton
+                                                ajax="false"
+                                                value="Manage Charge Type Labels"
+                                                class="w-100"
+                                                action="inward_charge_type_labels?faces-redirect=true"/>
                                         </div>
                                     </p:tab>
 

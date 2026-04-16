@@ -23,10 +23,21 @@
                                 <h:outputText class="mx-4" value="Admit a Baby"/>
                             </div>
                             <div>
-                                <p:commandButton 
-                                    id="admt" 
-                                    action="#{admissionController.saveSelected}" 
-                                    ajax="false" 
+                                <p:commandButton
+                                    ajax="false"
+                                    value="Inpatient Dashboard"
+                                    icon="fa fa-id-card"
+                                    class="ui-button-secondary mx-1"
+                                    rendered="#{admissionController.parentAdmission ne null and admissionController.parentAdmission.id ne null}"
+                                    action="#{admissionController.navigateToAdmissionProfilePage}">
+                                    <f:setPropertyActionListener
+                                        value="#{admissionController.parentAdmission}"
+                                        target="#{admissionController.current}" />
+                                </p:commandButton>
+                                <p:commandButton
+                                    id="admt"
+                                    action="#{admissionController.saveSelected}"
+                                    ajax="false"
                                     class="ui-button-success mx-1"
                                     value="Admit"  />
                                 <p:commandButton ajax="false" value="Clear" actionListener="#{admissionController.makeNull}" />

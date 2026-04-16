@@ -129,6 +129,7 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
     String comment;
 
     private Institution currentCompany;
+    private Institution institution;
     private String subject;
     private String emailBoday;
 
@@ -344,6 +345,22 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
         return suggestions;
     }
 
+    public List<Admission> completePatientByInstitution(String query) {
+        return admissionController.completePatientNotFinalizedByInstitution(query, getInstitution());
+    }
+
+    public void onInstitutionChange() {
+        current = null;
+    }
+
+    public Institution getInstitution() {
+        return institution;
+    }
+
+    public void setInstitution(Institution institution) {
+        this.institution = institution;
+    }
+
     public List<Admission> completePatientAll(String query) {
         List<Admission> suggestions;
         String sql;
@@ -386,7 +403,7 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
             getFacade().edit(getCurrent());
             JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            JsfUtil.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addErrorMessage("Nothing to Delete");
         }
         prepereForNew();
         getItems();
@@ -402,6 +419,7 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
         current = null;
         selectText = "";
         yearMonthDay = new YearMonthDay();
+        institution = sessionController.getInstitution();
     }
 
     @Deprecated
@@ -532,6 +550,15 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
         fillCreditCompaniesByPatient();
         fillCurrentPatientAllergies(current.getPatient());
         return "/inward/inward_edit_bht?faces-redirect=true";
+    }
+
+    public String navigateToManageAllergies() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("No Admission Selected");
+            return "";
+        }
+        fillCurrentPatientAllergies(current.getPatient());
+        return "/inward/inward_manage_allergies?faces-redirect=true";
     }
 
     public String navigateToSendMailToCompany(EncounterCreditCompany ecc) {

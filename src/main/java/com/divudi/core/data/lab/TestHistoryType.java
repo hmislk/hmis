@@ -17,6 +17,8 @@ public enum TestHistoryType {
     SAMPLE_SEPARATE,
     SEPARATE_AND_BARCODE_GENERATED,
     BARCODE_GENERATED,
+    VIEW_BARCODE,
+    PRINT_BARCODE,
     BARCODE_REGENERATED,
     BARCODE_PRINTED,
     BARCODE_PRINTED_INDIVIDUAL,
@@ -31,6 +33,7 @@ public enum TestHistoryType {
     SAMPLE_REJECTED,
     SAMPLE_RECEIVED,
     SAMPLE_TRANSFERRED,
+    BYPASS_BARCODE_GENERAT_AND_REPORT_CREATED,
     SAMPLE_PUT_TO_ANALYZER,
     RESULT_RECEIVED_FROM_ANALYZER,
     REPORT_CREATED,
@@ -39,12 +42,36 @@ public enum TestHistoryType {
     REMOVED_UPLOADED_REPORT,
     REPORT_CALCULATED,
     REPORT_APPROVED,
+    PATIENT_DETAILS_CHANGE,
+    RECALCULATE_DYNAMICLABEL,
     REPORT_APPROVED_CANCEL,
     REPORT_VIEWED,
     REPORT_PRINTED,
+    REPORT_EXPORT_AS_PDF,
+    REPORT_REMOVE,
+    REPORT_ISSUE_PATIENT,
+    REPORT_ISSUE_STAFF,
+    CREATE_SMS_MANUAL,
     SENT_SMS_MANUAL,
+    CREATE_SMS_AUTO,
     SENT_SMS_AUTO,
-    SENT_EMAIL;
+    SENT_SMS_FAIL,
+    RESENT_FAIL_SMS,
+    CREATE_EMAIL,
+    SENT_EMAIL,
+    SENT_EMAIL_FAIL,
+    RESENT_EMAIL;
+    
+     
+    // <editor-fold defaultstate="collapsed" desc="Extra Need to Add Enum">
+    
+//    1. Bill Request (Cancel/Refund)
+//    2. Request Cancel   
+//    3. Request Approvel
+//    4. Request Reject
+//    5. Request Approvel Cancel
+    
+    // </editor-fold>
 
     public String getLabel() {
         switch (this) {
@@ -56,6 +83,10 @@ public enum TestHistoryType {
                 return "Refunded";
             case BARCODE_GENERATED:
                 return "Barcode Generated";
+            case VIEW_BARCODE:
+                return "View Barcode";
+            case PRINT_BARCODE:
+                return "Print Barcode";
             case SEPARATE_AND_BARCODE_GENERATED:
                 return "Separate and Barcode Generated";
             case SAMPLE_SEPARATE:
@@ -92,6 +123,8 @@ public enum TestHistoryType {
                 return "Sample Put to Analyzer";
             case RESULT_RECEIVED_FROM_ANALYZER:
                 return "Result Received from Analyzer";
+            case BYPASS_BARCODE_GENERAT_AND_REPORT_CREATED:
+                return "Sample Process and Report Created";
             case REPORT_CREATED:
                 return "Report Created";
             case DATA_ENTERED:
@@ -101,21 +134,47 @@ public enum TestHistoryType {
             case REMOVED_UPLOADED_REPORT:
                 return "Uploaded Report Removed";
             case REPORT_CALCULATED:
-                return "Report Corrected";
+                return "Flags Generate";
             case REPORT_APPROVED:
                 return "Report Approved";
+            case PATIENT_DETAILS_CHANGE:
+                return "Change the Patient Details in Patient Report";
+            case RECALCULATE_DYNAMICLABEL:
+                return "Re-Calculate Dynamiclabel";
             case REPORT_APPROVED_CANCEL:
                 return "Report Approval Canceled";
+            case REPORT_REMOVE:
+                return "Delete Report";
             case REPORT_VIEWED:
                 return "Report Viewed";
             case REPORT_PRINTED:
                 return "Report Printed";
+            case REPORT_EXPORT_AS_PDF:
+                return "Report Export as PDF";
+            case REPORT_ISSUE_PATIENT:
+                return "Report Issue to Patient";
+            case REPORT_ISSUE_STAFF:
+                return "Report Issue to Staff";    
+            case CREATE_SMS_MANUAL:
+                return "Create SMS (Manual)";
             case SENT_SMS_MANUAL:
-                return "SMS Sent (Manual)";
+                return "Sent SMS (Manual)";
+            case CREATE_SMS_AUTO:
+                return "Create SMS (Auto)";
             case SENT_SMS_AUTO:
-                return "SMS Sent (Auto)";
+                return "Sent SMS (Auto)";
+            case SENT_SMS_FAIL:
+                return "Failed - SMS Send";
+            case RESENT_FAIL_SMS:
+                return "Failed SMS Resent";
+            case CREATE_EMAIL:
+                return "Create E-mail";
             case SENT_EMAIL:
                 return "Email Sent";
+            case SENT_EMAIL_FAIL:
+                return "Failed - Email Sent";
+            case RESENT_EMAIL:
+                return "Failed Email Resent";
             default:
                 return this.toString();
         }

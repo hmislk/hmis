@@ -7,8 +7,11 @@ package com.divudi.bean.common;
 
 import com.divudi.bean.lab.InvestigationController;
 import com.divudi.core.data.BillClassType;
+import com.divudi.core.data.BillNumberSuffix;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.entity.BilledBill;
 import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.dataStructure.BillListWithTotals;
 import com.divudi.core.data.dataStructure.SearchKeyword;
@@ -20,6 +23,7 @@ import com.divudi.core.entity.lab.PatientInvestigation;
 import com.divudi.core.entity.lab.PatientReport;
 import com.divudi.core.entity.lab.PatientReportItemValue;
 import com.divudi.core.entity.pharmacy.Amp;
+import com.divudi.core.entity.pharmacy.Ampp;
 import com.divudi.core.entity.pharmacy.ItemBatch;
 import com.divudi.core.entity.pharmacy.PharmaceuticalItemCategory;
 import com.divudi.core.facade.BillComponentFacade;
@@ -30,6 +34,7 @@ import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.BillNumberFacade;
 import com.divudi.core.facade.AuditDatabaseFacade;
 import com.divudi.core.facade.CategoryFacade;
+import com.divudi.core.facade.DatabaseMigrationFacade;
 import com.divudi.core.facade.DepartmentFacade;
 import com.divudi.core.facade.InstitutionFacade;
 import com.divudi.core.facade.ItemBatchFacade;
@@ -88,11 +93,14 @@ import com.divudi.core.facade.StockVarientBillItemFacade;
 import com.divudi.core.facade.UserStockContainerFacade;
 import com.divudi.core.facade.UserStockFacade;
 import com.divudi.core.util.CommonFunctions;
+import com.divudi.service.DatabaseMigrationService;
 import com.divudi.service.LogFileService;
 import com.divudi.service.BillService;
 import java.sql.SQLSyntaxErrorException;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -222,6 +230,8 @@ public class DataAdministrationController implements Serializable {
     ConfigOptionApplicationController configOptionApplicationController;
     @Inject
     com.divudi.service.CacheAdminService cacheAdminService;
+    @Inject
+    com.divudi.service.pharmacy.PharmacyCostingService pharmacyCostingService;
 
     @EJB
     ItemFacade itemFacade;
@@ -267,6 +277,17 @@ public class DataAdministrationController implements Serializable {
     private LogFileService logService;
     @EJB
     private BillService billService;
+    @EJB
+    private DatabaseMigrationService databaseMigrationService;
+    @EJB
+    private DatabaseMigrationFacade databaseMigrationFacade;
+    @EJB
+    private com.divudi.core.facade.BillFinanceDetailsFacade billFinanceDetailsFacade;
+    @EJB
+    private com.divudi.core.facade.BillItemFinanceDetailsFacade billItemFinanceDetailsFacade;
+
+    @Inject
+    WebUserController webUserController;
 
     List<Bill> bills;
     List<Bill> selectedBills;
@@ -316,6 +337,11 @@ public class DataAdministrationController implements Serializable {
     private String mainDatabaseExecutionFeedback;
     private String auditDatabaseExecutionFeedback;
 
+    // Wiki DDL version tracking
+    private static final String WIKI_DDL_URL = "https://github.com/hmislk/hmis/wiki/Database-Schema-DDL-Generation-Guide";
+    private static final String CONFIG_KEY_DDL_VERSION = "DATABASE_DDL_VERSION";
+    private String wikiDdlVersion;
+
     Date fromDate;
     Date toDate;
 
@@ -338,6 +364,13 @@ public class DataAdministrationController implements Serializable {
         return Paths.get(p.trim()).normalize();
     }
 
+    private String getExceptionMessage(Throwable throwable) {
+        if (throwable == null) {
+            return "Unknown exception";
+        }
+        return throwable.getMessage() != null ? throwable.getMessage() : throwable.getClass().getName();
+    }
+
     public void refresh() {
         try {
             String configuredPath = getPayaraLogLocation();
@@ -356,7 +389,7 @@ public class DataAdministrationController implements Serializable {
             }
         } catch (IOException e) {
             logs = Collections.emptyList();
-            JsfUtil.addErrorMessage("Error accessing log directory: " + e.getMessage());
+            JsfUtil.addErrorMessage("Error accessing log directory: " + getExceptionMessage(e));
         }
     }
 
@@ -456,7 +489,44 @@ public class DataAdministrationController implements Serializable {
 
             billController.setOutput(billController.getOutput() + "Successfully updated " + updatedCount + " PharmaceuticalItem(s) with Pharmacy department type.");
         } catch (Exception e) {
-            billController.setOutput("Error updating PharmaceuticalItems: " + e.getMessage());
+            billController.setOutput("Error updating PharmaceuticalItems: " + getExceptionMessage(e));
+            e.printStackTrace();
+        }
+    }
+
+    public void fillBillDepartmentTypeFromBillItems() {
+        billController.setOutput("");
+        try {
+            String jpql = "SELECT b FROM Bill b WHERE b.departmentType IS NULL AND b.retired = false";
+            List<Bill> bills = billFacade.findByJpql(jpql, new HashMap<>());
+            billController.setOutput("Found " + bills.size() + " bill(s) with null department type.\n");
+
+            int updated = 0;
+            int skipped = 0;
+            for (Bill bill : bills) {
+                Map<String, Object> params = new HashMap<>();
+                params.put("bill", bill);
+                String biJpql = "SELECT bi FROM BillItem bi WHERE bi.bill = :bill AND bi.retired = false ORDER BY bi.id ASC";
+                List<BillItem> items = billItemFacade.findByJpql(biJpql, params);
+                DepartmentType dt = null;
+                for (BillItem bi : items) {
+                    if (bi.getItem() != null && bi.getItem().getDepartmentType() != null) {
+                        dt = bi.getItem().getDepartmentType();
+                        break;
+                    }
+                }
+                if (dt != null) {
+                    bill.setDepartmentType(dt);
+                    billFacade.edit(bill);
+                    updated++;
+                } else {
+                    skipped++;
+                }
+            }
+            billController.setOutput(billController.getOutput()
+                    + "Updated: " + updated + " bill(s). Skipped (no item dept type found): " + skipped + " bill(s).");
+        } catch (Exception e) {
+            billController.setOutput("Error: " + getExceptionMessage(e));
             e.printStackTrace();
         }
     }
@@ -542,7 +612,7 @@ public class DataAdministrationController implements Serializable {
                     .append(paymentsCorrected).append(" payment value(s).");
             billController.setOutput(output.toString());
         } catch (Exception e) {
-            billController.setOutput("Error correcting payment values: " + e.getMessage());
+            billController.setOutput("Error correcting payment values: " + getExceptionMessage(e));
             e.printStackTrace();
         }
     }
@@ -638,7 +708,7 @@ public class DataAdministrationController implements Serializable {
             executionFeedback = output.toString();
 
         } catch (Exception e) {
-            executionFeedback = "Error correcting bill finance details signs: " + e.getMessage();
+            executionFeedback = "Error correcting bill finance details signs: " + getExceptionMessage(e);
             e.printStackTrace();
         }
     }
@@ -746,7 +816,7 @@ public class DataAdministrationController implements Serializable {
             executionFeedback = output.toString();
 
         } catch (Exception e) {
-            executionFeedback = "Error updating historical stock data: " + e.getMessage();
+            executionFeedback = "Error updating historical stock data: " + getExceptionMessage(e);
             e.printStackTrace();
         }
     }
@@ -954,7 +1024,7 @@ public class DataAdministrationController implements Serializable {
             output.append("Updated ").append(billsUpdated).append(" bills to completed=true.");
             billController.setOutput(output.toString());
         } catch (Exception e) {
-            billController.setOutput("Error adding completed state to bills: " + e.getMessage());
+            billController.setOutput("Error adding completed state to bills: " + getExceptionMessage(e));
             e.printStackTrace();
         }
     }
@@ -1152,8 +1222,289 @@ public class DataAdministrationController implements Serializable {
             out.append("Updated Bills: ").append(updatedBills).append("\n");
             out.append("Updated Bill Items: ").append(updatedItems).append("\n");
         } catch (Exception e) {
-            out.append("Error: ").append(e.getMessage());
+            out.append("Error: ").append(getExceptionMessage(e));
         }
+        executionFeedback = out.toString();
+    }
+
+    /**
+     * Fast native SQL version of correctPharmacyDisbursementSigns().
+     * Uses bulk UPDATE statements instead of loading each entity individually.
+     * Supports date range filtering via fromDate and toDate.
+     */
+    public void correctPharmacyDisbursementSignsNative() {
+        executionFeedback = "";
+        try {
+            String result = billFacade.correctPharmacyDisbursementSignsNative(fromDate, toDate, false);
+            executionFeedback = result;
+            JsfUtil.addSuccessMessage("Sign correction completed. Check feedback for details.");
+        } catch (Exception e) {
+            executionFeedback = "Error: " + getExceptionMessage(e);
+            JsfUtil.addErrorMessage("Error correcting signs: " + getExceptionMessage(e));
+        }
+    }
+
+    /**
+     * Dry-run version to preview what would be corrected without making changes.
+     */
+    public void previewPharmacyDisbursementSignsCorrection() {
+        executionFeedback = "";
+        try {
+            String result = billFacade.correctPharmacyDisbursementSignsNative(fromDate, toDate, true);
+            executionFeedback = result;
+            JsfUtil.addSuccessMessage("Preview complete. Check feedback for details.");
+        } catch (Exception e) {
+            executionFeedback = "Error: " + getExceptionMessage(e);
+            JsfUtil.addErrorMessage("Error previewing: " + getExceptionMessage(e));
+        }
+    }
+
+    public void correctDirectIssueInwardMedicineCancellationStockValues() {
+        executionFeedback = "";
+        StringBuilder output = new StringBuilder();
+
+        try {
+            Map<String, Object> params = new HashMap<>();
+            params.put("ret", false);
+
+            List<BillTypeAtomic> billTypesToCorrect = Arrays.asList(
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION
+            );
+
+            params.put("types", billTypesToCorrect);
+
+            StringBuilder jpql = new StringBuilder(
+                "SELECT b FROM Bill b WHERE b.retired = :ret AND b.billTypeAtomic IN :types"
+            );
+
+            if (fromDate != null) {
+                jpql.append(" AND b.createdAt >= :fromDate");
+                params.put("fromDate", fromDate);
+            }
+            if (toDate != null) {
+                jpql.append(" AND b.createdAt <= :toDate");
+                params.put("toDate", toDate);
+            }
+
+            List<Bill> billsToProcess = billFacade.findByJpql(
+                jpql.toString(),
+                params,
+                TemporalType.TIMESTAMP
+            );
+
+            if (billsToProcess == null || billsToProcess.isEmpty()) {
+                executionFeedback = "No Direct Issue Inward Medicine Cancellation bills found in the specified date range.";
+                return;
+            }
+
+            int billsProcessed = 0;
+            int billsCorrected = 0;
+
+            for (Bill bill : billsToProcess) {
+                if (bill == null || bill.getBillFinanceDetails() == null) {
+                    continue;
+                }
+
+                billsProcessed++;
+                boolean billWasCorrected = false;
+
+                BillFinanceDetails bfd = bill.getBillFinanceDetails();
+
+                // For cancellations, stock comes back IN = POSITIVE values
+                billWasCorrected = correctToPositive(bfd);
+
+                if (billWasCorrected) {
+                    billFacade.edit(bill);
+                    billsCorrected++;
+                }
+            }
+
+            output.append("Processed: ").append(billsProcessed).append(" bills\n");
+            output.append("Corrected: ").append(billsCorrected).append(" bills with incorrect signs\n");
+
+            if (fromDate != null || toDate != null) {
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+                String fromStr = fromDate != null ? sdf.format(fromDate) : "beginning";
+                String toStr = toDate != null ? sdf.format(toDate) : "now";
+                output.append("Date range: ").append(fromStr).append(" to ").append(toStr);
+            }
+
+            executionFeedback = output.toString();
+
+            JsfUtil.addSuccessMessage("Correction completed: " + billsCorrected + " bills corrected");
+
+        } catch (Exception e) {
+            executionFeedback = "Error correcting Direct Issue Inward Medicine Cancellation stock values: " + getExceptionMessage(e);
+            JsfUtil.addErrorMessage("Error: " + getExceptionMessage(e));
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Backfills missing BillFinanceDetails and BillItemFinanceDetails for
+     * PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER bills that have no finance
+     * data. These bills represent stock-movement events in the F15 report; without
+     * BFD the totalRetailSaleValue is treated as 0 causing F15 discrepancies.
+     *
+     * Safe to re-run: skips bills whose BFD already has a non-zero totalRetailSaleValue.
+     * Uses the date range selected at the top of the admin page.
+     */
+    public void backfillBfdForPreToSettleAtCashierBills() {
+        executionFeedback = "";
+        StringBuilder out = new StringBuilder();
+        int processedBills = 0;
+        int skippedBills = 0;
+        int updatedBills = 0;
+        int updatedItems = 0;
+
+        try {
+            List<BillTypeAtomic> targetTypes = Arrays.asList(
+                    BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER
+            );
+
+            Map<String, Object> params = new HashMap<>();
+            params.put("types", targetTypes);
+            StringBuilder jpql = new StringBuilder();
+            jpql.append("SELECT b FROM Bill b WHERE b.retired = false AND b.billTypeAtomic IN :types");
+            if (fromDate != null) {
+                jpql.append(" AND b.createdAt >= :fd");
+                params.put("fd", fromDate);
+            }
+            if (toDate != null) {
+                jpql.append(" AND b.createdAt <= :td");
+                params.put("td", toDate);
+            }
+
+            List<Bill> candidates = billFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+            out.append("Found ").append(candidates.size()).append(" PRE_TO_SETTLE_AT_CASHIER bills in range.\n\n");
+
+            for (Bill candidate : candidates) {
+                processedBills++;
+                Bill bill = billService.reloadBill(candidate);
+                if (bill == null) {
+                    continue;
+                }
+
+                // Skip if BFD already has a non-zero retail value (already processed)
+                BillFinanceDetails bfd = bill.getBillFinanceDetails();
+                if (bfd != null && bfd.getId() != null
+                        && bfd.getTotalRetailSaleValue() != null
+                        && bfd.getTotalRetailSaleValue().compareTo(BigDecimal.ZERO) != 0) {
+                    skippedBills++;
+                    continue;
+                }
+
+                if (bill.getBillItems() == null || bill.getBillItems().isEmpty()) {
+                    skippedBills++;
+                    continue;
+                }
+
+                // Ensure BFD exists
+                if (bfd == null || bfd.getId() == null) {
+                    bfd = new BillFinanceDetails();
+                    bfd.setBill(bill);
+                    bill.setBillFinanceDetails(bfd);
+                }
+
+                BigDecimal totalCostValue = BigDecimal.ZERO;
+                BigDecimal totalPurchaseValue = BigDecimal.ZERO;
+                BigDecimal totalRetailSaleValue = BigDecimal.ZERO;
+
+                for (BillItem bi : bill.getBillItems()) {
+                    if (bi == null || !bi.isConsideredForCosting()) {
+                        continue;
+                    }
+                    PharmaceuticalBillItem pharmaItem = bi.getPharmaceuticalBillItem();
+                    if (pharmaItem == null) {
+                        continue;
+                    }
+
+                    BigDecimal qty = bi.getQty() != null
+                            ? BigDecimal.valueOf(bi.getQty()) : BigDecimal.ZERO;
+
+                    // Ensure BIFD exists on the item
+                    BillItemFinanceDetails bifd = bi.getBillItemFinanceDetails();
+                    if (bifd == null || bifd.getId() == null) {
+                        bifd = new BillItemFinanceDetails();
+                        bifd.setBillItem(bi);
+                        bi.setBillItemFinanceDetails(bifd);
+                    }
+
+                    // Only populate if not already set
+                    if (bifd.getValueAtRetailRate() == null
+                            || bifd.getValueAtRetailRate().compareTo(BigDecimal.ZERO) == 0) {
+
+                        bifd.setQuantity(qty);
+                        bifd.setTotalQuantity(qty);
+
+                        // Cost rate: prefer ItemBatch.costRate, fall back to purchaseRate
+                        Double costRateValue = null;
+                        if (pharmaItem.getItemBatch() != null) {
+                            costRateValue = pharmaItem.getItemBatch().getCostRate();
+                        }
+                        if (costRateValue == null || costRateValue <= 0) {
+                            costRateValue = pharmaItem.getPurchaseRate();
+                        }
+                        if (costRateValue != null && costRateValue > 0) {
+                            BigDecimal costRate = BigDecimal.valueOf(costRateValue);
+                            BigDecimal valueAtCost = qty.multiply(costRate).negate();
+                            bifd.setCostRate(costRate);
+                            bifd.setValueAtCostRate(valueAtCost);
+                            totalCostValue = totalCostValue.add(valueAtCost);
+                        }
+
+                        // Purchase rate
+                        if (pharmaItem.getPurchaseRate() > 0) {
+                            BigDecimal purchaseRate = BigDecimal.valueOf(pharmaItem.getPurchaseRate());
+                            BigDecimal valueAtPurchase = qty.multiply(purchaseRate).negate();
+                            bifd.setPurchaseRate(purchaseRate);
+                            bifd.setValueAtPurchaseRate(valueAtPurchase);
+                            totalPurchaseValue = totalPurchaseValue.add(valueAtPurchase);
+                        }
+
+                        // Retail rate
+                        if (pharmaItem.getRetailRate() > 0) {
+                            BigDecimal retailRate = BigDecimal.valueOf(pharmaItem.getRetailRate());
+                            BigDecimal valueAtRetail = qty.multiply(retailRate).negate();
+                            bifd.setRetailSaleRate(retailRate);
+                            bifd.setValueAtRetailRate(valueAtRetail);
+                            totalRetailSaleValue = totalRetailSaleValue.add(valueAtRetail);
+                        }
+
+                        billItemFacade.edit(bi);
+                        updatedItems++;
+                    } else {
+                        // Already populated — still include in bill-level totals
+                        if (bifd.getValueAtCostRate() != null) {
+                            totalCostValue = totalCostValue.add(bifd.getValueAtCostRate());
+                        }
+                        if (bifd.getValueAtPurchaseRate() != null) {
+                            totalPurchaseValue = totalPurchaseValue.add(bifd.getValueAtPurchaseRate());
+                        }
+                        if (bifd.getValueAtRetailRate() != null) {
+                            totalRetailSaleValue = totalRetailSaleValue.add(bifd.getValueAtRetailRate());
+                        }
+                    }
+                }
+
+                bfd.setTotalCostValue(totalCostValue);
+                bfd.setTotalPurchaseValue(totalPurchaseValue);
+                bfd.setTotalRetailSaleValue(totalRetailSaleValue);
+                billFacade.edit(bill);
+                updatedBills++;
+            }
+
+            out.append("=== Backfill Summary ===\n");
+            out.append("Processed: ").append(processedBills).append(" bills\n");
+            out.append("Updated:   ").append(updatedBills).append(" bills (").append(updatedItems).append(" items)\n");
+            out.append("Skipped:   ").append(skippedBills).append(" bills (already had BFD or no items)\n");
+
+        } catch (Exception e) {
+            out.append("Error: ").append(getExceptionMessage(e));
+            JsfUtil.addErrorMessage("Error during BFD backfill: " + getExceptionMessage(e));
+            e.printStackTrace();
+        }
+
         executionFeedback = out.toString();
     }
 
@@ -1397,7 +1748,7 @@ public class DataAdministrationController implements Serializable {
 
                     } catch (Exception itemEx) {
                         result.append("Error processing bill ID ").append(fixingBill.getId())
-                                .append(": ").append(itemEx.getMessage()).append("\n");
+                                .append(": ").append(getExceptionMessage(itemEx)).append("\n");
                     }
                 }
 
@@ -1421,7 +1772,7 @@ public class DataAdministrationController implements Serializable {
             executionFeedback = result.toString();
 
         } catch (Exception e) {
-            String errorMsg = "Error during transfer bill finance details migration: " + e.getMessage();
+            String errorMsg = "Error during transfer bill finance details migration: " + getExceptionMessage(e);
             executionFeedback = errorMsg;
             e.printStackTrace();
         }
@@ -1702,6 +2053,145 @@ public class DataAdministrationController implements Serializable {
 
     }
 
+    // OPD Billing Fee Aggregation Correction Methods (Issue: April 2025 - January 2026)
+
+    /**
+     * Corrects historical bill-level fee aggregation data affected by the
+     * April 2025 OPD billing bug (when fee aggregation method was commented out).
+     *
+     * This method calls the BillFacade to perform bulk data correction using native SQL.
+     * Covers the period from April 18, 2025 to January 22, 2026.
+     */
+    public void correctHistoricalOpdBillingFees() {
+        try {
+            // First do a dry run to see how many bills would be affected
+            int billsToCorrect = billFacade.correctOpdBillingBugData(true);
+
+            if (billsToCorrect == 0) {
+                JsfUtil.addSuccessMessage("No bills found that need fee aggregation correction.");
+                return;
+            }
+
+            // Show confirmation message
+            JsfUtil.addSuccessMessage("Found " + billsToCorrect + " bills that need correction. Click 'Execute Correction' to proceed.");
+
+        } catch (Exception e) {
+            String exceptionMessage = getExceptionMessage(e);
+            String errorMsg = buildBillingFeeCorrectionErrorMessage(
+                    exceptionMessage,
+                    "Error checking bills for correction: ",
+                    ". This appears to be a database schema issue. Please check if the BILL and BILLITEM tables exist in your database.");
+
+            JsfUtil.addErrorMessage(errorMsg);
+            System.err.println("OPD Billing Fee Correction Error: " + errorMsg);
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Executes the actual correction of historical bill fee aggregation data.
+     * Should be called after correctHistoricalOpdBillingFees() to perform the actual update.
+     */
+    public void executeHistoricalOpdBillingFeesCorrection() {
+        try {
+            // Execute the actual correction
+            int correctedCount = billFacade.correctOpdBillingBugData(false);
+
+            if (correctedCount > 0) {
+                JsfUtil.addSuccessMessage("Successfully corrected fee aggregation for " + correctedCount + " bills.");
+                System.out.println("Historical OPD billing fee correction completed. Bills corrected: " + correctedCount);
+            } else {
+                JsfUtil.addSuccessMessage("No bills required correction.");
+            }
+
+        } catch (Exception e) {
+            String exceptionMessage = getExceptionMessage(e);
+            String errorMsg = buildBillingFeeCorrectionErrorMessage(
+                    exceptionMessage,
+                    "Error correcting historical bill fees: ",
+                    ". This appears to be a database schema issue. The correction failed due to table name case sensitivity or missing tables.");
+
+            JsfUtil.addErrorMessage(errorMsg);
+            System.err.println("OPD Billing Fee Correction Execution Error: " + errorMsg);
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Custom date range correction for bill fee aggregation.
+     * Uses the fromDate and toDate from the admin page date controls.
+     */
+    public void correctCustomDateRangeBillingFees() {
+        if (fromDate == null || toDate == null) {
+            JsfUtil.addErrorMessage("Please select both from date and to date.");
+            return;
+        }
+
+        try {
+            // First show what would be corrected (dry run)
+            int result = billFacade.correctHistoricalBillFeeAggregation(fromDate, toDate, true);
+
+            if (result > 0) {
+                JsfUtil.addSuccessMessage("Found " + result + " bills that would be corrected in the date range " +
+                    fromDate + " to " + toDate + ". Click 'Execute Custom Range Correction' to proceed.");
+            } else {
+                JsfUtil.addSuccessMessage("No bills found that need fee aggregation correction in the selected date range.");
+            }
+
+        } catch (Exception e) {
+            String exceptionMessage = getExceptionMessage(e);
+            String errorMsg = buildBillingFeeCorrectionErrorMessage(
+                    exceptionMessage,
+                    "Error checking bills in custom date range: ",
+                    ". Database schema issue detected. Check table names and database connectivity.");
+
+            JsfUtil.addErrorMessage(errorMsg);
+            System.err.println("Custom Date Range Check Error: " + errorMsg);
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Executes the custom date range correction for bill fee aggregation.
+     */
+    public void executeCustomDateRangeBillingFeesCorrection() {
+        if (fromDate == null || toDate == null) {
+            JsfUtil.addErrorMessage("Please select both from date and to date.");
+            return;
+        }
+
+        try {
+            int result = billFacade.correctHistoricalBillFeeAggregation(fromDate, toDate, false);
+
+            if (result > 0) {
+                JsfUtil.addSuccessMessage("Successfully corrected fee aggregation for " + result + " bills in the date range " +
+                    fromDate + " to " + toDate + ".");
+            } else {
+                JsfUtil.addSuccessMessage("No bills required correction in the selected date range.");
+            }
+
+        } catch (Exception e) {
+            String exceptionMessage = getExceptionMessage(e);
+            String errorMsg = buildBillingFeeCorrectionErrorMessage(
+                    exceptionMessage,
+                    "Error correcting bills in custom date range: ",
+                    ". Database execution failed due to schema issues. Verify table structure and permissions.");
+
+            JsfUtil.addErrorMessage(errorMsg);
+            System.err.println("Custom Date Range Correction Error: " + errorMsg);
+            e.printStackTrace();
+        }
+    }
+
+    private String buildBillingFeeCorrectionErrorMessage(String exceptionMessage, String prefix, String schemaGuidance) {
+        String errorMsg = prefix + exceptionMessage;
+        if (exceptionMessage.contains("doesn't exist") || exceptionMessage.contains("Table") || exceptionMessage.contains("SQLSyntaxErrorException")) {
+            errorMsg += schemaGuidance;
+        }
+
+        return errorMsg;
+    }
+
     public String navigateToCheckMissingFields() {
         allCreateStetements = "";
         executionFeedback = "";
@@ -1747,31 +2237,77 @@ public class DataAdministrationController implements Serializable {
         JsfUtil.addSuccessMessage("Added Dept Bill Number");
     }
 
-    public void checkMissingFields1() {
-        suggestedSql = "";
-        errors = "";
-        StringBuilder allErrors = new StringBuilder();
+    public boolean canAccessMigrationPage() {
+        if (databaseMigrationService.isMigrationPending()) {
+            return true;
+        }
+        return webUserController.hasPrivilege("Admin");
+    }
 
-        for (Class<?> entityClass : findEntityClassNames()) {
-            String entityName = entityClass.getSimpleName();
-            try {
-                itemFacade.executeQueryFirstResult(entityClass, "SELECT e FROM " + entityName + " e");
-            } catch (PersistenceException pe) {
-                Throwable cause = pe.getCause();
-                while (cause != null && !(cause instanceof SQLSyntaxErrorException)) {
-                    cause = cause.getCause();
-                }
-                if (cause != null) {
-                    Matcher matcher = Pattern.compile("Unknown column '([^']+)' in 'field list'").matcher(cause.getMessage());
-                    if (matcher.find()) {
-                        String missingColumn = matcher.group(1);
-                        errors += String.format("Entity: %s, Missing Column: %s\n", entityName, missingColumn);
+    public boolean isMigrationPageAccessDenied() {
+        return !canAccessMigrationPage();
+    }
+
+    public boolean isMigrationPending() {
+        return databaseMigrationService.isMigrationPending();
+    }
+
+    public void markMigrationComplete() {
+        databaseMigrationService.markMigrationComplete();
+        JsfUtil.addSuccessMessage("Migration marked as complete. The migration page is now restricted to administrators.");
+    }
+
+    public void markMigrationNotNecessary() {
+        databaseMigrationService.markMigrationNotNecessary();
+        JsfUtil.addSuccessMessage("Migration marked as not necessary. The migration page is now restricted to administrators.");
+    }
+
+    public void checkMissingFieldsForced() {
+        suggestedSql = "";
+        mainDatabaseSuggestedSql = "";
+        auditDatabaseSuggestedSql = "";
+        mainDatabaseErrors = "";
+        auditDatabaseErrors = "";
+        errors = "";
+        if (runOnMainDatabase) {
+            checkMissingFieldsForDatabase(itemFacade, "Main Database");
+        }
+        if (runOnAuditDatabase) {
+            checkMissingFieldsForDatabase(auditDatabaseFacade, "Audit Database");
+        }
+    }
+
+    public String fetchWikiDdlVersion() {
+        java.net.HttpURLConnection conn = null;
+        try {
+            java.net.URL url = new java.net.URL(WIKI_DDL_URL);
+            conn = (java.net.HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            conn.setConnectTimeout(5000);
+            conn.setReadTimeout(10000);
+            conn.setRequestProperty("User-Agent", "HMIS-Schema-Checker/1.0");
+            int status = conn.getResponseCode();
+            if (status == 200) {
+                try (java.io.BufferedReader reader = new java.io.BufferedReader(
+                        new java.io.InputStreamReader(conn.getInputStream(), java.nio.charset.StandardCharsets.UTF_8))) {
+                    String line;
+                    Pattern versionPattern = Pattern.compile("Last Update\\s*-\\s*(\\d{4}\\.\\d{2}\\.\\d{2}\\s+\\d{2}:\\d{2})");
+                    while ((line = reader.readLine()) != null) {
+                        Matcher m = versionPattern.matcher(line);
+                        if (m.find()) {
+                            return m.group(1).trim();
+                        }
                     }
                 }
-            } catch (Exception e) {
-                // Handle other exceptions as needed
+            }
+        } catch (Exception e) {
+            // Network or parse failure — return null so caller falls back to legacy
+        } finally {
+            if (conn != null) {
+                conn.disconnect();
             }
         }
+        return null;
     }
 
     public void checkMissingFields() {
@@ -1783,13 +2319,60 @@ public class DataAdministrationController implements Serializable {
         auditDatabaseErrors = "";
         errors = "";
 
-        // Check both databases if enabled
+        // Check wiki DDL version first
+        wikiDdlVersion = fetchWikiDdlVersion();
+        if (wikiDdlVersion != null) {
+            String storedVersion = configOptionApplicationController.getShortTextValueByKey(CONFIG_KEY_DDL_VERSION);
+            if (wikiDdlVersion.equals(storedVersion) && !"UNCHECKED".equals(storedVersion)) {
+                errors = "Schema is up to date (Wiki DDL version: " + wikiDdlVersion + "). No missing fields expected.";
+                return;
+            }
+        }
+
+        // Version mismatch or wiki unreachable — run legacy check
         if (runOnMainDatabase) {
             checkMissingFieldsForDatabase(itemFacade, "Main Database");
         }
         if (runOnAuditDatabase) {
             checkMissingFieldsForDatabase(auditDatabaseFacade, "Audit Database");
         }
+    }
+
+    public void markSchemaAsCurrent() {
+        if (wikiDdlVersion == null) {
+            wikiDdlVersion = fetchWikiDdlVersion();
+        }
+        if (wikiDdlVersion == null) {
+            JsfUtil.addErrorMessage("Could not reach wiki to determine current DDL version.");
+            return;
+        }
+        configOptionApplicationController.saveShortTextOption(CONFIG_KEY_DDL_VERSION, wikiDdlVersion);
+        databaseMigrationService.markMigrationComplete();
+        JsfUtil.addSuccessMessage("Schema version " + wikiDdlVersion + " saved. Migration banner cleared.");
+    }
+
+    private void markSchemaAsCurrentSilently(boolean executionPerformed) {
+        if (!executionPerformed) {
+            return;
+        }
+        try {
+            String version = fetchWikiDdlVersion();
+            if (version != null) {
+                configOptionApplicationController.saveShortTextOption(CONFIG_KEY_DDL_VERSION, version);
+                databaseMigrationService.markMigrationComplete();
+                wikiDdlVersion = version;
+            }
+        } catch (Exception e) {
+            // Schema operations succeeded; version tracking is secondary — swallow silently
+        }
+    }
+
+    public String getStoredDdlVersion() {
+        return configOptionApplicationController.getShortTextValueByKey(CONFIG_KEY_DDL_VERSION);
+    }
+
+    public String getWikiDdlVersion() {
+        return wikiDdlVersion;
     }
 
     private void checkMissingFieldsForDatabase(AbstractFacade<?> facade, String databaseName) {
@@ -1822,7 +2405,7 @@ public class DataAdministrationController implements Serializable {
                     cause = cause.getCause();
                 }
                 if (cause != null) {
-                    String message = cause.getMessage();
+                    String message = getExceptionMessage(cause);
 
                     // Check for missing table
                     Pattern tablePattern = Pattern.compile("Table '.*?\\.(.*?)' doesn't exist");
@@ -2038,12 +2621,16 @@ public class DataAdministrationController implements Serializable {
         auditDatabaseExecutionFeedback = "";
 
         // Run on both databases if enabled
+        boolean executionPerformed = false;
         if (runOnMainDatabase) {
             createTablesOnDatabase(itemFacade, "Main Database");
+            executionPerformed = true;
         }
         if (runOnAuditDatabase) {
             createTablesOnDatabase(auditDatabaseFacade, "Audit Database");
+            executionPerformed = true;
         }
+        markSchemaAsCurrentSilently(executionPerformed);
     }
 
     private void createTablesOnDatabase(AbstractFacade<?> facade, String databaseName) {
@@ -2061,12 +2648,13 @@ public class DataAdministrationController implements Serializable {
             String createStatement = "CREATE TABLE " + part;
 
             try {
-                // First execute the CREATE TABLE
+                // First execute the CREATE TABLE outside JTA (DDL causes implicit MySQL commit
+                // which desyncs the JTA transaction manager if run via EntityManager)
                 try {
-                    facade.executeNativeSql(createStatement);
+                    executeDdlForDatabase(databaseName, createStatement);
                     executionResults.append("<br/>Successfully executed: ").append(createStatement);
                 } catch (Exception e) {
-                    executionResults.append("<br/>CREATE TABLE failed (likely already exists): ").append(e.getMessage());
+                    executionResults.append("<br/>CREATE TABLE failed (likely already exists): ").append(getExceptionMessage(e));
                 }
 
                 // Proceed with ALTER logic
@@ -2087,19 +2675,19 @@ public class DataAdministrationController implements Serializable {
 
                     try {
                         if (isValidSqlStatement(sql)) {
-                            facade.executeNativeSql(sql);
+                            executeDdlForDatabase(databaseName, sql);
                             executionResults.append("<br/>Successfully executed: ").append(sql);
                         } else {
                             executionResults.append("<br/>Rejected potentially harmful SQL: ").append(sql);
                         }
                     } catch (Exception e) {
                         executionResults.append("<br/>Failed to execute: ").append(sql);
-                        executionResults.append("<br/>Error: ").append(e.getMessage());
+                        executionResults.append("<br/>Error: ").append(getExceptionMessage(e));
                     }
                 }
             } catch (Exception e) {
                 e.printStackTrace();
-                executionResults.append("<br/>Error processing create statement: ").append(e.getMessage());
+                executionResults.append("<br/>Error processing create statement: ").append(getExceptionMessage(e));
             }
         }
 
@@ -2140,11 +2728,162 @@ public class DataAdministrationController implements Serializable {
         auditDatabaseExecutionFeedback = "";
 
         // Run on both databases if enabled
+        boolean executionPerformed = false;
         if (runOnMainDatabase) {
             runSqlOnDatabase(itemFacade, suggestedSql, "Main Database");
+            executionPerformed = true;
         }
         if (runOnAuditDatabase) {
             runSqlOnDatabase(auditDatabaseFacade, suggestedSql, "Audit Database");
+            executionPerformed = true;
+        }
+        markSchemaAsCurrentSilently(executionPerformed);
+    }
+
+    /**
+     * Detect missing fields for each entity and automatically apply ALTER TABLE
+     * ADD COLUMN statements sourced from the pasted DDL content in
+     * {@code allCreateStetements}. Uses {@link DatabaseMigrationFacade#executeDdlNative}
+     * for the main database and {@link AuditDatabaseFacade#executeDdlNative} for
+     * the audit database so that DDL runs outside JTA (avoids MySQL implicit-commit
+     * desync).
+     *
+     * <p>Requires the full DDL file content to be pasted into the
+     * "allCreateStetements" field (Tab 1) before calling this method. If no DDL
+     * is available the method reports which entities still need attention.</p>
+     */
+    public void fixMissingFields() {
+        executionFeedback = "";
+        mainDatabaseExecutionFeedback = "";
+        auditDatabaseExecutionFeedback = "";
+
+        if (allCreateStetements == null || allCreateStetements.trim().isEmpty()) {
+            String msg = "DDL content is empty. Paste the full createDDL.jdbc contents into the 'DDL Content' field in Tab 1 first.";
+            executionFeedback = msg;
+            mainDatabaseExecutionFeedback = msg;
+            auditDatabaseExecutionFeedback = msg;
+            return;
+        }
+
+        if (runOnMainDatabase) {
+            fixMissingFieldsForDatabase(itemFacade, "Main Database");
+        }
+        if (runOnAuditDatabase) {
+            fixMissingFieldsForDatabase(auditDatabaseFacade, "Audit Database");
+        }
+    }
+
+    private void fixMissingFieldsForDatabase(AbstractFacade<?> facade, String databaseName) {
+        StringBuilder executionResults = new StringBuilder();
+        executionResults.append("=== ").append(databaseName).append(" ===<br/>");
+
+        for (Class<?> entityClass : findEntityClassNames()) {
+            Class<?> rootEntityClass = entityClass;
+            while (rootEntityClass.getSuperclass() != null
+                    && rootEntityClass.getSuperclass().getAnnotation(javax.persistence.Entity.class) != null) {
+                rootEntityClass = rootEntityClass.getSuperclass();
+            }
+            if (!entityClass.equals(rootEntityClass)) {
+                continue;
+            }
+
+            String entityName = entityClass.getSimpleName();
+            String jpql = "SELECT e FROM " + entityName + " e";
+
+            try {
+                facade.executeQueryFirstResult(entityClass, jpql);
+            } catch (Exception e) {
+                Throwable cause = e.getCause();
+                while (cause != null && !(cause instanceof SQLSyntaxErrorException)) {
+                    cause = cause.getCause();
+                }
+                if (cause == null) {
+                    continue;
+                }
+                // Entity has at least one missing column — fix ALL columns for this entity
+                // by generating ADD COLUMN statements from the CREATE TABLE in the DDL.
+                String createStatement = findCreateStatementInDdl(entityName);
+                if (createStatement == null) {
+                    executionResults.append("<br/>No DDL found for entity: ").append(entityName)
+                            .append(" — cannot auto-fix.");
+                    continue;
+                }
+                String alterSql = generateAlterStatements(createStatement);
+                String[] statements = alterSql.split(";");
+                for (String stmt : statements) {
+                    stmt = stmt.trim();
+                    if (stmt.isEmpty()) {
+                        continue;
+                    }
+                    String stmtLower = stmt.toLowerCase();
+                    if (!stmtLower.contains("add column")) {
+                        continue; // only apply ADD COLUMN fixes here
+                    }
+                    if (!isValidSqlStatement(stmt)) {
+                        continue;
+                    }
+                    try {
+                        executeDdlForDatabase(databaseName, stmt);
+                        executionResults.append("<br/>Fixed [").append(entityName).append("]: ").append(stmt);
+                    } catch (Exception ex) {
+                        String errMsg = getExceptionMessage(ex);
+                        if (errMsg != null && errMsg.toLowerCase().contains("duplicate column")) {
+                            // Column already exists — not an error
+                        } else {
+                            executionResults.append("<br/>Failed [").append(entityName).append("]: ")
+                                    .append(stmt).append(" | ").append(errMsg);
+                        }
+                    }
+                }
+            }
+        }
+
+        String databaseResult = executionResults.toString();
+        if ("Main Database".equals(databaseName)) {
+            mainDatabaseExecutionFeedback = databaseResult;
+        } else {
+            auditDatabaseExecutionFeedback = databaseResult;
+        }
+        if (executionFeedback.isEmpty()) {
+            executionFeedback = databaseResult;
+        } else {
+            executionFeedback += "<br/><br/>" + databaseResult;
+        }
+    }
+
+    /**
+     * Find the full CREATE TABLE statement for the given entity name (case-insensitive)
+     * within the pasted {@code allCreateStetements} DDL content.
+     *
+     * @return the CREATE TABLE statement string, or {@code null} if not found
+     */
+    private String findCreateStatementInDdl(String entityName) {
+        if (allCreateStetements == null || allCreateStetements.trim().isEmpty()) {
+            return null;
+        }
+        String upperEntityName = entityName.toUpperCase();
+        String[] rawParts = allCreateStetements.split("(?i)CREATE TABLE");
+        for (String part : rawParts) {
+            String trimmedPart = part.trim();
+            if (trimmedPart.toUpperCase().startsWith(upperEntityName + " ")
+                    || trimmedPart.toUpperCase().startsWith(upperEntityName + "(")) {
+                return "CREATE TABLE " + trimmedPart;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Execute a DDL statement on the correct database (main or audit) using the
+     * native JDBC path that bypasses JTA. This avoids the MySQL implicit-commit
+     * desync that occurs when DDL runs through an EntityManager inside a JTA
+     * transaction.
+     */
+    private void executeDdlForDatabase(String databaseName, String sql) throws Exception {
+        if ("Main Database".equals(databaseName)) {
+            databaseMigrationFacade.executeDdlNative(sql);
+        } else {
+            auditDatabaseFacade.executeDdlNative(sql);
         }
     }
 
@@ -2169,7 +2908,7 @@ public class DataAdministrationController implements Serializable {
             } catch (Exception e) {
                 // Append error message with exception details
                 executionResults.append("<br/>Failed to execute: ").append(sqlStatement);
-                executionResults.append("<br/>Error: ").append(e.getMessage());
+                executionResults.append("<br/>Error: ").append(getExceptionMessage(e));
             }
         }
 
@@ -3507,7 +4246,7 @@ public class DataAdministrationController implements Serializable {
             }
             JsfUtil.addSuccessMessage("Cleared JPA shared caches.");
         } catch (Exception e) {
-            JsfUtil.addErrorMessage("Failed to clear caches: " + e.getMessage());
+            JsfUtil.addErrorMessage("Failed to clear caches: " + getExceptionMessage(e));
         }
     }
 
@@ -3830,22 +4569,28 @@ public class DataAdministrationController implements Serializable {
         executionFeedback = output.toString();
     }
 
+    // Batch processing configuration
+    private static final int BATCH_SIZE_FOR_FINANCE_CORRECTION = 100; // Process 100 bills per batch
+
     /**
      * Corrects finance details for historical Return Without Tracing bills.
      * Creates BillItemFinanceDetails and BillFinanceDetails for bills that were created
      * before the BIFD/BFD implementation was added to the return process.
+     * Uses batch processing for better performance with large datasets.
      */
     public void correctReturnWithoutTracingBillFinanceDetails() {
-        int processed = 0;
-        int updated = 0;
-        int skipped = 0;
+        long startTime = System.currentTimeMillis();
+        int totalProcessed = 0;
+        int totalUpdated = 0;
+        int totalSkipped = 0;
+        int batchNumber = 0;
 
         // Target Return Without Tracing bill type
         List<BillTypeAtomic> targetTypes = Arrays.asList(
                 BillTypeAtomic.PHARMACY_RETURN_WITHOUT_TREASING
         );
 
-        // Build JPQL query with date range
+        // Build base JPQL query with date range
         Map<String, Object> params = new HashMap<>();
         params.put("ret", false);
         params.put("types", targetTypes);
@@ -3861,42 +4606,103 @@ public class DataAdministrationController implements Serializable {
             jpql.append(" AND b.createdAt <= :toDate");
             params.put("toDate", toDate);
         }
+        jpql.append(" ORDER BY b.id"); // Ensure consistent ordering for pagination
 
-        List<Bill> bills = billFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+        // First, get total count for progress indication
+        String countJpql = jpql.toString().replace("SELECT b FROM", "SELECT COUNT(b) FROM");
+        Long totalCount = billFacade.findLongByJpql(countJpql, params, TemporalType.TIMESTAMP);
+        if (totalCount == null) totalCount = 0L;
 
-        for (Bill bill : bills) {
-            processed++;
+        StringBuilder progressOutput = new StringBuilder();
+        progressOutput.append("Return Without Tracing Finance Details Correction\n");
+        progressOutput.append("=================================================\n");
+        progressOutput.append("Total bills to process: ").append(totalCount).append("\n");
+        progressOutput.append("Batch size: ").append(BATCH_SIZE_FOR_FINANCE_CORRECTION).append("\n");
+        progressOutput.append("Processing in batches...\n\n");
 
-            // Skip if BillFinanceDetails already exists with data
-            if (bill.getBillFinanceDetails() != null
-                    && bill.getBillFinanceDetails().getTotalCostValue() != null
-                    && bill.getBillFinanceDetails().getTotalCostValue().compareTo(BigDecimal.ZERO) != 0) {
-                skipped++;
-                continue;
+        boolean hasMoreBatches = true;
+        int offset = 0;
+
+        while (hasMoreBatches) {
+            batchNumber++;
+            int batchProcessed = 0;
+            int batchUpdated = 0;
+            int batchSkipped = 0;
+
+            // Get next batch of bills (using fromRecord/toRecord pagination)
+            int fromRecord = offset;
+            int toRecord = offset + BATCH_SIZE_FOR_FINANCE_CORRECTION - 1;
+            List<Bill> bills = billFacade.findByJpql(jpql.toString(), params, fromRecord, toRecord);
+
+            if (bills == null || bills.isEmpty()) {
+                hasMoreBatches = false;
+                break;
             }
 
-            try {
-                // Create financial details using the same logic as new returns
-                createFinanceDetailsForHistoricalReturnBill(bill);
-                updated++;
-            } catch (Exception e) {
-                // Log error but continue processing other bills
-                System.err.println("Error processing Return Without Tracing bill ID " + bill.getId() + ": " + e.getMessage());
-                skipped++;
+            progressOutput.append("Batch ").append(batchNumber).append(": Processing ")
+                    .append(bills.size()).append(" bills (").append(offset + 1).append(" to ")
+                    .append(offset + bills.size()).append(" of ").append(totalCount).append(")\n");
+
+            for (Bill bill : bills) {
+                batchProcessed++;
+                totalProcessed++;
+
+                // Skip if bill already has valid finance details for returns
+                if (hasValidReturnFinanceDetails(bill)) {
+                    batchSkipped++;
+                    totalSkipped++;
+                    continue;
+                }
+
+                try {
+                    // Create financial details using the same logic as new returns
+                    createFinanceDetailsForHistoricalReturnBill(bill);
+                    batchUpdated++;
+                    totalUpdated++;
+                } catch (Exception e) {
+                    // Log error but continue processing other bills
+                    String errorMsg = "Error processing Return Without Tracing bill ID " + bill.getId() + ": " + getExceptionMessage(e);
+                    System.err.println(errorMsg);
+                    progressOutput.append("  ERROR: ").append(errorMsg).append("\n");
+                    batchSkipped++;
+                    totalSkipped++;
+                }
+            }
+
+            progressOutput.append("  Batch ").append(batchNumber).append(" results: ")
+                    .append(batchUpdated).append(" updated, ")
+                    .append(batchSkipped).append(" skipped\n\n");
+
+            offset += BATCH_SIZE_FOR_FINANCE_CORRECTION;
+
+            // Check if we've processed all bills
+            if (bills.size() < BATCH_SIZE_FOR_FINANCE_CORRECTION) {
+                hasMoreBatches = false;
             }
         }
 
-        // Build feedback message
-        StringBuilder output = new StringBuilder();
-        output.append("Return Without Tracing Finance Details Correction\n");
-        output.append("=================================================\n");
-        output.append("Processed: ").append(processed).append(" bills\n");
-        output.append("Updated: ").append(updated).append(" bills\n");
-        output.append("Skipped (already populated or errors): ").append(skipped).append(" bills\n");
+        long endTime = System.currentTimeMillis();
+        long durationMs = endTime - startTime;
+        long durationSeconds = durationMs / 1000;
+
+        // Build final feedback message
+        progressOutput.append("FINAL RESULTS\n");
+        progressOutput.append("=============\n");
+        progressOutput.append("Total processed: ").append(totalProcessed).append(" bills\n");
+        progressOutput.append("Total updated: ").append(totalUpdated).append(" bills\n");
+        progressOutput.append("Total skipped (already populated or errors): ").append(totalSkipped).append(" bills\n");
+        progressOutput.append("Batches processed: ").append(batchNumber).append("\n");
+        progressOutput.append("Processing time: ").append(durationSeconds).append(" seconds\n");
         if (fromDate != null || toDate != null) {
-            output.append("Date range: ").append(fromDate).append(" to ").append(toDate);
+            progressOutput.append("Date range: ").append(fromDate).append(" to ").append(toDate).append("\n");
         }
-        executionFeedback = output.toString();
+
+        if (totalUpdated > 0) {
+            double avgTimePerBill = (double) durationMs / totalUpdated;
+            progressOutput.append("Average time per updated bill: ").append(String.format("%.2f", avgTimePerBill)).append(" ms\n");
+        }
+
+        executionFeedback = progressOutput.toString();
     }
 
     /**
@@ -3924,7 +4730,8 @@ public class DataAdministrationController implements Serializable {
     }
 
     /**
-     * Creates BIFD for historical bill item using same logic as current implementation.
+     * Creates BIFD for historical bill item using comprehensive logic from PharmacyReturnwithouttresing.
+     * Includes PharmacyCostingService integration and complete field population.
      */
     private void createHistoricalBillItemFinanceDetails(BillItem billItem) {
         PharmaceuticalBillItem phi = billItem.getPharmaceuticalBillItem();
@@ -3932,7 +4739,7 @@ public class DataAdministrationController implements Serializable {
             return;
         }
 
-        // Initialize BIFD
+        // Initialize BIFD (replicating billItem.initializeBillItemFinanceDetails())
         if (billItem.getBillItemFinanceDetails() == null) {
             billItem.setBillItemFinanceDetails(new BillItemFinanceDetails());
             billItem.getBillItemFinanceDetails().setBillItem(billItem);
@@ -3940,43 +4747,149 @@ public class DataAdministrationController implements Serializable {
 
         BillItemFinanceDetails bifd = billItem.getBillItemFinanceDetails();
 
-        // Set basic info
+        // Set audit information
         bifd.setCreatedAt(new Date());
 
-        // Get rates from batch
+        // Calculate units per pack using PharmacyCostingService
+        pharmacyCostingService.calculateUnitsPerPack(bifd);
+
+        // Set quantities from PharmaceuticalBillItem (negative for returns)
+        pharmacyCostingService.addBillItemFinanceDetailQuantitiesFromPharmaceuticalBillItem(phi, bifd);
+
+        // Extract and set rates from ItemBatch (positive values)
         ItemBatch batch = phi.getStock().getItemBatch();
-        BigDecimal costRate = BigDecimal.valueOf(batch.getCostRate() != null ? batch.getCostRate() : batch.getPurcahseRate());
-        BigDecimal purchaseRate = BigDecimal.valueOf(batch.getPurcahseRate());
-        BigDecimal retailRate = BigDecimal.valueOf(batch.getRetailsaleRate());
+        bifd.setCostRate(BigDecimal.valueOf(batch.getCostRate() != null ? batch.getCostRate() : batch.getPurcahseRate()));
+        bifd.setPurchaseRate(BigDecimal.valueOf(batch.getPurcahseRate()));
+        bifd.setRetailSaleRate(BigDecimal.valueOf(batch.getRetailsaleRate()));
 
-        // Set rates (positive values)
-        bifd.setCostRate(costRate);
-        bifd.setPurchaseRate(purchaseRate);
-        bifd.setRetailSaleRate(retailRate);
-        bifd.setLineGrossRate(purchaseRate); // Use purchase rate for returns
-        bifd.setGrossRate(purchaseRate);
-        bifd.setNetRate(purchaseRate);
+        // Set line rates (using purchase rate for return pricing)
+        bifd.setLineGrossRate(bifd.getPurchaseRate());
 
-        // Get quantities from PharmaceuticalBillItem
-        BigDecimal qty = BigDecimal.valueOf(Math.abs(phi.getQty()));
-        BigDecimal freeQty = BigDecimal.valueOf(Math.abs(phi.getFreeQty()));
+        // Apply comprehensive line total calculation
+        calculateHistoricalLineTotal(billItem);
+    }
+
+    /**
+     * Comprehensive line total calculation for historical corrections.
+     * Based on PharmacyReturnwithouttresing.calculateLineTotal() method.
+     */
+    private void calculateHistoricalLineTotal(BillItem bi) {
+        BillItemFinanceDetails fd = bi.getBillItemFinanceDetails();
+        PharmaceuticalBillItem phi = bi.getPharmaceuticalBillItem();
+
+        // Get current quantities and rates
+        BigDecimal qty = fd.getQuantity();
+        BigDecimal freeQty = fd.getFreeQuantity();
+        BigDecimal rate = fd.getLineGrossRate();
+
+        // Null safety
+        if (qty == null) qty = BigDecimal.ZERO;
+        if (freeQty == null) freeQty = BigDecimal.ZERO;
+        if (rate == null) rate = BigDecimal.ZERO;
+
+        // Use absolute values for calculation (quantities are already negative)
+        qty = qty.abs();
+        freeQty = freeQty.abs();
+
+        // Calculate total quantity and line total
         BigDecimal totalQty = qty.add(freeQty);
+        BigDecimal lineTotal = totalQty.multiply(rate);
 
-        // Set quantities (negative for returns - stock going out)
-        bifd.setQuantity(qty.negate());
-        bifd.setFreeQuantity(freeQty.negate());
-        bifd.setTotalQuantity(totalQty.negate());
-        bifd.setQuantityByUnits(totalQty.negate()); // Simplified - assume no pack conversion
+        // Set total quantity (negative for returns - stock moving out)
+        fd.setTotalQuantity(totalQty.abs().negate());
 
+        // Set financial totals (positive for refund amounts)
+        fd.setLineGrossTotal(lineTotal);
+        fd.setLineNetTotal(lineTotal);
+
+        // Calculate line net rate
+        if (totalQty.compareTo(BigDecimal.ZERO) > 0) {
+            fd.setLineNetRate(lineTotal.divide(totalQty, 4, RoundingMode.HALF_UP));
+        } else {
+            fd.setLineNetRate(BigDecimal.ZERO);
+        }
+
+        // Set bill-level rates and totals in BIFD
+        fd.setGrossRate(rate);
+        fd.setNetRate(fd.getLineNetRate());
+        fd.setGrossTotal(lineTotal);
+        fd.setNetTotal(lineTotal);
+
+        // Set BillItem legacy fields (matching BIFD values)
+        bi.setRate(rate.doubleValue());
+        bi.setQty(qty.doubleValue());
+        bi.setNetRate(fd.getLineNetRate() != null ? fd.getLineNetRate().doubleValue() : 0.0);
+        bi.setGrossValue(lineTotal.doubleValue());
+        bi.setNetValue(lineTotal.doubleValue());
+
+        // Calculate unit-based quantities
+        boolean isAmpp = bi.getItem() instanceof Ampp;
+        BigDecimal unitsPerPack = fd.getUnitsPerPack() != null ? fd.getUnitsPerPack() : BigDecimal.ONE;
+        BigDecimal qtyByUnits = isAmpp ? qty.multiply(unitsPerPack) : qty;
+        BigDecimal freeQtyByUnits = isAmpp ? freeQty.multiply(unitsPerPack) : freeQty;
+        BigDecimal totalQtyByUnits = qtyByUnits.add(freeQtyByUnits);
+
+        // Update BIFD quantities (negative for returns - stock moving out)
+        fd.setQuantity(qty.abs().negate());
+        fd.setFreeQuantity(freeQty.abs().negate());
+        fd.setQuantityByUnits(qtyByUnits.abs().negate());
+        fd.setFreeQuantityByUnits(freeQtyByUnits.abs().negate());
+        fd.setTotalQuantityByUnits(totalQtyByUnits.abs().negate());
+
+        // Set cost rate fields for consistency
+        if (fd.getCostRate() != null) {
+            fd.setLineCostRate(fd.getCostRate());
+            fd.setBillCostRate(fd.getCostRate());
+            fd.setTotalCostRate(fd.getCostRate());
+
+            // Calculate cost values (negative for returns)
+            BigDecimal totalCostValue = fd.getCostRate().multiply(totalQtyByUnits.abs());
+            fd.setLineCost(totalCostValue.negate());
+            fd.setBillCost(totalCostValue.negate());
+            fd.setTotalCost(totalCostValue.negate());
+        }
+
+        // Set BIFD value fields for aggregation by createHistoricalBillFinanceDetails()
         // Calculate stock valuation values (NEGATIVE for returns)
-        bifd.setValueAtCostRate(costRate.multiply(totalQty).negate());
-        bifd.setValueAtPurchaseRate(purchaseRate.multiply(totalQty).negate());
-        bifd.setValueAtRetailRate(retailRate.multiply(totalQty).negate());
+        if (fd.getCostRate() != null) {
+            BigDecimal costValue = fd.getCostRate().multiply(totalQtyByUnits.abs()).negate();
+            fd.setValueAtCostRate(costValue);
+        }
+        if (fd.getPurchaseRate() != null) {
+            BigDecimal purchaseValue = fd.getPurchaseRate().multiply(totalQtyByUnits.abs()).negate();
+            fd.setValueAtPurchaseRate(purchaseValue);
+        }
+        if (fd.getRetailSaleRate() != null) {
+            BigDecimal retailValue = fd.getRetailSaleRate().multiply(totalQtyByUnits.abs()).negate();
+            fd.setValueAtRetailRate(retailValue);
+        }
 
-        // Calculate line totals (positive revenue from returns)
-        bifd.setLineGrossTotal(purchaseRate.multiply(qty));
-        bifd.setGrossTotal(bifd.getLineGrossTotal());
-        bifd.setNetTotal(bifd.getLineGrossTotal());
+        // Set PharmaceuticalBillItem stock values (negative for returns)
+        if (phi != null) {
+            double totalQtyInUnits = totalQtyByUnits.doubleValue();
+            if (fd.getPurchaseRate() != null) {
+                phi.setPurchaseValue(-Math.abs(totalQtyInUnits * fd.getPurchaseRate().doubleValue()));
+            }
+            if (fd.getCostRate() != null) {
+                phi.setCostValue(-Math.abs(totalQtyInUnits * fd.getCostRate().doubleValue()));
+                phi.setCostRate(fd.getCostRate().doubleValue());
+            }
+            if (fd.getRetailSaleRate() != null) {
+                phi.setRetailValue(-Math.abs(totalQtyInUnits * fd.getRetailSaleRate().doubleValue()));
+                phi.setRetailRate(fd.getRetailSaleRate().doubleValue());
+            }
+        }
+
+        // Set zero-value fields (no discounts, taxes, or expenses on returns without tracing)
+        fd.setLineDiscount(BigDecimal.ZERO);
+        fd.setLineTax(BigDecimal.ZERO);
+        fd.setLineExpense(BigDecimal.ZERO);
+        fd.setBillDiscount(BigDecimal.ZERO);
+        fd.setBillTax(BigDecimal.ZERO);
+        fd.setBillExpense(BigDecimal.ZERO);
+        fd.setTotalDiscount(BigDecimal.ZERO);
+        fd.setTotalTax(BigDecimal.ZERO);
+        fd.setTotalExpense(BigDecimal.ZERO);
     }
 
     /**
@@ -4028,6 +4941,51 @@ public class DataAdministrationController implements Serializable {
         bfd.setTotalRetailSaleValue(totalRetailValue);
     }
 
+    /**
+     * Checks if a return without tracing bill already has valid finance details.
+     * For returns, we expect:
+     * - BillFinanceDetails with negative stock valuation values
+     * - BillItemFinanceDetails for each bill item with proper calculations
+     * - Consistent positive revenue totals
+     */
+    private boolean hasValidReturnFinanceDetails(Bill bill) {
+        // Must have BillFinanceDetails
+        BillFinanceDetails bfd = bill.getBillFinanceDetails();
+        if (bfd == null) {
+            return false;
+        }
+
+        // For returns, totalCostValue should be negative (stock moving out)
+        if (bfd.getTotalCostValue() == null || bfd.getTotalCostValue().compareTo(BigDecimal.ZERO) >= 0) {
+            return false;
+        }
+
+        // Must have at least one BillItemFinanceDetails that makes sense
+        boolean hasValidBIFD = false;
+        for (BillItem billItem : bill.getBillItems()) {
+            if (billItem.isRetired()) {
+                continue;
+            }
+
+            BillItemFinanceDetails bifd = billItem.getBillItemFinanceDetails();
+            if (bifd == null) {
+                return false; // Missing BIFD for active item
+            }
+
+            // Check if BIFD has sensible values for returns
+            if (bifd.getValueAtCostRate() != null
+                    && bifd.getValueAtCostRate().compareTo(BigDecimal.ZERO) < 0 // Should be negative
+                    && bifd.getQuantity() != null
+                    && bifd.getQuantity().compareTo(BigDecimal.ZERO) < 0 // Should be negative
+                    && bifd.getGrossTotal() != null
+                    && bifd.getGrossTotal().compareTo(BigDecimal.ZERO) > 0) { // Should be positive
+                hasValidBIFD = true;
+            }
+        }
+
+        return hasValidBIFD;
+    }
+
     public class EntityFieldError {
 
         private String entityName;
@@ -4062,6 +5020,167 @@ public class DataAdministrationController implements Serializable {
             this.missingFields = missingFields;
         }
 
+    }
+
+    public void dischargeOldDuplicateEncounters() {
+        try {
+            String t = patientEncounterFacade.getTableName();
+            String pr = patientRoomFacade.getTableName();
+            // Group by the actual room (roomFacilityCharge_id in patientroom), not by the
+            // PatientRoom assignment ID. Multiple PatientRoom records can point to the same
+            // physical room, so grouping by currentPatientRoom_id only catches duplicates
+            // within the same assignment, not across different admissions to the same room.
+            String sql = "UPDATE " + t + " pe "
+                    + "JOIN " + pr + " prm ON pe.currentPatientRoom_id = prm.id "
+                    + "JOIN ( "
+                    + "  SELECT MAX(pe2.id) AS keep_id, prm2.roomFacilityCharge_id "
+                    + "  FROM " + t + " pe2 "
+                    + "  JOIN " + pr + " prm2 ON pe2.currentPatientRoom_id = prm2.id "
+                    + "  WHERE pe2.discharged = 0 AND pe2.paymentFinalized = 0 AND pe2.currentPatientRoom_id IS NOT NULL "
+                    + "  GROUP BY prm2.roomFacilityCharge_id "
+                    + ") latest ON prm.roomFacilityCharge_id = latest.roomFacilityCharge_id "
+                    + "SET pe.discharged = 1 "
+                    + "WHERE pe.discharged = 0 AND pe.paymentFinalized = 0 "
+                    + "AND pe.id != latest.keep_id "
+                    + "AND pe.currentPatientRoom_id IS NOT NULL";
+            patientEncounterFacade.executeNativeSql(sql);
+            JsfUtil.addSuccessMessage("Done. Old duplicate undischarged encounters have been discharged, keeping the latest per room.");
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error: " + getExceptionMessage(e));
+        }
+    }
+
+    private int staleEncounterDays = 60;
+
+    public void dischargeStaleEncounters() {
+        if (staleEncounterDays <= 0) {
+            JsfUtil.addErrorMessage("Please enter a value greater than 0 days.");
+            return;
+        }
+        try {
+            String t = patientEncounterFacade.getTableName();
+            String sql = "UPDATE " + t + " "
+                    + "SET discharged = 1 "
+                    + "WHERE discharged = 0 AND paymentFinalized = 0 "
+                    + "AND createdAt < DATE_SUB(NOW(), INTERVAL " + staleEncounterDays + " DAY)";
+            patientEncounterFacade.executeNativeSql(sql);
+            JsfUtil.addSuccessMessage("Done. Undischarged encounters older than " + staleEncounterDays + " days have been marked as discharged.");
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error: " + getExceptionMessage(e));
+        }
+    }
+
+    public int getStaleEncounterDays() {
+        return staleEncounterDays;
+    }
+
+    public void setStaleEncounterDays(int staleEncounterDays) {
+        this.staleEncounterDays = staleEncounterDays;
+    }
+
+    /**
+     * One-time migration: creates INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY
+     * bills for old admissions that were settled before per-company billing was
+     * introduced. Skips any encounter that already has such a bill.
+     * Closes #19571
+     */
+    public void migrateInwardCreditCompanyBills() {
+        executionFeedback = "";
+        StringBuilder result = new StringBuilder();
+        int created = 0;
+        int skipped = 0;
+
+        try {
+            // Find finalized credit admissions that have no per-company bill yet
+            String jpql = "Select pe From PatientEncounter pe "
+                    + " where pe.retired = false "
+                    + " and pe.paymentFinalized = true "
+                    + " and pe.paymentMethod = :pm "
+                    + " and pe.creditCompany is not null "
+                    + " and pe.finalBill is not null "
+                    + " and pe.id not in ("
+                    + "   Select b.patientEncounter.id From Bill b "
+                    + "   where b.retired = false "
+                    + "   and b.billTypeAtomic = :bta "
+                    + " )";
+            Map<String, Object> params = new HashMap<>();
+            params.put("pm", PaymentMethod.Credit);
+            params.put("bta", BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
+
+            List<PatientEncounter> encounters = patientEncounterFacade.findByJpql(jpql, params);
+            result.append("Found ").append(encounters.size()).append(" encounter(s) to migrate.\n\n");
+
+            for (PatientEncounter pe : encounters) {
+                try {
+                    if (pe.getCreditCompany() == null || pe.getFinalBill() == null) {
+                        skipped++;
+                        continue;
+                    }
+
+                    double netTotal = Math.abs(pe.getCreditUsedAmount());
+                    if (netTotal < 0.01 && pe.getFinalBill().getNetTotal() != 0) {
+                        netTotal = Math.abs(pe.getFinalBill().getNetTotal());
+                    }
+                    if (netTotal < 0.01) {
+                        skipped++;
+                        continue;
+                    }
+
+                    double paidAmount = Math.abs(pe.getCreditPaidAmount());
+
+                    Bill ccBill = new BilledBill();
+                    ccBill.setGrantTotal(netTotal);
+                    ccBill.setTotal(netTotal);
+                    ccBill.setNetTotal(netTotal);
+                    ccBill.setPaidAmount(paidAmount);
+                    ccBill.setInstitution(pe.getFinalBill().getInstitution());
+                    ccBill.setCreditCompany(pe.getCreditCompany());
+                    ccBill.setPaymentMethod(PaymentMethod.Credit);
+                    ccBill.setBillType(BillType.InwardFinalBillCCPayment);
+                    ccBill.setBillTypeAtomic(BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
+
+                    ccBill.setDeptId(billNumberGenerator.departmentBillNumberGenerator(
+                            pe.getFinalBill().getDepartment(), BillType.InwardFinalBillCCPayment,
+                            BillClassType.BilledBill, BillNumberSuffix.INWFINALCCPAY));
+                    ccBill.setInsId(billNumberGenerator.institutionBillNumberGenerator(
+                            pe.getFinalBill().getInstitution(), BillType.InwardFinalBillCCPayment,
+                            BillClassType.BilledBill, BillNumberSuffix.INWFINALCCPAY));
+
+                    Date billDate = pe.getDateOfDischarge() != null ? pe.getDateOfDischarge()
+                            : (pe.getFinalBill() != null && pe.getFinalBill().getCreatedAt() != null
+                                    ? pe.getFinalBill().getCreatedAt() : pe.getCreatedAt());
+                    ccBill.setBillDate(billDate);
+                    ccBill.setBillTime(billDate);
+                    ccBill.setCreatedAt(new Date()); // audit timestamp — when the migration ran
+                    ccBill.setCreater(sessionController.getLoggedUser());
+
+                    ccBill.setPatientEncounter(pe);
+                    ccBill.setPatient(pe.getPatient());
+                    ccBill.setReferenceBill(pe.getFinalBill());
+
+                    billFacade.create(ccBill);
+                    created++;
+
+                    if (created % 50 == 0) {
+                        result.append("Created ").append(created).append(" bills so far...\n");
+                    }
+                } catch (Exception ex) {
+                    result.append("Error for encounter ID ").append(pe.getId())
+                            .append(": ").append(ex.getMessage()).append("\n");
+                    skipped++;
+                }
+            }
+
+            result.append("\n=== Migration Summary ===\n");
+            result.append("Bills created: ").append(created).append("\n");
+            result.append("Skipped: ").append(skipped).append("\n");
+            executionFeedback = result.toString();
+            JsfUtil.addSuccessMessage("Migration complete. Created: " + created + ", Skipped: " + skipped);
+
+        } catch (Exception e) {
+            executionFeedback = "Error: " + getExceptionMessage(e);
+            JsfUtil.addErrorMessage(executionFeedback);
+        }
     }
 
 }

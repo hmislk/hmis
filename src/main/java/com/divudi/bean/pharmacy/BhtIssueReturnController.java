@@ -391,7 +391,7 @@ public class BhtIssueReturnController implements Serializable {
             saveReturnBill();
         }
         saveComponent();
-        billService.createBillFinancialDetailsForPharmacyBill(getReturnBill());
+        billService.createBillFinancialDetailsForInpatientDirectIssueReturnBill(getReturnBill());
 
         getReturnBill().setReferenceBill(getBill());
 //        updateMargin(getReturnBill().getBillItems(), getReturnBill(), getReturnBill().getFromDepartment(), getBill().getPatientEncounter().getPaymentMethod());

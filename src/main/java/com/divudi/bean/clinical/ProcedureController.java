@@ -54,7 +54,7 @@ public class ProcedureController implements Serializable {
     String selectText = "";
 
     public String navigateToManageProcedures() {
-        return "/emr/admin/procedures";
+        return "/emr/admin/procedures?faces-redirect=true";
     }
 
     public void downloadAsExcel() {
@@ -197,7 +197,7 @@ public class ProcedureController implements Serializable {
             getFacade().edit(current);
             JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            JsfUtil.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addErrorMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();

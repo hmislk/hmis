@@ -187,7 +187,7 @@
                                         </p:outputLabel>
                                         <p:outputLabel rendered="#{not empty p.person.phone and p.person.phone ne ''}" value=",&nbsp; "></p:outputLabel>
                                         <br/>
-                                        <p:outputLabel value="#{p.phn}"></p:outputLabel>
+                                        <p:outputLabel value="#{p.phn}"></p:outputLabel><br/>
                                         <p:outputLabel value="#{p.person.address}"></p:outputLabel>
                                     </p:column>
 
@@ -282,6 +282,13 @@
                                                     <f:setPropertyActionListener value="#{p}" target="#{searchController.patient}" ></f:setPropertyActionListener>
                                                 </p:commandButton>
                                                 <p:commandButton 
+                                                    value="Lab Result Summary"
+                                                    action="#{laboratoryChartViewController.navigateToProcessInvestigations(p)}"
+                                                    ajax="false"
+                                                    icon="pi pi-chart-line"
+                                                    class="mx-1 mb-2">
+                                                </p:commandButton>
+                                                <p:commandButton 
                                                     value="Receive Deposits"
                                                     action="#{patientDepositController.navigateToReciveDepositWithPatient(p)}"
                                                     ajax="false"
@@ -303,7 +310,7 @@
                                                     styleClass="mx-1 mb-2">
                                                     <f:setPropertyActionListener value="#{p}" target="#{patientController.current}" />
                                                 </p:commandButton>
-
+                                                
                                             </div>
                                         </div>
                                     </p:column>

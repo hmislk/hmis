@@ -1,115 +1,89 @@
 # Claude Code Configuration for HMIS Project
 
 ## Repository Information
-- **GitHub Repository**: https://github.com/hmislk/hmis
+- **GitHub Repository**: https://github.com/hmislk/hmis (not buddhika75/hmis)
 - **Issues URL**: https://github.com/hmislk/hmis/issues
-- **Main Repository**: hmislk/hmis (not buddhika75/hmis)
+- **Project tmp Folder**: `tmp/` directory **inside the project root** (i.e., `<project-root>/tmp/`) for project-specific temporary files. Do NOT use the system `/tmp/` directory.
 
-## Core Workflows
+## Essential Rules (Always Apply)
 
-### Persistence Configuration
-- **🚨 CRITICAL**: Before any push, verify persistence.xml uses environment variables
-- **File**: `src/main/resources/META-INF/persistence.xml`
-- **Required**: `${JDBC_DATASOURCE}` and `${JDBC_AUDIT_DATASOURCE}` (NOT hardcoded JNDI names)
-- **Pre-Push Checklist**: [Detailed Verification Guide](developer_docs/deployment/persistence-verification.md)
+### Working Directory
+0. **🚨 NEVER USE WORKTREE ISOLATION**: Always work directly in the main project checkout directory. Do NOT use `isolation: "worktree"` when spawning agents. If you find yourself in a path like `.claude/worktrees/*`, stop and perform all file edits in the main project directory instead. Worktrees cause the developer's local branch to go out of sync with remote commits, leading to confusing stale-file compilation errors. (Issue: hmislk/hmis#19944)
 
-### Git & GitHub Integration
-- **Commit Conventions**: [Guide](developer_docs/git/commit-conventions.md)
-- **Project Board**: [Workflow](developer_docs/github/project-board-integration.md)
-- **QA Deployment**: [Guide](developer_docs/deployment/qa-deployment-guide.md)
-- **VM Management**: [Guide](developer_docs/deployment/vm-restart-guide.md)
-- **Auto-close keywords**: `Closes #issueNumber`, `Fixes #issueNumber`
-
-### Wiki Publishing
-- **🚨 CRITICAL**: ALWAYS publish to GitHub Wiki immediately after creating user documentation
-- **Directory**: Create files in `wiki-docs/` (e.g., `wiki-docs/Pharmacy/Feature-Name.md`)
-- **Publishing Workflow**: [Complete Guide](developer_docs/github/wiki-publishing.md)
-- **Writing Guidelines**: [Content Standards](developer_docs/github/wiki-writing-guidelines.md)
-- **Target Audience if not explicitly mentioned**: End users (pharmacy staff, nurses, doctors, administrators)
-
-### Developer Documentation Guidelines
-- **🚨 TECHNICAL FOCUS ONLY**: Developer documentation should contain only technical implementation patterns, not narrative "before/after" stories
-- **🚨 NO PROGRESS STORIES**: Avoid "we implemented this because...", "the user requested...", "this fixes the issue..." - focus on HOW to implement
-- **🚨 IMPLEMENTATION PATTERNS**: Show code examples, method signatures, component usage, configuration patterns
-- **🚨 CURRENT STATE ONLY**: Document the final implementation state, not the journey to get there
-- **Target Audience**: Developers implementing similar features
-
-### Testing & Build
-- **🚨 COMPILE RULE**: Do NOT run `./detect-maven.sh compile` or Maven compile commands unless explicitly requested by user. Ask the user to compile and provide feedback first.
-- **Maven Commands**: [Environment Setup](developer_docs/testing/maven-commands.md)
-- **Preferred**: Use `./detect-maven.sh test` auto-detection script
-- **Fallback**: Machine-specific Maven paths
-- **JSF-Only Changes**: When modifying only XHTML/JSF files (no Java changes), compilation/testing is not required
-
-
-### DTO Implementation
-- **Guidelines**: [Complete Reference](developer_docs/dto/implementation-guidelines.md)
-- **CRITICAL**: Try not to modify existing constructors - only add new ones
-- **Use direct DTO queries** - avoid entity-to-DTO conversion loops
-- **🚨 JPQL PERSISTED FIELDS ONLY**: NEVER use derived/calculated properties like `nameWithTitle`, `age`, `displayName` in JPQL - only persisted database fields work (e.g., use `person.name` not `person.nameWithTitle`)
-
-### UI Development Guidelines
-- **🚨 UI-ONLY CHANGES**: When UI improvements are requested, make ONLY frontend/XHTML changes
-- **NO BACKEND MODIFICATIONS**: Do NOT add new controller properties, methods, or backend dependencies unless explicitly requested
-- **KEEP IT SIMPLE**: Use existing controller properties and methods - avoid introducing filteredValues, globalFilter, or new backend logic
-- **FRONTEND FOCUS**: Stick to HTML/CSS styling, PrimeFaces component attributes, and layout improvements
-- **UI Development Handbook**: [Complete Reference](developer_docs/ui/comprehensive-ui-guidelines.md)
-- **Icon Management**: [Standard Actions & Sizing](developer_docs/ui/icon-management.md)
-
-### JSF Development Guidelines
-- **JSF AJAX Updates**: [Critical Guidelines](developer_docs/jsf/ajax-update-guidelines.md)
-- **🚨 AJAX UPDATE RULE**: NEVER use plain HTML elements (div, span, etc.) with id attributes for AJAX updates - use JSF components (h:panelGroup, p:outputPanel, etc.) instead
-- **🚨 RENDERED ATTRIBUTE RULE**: NEVER use `rendered` attribute on plain HTML elements - JSF ignores it; use JSF components like `h:panelGroup` with `layout="block"` instead
-- **PrimeFaces DataTable Selection**: [Implementation Guide](developer_docs/jsf/primefaces-datatable-selection.md)
-- **🚨 DATATABLE SELECTION**: Use `selectionMode="multiple"` on dataTable and `selectionBox="true"` on column (NOT `selectionMode` on column)
-
-### Database Development
-- **MySQL Guide**: [Complete Reference](developer_docs/database/mysql-developer-guide.md)
-- **🚨 CREDENTIALS SECURITY**: MySQL credentials MUST be stored in separate folder (NOT in git)
-- **Location**: `C:\Credentials\credentials.txt` (Windows) or `~/.config/hmis/credentials.txt` (Linux/Mac)
-- **Never commit database credentials** to version control
-- **Database debugging techniques** and performance optimization guidelines in MySQL guide
-
-## Essential Rules
-
-### User Control & Automation
+### User Control
 1. **🚨 NO AUTO-ACTIONS**: Do NOT commit, build, run, or push code unless the user explicitly requests it
 2. **🚨 EXPLICIT COMMANDS ONLY**: Wait for user confirmation before executing Git operations, Maven builds, or deployment commands
-3. **🚨 WIKI EXCEPTION**: Wiki publishing requires push - follow [Publishing Workflow](developer_docs/github/wiki-publishing.md) exactly
-
-### Deployment & Configuration
-3. **🚨 PERSISTENCE.XML**: Verify environment variables before push - [Guide](developer_docs/deployment/persistence-verification.md)
-4. **🚨 DATABASE CREDENTIALS**: Never commit credentials to git - [MySQL Guide](developer_docs/database/mysql-developer-guide.md)
-
-### Git & Documentation
-5. **Include issue closing keywords** (`Closes #N`) in commit messages
-6. **🚨 WIKI PUBLISHING**: Publish to GitHub Wiki immediately - [Guide](developer_docs/github/wiki-publishing.md)
-
-### Build & Testing
-5. **Run tests before committing** using `./detect-maven.sh test` (Java changes only, when user requests)
-6. **🚨 NO AUTO-COMPILE**: Never run Maven compile unless explicitly requested
-7. **JSF-only changes** do not require compilation or testing
+3. **🚨 NO AUTO-COMPILE**: Never run Maven compile unless explicitly requested
 
 ### Code Integrity
-8. **Follow DTO patterns** to avoid breaking changes - [Guide](developer_docs/dto/implementation-guidelines.md)
-9. **🚨 BACKWARD COMPATIBILITY**: Never "fix" intentional typos (e.g., `purcahseRate`) - database compatibility unless explicitly requested by the user
-10. **🚨 COMPONENT NAMING**: Never rename composite components without checking ALL usage
-11. **🚨 NO MOCK DATA**: NEVER use mock bills, fake entities, or temporary workarounds in business logic
-12. **🚨 DISCUSS UNCERTAINTIES**: ALWAYS discuss with user when uncertain about implementation approach - never assume or create workarounds
+4. **🚨 NO MOCK DATA**: NEVER use mock bills, fake entities, or temporary workarounds in business logic
+5. **🚨 DISCUSS UNCERTAINTIES**: ALWAYS discuss with user when uncertain about implementation approach
+6. **🚨 BACKWARD COMPATIBILITY**: Never "fix" intentional typos (e.g., `purcahseRate`) - database compatibility
+7. **🚨 COMPONENT NAMING**: Never rename composite components without checking ALL usage
+8. **🚨 NEVER MODIFY EXISTING CONSTRUCTORS**: Only ADD new constructors. Changing or removing existing constructor signatures breaks other callers. New constructors should delegate to the existing one via `this(...)` when possible. See [DTO Guidelines](developer_docs/dto/implementation-guidelines.md)
+9. **🚨 JPQL FIRST, NATIVE SQL LAST**: Always use JPQL for database queries. Native SQL (`nativeScalarQuery`, `executeNativeSql`) is only permitted when there is a significant, demonstrated performance constraint that JPQL cannot address. Never reach for native SQL just because JPQL is harder to write.
+10. **🚨 USE `findLongByJpql` FOR COUNT QUERIES**: Always use `findLongByJpql` (not `findDoubleByJpql`) for JPQL `COUNT(...)` queries. `COUNT` returns a `Long`; using `findDoubleByJpql` causes a silent `ClassCastException` caught internally, returning `0.0` every time and making the check always pass.
 
-### UI Development
-11. **🚨 UI-ONLY CHANGES**: Frontend only - no backend modifications unless requested - [Guide](developer_docs/ui/comprehensive-ui-guidelines.md)
-12. **🚨 ERP UI**: Use `h:outputText` instead of HTML headings (h1-h6)
-13. **🚨 PRIMEFACES CSS**: Use PrimeFaces button classes, not Bootstrap
-14. **🚨 XHTML STRUCTURE**: HTML DOCTYPE with `ui:composition` and template inside `h:body`
-15. **🚨 XML ENTITIES**: Always escape ampersands as `&amp;` in XHTML attributes
+### Git & Branching
+11. **Include issue closing keywords** (`Closes #N`) in commit messages
+12. **JSF-only changes** (XHTML only, no Java) do not require compilation or testing
+13. **🚨 ALWAYS BASE FEATURE BRANCHES ON `development`**: When creating a new local branch for feature development, ALWAYS branch from `origin/development`, NEVER from `master`. The `master` branch is managed exclusively by system admins. Use: `git checkout -b <branch-name> origin/development`
+14. **🚨 `development` IS THE DEFAULT BRANCH**: All PRs MUST target `development`, NOT `master`. When checking what already exists in the codebase (to avoid duplicate fields/methods), ALWAYS compare against `origin/development`, not `origin/master`. The CI validates against `development`. Never reference or merge into `master` during feature development.
+15. **🚨 HOTFIX BRANCHES MUST END WITH `-hotfix`**: When creating a branch targeting a production branch (e.g., `coop-prod`, `ruhunu-prod`, `southernlanka-prod`), the branch name **MUST** end with `-hotfix`. CI merge validation will block PRs from branches that do not end with `-hotfix`. Format: `<description>-hotfix` (e.g., `sequence-preallocation-hotfix`, `critical-billing-fix-hotfix`). See the `/hotfix-deploy` skill.
 
-### JSF Development
-16. **🚨 JSF AJAX UPDATES**: Never use plain HTML elements for AJAX updates - [Guide](developer_docs/jsf/ajax-update-guidelines.md)
-17. **🚨 PRIMEFACES COMPONENT REFERENCES**: Use PrimeFaces `p:resolveFirstComponentWithId` function for component updates: `update=":#{p:resolveFirstComponentWithId('componentId',view).clientId}"` or `render=":#{p:resolveFirstComponentWithId('pDetails',view).clientId} :#{p:resolveFirstComponentWithId('pPreview',view).clientId}"` for multiple components
-18. **🚨 DATATABLE SELECTION**: Use `selectionMode="multiple"` on dataTable element, `selectionBox="true"` on column, and array property (not List) for selection binding - [Guide](developer_docs/jsf/primefaces-datatable-selection.md)
-19. **🚨 JSF RENDERED ATTRIBUTE**: Never use `rendered` attribute on plain HTML elements (div, span, etc.) - JSF ignores it; use JSF components like `h:panelGroup` with `layout="block"` instead
-20. **🚨 AJAX SELECTORS**: NEVER use PrimeFaces CSS/jQuery selectors like `@(.class)`, `@(#id)`, `@parent`, etc. in `update` or `process` attributes. Use `@this` for current component, `@form` for current form, explicit component IDs like `:growl` for absolute IDs, `componentId` for same-form components, or `:#{p:resolveFirstComponentWithId('id',view).clientId}` for dynamic resolution - [Guide](developer_docs/jsf/ajax-update-guidelines.md)
+## Situational Guidelines (Reference When Needed)
+
+### When Working on Persistence/Deployment
+- [Persistence Configuration Guide](developer_docs/deployment/persistence-verification.md) - JNDI settings for dev vs production
+
+### When Working on UI/XHTML
+- [UI Development Handbook](developer_docs/ui/comprehensive-ui-guidelines.md) - Complete UI reference
+- [Icon Management](developer_docs/ui/icon-management.md) - Standard icons and sizing
+
+### When Working on JSF/AJAX
+- [JSF AJAX Update Guidelines](developer_docs/jsf/ajax-update-guidelines.md) - Critical AJAX rules
+- [Navigation Patterns](developer_docs/jsf/navigation-patterns.md) - viewAction anti-pattern, initialization in navigation methods
+- [DataTable Selection Guide](developer_docs/jsf/primefaces-datatable-selection.md) - Selection patterns
+
+### When Working with DTOs
+- [DTO Implementation Guidelines](developer_docs/dto/implementation-guidelines.md) - Constructor and query patterns
+
+### When Working with Database
+- [MySQL Developer Guide](developer_docs/database/mysql-developer-guide.md) - Credentials and debugging
+
+### When Adding Excel Export to a Report
+- [Excel Export for HTML Tables](developer_docs/feature/excel-export-html-table.md) - Pattern for exporting HTML-based (non-DataTable) report tables to Excel using Apache POI via `HttpServletResponse`
+
+### When Creating User Documentation
+- [Wiki Publishing Workflow](developer_docs/github/wiki-publishing.md) - Sibling folder approach
+- [Wiki Writing Guidelines](developer_docs/github/wiki-writing-guidelines.md) - Content standards
+- **Wiki Location**: `../hmis.wiki` sibling directory (NEVER inside the main project repo)
+- **Target Audience**: End users (pharmacy staff, nurses, doctors, administrators)
+
+### When Working on Inward / Inpatient Module
+- [Inward Navigation & Reference](developer_docs/navigation/inward_navigation.md) - Pages, controllers, workflow, open issues
+- [Inward CC Settlement Tracking](developer_docs/billing/inward-cc-settlement-tracking.md) - Data model, settlement paths, cancellation flows, and debtor report pattern for inpatient credit company payments
+
+### When Adding a New Privilege
+- [Privilege System Guide](developer_docs/security/privilege-system.md) - **All 3 steps required**: enum value + `getCategory()` case + `UserPrivilageController` tree node. Adding only the enum is NOT sufficient — the privilege will be invisible in the admin UI. This was missed for `InpatientClinicalDischarge` (PR #19658, issue #19677).
+
+### When Developing a REST API
+- [REST API Development Guide](developer_docs/api/rest-api-development-guide.md) - **All 4 registration steps required**: `ApplicationConfig` + `CapabilityStatementResource` + `AnthropicApiService.buildSystemPrompt` (module listing) + `AnthropicApiService.buildToolsArray`/`executeToolCall` (tool handler). Skipping any step means the API is invisible to the AI chat or undiscoverable via `/api/capabilities`.
+
+### When Reviewing a PR
+- [PR Review Workflow](developer_docs/git/pr-review-workflow.md) - Full checklist for handling CodeRabbit/Codex comments: fetch → investigate → discuss → batch-fix → persistence check → push → reply → re-request review → cleanup
+- Use `/review-pr <pr-url>` skill to automate investigation and fix steps
+
+### When Committing Code
+- [Commit Conventions](developer_docs/git/commit-conventions.md) - Message format
+
+### When Creating a Hotfix for a Production Branch
+- **Branch name MUST end with `-hotfix`** (rule #15 above) — CI blocks merges otherwise
+- Use the `/hotfix-deploy` skill to run the full workflow: branch from prod → fix → commit → push → PR targeting prod branch
+- [Commit Conventions — Hotfix Branches](developer_docs/git/commit-conventions.md#hotfix-branches) - naming format and examples
+
+## Common Abbreviations & Terms
+- **TIA**: Thanks In Advance
 
 ---
 This behavior should persist across all Claude Code sessions for this project.

@@ -311,62 +311,87 @@
                                                 action="#{paymentSchemeController.navigateToPaymentScheme()}" 
                                                 value="Discount Schemes" 
                                                 ajax="false" 
-                                                rendered="#{webUserController.hasPrivilege('MembershipSchemes')}"/>   
+                                                rendered="#{webUserController.hasPrivilege('MembershipSchemes')}">
+                                            </p:commandButton> 
+
                                             <p:commandButton 
                                                 class="w-100" 
                                                 action="#{membershipSchemeController.navigateToMembershipScheme()}" 
                                                 value="Membership Schemes" 
                                                 ajax="false" 
-                                                rendered="#{webUserController.hasPrivilege('MembershipSchemes')}"/>
+                                                rendered="#{webUserController.hasPrivilege('MembershipSchemes')}">
+                                            </p:commandButton>
 
                                             <p:commandButton 
                                                 class="w-100" 
                                                 action="#{navigationController.navigateToPaymentMethodAllowed()}"   
                                                 value="Allowed Payment Methods" 
                                                 ajax="false" 
-                                                rendered="#{webUserController.hasPrivilege('MembershipSchemes')}"/>                                       
+                                                rendered="#{webUserController.hasPrivilege('MembershipSchemes')}">
+                                            </p:commandButton>                                      
 
                                             <p:commandButton 
                                                 class="w-100"
-                                                ajax="false" value="Pharmacy Discounts"
-                                                action="/admin/pricing/membership/payment_scheme_discount_pharmacy_by_category?faces-redirect=true"/>
+                                                ajax="false" 
+                                                value="Pharmacy Discounts"
+                                                action="/admin/pricing/membership/payment_scheme_discount_pharmacy_by_category?faces-redirect=true">
+                                            </p:commandButton>
+
                                             <p:commandButton 
                                                 class="w-100" 
                                                 action="#{navigationController.navigateToPaymentSchemeDiscountPharmacyByCategory()}" 
-                                                value="Discount by Pharmceutical Category " actionListener="#{opdMemberShipDiscountController.recreateModel()}"  ajax="false" />
+                                                value="Discount by Pharmceutical Category " 
+                                                actionListener="#{opdMemberShipDiscountController.recreateModel()}"  
+                                                ajax="false" >
+                                            </p:commandButton>
+
                                             <p:commandButton 
                                                 class="w-100" 
                                                 action="#{navigationController.navigateToPaymentSchemeDiscountOpdByDepartment()}" 
                                                 value="OPD Discount by Department" 
                                                 actionListener="#{opdMemberShipDiscountController.recreateModel()}" 
-                                                ajax="false"/>
+                                                ajax="false">
+                                            </p:commandButton>
+
+                                            <p:commandButton 
+                                                class="w-100" 
+                                                action="#{navigationController.navigateToPaymentSchemeDiscountforCreditCompany()}" 
+                                                value="Discount for Credit Company " 
+                                                actionListener="#{opdMemberShipDiscountController.recreateModel()}" 
+                                                ajax="false">
+                                            </p:commandButton>
 
                                             <p:commandButton 
                                                 class="w-100" 
                                                 action="#{navigationController.navigateToPaymentSchemeDiscountOpdBySite()}" 
                                                 value="OPD Discount by Site" 
                                                 actionListener="#{opdMemberShipDiscountController.recreateModel()}" 
-                                                ajax="false"/>
+                                                ajax="false">
+                                            </p:commandButton>
 
                                             <p:commandButton 
                                                 class="w-100" 
                                                 action="#{navigationController.navigateToPaymentSchemeDiscountOpdBtCategory()}" 
                                                 value="OPD Discount by Category" 
                                                 actionListener="#{opdMemberShipDiscountController.recreateModel()}"  
-                                                ajax="false"/>
+                                                ajax="false">
+                                            </p:commandButton>
 
                                             <p:commandButton 
                                                 class="w-100"
                                                 action="#{navigationController.navigateToPaymentSchemeDiscountOpdByItem()}" 
                                                 value="OPD Discount by Item " 
                                                 actionListener="#{opdMemberShipDiscountController.recreateModel()}"  
-                                                ajax="false" />
+                                                ajax="false" >
+                                            </p:commandButton>
+
                                             <p:commandButton 
                                                 class="w-100" 
                                                 action="#{navigationController.navigateToPaymentSchemeDiscountChannel()}"   
                                                 value="Discount for Channelling" 
                                                 ajax="false" 
-                                                rendered="#{webUserController.hasPrivilege('MembershipSchemes')}"/>   
+                                                rendered="#{webUserController.hasPrivilege('MembershipSchemes')}">
+                                            </p:commandButton> 
 
                                         </div>
                                     </p:tab>
@@ -392,9 +417,12 @@
                                         rendered="false"
                                         title="Manage Membership Schemes">
                                         <div class="d-grid gap-2">
-                                            <p:commandButton class="w-100"
-                                                             ajax="false" value="Membership Schemes Discounts"
-                                                             action="/admin/pricing/membership/membership_scheme_discount_inward"/>
+                                            <p:commandButton 
+                                                class="w-100"
+                                                ajax="false" 
+                                                value="Membership Schemes Discounts"
+                                                action="/admin/pricing/membership/membership_scheme_discount_inward">
+                                            </p:commandButton>
 
                                             <p:commandButton
                                                 class="w-100" action="#{navigationController.navigateToMembershipPaymentMethodAllowed()}" actionListener="#{membershipSchemeController.fillItems}" value="Allowed Payment Methods" ajax="false" rendered="#{webUserController.hasPrivilege('MembershipSchemes')}"/>                                       

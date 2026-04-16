@@ -1,5 +1,11 @@
 # PrimeFaces DataTable Selection - Points to Note
 
+## Critical Rule for Claude Code
+
+**🚨 DATATABLE SELECTION**: Use `selectionMode="multiple"` on dataTable element, `selectionBox="true"` on column, and array property (not List) for selection binding.
+
+---
+
 ## Overview
 PrimeFaces DataTable selection behavior has evolved in newer versions. This document outlines the correct implementation patterns for multiple row selection with checkboxes.
 

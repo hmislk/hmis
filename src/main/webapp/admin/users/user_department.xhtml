@@ -6,12 +6,13 @@
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns="http://www.w3.org/1999/xhtml"
       xmlns:p="http://primefaces.org/ui"
+      xmlns:na="http://xmlns.jcp.org/jsf/composite/template"
       >
     <h:body>
         <ui:composition template="/admin/users/user_list.xhtml">
             <ui:define name="users">
                 <h:panelGroup rendered="#{not webUserController.hasPrivilege('AdminManagingUsers') and not sessionController.firstLogin}" >
-                    <h:outputLabel value="You are NOT authorized"/>
+                    <na:not_authorize />
                 </h:panelGroup>
 
                 <p:panel header="Allow user to log on to Departments" rendered="#{webUserController.hasPrivilege('AdminManagingUsers') or sessionController.firstLogin}">

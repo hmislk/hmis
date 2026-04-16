@@ -1,0 +1,44 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="paymentMethodData"  type="com.divudi.core.data.dataStructure.PaymentMethodData" />
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+        <h:panelGrid columns="2" class="w-100">
+            <p:outputLabel value="Staff" for="staff"/>
+            <p:autoComplete id="staff"
+                            forceSelection="true"
+                            value="#{cc.attrs.paymentMethodData.iou.toStaff}"
+                            completeMethod="#{staffController.completeStaff}"
+                            var="mys"
+                            class="w-100"
+                            inputStyleClass="w-100"
+                            itemLabel="#{mys.person.nameWithTitle}"
+                            itemValue="#{mys}"
+                            required="true"
+                            requiredMessage="Staff is required"
+                            placeholder="Type staff name to search">
+                <p:ajax process="@this" />
+            </p:autoComplete>
+
+            <p:outputLabel value="Comments" for="txtIouComments"/>
+            <p:inputTextarea id="txtIouComments"
+                          class="w-100"
+                          value="#{cc.attrs.paymentMethodData.iou.comment}"
+                          placeholder="Enter IOU comments"
+                          required="true"
+                          requiredMessage="Comments are required">
+                <p:ajax process="@this" />
+            </p:inputTextarea>
+        </h:panelGrid>
+    </cc:implementation>
+</html>

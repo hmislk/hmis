@@ -53,7 +53,7 @@ public class SignController implements Serializable {
     String selectText = "";
 
     public String navigateToManageSigns(){
-        return "/emr/admin/signs";
+        return "/emr/admin/signs?faces-redirect=true";
     }
 
 
@@ -195,7 +195,7 @@ public class SignController implements Serializable {
             getFacade().edit(current);
             JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            JsfUtil.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addErrorMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();

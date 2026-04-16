@@ -7,11 +7,13 @@ package com.divudi.core.entity;
 import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.DepartmentType;
 import static com.divudi.core.data.BillTypeAtomic.PHARMACY_GRN_RETURN;
 import com.divudi.core.data.IdentifiableWithNameOrCode;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.inward.SurgeryBillType;
 import com.divudi.core.data.lab.PatientInvestigationStatus;
+import com.divudi.core.data.lab.Priority;
 import com.divudi.core.entity.cashTransaction.CashTransaction;
 import com.divudi.core.entity.hr.BankAccount;
 import com.divudi.core.entity.membership.MembershipScheme;
@@ -51,7 +53,7 @@ import javax.persistence.JoinColumn;
 public class Bill implements Serializable, RetirableEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
 
     static final long serialVersionUID = 1L;
@@ -146,6 +148,8 @@ public class Bill implements Serializable, RetirableEntity {
     private BillTypeAtomic billTypeAtomic;
     @Enumerated(EnumType.STRING)
     private PaymentMethod paymentMethod;
+    @Enumerated(EnumType.STRING)
+    private DepartmentType departmentType;
     @ManyToOne(fetch = FetchType.LAZY)
     private BillItem singleBillItem;
     @ManyToOne(fetch = FetchType.LAZY)
@@ -512,6 +516,8 @@ public class Bill implements Serializable, RetirableEntity {
     private Patient chiefHouseHolder;
     @ManyToOne(fetch = FetchType.LAZY)
     private Family memberFamily;
+    @Enumerated(EnumType.STRING)
+    private Priority priority;
 
     public Bill() {
         if (status == null) {
@@ -526,6 +532,7 @@ public class Bill implements Serializable, RetirableEntity {
         billDate = new Date();
         billTime = new Date();
         createdAt = new Date();
+        priority = Priority.NORMAL;
     }
 
     public OnlineBooking getOnlineBooking() {
@@ -1326,6 +1333,14 @@ public class Bill implements Serializable, RetirableEntity {
         this.paymentMethod = paymentMethod;
     }
 
+    public DepartmentType getDepartmentType() {
+        return departmentType;
+    }
+
+    public void setDepartmentType(DepartmentType departmentType) {
+        this.departmentType = departmentType;
+    }
+
     public Item getBillPackege() {
         return billPackege;
     }
@@ -1625,9 +1640,6 @@ public class Bill implements Serializable, RetirableEntity {
     }
 
     public Patient getPatient() {
-        if (patientEncounter != null) {
-            patient = patientEncounter.getPatient();
-        }
         return patient;
     }
 
@@ -3120,6 +3132,14 @@ public class Bill implements Serializable, RetirableEntity {
 
     public void setMemberFamily(Family memberFamily) {
         this.memberFamily = memberFamily;
+    }
+
+    public Priority getPriority() {
+        return priority;
+    }
+
+    public void setPriority(Priority priority) {
+        this.priority = priority;
     }
 
 }

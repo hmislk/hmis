@@ -12,12 +12,19 @@ public class InvestigationDTO implements Serializable {
     private String machineName;
     private Boolean retired;
     private String departmentName;
+    private Long count;
 
     public InvestigationDTO() {
     }
 
-    public InvestigationDTO(Long id, String name, String categoryName, String institutionName,
-                             String machineName, Boolean retired, String departmentName) {
+    public InvestigationDTO(
+            Long id, 
+            String name, 
+            String categoryName, 
+            String institutionName,
+            String machineName, 
+            Boolean retired, 
+            String departmentName) {
         this.id = id;
         this.name = name;
         this.categoryName = categoryName;
@@ -32,6 +39,18 @@ public class InvestigationDTO implements Serializable {
         this.name = name;
     }
 
+    public InvestigationDTO(Long id, String name, Long count) {
+        this.id = id;
+        this.name = name;
+        this.count = count;
+    }
+
+    public InvestigationDTO(Long id) {
+        this.id = id;
+    }
+    
+    
+    
     public Long getId() {
         return id;
     }
@@ -86,6 +105,14 @@ public class InvestigationDTO implements Serializable {
 
     public void setDepartmentName(String departmentName) {
         this.departmentName = departmentName;
+    }
+
+    public Long getCount() {
+        return count;
+    }
+
+    public void setCount(Long count) {
+        this.count = count;
     }
 }
 

@@ -54,11 +54,11 @@ public class PlanController implements Serializable {
 
 
     public String navigateToManagePlans(){
-        return "/emr/admin/plans";
+        return "/emr/admin/plans?faces-redirect=true";
     }
 
     public String navigateToManageClinicaEntities(){
-        return "/emr/admin/clinical_entities";
+        return "/emr/admin/clinical_entities?faces-redirect=true";
     }
 
 
@@ -199,7 +199,7 @@ public class PlanController implements Serializable {
             getFacade().edit(current);
             JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            JsfUtil.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addErrorMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();

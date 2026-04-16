@@ -9,7 +9,7 @@
                 xmlns:phi="http://xmlns.jcp.org/jsf/composite/pharmacy"
                 xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod">
     <ui:define name="subcontent">
-        <h:form id="bill" >
+        <h:form id="bill">
             <p:panel rendered="#{!pharmacyReturnwithouttresing.billPreview}"  >
                 <p:panel class="w-100">
                     <f:facet name="header" >
@@ -112,10 +112,11 @@
                                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
                                                 </h:outputLabel>
                                             </p:column>
-                                            <p:ajax event="focus" process="acStock :#{p:resolveFirstComponentWithId('acDept',view).clientId}"  ></p:ajax>
-                                            <p:ajax event="itemSelect"
-                                                    listener="#{pharmacyReturnwithouttresing.handleSelect}"
-                                                    update="txtQty txtRate focusQty" ></p:ajax>
+                                            <p:ajax
+                                                event="itemSelect"
+                                                listener="#{pharmacyReturnwithouttresing.handleSelect}"
+                                                process="@this"
+                                                update="txtQty txtRate txtRetailSale txtVal focusQty" />
                                         </p:autoComplete>
 
                                     </div>
@@ -282,8 +283,8 @@
                                         </p:commandButton>
                                     </p:column>
                                 </p:dataTable>
-                         
-                                
+
+
                                 <!-- Column Visibility Settings - Subtle placement -->
                                 <div class="mt-3 pt-2" style="border-top: 1px solid #e9ecef;">
                                     <p:panel id="panelColumnToggler" toggleable="true" collapsed="true" styleClass="ui-panel-sm">
@@ -297,13 +298,13 @@
                                         <div class="d-flex flex-wrap gap-2 gap-2xl-0 justify-content-between align-items-center" style="font-size: 0.8rem">
                                             <div class="d-flex flex-wrap gap-2">
                                                 <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyReturnWithouttressingItemVisible}"
-                                                                        itemLabel="Item">
+                                                                         itemLabel="Item">
                                                 </p:selectBooleanCheckbox>
                                                 <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyReturnWithouttressingQtyVisible}"
                                                                          itemLabel="Qty">
                                                 </p:selectBooleanCheckbox>                                  
                                                 <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyReturnWithouttressingReturnRateVisible}"
-                                                                           itemLabel="Return Rate">
+                                                                         itemLabel="Return Rate">
                                                 </p:selectBooleanCheckbox> 
                                                 <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyReturnWithouttressingReturnValueVisible}"
                                                                          itemLabel="Return Value">
@@ -312,10 +313,10 @@
                                                                          itemLabel="Retail Rate">
                                                 </p:selectBooleanCheckbox>
                                                 <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyReturnWithouttressingRetailValueVisible}"
-                                                                           itemLabel="Retail Value">
+                                                                         itemLabel="Retail Value">
                                                 </p:selectBooleanCheckbox>
                                                 <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyReturnWithouttressingExpiryVisible}"
-                                                                           itemLabel="Expiry">
+                                                                         itemLabel="Expiry">
                                                 </p:selectBooleanCheckbox>
                                             </div>
                                             <div class="flex">

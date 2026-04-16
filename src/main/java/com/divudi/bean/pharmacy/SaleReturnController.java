@@ -1223,6 +1223,7 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
 
             List<BillTypeAtomic> btas = new ArrayList<>();
             btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS);
+            btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS_PREBILL);
             btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY);
 
             double rFund = getPharmacyRecieveBean().getTotalQty(i.getBillItem(), btas);

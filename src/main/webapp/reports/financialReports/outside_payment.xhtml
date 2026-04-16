@@ -116,7 +116,7 @@
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf0f0;" styleClass="fa mr-2" />
-                                <h:outputLabel value="Referring Doctor" class="mx-3"/>
+                                <h:outputLabel value="Referring Doctor (Admit Doctor)" class="mx-3"/>
                             </h:panelGroup>
                             <p:selectOneMenu value="" filter="true"  class="w-100 " >
                                 <f:selectItem itemLabel="All" ></f:selectItem>
@@ -225,7 +225,7 @@
                                 </p:column>
                                 <p:column headerText="Item"  style="width: 100px" >
                                     <f:facet name="header">
-                                        <h:outputLabel value="Discription"/>
+                                        <h:outputLabel value="Description"/>
                                     </f:facet>
                                     <h:outputLabel value="" ></h:outputLabel>
                                 </p:column>
@@ -281,7 +281,7 @@
                                     <f:facet name="header">
                                          <h:outputLabel value="Memo"/>
                                     </f:facet>
-                                    <p:inputTextarea rows="1" cols="25"/>
+                                    <h:outputLabel value="" ></h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Item"  style="width: 100px" >
                                     <f:facet name="header">

@@ -242,6 +242,7 @@ public class LaborataryReportController implements Serializable {
 // </editor-fold>
     
     // <editor-fold defaultstate="collapsed" desc="Navigators">
+
     public String navigateToLaborataryInwardOrderReportFromLabAnalytics() {
         resetAllFiltersExceptDateRange();
         return "/reportLab/lab_inward_order_report?faces-redirect=true";
@@ -251,7 +252,7 @@ public class LaborataryReportController implements Serializable {
         resetAllFiltersExceptDateRange();
         return "/reportLab/laboratary_income_report?faces-redirect=true";
     }
-
+    
     public String navigateToLaborataryIncomeReportFromLabAnalyticsDto() {
         resetAllFiltersExceptDateRange();
         return "/reportLab/laboratary_income_report_dto?faces-redirect=true";
@@ -1731,6 +1732,7 @@ public class LaborataryReportController implements Serializable {
         List<BillTypeAtomic> otherbillTypeAtomics = new ArrayList<>();
         otherbillTypeAtomics.add(BillTypeAtomic.FUND_TRANSFER_BILL);
         otherbillTypeAtomics.add(BillTypeAtomic.FUND_TRANSFER_BILL_CANCELLED);
+        otherbillTypeAtomics.add(BillTypeAtomic.FUND_TRANSFER_BILL_DECLINED);
 
         return otherbillTypeAtomics;
     }
@@ -1871,6 +1873,14 @@ public class LaborataryReportController implements Serializable {
     // </editor-fold>
     
     // <editor-fold defaultstate="collapsed" desc="Getters and Setters">
+    public List<BillLight> getBillLights() {
+        return billLights;
+    }
+
+    public void setBillLights(List<BillLight> billLights) {
+        this.billLights = billLights;
+    }
+    
     public Long getRowsPerPageForScreen() {
         return rowsPerPageForScreen;
     }
@@ -2567,11 +2577,4 @@ public class LaborataryReportController implements Serializable {
     
     // </editor-fold>
 
-    public List<BillLight> getBillLights() {
-        return billLights;
-    }
-
-    public void setBillLights(List<BillLight> billLights) {
-        this.billLights = billLights;
-    }
 }

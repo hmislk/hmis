@@ -24,6 +24,7 @@ import static com.divudi.core.data.PaymentMethod.Voucher;
 import static com.divudi.core.data.PaymentMethod.YouOweMe;
 import static com.divudi.core.data.PaymentMethod.ewallet;
 import com.divudi.core.entity.*;
+import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.entity.channel.SessionInstance;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.core.light.common.BillLight;
@@ -868,11 +869,14 @@ public class PharmacyBundle implements Serializable {
     }
 
     public void generatePaymentDetailsGroupedByBillTypeAndDiscountSchemeAndAdmissionTypeDto() {
-        Map<String, PharmacyRow> grouped = new LinkedHashMap<>();
 
+        Map<String, PharmacyRow> grouped = new LinkedHashMap<>();
         for (PharmacyRow r : getRows()) {
             BillLight b = r.getBillLight();
-            if (b == null || b.getBillTypeAtomic() == null) {
+            if (b == null) {
+                continue;
+            }
+            if (b.getBillTypeAtomic() == null) {
                 continue;
             }
 
@@ -880,20 +884,21 @@ public class PharmacyBundle implements Serializable {
 
             BillTypeAtomic bta = b.getBillTypeAtomic();
             String detail;
-            if (b.getPatientEncounter() != null) {
-                r.setAdmissionType(b.getPatientEncounter().getAdmissionType());
-                if (b.getPatientEncounter().getAdmissionType() == null) {
-                    detail = "No Admission Type";
-                } else {
-                    detail = b.getPatientEncounter().getAdmissionType().getName();
-                }
+            // Support both entity-based (legacy) and scalar-based (new) BillLight construction
+            AdmissionType admissionType = (b.getPatientEncounter() != null)
+                    ? b.getPatientEncounter().getAdmissionType()
+                    : b.getAdmissionType();
+            String schemeName = (b.getPaymentScheme() != null)
+                    ? b.getPaymentScheme().getName()
+                    : b.getPaymentSchemeName();
+            if (admissionType != null) {
+                r.setAdmissionType(admissionType);
+                detail = admissionType.getName();
+            } else if (b.getPatientEncounter() != null || b.getAdmissionType() != null) {
+                // encounter present but admissionType is null
+                detail = "No Admission Type";
             } else {
-                r.setPaymentScheme(b.getPaymentScheme());
-                if (b.getPaymentScheme() == null) {
-                    detail = "No Discount Scheme";
-                } else {
-                    detail = b.getPaymentScheme().getName();
-                }
+                detail = (schemeName != null) ? schemeName : "No Discount Scheme";
             }
 
             String groupKey = bta.name() + " - " + detail;
@@ -938,6 +943,11 @@ public class PharmacyBundle implements Serializable {
                     groupRow.getValueOfStocksAtCostRate().add(r.getValueOfStocksAtCostRate())
                 );
             }
+            if (r.getValueOfStocksAtPurchaseRate() != null) {
+                groupRow.setValueOfStocksAtPurchaseRate(
+                    groupRow.getValueOfStocksAtPurchaseRate().add(r.getValueOfStocksAtPurchaseRate())
+                );
+            }
             if (r.getValueOfStocksAtRetailSaleRate() != null) {
                 groupRow.setValueOfStocksAtRetailSaleRate(
                     groupRow.getValueOfStocksAtRetailSaleRate().add(r.getValueOfStocksAtRetailSaleRate())
@@ -950,6 +960,7 @@ public class PharmacyBundle implements Serializable {
         grouped.values().stream()
                 .sorted(Comparator.comparing(PharmacyRow::getRowType, Comparator.nullsLast(String::compareToIgnoreCase)))
                 .forEachOrdered(getRows()::add);
+
         populateSummaryRow();
     }
 
@@ -1296,9 +1307,18 @@ public class PharmacyBundle implements Serializable {
             return;
         }
 
-        r.setGrossTotal(b.getTotal());
+        double grossTotal = b.getTotal();
+        r.setGrossTotal(grossTotal);
         r.setNetTotal(b.getNetTotal());
-        r.setDiscount(b.getDiscount());
+
+        // Discount is inconsistently signed in database - some bills have positive, some negative
+        // Use absolute value and apply sign based on gross total (which is consistently signed)
+        double discountValue = Math.abs(b.getDiscount());
+        if (grossTotal < 0) {
+            discountValue = -discountValue;
+        }
+        r.setDiscount(discountValue);
+
         r.setServiceCharge(b.getMargin());
         r.setActualTotal(b.getTotal() - b.getMargin());
 
@@ -1385,9 +1405,18 @@ public class PharmacyBundle implements Serializable {
             return;
         }
 
-        r.setGrossTotal(nullSafeDouble(b.getTotal()));
+        double grossTotal = nullSafeDouble(b.getTotal());
+        r.setGrossTotal(grossTotal);
         r.setNetTotal(nullSafeDouble(b.getNetTotal()));
-        r.setDiscount(nullSafeDouble(b.getDiscount()));
+
+        // Discount is inconsistently signed in database - some bills have positive, some negative
+        // Use absolute value and apply sign based on gross total (which is consistently signed)
+        double discountValue = Math.abs(nullSafeDouble(b.getDiscount()));
+        if (grossTotal < 0) {
+            discountValue = -discountValue;
+        }
+        r.setDiscount(discountValue);
+
         r.setServiceCharge(nullSafeDouble(b.getMargin()));
         r.setActualTotal(nullSafeDouble(b.getTotal()) - nullSafeDouble(b.getMargin()));
 

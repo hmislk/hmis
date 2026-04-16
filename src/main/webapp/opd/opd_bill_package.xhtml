@@ -105,15 +105,15 @@
                                                             value="Searched Patient Details" 
                                                             class="mx-2"
                                                             ></h:outputText>
-                                                        <h:panelGroup rendered="true" id="edit" >
-                                                            <p:selectBooleanButton 
-                                                                value="#{billPackageController.patientDetailsEditable}" 
-                                                                offIcon="pi pi-pencil" 
-                                                                onIcon="pi pi-eye"                                 
+                                                        <h:panelGroup rendered="#{webUserController.hasPrivilege('OpdEditPatientDetails')}" id="edit" >
+                                                            <p:selectBooleanButton
+                                                                value="#{billPackageController.patientDetailsEditable}"
+                                                                offIcon="pi pi-pencil"
+                                                                onIcon="pi pi-eye"
                                                                 class="mx-2"
                                                                 >
-                                                                <p:ajax 
-                                                                    process="@this" 
+                                                                <p:ajax
+                                                                    process="@this"
                                                                     update="viewPatient editPatient btnDone edit" />
                                                             </p:selectBooleanButton>
                                                             <p:commandButton 
@@ -508,20 +508,11 @@
 
                             <div class="mb-2">
 
-                                <p:panel id='pIxAdd' header="Items Requests"  >  
+                                <p:panel id='pIxAdd' header="Items Requests" class="mt-3" >  
                                     <f:facet name="header" >
                                         <h:outputText styleClass="fa-solid fa-circle-plus" />
                                         <h:outputText value="Add New Items" class="mx-4"></h:outputText>
-                                        <p:commandButton 
-                                            id="btnAddIx" 
-                                            value="Add Package" 
-                                            process="advanced btnAddIx"
-                                            update="tblBillItem pBillDetails pIxAdd msg"
-                                            icon="fa fa-plus"
-                                            style=""
-                                            class=" mx-1 ui-button-success my-2"
-                                            action="#{billPackageController.addToBill()}" >
-                                        </p:commandButton>
+
 
                                         <p:commandButton 
                                             id="btnRefresh" 
@@ -529,54 +520,74 @@
                                             ajax="false"
                                             icon="fas fa-refresh"
                                             style="float: right;"
-                                            class=" mx-1 ui-button-danger my-2"
+                                            class=" mx-1 ui-button-danger"
                                             action="#{billPackageController.reloadPackages()}" >
                                         </p:commandButton>
+
+                                        <p:commandButton 
+                                            id="btnAddIx" 
+                                            value="Add Package" 
+                                            process="advanced btnAddIx"
+                                            update="tblBillItem pBillDetails pIxAdd msg"
+                                            icon="fa fa-plus"
+                                            style="float: right;"
+                                            class=" mx-1 ui-button-success"
+                                            action="#{billPackageController.addToBill()}" >
+                                        </p:commandButton>
+
                                     </f:facet>
                                     <p:selectOneListbox 
                                         id="advanced" 
-                                        value="#{billPackageController.currentBillItem.item}"
+                                        value="#{billPackageController.currentSelectedPackage}"
                                         var="i"
                                         filter="true" 
                                         scrollHeight="250"
                                         filterMatchMode="contains">
                                         <f:selectItems 
                                             value="#{billPackageController.genderBasedPackaes}" 
-                                            var="item" 
+                                            var="item"
+                                            itemDisabled="#{item.expired}"
                                             itemLabel="#{item.name}" 
                                             itemValue="#{item}"/>
-                                        <p:column>
-                                            <h:outputText value="#{i.name}"/>
-                                        </p:column>
-                                        <p:column>
-                                            <h:outputText value="#{i.department}"/>
-                                        </p:column>
-                                        <p:column rendered="#{configOptionApplicationController.getBooleanValueByKey('Package bill – Reloading of Packages with Consideration of Gender')}">
 
+                                        <p:column>
+                                            <div class="d-flex justify-content-between">
+                                                <h:outputText value="#{i.name}"/>
+                                                <h:panelGroup>
+                                                    <p:badge 
+                                                        rendered="#{i.expired}"
+                                                        style="width: 8em;"
+                                                        value="Expired" 
+                                                        severity="#{i.expired ?'danger': ''}">
+                                                    </p:badge>
+                                                </h:panelGroup>
+                                            </div>
+                                        </p:column>
+
+                                        <p:column rendered="#{configOptionApplicationController.getBooleanValueByKey('Package bill – Reloading of Packages with Consideration of Gender')}">
                                             <p:badge 
                                                 size="large"
+                                                style="width: 6em;"
                                                 value="#{i.forGender}" 
-                                                severity="#{i.forGender eq 'Male'?'info': i.forGender eq 'Female'? 'warning':'success'}"
-                                                >
+                                                severity="#{i.forGender eq 'Male'?'info': i.forGender eq 'Female'? 'warning':'success'}">
                                             </p:badge>
                                         </p:column>
-                                        <p:column>
-                                            <h:outputText value="#{i.total}"/>
+
+                                        <p:column >
+                                            <h:outputText value="#{i.total}" class="d-flex justify-content-end mx-2">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
                                         </p:column>
                                     </p:selectOneListbox>
-
-
+                                    
                                 </p:panel>
                             </div>
-
                         </h:panelGroup>
-
                     </div>
 
                     <div class="col-md-6">
                         <div>
                             <p:panel class="w-100">
-
                                 <f:facet name="header" >
                                     <h:outputText styleClass="fa fa-list" /> 
                                     <h:outputText value="Added Items" class="mx-4"></h:outputText>

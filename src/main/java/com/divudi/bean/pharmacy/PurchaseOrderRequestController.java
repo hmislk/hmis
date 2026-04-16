@@ -9,9 +9,12 @@ import com.divudi.bean.common.ConfigOptionController;
 import com.divudi.bean.common.ItemController;
 import com.divudi.bean.common.EnumController;
 import com.divudi.bean.common.NotificationController;
+import com.divudi.bean.common.PageMetadataRegistry;
 import com.divudi.bean.common.SessionController;
 
 import com.divudi.core.data.BillType;
+import com.divudi.core.data.DepartmentType;
+import com.divudi.core.data.OptionScope;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.PharmacyBean;
@@ -29,6 +32,9 @@ import com.divudi.core.facade.ItemFacade;
 import com.divudi.core.facade.ItemsDistributorsFacade;
 import com.divudi.core.facade.PharmaceuticalBillItemFacade;
 import com.divudi.core.facade.EmailFacade;
+import com.divudi.core.data.admin.ConfigOptionInfo;
+import com.divudi.core.data.admin.PageMetadata;
+import com.divudi.core.data.admin.PrivilegeInfo;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.ejb.EmailManagerEjb;
@@ -47,6 +53,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -89,12 +96,15 @@ public class PurchaseOrderRequestController implements Serializable {
     EnumController enumController;
     @Inject
     ConfigOptionController configOptionController;
+    @Inject
+    private PageMetadataRegistry pageMetadataRegistry;
 
     private Bill currentBill;
     private BillItem currentBillItem;
     private List<BillItem> selectedBillItems;
     private List<BillItem> billItems;
     private boolean printPreview;
+    private boolean itemHistoryVisible;
     private double totalBillItemsCount;
     private Long billId;
     //private List<PharmaceuticalBillItem> pharmaceuticalBillItems;
@@ -193,6 +203,7 @@ public class PurchaseOrderRequestController implements Serializable {
         currentBillItem = null;
         billItems = null;
         printPreview = false;
+        itemHistoryVisible = false;
     }
 
     public void addItem() {
@@ -201,13 +212,43 @@ public class PurchaseOrderRequestController implements Serializable {
             return;
         }
 
+        // Auto-set department type if not already set (use the item's department type)
+        if (getCurrentBill().getDepartmentType() == null) {
+            if (getCurrentBillItem().getItem().getDepartmentType() != null) {
+                getCurrentBill().setDepartmentType(getCurrentBillItem().getItem().getDepartmentType());
+            } else {
+                // Fallback to Pharmacy if item has no department type
+                getCurrentBill().setDepartmentType(DepartmentType.Pharmacy);
+            }
+        }
+
+        // Validate that the item's department type matches the bill's department type
+        if (getCurrentBill().getDepartmentType() != null) {
+            DepartmentType itemDepartmentType = getCurrentBillItem().getItem().getDepartmentType();
+
+            // Check if item's department type matches bill's department type
+            if (itemDepartmentType != null && !itemDepartmentType.equals(getCurrentBill().getDepartmentType())) {
+                JsfUtil.addErrorMessage("Cannot add items from different department types. "
+                        + "Bill is set for " + getCurrentBill().getDepartmentType().getLabel()
+                        + " items, but you are trying to add a " + itemDepartmentType.getLabel() + " item.");
+                return;
+            }
+
+            // Verify department type is allowed for pharmacy transactions
+            List<DepartmentType> allowedTypes = sessionController.getAvailableDepartmentTypesForPharmacyTransactions();
+            if (allowedTypes == null || !allowedTypes.contains(getCurrentBill().getDepartmentType())) {
+                JsfUtil.addErrorMessage("Items are not allowed for the selected department type: " + getCurrentBill().getDepartmentType().getLabel());
+                return;
+            }
+        }
+
         // Check for duplicate items if configuration is enabled
         if (configOptionApplicationController.getBooleanValueByKey("Prevent Duplicate Items in Purchase Orders", false)) {
             Item selectedItem = getCurrentBillItem().getItem();
             for (BillItem existingItem : getBillItems()) {
                 if (existingItem != null && !existingItem.isRetired()
-                    && existingItem.getItem() != null
-                    && existingItem.getItem().equals(selectedItem)) {
+                        && existingItem.getItem() != null
+                        && existingItem.getItem().equals(selectedItem)) {
                     JsfUtil.addErrorMessage("This item has already been added to the purchase order. Please update the quantity of the existing item instead of adding it again.");
                     return;
                 }
@@ -219,9 +260,9 @@ public class PurchaseOrderRequestController implements Serializable {
         // PERFORMANCE: Fetch last purchase and retail rates (replaces 9-second individual calls!)
         Long itemId = getCurrentBillItem().getItem().getId();
         getCurrentBillItem().getPharmaceuticalBillItem().setPurchaseRate(
-            fetchLastPurchaseRateForItem(itemId));
+                fetchLastPurchaseRateForItem(itemId));
         getCurrentBillItem().getPharmaceuticalBillItem().setRetailRate(
-            fetchLastRetailRateForItem(itemId));
+                fetchLastRetailRateForItem(itemId));
 
         if (getCurrentBillItem().getItem() instanceof Ampp) {
             BigDecimal unitsPerPack = BigDecimal.valueOf(getCurrentBillItem().getItem().getDblValue());
@@ -268,6 +309,7 @@ public class PurchaseOrderRequestController implements Serializable {
         currentBill = billService.reloadBill(currentBill);
         calculateBillTotals();
         currentBillItem = null;
+        itemHistoryVisible = false;
     }
 
     @Inject
@@ -441,6 +483,19 @@ public class PurchaseOrderRequestController implements Serializable {
 
     public void displayItemDetails(BillItem bi) {
         getPharmacyController().fillItemDetails(bi.getItem());
+        itemHistoryVisible = true;
+    }
+
+    public void closeItemHistory() {
+        itemHistoryVisible = false;
+    }
+
+    public boolean isItemHistoryVisible() {
+        return itemHistoryVisible;
+    }
+
+    public void setItemHistoryVisible(boolean itemHistoryVisible) {
+        this.itemHistoryVisible = itemHistoryVisible;
     }
 
     /**
@@ -484,8 +539,8 @@ public class PurchaseOrderRequestController implements Serializable {
     }
 
     /**
-     * PERFORMANCE OPTIMIZATION: Get last retail rate for a single item
-     * Replaces pharmacyBean.getLastRetailRate() call
+     * PERFORMANCE OPTIMIZATION: Get last retail rate for a single item Replaces
+     * pharmacyBean.getLastRetailRate() call
      */
     private Double fetchLastRetailRateForItem(Long itemId) {
         if (itemId == null) {
@@ -629,8 +684,8 @@ public class PurchaseOrderRequestController implements Serializable {
                 boolean isDuplicate = false;
                 for (BillItem existingItem : getBillItems()) {
                     if (existingItem != null && !existingItem.isRetired()
-                        && existingItem.getItem() != null
-                        && existingItem.getItem().equals(i)) {
+                            && existingItem.getItem() != null
+                            && existingItem.getItem().equals(i)) {
                         isDuplicate = true;
                         skippedCount++;
                         break;
@@ -717,7 +772,7 @@ public class PurchaseOrderRequestController implements Serializable {
         }
 
         String jpql = "SELECT i FROM Item i WHERE i IN "
-                + "(SELECT id.item FROM ItemsDistributors id WHERE id.institution = :supplier AND id.retired = false AND id.item.retired = false) "
+                + "(SELECT id.item FROM ItemsDistributors id WHERE id.institution = :supplier AND id.retired = false AND id.item.retired = false AND id.item.inactive = false) "
                 + "AND i IN "
                 + "(SELECT s.itemBatch.item FROM Stock s JOIN Reorder r ON r.item = s.itemBatch.item AND r.department = s.department "
                 + "WHERE s.department = :department AND s.stock < r.rol GROUP BY s.itemBatch.item) "
@@ -747,6 +802,10 @@ public class PurchaseOrderRequestController implements Serializable {
             JsfUtil.addErrorMessage("Cannot save a finalized bill");
             return false;
         }
+        if (getCurrentBill().getToInstitution()==null) {
+            JsfUtil.addErrorMessage("Please select a supplier");
+            return false;
+        }
         saveBill();
         saveBillComponent();
         return true;
@@ -760,16 +819,60 @@ public class PurchaseOrderRequestController implements Serializable {
                 + " from ItemsDistributors c"
                 + " where c.retired=false "
                 + " and c.item.retired=false "
+                + " and c.item.inactive=false "
                 + " and c.institution=:ins "
                 + " order by c.item.name";
         hm.put("ins", getCurrentBill().getToInstitution());
         lst = itemFacade.findByJpql(sql, hm, 200);
+
+        // Filter by department type if set
+        if (getCurrentBill().getDepartmentType() != null && lst != null) {
+            lst = filterItemsByDepartmentType(lst, getCurrentBill().getDepartmentType());
+        }
+
         return lst;
+    }
+
+    private List<Item> filterItemsByDepartmentType(List<Item> items, DepartmentType departmentType) {
+        if (items == null || departmentType == null) {
+            return items;
+        }
+
+        // Check if the department type is allowed for pharmacy transactions
+        List<DepartmentType> allowedTypes = sessionController.getAvailableDepartmentTypesForPharmacyTransactions();
+        if (allowedTypes == null || !allowedTypes.contains(departmentType)) {
+            return new ArrayList<>(); // Return empty list if department type not allowed
+        }
+
+        // For now, return all items if department type is allowed
+        // Additional item-specific filtering can be added here if needed
+        return items;
+    }
+
+    public List<Item> completeItemForSelectedDepartmentType(String query) {
+        // Get items from the ItemController
+        List<Item> allItems;
+        if (getCurrentBill().getDepartmentType() == null) {
+            allItems = itemController.completeAmpAndAmppItemForLoggedDepartment(query);
+        } else {
+            allItems = itemController.completeAmpAndAmppItemForLoggedDepartment(query, getCurrentBill().getDepartmentType());
+        }
+
+        // Filter by department type if set
+        if (getCurrentBill().getDepartmentType() != null && allItems != null) {
+            return filterItemsByDepartmentType(allItems, getCurrentBill().getDepartmentType());
+        }
+
+        return allItems;
     }
 
     public void finalizeRequest() {
         if (currentBill == null) {
             JsfUtil.addErrorMessage("No Bill");
+            return;
+        }
+        if (getCurrentBill().getToInstitution() == null) {
+            JsfUtil.addErrorMessage("Please selectr a supplier");
             return;
         }
         if (getCurrentBill().isChecked()) {
@@ -1282,6 +1385,127 @@ public class PurchaseOrderRequestController implements Serializable {
 
     public void setEmailRecipient(String emailRecipient) {
         this.emailRecipient = emailRecipient;
+    }
+
+    @PostConstruct
+    public void init() {
+        registerPageMetadata();
+    }
+
+    /**
+     * Register page metadata for the admin configuration interface
+     */
+    private void registerPageMetadata() {
+        if (pageMetadataRegistry == null) {
+            return;
+        }
+
+        PageMetadata metadata = new PageMetadata(
+                "pharmacy/pharmacy_purhcase_order_request",
+                "Pharmacy Purchase Order Request",
+                "Create and manage pharmacy purchase order requests to suppliers",
+                "PurchaseOrderRequestController"
+        );
+
+        // Configuration Options - APPLICATION scope
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Pharmacy PO - Show Item History Above Items",
+                "Controls whether item history panel appears above or below the items datatable",
+                OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Enable Consignment in Pharmacy Purchasing",
+                "Shows or hides the consignment checkbox option in the purchase order panel",
+                OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Minimum Number of Characters to Search for Item",
+                "Minimum characters required before item autocomplete search triggers",
+                OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Prevent Duplicate Items in Purchase Orders",
+                "When enabled, prevents adding duplicate items to a purchase order",
+                OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Consignment Option is checked in new Pharmacy Purchasing Bills",
+                "Sets the default checked state of the consignment checkbox when creating a new purchase order",
+                OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Pharmacy Purchase Order Default Payment Method",
+                "Sets the default payment method when creating a new purchase order",
+                OptionScope.APPLICATION
+        ));
+
+        // Bill Number Generation Strategies
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Bill Number Suffix for PHARMACY_ORDER_PRE",
+                "Custom suffix for purchase order request bill numbers (default: POR)",
+                OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Bill Number Generation Strategy for Purchase Order Requests - Prefix + Department Code + Institution Code + Year + Yearly Number and Yearly Number",
+                "Bill numbering format: Prefix-DeptCode-InstCode-Year-Number",
+                OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Bill Number Generation Strategy for Purchase Order Requests - Prefix + Institution Code + Department Code + Year + Yearly Number and Yearly Number",
+                "Bill numbering format: Prefix-InstCode-DeptCode-Year-Number",
+                OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Bill Number Generation Strategy for Purchase Order Requests - Prefix + Institution Code + Year + Yearly Number and Yearly Number",
+                "Bill numbering format: Prefix-InstCode-Year-Number (institution-wide)",
+                OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Institution Number Generation Strategy for Purchase Order Requests - Prefix + Institution Code + Year + Yearly Number and Yearly Number",
+                "Controls separate institution-wide number generation for the insId field",
+                OptionScope.APPLICATION
+        ));
+
+        // Configuration Options - INSTITUTION scope
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Pharmacy Purchase Order Request Print - A4 Paper Custom 1",
+                "Uses A4 Paper Custom Format 1 for purchase order request printing",
+                OptionScope.INSTITUTION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Pharmacy Purchase Order Request Print - A4 Paper Custom 2",
+                "Uses A4 Paper Custom Format 2 for purchase order request printing",
+                OptionScope.INSTITUTION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Pharmacy Purchase - Quantity Must Be Integer",
+                "Validates that quantity and free quantity values are whole numbers (no decimals)",
+                OptionScope.INSTITUTION
+        ));
+
+        // Privileges
+        metadata.addPrivilege(new PrivilegeInfo(
+                "Admin",
+                "Administrative access to configuration interface",
+                "Controls visibility of the Config button"
+        ));
+        metadata.addPrivilege(new PrivilegeInfo(
+                "CreatePurchaseOrder",
+                "Permission to create and manage purchase orders",
+                "Controls access to the entire purchase order request page"
+        ));
+        metadata.addPrivilege(new PrivilegeInfo(
+                "Developers",
+                "Developer-only features",
+                "Controls visibility of item ID column in autocomplete"
+        ));
+        metadata.addPrivilege(new PrivilegeInfo(
+                "ChangeReceiptPrintingPaperTypes",
+                "Access to receipt printing configuration settings",
+                "Controls visibility of the Settings button in print preview"
+        ));
+
+        pageMetadataRegistry.registerPage(metadata);
     }
 
 }

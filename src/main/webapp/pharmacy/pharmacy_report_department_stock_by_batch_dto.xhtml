@@ -20,17 +20,81 @@
 
                         <h:panelGroup id="panelDeptType" layout="block" styleClass="container-fluid my-2">
                             <h:panelGroup layout="block" styleClass="row">
+                                <!-- Category Filter -->
+                                <h:panelGroup layout="block" styleClass="col-lg-4 col-md-6 col-sm-12 mb-3">
+                                    <h:panelGroup layout="block" styleClass="form-group">
+                                        <h:panelGroup layout="block" styleClass="d-flex align-items-center mb-2">
+                                            <h:outputText styleClass="fa fa-tags mr-2" />
+                                            <h:outputLabel value="Category" for="categoryFilter" styleClass="mb-0"/>
+                                        </h:panelGroup>
+                                        <p:selectOneMenu
+                                            id="categoryFilter"
+                                            value="#{reportsStock.category}"
+                                            styleClass="w-100"
+                                            filter="true"
+                                            filterMatchMode="contains">
+                                            <f:selectItem itemLabel="All Categories"/>
+                                            <f:selectItems value="#{pharmaceuticalItemCategoryController.items}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}"/>
+                                        </p:selectOneMenu>
+                                    </h:panelGroup>
+                                </h:panelGroup>
+                                <!-- Dosage Form Filter -->
+                                <h:panelGroup layout="block" styleClass="col-lg-4 col-md-6 col-sm-12 mb-3">
+                                    <h:panelGroup layout="block" styleClass="form-group">
+                                        <h:panelGroup layout="block" styleClass="d-flex align-items-center mb-2">
+                                            <h:outputText styleClass="fa fa-capsules mr-2" />
+                                            <h:outputLabel value="Dosage Form" for="dosageFormFilter" styleClass="mb-0"/>
+                                        </h:panelGroup>
+                                        <p:selectOneMenu
+                                            id="dosageFormFilter"
+                                            value="#{reportsStock.dosageForm}"
+                                            styleClass="w-100"
+                                            filter="true"
+                                            filterMatchMode="contains">
+                                            <f:selectItem itemLabel="All Dosage Forms"/>
+                                            <f:selectItems value="#{dosageFormController.items}" var="df" itemLabel="#{df.name}" itemValue="#{df}"/>
+                                        </p:selectOneMenu>
+                                    </h:panelGroup>
+                                </h:panelGroup>
                                 <!-- Department Type Filter -->
                                 <h:panelGroup layout="block" styleClass="col-lg-4 col-md-6 col-sm-12 mb-3">
                                     <h:panelGroup layout="block" styleClass="form-group">
                                         <h:panelGroup layout="block" styleClass="d-flex align-items-center mb-2">
                                             <h:outputText value="&#xf0e8;" styleClass="fa mr-2" />
-                                            <h:outputLabel value="Department Type" for="cmbDeptType" styleClass="mb-0"/>
+                                            <h:outputLabel value="Department Types" for="departmentTypeFilter" styleClass="mb-0"/>
                                         </h:panelGroup>
-                                        <p:selectOneMenu id="cmbDeptType" value="#{reportsStock.departmentType}" filter="true" filterMatchMode="contains" styleClass="w-100">
-                                            <f:selectItem itemLabel="All Department Types" itemValue="#{null}" />
-                                            <f:selectItems value="#{departmentTypeController.departmentTypes}" var="dt" itemLabel="#{dt.label}" itemValue="#{dt}" />
-                                        </p:selectOneMenu>
+                                        <p:selectCheckboxMenu
+                                            id="departmentTypeFilter"
+                                            value="#{reportsStock.selectedDepartmentTypes}"
+                                            label="Select Department Types"
+                                            styleClass="w-100"
+                                            filter="true"
+                                            filterMatchMode="contains"
+                                            showHeader="true"
+                                            scrollHeight="200"
+                                            title="Select one or more department types to filter results. Leave empty to include all departments.">
+                                            <f:selectItems
+                                                value="#{reportsStock.availableDepartmentTypes}"
+                                                var="depType"
+                                                itemLabel="#{depType.label}"
+                                                itemValue="#{depType}"/>
+                                        </p:selectCheckboxMenu>
+                                    </h:panelGroup>
+                                </h:panelGroup>
+                            </h:panelGroup>
+                        </h:panelGroup>
+
+                        <h:panelGroup id="panelZeroStock" layout="block" styleClass="container-fluid my-2">
+                            <h:panelGroup layout="block" styleClass="row">
+                                <!-- Include Zero Stock Filter -->
+                                <h:panelGroup layout="block" styleClass="col-lg-4 col-md-6 col-sm-12 mb-3">
+                                    <h:panelGroup layout="block" styleClass="form-group">
+                                        <h:panelGroup layout="block" styleClass="d-flex align-items-center mb-2">
+                                            <h:outputText styleClass="fa fa-box-open mr-2" />
+                                            <h:outputLabel value="Include Zero Stock" styleClass="mb-0"/>
+                                        </h:panelGroup>
+                                        <h:selectBooleanCheckbox id="includeZeroStockFilter" value="#{reportsStock.includeZeroStock}" />
+                                        <h:outputLabel for="includeZeroStockFilter" value=" Include batches with zero stock" styleClass="ms-1"/>
                                     </h:panelGroup>
                                 </h:panelGroup>
                                 <!-- Action Buttons -->
@@ -42,22 +106,22 @@
                                         ajax="false" value="Process" icon="fas fa-cogs" styleClass="ui-button-warning mx-1"
                                         actionListener="#{reportsStock.fillDepartmentStockDtos()}" />
 
-                                    <p:commandButton styleClass="ui-button-danger mx-1" icon="fas fa-file-pdf" value="PDF" ajax="false">
-                                        <p:dataExporter type="pdf" target="tbl" fileName="stock_by_batch" />
-                                    </p:commandButton>
+                                    <p:commandButton styleClass="ui-button-danger mx-1" icon="fas fa-file-pdf" value="PDF" ajax="false"
+                                                     action="#{reportsStock.exportCurrentStockByBatchToPDF()}"
+                                                     />
 
-                                    <p:commandButton icon="fas fa-file-excel" styleClass="ui-button-success mx-1" value="Excel" ajax="false">
-                                        <p:dataExporter type="xlsx" target="tbl" fileName="stock_by_batch" />
-                                    </p:commandButton>
-                                    <p:commandButton 
-                                        value="Print" icon="fas fa-print" 
-                                        styleClass="ui-button-info mx-1"
-                                        actionListener="#{reportsStock.prepareForPrint()}"
-                                        oncomplete="$('#frm\\:print').click()" update=":frm:tbl" />
-                                    <p:commandButton id="print" value="Actual print" style="display: none;">
-                                        <p:ajax event="click" listener="#{reportsStock.prepareForView()}" update=":frm:tbl" />
-                                        <p:printer target=":frm:tbl" />
-                                    </p:commandButton>
+
+                                    <p:commandButton icon="fas fa-file-excel"
+                                                     styleClass="ui-button-success mx-1"
+                                                     value="Excel"
+                                                     ajax="false"
+                                                     action="#{reportsStock.exportCurrentStockByBatchToExcel}" />
+
+                                    <p:commandButton
+                                        value="To Print"
+                                        styleClass="ui-button-info m-1"
+                                        icon="pi pi-print"
+                                        action="pharmacy_report_department_stock_by_batch_dto_print?faces-redirect=true"/>
                                 </h:panelGroup>
                             </h:panelGroup>
                         </h:panelGroup>
@@ -85,6 +149,16 @@
                                         <h:outputLabel value="Category" />
                                     </f:facet>
                                     <h:outputLabel value="#{i.categoryName}" />
+                                </p:column>
+
+                                <p:column headerText="Dosage Form" style="text-align: left;"
+                                          sortBy="#{i.dosageFormName}"
+                                          filterBy="#{i.dosageFormName}"
+                                          filterMatchMode="contains">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Dosage Form" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.dosageFormName}" />
                                 </p:column>
 
                                 <p:column headerText="Item"
@@ -117,17 +191,6 @@
                                         <h:outputLabel value="Code" />
                                     </f:facet>
                                     <h:outputLabel value="#{i.code}" />
-                                </p:column>
-
-                                <p:column headerText="Generic Name"
-                                          sortBy="#{i.genericName}"
-                                          filterBy="#{i.genericName}"
-                                          filterMatchMode="contains"
-                                          rendered="#{userSettingsController.pharmacyDepartmentStockByBatchGenericNameVisible}">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Generic Name" />
-                                    </f:facet>
-                                    <h:outputLabel value="#{i.genericName}" />
                                 </p:column>
 
                                 <p:column headerText="Expiry" sortBy="#{i.dateOfExpire}"
@@ -278,13 +341,6 @@
                                             <f:ajax render="tbl" />
                                         </h:selectBooleanCheckbox>
                                         <h:outputLabel for="chkCode" value="Code" styleClass="ms-1" />
-                                    </div>
-
-                                    <div class="d-flex align-items-center me-3 mb-2">
-                                        <h:selectBooleanCheckbox id="chkGenericName" value="#{userSettingsController.pharmacyDepartmentStockByBatchGenericNameVisible}">
-                                            <f:ajax render="tbl" />
-                                        </h:selectBooleanCheckbox>
-                                        <h:outputLabel for="chkGenericName" value="Generic Name" styleClass="ms-1" />
                                     </div>
 
                                     <div class="d-flex align-items-center me-3 mb-2">

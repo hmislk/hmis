@@ -27,19 +27,31 @@
                         columnClasses="custom-col-20, custom-col-40, custom-col-20"
                         rendered="#{webUserController.hasPrivilege('AdminManagingUsers') or sessionController.firstLogin}">
                         <p:outputLabel value="Department" ></p:outputLabel>
-                        <p:selectOneMenu 
-                            id="cmbDepartment"
-                            placeholder="Department"
-                            value="#{userIconController.department}" 
-                            class="w-100"
-                            filter="true">
-                            <f:selectItem itemLabel="Select" ></f:selectItem>
-                            <f:selectItems 
-                                value="#{userIconController.departments}"
-                                var="d"
-                                itemLabel="#{d.name}"
-                                itemValue="#{d}" ></f:selectItems>
-                        </p:selectOneMenu>
+                        <h:panelGroup class="d-flex align-items-center">
+                            <p:selectOneMenu
+                                id="cmbDepartment"
+                                placeholder="Department"
+                                value="#{userIconController.department}"
+                                class="flex-grow-1 me-2"
+                                filter="true">
+                                <f:selectItem itemLabel="Select" ></f:selectItem>
+                                <f:selectItems
+                                    value="#{userIconController.departments}"
+                                    var="d"
+                                    itemLabel="#{d.name}"
+                                    itemValue="#{d}" ></f:selectItems>
+                            </p:selectOneMenu>
+                            <p:commandButton
+                                id="btnSetMyDepartment"
+                                title="Set to My Department"
+                                icon="fa fa-user"
+                                class="ui-button-success"
+                                style="min-width: 40px;"
+                                rendered="#{sessionController.department ne null}"
+                                actionListener="#{userIconController.setDepartmentToLoggedUser}"
+                                update="cmbDepartment"
+                                />
+                        </h:panelGroup>
                         <p:commandButton 
                             id="btnList"
                             title="List Icon for the Department"

@@ -73,6 +73,9 @@ public class OpdMemberShipDiscountController implements Serializable {
     double toPrice;
     double margin;
     private Category roomLocation;
+    
+    private Institution selectedCreditCompany;
+    private Institution company;
 
     public Item getItem() {
         return item;
@@ -106,6 +109,9 @@ public class OpdMemberShipDiscountController implements Serializable {
         membershipScheme = null;
         paymentMethod = null;
         site = null;
+        selectedCreditCompany = null;
+        company = null;
+        
     }
 
     public void saveSelectedDepartmentPaymentScheme() {
@@ -447,22 +453,22 @@ public class OpdMemberShipDiscountController implements Serializable {
             JsfUtil.addErrorMessage("Please select a Payment Scheme");
             return;
         }
-        if(paymentMethod == null){
+        if (paymentMethod == null) {
             JsfUtil.addErrorMessage("Please select a Payment Method");
             return;
         }
-            for (Category c : pharmaceuticalItemCategoryController.getItems()) {
-                PaymentSchemeDiscount p = fetchPaymentSchemeDiscount(null,
-                        c,
-                        null,
-                        paymentScheme,
-                        paymentMethod,
-                        null,
-                        null);
-                p.setDiscountPercent(margin);
-                System.out.println("p = " + p);
-                paymentSchemeDiscountFacade.edit(p);
-            }
+        for (Category c : pharmaceuticalItemCategoryController.getItems()) {
+            PaymentSchemeDiscount p = fetchPaymentSchemeDiscount(null,
+                    c,
+                    null,
+                    paymentScheme,
+                    paymentMethod,
+                    null,
+                    null);
+            p.setDiscountPercent(margin);
+            System.out.println("p = " + p);
+            paymentSchemeDiscountFacade.edit(p);
+        }
     }
 
     public void savePharmacyCategoryPaymentMethod() {
@@ -723,7 +729,7 @@ public class OpdMemberShipDiscountController implements Serializable {
             getFacade().edit(current);
             JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            JsfUtil.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addErrorMessage("Nothing to Delete");
         }
         //    recreateModel();
 
@@ -741,7 +747,7 @@ public class OpdMemberShipDiscountController implements Serializable {
             getFacade().edit(current);
             JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            JsfUtil.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addErrorMessage("Nothing to Delete");
         }
         //    recreateModel();
 
@@ -798,7 +804,7 @@ public class OpdMemberShipDiscountController implements Serializable {
             getFacade().edit(current);
             JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            JsfUtil.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addErrorMessage("Nothing to Delete");
         }
         //    recreateModel();
 
@@ -1027,7 +1033,6 @@ public class OpdMemberShipDiscountController implements Serializable {
         getFacade().edit(tmp);
         JsfUtil.addSuccessMessage("Update Successfully");
         clearInstanceVars();
-
     }
 
     public Category getRoomLocation() {
@@ -1053,6 +1058,22 @@ public class OpdMemberShipDiscountController implements Serializable {
 
     public void setSite(Institution site) {
         this.site = site;
+    }
+
+    public Institution getSelectedCreditCompany() {
+        return selectedCreditCompany;
+    }
+
+    public void setSelectedCreditCompany(Institution selectedCreditCompany) {
+        this.selectedCreditCompany = selectedCreditCompany;
+    }
+
+    public Institution getCompany() {
+        return company;
+    }
+
+    public void setCompany(Institution company) {
+        this.company = company;
     }
 
 }

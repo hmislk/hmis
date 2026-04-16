@@ -1,6 +1,7 @@
 package com.divudi.bean.clinical;
 
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.inward.InpatientClinicalDataController;
 
 import com.divudi.core.data.clinical.DocumentTemplateType;
 import com.divudi.core.entity.WebUser;
@@ -36,6 +37,9 @@ public class DocumentTemplateController implements Serializable {
 
     @Inject
     SessionController sessionController;
+
+    @Inject
+    InpatientClinicalDataController inpatientClinicalDataController;
 
     @EJB
     private DocumentTemplateFacade ejbFacade;
@@ -82,6 +86,17 @@ public class DocumentTemplateController implements Serializable {
             m.put("u", u);
         }
         j += " order by c.name";
+        return getFacade().findByJpql(j, m);
+    }
+
+    public List<DocumentTemplate> fillByType(DocumentTemplateType type) {
+        Map m = new HashMap();
+        m.put("ret", false);
+        m.put("type", type);
+        String j = "select c from DocumentTemplate c "
+                + "where c.retired=:ret "
+                + "and c.type=:type "
+                + "order by c.name";
         return getFacade().findByJpql(j, m);
     }
 
@@ -165,6 +180,7 @@ public class DocumentTemplateController implements Serializable {
         }
         saveSelected();
         fillAllItems(null);
+        inpatientClinicalDataController.refreshDiagnosisCardTemplates();
 
     }
 
@@ -176,6 +192,7 @@ public class DocumentTemplateController implements Serializable {
         current.setWebUser(sessionController.getLoggedUser());
         delete();
         fillAllItems(sessionController.getLoggedUser());
+        inpatientClinicalDataController.refreshDiagnosisCardTemplates();
         JsfUtil.addSuccessMessage("Saved");
     }
 
@@ -220,7 +237,7 @@ public class DocumentTemplateController implements Serializable {
             getFacade().edit(current);
             JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            JsfUtil.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addErrorMessage("Nothing to Delete");
         }
         items = null;
         current = null;

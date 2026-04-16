@@ -33,6 +33,9 @@ wiki/
 wiki-temp/
 wiki-backup/
 hmis.wiki/
+temp-wiki/
+wiki-tmp/
+*.wiki/
 
 # Windows reserved filename
 nul
@@ -46,3 +49,6 @@ hs_err_pid*.log
 *-caveat-the-messages-below-*.txt
 claude-*.jsonl
 .claude-session*
+
+# Claude Code temporary working directories
+tmpclaude-*

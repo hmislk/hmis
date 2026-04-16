@@ -1,5 +1,15 @@
 # DTO Implementation Guidelines
 
+## Critical Rules for Claude Code
+
+**🚨 These rules MUST be followed when working with DTOs:**
+
+1. **NEVER modify existing constructors** - only add new ones
+2. **Use direct DTO queries** - avoid entity-to-DTO conversion loops
+3. **JPQL PERSISTED FIELDS ONLY**: NEVER use derived/calculated properties like `nameWithTitle`, `age`, `displayName` in JPQL - only persisted database fields work
+
+---
+
 ## CRITICAL RULES: Avoid Breaking Changes
 
 When implementing DTOs to replace entity objects in UI/display components, follow these strict rules to prevent compilation errors and maintain backward compatibility:

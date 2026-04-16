@@ -134,11 +134,6 @@ public class PatientDepositBalanceReportController implements Serializable {
             m.put("department", department);
         }
 
-        if (patient != null) {
-            jpql.append("AND pdh.patientDeposit.patient = :patient ");
-            m.put("patient", patient);
-        }
-
         jpql.append("ORDER BY pdh.patientDeposit.patient.phn, pdh.department.name");
 
         List<?> results = patientDepositHistoryFacade.findLightsByJpql(jpql.toString(), m, TemporalType.TIMESTAMP);
@@ -174,7 +169,6 @@ public class PatientDepositBalanceReportController implements Serializable {
         institution = null;
         site = null;
         department = null;
-        patient = null;
         patientDepositBalanceDtos = null;
         totalBalance = 0.0;
     }

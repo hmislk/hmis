@@ -17,20 +17,21 @@
         <cc:interface>
             <!-- Attributes passed to the component -->
             <cc:attribute name="bill" required="true" />
-            <cc:attribute name="duplicate" required="false" />
+            <cc:attribute name="duplicate" type="java.lang.Boolean" default="false"/>
         </cc:interface>
 
         <!-- Composite Component Implementation -->
         <cc:implementation>
             <h:outputStylesheet library="css" name="opd_bill_five_five_custom_3.css" />
 
-
             <div class="receipt-container">
                 <!-- Header Section -->
                 <div class="hospital-name">
                     <h:outputLabel value="#{cc.attrs.bill.department.name}"/>
-                    <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" /> 
-                    <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" /> 
+                </div>
+                <div class="hospital-name">
+                    <h:outputLabel value="**Duplicate**" rendered="#{cc.attrs.duplicate}" /> 
+                    <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" />
                 </div>
 
                 <!-- Separator Line -->
@@ -109,7 +110,16 @@
                             <tr>
                                 <!-- Display the item number across all items -->
                                 <td>#{s.index +1}</td> <!-- status.index starts from 0, so add 1 for a human-readable count -->
-                                <td>#{item.item.name}</td>
+                                <td>
+                                    <h:outputLabel 
+                                        value="#{item.item.name}" 
+                                        rendered="#{!configOptionApplicationController.getBooleanValueByKey('Show the print name of the items on the 5x5 Custum 3 bill.',false)}">
+                                    </h:outputLabel>
+                                    <h:outputLabel 
+                                        value="#{item.item.printName}" 
+                                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Show the print name of the items on the 5x5 Custum 3 bill.',false)}">
+                                    </h:outputLabel>                                
+                                </td>
                                 <td>
                                     <h:outputLabel value="#{item.qty}">
                                         <f:convertNumber integerOnly="true" />

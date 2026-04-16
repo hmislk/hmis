@@ -201,10 +201,23 @@ public class PharmacyBatchApiService implements Serializable {
             throw new Exception("Wholesale rate must be positive when provided");
         }
 
-        // Future date validation
-        if (request.getExpiryDate().before(new Date())) {
-            throw new Exception("Expiry date must be in the future");
+        // Expiry date validation (DATE-ONLY, ignores time component)
+        Date today = truncateToDate(new Date());
+        Date expiry = truncateToDate(request.getExpiryDate());
+
+        if (expiry.before(today)) {
+            throw new Exception("Expiry date must be today or a future date");
         }
+    }
+
+    private Date truncateToDate(Date date) {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date);
+        cal.set(Calendar.HOUR_OF_DAY, 0);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+        return cal.getTime();
     }
 
     private Amp loadAndValidateAmp(Long itemId) throws Exception {

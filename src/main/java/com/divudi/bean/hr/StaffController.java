@@ -912,6 +912,24 @@ public class StaffController implements Serializable {
         return ss;
     }
 
+    // Staff with speciality optional
+    public List<Staff> getSpecialityStaffOptional(Speciality speciality) {
+        List<Staff> ss;
+        String sql;
+        HashMap hm = new HashMap();
+        sql = "select p from Staff p where  "
+                + " p.retired=false ";
+        
+        if (speciality != null) {
+            sql += " and p.speciality=:sp ";
+            hm.put("sp", speciality);
+        } 
+        sql += " order by p.person.name";
+
+        ss = getFacade().findByJpql(sql, hm);
+        return ss;
+    }
+
     public List<Staff> completeStaffWithoutDoctors(String query) {
         List<Staff> suggestions;
         String sql;
@@ -1170,7 +1188,7 @@ public class StaffController implements Serializable {
     public void delete() {
         if (current != null) {
             if (current.getId() == null) {
-                JsfUtil.addSuccessMessage("Nothing To Delete");
+                JsfUtil.addErrorMessage("Nothing To Delete");
             } else {
 
                 current.setRetired(true);
@@ -1180,7 +1198,7 @@ public class StaffController implements Serializable {
                 JsfUtil.addSuccessMessage("Deleted Successfully");
             }
         } else {
-            JsfUtil.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addErrorMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();

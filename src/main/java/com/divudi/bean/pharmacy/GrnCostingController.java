@@ -11,6 +11,7 @@ import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillNumberSuffix;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.dataStructure.SearchKeyword;
 import com.divudi.ejb.BillNumberGenerator;
@@ -60,6 +61,7 @@ import com.divudi.core.entity.Item;
 import com.divudi.core.entity.pharmacy.Amp;
 import com.divudi.core.entity.pharmacy.Ampp;
 import com.divudi.core.util.BigDecimalUtil;
+import com.divudi.core.util.CommonFunctions;
 import com.divudi.service.BillService;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -1135,17 +1137,88 @@ public class GrnCostingController implements Serializable {
         }
     }
 
-    public void generateBillComponent() {
+    /**
+     * Bulk-loads received-quantity totals for every BillItem in the given PO
+     * with a single aggregate query, returning a map of BillItem.id →
+     * total qty (in pharmaceutical units).
+     */
+    private Map<Long, Double> buildReceivedQtyMap(Bill poBill, BillTypeAtomic billTypeAtomic) {
+        String jpql = "SELECT bi.referanceBillItem.id,"
+                + " COALESCE(SUM(COALESCE(bi.pharmaceuticalBillItem.qty, 0)), 0)"
+                + " FROM BillItem bi"
+                + " WHERE bi.referanceBillItem.bill = :poBill"
+                + " AND (bi.retired = false OR bi.retired IS NULL)"
+                + " AND (bi.bill.retired = false OR bi.bill.retired IS NULL)"
+                + " AND bi.bill.billTypeAtomic = :bta"
+                + " GROUP BY bi.referanceBillItem.id";
+        Map<String, Object> params = new HashMap<>();
+        params.put("poBill", poBill);
+        params.put("bta", billTypeAtomic);
+        Map<Long, Double> result = new HashMap<>();
+        List<Object> rows = getBillItemFacade().findObjects(jpql, params);
+        if (rows != null) {
+            for (Object row : rows) {
+                Object[] cols = (Object[]) row;
+                Long billItemId = ((Number) cols[0]).longValue();
+                double qty = cols[1] instanceof Number ? ((Number) cols[1]).doubleValue() : 0.0;
+                result.put(billItemId, qty);
+            }
+        }
+        return result;
+    }
 
-        for (PharmaceuticalBillItem pbiInApprovedOrder : getPharmaceuticalBillItemFacade().getPharmaceuticalBillItems(getApproveBill())) {
+    /**
+     * Bulk-loads received free-quantity totals for every BillItem in the given
+     * PO with a single aggregate query.
+     */
+    private Map<Long, Double> buildReceivedFreeQtyMap(Bill poBill, BillTypeAtomic billTypeAtomic) {
+        String jpql = "SELECT bi.referanceBillItem.id,"
+                + " COALESCE(SUM(COALESCE(bi.pharmaceuticalBillItem.freeQty, 0)), 0)"
+                + " FROM BillItem bi"
+                + " WHERE bi.referanceBillItem.bill = :poBill"
+                + " AND (bi.retired = false OR bi.retired IS NULL)"
+                + " AND (bi.bill.retired = false OR bi.bill.retired IS NULL)"
+                + " AND bi.bill.billTypeAtomic = :bta"
+                + " GROUP BY bi.referanceBillItem.id";
+        Map<String, Object> params = new HashMap<>();
+        params.put("poBill", poBill);
+        params.put("bta", billTypeAtomic);
+        Map<Long, Double> result = new HashMap<>();
+        List<Object> rows = getBillItemFacade().findObjects(jpql, params);
+        if (rows != null) {
+            for (Object row : rows) {
+                Object[] cols = (Object[]) row;
+                Long billItemId = ((Number) cols[0]).longValue();
+                double qty = cols[1] instanceof Number ? ((Number) cols[1]).doubleValue() : 0.0;
+                result.put(billItemId, qty);
+            }
+        }
+        return result;
+    }
+
+    public void generateBillComponent() {
+        // Pre-load all received/cancelled quantities for the entire PO in 4 bulk
+        // queries instead of 4 individual queries per line item (N×4 → 4 total).
+        Bill poBill = getApproveBill();
+        Map<Long, Double> grnQtyMap = buildReceivedQtyMap(poBill, BillTypeAtomic.PHARMACY_GRN);
+        Map<Long, Double> grnCancelledQtyMap = buildReceivedQtyMap(poBill, BillTypeAtomic.PHARMACY_GRN_CANCELLED);
+        Map<Long, Double> grnFreeQtyMap = buildReceivedFreeQtyMap(poBill, BillTypeAtomic.PHARMACY_GRN);
+        Map<Long, Double> grnCancelledFreeQtyMap = buildReceivedFreeQtyMap(poBill, BillTypeAtomic.PHARMACY_GRN_CANCELLED);
+
+        for (PharmaceuticalBillItem pbiInApprovedOrder : getPharmaceuticalBillItemFacade().getPharmaceuticalBillItems(poBill)) {
 
             if (pbiInApprovedOrder.getBillItem() == null) {
                 continue;
             }
 
-            double calculatedReturns = calculateRemainigQtyFromOrder(pbiInApprovedOrder);
-            double remains = Math.abs(pbiInApprovedOrder.getQty()) - Math.abs(calculatedReturns);
-            double remainFreeQty = pbiInApprovedOrder.getFreeQty() - calculateRemainingFreeQtyFromOrder(pbiInApprovedOrder);
+            Long poItemId = pbiInApprovedOrder.getBillItem().getId();
+            double receivedQty = Math.abs(grnQtyMap.getOrDefault(poItemId, 0.0))
+                    - Math.abs(grnCancelledQtyMap.getOrDefault(poItemId, 0.0));
+            double receivedFreeQty = Math.abs(grnFreeQtyMap.getOrDefault(poItemId, 0.0))
+                    - Math.abs(grnCancelledFreeQtyMap.getOrDefault(poItemId, 0.0));
+
+            double remains = Math.abs(pbiInApprovedOrder.getQty()) - Math.abs(receivedQty);
+            double remainFreeQty = pbiInApprovedOrder.getFreeQty() - Math.abs(receivedFreeQty);
 
             if (remains > 0 || remainFreeQty > 0) {
                 BillItem newlyCreatedBillItemForGrn = new BillItem();
@@ -1977,15 +2050,7 @@ public class GrnCostingController implements Serializable {
 
     @Deprecated // THis is NO longer Needed
     public void createBillFeePaymentAndPayment(BillFee bf, Payment p) {
-        BillFeePayment bfp = new BillFeePayment();
-        bfp.setBillFee(bf);
-        bfp.setAmount(bf.getSettleValue());
-        bfp.setInstitution(getSessionController().getInstitution());
-        bfp.setDepartment(getSessionController().getDepartment());
-        bfp.setCreater(getSessionController().getLoggedUser());
-        bfp.setCreatedAt(new Date());
-        bfp.setPayment(p);
-        getBillFeePaymentFacade().create(bfp);
+        // BillFeePayment is deprecated and no longer used
     }
 
     public BillItem getCurrentExpense() {
@@ -2546,9 +2611,10 @@ public class GrnCostingController implements Serializable {
         getCurrentGrnBillPre().setPaymentMethod(getApproveBill().getPaymentMethod());
         getCurrentGrnBillPre().setCreditDuration(getApproveBill().getCreditDuration());
 
-        // Copy discount from the approved purchase order to GRN
+        // Copy discount and departmentType from the approved purchase order to GRN
         if (getApproveBill() != null) {
             getCurrentGrnBillPre().setDiscount(getApproveBill().getDiscount());
+            getCurrentGrnBillPre().setDepartmentType(getApproveBill().getDepartmentType());
         }
 
         // Ensure calculations are done after setup
@@ -2786,6 +2852,23 @@ public class GrnCostingController implements Serializable {
         if (getCurrentGrnBillPre().getPaymentMethod() == null) {
             JsfUtil.addErrorMessage("Please select a payment method");
             return;
+        }
+
+        // Validate department type consistency across all bill items
+        if (!getBillItems().isEmpty()) {
+            DepartmentType billDeptType = getCurrentGrnBillPre().getDepartmentType();
+            if (billDeptType == null && getBillItems().get(0).getItem() != null) {
+                billDeptType = getBillItems().get(0).getItem().getDepartmentType();
+                getCurrentGrnBillPre().setDepartmentType(billDeptType);
+            }
+            for (BillItem bi : getBillItems()) {
+                if (bi.getItem() != null && bi.getItem().getDepartmentType() != null) {
+                    if (!bi.getItem().getDepartmentType().equals(billDeptType)) {
+                        JsfUtil.addErrorMessage("Items belong to more than one department type. GRN cannot be finalized.");
+                        return;
+                    }
+                }
+            }
         }
 
         // Validate batch details and sale prices for finalization
@@ -3884,6 +3967,9 @@ public class GrnCostingController implements Serializable {
 
         netTotal = lineNetTotal.abs().add(billTax.abs()).add(BigDecimal.valueOf(currentBillExpensesConsideredForCosting).abs()).subtract(billDiscount.abs());
 
+        BigDecimal expensesNotForCosting = BigDecimal.valueOf(bill.getExpensesTotalNotConsideredForCosting());
+        BigDecimal totalBillValue = netTotal.add(expensesNotForCosting);
+
         bill.setTotal(lineNetTotal.doubleValue());
         bill.setNetTotal(netTotal.doubleValue());
         bill.setSaleValue(totalRetail.doubleValue());
@@ -3931,6 +4017,10 @@ public class GrnCostingController implements Serializable {
         bfd.setLineGrossTotal(lineGrossTotal);
         bfd.setNetTotal(netTotal);
         bfd.setLineNetTotal(lineNetTotal);
+
+        bfd.setBillExpensesConsideredForCosting(BigDecimal.valueOf(bill.getExpensesTotalConsideredForCosting()));
+        bfd.setBillExpensesNotConsideredForCosting(expensesNotForCosting);
+        bfd.setTotalBillValue(totalBillValue);
 
     }
 
@@ -4235,6 +4325,10 @@ public class GrnCostingController implements Serializable {
         i.getBillItem().setPharmaceuticalBillItem(i);
 
         getBillItemFacade().edit(i.getBillItem());
+    }
+    
+    public String convertToWord(Double d) {
+        return d == null ? "" : CommonFunctions.convertToWord(d);
     }
 
 }

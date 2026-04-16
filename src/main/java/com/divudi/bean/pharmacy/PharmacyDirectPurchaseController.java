@@ -6,10 +6,12 @@ package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.ConfigOptionController;
+import com.divudi.bean.common.ItemController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.dataStructure.BillListWithTotals;
 import com.divudi.core.data.dataStructure.PaymentMethodData;
@@ -78,6 +80,7 @@ public class PharmacyDirectPurchaseController implements Serializable {
     private BilledBill bill;
     private List<BillItem> billItems;
     private BillItem currentBillItem;
+    private BillItem editingBillItem;
     private boolean printPreview;
     private boolean showAllBillFormats = false;
     private BillItem currentExpense;
@@ -98,6 +101,9 @@ public class PharmacyDirectPurchaseController implements Serializable {
     public void prepareForNewDIrectPurchaseBill() {
         printPreview = false;
         currentBillItem = null;
+        if (bill != null) {
+            bill.setDepartmentType(null);
+        }
         bill = null;
         billItems = null;
         billExpenses = null;
@@ -131,6 +137,34 @@ public class PharmacyDirectPurchaseController implements Serializable {
         if (item == null) {
             JsfUtil.addErrorMessage("Please select an item");
             return;
+        }
+
+        // Auto-set department type if not already set
+        if (getBill().getDepartmentType() == null) {
+            if (item.getDepartmentType() != null) {
+                getBill().setDepartmentType(item.getDepartmentType());
+            } else {
+                getBill().setDepartmentType(DepartmentType.Pharmacy);
+            }
+        }
+
+        // Validate item's department type matches bill's department type
+        if (getBill().getDepartmentType() != null) {
+            DepartmentType itemDepartmentType = item.getDepartmentType();
+
+            if (itemDepartmentType != null && !itemDepartmentType.equals(getBill().getDepartmentType())) {
+                JsfUtil.addErrorMessage("Cannot add items from different department types. "
+                        + "Bill is set for " + getBill().getDepartmentType().getLabel()
+                        + " items, but you are trying to add a " + itemDepartmentType.getLabel() + " item.");
+                return;
+            }
+
+            // Verify department type is allowed
+            List<DepartmentType> allowedTypes = sessionController.getAvailableDepartmentTypesForPharmacyTransactions();
+            if (allowedTypes == null || !allowedTypes.contains(getBill().getDepartmentType())) {
+                JsfUtil.addErrorMessage("Items are not allowed for the selected department type: " + getBill().getDepartmentType().getLabel());
+                return;
+            }
         }
 
         // ChatGPT contributed
@@ -452,6 +486,8 @@ public class PharmacyDirectPurchaseController implements Serializable {
     ConfigOptionController configOptionController;
     @Inject
     private PharmacyController pharmacyController;
+    @Inject
+    private ItemController itemController;
     /**
      * Properties
      */
@@ -895,8 +931,8 @@ public class PharmacyDirectPurchaseController implements Serializable {
     }
 
     public void settleDirectPurchaseBillFinally() {
-        if (getBill().getPaymentMethod() == null) {
-            JsfUtil.addErrorMessage("Select Payment Method");
+        if (getBillItems() == null || getBillItems().isEmpty()) {
+            JsfUtil.addErrorMessage("Please add items");
             return;
         }
         if (getBill().getFromInstitution() == null) {
@@ -926,16 +962,25 @@ public class PharmacyDirectPurchaseController implements Serializable {
                 return;
             }
         }
+        if (getBill().getPaymentMethod() == null) {
+            JsfUtil.addErrorMessage("Select Payment Method");
+            return;
+        }
         if (getBill().getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
             JsfUtil.addErrorMessage("MultiplePayments Not Allowed.");
             return;
         }
 
-        //Need to Add History
-        String msg = errorCheck();
-        if (!msg.isEmpty()) {
-            JsfUtil.addErrorMessage(msg);
-            return;
+        // Validate department type consistency
+        if (getBill().getDepartmentType() != null && !getBillItems().isEmpty()) {
+            for (BillItem bi : getBillItems()) {
+                if (bi.getItem() != null && bi.getItem().getDepartmentType() != null) {
+                    if (!bi.getItem().getDepartmentType().equals(getBill().getDepartmentType())) {
+                        JsfUtil.addErrorMessage("Inconsistent department types detected. All items must belong to the same department type.");
+                        return;
+                    }
+                }
+            }
         }
 
         saveBill();
@@ -1038,8 +1083,76 @@ public class PharmacyDirectPurchaseController implements Serializable {
             it.setSearialNo(i++);
         }
 
+        // Clear department type if all items are removed
+        if (getBillItems().isEmpty()) {
+            getBill().setDepartmentType(null);
+        }
+
         calculateBillTotalsFromItems();
         currentBillItem = null;
+    }
+
+    public void prepareEditBillItem(BillItem bi) {
+        this.editingBillItem = bi;
+    }
+
+    public void updateBillItem() {
+        if (editingBillItem == null) {
+            JsfUtil.addErrorMessage("No item selected for editing");
+            return;
+        }
+        BillItemFinanceDetails f = editingBillItem.getBillItemFinanceDetails();
+        if (f != null) {
+            Item item = editingBillItem.getItem();
+            PharmaceuticalBillItem pbi = editingBillItem.getPharmaceuticalBillItem();
+
+            // Sync retailSaleRatePerUnit from retailSaleRate (same logic as onRetailSaleRateChange)
+            if (f.getRetailSaleRate() != null) {
+                if (item instanceof Ampp) {
+                    double dblVal = item.getDblValue();
+                    BigDecimal unitsPerPack = dblVal > 0.0 ? BigDecimal.valueOf(dblVal) : BigDecimal.ONE;
+                    f.setRetailSaleRatePerUnit(f.getRetailSaleRate().divide(unitsPerPack, MathContext.DECIMAL64));
+                } else {
+                    f.setRetailSaleRatePerUnit(f.getRetailSaleRate());
+                }
+            }
+
+            // Sync billItem.qty (pack-level quantity) - mirrors addItem() line 333
+            editingBillItem.setQty(BigDecimalUtil.valueOrZero(f.getQuantity()).doubleValue());
+
+            // Sync pack-level fields on PharmaceuticalBillItem - mirrors addItem() lines 302-313
+            if (pbi != null) {
+                if (item instanceof Ampp) {
+                    pbi.setQtyPacks(BigDecimalUtil.valueOrZero(f.getQuantity()).doubleValue());
+                    pbi.setFreeQtyPacks(BigDecimalUtil.valueOrZero(f.getFreeQuantity()).doubleValue());
+                    pbi.setPurchaseRatePack(BigDecimalUtil.valueOrZero(f.getLineNetRate()).doubleValue());
+                    pbi.setRetailRatePack(BigDecimalUtil.valueOrZero(f.getRetailSaleRate()).doubleValue());
+                } else {
+                    pbi.setQtyPacks(BigDecimalUtil.valueOrZero(f.getQuantityByUnits()).doubleValue());
+                    pbi.setFreeQtyPacks(BigDecimalUtil.valueOrZero(f.getFreeQuantityByUnits()).doubleValue());
+                    pbi.setPurchaseRatePack(BigDecimalUtil.valueOrZero(f.getLineNetRate()).doubleValue());
+                    pbi.setRetailRatePack(BigDecimalUtil.valueOrZero(f.getRetailSaleRatePerUnit()).doubleValue());
+                }
+            }
+        }
+        calculateItemTotals(editingBillItem);
+        calculateBillTotalsFromItems();
+        distributeProportionalBillValuesToItems();
+        recalculateProfitMarginsForAllItems();
+        editingBillItem = null;
+    }
+
+    /**
+     * Autocomplete method for items filtered by department type
+     * When department type is set on the bill, only items of that type are returned
+     * Otherwise, items from all allowed department types are returned
+     */
+    public List<Item> completeItemsFilteredByDepartmentType(String query) {
+        DepartmentType filterType = null;
+        if (getBill() != null && getBill().getDepartmentType() != null) {
+            filterType = getBill().getDepartmentType();
+        }
+        return itemController.completeAmpAndAmppItemForLoggedDepartment(query, filterType);
     }
 
     public Payment createPayment(Bill bill) {
@@ -1625,6 +1738,10 @@ public class PharmacyDirectPurchaseController implements Serializable {
         bfd.setLineGrossTotal(grossTotalLines);
         bfd.setNetTotal(finalNet);
         bfd.setLineNetTotal(netTotalLines);
+        BigDecimal expensesNotForCosting = BigDecimal.valueOf(getBill().getExpensesTotalNotConsideredForCosting());
+        bfd.setBillExpensesConsideredForCosting(BigDecimal.valueOf(getBill().getExpensesTotalConsideredForCosting()));
+        bfd.setBillExpensesNotConsideredForCosting(expensesNotForCosting);
+        bfd.setTotalBillValue(finalNet.add(expensesNotForCosting));
     }
 
     /**
@@ -1942,6 +2059,14 @@ public class PharmacyDirectPurchaseController implements Serializable {
 
     public void setCurrentBillItem(BillItem currentBillItem) {
         this.currentBillItem = currentBillItem;
+    }
+
+    public BillItem getEditingBillItem() {
+        return editingBillItem;
+    }
+
+    public void setEditingBillItem(BillItem editingBillItem) {
+        this.editingBillItem = editingBillItem;
     }
 
     public List<BillItem> getBillItems() {

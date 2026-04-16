@@ -64,9 +64,15 @@
                             <p:column headerText="Issue No" width="6em">                        
                                 <h:outputLabel value="#{p.deptId}"/>                          
                             </p:column>
-                            <p:column headerText="From Department" width="150px">                       
-                                <h:outputLabel value="#{p.department.name}"/>                          
-                            </p:column>  
+                            <p:column headerText="From Department" width="150px">
+                                <h:outputLabel value="#{p.department.name}"/>
+                            </p:column>
+                            <p:column headerText="Department Type" width="120px">
+                                <h:outputText value="#{p.departmentType.label}"
+                                              rendered="#{p.departmentType != null}"/>
+                                <h:outputText value="-"
+                                              rendered="#{p.departmentType == null}"/>
+                            </p:column>
                             <p:column headerText="Issued By" width="6em">
                                 <h:outputLabel value="#{p.creater.webUserPerson.name}"/>     
                                 <br/>

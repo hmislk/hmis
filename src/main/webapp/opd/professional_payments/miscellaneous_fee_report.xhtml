@@ -1,0 +1,164 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="/payments/pay_index.xhtml">
+            <ui:define name="admin">
+                <h:panelGroup id="panMiscFeeReport" styleClass="alignTop">
+                    <p:panel header="Miscellaneous Fee Report">
+                        <h:form id="formFeeReport">
+                            <p:growl id="growl" showDetail="true" sticky="false" life="3000"/>
+
+                            <p:panel header="Filter Criteria" styleClass="mb-3">
+                                <h:panelGrid columns="2" cellpadding="10" styleClass="w-100">
+
+                                    <p:outputLabel value="From Date:" for="dtFromDate"/>
+                                    <p:calendar
+                                        id="dtFromDate"
+                                        value="#{miscellaneousStaffFeeController.fromDate}"
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                        class="w-100"
+                                        required="true"
+                                        requiredMessage="Please select from date">
+                                    </p:calendar>
+
+                                    <p:outputLabel value="To Date:" for="dtToDate"/>
+                                    <p:calendar
+                                        id="dtToDate"
+                                        value="#{miscellaneousStaffFeeController.toDate}"
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                        class="w-100"
+                                        required="true"
+                                        requiredMessage="Please select to date">
+                                    </p:calendar>
+
+                                    <p:outputLabel value="Staff/Doctor (Optional):" for="acFilterStaff"/>
+                                    <h:panelGroup>
+                                        <p:autoComplete
+                                            id="acFilterStaff"
+                                            value="#{miscellaneousStaffFeeController.filterStaff}"
+                                            completeMethod="#{miscellaneousStaffFeeController.completeStaff}"
+                                            var="s"
+                                            itemLabel="#{s.person.nameWithTitle}"
+                                            itemValue="#{s}"
+                                            forceSelection="true"
+                                            class="w-100"
+                                            inputStyleClass="w-100"
+                                            placeholder="Search staff by name (optional)..."
+                                            minQueryLength="2">
+                                            <p:column>
+                                                <h:outputText value="#{s.person.nameWithTitle}"/>
+                                            </p:column>
+                                            <p:column>
+                                                <h:outputText value="#{s.speciality.name}" rendered="#{s.speciality ne null}"/>
+                                            </p:column>
+                                        </p:autoComplete>
+                                        <small class="text-muted" style="display: block; margin-top: 5px;">
+                                            Leave blank to show all staff members
+                                        </small>
+                                    </h:panelGroup>
+
+                                </h:panelGrid>
+
+                                <f:facet name="footer">
+                                    <p:commandButton
+                                        value="Search"
+                                        action="#{miscellaneousStaffFeeController.filterMiscellaneousFees}"
+                                        update="formFeeReport:panelResults formFeeReport:growl"
+                                        icon="fa fa-search"
+                                        styleClass="ui-button-success mx-2 my-2"/>
+
+                                    <p:commandButton
+                                        value="Clear"
+                                        action="#{miscellaneousStaffFeeController.clearReportFilters}"
+                                        update="formFeeReport"
+                                        icon="fa fa-eraser"
+                                        styleClass="ui-button-secondary mx-2 my-2"
+                                        process="@this"/>
+                                </f:facet>
+                            </p:panel>
+
+                            <h:panelGroup id="panelResults">
+                                <p:panel header="Fee Records" styleClass="mb-3" rendered="#{not empty miscellaneousStaffFeeController.filteredMiscellaneousFees}">
+                                    <p:commandButton
+                                        ajax="false"
+                                        value="Download as Excel"
+                                        icon="fa-solid fa-file-excel"
+                                        styleClass="ui-button-success mx-2 my-2">
+                                        <p:dataExporter type="xlsx" target="tblFeeReport" fileName="Miscellaneous_Fee_Report"/>
+                                    </p:commandButton>
+
+                                    <p:dataTable
+                                        id="tblFeeReport"
+                                        value="#{miscellaneousStaffFeeController.filteredMiscellaneousFees}"
+                                        var="bf"
+                                        paginator="true"
+                                        rows="20"
+                                        rowKey="#{bf.id}"
+                                        paginatorPosition="bottom"
+                                        paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                        currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
+                                        rowsPerPageTemplate="20,50,100,{ShowAll|'All'}"
+                                        emptyMessage="No fees found for the selected criteria"
+                                        class="w-100 m-1">
+
+                                        <p:column headerText="Bill ID" width="10%">
+                                            <h:outputText value="#{bf.bill.deptId}"/>
+                                        </p:column>
+
+                                        <p:column headerText="Date Created" width="12%" sortBy="#{bf.createdAt}">
+                                            <h:outputText value="#{bf.createdAt}">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
+                                            </h:outputText>
+                                        </p:column>
+
+                                        <p:column headerText="Staff/Doctor" width="15%" sortBy="#{bf.staff.person.name}">
+                                            <h:outputText value="#{bf.staff.person.nameWithTitle}"/>
+                                        </p:column>
+
+                                        <p:column headerText="Speciality" width="10%">
+                                            <h:outputText value="#{bf.staff.speciality.name}" rendered="#{bf.staff.speciality ne null}"/>
+                                            <h:outputText value="-" rendered="#{bf.staff.speciality eq null}"/>
+                                        </p:column>
+
+                                        <p:column headerText="Payment Category" width="13%">
+                                            <h:outputText value="#{bf.billItem.item.name}"/>
+                                        </p:column>
+
+                                        <p:column headerText="Description" width="25%">
+                                            <h:outputText value="#{bf.billItem.descreption}"/>
+                                        </p:column>
+
+                                        <p:column headerText="Amount" width="10%" styleClass="text-end" sortBy="#{bf.feeValue}">
+                                            <h:outputText value="#{bf.feeValue}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </p:column>
+
+                                        <p:column headerText="Status" width="10%">
+                                            <p:badge value="Paid" severity="success" rendered="#{bf.paidValue gt 0}"/>
+                                            <p:badge value="Unpaid" severity="warning" rendered="#{bf.paidValue eq 0}"/>
+                                        </p:column>
+
+                                        <f:facet name="footer">
+                                            <div class="text-end fw-bold">
+                                                Total Fees: #{miscellaneousStaffFeeController.filteredMiscellaneousFees.size()}
+                                            </div>
+                                        </f:facet>
+
+                                    </p:dataTable>
+                                </p:panel>
+                            </h:panelGroup>
+
+                        </h:form>
+                    </p:panel>
+                </h:panelGroup>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

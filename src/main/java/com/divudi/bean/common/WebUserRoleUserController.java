@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/JSF/JSFManagedBean.java to edit this template
- */
 package com.divudi.bean.common;
 
 import com.divudi.bean.common.UserPrivilageController.PrivilegeHolder;
@@ -11,10 +7,12 @@ import com.divudi.core.data.Privileges;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.WebUser;
+import com.divudi.core.entity.WebUserPrivilege;
 import com.divudi.core.entity.WebUserRole;
 import com.divudi.core.entity.WebUserRolePrivilege;
 import com.divudi.core.entity.WebUserRoleUser;
 import com.divudi.core.facade.DepartmentFacade;
+import com.divudi.core.facade.WebUserPrivilegeFacade;
 import com.divudi.core.facade.WebUserRoleUserFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -43,14 +41,19 @@ import javax.inject.Named;
 public class WebUserRoleUserController implements Serializable {
 
     private static final long serialVersionUID = 1L;
-    @Inject
-    private SessionController sessionController;
-    @Inject
-    private UserPrivilageController userPrivilageController;
+    
     @EJB
     private WebUserRoleUserFacade facade;
     @EJB
     private DepartmentFacade departmentFacade;
+    @EJB
+    private WebUserPrivilegeFacade webUserPrivilegeFacade;
+    
+    @Inject
+    private SessionController sessionController;
+    @Inject
+    private UserPrivilageController userPrivilageController;
+    
     private WebUserRoleUser current;
     private WebUserRole webUserRole;
     private List<WebUser> users = null;
@@ -73,33 +76,115 @@ public class WebUserRoleUserController implements Serializable {
             JsfUtil.addErrorMessage("Select Department");
             return;
         }
+//        String jpql = "select ru "
+//                + " from WebUserRoleUser ru "
+//                + " where ru.department=:dept "
+//                + " and ru.webUserRole=:role"
+//                + " and ru.webUser=:user "
+//                + " order by ru.id desc ";
+//        Map params = new HashMap();
+//        params.put("dept", department);
+//        params.put("role", webUserRole);
+//        params.put("user", webUser);
+//        WebUserRoleUser roleUser = getFacade().findFirstByJpql(jpql, params);
+//        
+//
+//        if (roleUser == null) {
+//            roleUser = new WebUserRoleUser();
+//            roleUser.setDepartment(department);
+//            roleUser.setWebUser(webUser);
+//            roleUser.setWebUserRole(webUserRole);
+//            
+//            //Add Creater Details
+//            roleUser.setCreater(sessionController.getLoggedUser());
+//            roleUser.setCreatedAt(new Date());
+//            //Add Last Editer Details
+//            roleUser.setEditer(sessionController.getLoggedUser());
+//            roleUser.setEditedAt(new Date());
+//            getFacade().create(roleUser);
+//        } else {
+//            //Add Last Editer Details
+//            roleUser.setEditer(sessionController.getLoggedUser());
+//            roleUser.setEditedAt(new Date());
+//            roleUser.setRetired(false);
+//            getFacade().edit(roleUser);
+//        }
+        
+        updatePrivilegesToUserRole(webUserRole,webUser,department);
+        
+        JsfUtil.addSuccessMessage("Added Successfully "+ webUserRole.getName() +" Role Privileges to " + department.getName() + "Department.");
+        
+        clear();
+        
+//loadWebUserRoles();
+        
+    }
+    
+    public void clear(){
+        webUserRole = null;
+        department = null;
+    }
+    
+    public void updatePrivilegesToUserRole(WebUserRole userRole, WebUser user, Department department){
+        List<WebUserRolePrivilege> rolePrivileges = userPrivilageController.fetchUserPrivileges(userRole);
+        
+        for(WebUserRolePrivilege wurp:rolePrivileges){
+            Privileges p = wurp.getPrivilege();
+            userPrivilageController.addUserPrivilege(p, user, department);
+        }
+    }
+    
+    public void resetRolePrivileges(WebUserRoleUser roleUser){
+        
+        WebUser user = roleUser.getWebUser();
+        Department dept = roleUser.getDepartment();
+        
+        // Add Role Privillage
+        updatePrivilegesToUserRole(roleUser.getWebUserRole(),user, dept);
+        
+        JsfUtil.addSuccessMessage("Reset "+ roleUser.getWebUserRole().getName() +" UserRole Privileges for " + dept.getName());
+    }
+    
+    public void clearUserRolePrivileges(WebUserRoleUser roleUser){
+        List<WebUserRolePrivilege> rolePrivileges = userPrivilageController.fetchUserPrivileges(roleUser.getWebUserRole());
+        if (rolePrivileges == null || rolePrivileges.isEmpty()) {
+            return;
+        }
+
+        Set<Privileges> rolePrivilegeSet = new HashSet<>();
+        for (WebUserRolePrivilege wurp : rolePrivileges) {
+            if (wurp.getPrivilege() != null) {
+                rolePrivilegeSet.add(wurp.getPrivilege());
+            }
+        }
+
+        List<WebUserPrivilege> userPrivileges = userPrivilageController.loadUserPrivileges(roleUser.getWebUser(), roleUser.getDepartment());
+
+        for (WebUserPrivilege wup : userPrivileges) {
+            if (wup.getPrivilege() != null && rolePrivilegeSet.contains(wup.getPrivilege())) {
+                wup.setRetired(true);
+                wup.setRetiredAt(new Date());
+                wup.setRetirer(sessionController.getLoggedUser());
+                webUserPrivilegeFacade.edit(wup);
+            }
+        }
+    }
+    
+    public void loadWebUserRoles(){
+        roleUsers = new ArrayList<>();
+        
         String jpql = "select ru "
                 + " from WebUserRoleUser ru "
-                + " where ru.department=:dept "
-                + " and ru.webUserRole=:role"
+                + " where ru.retired=:ret "
                 + " and ru.webUser=:user "
                 + " order by ru.id desc ";
         Map params = new HashMap();
-        params.put("dept", department);
-        params.put("role", webUserRole);
+        params.put("ret", false);
         params.put("user", webUser);
-        WebUserRoleUser roleUser = getFacade().findFirstByJpql(jpql, params);
-        if (roleUser == null) {
-            roleUser = new WebUserRoleUser();
-            roleUser.setDepartment(department);
-            roleUser.setWebUser(webUser);
-            roleUser.setWebUserRole(webUserRole);
-            getFacade().create(roleUser);
-        } else {
-            roleUser.setRetired(false);
-        }
-        List<WebUserRolePrivilege> rolePrivileges = userPrivilageController.fetchUserPrivileges(webUserRole);
-        for(WebUserRolePrivilege wurp:rolePrivileges){
-            Privileges p = wurp.getPrivilege();
-            userPrivilageController.addUserPrivilege(p, webUser, department);
-        }
-    }
 
+        roleUsers = getFacade().findByJpqlWithoutCache(jpql, params);
+
+    }
 
     public void addUsers() {
         if (current == null) {
@@ -217,18 +302,26 @@ public class WebUserRoleUserController implements Serializable {
         }
     }
 
-    public void removeUser() {
-        if (current != null) {
-            current.setRetired(true);
-            Date d = new Date();
-            current.setRetiredAt(d);
-            current.setRetirer(sessionController.getLoggedUser());
-            save(current);
+    public void removeUserRole(WebUserRoleUser roleUser) {
+        if(roleUser == null){
+            JsfUtil.addErrorMessage("Error in UserRole");
+                return;
+        }
+        
+        WebUserRoleUser user = facade.findWithoutCache(roleUser.getId());
+        
+        if (user != null) {
+            clearUserRolePrivileges(user);
+            user.setRetired(true);
+            user.setRetiredAt(new Date());
+            roleUser.setRetirer(sessionController.getLoggedUser());
+            save(user);
             JsfUtil.addSuccessMessage("Removed Successfully");
         } else {
             JsfUtil.addSuccessMessage("Nothing to Remove");
         }
-        fillRoleUsers();
+        loadWebUserRoles();
+        clear();
     }
 
     public WebUserRoleUserController() {

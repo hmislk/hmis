@@ -42,8 +42,10 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -580,7 +582,11 @@ public class WebUserController implements Serializable {
 
         getCurrent().setLoginPage(loginPage);
 
-        getCurrent().setSite(site);
+        if (site != null) {
+            getCurrent().setSite(site);
+        } else {
+            getCurrent().setSite(sessionController.getLoggedSite());
+        }
 
         getPersonFacade().create(getCurrent().getWebUserPerson());
         if (createOnlyUserForExsistingUser) {
@@ -593,19 +599,22 @@ public class WebUserController implements Serializable {
             if (getStaff().getWorkingDepartment() != null) {
                 getCurrent().setInstitution(getStaff().getWorkingDepartment().getInstitution());
                 getCurrent().setDepartment(getStaff().getWorkingDepartment());
+            } else {
+                getCurrent().setInstitution(sessionController.getInstitution());
+                getCurrent().setDepartment(sessionController.getDepartment());
             }
 
         } else {
-            getCurrent().setInstitution(getInstitution());
-            getCurrent().setDepartment(getDepartment());
+            getCurrent().setInstitution(getInstitution() != null ? getInstitution() : sessionController.getInstitution());
+            getCurrent().setDepartment(getDepartment() != null ? getDepartment() : sessionController.getDepartment());
             if (!createOnlyUser) {
                 Staff staff = new Staff();
                 //Save Staff
                 staff.setPerson(getCurrent().getWebUserPerson());
                 staff.setCreatedAt(Calendar.getInstance().getTime());
-                staff.setDepartment(department);
-                staff.setWorkingDepartment(department);
-                staff.setInstitution(institution);
+                staff.setDepartment(getCurrent().getDepartment());
+                staff.setWorkingDepartment(getCurrent().getDepartment());
+                staff.setInstitution(getCurrent().getInstitution());
                 staff.setSpeciality(speciality);
                 staff.setCode(getCurrent().getCode());
                 getStaffFacade().create(staff);
@@ -738,10 +747,15 @@ public class WebUserController implements Serializable {
                 + "wu.webUserPerson.name, "
                 + "wu.id, "
                 + "wu.code, "
-                + "wu.staff.person.name) "
+                + "COALESCE(sp.name, ''), "
+                + "COALESCE(i.name, ''), "
+                + "COALESCE(d.name, '')) "
                 + "from WebUser wu "
+                + "left join wu.staff s "
+                + "left join s.person sp "
+                + "left join wu.institution i "
+                + "left join wu.department d "
                 + "where wu.retired=:ret "
-                + "and wu.staff is not null "
                 + "order by wu.name";
         m.put("ret", false);
         webUseLights = (List<WebUserLight>) getPersonFacade().findLightsByJpql(jpql, m);
@@ -755,10 +769,15 @@ public class WebUserController implements Serializable {
                 + "wu.webUserPerson.name, "
                 + "wu.id, "
                 + "wu.code, "
-                + "wu.staff.person.name) "
+                + "COALESCE(sp.name, ''), "
+                + "COALESCE(i.name, ''), "
+                + "COALESCE(d.name, '')) "
                 + "from WebUser wu "
+                + "left join wu.staff s "
+                + "left join s.person sp "
+                + "left join wu.institution i "
+                + "left join wu.department d "
                 + "where wu.retired=:ret "
-                + "and wu.staff is not null "
                 + "order by wu.name";
         m.put("ret", true);
         webUseLights = (List<WebUserLight>) getPersonFacade().findLightsByJpql(jpql, m);
@@ -1080,6 +1099,17 @@ public class WebUserController implements Serializable {
         return "/admin/users/user_icons?faces-redirect=true";
     }
 
+    public String navigateToManageUserIconsTree() {
+        if (selected == null) {
+            JsfUtil.addErrorMessage("Please select a user");
+            return "";
+        }
+        userIconController.setUser(selected);
+        userIconController.setDepartments(getUserPrivilageController().fillWebUserDepartments(selected));
+        userIconController.setIconsLoaded(false);
+        return "/admin/users/user_icons_tree?faces-redirect=true";
+    }
+
     public String navigateToManageUserSubscriptions() {
         if (selected == null) {
             JsfUtil.addErrorMessage("Please select a user");
@@ -1155,6 +1185,33 @@ public class WebUserController implements Serializable {
         getUserDepartmentController().setSelectedUser(selected);
         getUserDepartmentController().setItems(getUserDepartmentController().fillWebUserDepartments(selected));
         return "/admin/users/user_routes?faces-redirect=true";
+    }
+    
+    public String navigateToManageUserRole() {
+        if (selected == null) {
+            JsfUtil.addErrorMessage("Please select a user");
+            return "";
+        }
+        webUserRoleUserController.setWebUser(selected);
+        webUserRoleUserController.setDepartments(fillWebUserDepartments(selected));
+        webUserRoleUserController.loadWebUserRoles();
+        webUserRoleUserController.clear();
+        return "/admin/users/user_role_users?faces-redirect=true";
+    }
+    
+    public List<Department> fillWebUserDepartments(WebUser wu) {
+        Set<Department> departmentSet = new HashSet<>();
+        String sql = "SELECT i.department "
+                + " FROM WebUserDepartment i "
+                + " WHERE i.retired = :ret "
+                + " AND i.webUser = :wu "
+                + " ORDER BY i.department.name";
+        Map<String, Object> m = new HashMap<>();
+        m.put("ret", false);
+        m.put("wu", wu);
+        List<Department> depts = departmentFacade.findByJpql(sql, m);
+        departmentSet.addAll(depts);
+        return new ArrayList<>(departmentSet);
     }
 
     public String toManageDashboards() {
@@ -1272,7 +1329,7 @@ public class WebUserController implements Serializable {
         String hashedPassword;
         hashedPassword = getSecurityController().hashAndCheck(newPassword);
         current.setWebUserPassword(hashedPassword);
-        getFacade().edit(current);
+        getFacade().editAndCommit(current);
         WebUserPasswordHistory wh = new WebUserPasswordHistory();
         wh.setWebUser(current);
         wh.setPassword(hashedPassword);

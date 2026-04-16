@@ -4,10 +4,12 @@ import com.divudi.core.data.dto.PharmacyIncomeBillDTO;
 import com.divudi.core.data.dto.PharmacyIncomeBillItemDTO;
 import com.divudi.core.data.dto.OpdIncomeReportDTO;
 import com.divudi.core.data.dto.LabIncomeReportDTO;
+import com.divudi.core.data.dto.OpdRevenueDashboardDTO;
 import com.divudi.core.entity.*;
 import com.divudi.core.entity.channel.SessionInstance;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.core.data.dto.PharmacyIncomeCostBillDTO;
+import com.divudi.service.BillService;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -20,6 +22,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import java.util.*;
+import javax.ejb.EJB;
 
 /**
  * @author buddhika
@@ -312,6 +315,15 @@ public class IncomeBundle implements Serializable {
                         rows.add(ir);
                     }
                 }
+            } else if (firstElement instanceof OpdRevenueDashboardDTO) {
+                // Process list as IncomeRows
+                for (Object obj : entries) {
+                    if (obj instanceof OpdRevenueDashboardDTO) {
+                        OpdRevenueDashboardDTO dto = (OpdRevenueDashboardDTO) obj;
+                        IncomeRow ir = new IncomeRow(dto);
+                        rows.add(ir);
+                    }
+                }
             } else if (firstElement instanceof LabIncomeReportDTO) {
                 // Process list as IncomeRows for Laboratory reports
                 for (Object obj : entries) {
@@ -344,7 +356,6 @@ public class IncomeBundle implements Serializable {
             }
         }
     }
-
 
     public void generateRetailAndCostDetailsForPharmaceuticalBillItems() {
         saleValue = 0;
@@ -951,7 +962,7 @@ public class IncomeBundle implements Serializable {
                 pm = bb.getPaymentMethod();
             } else {
                 pm = b.getPaymentMethod();
-            }
+            }  
 
             if (pm == null) {
                 r.setCreditValue(b.getNetTotal());
@@ -1031,6 +1042,73 @@ public class IncomeBundle implements Serializable {
 
         }
         populateSummaryRow();
+    }
+
+    public void generateDiscountDetailsForDashboard() {
+        Map<Object, IncomeRow> grouped = new LinkedHashMap<>();
+
+        for (IncomeRow r : getRows()) {
+            Bill b = r.getBill();
+
+            if (b == null || (b.getDepartment() == null && b.getToDepartment() == null)) {
+                continue;
+            }
+
+            r.setDiscount(b.getDiscount());
+
+            DepartmentType st;
+            String dept;
+            if (b.getToDepartment() != null) {
+                st = b.getToDepartment().getDepartmentType();
+                if (st == null) {
+                    dept = b.getToDepartment().getName();
+                } else {
+                    dept = st.toString();
+                }
+            } else {
+                st = b.getDepartment().getDepartmentType();
+                if (st == null) {
+                    dept = b.getDepartment().getName();
+                } else {
+                    dept = st.toString();
+                }
+            }
+
+            IncomeRow groupRow = grouped.computeIfAbsent(dept, k -> {
+                IncomeRow ir = new IncomeRow();
+                ir.setRowType(k.toString());
+                return ir;
+            });
+            if (b.getBillTypeAtomic() != null) {
+                switch (b.getBillTypeAtomic().getBillCategory()) {
+                    case REFUND:
+                        groupRow.setDiscount(groupRow.getDiscount() + (-(Math.abs(r.getDiscount()))));
+                        break;
+                    case CANCELLATION:
+                        groupRow.setDiscount(groupRow.getDiscount() + (-(Math.abs(r.getDiscount()))));
+                        break;
+                    case BILL:
+                        groupRow.setDiscount(groupRow.getDiscount() + (Math.abs(r.getDiscount())));
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+
+        getRows().clear();
+        grouped.values().stream()
+                .filter(row -> row.getDiscount() != 0.0)
+                .sorted(Comparator.comparing(IncomeRow::getRowType,
+                        Comparator.nullsLast(Comparator.naturalOrder())))
+                .forEachOrdered(getRows()::add);
+
+        double sumOfDiscount = 0.0;
+        for (IncomeRow r : rows) {
+            sumOfDiscount += r.getDiscount();
+        }
+
+        getSummaryRow().setDiscount(sumOfDiscount);
     }
 
     @Deprecated
@@ -1166,10 +1244,10 @@ public class IncomeBundle implements Serializable {
         r.setDiscount(b.getDiscount());
         r.setServiceCharge(b.getMargin());
         r.setActualTotal(r.getNetTotal() - r.getServiceCharge());
-        
-        if(b.getPatientEncounter() != null){
+
+        if (b.getPatientEncounter() != null) {
             r.setBhtNo(b.getPatientEncounter().getBhtNo());
-        }else{
+        } else {
             r.setBhtNo("");
         }
 
@@ -1533,6 +1611,7 @@ public class IncomeBundle implements Serializable {
                 }
             }
         }
+
     }
 
     private double nullSafeDouble(Double value) {

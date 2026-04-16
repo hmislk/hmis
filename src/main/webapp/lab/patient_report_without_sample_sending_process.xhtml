@@ -108,6 +108,18 @@
 
                                         <div class="d-flex gap-2">
 
+                                            <p:remoteCommand 
+                                                name="recordExportHistory"
+                                                actionListener="#{patientReportController.reportExport()}"
+                                                async="true">
+                                            </p:remoteCommand>
+
+                                            <p:remoteCommand 
+                                                name="recordPrintHistory"
+                                                actionListener="#{patientReportController.printPatientReport()}"
+                                                async="true">
+                                            </p:remoteCommand>
+
                                             <p:commandButton 
                                                 value="Export PDF" 
                                                 class="ui-button-channelling" 
@@ -124,7 +136,7 @@
                                                 class="mx-1 ui-button-info"
                                                 rendered="#{!sessionController.departmentPreference.partialPaymentOfOpdBillsAllowed}"
                                                 value="Print" 
-                                                onclick="#{patientReportController.printPatientReport()}"
+                                                onclick="recordPrintHistory();"
                                                 disabled="#{!patientReportController.currentPatientReport.approved or userPreferenceController.userPreference.canPrintWithoutPermission}">
                                                 <p:printer target="divPrint" />
                                             </p:commandButton>
@@ -165,6 +177,47 @@
                         </f:facet>
 
                         <p:growl id="messages" showDetail="false" /> 
+
+                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Need to record the history of issuing lab reports.',true) and patientReportController.currentPatientReport.approved}">
+                            <div class="row mb-4">
+                                <div class="d-flex gap-2 justify-content-end">
+                                    <h:panelGroup rendered="#{patientReportController.currentPatientReport.patientInvestigation.billItem.bill.patientEncounter ne null}" class="d-flex gap-2">
+                                        <p:autoComplete 
+                                            completeMethod="#{staffController.completeStaff}"
+                                            value="#{laboratoryManagementController.reportHandoverStaff}" 
+                                            var="mys"
+                                            style="width: 400px;"
+                                            maxResults="15"
+                                            placeholder="Please Add a Staff"
+                                            inputStyleClass="form-control"
+                                            itemLabel="#{mys.person.nameWithTitle}" 
+                                            panelStyleClass="custom-dropdown-panel"
+                                            itemValue="#{mys}">
+                                            <p:column headerText="Code" style="padding: 4px; width: 20px;">#{mys.code}</p:column>
+                                            <p:column headerText="Name" style="padding: 4px; width: 250px;">#{mys.person.nameWithTitle}</p:column>
+                                        </p:autoComplete>
+
+                                        <p:commandButton 
+                                            ajax="false"
+                                            value="Handover to Ward Staff" 
+                                            icon="fa-solid fa-people-carry-box"
+                                            style="float: right"
+                                            class="ui-button-stores" 
+                                            action="#{laboratoryManagementController.addIssueHistory()}">
+                                        </p:commandButton>
+                                    </h:panelGroup>
+                                    <p:commandButton 
+                                        ajax="false"
+                                        value="Handover to Patient" 
+                                        icon="fa-solid fa-people-carry-box"
+                                        rendered="#{patientReportController.currentPatientReport.patientInvestigation.billItem.bill.patientEncounter eq null}"
+                                        style="float: right"
+                                        class="ui-button-stores" 
+                                        action="#{laboratoryManagementController.addIssueHistory()}">
+                                    </p:commandButton>
+                                </div>
+                            </div>
+                        </h:panelGroup>
 
                         <div class="row">
 
@@ -745,35 +798,6 @@
                                         </p:calendar>
                                     </p:panelGrid>
 
-                                    <h:panelGroup rendered="#{webUserController.hasPrivilege('Developers')}"><hr/></h:panelGroup>
-
-                                    <p:panelGrid columns="2" rendered="#{webUserController.hasPrivilege('Developers')}">
-
-                                        <p:outputLabel for="PatientName" value="Patient Name" ></p:outputLabel>
-                                        <p:inputText 
-                                            id="PatientName" 
-                                            value="#{patientReportController.currentPatientReport.patientName}" 
-                                            readonly="#{patientReportController.currentPatientReport.approved}"
-                                            class="w-100">
-                                        </p:inputText>
-
-                                        <p:outputLabel for="PatientAge" value="Patient Age (for Bill Date)" ></p:outputLabel>
-                                        <p:inputText 
-                                            id="PatientAge" 
-                                            value="#{patientReportController.currentPatientReport.patientAge}" 
-                                            readonly="#{patientReportController.currentPatientReport.approved}"
-                                            class="w-100">
-                                        </p:inputText>
-
-                                        <p:outputLabel for="PatientGender" value="Patient Gender" ></p:outputLabel>
-                                        <p:inputText 
-                                            id="PatientGender" 
-                                            value="#{patientReportController.currentPatientReport.patientGender}" 
-                                            readonly="#{patientReportController.currentPatientReport.approved}"
-                                            class="w-100">
-                                        </p:inputText>
-
-                                    </p:panelGrid>
                                 </p:panel>
 
                             </div>
@@ -798,9 +822,83 @@
                                 </h:panelGroup>
 
                                 <div class="mb-1 row w-100" >
-                                    <p:panel class="mx-2" header="Patient details" >
-                                        <ezcommon:patient patient="#{patientReportController.currentPatientReport.patientInvestigation.patient}" ></ezcommon:patient>
-                                    </p:panel>
+                                    <div class="col-md-5">
+                                        <p:panel header="Patient Details" >
+                                            <ezcommon:patient patient="#{patientReportController.currentPatientReport.patientInvestigation.patient}" ></ezcommon:patient>
+                                        </p:panel>
+                                    </div>
+                                    <div class="col-md-7">
+                                        <p:panel >
+                                            <f:facet name="header">
+                                                <div class="d-flex justify-content-between">
+                                                    <p:outputLabel value="Patient Details (Report Header)" class="mt-2"></p:outputLabel>
+                                                    <p:commandButton
+                                                        ajax="false"
+                                                        class="ui-button-channelling"
+                                                        icon="fa fa-refresh"
+                                                        disabled="#{patientReportController.currentPatientReport.approved || !webUserController.hasPrivilege('LabDeAutherizing') }"
+                                                        action="#{patientReportController.reloadPatientDetailsInReport()}"
+                                                        value="Reload Patient Details" >
+                                                    </p:commandButton>
+                                                </div>
+                                            </f:facet>
+                                            <div>
+                                                <div class="row">
+                                                    <div class="col-md-5">
+                                                        <p:outputLabel for="PatientName" value="Patient Name"  class="mt-2"></p:outputLabel>
+                                                    </div>
+                                                    <div class="col-md-7">
+                                                        <p:inputText 
+                                                            id="PatientName" 
+                                                            readonly="#{patientReportController.currentPatientReport.approved || !webUserController.hasPrivilege('LabDeAutherizing')}"
+                                                            value="#{patientReportController.currentPatientReport.patientName}" 
+                                                            class="w-100">
+                                                        </p:inputText>
+                                                    </div>
+                                                </div>
+
+                                                <div class="row my-2">
+                                                    <div class="col-md-5">
+                                                        <p:outputLabel for="PatientAge" value="Patient Age (for Bill Date)" class="mt-2"></p:outputLabel>
+                                                    </div>
+                                                    <div class="col-md-7">
+                                                        <p:inputText 
+                                                            id="PatientAge" 
+                                                            readonly="#{patientReportController.currentPatientReport.approved || !webUserController.hasPrivilege('LabDeAutherizing')}"
+                                                            value="#{patientReportController.currentPatientReport.patientAge}" 
+                                                            class="w-100">
+                                                        </p:inputText>
+                                                    </div>
+                                                </div>
+
+                                                <div class="row">
+                                                    <div class="col-md-5">
+                                                        <p:outputLabel for="PatientGender" value="Patient Gender"  class="mt-2"></p:outputLabel>
+                                                    </div>
+                                                    <div class="col-md-7">
+                                                        <p:inputText 
+                                                            id="PatientGender" 
+                                                            readonly="#{patientReportController.currentPatientReport.approved || !webUserController.hasPrivilege('LabDeAutherizing')}"
+                                                            value="#{patientReportController.currentPatientReport.patientGender}" 
+                                                            class="w-100">
+                                                        </p:inputText>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <f:facet name="footer">
+                                                <div class="alert alert-warning" role="alert" style="padding: 5px;">
+                                                    <div class="d-flex gap-2">
+                                                        <i class="fa fa-exclamation-triangle" aria-hidden="true" style="font-size: 70px;  padding: 10px; color: #f39c12;"></i>
+                                                        <div class="card-body d-flex justify-content-center text-center" style="font-weight: 700; font-size: 18px;">
+                                                            When updating patient information,<br/> please verify that the reference range and flag are consistent with <br/>the patient’s age and gender to ensure accurate result interpretation.
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </f:facet>
+
+                                        </p:panel>
+                                    </div>
+
                                 </div>
 
                                 <style>
@@ -819,6 +917,8 @@
                                 <script>
                                                     function downloadPdf() {
                                                         console.log("Downloading PDF...");
+                                                        recordExportHistory();
+                                                        console.log("Add History to Downloading PDF ...");
                                                         const element = document.getElementById('pdf');
                                                         element.classList.remove('print-only');
 
@@ -831,7 +931,7 @@
                                                                 useCORS: true,
                                                                 allowTaint: false
                                                             },
-                                                            jsPDF: {unit: 'mm', format: [210, 280], orientation: 'portrait'}
+                                                            jsPDF: {unit: 'mm', format: [210, 297], orientation: 'portrait'}
                                                         };
 
                                                         html2pdf().from(element).set(opt).toPdf().get('pdf').then(function (pdf) {

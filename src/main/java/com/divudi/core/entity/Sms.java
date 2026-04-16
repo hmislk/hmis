@@ -29,7 +29,7 @@ public class Sms implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne
@@ -72,6 +72,8 @@ public class Sms implements Serializable {
     private Institution institution;
     @ManyToOne
     private Department department;
+    
+    private Boolean sendingFailed;
 
 
 
@@ -285,6 +287,14 @@ public class Sms implements Serializable {
 
     public void setOtp(String otp) {
         this.otp = otp;
+    }
+
+    public Boolean getSendingFailed() {
+        return sendingFailed;
+    }
+
+    public void setSendingFailed(Boolean sendingFailed) {
+        this.sendingFailed = sendingFailed;
     }
 
 

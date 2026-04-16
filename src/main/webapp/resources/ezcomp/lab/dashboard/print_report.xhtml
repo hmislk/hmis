@@ -393,6 +393,72 @@
                                         </p:badge>
 
                                     </div>
+                                    
+                                    <div class="d-flex justify-content-end gap-2">
+                                        <p:graphicImage 
+                                            library="image" 
+                                            rendered="#{!dpr.printComplete}"
+                                            title="Not Print"
+                                            name="print_pending.png" 
+                                            style="height: 50px; width: 50px;" >
+                                        </p:graphicImage>
+
+                                        <p:graphicImage 
+                                            library="image" 
+                                            rendered="#{dpr.printComplete}"
+                                            name="print_done.png"
+                                            title="Report Printed"
+                                            style="height: 50px; width: 50px;" >
+                                        </p:graphicImage>
+
+                                        <p:graphicImage 
+                                            library="image" 
+                                            rendered="#{!dpr.handoverComplete}"
+                                            title="Not Issue"
+                                            name="handover_pending.png" 
+                                            style="height: 50px; width: 50px;" >
+                                        </p:graphicImage>
+
+                                        <p:graphicImage 
+                                            library="image" 
+                                            rendered="#{dpr.handoverComplete}"
+                                            name="handover_done.png" 
+                                            title="Report Issued."
+                                            style="height: 50px; width: 50px;" >
+                                        </p:graphicImage>
+                                        
+                                        <p:graphicImage 
+                                            library="image" 
+                                            rendered="#{!dpr.sendSMSComplete}"
+                                            title="SMS Send Pending"
+                                            name="sms_send_pending.png" 
+                                            style="height: 50px; width: 50px;" >
+                                        </p:graphicImage>
+
+                                        <p:graphicImage 
+                                            library="image" 
+                                            rendered="#{dpr.sendSMSComplete}"
+                                            name="sms_send_complete.png"
+                                            title="SMS Send Complete"
+                                            style="height: 50px; width: 50px;" >
+                                        </p:graphicImage>
+
+                                        <p:graphicImage 
+                                            library="image" 
+                                            rendered="#{!dpr.sendEmailComplete}"
+                                            title="Email Send Pending"
+                                            name="email_sending_pending.png" 
+                                            style="height: 50px; width: 50px;" >
+                                        </p:graphicImage>
+
+                                        <p:graphicImage 
+                                            library="image" 
+                                            rendered="#{dpr.sendEmailComplete}"
+                                            name="email_sending_complete.png" 
+                                            title="Email Send Complete."
+                                            style="height: 50px; width: 50px;" >
+                                        </p:graphicImage>
+                                    </div>
 
                                 </div>
                             </ui:repeat>

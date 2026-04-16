@@ -28,7 +28,7 @@ public class UserStock implements Serializable, RetirableEntity  {
     private UserStockContainer userStockContainer;
     private static final long serialVersionUID = 1L;
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     //Created Properties
     @ManyToOne

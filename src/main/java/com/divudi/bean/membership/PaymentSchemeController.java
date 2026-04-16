@@ -215,12 +215,12 @@ public class PaymentSchemeController implements Serializable {
     }
 
     public void saveSelected() {
+        
+        if(getCurrent().getName() == null || getCurrent().getName().trim().isEmpty()){
+            JsfUtil.addErrorMessage("Please Add the Scheme Name");
+            return;
+        }
 
-        //  getCurrent().setMembershipScheme(membershipScheme);
-//        if (getCurrent().getPaymentMethod() == null) {
-//            JsfUtil.addErrorMessage("Payment Method?");
-//            return;
-//        }
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(paymentScheme);
             JsfUtil.addSuccessMessage("Updated Successfully.");
@@ -230,10 +230,6 @@ public class PaymentSchemeController implements Serializable {
             getFacade().create(paymentScheme);
             JsfUtil.addSuccessMessage("Saved Successfully");
         }
-
-        paymentScheme = null;
-        //  createPaymentSchemesMembership();
-        //    recreateModel();
 
     }
 
@@ -315,7 +311,7 @@ public class PaymentSchemeController implements Serializable {
             getFacade().edit(paymentScheme);
             JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            JsfUtil.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addErrorMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();
@@ -346,6 +342,7 @@ public class PaymentSchemeController implements Serializable {
         dup.setMemberOrFamilyRequired(paymentScheme.isMemberOrFamilyRequired());
         dup.setSeniorCitizenRequired(paymentScheme.isSeniorCitizenRequired());
         dup.setPregnantMotherRequired(paymentScheme.isPregnantMotherRequired());
+        dup.setExpiryDate(paymentScheme.getExpiryDate());
         dup.setCliantType(paymentScheme.getCliantType());
         dup.setInstitution(paymentScheme.getInstitution());
         dup.setPerson(paymentScheme.getPerson());
@@ -515,6 +512,21 @@ public class PaymentSchemeController implements Serializable {
 
     public void setAllowedPaymentMethods(List<AllowedPaymentMethod> allowedPaymentMethods) {
         this.allowedPaymentMethods = allowedPaymentMethods;
+    }
+
+    public boolean isExpired(PaymentScheme ps) {
+        if (ps == null) {
+            return false;
+        }
+        Date expiryDate = ps.getExpiryDate();
+        if (expiryDate == null) {
+            return false;
+        }
+        return new Date().after(expiryDate);
+    }
+
+    public boolean isCurrentSchemeExpired() {
+        return isExpired(paymentScheme);
     }
 
     public List<PaymentScheme> getAllPaymentSchemes() {

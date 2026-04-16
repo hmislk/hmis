@@ -2,37 +2,37 @@ package com.divudi.core.data.inward;
 
 public enum InwardChargeType {
 
-    AdmissionFee("Admission Fee"),
+    AdmissionFee("Admission Fee", CalculationMethod.ADMISSION_FEE),
     AmbulanceCharges("Ambulance Charges"),
-    AdministrationCharge("Administration Fee"),//GOES WITH ROOM CHARGE
+    AdministrationCharge("Administration Fee", CalculationMethod.PATIENT_ROOM),//GOES WITH ROOM CHARGE
     BloodTransfusioncharges("Blood Transfusion Charges"),
     CT("CT Scan"),
     DressingCharges("Dressing Charges"),
     Equipment("Equipment Charges"),
     ECG_EEG("ECG/EEG"),//"ECG/EEG/ECHO/EXECG"
     ETUCharges("ETU Charges"),
-    GeneralIssuing("General Issuing"),
+    GeneralIssuing("General Issuing", CalculationMethod.STORE_BILL),
     HomeVisiting("Home Visiting"),
     Immunization("Immunization"),
     IntensiveCareManagement("Intensive Care Management"),
     LarbourRoomCharges("Larbour Room Charges"),
-    LinenCharges("Linen Charges"),//GOES WITH PATIENT ROOM
+    LinenCharges("Linen Charges", CalculationMethod.PATIENT_ROOM),//GOES WITH PATIENT ROOM
     Laboratory("Laboratory Charges"),
     MealCharges("Meal Charges"),
-    MedicalCareICU("Medical Care"),//Goes With Room
+    MedicalCareICU("Medical Care", CalculationMethod.PATIENT_ROOM),//Goes With Room
     MedicalServices("Medical Services"),
-    Medicine("Medicine"),//For BHT ISSUE
+    Medicine("Medicine", CalculationMethod.PHARMACY_BILL),//For BHT ISSUE
     MedicinesAndSurgicalSupplies("Medicines and Surgical Supplies"),//For Surgery Bill Medicines
-    MOCharges("MO Charges"),//GOES WITH PATIENT ROOM
-    MaintainCharges("Maintain Charges"),//GOES WITH PATIENT ROOM
-    DoctorAndNurses("Assisting Charge"),//Set Doctor && Nurse Fees
-    NursingCharges("Nursing Care"),//GOES WITH PATIENT ROOM
+    MOCharges("MO Charges", CalculationMethod.PATIENT_ROOM),//GOES WITH PATIENT ROOM
+    MaintainCharges("Maintain Charges", CalculationMethod.PATIENT_ROOM),//GOES WITH PATIENT ROOM
+    DoctorAndNurses("Assisting Charge", CalculationMethod.BILL_FEE),//Set Doctor && Nurse Fees
+    NursingCharges("Nursing Care", CalculationMethod.PATIENT_ROOM),//GOES WITH PATIENT ROOM
     OxygenCharges("Oxygen Charges"),
     OtherCharges("Other Charges"),
     OperationTheatreCharges("Operation Theatre Charges"),
-    ProfessionalCharge("Professional Charge"),//Only for Consultant Fees
+    ProfessionalCharge("Professional Charge", CalculationMethod.BILL_FEE),//Only for Consultant Fees
     ReimbursementCharges("Reimbursement Charges"),
-    RoomCharges("Room Charges"),//GOES WITH PATIENT ROOM
+    RoomCharges("Room Charges", CalculationMethod.PATIENT_ROOM),//GOES WITH PATIENT ROOM
     physiotherapy("Physiotherapy Charges"),
     Scanning("Scanning Charges"),
     TreatmentCharges("Treatment Charges"),
@@ -48,6 +48,14 @@ public enum InwardChargeType {
     VAT("VAT (18%)"),
     AccessoryCharges("Endoscopy Charges"),
     EyeLence("Opthalmic Technician & Lense Fee"),
+    @Deprecated
+    RoomChargesVAT("RoomChargesVAT"),
+    @Deprecated
+    ProfessionalChargeVAT("ProfessionalChargeVAT"),
+    @Deprecated
+    LensFee("Lense Fee"),
+    @Deprecated
+    PackageFee("PackageFee"),
     HospitalSupportService("Hospital Support Service Charges"),
     ExtraMedicine("Extra Medicine Charges"),
     DialysisTreatment("Dialysis Treatment Charges"),
@@ -57,6 +65,8 @@ public enum InwardChargeType {
     Investigations("Investigations"),
     @Deprecated
     MedicalCare("MedicalCare"),
+    @Deprecated
+    MedicalCareWard("MedicalCareWard"),
     BabyCare("BabyCare Charges"),
     LabourCharges("Labour Charges"),
     @Deprecated
@@ -184,9 +194,19 @@ public enum InwardChargeType {
 
     private final String nameAsString;
     private String name;
+    private CalculationMethod calculationMethod;
 
     InwardChargeType(String nameAsString) {
         this.nameAsString = nameAsString;
+    }
+
+    InwardChargeType(String nameAsString, CalculationMethod calculationMethod) {
+        this.nameAsString = nameAsString;
+        this.calculationMethod = calculationMethod;
+    }
+
+    public CalculationMethod getCalculationMethod() {
+        return calculationMethod != null ? calculationMethod : CalculationMethod.BILL_ITEM;
     }
 
     @Override

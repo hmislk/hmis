@@ -53,7 +53,7 @@ public class SymptomController implements Serializable {
     String selectText = "";
 
     public String navigateToManageSymptoms(){
-        return "/emr/admin/symptoms";
+        return "/emr/admin/symptoms?faces-redirect=true";
     }
 
 
@@ -196,7 +196,7 @@ public class SymptomController implements Serializable {
             getFacade().edit(current);
             JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            JsfUtil.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addErrorMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();
