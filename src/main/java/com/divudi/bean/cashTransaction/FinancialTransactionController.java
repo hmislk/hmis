@@ -3833,14 +3833,13 @@ public class FinancialTransactionController implements Serializable {
         if (nonClosedShiftStartFundBill == null) {
             return;
         }
-        Long shiftStartBillId = nonClosedShiftStartFundBill.getId();
         String jpql = "SELECT p "
-                + "FROM Payment p "
+                + "FROM Payment p JOIN p.bill b "
                 + "WHERE p.creater = :cr "
                 + "AND p.retired = :ret "
-                + "AND p.id > :cid "
+                + "AND b.id > :cid "
                 + "AND p.cashbookEntryStated = :started "
-                + "ORDER BY p.id DESC";
+                + "ORDER BY b.id DESC";
         Map<String, Object> m = new HashMap<>();
         m.put("started", false);
         m.put("cr", nonClosedShiftStartFundBill.getCreater());
@@ -4821,17 +4820,16 @@ public class FinancialTransactionController implements Serializable {
             JsfUtil.addErrorMessage("No User");
             return;
         }
-        Long shiftStartBillId = startBill.getId();
         String jpql = "SELECT p "
-                + "FROM Payment p "
+                + "FROM Payment p JOIN p.bill b "
                 + "WHERE p.creater = :cr "
                 + "AND p.retired = :ret "
-                + "AND p.id > :cid "
-                + "ORDER BY p.id DESC";
+                + "AND b.id > :cid "
+                + "ORDER BY b.id DESC";
         Map<String, Object> m = new HashMap<>();
         m.put("cr", user);
         m.put("ret", false);
-        m.put("cid", shiftStartBillId);
+        m.put("cid", startBill.getId());
         paymentsFromShiftSratToNow = paymentFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
         atomicBillTypeTotalsByPayments = new AtomicBillTypeTotals();
         for (Payment p : paymentsFromShiftSratToNow) {
@@ -4890,20 +4888,18 @@ public class FinancialTransactionController implements Serializable {
             JsfUtil.addErrorMessage("No User");
             return;
         }
-        Long shiftStartBillId = startBill.getId();
-        Long shiftEndBillId = endBill.getId();
         String jpql = "SELECT p "
-                + "FROM Payment p "
+                + "FROM Payment p JOIN p.bill b "
                 + "WHERE p.creater = :cr "
                 + "AND p.retired = :ret "
-                + "AND p.id > :sid "
-                + "AND p.id < :eid "
-                + "ORDER BY p.id DESC";
+                + "AND b.id > :sid "
+                + "AND b.id < :eid "
+                + "ORDER BY b.id DESC";
         Map<String, Object> m = new HashMap<>();
         m.put("cr", user);
         m.put("ret", false);
-        m.put("sid", shiftStartBillId);
-        m.put("eid", shiftEndBillId);
+        m.put("sid", startBill.getId());
+        m.put("eid", endBill.getId());
 
         paymentsFromShiftSratToNow = paymentFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
         atomicBillTypeTotalsByPayments = new AtomicBillTypeTotals();
