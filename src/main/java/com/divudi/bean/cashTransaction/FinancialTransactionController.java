@@ -2019,7 +2019,7 @@ public class FinancialTransactionController implements Serializable {
                     + "AND p.handingOverStarted = true "
                     + "AND p.cashbookEntryStated = false "
                     + "AND b.billTypeAtomic IN :btas "
-                    + "AND p.id > :sid";
+                    + "AND b.id > :sid";
             floatParams.put("cu", selectedBill.getFromWebUser());
             floatParams.put("btas", floatTransferBtas);
             floatParams.put("sid", shiftStartBill.getId());
@@ -2098,7 +2098,7 @@ public class FinancialTransactionController implements Serializable {
                     + "AND p.handingOverStarted = true "
                     + "AND p.cashbookEntryStated = false "
                     + "AND b.billTypeAtomic IN :btas "
-                    + "AND p.id > :sid";
+                    + "AND b.id > :sid";
             floatParams.put("cu", selectedBill.getFromWebUser());
             floatParams.put("btas", floatTransferBtas);
             floatParams.put("sid", shiftStartBill.getId());
@@ -3833,14 +3833,13 @@ public class FinancialTransactionController implements Serializable {
         if (nonClosedShiftStartFundBill == null) {
             return;
         }
-        Long shiftStartBillId = nonClosedShiftStartFundBill.getId();
         String jpql = "SELECT p "
-                + "FROM Payment p "
+                + "FROM Payment p JOIN p.bill b "
                 + "WHERE p.creater = :cr "
                 + "AND p.retired = :ret "
-                + "AND p.id > :cid "
+                + "AND b.id > :cid "
                 + "AND p.cashbookEntryStated = :started "
-                + "ORDER BY p.id DESC";
+                + "ORDER BY b.id DESC";
         Map<String, Object> m = new HashMap<>();
         m.put("started", false);
         m.put("cr", nonClosedShiftStartFundBill.getCreater());
@@ -3924,21 +3923,18 @@ public class FinancialTransactionController implements Serializable {
         if (nonClosedShiftStartFundBill == null) {
             return;
         }
-        Long shiftStartBillId = nonClosedShiftStartFundBill.getId();
         Map<String, Object> m = new HashMap<>();
         String jpql = "SELECT p "
-                + "FROM Payment p "
+                + "FROM Payment p JOIN p.bill b "
                 + "WHERE p.creater = :cr "
                 + "AND p.retired = :ret "
-                + "AND p.id > :cid "
-                + "AND p.cashbookEntryStated = :started ";
+                + "AND b.id > :cid "
+                + "AND p.cashbookEntryStated = :started "
+                + "ORDER BY b.id DESC";
         m.put("started", false);
-
-        jpql += "ORDER BY p.id DESC";
-
         m.put("cr", nonClosedShiftStartFundBill.getCreater());
         m.put("ret", false);
-        m.put("cid", shiftStartBillId);
+        m.put("cid", nonClosedShiftStartFundBill.getId());
         paymentsFromShiftSratToNow = paymentFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
 
         atomicBillTypeTotalsByPayments = new AtomicBillTypeTotals();
@@ -4047,8 +4043,6 @@ public class FinancialTransactionController implements Serializable {
         if (nonClosedShiftStartFundBill == null) {
             return;
         }
-        Long shiftStartBillId = nonClosedShiftStartFundBill.getId();
-
         List<BillTypeAtomic> btas = new ArrayList<>();
         btas.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CASH_IN));
         btas.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CASH_OUT));
@@ -4057,12 +4051,12 @@ public class FinancialTransactionController implements Serializable {
         String jpql = "SELECT p FROM Payment p JOIN p.bill b "
                 + "WHERE p.creater = :cr "
                 + "AND p.retired = :ret "
-                + "AND p.id > :cid "
+                + "AND b.id > :cid "
                 + "AND b.billTypeAtomic IN :btas "
                 + "AND p.cashbookEntryStated = :started "
                 + "AND FUNCTION('DATE', p.createdAt) = :createdDate "
                 + "AND b.department = :dept "
-                + "ORDER BY p.id DESC";
+                + "ORDER BY b.id DESC";
 
         m.put("dept", cashbookDepartment);
         m.put("btas", btas);
@@ -4070,7 +4064,7 @@ public class FinancialTransactionController implements Serializable {
         m.put("started", false);
         m.put("cr", nonClosedShiftStartFundBill.getCreater());
         m.put("ret", false);
-        m.put("cid", shiftStartBillId);
+        m.put("cid", nonClosedShiftStartFundBill.getId());
         paymentsFromShiftSratToNow = paymentFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
 
 // Filter and collect unique cancelled bills
@@ -4754,10 +4748,10 @@ public class FinancialTransactionController implements Serializable {
         m.put("sid", startBill.getId());
 
         StringBuilder jpqlBuilder = new StringBuilder("SELECT p FROM Payment p JOIN p.bill b WHERE p.creater = :cr ")
-                .append("AND p.retired = :ret AND p.id > :sid ");
+                .append("AND p.retired = :ret AND b.id > :sid ");
 
         if (endBill != null && endBill.getId() != null) {
-            jpqlBuilder.append("AND p.id < :eid ");
+            jpqlBuilder.append("AND b.id < :eid ");
             m.put("eid", endBill.getId());
         }
 
@@ -4821,17 +4815,16 @@ public class FinancialTransactionController implements Serializable {
             JsfUtil.addErrorMessage("No User");
             return;
         }
-        Long shiftStartBillId = startBill.getId();
         String jpql = "SELECT p "
-                + "FROM Payment p "
+                + "FROM Payment p JOIN p.bill b "
                 + "WHERE p.creater = :cr "
                 + "AND p.retired = :ret "
-                + "AND p.id > :cid "
-                + "ORDER BY p.id DESC";
+                + "AND b.id > :cid "
+                + "ORDER BY b.id DESC";
         Map<String, Object> m = new HashMap<>();
         m.put("cr", user);
         m.put("ret", false);
-        m.put("cid", shiftStartBillId);
+        m.put("cid", startBill.getId());
         paymentsFromShiftSratToNow = paymentFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
         atomicBillTypeTotalsByPayments = new AtomicBillTypeTotals();
         for (Payment p : paymentsFromShiftSratToNow) {
@@ -4890,20 +4883,18 @@ public class FinancialTransactionController implements Serializable {
             JsfUtil.addErrorMessage("No User");
             return;
         }
-        Long shiftStartBillId = startBill.getId();
-        Long shiftEndBillId = endBill.getId();
         String jpql = "SELECT p "
-                + "FROM Payment p "
+                + "FROM Payment p JOIN p.bill b "
                 + "WHERE p.creater = :cr "
                 + "AND p.retired = :ret "
-                + "AND p.id > :sid "
-                + "AND p.id < :eid "
-                + "ORDER BY p.id DESC";
+                + "AND b.id > :sid "
+                + "AND b.id < :eid "
+                + "ORDER BY b.id DESC";
         Map<String, Object> m = new HashMap<>();
         m.put("cr", user);
         m.put("ret", false);
-        m.put("sid", shiftStartBillId);
-        m.put("eid", shiftEndBillId);
+        m.put("sid", startBill.getId());
+        m.put("eid", endBill.getId());
 
         paymentsFromShiftSratToNow = paymentFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
         atomicBillTypeTotalsByPayments = new AtomicBillTypeTotals();
@@ -4931,19 +4922,18 @@ public class FinancialTransactionController implements Serializable {
         billTypesToFilter.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.FLOAT_STARTING_BALANCE));
         billTypesToFilter.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.FLOAT_CLOSING_BALANCE));
 
-        Long shiftStartBillId = nonClosedShiftStartFundBill.getId();
         String jpql = "SELECT p "
                 + "FROM Bill p "
                 + "WHERE p.creater = :cr "
                 + "AND p.retired = :ret "
                 + "AND p.billTypeAtomic in :btas "
-                + "AND p.id > :cid "
-                + "ORDER BY p.id DESC";
+                + "AND p.createdAt >= :startTime "
+                + "ORDER BY p.createdAt DESC";
         Map<String, Object> m = new HashMap<>();
         m.put("cr", nonClosedShiftStartFundBill.getCreater());
         m.put("btas", billTypesToFilter);
         m.put("ret", false);
-        m.put("cid", shiftStartBillId);
+        m.put("startTime", nonClosedShiftStartFundBill.getCreatedAt());
         currentBills = billFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
 //        paymentMethodValues = new PaymentMethodValues(PaymentMethod.values());
         atomicBillTypeTotalsByBills = new AtomicBillTypeTotals();
@@ -5769,7 +5759,7 @@ public class FinancialTransactionController implements Serializable {
                     + "AND p.handingOverStarted = false "
                     + "AND p.cashbookEntryStated = false "
                     + "AND b.billTypeAtomic IN :btas "
-                    + "AND p.id > :sid";
+                    + "AND b.id > :sid";
             floatParams.put("cu", sessionController.getLoggedUser());
             floatParams.put("btas", floatTransferBtas);
             floatParams.put("sid", shiftStartBillForFloats.getId());
