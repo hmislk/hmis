@@ -216,6 +216,15 @@
                                         </h:outputLabel>
                                     </p:column>
 
+                                    <p:column headerText="GRNs" styleClass="text-center" exportable="false" width="60">
+                                        <h:panelGroup rendered="#{not empty p.listOfBill}">
+                                            <span class="badge bg-success">#{p.listOfBill.size()}</span>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{empty p.listOfBill}">
+                                            <span class="badge bg-secondary">0</span>
+                                        </h:panelGroup>
+                                    </p:column>
+
                                     <p:column headerText="Actions" styleClass="text-center" exportable="false" width="160">
                                         <div class="d-flex flex-column align-items-center gap-2">
                                             <p:commandButton
