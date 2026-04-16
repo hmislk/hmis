@@ -1,0 +1,295 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+
+                <h:form id="formClinicalDischarge">
+                    <p:growl id="growl" life="4000"/>
+
+                    <!-- Navigation bar -->
+                    <div class="row">
+                        <div class="col-12 px-4">
+                            <p:commandButton
+                                value="Inpatient Dashboard"
+                                ajax="false"
+                                action="#{admissionController.navigateToAdmissionProfilePage}"
+                                icon="fa fa-id-card"
+                                class="p-0 m-1">
+                                <f:setPropertyActionListener
+                                    value="#{inpatientClinicalDataController.parentAdmission}"
+                                    target="#{admissionController.current}" />
+                            </p:commandButton>
+                            <p:commandButton
+                                value="Discharge Medications"
+                                ajax="false"
+                                action="#{inpatientClinicalDataController.navigateToAssessmentDischargeMedicines()}"
+                                icon="fa fa-prescription-bottle-alt"
+                                class="p-0 m-1"
+                                disabled="#{inpatientClinicalDataController.clinicalDischargeRecord == null or inpatientClinicalDataController.clinicalDischargeRecord.id == null}"
+                                title="Save the clinical discharge first">
+                            </p:commandButton>
+                        </div>
+                    </div>
+
+                    <!-- Access denied panel -->
+                    <h:panelGroup layout="block" rendered="#{not webUserController.hasPrivilege('InpatientClinicalDischarge')}">
+                        <div class="row px-4">
+                            <div class="col-12">
+                                <p:panel class="m-1">
+                                    <h:outputText value="You do not have permission to access Clinical Discharge." />
+                                </p:panel>
+                            </div>
+                        </div>
+                    </h:panelGroup>
+
+                    <!-- Main content -->
+                    <h:panelGroup layout="block" rendered="#{webUserController.hasPrivilege('InpatientClinicalDischarge')}">
+
+                        <!-- Confirmation status banner -->
+                        <h:panelGroup layout="block"
+                                      rendered="#{inpatientClinicalDataController.parentAdmission.clinicallyDischarged}">
+                            <div class="row px-4 pt-2">
+                                <div class="col-12">
+                                    <div class="alert alert-success" role="alert">
+                                        <i class="fa fa-check-circle mr-2"/>
+                                        Clinically discharged by
+                                        <strong>#{inpatientClinicalDataController.parentAdmission.clinicalDischargedBy.name}</strong>
+                                        on
+                                        <h:outputText value="#{inpatientClinicalDataController.parentAdmission.clinicalDischargeDateTime}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                        </h:outputText>
+                                    </div>
+                                </div>
+                            </div>
+                        </h:panelGroup>
+
+                        <div class="row px-4 py-2">
+                            <div class="col-12">
+
+                                <!-- Discharge Details panel -->
+                                <p:panel class="w-100 m-1 p-0 mb-2">
+                                    <f:facet name="header">
+                                        <i class="fa fa-sign-out-alt mr-2"/>
+                                        <h:outputText value="Discharge Details" />
+                                    </f:facet>
+                                    <div class="container-fluid">
+                                        <div class="row my-2">
+                                            <div class="col-md-6">
+                                                <p:outputLabel for="cmbCondition" value="Discharge Condition:" styleClass="font-weight-bold" />
+                                                <p:autoComplete
+                                                    id="cmbCondition"
+                                                    value="#{inpatientClinicalDataController.clinicalDischargeRecord.dischargeCondition}"
+                                                    completeMethod="#{dischargeConditionController.completeDischargeConditions}"
+                                                    var="dc"
+                                                    itemLabel="#{dc.name}"
+                                                    itemValue="#{dc}"
+                                                    forceSelection="true"
+                                                    class="w-100"
+                                                    inputStyleClass="w-100"
+                                                    disabled="#{inpatientClinicalDataController.parentAdmission.clinicallyDischarged}"
+                                                    placeholder="Select discharge condition" />
+                                            </div>
+                                            <div class="col-md-6">
+                                                <p:outputLabel for="txtDischargeDateTime" value="Discharge Date/Time:" styleClass="font-weight-bold" />
+                                                <p:inputText
+                                                    id="txtDischargeDateTime"
+                                                    value="#{inpatientClinicalDataController.clinicalDischargeRecord.encounterDateTime}"
+                                                    disabled="#{inpatientClinicalDataController.parentAdmission.clinicallyDischarged}"
+                                                    style="width:200px;">
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                                </p:inputText>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </p:panel>
+
+                                <!-- Discharge Diagnoses panel -->
+                                <p:panel id="panelDischargeDiagnoses" class="w-100 m-1 p-0 mb-2">
+                                    <f:facet name="header">
+                                        <i class="fa fa-stethoscope mr-2"/>
+                                        <h:outputText value="Discharge Diagnoses" />
+                                    </f:facet>
+                                    <div class="container-fluid">
+                                        <h:panelGroup layout="block"
+                                                      rendered="#{not inpatientClinicalDataController.parentAdmission.clinicallyDischarged}">
+                                            <div class="row my-2">
+                                                <div class="col-md-9">
+                                                    <p:autoComplete
+                                                        id="acDischargeDx"
+                                                        value="#{inpatientClinicalDataController.diagnosis}"
+                                                        completeMethod="#{diagnosisController.completeDiagnosis}"
+                                                        var="dx"
+                                                        forceSelection="true"
+                                                        itemLabel="#{dx.name}"
+                                                        itemValue="#{dx}"
+                                                        class="w-100"
+                                                        inputStyleClass="w-100"
+                                                        placeholder="Search diagnosis" />
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <p:commandButton
+                                                        ajax="true"
+                                                        id="btnAddDischargeDx"
+                                                        action="#{inpatientClinicalDataController.addDx}"
+                                                        process="acDischargeDx btnAddDischargeDx"
+                                                        update="acDischargeDx panelDischargeDiagnoses"
+                                                        icon="pi pi-plus"
+                                                        value="Add"
+                                                        disabled="#{inpatientClinicalDataController.clinicalDischargeRecord == null or inpatientClinicalDataController.clinicalDischargeRecord.id == null}"
+                                                        title="Save the record first before adding diagnoses" />
+                                                </div>
+                                            </div>
+                                        </h:panelGroup>
+                                        <h:panelGroup id="gpDischargeDx">
+                                            <p:dataTable
+                                                id="tblDischargeDx"
+                                                rendered="#{inpatientClinicalDataController.encounterDiagnoses ne null and inpatientClinicalDataController.encounterDiagnoses.size() > 0}"
+                                                value="#{inpatientClinicalDataController.encounterDiagnoses}"
+                                                emptyMessage="No diagnosis added yet"
+                                                var="edx"
+                                                class="w-100">
+                                                <p:column headerText="Diagnosis">
+                                                    <h:outputLabel value="#{edx.itemValue.name}" />
+                                                    <p:commandLink
+                                                        id="clRemoveDischargeDx"
+                                                        value=" (X)"
+                                                        process="clRemoveDischargeDx"
+                                                        action="#{inpatientClinicalDataController.removeEncounterDiagnoses()}"
+                                                        update=":#{p:resolveFirstComponentWithId('tblDischargeDx',view).clientId}"
+                                                        rendered="#{not inpatientClinicalDataController.parentAdmission.clinicallyDischarged}">
+                                                        <f:setPropertyActionListener value="#{edx}" target="#{inpatientClinicalDataController.removingCfv}" />
+                                                    </p:commandLink>
+                                                </p:column>
+                                                <p:column headerText="Details">
+                                                    <h:outputLabel value="#{edx.lobValue}" />
+                                                </p:column>
+                                            </p:dataTable>
+                                        </h:panelGroup>
+                                    </div>
+                                </p:panel>
+
+                                <!-- Discharge Summary panel -->
+                                <p:panel class="w-100 m-1 p-0 mb-2">
+                                    <f:facet name="header">
+                                        <i class="fa fa-file-medical-alt mr-2"/>
+                                        <h:outputText value="Discharge Summary" />
+                                    </f:facet>
+                                    <div class="container-fluid">
+                                        <div class="row my-2">
+                                            <div class="col-12">
+                                                <p:outputLabel for="txtDischargeSummary" value="Discharge Summary / Clinical Notes:" styleClass="font-weight-bold" />
+                                                <p:inputTextarea
+                                                    id="txtDischargeSummary"
+                                                    value="#{inpatientClinicalDataController.clinicalDischargeRecord.comments}"
+                                                    class="w-100"
+                                                    autoResize="true"
+                                                    rows="6"
+                                                    placeholder="Enter discharge summary, course in hospital, investigations, treatments given, etc."
+                                                    disabled="#{inpatientClinicalDataController.parentAdmission.clinicallyDischarged}" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </p:panel>
+
+                                <!-- Follow-up Plan panel -->
+                                <p:panel class="w-100 m-1 p-0 mb-2">
+                                    <f:facet name="header">
+                                        <i class="fa fa-calendar-check mr-2"/>
+                                        <h:outputText value="Follow-up Plan" />
+                                    </f:facet>
+                                    <div class="container-fluid">
+                                        <div class="row my-2">
+                                            <div class="col-12">
+                                                <p:inputTextarea
+                                                    id="txtFollowUp"
+                                                    value="#{inpatientClinicalDataController.clinicalDischargeRecord.followUpPlan}"
+                                                    class="w-100"
+                                                    autoResize="true"
+                                                    rows="4"
+                                                    placeholder="e.g. Review at OPD in 2 weeks, referral to specialist, etc."
+                                                    disabled="#{inpatientClinicalDataController.parentAdmission.clinicallyDischarged}" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </p:panel>
+
+                                <!-- Activity and Diet panel -->
+                                <p:panel class="w-100 m-1 p-0 mb-2">
+                                    <f:facet name="header">
+                                        <i class="fa fa-walking mr-2"/>
+                                        <h:outputText value="Activity and Diet Instructions" />
+                                    </f:facet>
+                                    <div class="container-fluid">
+                                        <div class="row my-2">
+                                            <div class="col-md-6">
+                                                <p:outputLabel for="txtActivity" value="Activity Restrictions:" styleClass="font-weight-bold" />
+                                                <p:inputTextarea
+                                                    id="txtActivity"
+                                                    value="#{inpatientClinicalDataController.clinicalDischargeRecord.activityInstructions}"
+                                                    class="w-100"
+                                                    autoResize="true"
+                                                    rows="4"
+                                                    placeholder="e.g. Bed rest for 1 week, no heavy lifting, return to work after 2 weeks, etc."
+                                                    disabled="#{inpatientClinicalDataController.parentAdmission.clinicallyDischarged}" />
+                                            </div>
+                                            <div class="col-md-6">
+                                                <p:outputLabel for="txtDiet" value="Diet Instructions:" styleClass="font-weight-bold" />
+                                                <p:inputTextarea
+                                                    id="txtDiet"
+                                                    value="#{inpatientClinicalDataController.clinicalDischargeRecord.dietInstructions}"
+                                                    class="w-100"
+                                                    autoResize="true"
+                                                    rows="4"
+                                                    placeholder="e.g. Low salt diet, diabetic diet, avoid oily food, etc."
+                                                    disabled="#{inpatientClinicalDataController.parentAdmission.clinicallyDischarged}" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </p:panel>
+
+                                <!-- Action buttons -->
+                                <div class="d-flex justify-content-end my-2 mb-4">
+                                    <h:panelGroup rendered="#{not inpatientClinicalDataController.parentAdmission.clinicallyDischarged}">
+                                        <p:commandButton
+                                            id="btnSaveDraft"
+                                            value="Save Draft"
+                                            ajax="false"
+                                            action="#{inpatientClinicalDataController.saveClinicalDischarge()}"
+                                            icon="pi pi-save"
+                                            class="ui-button-secondary mx-1" />
+                                        <p:commandButton
+                                            id="btnConfirm"
+                                            value="Confirm Clinical Discharge"
+                                            ajax="false"
+                                            action="#{inpatientClinicalDataController.confirmClinicalDischarge()}"
+                                            icon="fa fa-check"
+                                            class="ui-button-success mx-1"
+                                            onclick="return confirm('Are you sure you want to confirm clinical discharge? This will lock the record.')" />
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{inpatientClinicalDataController.parentAdmission.clinicallyDischarged}">
+                                        <p:commandButton
+                                            id="btnCancelDischarge"
+                                            value="Cancel Clinical Discharge"
+                                            ajax="false"
+                                            action="#{inpatientClinicalDataController.cancelClinicalDischarge()}"
+                                            icon="fa fa-times"
+                                            class="ui-button-warning mx-1"
+                                            onclick="return confirm('Are you sure you want to cancel the clinical discharge confirmation?')" />
+                                    </h:panelGroup>
+                                </div>
+
+                            </div>
+                        </div>
+                    </h:panelGroup>
+
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

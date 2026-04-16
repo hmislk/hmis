@@ -64,6 +64,7 @@ public class AtmController implements Serializable {
 
     // DTO properties - For optimized display and reporting
     private AtmDto selectedAtmDto;
+    private List<AtmDto> pharmacyAtmListDtos;
 
     // Filter status - "active", "inactive", "all"
     private String filterStatus = "active";
@@ -519,6 +520,7 @@ public class AtmController implements Serializable {
 
     public void refreshData() {
         recreateModel();
+        pharmacyAtmListDtos = null;
 
         if (current != null) {
             boolean shouldKeepSelection = false;
@@ -565,6 +567,41 @@ public class AtmController implements Serializable {
             default:
                 return "Active ATMs";
         }
+    }
+
+    // ===================== List Page Methods =====================
+
+    public List<AtmDto> getPharmacyAtmListDtos() {
+        if (pharmacyAtmListDtos == null) {
+            String jpql = "SELECT new com.divudi.core.data.dto.AtmDto("
+                    + "a.id, a.name, a.code, a.descreption, "
+                    + "a.retired, a.inactive, v.id, v.name) "
+                    + "FROM Atm a "
+                    + "LEFT JOIN a.vtm v "
+                    + "WHERE a.retired=false AND a.departmentType=:dep ";
+
+            Map<String, Object> params = new HashMap<>();
+            params.put("dep", DepartmentType.Pharmacy);
+
+            if ("active".equals(filterStatus)) {
+                jpql += "AND a.inactive=:inact ";
+                params.put("inact", false);
+            } else if ("inactive".equals(filterStatus)) {
+                jpql += "AND a.inactive=:inact ";
+                params.put("inact", true);
+            }
+
+            jpql += "ORDER BY a.name";
+
+            pharmacyAtmListDtos = (List<AtmDto>) getFacade().findLightsByJpql(jpql, params);
+        }
+        return pharmacyAtmListDtos;
+    }
+
+    public String navigateToAtmList() {
+        pharmacyAtmListDtos = null;
+        getPharmacyAtmListDtos();
+        return "/pharmacy/admin/atm_list?faces-redirect=true";
     }
 
     // ========================== Toggle Status ==========================

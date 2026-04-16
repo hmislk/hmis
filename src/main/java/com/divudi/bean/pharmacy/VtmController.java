@@ -83,6 +83,9 @@ public class VtmController implements Serializable {
     boolean reportedAs;
     private boolean editable;
 
+    // List page DTO cache
+    private List<VtmDto> pharmacyVtmListDtos;
+
     // Filter state for active/inactive VTMs
     private String filterStatus = "active"; // "active", "inactive", "all"
 
@@ -715,21 +718,15 @@ public class VtmController implements Serializable {
     }
 
     public void setSelectedVtmDto(VtmDto selectedVtmDto) {
-        System.out.println("setSelectedVtmDto called");
-        System.out.println("selectedVtmDto = " + selectedVtmDto);
         this.selectedVtmDto = selectedVtmDto;
 
         // Sync with entity if DTO is selected
         if (selectedVtmDto != null && selectedVtmDto.getId() != null) {
-            System.out.println("selectedVtmDto.getId() = " + selectedVtmDto.getId());
             this.current = getFacade().find(selectedVtmDto.getId());
-            System.out.println("Loaded entity: " + (this.current != null ? this.current.getName() : "null"));
         } else {
             // Clear current entity when no DTO is selected
-            System.out.println("Clearing current entity (selectedVtmDto is null or has null ID)");
             this.current = null;
         }
-        System.out.println("current = " + current);
     }
 
     // Audit Events Methods
@@ -764,7 +761,6 @@ public class VtmController implements Serializable {
                 ae.calculateDifference();
             }
 
-            System.out.println("VTM Audit Events loaded: " + vtmAuditEvents.size() + " events for VTM ID: " + current.getId());
         }
     }
 
@@ -830,6 +826,7 @@ public class VtmController implements Serializable {
     public void refreshData() {
         items = null;
         clearDtoCache();
+        pharmacyVtmListDtos = null;
 
         // Clear selection if current item doesn't match new filter
         if (current != null) {
@@ -877,6 +874,40 @@ public class VtmController implements Serializable {
             default:
                 return "Active VTMs";
         }
+    }
+
+    // ===================== List Page Methods =====================
+
+    public List<VtmDto> getPharmacyVtmListDtos() {
+        if (pharmacyVtmListDtos == null) {
+            String jpql = "SELECT new com.divudi.core.data.dto.VtmDto("
+                    + "a.id, a.name, a.code, a.descreption, "
+                    + "a.instructions, a.retired, a.inactive) "
+                    + "FROM Vtm a "
+                    + "WHERE a.retired=false AND a.departmentType=:dep ";
+
+            Map<String, Object> params = new HashMap<>();
+            params.put("dep", DepartmentType.Pharmacy);
+
+            if ("active".equals(filterStatus)) {
+                jpql += "AND a.inactive=:inact ";
+                params.put("inact", false);
+            } else if ("inactive".equals(filterStatus)) {
+                jpql += "AND a.inactive=:inact ";
+                params.put("inact", true);
+            }
+
+            jpql += "ORDER BY a.name";
+
+            pharmacyVtmListDtos = (List<VtmDto>) getFacade().findLightsByJpql(jpql, params);
+        }
+        return pharmacyVtmListDtos;
+    }
+
+    public String navigateToVtmList() {
+        pharmacyVtmListDtos = null;
+        getPharmacyVtmListDtos();
+        return "/pharmacy/admin/vtm_list?faces-redirect=true";
     }
 
     // ===================== Toggle Status Methods =====================
@@ -1024,23 +1055,18 @@ public class VtmController implements Serializable {
 
         @Override
         public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            System.out.println("VtmDtoConverter.getAsObject called with value: '" + value + "'");
-
             if (value == null || value.isEmpty()) {
-                System.out.println("Value is null or empty, returning null");
                 return null;
             }
 
             try {
                 Long id = Long.parseLong(value);
-                System.out.println("Parsed ID: " + id);
 
                 // Get controller instance
                 VtmController controller = (VtmController) facesContext.getApplication().getELResolver().
                         getValue(facesContext.getELContext(), null, "vtmController");
 
                 if (controller == null) {
-                    System.out.println("Controller not found!");
                     return null;
                 }
 
@@ -1048,19 +1074,14 @@ public class VtmController implements Serializable {
                 Vtm entity = controller.getFacade().find(id);
                 if (entity != null) {
                     VtmDto dto = controller.createVtmDto(entity);
-                    System.out.println("Created DTO from entity: " + dto.getName());
                     return dto;
                 } else {
-                    System.out.println("Entity not found for ID: " + id);
                     return null;
                 }
 
             } catch (NumberFormatException e) {
-                System.out.println("NumberFormatException: " + e.getMessage());
                 return null;
             } catch (Exception e) {
-                System.out.println("Exception in getAsObject: " + e.getMessage());
-                e.printStackTrace();
                 return null;
             }
         }
@@ -1074,7 +1095,6 @@ public class VtmController implements Serializable {
             if (object instanceof VtmDto) {
                 VtmDto dto = (VtmDto) object;
                 String result = dto.getId() != null ? dto.getId().toString() : null;
-                System.out.println("VtmDtoConverter.getAsString: " + dto.getName() + " -> " + result);
                 return result;
             } else {
                 throw new IllegalArgumentException("object " + object + " is of type "

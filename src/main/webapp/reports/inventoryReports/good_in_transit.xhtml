@@ -378,15 +378,26 @@
                                              value="Process"
                                              action="#{pharmacyReportController.processGoodInTransistReport}">
                             </p:commandButton>
-                            <p:commandButton class="ui-button-secondary mx-1" icon="fas fa-print" ajax="false" value="Print All">
-                                <p:printer target="tbl"/>
+                            <p:commandButton 
+                                    class="ui-button-primary mx-1"
+                                    icon="fas fa-print"
+                                    ajax="false"
+                                    action="good_in_transit_print?faces-redirect=true"
+                                    value="To Print">
                             </p:commandButton>
-                            <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false"
-                                             value="Download">
-                                <p:dataExporter type="xlsx" target="tbl" fileName="good_in_transit"/>
+                            <p:commandButton 
+                                class="ui-button-success mx-1" 
+                                icon="fas fa-file-excel" 
+                                ajax="false"
+                                value="Download" 
+                                action="#{pharmacyReportController.exportGoodInTransitReportToExcel()}">
                             </p:commandButton>
-                            <p:commandButton class="ui-button-danger mx-1" icon="fas fa-file-pdf" ajax="false" value="PDF">
-                                <p:dataExporter type="pdf" target="tbl" fileName="good_in_transit"/>
+                            <p:commandButton 
+                                class="ui-button-danger mx-1" 
+                                icon="fas fa-file-pdf" 
+                                ajax="false" 
+                                value="PDF" 
+                                action="#{pharmacyReportController.exportGoodInTransitToPDF()}">
                             </p:commandButton>
                         </div>
 

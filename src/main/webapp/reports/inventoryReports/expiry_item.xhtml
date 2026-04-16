@@ -295,25 +295,62 @@
                                 action="#{pharmacyReportController.processExpiryItemReport()}">
                             </p:commandButton>
                             <p:commandButton
-                                class="ui-button-secondary mx-1"
+                                class="ui-button-primary mx-1"
                                 icon="fas fa-print"
                                 ajax="false"
-                                value="Print All">
-                                <p:printer target="printPanel"/>
+                                value="To Print"
+                                action="expiry_item_print?faces-redirect=true">
                             </p:commandButton>
+
+                            <p:commandButton
+                                class="ui-button-success mx-1"
+                                icon="fas fa-file-excel"
+                                ajax="false"
+                                value="Download"
+                                rendered="#{pharmacyReportController.expiryReportType eq 'stockList'}"
+                                action="#{pharmacyReportController.exportExpireItemStockListToExcel}">
+                            </p:commandButton>
+                            <p:commandButton
+                                class="ui-button-danger mx-1"
+                                icon="fas fa-file-pdf"
+                                ajax="false"
+                                value="PDF"
+                                rendered="#{pharmacyReportController.expiryReportType eq 'stockList'}"
+                                action="#{pharmacyReportController.exportExpireItemStockListToPDF}">
+                            </p:commandButton>
+
+                            <p:commandButton
+                                class="ui-button-success mx-1"
+                                icon="fas fa-file-excel"
+                                ajax="false"
+                                value="Download"
+                                rendered="#{pharmacyReportController.expiryReportType eq 'itemList'}"
+                                action="#{pharmacyReportController.exportExpireItemItemListToExcel}">
+                            </p:commandButton>
+                            <p:commandButton
+                                class="ui-button-danger mx-1"
+                                icon="fas fa-file-pdf"
+                                ajax="false"
+                                value="PDF"
+                                rendered="#{pharmacyReportController.expiryReportType eq 'itemList'}"
+                                action="#{pharmacyReportController.exportExpireItemItemListToPDF}">
+                            </p:commandButton>
+
                             <p:commandButton
                                 class="ui-button-success mx-1"
                                 icon="fas fa-file-excel"
                                 ajax="false"
                                 action="#{pharmacyReportController.exportExpiryItemReportToExcel()}"
-                                value="Download">
+                                value="Download"
+                                rendered="#{pharmacyReportController.expiryReportType eq 'detailed'}">
                             </p:commandButton>
                             <p:commandButton
                                 class="ui-button-danger mx-1"
                                 icon="fas fa-file-pdf"
                                 ajax="false"
                                 action="#{pharmacyReportController.exportExpiryItemReportToPdf()}"
-                                value="PDF">
+                                value="PDF"
+                                rendered="#{pharmacyReportController.expiryReportType eq 'detailed'}">
                             </p:commandButton>
                         </div>
 

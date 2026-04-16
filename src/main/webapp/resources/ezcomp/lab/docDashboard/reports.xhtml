@@ -255,8 +255,8 @@
                                                 class="ui-button-danger"
                                                 rendered="#{webUserController.hasPrivilege('LabDeAutherizing')}"
                                                 onclick="if (!confirm('Are You Sure You Want to Delete this Patient Report?'))
-                                                            return false;"
-                                                action="#{laboratoryManagementController.removePatientReport(dpr.id)}" 
+                                                        return false;"
+                                                action="#{laboratoryManagementController.removePatientReport(dpr.id)}"
                                                 oncomplete="PF('dlg').hide();" >
                                             </p:commandButton>
                                         </div>

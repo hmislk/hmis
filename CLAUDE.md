@@ -7,6 +7,9 @@
 
 ## Essential Rules (Always Apply)
 
+### Working Directory
+0. **🚨 NEVER USE WORKTREE ISOLATION**: Always work directly in the main project checkout directory. Do NOT use `isolation: "worktree"` when spawning agents. If you find yourself in a path like `.claude/worktrees/*`, stop and perform all file edits in the main project directory instead. Worktrees cause the developer's local branch to go out of sync with remote commits, leading to confusing stale-file compilation errors. (Issue: hmislk/hmis#19944)
+
 ### User Control
 1. **🚨 NO AUTO-ACTIONS**: Do NOT commit, build, run, or push code unless the user explicitly requests it
 2. **🚨 EXPLICIT COMMANDS ONLY**: Wait for user confirmation before executing Git operations, Maven builds, or deployment commands
@@ -18,10 +21,15 @@
 6. **🚨 BACKWARD COMPATIBILITY**: Never "fix" intentional typos (e.g., `purcahseRate`) - database compatibility
 7. **🚨 COMPONENT NAMING**: Never rename composite components without checking ALL usage
 8. **🚨 NEVER MODIFY EXISTING CONSTRUCTORS**: Only ADD new constructors. Changing or removing existing constructor signatures breaks other callers. New constructors should delegate to the existing one via `this(...)` when possible. See [DTO Guidelines](developer_docs/dto/implementation-guidelines.md)
+9. **🚨 JPQL FIRST, NATIVE SQL LAST**: Always use JPQL for database queries. Native SQL (`nativeScalarQuery`, `executeNativeSql`) is only permitted when there is a significant, demonstrated performance constraint that JPQL cannot address. Never reach for native SQL just because JPQL is harder to write.
+10. **🚨 USE `findLongByJpql` FOR COUNT QUERIES**: Always use `findLongByJpql` (not `findDoubleByJpql`) for JPQL `COUNT(...)` queries. `COUNT` returns a `Long`; using `findDoubleByJpql` causes a silent `ClassCastException` caught internally, returning `0.0` every time and making the check always pass.
 
-### Git & Documentation
-9. **Include issue closing keywords** (`Closes #N`) in commit messages
-10. **JSF-only changes** (XHTML only, no Java) do not require compilation or testing
+### Git & Branching
+11. **Include issue closing keywords** (`Closes #N`) in commit messages
+12. **JSF-only changes** (XHTML only, no Java) do not require compilation or testing
+13. **🚨 ALWAYS BASE FEATURE BRANCHES ON `development`**: When creating a new local branch for feature development, ALWAYS branch from `origin/development`, NEVER from `master`. The `master` branch is managed exclusively by system admins. Use: `git checkout -b <branch-name> origin/development`
+14. **🚨 `development` IS THE DEFAULT BRANCH**: All PRs MUST target `development`, NOT `master`. When checking what already exists in the codebase (to avoid duplicate fields/methods), ALWAYS compare against `origin/development`, not `origin/master`. The CI validates against `development`. Never reference or merge into `master` during feature development.
+15. **🚨 HOTFIX BRANCHES MUST END WITH `-hotfix`**: When creating a branch targeting a production branch (e.g., `coop-prod`, `ruhunu-prod`, `southernlanka-prod`), the branch name **MUST** end with `-hotfix`. CI merge validation will block PRs from branches that do not end with `-hotfix`. Format: `<description>-hotfix` (e.g., `sequence-preallocation-hotfix`, `critical-billing-fix-hotfix`). See the `/hotfix-deploy` skill.
 
 ## Situational Guidelines (Reference When Needed)
 
@@ -34,6 +42,7 @@
 
 ### When Working on JSF/AJAX
 - [JSF AJAX Update Guidelines](developer_docs/jsf/ajax-update-guidelines.md) - Critical AJAX rules
+- [Navigation Patterns](developer_docs/jsf/navigation-patterns.md) - viewAction anti-pattern, initialization in navigation methods
 - [DataTable Selection Guide](developer_docs/jsf/primefaces-datatable-selection.md) - Selection patterns
 
 ### When Working with DTOs
@@ -42,14 +51,36 @@
 ### When Working with Database
 - [MySQL Developer Guide](developer_docs/database/mysql-developer-guide.md) - Credentials and debugging
 
+### When Adding Excel Export to a Report
+- [Excel Export for HTML Tables](developer_docs/feature/excel-export-html-table.md) - Pattern for exporting HTML-based (non-DataTable) report tables to Excel using Apache POI via `HttpServletResponse`
+
 ### When Creating User Documentation
 - [Wiki Publishing Workflow](developer_docs/github/wiki-publishing.md) - Sibling folder approach
 - [Wiki Writing Guidelines](developer_docs/github/wiki-writing-guidelines.md) - Content standards
 - **Wiki Location**: `../hmis.wiki` sibling directory (NEVER inside the main project repo)
 - **Target Audience**: End users (pharmacy staff, nurses, doctors, administrators)
 
+### When Working on Inward / Inpatient Module
+- [Inward Navigation & Reference](developer_docs/navigation/inward_navigation.md) - Pages, controllers, workflow, open issues
+- [Inward CC Settlement Tracking](developer_docs/billing/inward-cc-settlement-tracking.md) - Data model, settlement paths, cancellation flows, and debtor report pattern for inpatient credit company payments
+
+### When Adding a New Privilege
+- [Privilege System Guide](developer_docs/security/privilege-system.md) - **All 3 steps required**: enum value + `getCategory()` case + `UserPrivilageController` tree node. Adding only the enum is NOT sufficient — the privilege will be invisible in the admin UI. This was missed for `InpatientClinicalDischarge` (PR #19658, issue #19677).
+
+### When Developing a REST API
+- [REST API Development Guide](developer_docs/api/rest-api-development-guide.md) - **All 4 registration steps required**: `ApplicationConfig` + `CapabilityStatementResource` + `AnthropicApiService.buildSystemPrompt` (module listing) + `AnthropicApiService.buildToolsArray`/`executeToolCall` (tool handler). Skipping any step means the API is invisible to the AI chat or undiscoverable via `/api/capabilities`.
+
+### When Reviewing a PR
+- [PR Review Workflow](developer_docs/git/pr-review-workflow.md) - Full checklist for handling CodeRabbit/Codex comments: fetch → investigate → discuss → batch-fix → persistence check → push → reply → re-request review → cleanup
+- Use `/review-pr <pr-url>` skill to automate investigation and fix steps
+
 ### When Committing Code
 - [Commit Conventions](developer_docs/git/commit-conventions.md) - Message format
+
+### When Creating a Hotfix for a Production Branch
+- **Branch name MUST end with `-hotfix`** (rule #15 above) — CI blocks merges otherwise
+- Use the `/hotfix-deploy` skill to run the full workflow: branch from prod → fix → commit → push → PR targeting prod branch
+- [Commit Conventions — Hotfix Branches](developer_docs/git/commit-conventions.md#hotfix-branches) - naming format and examples
 
 ## Common Abbreviations & Terms
 - **TIA**: Thanks In Advance

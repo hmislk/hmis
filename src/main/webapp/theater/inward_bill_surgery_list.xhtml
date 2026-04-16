@@ -1,0 +1,208 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:in="http://xmlns.jcp.org/jsf/composite/inward">
+
+    <ui:define name="content">
+
+        <h:panelGroup styleClass="opdPanel">
+            <h:form id="form">
+
+                <!-- Patient selection panel (shown when no admission is selected) -->
+                <p:panel rendered="#{surgeryBillController.surgeryBill.patientEncounter eq null}">
+                    <f:facet name="header">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h:outputText styleClass="fa-solid fa-address-card fa-lg"/>
+                                <p:outputLabel value="Patient Details" class="m-2"/>
+                            </div>
+                            <div>
+                                <h:panelGroup rendered="#{webUserController.hasPrivilege('NursingWorkBench')}">
+                                    <p:commandButton
+                                        value="Nursing WorkBench"
+                                        action="#{nursingWorkBenchController.navigateToBackNursingWorkBench()}"
+                                        ajax="false"
+                                        class="ui-button-operating-theatre"
+                                        icon="fa fa-arrow-left">
+                                    </p:commandButton>
+                                </h:panelGroup>
+                            </div>
+                        </div>
+                    </f:facet>
+
+                    <h:outputLabel value="Type Patient Name or BHT : " class="mx-2"/>
+                    <p:autoComplete
+                        forceSelection="true"
+                        value="#{surgeryBillController.surgeryBill.patientEncounter}"
+                        completeMethod="#{admissionController.completePatient}"
+                        var="apt2"
+                        itemLabel="#{apt2.patient.person.name}"
+                        itemValue="#{apt2}"
+                        size="40"
+                        class="m-2">
+                        <p:column headerText="PHN" style="padding: 6px; width: 8em;">
+                            <h:outputLabel value="#{apt2.patient.phn}"/>
+                        </p:column>
+                        <p:column headerText="BHT No" style="padding: 6px; width: 8em;">
+                            <h:outputLabel value="#{apt2.bhtNo}"/>
+                        </p:column>
+                        <p:column headerText="Patient" style="padding: 6px; width: 400px;">
+                            <h:outputLabel value="#{apt2.patient.person.nameWithTitle}"/>
+                        </p:column>
+                        <p:column headerText="Room" style="padding: 6px; width: 8em;">
+                            <h:outputLabel value="#{apt2.currentPatientRoom.roomFacilityCharge.name}"/>
+                        </p:column>
+                    </p:autoComplete>
+                    <p:commandButton value="Select" ajax="false" id="btnSelect"/>
+                </p:panel>
+
+                <!-- Surgery list panel (shown when admission is selected) -->
+                <p:panel rendered="#{surgeryBillController.surgeryBill.patientEncounter ne null}">
+                    <f:facet name="header">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h:outputText styleClass="fa fa-scalpel fa-lg"/>
+                                <h:outputLabel value="Surgeries for BHT" class="mx-2"/>
+                                <h:outputLabel value="#{surgeryBillController.surgeryBill.patientEncounter.bhtNo}"
+                                               style="font-weight: bold;"/>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <p:commandButton
+                                    value="Add Surgery"
+                                    ajax="false"
+                                    icon="fa fa-plus"
+                                    class="ui-button-success"
+                                    action="#{surgeryBillController.navigateToAddSurgeriesFromAdmissionProfile()}"
+                                    rendered="#{!surgeryBillController.surgeryBill.patientEncounter.paymentFinalized}">
+                                </p:commandButton>
+
+                                <h:panelGroup rendered="#{webUserController.hasPrivilege('InwardSearch')}">
+                                    <p:commandButton
+                                        ajax="false"
+                                        value="Inpatient Dashboard"
+                                        icon="fa fa-id-card"
+                                        class="ui-button-secondary"
+                                        action="#{admissionController.navigateToAdmissionProfilePage()}">
+                                        <f:setPropertyActionListener
+                                            value="#{surgeryBillController.surgeryBill.patientEncounter}"
+                                            target="#{admissionController.current}"/>
+                                    </p:commandButton>
+                                </h:panelGroup>
+
+                                <h:panelGroup rendered="#{webUserController.hasPrivilege('NursingWorkBench')}">
+                                    <p:commandButton
+                                        value="Nursing WorkBench"
+                                        action="#{nursingWorkBenchController.navigateToBackNursingWorkBench()}"
+                                        ajax="false"
+                                        class="ui-button-operating-theatre"
+                                        icon="fa fa-arrow-left">
+                                    </p:commandButton>
+                                </h:panelGroup>
+                            </div>
+                        </div>
+                    </f:facet>
+
+                    <!-- Patient summary -->
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <in:bhtDetail admission="#{surgeryBillController.surgeryBill.patientEncounter}"/>
+                        </div>
+                    </div>
+
+                    <!-- Blocking bills warning -->
+                    <p:panel rendered="#{not empty surgeryBillController.blockingBillsForDelete}"
+                             style="border: 2px solid #f44336; margin-bottom: 12px;">
+                        <f:facet name="header">
+                            <span style="color: #f44336; font-weight: bold;">
+                                <i class="fa fa-exclamation-triangle"/>
+                                Cannot Delete — Related Bills Must Be Cancelled First
+                            </span>
+                        </f:facet>
+                        <p:outputLabel value="The surgery '#{surgeryBillController.selectedSurgeryToDelete.procedure.item.name}' has the following active bills. Please cancel them before deleting the surgery:" class="d-block mb-2"/>
+                        <p:dataTable value="#{surgeryBillController.blockingBillsForDelete}" var="bb" styleClass="mt-2">
+                            <p:column headerText="Bill No">
+                                <h:outputLabel value="#{bb.deptId}"/>
+                            </p:column>
+                            <p:column headerText="Type">
+                                <h:outputLabel value="#{bb.billType}"/>
+                            </p:column>
+                            <p:column headerText="Surgery Bill Type">
+                                <h:outputLabel value="#{bb.surgeryBillType}"/>
+                            </p:column>
+                            <p:column headerText="Total">
+                                <h:outputLabel value="#{bb.total}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                            </p:column>
+                            <p:column headerText="Date">
+                                <h:outputLabel value="#{bb.createdAt}">
+                                    <f:convertDateTime timeZone="Asia/Colombo"
+                                                       pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
+                                </h:outputLabel>
+                            </p:column>
+                        </p:dataTable>
+                    </p:panel>
+
+                    <!-- Surgery list table -->
+                    <p:dataTable value="#{surgeryBillController.surgeryList}" var="surg"
+                                 emptyMessage="No surgeries found for this BHT.">
+                        <p:column headerText="Surgery Name">
+                            <h:outputLabel value="#{surg.procedure.item.name}"/>
+                        </p:column>
+                        <p:column headerText="Bill No">
+                            <h:outputLabel value="#{surg.deptId}"/>
+                        </p:column>
+                        <p:column headerText="Date">
+                            <h:outputLabel value="#{surg.createdAt}">
+                                <f:convertDateTime timeZone="Asia/Colombo"
+                                                   pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
+                            </h:outputLabel>
+                        </p:column>
+                        <p:column headerText="Total" styleClass="text-end">
+                            <h:outputLabel value="#{surg.total}">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputLabel>
+                        </p:column>
+                        <p:column headerText="Professional Fees" styleClass="text-center">
+                            <p:commandButton
+                                value="Add Fees"
+                                icon="fa fa-plus"
+                                class="ui-button-success"
+                                ajax="false"
+                                action="#{inwardProfessionalBillController.navigateToSurgeryProfessionalFees(surg)}"
+                                rendered="#{!surgeryBillController.surgeryBill.patientEncounter.paymentFinalized}">
+                            </p:commandButton>
+                            <p:commandButton
+                                value="View Fees"
+                                icon="fa fa-list"
+                                class="ui-button-secondary"
+                                ajax="false"
+                                action="#{inwardProfessionalBillController.navigateToSurgeryProfessionalFeesList(surg)}">
+                            </p:commandButton>
+                        </p:column>
+
+                        <p:column headerText="Action" styleClass="text-center"
+                                  rendered="#{!surgeryBillController.surgeryBill.patientEncounter.paymentFinalized}">
+                            <p:commandButton
+                                value="Delete"
+                                icon="fa fa-trash"
+                                class="ui-button-danger"
+                                ajax="false"
+                                action="#{surgeryBillController.checkAndDeleteSurgery(surg)}"
+                                onclick="return confirm('Are you sure you want to delete this surgery? This action cannot be undone.');">
+                            </p:commandButton>
+                        </p:column>
+                    </p:dataTable>
+
+                </p:panel>
+
+            </h:form>
+        </h:panelGroup>
+
+    </ui:define>
+</ui:composition>

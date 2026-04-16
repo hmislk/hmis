@@ -211,6 +211,9 @@ public class BillItemReportDTO implements Serializable {
             // OPD Batch Bill Types - Cancellations
             case OPD_BATCH_BILL_CANCELLATION:
             case PACKAGE_OPD_BATCH_BILL_CANCELLATION:
+            // Inward Professional Fee Cancellations
+            case INWARD_PROFESSIONAL_FEE_BILL_CANCELLATION:
+            case INWARD_THEATRE_PROFESSIONAL_FEE_BILL_CANCELLATION:
                 return BillCategory.CANCELLATION;
             case OPD_BILL_REFUND:
             case INWARD_SERVICE_BILL_REFUND:

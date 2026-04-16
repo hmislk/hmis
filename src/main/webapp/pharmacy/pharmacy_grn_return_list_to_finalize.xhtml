@@ -155,15 +155,6 @@
                                             </h:outputLabel>
                                         </span>
                                     </div>
-                                    <h:panelGroup rendered="#{b.cancelled}">
-                                        <div class="alert alert-danger py-1 px-2 mb-0 small">
-                                            <i class="fas fa-times-circle me-1"></i>
-                                            <strong>Cancelled:</strong>
-                                            <h:outputLabel rendered="#{b.cancelled}" value="#{b.cancelledBill.createdAt}">
-                                                <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                            </h:outputLabel>
-                                        </div>
-                                    </h:panelGroup>
                                 </div>
                             </p:column> 
 
@@ -173,12 +164,6 @@
                                         <i class="fas fa-user text-primary me-2"></i>
                                         <span class="fw-medium">#{b.creater.webUserPerson.name}</span>
                                     </div>
-                                    <h:panelGroup rendered="#{b.cancelled}">
-                                        <div class="text-danger small">
-                                            <i class="fas fa-user-times me-1"></i>
-                                            <strong>Cancelled by:</strong> #{b.cancelledBill.creater.webUserPerson.name}
-                                        </div>
-                                    </h:panelGroup>
                                 </div>
                             </p:column>    
 
@@ -221,8 +206,8 @@
                                 </div>
                             </p:column>
 
-                            <p:column headerText="Actions" styleClass="text-center" exportable="false" width="120">
-                                <div class="d-flex justify-content-center align-items-center gap-2">
+                            <p:column headerText="Actions" styleClass="text-center" exportable="false" width="210">
+                                <div class="d-flex flex-wrap justify-content-center align-items-center gap-1">
                                     <p:commandButton
                                         id="finalize"
                                         ajax="false"
@@ -233,6 +218,19 @@
                                         value="#{b.checkedBy ne null ? 'Finalized' : 'Finalize'}"
                                         action="#{grnReturnWorkflowController.navigateToUpdateGrnReturn()}"
                                         disabled="#{b.checkedBy ne null or b.cancelled eq true}"
+                                        style="min-width: 90px;">
+                                        <f:setPropertyActionListener target="#{grnReturnWorkflowController.currentBill}" value="#{b}"/>
+                                    </p:commandButton>
+                                    <p:commandButton
+                                        id="cancelFromList"
+                                        rendered="#{not b.cancelled and b.checkedBy eq null}"
+                                        title="Cancel GRN Return #{b.deptId}"
+                                        icon="fas fa-ban"
+                                        class="ui-button-outlined ui-button-danger"
+                                        value="Cancel"
+                                        action="#{grnReturnWorkflowController.cancelGrnReturnFromList()}"
+                                        update="tbl :messages"
+                                        onclick="if(!confirm('Cancel GRN Return #{b.deptId}?\nThis action cannot be undone.')) return false;"
                                         style="min-width: 90px;">
                                         <f:setPropertyActionListener target="#{grnReturnWorkflowController.currentBill}" value="#{b}"/>
                                     </p:commandButton>

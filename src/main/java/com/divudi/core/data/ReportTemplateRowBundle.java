@@ -118,6 +118,9 @@ public class ReportTemplateRowBundle implements Serializable {
     private double settledAmountBySponsorsTotal;
     private double totalBalance;
 
+    private double floatOutTotal;
+    private double floatInTotal;
+
     // Booleans to track transactions
     private boolean hasOnCallTransaction;
     private boolean hasCashTransaction;
@@ -1871,6 +1874,26 @@ public class ReportTemplateRowBundle implements Serializable {
         }
     }
 
+    // For channel bills
+    public void createRowValuesFromBillForChannelBills() {
+        if (this.reportTemplateRows != null && !this.reportTemplateRows.isEmpty()) {
+            for (ReportTemplateRow row : this.reportTemplateRows) {
+
+                if (row.getBill() == null) {
+                    continue;
+                }
+
+                // Setting values
+                row.setGrossTotal(row.getBill().getTotal());
+                row.setDiscount(row.getBill().getDiscount());
+                row.setTotal(row.getBill().getNetTotal());
+                row.setHospitalTotal(row.getBill().getHospitalFee());
+                row.setStaffTotal(row.getBill().getStaffFee());
+                row.setCcTotal(row.getBill().getTotalCenterFee());
+            }
+        }
+    }
+
     public Map<String, List<BillItem>> getGroupedBillItems() {
         return groupedBillItems;
     }
@@ -2284,6 +2307,26 @@ public class ReportTemplateRowBundle implements Serializable {
 
     public void setTotalBalance(double totalBalance) {
         this.totalBalance = totalBalance;
+    }
+
+    public double getFloatOutTotal() {
+        return floatOutTotal;
+    }
+
+    public void setFloatOutTotal(double floatOutTotal) {
+        this.floatOutTotal = floatOutTotal;
+    }
+
+    public double getFloatInTotal() {
+        return floatInTotal;
+    }
+
+    public void setFloatInTotal(double floatInTotal) {
+        this.floatInTotal = floatInTotal;
+    }
+
+    public double getFloatNetTotal() {
+        return floatInTotal - floatOutTotal;
     }
 
     public void setTotal(Double total) {

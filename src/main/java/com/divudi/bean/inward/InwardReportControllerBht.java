@@ -27,6 +27,7 @@ import com.divudi.core.entity.Patient;
 import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.entity.PatientItem;
 import com.divudi.core.entity.Speciality;
+import com.divudi.core.entity.inward.Admission;
 import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.entity.inward.PatientRoom;
 import com.divudi.core.entity.lab.Investigation;
@@ -37,6 +38,7 @@ import com.divudi.core.facade.PatientItemFacade;
 import com.divudi.core.facade.PatientRoomFacade;
 import com.divudi.service.BillService;
 import com.divudi.core.data.dto.InpatientPharmacyIssueDTO;
+import com.divudi.core.data.dto.InpatientServiceIssueDTO;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -49,6 +51,8 @@ import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.persistence.TemporalType;
 
 /**
@@ -74,6 +78,8 @@ public class InwardReportControllerBht implements Serializable {
     private SessionController sessionController;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    AdmissionController admissionController;
 
     PatientEncounter patientEncounter;
     Bill bill;
@@ -94,6 +100,9 @@ public class InwardReportControllerBht implements Serializable {
 
     private List<InpatientPharmacyIssueDTO> pharmacyIssueDtosToPatientEncounter;
     private double pharmacyIssueDtosToPatientEncounterNetTotal;
+
+    private List<InpatientServiceIssueDTO> serviceIssueDtosToPatientEncounter;
+    private double serviceIssueDtosToPatientEncounterNetTotal;
 
     private List<BillItem> labBillItemsToPatientEncounter;
     private double labBillItemsToPatientEncounterNetTotal;
@@ -234,11 +243,150 @@ public class InwardReportControllerBht implements Serializable {
             }
 
         } catch (Exception e) {
-            pharmacyIssueDtosToPatientEncounter = new ArrayList<>();
-            pharmacyIssueDtosToPatientEncounterNetTotal = 0.0;
+            Logger.getLogger(InwardReportControllerBht.class.getName()).log(Level.SEVERE, "Error loading pharmacy issue DTOs", e);
+            JsfUtil.addErrorMessage("Error loading pharmacy data");
+            return null;
         }
 
         return "/inward/reports/inpatient_pharmacy_item_list_dto?faces-redirect=true";
+    }
+
+    public String navigateToInpatientServiceItemListDto() {
+        if (patientEncounter == null) {
+            JsfUtil.addErrorMessage("No encounter");
+            return null;
+        }
+        serviceIssueDtosToPatientEncounter = new ArrayList<>();
+        serviceIssueDtosToPatientEncounterNetTotal = 0.0;
+        try {
+            List<BillTypeAtomic> serviceTypes = new ArrayList<>();
+            serviceTypes.add(BillTypeAtomic.INWARD_SERVICE_BILL);
+            serviceTypes.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL);
+            serviceTypes.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
+            serviceTypes.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL_CANCELLATION);
+            serviceTypes.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+            serviceTypes.add(BillTypeAtomic.INWARD_OUTSIDE_CHARGES_BILL);
+            serviceTypes.add(BillTypeAtomic.INWARD_OUTSIDE_CHARGES_BILL_CANCELLATION);
+
+            serviceIssueDtosToPatientEncounter = fetchServiceIssueDtos(serviceTypes);
+
+            for (InpatientServiceIssueDTO dto : serviceIssueDtosToPatientEncounter) {
+                double netValue = dto.getNetValue() != null ? dto.getNetValue() : 0.0;
+                if (Boolean.TRUE.equals(dto.getCancellation())) {
+                    serviceIssueDtosToPatientEncounterNetTotal -= Math.abs(netValue);
+                } else {
+                    serviceIssueDtosToPatientEncounterNetTotal += Math.abs(netValue);
+                }
+            }
+        } catch (Exception e) {
+            Logger.getLogger(InwardReportControllerBht.class.getName()).log(Level.SEVERE, "Error loading service issue DTOs", e);
+            JsfUtil.addErrorMessage("Error loading service data");
+            return null;
+        }
+        return "/inward/reports/inpatient_service_item_list_dto?faces-redirect=true";
+    }
+
+    public String navigateToInpatientPharmacyAndServiceItemListDto() {
+        if (patientEncounter == null) {
+            JsfUtil.addErrorMessage("No encounter");
+            return null;
+        }
+        // Pharmacy part
+        pharmacyIssueDtosToPatientEncounter = new ArrayList<>();
+        pharmacyIssueDtosToPatientEncounterNetTotal = 0.0;
+        try {
+            List<BillTypeAtomic> pharmacyTypes = new ArrayList<>();
+            pharmacyTypes.add(BillTypeAtomic.PHARMACY_DIRECT_ISSUE);
+            pharmacyTypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE);
+            pharmacyTypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN);
+            pharmacyTypes.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD);
+            pharmacyTypes.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN);
+            List<InpatientPharmacyIssueDTO> allDtos = fetchPharmacyIssueDtos(pharmacyTypes);
+            pharmacyIssueDtosToPatientEncounter.addAll(allDtos);
+            for (InpatientPharmacyIssueDTO dto : allDtos) {
+                BillTypeAtomic billType = dto.getBillTypeAtomic();
+                double netValue = dto.getNetValue() != null ? dto.getNetValue() : 0.0;
+                if (billType == BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN
+                        || billType == BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN) {
+                    pharmacyIssueDtosToPatientEncounterNetTotal -= Math.abs(netValue);
+                } else {
+                    pharmacyIssueDtosToPatientEncounterNetTotal += Math.abs(netValue);
+                }
+            }
+        } catch (Exception e) {
+            Logger.getLogger(InwardReportControllerBht.class.getName()).log(Level.SEVERE, "Error loading pharmacy issue DTOs for combined report", e);
+            JsfUtil.addErrorMessage("Error loading pharmacy data");
+            return null;
+        }
+        // Service part
+        serviceIssueDtosToPatientEncounter = new ArrayList<>();
+        serviceIssueDtosToPatientEncounterNetTotal = 0.0;
+        try {
+            List<BillTypeAtomic> serviceTypes = new ArrayList<>();
+            serviceTypes.add(BillTypeAtomic.INWARD_SERVICE_BILL);
+            serviceTypes.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL);
+            serviceTypes.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
+            serviceTypes.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL_CANCELLATION);
+            serviceTypes.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+            serviceTypes.add(BillTypeAtomic.INWARD_OUTSIDE_CHARGES_BILL);
+            serviceTypes.add(BillTypeAtomic.INWARD_OUTSIDE_CHARGES_BILL_CANCELLATION);
+            serviceIssueDtosToPatientEncounter = fetchServiceIssueDtos(serviceTypes);
+            for (InpatientServiceIssueDTO dto : serviceIssueDtosToPatientEncounter) {
+                double netValue = dto.getNetValue() != null ? dto.getNetValue() : 0.0;
+                if (Boolean.TRUE.equals(dto.getCancellation())) {
+                    serviceIssueDtosToPatientEncounterNetTotal -= Math.abs(netValue);
+                } else {
+                    serviceIssueDtosToPatientEncounterNetTotal += Math.abs(netValue);
+                }
+            }
+        } catch (Exception e) {
+            Logger.getLogger(InwardReportControllerBht.class.getName()).log(Level.SEVERE, "Error loading service issue DTOs for combined report", e);
+            JsfUtil.addErrorMessage("Error loading service data");
+            return null;
+        }
+        return "/inward/reports/inpatient_pharmacy_and_service_item_list_dto?faces-redirect=true";
+    }
+
+    private List<InpatientServiceIssueDTO> fetchServiceIssueDtos(List<BillTypeAtomic> billTypes) {
+        String jpql = "SELECT new com.divudi.core.data.dto.InpatientServiceIssueDTO("
+                + "bi.id, "
+                + "bi.item.name, "
+                + "bi.qty, "
+                + "bi.netValue, "
+                + "bi.bill.createdAt, "
+                + "bi.bill.billTypeAtomic, "
+                + "COALESCE(bi.bill.department.name, 'N/A'), "
+                + "bi.bill.cancelled) "
+                + "FROM BillItem bi "
+                + "WHERE bi.bill.patientEncounter = :patientEncounter "
+                + "AND bi.bill.billTypeAtomic IN :billTypeAtomics "
+                + "AND bi.retired = FALSE "
+                + "AND bi.bill.retired = FALSE ";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("billTypeAtomics", billTypes);
+        params.put("patientEncounter", patientEncounter);
+
+        if (department != null) {
+            jpql += "AND bi.bill.department = :department ";
+            params.put("department", department);
+        }
+
+        jpql += "ORDER BY bi.bill.createdAt, bi.id";
+
+        List<InpatientServiceIssueDTO> result = (List<InpatientServiceIssueDTO>) billItemFacade.findLightsByJpql(jpql, params);
+        return result != null ? result : new ArrayList<>();
+    }
+
+    public String navigateToAdmissionProfile() {
+        if (patientEncounter == null) {
+            JsfUtil.addErrorMessage("No encounter selected");
+            return null;
+        }
+        if (patientEncounter instanceof Admission) {
+            admissionController.setCurrent((Admission) patientEncounter);
+        }
+        return "/inward/admission_profile?faces-redirect=true";
     }
 
     private List<InpatientPharmacyIssueDTO> fetchPharmacyIssueDtos(List<BillTypeAtomic> billTypes) {
@@ -270,7 +418,6 @@ public class InwardReportControllerBht implements Serializable {
         jpql += "ORDER BY bi.bill.createdAt, bi.id";
 
         List<InpatientPharmacyIssueDTO> result = (List<InpatientPharmacyIssueDTO>) billItemFacade.findLightsByJpql(jpql, params);
-
 
         return result != null ? result : new ArrayList<>();
     }
@@ -1774,5 +1921,21 @@ public class InwardReportControllerBht implements Serializable {
 
     public void setPharmacyIssueDtosToPatientEncounterNetTotal(double pharmacyIssueDtosToPatientEncounterNetTotal) {
         this.pharmacyIssueDtosToPatientEncounterNetTotal = pharmacyIssueDtosToPatientEncounterNetTotal;
+    }
+
+    public List<InpatientServiceIssueDTO> getServiceIssueDtosToPatientEncounter() {
+        return serviceIssueDtosToPatientEncounter;
+    }
+
+    public void setServiceIssueDtosToPatientEncounter(List<InpatientServiceIssueDTO> serviceIssueDtosToPatientEncounter) {
+        this.serviceIssueDtosToPatientEncounter = serviceIssueDtosToPatientEncounter;
+    }
+
+    public double getServiceIssueDtosToPatientEncounterNetTotal() {
+        return serviceIssueDtosToPatientEncounterNetTotal;
+    }
+
+    public void setServiceIssueDtosToPatientEncounterNetTotal(double serviceIssueDtosToPatientEncounterNetTotal) {
+        this.serviceIssueDtosToPatientEncounterNetTotal = serviceIssueDtosToPatientEncounterNetTotal;
     }
 }
