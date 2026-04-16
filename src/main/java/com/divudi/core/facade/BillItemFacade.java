@@ -71,6 +71,29 @@ public class BillItemFacade extends AbstractFacade<BillItem> {
         int blocks = (count + allocationSize - 1) / allocationSize;
         int toReserve = blocks * allocationSize;
 
+        // After the GenerationType.IDENTITY migration (v2.2.0), EclipseLink no longer
+        // updates the SEQUENCE table — MySQL per-table AUTO_INCREMENT handles ID
+        // assignment instead.  This means SEQUENCE.SEQ_COUNT can lag behind the real
+        // AUTO_INCREMENT values, causing allocateSequenceBlock() to hand out IDs that
+        // already exist in the target tables (PK conflicts on bulk INSERT).
+        //
+        // Guard: before advancing the counter, ensure SEQ_COUNT is at or above the
+        // highest AUTO_INCREMENT across all entity tables that have a BIGINT ID column.
+        // GREATEST() makes the UPDATE a no-op when the counter is already safe.
+        Query sync = em.createNativeQuery(
+                "UPDATE SEQUENCE s "
+                + "JOIN (SELECT COALESCE(MAX(t.AUTO_INCREMENT), 0) AS max_ai "
+                + "      FROM information_schema.TABLES t "
+                + "      JOIN information_schema.COLUMNS c "
+                + "        ON t.TABLE_NAME = c.TABLE_NAME AND t.TABLE_SCHEMA = c.TABLE_SCHEMA "
+                + "      WHERE t.TABLE_SCHEMA = DATABASE() "
+                + "        AND c.COLUMN_NAME = 'ID' "
+                + "        AND c.DATA_TYPE = 'bigint' "
+                + "        AND c.EXTRA LIKE '%auto_increment%') ai "
+                + "SET s.SEQ_COUNT = GREATEST(s.SEQ_COUNT, ai.max_ai) "
+                + "WHERE s.SEQ_NAME = 'SEQ_GEN'");
+        sync.executeUpdate();
+
         Query update = em.createNativeQuery(
                 "UPDATE sequence SET SEQ_COUNT = LAST_INSERT_ID(SEQ_COUNT + ?) WHERE SEQ_NAME = 'SEQ_GEN'");
         update.setParameter(1, toReserve);
