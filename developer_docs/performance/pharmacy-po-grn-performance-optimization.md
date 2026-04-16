@@ -59,33 +59,42 @@ this produces **up to 200 extra DB queries** just to open the GRN page.
 
 ---
 
-## Fix 2 — PO list: N+1 GRN loading (PENDING)
+## Fix 2 — PO list: N+1 GRN loading (DONE)
 
-**Issue:** TBD
-**Status:** Not yet started — waiting for Fix 1 QA to pass.
+**Issue:** hmislk/hmis#19987
+**Branch:** `feature/19987-fix-po-list-bulk-grn-load` (stacked on Fix 1)
+**Files:**
+- `src/main/java/com/divudi/bean/common/SearchController.java`
+- `src/main/webapp/pharmacy/pharmacy_purchase_order_list_for_recieve.xhtml`
 
 ### Root cause
 
-`createPoTable()` (`SearchController.java:7157`) loops over every loaded PO and
-calls `getGrns(b, referenceBillTypes)`, which runs **2 queries per PO**
-(one for `referenceBill = :ref`, one for `billedBill.referenceBill = :ref`).
-For 50 POs this is 101 total queries. Additionally, the PO main query loads full
-`Bill` entities, triggering lazy loads on `creater.webUserPerson.name`,
-`toInstitution.name`, `fromDepartment.name` per row.
+`createPoTable()` looped over every loaded PO and called `getGrns()` (2 queries
+per PO). For 50 POs → **101 total queries** just to load the list.
+GRN details were also rendered inline for every row (always-visible nested table).
 
-### Planned fix
+### Fix applied
 
-1. Replace per-PO `getGrns()` loop with one bulk query that loads all GRNs for
-   all matching POs at once, groups them by PO ID in a `Map<Long, List<Bill>>`,
-   then assigns in one pass.
-2. Add `JOIN FETCH` clauses to the main PO query for the common lazy paths.
-3. (Optional) Convert the always-visible nested GRN sub-table to
-   `p:rowExpansion` so GRN detail is loaded on demand.  Show a GRN count badge
-   in the main row as the indicator.
+- **Backend**: Replaced the per-PO loop with `fillGrnsByBulkQuery()`, which
+  runs **2 queries total** for all POs:
+  - Path 1: `g.referenceBill IN :pos`
+  - Path 2: `g.billedBill.referenceBill IN :pos`
+  Results grouped into `Map<Long, List<Bill>>` and assigned in one pass.
+- **Frontend**: Converted the always-visible nested GRN table to
+  `p:rowExpansion` — GRN details only render when the user expands a row.
+  Added a GRN count badge (green = has GRNs, grey = none) in a narrow column
+  as the at-a-glance indicator.
 
-**Key files:**
-- `src/main/java/com/divudi/bean/common/SearchController.java` — `createPoTable()` (line ~7103) and `getGrns()` (line ~7177)
-- `src/main/webapp/pharmacy/pharmacy_purchase_order_list_for_recieve.xhtml`
+### Testing checklist (for QA)
+
+- [ ] Search POs — list loads noticeably faster than before.
+- [ ] GRN count badge shows correct count for each PO row.
+- [ ] Expand a row — GRN table appears with correct GRN numbers, dates, values.
+- [ ] GRN "View" button navigates to finalized GRN page correctly.
+- [ ] GRN "Edit" button navigates to saved GRN edit page correctly.
+- [ ] Cancelled GRNs shown with correct red styling in expansion.
+- [ ] Action buttons (Create GRN, Receive, PO Close/Re-Open) still work correctly.
+- [ ] POs with no GRNs show "0" badge and empty expansion message.
 
 ---
 
@@ -93,10 +102,9 @@ For 50 POs this is 101 total queries. Additionally, the PO main query loads full
 
 If this conversation is disconnected, resume from here:
 
-1. Fix 1 is merged / in QA.
-2. Start Fix 2: create a new issue, branch from `origin/development`, bulk the
-   GRN load in `SearchController.createPoTable()`, optionally add row expansion
-   to the XHTML.
-3. After Fix 2: consider a `PurchaseOrderSummaryDto` with a JOIN FETCH
-   constructor query to eliminate remaining lazy loads on the PO list (lower
-   priority once the N+1 is gone).
+1. Fix 1 (GRN entry bulk rate) — branch `feature/19982-fix-grn-entry-bulk-rate-lookup`, PR #19983
+2. Fix 2 (PO list bulk GRN) — branch `feature/19987-fix-po-list-bulk-grn-load`, PR TBD (stacked on Fix 1)
+3. Both fixes are stacked (Fix 2 based on Fix 1). They should be merged together to `development`.
+4. After both pass QA: consider remaining lazy-load optimization on the PO list
+   main query (JOIN FETCH for `creater.webUserPerson`, `toInstitution`,
+   `fromDepartment`) — lower priority now that the N+1 is resolved.
