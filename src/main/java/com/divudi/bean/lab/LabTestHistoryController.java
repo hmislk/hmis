@@ -185,13 +185,6 @@ public class LabTestHistoryController implements Serializable {
     public void addReCalculateDynamicLabelHistory(PatientInvestigation patientInvestigation, PatientReport patientReport) {
         labTestHistoryService.addReCalculateDynamicLabelHistory(patientInvestigation, patientReport, sessionController.getInstitution(), sessionController.getDepartment(), sessionController.getLoggedUser());
     }
-    
-    public void addParientDetailsEditHistory(PatientInvestigation patientInvestigation, PatientReport patientReport) {
-        addNewHistory(TestHistoryType.PATIENT_DETAILS_CHANGE, null, null, patientInvestigation, patientReport, null, null, null, null, null, null, null, null);
-    }
-    public void addReCalculateDynamicLabelHistory(PatientInvestigation patientInvestigation, PatientReport patientReport) {
-        addNewHistory(TestHistoryType.RECALCULATE_DYNAMICLABEL, null, null, patientInvestigation, patientReport, null, null, null, null, null, null, null, null);
-    }
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Report Sent">
