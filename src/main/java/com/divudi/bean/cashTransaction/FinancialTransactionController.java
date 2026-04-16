@@ -2019,7 +2019,7 @@ public class FinancialTransactionController implements Serializable {
                     + "AND p.handingOverStarted = true "
                     + "AND p.cashbookEntryStated = false "
                     + "AND b.billTypeAtomic IN :btas "
-                    + "AND p.id > :sid";
+                    + "AND b.id > :sid";
             floatParams.put("cu", selectedBill.getFromWebUser());
             floatParams.put("btas", floatTransferBtas);
             floatParams.put("sid", shiftStartBill.getId());
@@ -2098,7 +2098,7 @@ public class FinancialTransactionController implements Serializable {
                     + "AND p.handingOverStarted = true "
                     + "AND p.cashbookEntryStated = false "
                     + "AND b.billTypeAtomic IN :btas "
-                    + "AND p.id > :sid";
+                    + "AND b.id > :sid";
             floatParams.put("cu", selectedBill.getFromWebUser());
             floatParams.put("btas", floatTransferBtas);
             floatParams.put("sid", shiftStartBill.getId());
@@ -5769,7 +5769,7 @@ public class FinancialTransactionController implements Serializable {
                     + "AND p.handingOverStarted = false "
                     + "AND p.cashbookEntryStated = false "
                     + "AND b.billTypeAtomic IN :btas "
-                    + "AND p.id > :sid";
+                    + "AND b.id > :sid";
             floatParams.put("cu", sessionController.getLoggedUser());
             floatParams.put("btas", floatTransferBtas);
             floatParams.put("sid", shiftStartBillForFloats.getId());
