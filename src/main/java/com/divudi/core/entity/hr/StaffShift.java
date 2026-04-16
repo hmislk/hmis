@@ -45,7 +45,7 @@ public class StaffShift implements Serializable {
     Shift shift;
     private static final long serialVersionUID = 1L;
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @OneToOne
     private Staff staff;

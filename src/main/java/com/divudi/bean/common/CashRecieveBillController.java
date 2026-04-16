@@ -254,6 +254,7 @@ public class CashRecieveBillController implements Serializable {
             getCurrentBillItem().setPatientEncounter(b.getPatientEncounter());
             getCurrentBillItem().setNetValue(b.getNetTotal());
             getCurrentBillItem().getPatientEncounter().setCreditCompany(b.getCreditCompany());
+            getCurrentBillItem().setReferenceBill(b);
             getCurrentBillItem().setBill(b);
 //            selectBhtListener();
             addToBht();

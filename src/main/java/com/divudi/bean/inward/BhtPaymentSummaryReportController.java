@@ -213,7 +213,7 @@ public class BhtPaymentSummaryReportController implements Serializable {
             if (bi.getReferenceBill() != null && bi.getReferenceBill().getCreditCompany() != null) {
                 companyName = bi.getReferenceBill().getCreditCompany().getName();
             }
-            row.addCreditSettlement(Math.abs(bi.getNetValue()), companyName);
+            row.addCreditSettlement(bi.getNetValue(), companyName);
         }
 
         return row;
@@ -237,18 +237,21 @@ public class BhtPaymentSummaryReportController implements Serializable {
     }
 
     /**
-     * Fetch BillItems from INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED bills
-     * that reference this encounter.
+     * Fetch BillItems from INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED and
+     * INPATIENT_CREDIT_COMPANY_PAYMENT_CANCELLATION bills that reference this encounter.
+     * Including both types allows cancellation items (negative netValue) to naturally
+     * offset the received items, so the net total is correct even when payments are cancelled.
      */
     private List<BillItem> fetchCreditSettlementItems(PatientEncounter enc) {
         String jpql = "select bi from BillItem bi"
                 + " where bi.retired = false"
                 + " and bi.bill.retired = false"
-                + " and bi.bill.cancelled = false"
-                + " and bi.bill.billTypeAtomic = :bta"
+                + " and bi.bill.billTypeAtomic in :btas"
                 + " and bi.patientEncounter = :enc";
         Map<String, Object> params = new HashMap<>();
-        params.put("bta", BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED);
+        params.put("btas", java.util.Arrays.asList(
+                BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED,
+                BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_CANCELLATION));
         params.put("enc", enc);
         return billItemFacade.findByJpql(jpql, params);
     }

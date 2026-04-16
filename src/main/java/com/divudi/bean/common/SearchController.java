@@ -59,6 +59,7 @@ import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.opd.OpdBillController;
 import com.divudi.bean.pharmacy.GrnReturnWorkflowController;
 import com.divudi.bean.pharmacy.PharmacyBillSearch;
+import com.divudi.bean.pharmacy.PharmacyController;
 import com.divudi.core.data.BillCategory;
 import com.divudi.core.data.BillClassType;
 
@@ -255,6 +256,8 @@ public class SearchController implements Serializable {
     private EnumController enumController;
     @Inject
     private StaffController staffController;
+    @Inject
+    private PharmacyController pharmacyController;
 
     @Inject
     private GrnReturnWorkflowController grnReturnWorkflowController;
@@ -15909,17 +15912,12 @@ public class SearchController implements Serializable {
     }
 
     public void createPettyTable() {
-        List<BillType> billTypes = new ArrayList<>();
-        billTypes.add(BillType.PettyCash);
-        billTypes.add(BillType.IouIssue);
-
-        Date startTime = new Date();
 
         bills = null;
         String sql;
         Map temMap = new HashMap();
 
-        sql = "select b from BilledBill b where b.billType IN :billTypes and b.institution=:ins "
+        sql = "select b from Bill b where b.billTypeAtomic =:bta and b.institution=:ins "
                 + " and b.createdAt between :fromDate and :toDate and b.retired=false ";
 
         if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
@@ -15950,12 +15948,12 @@ public class SearchController implements Serializable {
         sql += " order by b.createdAt desc  ";
 //
 
-        temMap.put("billTypes", billTypes);
+        temMap.put("bta", BillTypeAtomic.PETTY_CASH_PRE);
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
         temMap.put("ins", getSessionController().getInstitution());
 
-        bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP, 50);
+        bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
 
@@ -20848,7 +20846,7 @@ public class SearchController implements Serializable {
 
         bundle = new ReportTemplateRowBundle();
         bundle.setReportTemplateRows(rs);
-        bundle.createRowValuesFromBill();
+        bundle.createRowValuesFromBillForChannelBills();
         bundle.calculateTotals();
 
     }
@@ -23164,6 +23162,33 @@ public class SearchController implements Serializable {
         return pdfSc;
     }
 
+    // PDF Export: Channel Income Report
+    public StreamedContent getChannelIncomeReportAsPdf() {
+        if (bundle == null || bundle.getReportTemplateRows() == null || bundle.getReportTemplateRows().isEmpty()) {
+            JsfUtil.addErrorMessage("Please generate the Channel Income report before exporting.");
+            return null;
+        }
+
+        StreamedContent pdfSc = null;
+        try {
+            String fileName = "Channel_Income_Report";
+            String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
+            if (dates != null && !dates.isEmpty()) {
+                fileName += "_" + dates;
+            }
+
+            // set bundleName and bundleType
+            bundle.setBundleType("channelIncome");
+            bundle.setName("Channel Income Report");
+            pdfSc = pdfController.createPdfForReportTemplateRows(bundle, PageSize.A4.rotate(), true, getFiltersForChannelIncomeReport(), fileName);
+        } catch (IOException e) {
+            logger.error("getChannelIncomeReportAsPdf: Error creating pdfSc via pdfController.createPdfForReportTemplateRows", e);
+            pdfSc = null;
+            JsfUtil.addErrorMessage("Failed to generate Channel Income PDF file. Please try again.");
+        }
+        return pdfSc;
+    }
+
     // Excel Export: wht Report
     public StreamedContent getWhtReportAsExcel() {
         if (bundle == null || bundle.getReportTemplateRows() == null || bundle.getReportTemplateRows().isEmpty()) {
@@ -23442,6 +23467,89 @@ public class SearchController implements Serializable {
 
     public void setDateBasis(String dateBasis) {
         this.dateBasis = dateBasis;
+    }
+
+    // PostProcessor for channel_income excel export
+    public void postProcessChannelIncomeReportExcel(Object document) {
+        if (document == null) {
+            logger.error("postProcessChannelIncomeReportExcel: Document is null in postProcessChannelIncomeReportExcel");
+            return;
+        }
+        if (!(document instanceof XSSFWorkbook)) {
+            logger.error("postProcessChannelIncomeReportExcel:Expected document to be an instance of XSSFWorkbook, but got: {}", document.getClass().getName());
+            return;
+        }
+        XSSFWorkbook workbook = (XSSFWorkbook) document;
+        XSSFSheet sheet = workbook.getSheetAt(0);
+        if (sheet == null) {
+            return;
+        }
+
+        workbook.setSheetName(0, "Channel Income Report");
+        sheet.shiftRows(0, sheet.getLastRowNum(), 6);
+
+        Map<String, Object> filters = getFiltersForChannelIncomeReport();
+
+        if (filters != null && !filters.isEmpty()) {
+            pharmacyController.addMetaDataToExcelSheet(workbook, sheet, 0, "Channel Income Report", filters);
+        }
+    }
+
+    // Filters for Channel Income Report
+    private Map<String, Object> getFiltersForChannelIncomeReport() {
+        Map<String, Object> params = new LinkedHashMap<>();
+        String dateTimeFormat = sessionController.getApplicationPreference().getLongDateTimeFormat();
+        String formattedFromDate = fromDate != null ? new SimpleDateFormat(dateTimeFormat).format(fromDate) : "Not available";
+        String formattedToDate = toDate != null ? new SimpleDateFormat(dateTimeFormat).format(toDate) : "Not available";
+
+        params.put("From Date", formattedFromDate);
+        params.put("To Date", formattedToDate);
+        params.put("Institution", institution != null ? institution.getName() : "All Institutions");
+        params.put("Department", department != null ? department.getName() : "All Departments");
+        params.put("Speciality", speciality != null ? speciality.getName() : "All");
+        params.put("Doctor", staff != null && staff.getPerson() != null && staff.getPerson().getNameWithTitle() != null ? staff.getPerson().getNameWithTitle() : "All");
+        params.put("User", webUser != null ? webUser.getName() : "All");
+        params.put("Booking Type", getChannelIncomeBookingTypeAsString());
+
+        return params;
+    }
+
+    // Excel Export fileName : channel income
+    public String getChannelIncomeReportFileName() {
+        String fileName = "Channel_Income_Report";
+        String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
+        if (dates != null && !dates.isEmpty()) {
+            fileName += "_" + dates;
+        }
+        
+        return fileName;
+    }
+
+    // Channel_income: Booking Type
+    private String getChannelIncomeBookingTypeAsString() {
+        String bt = "";
+
+        if (bookingType == null || bookingType.isEmpty()) {
+            bt = "All Bills";
+            return bt;
+        }
+
+        switch (bookingType) {
+            case "Online Bookings":
+                bt = "Online Bookings";
+                break;
+            case "System Bookings":
+                bt = "System Bookings (With Agent Bookings)";
+                break;
+            case "Agent Bookings":
+                bt = "Agent Bookings";
+                break;
+            default:
+                bt = "All Bills";
+                break;
+        }
+
+        return bt;
     }
 
 }

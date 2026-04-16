@@ -403,7 +403,11 @@ public class TransferIssueForRequestsController implements Serializable {
         }
     }
 
-    public void settle() {
+    public synchronized void settle() {
+        if (getIssuedBill() != null && getIssuedBill().getId() != null) {
+            JsfUtil.addErrorMessage("This bill has already been saved.");
+            return;
+        }
         if (getIssuedBill().getToDepartment() == null) {
             JsfUtil.addErrorMessage("Please Select Department to Issue");
             return;
