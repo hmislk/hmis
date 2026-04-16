@@ -4254,15 +4254,15 @@ public class FinancialTransactionController implements Serializable {
                 .append("FROM Payment p ")
                 .append("JOIN p.bill b ")
                 .append("WHERE p.creater=:cr ")
-                .append("AND p.retired=:ret AND p.id>:sid ")
+                .append("AND p.retired=:ret AND b.createdAt>=:startTime ")
                 .append("AND b.billTypeAtomic IN :btas ");
         m.put("cr", paymentUser);
         m.put("ret", false);
-        m.put("sid", startBill.getId());
+        m.put("startTime", startBill.getCreatedAt());
         m.put("btas", btas);
-        if (endBill != null && endBill.getId() != null) {
-            jpqlBuilder.append("AND p.id<:eid ");
-            m.put("eid", endBill.getId());
+        if (endBill != null && endBill.getCreatedAt() != null) {
+            jpqlBuilder.append("AND b.createdAt<=:endTime ");
+            m.put("endTime", endBill.getCreatedAt());
         }
         jpqlBuilder
                 .append("AND p.cashbookEntryStated =:cbes ")
@@ -4411,13 +4411,13 @@ public class FinancialTransactionController implements Serializable {
                 .append("AND b.billTypeAtomic IN :btas  ")
                 .append("AND (p.creater=:cr OR p.floatRecipient=:cr) ")
                 .append("AND p.cancelled=:can ")
-                .append("AND p.id > :sid ");
+                .append("AND b.createdAt >= :startTime ");
         m.put("btas", btas);
         m.put("cr", paymentUser);
         m.put("pr", false);
         m.put("br", false);
         m.put("can", false);
-        m.put("sid", startBill.getId());
+        m.put("startTime", startBill.getCreatedAt());
 
         jpqlBuilder
                 .append("AND p.cashbookEntryStated =:cbes ")
@@ -4425,9 +4425,9 @@ public class FinancialTransactionController implements Serializable {
         m.put("cbes", false);
         m.put("hos", false);
 
-        if (endBill != null && endBill.getId() != null) {
-            jpqlBuilder.append("AND p.id < :eid ");
-            m.put("eid", endBill.getId());
+        if (endBill != null && endBill.getCreatedAt() != null) {
+            jpqlBuilder.append("AND b.createdAt <= :endTime ");
+            m.put("endTime", endBill.getCreatedAt());
         }
         jpqlBuilder.append("ORDER BY p.createdAt, b.department, p.creater");
         String jpql = jpqlBuilder.toString();
@@ -4466,17 +4466,17 @@ public class FinancialTransactionController implements Serializable {
                 .append("AND b.billTypeAtomic IN :btas  ")
                 .append("AND p.creater=:cr ")
                 .append("AND p.cancelled=:can ")
-                .append("AND p.id > :sid ");
+                .append("AND b.createdAt >= :startTime ");
         m.put("btas", btas);
         m.put("cr", paymentUser);
         m.put("pr", false);
         m.put("br", false);
         m.put("can", false);
-        m.put("sid", startBill.getId());
+        m.put("startTime", startBill.getCreatedAt());
 
-        if (endBill != null && endBill.getId() != null) {
-            jpqlBuilder.append("AND p.id < :eid ");
-            m.put("eid", endBill.getId());
+        if (endBill != null && endBill.getCreatedAt() != null) {
+            jpqlBuilder.append("AND b.createdAt <= :endTime ");
+            m.put("endTime", endBill.getCreatedAt());
         }
         jpqlBuilder.append("ORDER BY p.createdAt, b.department, p.creater");
         String jpql = jpqlBuilder.toString();
