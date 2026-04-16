@@ -1137,17 +1137,88 @@ public class GrnCostingController implements Serializable {
         }
     }
 
-    public void generateBillComponent() {
+    /**
+     * Bulk-loads received-quantity totals for every BillItem in the given PO
+     * with a single aggregate query, returning a map of BillItem.id →
+     * total qty (in pharmaceutical units).
+     */
+    private Map<Long, Double> buildReceivedQtyMap(Bill poBill, BillTypeAtomic billTypeAtomic) {
+        String jpql = "SELECT bi.referanceBillItem.id,"
+                + " COALESCE(SUM(COALESCE(bi.pharmaceuticalBillItem.qty, 0)), 0)"
+                + " FROM BillItem bi"
+                + " WHERE bi.referanceBillItem.bill = :poBill"
+                + " AND (bi.retired = false OR bi.retired IS NULL)"
+                + " AND (bi.bill.retired = false OR bi.bill.retired IS NULL)"
+                + " AND bi.bill.billTypeAtomic = :bta"
+                + " GROUP BY bi.referanceBillItem.id";
+        Map<String, Object> params = new HashMap<>();
+        params.put("poBill", poBill);
+        params.put("bta", billTypeAtomic);
+        Map<Long, Double> result = new HashMap<>();
+        List<Object> rows = getBillItemFacade().findObjects(jpql, params);
+        if (rows != null) {
+            for (Object row : rows) {
+                Object[] cols = (Object[]) row;
+                Long billItemId = ((Number) cols[0]).longValue();
+                double qty = cols[1] instanceof Number ? ((Number) cols[1]).doubleValue() : 0.0;
+                result.put(billItemId, qty);
+            }
+        }
+        return result;
+    }
 
-        for (PharmaceuticalBillItem pbiInApprovedOrder : getPharmaceuticalBillItemFacade().getPharmaceuticalBillItems(getApproveBill())) {
+    /**
+     * Bulk-loads received free-quantity totals for every BillItem in the given
+     * PO with a single aggregate query.
+     */
+    private Map<Long, Double> buildReceivedFreeQtyMap(Bill poBill, BillTypeAtomic billTypeAtomic) {
+        String jpql = "SELECT bi.referanceBillItem.id,"
+                + " COALESCE(SUM(COALESCE(bi.pharmaceuticalBillItem.freeQty, 0)), 0)"
+                + " FROM BillItem bi"
+                + " WHERE bi.referanceBillItem.bill = :poBill"
+                + " AND (bi.retired = false OR bi.retired IS NULL)"
+                + " AND (bi.bill.retired = false OR bi.bill.retired IS NULL)"
+                + " AND bi.bill.billTypeAtomic = :bta"
+                + " GROUP BY bi.referanceBillItem.id";
+        Map<String, Object> params = new HashMap<>();
+        params.put("poBill", poBill);
+        params.put("bta", billTypeAtomic);
+        Map<Long, Double> result = new HashMap<>();
+        List<Object> rows = getBillItemFacade().findObjects(jpql, params);
+        if (rows != null) {
+            for (Object row : rows) {
+                Object[] cols = (Object[]) row;
+                Long billItemId = ((Number) cols[0]).longValue();
+                double qty = cols[1] instanceof Number ? ((Number) cols[1]).doubleValue() : 0.0;
+                result.put(billItemId, qty);
+            }
+        }
+        return result;
+    }
+
+    public void generateBillComponent() {
+        // Pre-load all received/cancelled quantities for the entire PO in 4 bulk
+        // queries instead of 4 individual queries per line item (N×4 → 4 total).
+        Bill poBill = getApproveBill();
+        Map<Long, Double> grnQtyMap = buildReceivedQtyMap(poBill, BillTypeAtomic.PHARMACY_GRN);
+        Map<Long, Double> grnCancelledQtyMap = buildReceivedQtyMap(poBill, BillTypeAtomic.PHARMACY_GRN_CANCELLED);
+        Map<Long, Double> grnFreeQtyMap = buildReceivedFreeQtyMap(poBill, BillTypeAtomic.PHARMACY_GRN);
+        Map<Long, Double> grnCancelledFreeQtyMap = buildReceivedFreeQtyMap(poBill, BillTypeAtomic.PHARMACY_GRN_CANCELLED);
+
+        for (PharmaceuticalBillItem pbiInApprovedOrder : getPharmaceuticalBillItemFacade().getPharmaceuticalBillItems(poBill)) {
 
             if (pbiInApprovedOrder.getBillItem() == null) {
                 continue;
             }
 
-            double calculatedReturns = calculateRemainigQtyFromOrder(pbiInApprovedOrder);
-            double remains = Math.abs(pbiInApprovedOrder.getQty()) - Math.abs(calculatedReturns);
-            double remainFreeQty = pbiInApprovedOrder.getFreeQty() - calculateRemainingFreeQtyFromOrder(pbiInApprovedOrder);
+            Long poItemId = pbiInApprovedOrder.getBillItem().getId();
+            double receivedQty = Math.abs(grnQtyMap.getOrDefault(poItemId, 0.0))
+                    - Math.abs(grnCancelledQtyMap.getOrDefault(poItemId, 0.0));
+            double receivedFreeQty = Math.abs(grnFreeQtyMap.getOrDefault(poItemId, 0.0))
+                    - Math.abs(grnCancelledFreeQtyMap.getOrDefault(poItemId, 0.0));
+
+            double remains = Math.abs(pbiInApprovedOrder.getQty()) - Math.abs(receivedQty);
+            double remainFreeQty = pbiInApprovedOrder.getFreeQty() - Math.abs(receivedFreeQty);
 
             if (remains > 0 || remainFreeQty > 0) {
                 BillItem newlyCreatedBillItemForGrn = new BillItem();
