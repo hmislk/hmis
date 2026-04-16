@@ -4569,13 +4569,11 @@ public class FinancialTransactionController implements Serializable {
                 if (p.getBill() == null) {
                     continue;
                 }
-                if (p.getBill().getBillTypeAtomic() != null && p.getBill().getBillTypeAtomic() == BillTypeAtomic.FUND_TRANSFER_RECEIVED_BILL) {
-                    if (p.getId() > shiftStartBill.getId()) {
-                        finalOtherPayments.add(p);
-                    }
-                } else {
-                    finalOtherPayments.add(p);
-                }
+                // FUND_TRANSFER_RECEIVED_BILL payments are included regardless of when they
+                // arrived — they stay outstanding until deposited or handed over.
+                // The DB query already ensures handingOverStarted=false and cancelled=false,
+                // so no extra date/id boundary is needed here.
+                finalOtherPayments.add(p);
             }
         }
         return finalOtherPayments;
@@ -4606,13 +4604,9 @@ public class FinancialTransactionController implements Serializable {
                 if (p.getBill() == null) {
                     continue;
                 }
-                if (p.getBill().getBillTypeAtomic() != null && p.getBill().getBillTypeAtomic() == BillTypeAtomic.FUND_TRANSFER_RECEIVED_BILL) {
-                    if (p.getCreatedAt().getTime() > paramFromDate.getTime() && p.getCreatedAt().getTime() < paramToDate.getTime()) {
-                        finalOtherPayments.add(p);
-                    }
-                } else {
-                    finalOtherPayments.add(p);
-                }
+                // FUND_TRANSFER_RECEIVED_BILL payments are included regardless of date —
+                // they remain outstanding until deposited or handed over.
+                finalOtherPayments.add(p);
             }
         }
         return finalOtherPayments;
@@ -7613,6 +7607,7 @@ public class FinancialTransactionController implements Serializable {
             p.setDepartment(sessionController.getDepartment());
             p.setInstitution(sessionController.getInstitution());
             p.setPaidValue(0 - Math.abs(p.getPaidValue()));
+            p.setCurrentHolder(null);
             paymentController.save(p);
             drawerController.updateDrawerForOuts(p);
         }
