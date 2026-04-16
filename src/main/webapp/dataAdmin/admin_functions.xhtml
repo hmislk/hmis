@@ -299,20 +299,12 @@
                                     <tr>
                                         <td><strong>Add Data to Bill Finance Details for GRNs</strong></td>
                                         <td>
-                                            Populates missing BillFinanceDetails and BillItemFinanceDetails for Pharmacy GRN bills. Takes data from PharmaceuticalBillItems to fill in quantities, rates (cost, purchase, retail), and calculated values. Handles all GRN types including returns, cancellations, and wholesale GRNs.
+                                            Deprecated. Use the REST API <code>POST /api/pharmacy/backfill_grn_bifd</code> or the SQL method described in
+                                            <code>developer_docs/data-correction/grn-bifd-sql-backfill.md</code> instead.
+                                            The admin function processes bills one at a time via JPA and is too slow for large backlogs.
                                         </td>
-
-                                        <td>
-                                            <p:commandButton
-                                                value="Calculate Finance Details"
-                                                ajax="false"
-                                                styleClass="ui-button-warning m-1"
-                                                icon="pi pi-cog"
-                                                action="#{pharmacySummaryReportController.addFinancialDetailsForPharmacyGRNsFromBillItemData}">
-                                            </p:commandButton>
-                                        </td>
-                                        <td>
-                                            #{billController.output}
+                                        <td colspan="2">
+                                            <span class="ui-message ui-message-warn">Deprecated — see developer docs for the recommended approach.</span>
                                         </td>
                                     </tr>
 
@@ -405,6 +397,8 @@
                                                 value="Backfill Pre-Bill BFDs"
                                                 styleClass="ui-button-warning m-1"
                                                 icon="pi pi-calculator"
+                                                title="Backfill missing BillFinanceDetails for PRE_TO_SETTLE_AT_CASHIER bills in the selected period"
+                                                aria-label="Backfill missing BillFinanceDetails for PRE_TO_SETTLE_AT_CASHIER bills in the selected period"
                                                 rendered="#{webUserController.hasPrivilege('Admin')}"
                                                 onclick="return confirm('This will create BillFinanceDetails for PRE_TO_SETTLE_AT_CASHIER bills missing BFD in the selected period. Proceed?');" />
                                         </td>
@@ -432,6 +426,27 @@
                                     </tr>
 
                                     <tr>
+                                        <td><strong>Fill Bill Department Type from Bill Items</strong></td>
+                                        <td>
+                                            Finds all bills where department type is null and assigns the department type
+                                            from the first bill item's item. Fixes bills (GRNs, etc.) that were saved
+                                            without a department type, which causes them to be excluded from department
+                                            type filtered reports such as the Stock Ledger.
+                                        </td>
+                                        <td>
+                                            <p:commandButton
+                                                action="#{dataAdministrationController.fillBillDepartmentTypeFromBillItems()}"
+                                                ajax="false"
+                                                value="Fill Bill Department Type"
+                                                styleClass="ui-button-warning m-1"
+                                                icon="pi pi-tag" />
+                                        </td>
+                                        <td>
+                                            #{billController.output}
+                                        </td>
+                                    </tr>
+
+                                    <tr>
                                         <td><strong>Migrate Transfer Bill Finance Details</strong></td>
                                         <td>
                                             Fixes issue #13419: Migrates existing pharmacy transfer bills to populate BillItemFinanceDetails.lineNetTotal from BillItem.netValue. This ensures disbursement reports show correct transfer rates when "Pharmacy Transfer is by Retail Rate" option is enabled. Only affects bills missing proper financial details - safe to run multiple times.
@@ -444,6 +459,28 @@
                                                 styleClass="ui-button-success m-1"
                                                 icon="pi pi-database"
                                                 onclick="return confirm('This will migrate financial details for existing transfer bills. Proceed?');" />
+                                        </td>
+                                        <td>
+                                            #{dataAdministrationController.executionFeedback}
+                                        </td>
+                                    </tr>
+
+                                    <tr>
+                                        <td><strong>Migrate Inward Credit Company Bills (Issue #19571)</strong></td>
+                                        <td>
+                                            Creates per-company INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY bills for
+                                            old inward admissions that were settled before per-company billing was introduced.
+                                            Skips any encounter that already has such a bill. Safe to run multiple times.
+                                        </td>
+                                        <td>
+                                            <p:commandButton
+                                                rendered="#{webUserController.hasPrivilege('Admin')}"
+                                                action="#{dataAdministrationController.migrateInwardCreditCompanyBills()}"
+                                                ajax="false"
+                                                value="Migrate Inward CC Bills"
+                                                styleClass="ui-button-success m-1"
+                                                icon="pi pi-database"
+                                                onclick="return confirm('This will create per-company credit bills for old inward admissions. Proceed?');" />
                                         </td>
                                         <td>
                                             #{dataAdministrationController.executionFeedback}
@@ -966,6 +1003,69 @@
                             </div>
                         </p:tab>
 
+
+                        <p:tab title="Inward / Admissions">
+                            <table class="table table-sm table-bordered w-100">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th style="width: 15%;">Name</th>
+                                        <th style="width: 40%;">Description</th>
+                                        <th style="width: 10%;">Action</th>
+                                        <th style="width: 35%;">Output</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><strong>Discharge Duplicate Encounters</strong></td>
+                                        <td>
+                                            For each room, keeps only the most recent undischarged encounter and marks
+                                            all older ones as discharged. Use this to clean up accumulated undischarged
+                                            records from past patients that were never properly discharged.
+                                        </td>
+                                        <td>
+                                            <p:commandButton
+                                                action="#{dataAdministrationController.dischargeOldDuplicateEncounters()}"
+                                                ajax="true"
+                                                update="@form"
+                                                value="Discharge Duplicates"
+                                                styleClass="ui-button-danger m-1"
+                                                icon="pi pi-sign-out"
+                                                rendered="#{webUserController.hasPrivilege('Admin')}"
+                                                onclick="return confirm('This will discharge all but the latest undischarged encounter per room. Continue?');" />
+                                        </td>
+                                        <td>
+                                            <p:messages />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Discharge Stale Encounters</strong></td>
+                                        <td>
+                                            Marks all undischarged, non-finalized encounters older than the specified
+                                            number of days as discharged. Use this to clear out accumulated historical
+                                            records that were never properly discharged.
+                                            <br/>
+                                            <strong>Days older than:</strong>
+                                            <p:inputText value="#{dataAdministrationController.staleEncounterDays}"
+                                                         size="5" style="width:60px;" />
+                                        </td>
+                                        <td>
+                                            <p:commandButton
+                                                action="#{dataAdministrationController.dischargeStaleEncounters()}"
+                                                ajax="true"
+                                                update="@form"
+                                                value="Discharge Stale"
+                                                styleClass="ui-button-danger m-1"
+                                                icon="pi pi-sign-out"
+                                                rendered="#{webUserController.hasPrivilege('Admin')}"
+                                                onclick="return confirm('This will discharge all undischarged encounters older than the specified days. Continue?');" />
+                                        </td>
+                                        <td>
+                                            <p:messages />
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </p:tab>
 
                     </p:accordionPanel>
                 </h:form>

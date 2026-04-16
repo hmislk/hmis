@@ -163,6 +163,15 @@
                                     disabled="#{labVmpController.current.id eq null}"
                                     title="View audit history for this Lab VMP record"/>
 
+                                <p:commandButton
+                                    id="btnViewList"
+                                    value="All VMPs List"
+                                    action="#{labVmpController.navigateToLabVmpList()}"
+                                    ajax="false"
+                                    styleClass="ui-button-secondary"
+                                    icon="fas fa-list"
+                                    title="View and download the full list of Lab VMPs"/>
+
                             </div>
                         </div>
 
@@ -272,7 +281,22 @@
                                         itemLabel="#{m.name}"/>
                                 </p:selectOneMenu>
 
-                                
+                                <p:outputLabel for="selIssueUnit" value="Issue Unit" styleClass="fw-bold"/>
+                                <p:selectOneMenu
+                                    id="selIssueUnit"
+                                    value="#{labVmpController.current.issueUnit}"
+                                    styleClass="w-100"
+                                    filter="true"
+                                    required="true"
+                                    requiredMessage="Dispensing Unit is required"
+                                    disabled="#{!labVmpController.editable}">
+                                    <f:selectItem itemLabel="-- Select Dispensing Unit --" itemValue="#{null}"/>
+                                    <f:selectItems
+                                        value="#{measurementUnitController.issueUnits}"
+                                        var="m"
+                                        itemValue="#{m}"
+                                        itemLabel="#{m.name}"/>
+                                </p:selectOneMenu>
 
                                 <!-- Department Type automatically set to Lab - not displayed -->
 

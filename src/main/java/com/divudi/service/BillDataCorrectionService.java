@@ -47,7 +47,7 @@ public class BillDataCorrectionService {
 
     private static final Set<String> BILL_FIELDS = new HashSet<>(Arrays.asList("netTotal", "grossTotal", "comments"));
     private static final Set<String> BILL_ITEM_FIELDS = new HashSet<>(Arrays.asList("qty", "rate", "grossValue", "netValue", "discount"));
-    private static final Set<String> BILL_FINANCE_FIELDS = new HashSet<>(Arrays.asList("totalRetailSaleValue", "totalCostValue", "totalPurchaseValue", "netTotal", "grossTotal"));
+    private static final Set<String> BILL_FINANCE_FIELDS = new HashSet<>(Arrays.asList("totalRetailSaleValue", "totalCostValue", "totalPurchaseValue", "netTotal", "grossTotal", "billExpensesConsideredForCosting", "billExpensesNotConsideredForCosting", "totalBillValue"));
     private static final Set<String> BILL_FEE_FIELDS = new HashSet<>(Arrays.asList("feeValue", "grossValue"));
     private static final Set<String> BILL_ITEM_FINANCE_FIELDS = new HashSet<>(Arrays.asList("valueAtRetailRate", "valueAtCostRate", "costRate", "retailSaleRate"));
     private static final Set<String> PHARMACEUTICAL_BILL_ITEM_FIELDS = new HashSet<>(Arrays.asList("qty", "retailRate", "costRate", "retailValue", "costValue"));
@@ -227,6 +227,24 @@ public class BillDataCorrectionService {
             BigDecimal value = toBigDecimal(fields.get("grossTotal"), "grossTotal");
             entity.setGrossTotal(value);
             newValues.put("grossTotal", entity.getGrossTotal());
+        }
+        if (fields.containsKey("billExpensesConsideredForCosting")) {
+            previousValues.put("billExpensesConsideredForCosting", entity.getBillExpensesConsideredForCosting());
+            BigDecimal value = toBigDecimal(fields.get("billExpensesConsideredForCosting"), "billExpensesConsideredForCosting");
+            entity.setBillExpensesConsideredForCosting(value);
+            newValues.put("billExpensesConsideredForCosting", entity.getBillExpensesConsideredForCosting());
+        }
+        if (fields.containsKey("billExpensesNotConsideredForCosting")) {
+            previousValues.put("billExpensesNotConsideredForCosting", entity.getBillExpensesNotConsideredForCosting());
+            BigDecimal value = toBigDecimal(fields.get("billExpensesNotConsideredForCosting"), "billExpensesNotConsideredForCosting");
+            entity.setBillExpensesNotConsideredForCosting(value);
+            newValues.put("billExpensesNotConsideredForCosting", entity.getBillExpensesNotConsideredForCosting());
+        }
+        if (fields.containsKey("totalBillValue")) {
+            previousValues.put("totalBillValue", entity.getTotalBillValue());
+            BigDecimal value = toBigDecimal(fields.get("totalBillValue"), "totalBillValue");
+            entity.setTotalBillValue(value);
+            newValues.put("totalBillValue", entity.getTotalBillValue());
         }
 
         billFinanceDetailsFacade.edit(entity);

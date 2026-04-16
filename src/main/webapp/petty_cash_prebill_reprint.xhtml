@@ -1,0 +1,190 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill"
+      xmlns:request="http://xmlns.jcp.org/jsf/composite/ezcomp/prints/request">
+
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:form>
+                    <p:panel rendered="#{pettyCashBillController.printPreview}" >
+                        <f:facet name="header">
+                            <div class="d-flex justify-content-between">
+                                <h:outputLabel value="Petty Cash Pre-Bill Reprint" class="mt-2" ></h:outputLabel>
+                                <p:commandButton  
+                                    class="mx-1 ui-button-warning" 
+                                    ajax="false"
+                                    icon="fas fa-arrow-left" 
+                                    action="/petty_cash_bill_search_own?faces-redirect=true"
+                                    value="Back to Search">                           
+                                </p:commandButton>
+                            </div>
+                        </f:facet>
+                        <div class="d-flex justify-content-end">
+                            <!-- Settings button for paper type configuration -->
+                            <p:commandButton
+                                rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
+                                value="Settings"
+                                icon="fas fa-cog"
+                                class="ui-button-secondary mx-1"
+                                type="button"
+                                onclick="PF('pettyCashConfigDialog').show();" />
+                        </div>
+
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <div class="d-flex justify-content-end">
+                                    <p:commandButton
+                                        value="Print Request"
+                                        ajax="false"
+                                        icon="fas fa-print"
+                                        class="ui-button-info mx-2">
+                                        <p:printer target="gpRequestPreview" />
+                                    </p:commandButton>
+                                </div>
+                                <div class="d-flex justify-content-center">
+                                    <h:panelGroup   id="gpRequestPreview">
+                                        <request:petty_cash_request request="#{pettyCashBillController.current.currentRequest}" />
+                                    </h:panelGroup>
+                                </div>
+
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="d-flex justify-content-end">
+                                    <p:commandButton
+                                        value="Print"
+                                        ajax="false"
+                                        icon="fas fa-print"
+                                        class="ui-button-info mx-2">
+                                        <p:printer target="gpBillPreview" />
+                                    </p:commandButton>
+                                </div>
+                                <h:panelGroup   id="gpBillPreview">
+
+                                    <!-- POS/5.5 inch Format (Default) -->
+                                    <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Petty Cash Receipt POS Paper', true)}">
+                                        <bi:petty  
+                                            bill="#{pettyCashBillController.current}" 
+                                            billController="#{pettyCashBillController}" 
+                                            dup="#{pettyCashBillController.duplicate}" 
+                                            pre="#{pettyCashBillController.preBill}">
+                                        </bi:petty>
+                                    </h:panelGroup>
+
+                                    <!-- A4 Format -->
+                                    <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Petty Cash Receipt A4 Paper', false)}">
+                                        <!-- For now, use the same component until A4 format is created -->
+                                        <bi:petty  
+                                            bill="#{pettyCashBillController.current}" 
+                                            billController="#{pettyCashBillController}" 
+                                            dup="#{pettyCashBillController.duplicate}" >
+                                        </bi:petty>
+                                        <h:outputText value="Note: A4 format composite component needs to be created" style="display:none;" />
+                                    </h:panelGroup>
+
+                                    <!-- Custom Format -->
+                                    <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Petty Cash Receipt Custom Paper', false)}">
+                                        <!-- Use existing format for now -->
+                                        <bi:petty  
+                                            bill="#{pettyCashBillController.current}" 
+                                            billController="#{pettyCashBillController}" 
+                                            dup="#{pettyCashBillController.duplicate}" >
+                                        </bi:petty>
+                                    </h:panelGroup>
+                                </h:panelGroup>
+                            </div>
+                        </div>
+
+
+                    </p:panel>
+
+                    <!-- Petty Cash Printer Configuration Dialog -->
+                    <p:dialog id="pettyCashConfigDialog"
+                              header="Petty Cash Receipt Printer Configuration"
+                              widgetVar="pettyCashConfigDialog"
+                              modal="true"
+                              width="600"
+                              height="500"
+                              resizable="true"
+                              maximizable="true"
+                              closeOnEscape="true">
+
+                        <p:ajax event="open" listener="#{pharmacyConfigController.loadCurrentConfig}" update="pettyCashConfigForm" />
+
+                        <h:form id="pettyCashConfigForm">
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="card config-section">
+                                        <div class="card-header">
+                                            <h:outputText value="Petty Cash Receipt Paper Settings">
+                                                <f:facet name="before">
+                                                    <i class="fas fa-file-alt"></i>
+                                                </f:facet>
+                                            </h:outputText>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="mb-3">
+                                                <h:selectBooleanCheckbox
+                                                    id="pettyCashPosPaper"
+                                                    value="#{pharmacyConfigController.pettyCashPosPaper}" />
+                                                <h:outputLabel for="pettyCashPosPaper" value="POS/5.5 inch Paper Format" class="ms-2" />
+                                                <small class="form-text text-muted d-block">Standard 5.5 inch thermal receipt format (Default)</small>
+                                            </div>
+                                            <div class="mb-3">
+                                                <h:selectBooleanCheckbox
+                                                    id="pettyCashA4Paper"
+                                                    value="#{pharmacyConfigController.pettyCashA4Paper}" />
+                                                <h:outputLabel for="pettyCashA4Paper" value="A4 Paper Format" class="ms-2" />
+                                                <small class="form-text text-muted d-block">A4 size paper format for detailed receipts</small>
+                                            </div>
+                                            <div class="mb-3">
+                                                <h:selectBooleanCheckbox
+                                                    id="pettyCashCustomPaper"
+                                                    value="#{pharmacyConfigController.pettyCashCustomPaper}" />
+                                                <h:outputLabel for="pettyCashCustomPaper" value="Custom Paper Format" class="ms-2" />
+                                                <small class="form-text text-muted d-block">Custom format for special printing requirements</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row mt-4">
+                                <div class="col-12">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <p:messages id="pettyCashConfigMessages" showDetail="true" closable="true" />
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div class="d-flex gap-2">
+                                                    <p:commandButton
+                                                        value="Apply &amp; Close"
+                                                        icon="fas fa-save"
+                                                        class="ui-button-success"
+                                                        ajax="false"
+                                                        action="#{pharmacyConfigController.savePettyCashConfig}" />
+                                                    <p:commandButton
+                                                        value="Cancel"
+                                                        icon="fas fa-times"
+                                                        class="ui-button-secondary"
+                                                        onclick="PF('pettyCashConfigDialog').hide(); return false;"
+                                                        type="button" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </h:form>
+                    </p:dialog>
+
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

@@ -132,14 +132,37 @@
                                 value="Process"
                                 icon="fas fa-cogs" class="ui-button-warning mx-2" >
                             </p:commandButton>
-                            <p:commandButton style="width: 150px" ajax="false" value="Print" icon="fas fa-print" class="ui-button-info mx-2"  >
-                                <p:printer target="dtaPr"/>
+                            <p:commandButton 
+                                style="width: 150px" 
+                                ajax="false" 
+                                value="Print" 
+                                icon="fas fa-print" 
+                                class="ui-button-info mx-2"
+                                action="collection_center_wise_summary_report_view?faces-redirect=true">
                             </p:commandButton>
-                            <p:commandButton style="width: 150px" ajax="false" value="Excel" icon="fas fa-file-excel" class="ui-button-success mx-2" >
-                                <p:dataExporter fileName="Collection Centre Wise Summary Report - #{webUserController.institution} (#{reportController.fromDate} - #{reportController.fromDate})" type="xlsx" target="dtaPr" />
+                            <p:commandButton 
+                                style="width: 150px" 
+                                ajax="false" 
+                                value="Excel" 
+                                icon="fas fa-file-excel" 
+                                class="ui-button-success mx-2" >
+                                <p:dataExporter 
+                                    fileName="Collection_Centre_Wise_Summary_Report_#{reportController.fromDateFormatted()}_to_#{reportController.toDateFormatted()}" 
+                                    type="xlsx" 
+                                    target="dtaPr"
+                                    postProcessor="#{reportController.postProcessCollectionCenterWiseSummaryReportExcel}"/>
                             </p:commandButton>
-                            <p:commandButton style="width: 150px" ajax="false" value="PDF" icon="fas fa-file-pdf" class="ui-button-danger mx-1" >
-                                <p:dataExporter fileName="Collection Centre Wise Summary Report - #{webUserController.institution} (#{reportController.fromDate} - #{reportController.fromDate})" type="pdf" target="dtaPr" />
+                            <p:commandButton 
+                                style="width: 150px" 
+                                ajax="false" 
+                                value="PDF" 
+                                icon="fas fa-file-pdf" 
+                                class="ui-button-danger mx-1" >
+                                <p:dataExporter 
+                                    fileName="Collection_Centre_Wise_Summary_Report_#{reportController.fromDateFormatted()}_to_#{reportController.toDateFormatted()}" 
+                                    type="pdf" 
+                                    target="dtaPr" 
+                                    preProcessor="#{reportController.preProcessCollectionCenterWiseSummaryReportPDF}"/>
                             </p:commandButton>
                         </h:panelGrid>
 
@@ -179,6 +202,10 @@
                             </p:column>
                             <p:column headerText="CC Route" filterMatchMode="contains" sortBy="#{c.institution.route.name}" filterBy="#{c.institution.route.name}">
                                 <h:outputText value="#{c.institution.route.name}" ></h:outputText>
+                                <f:facet name="footer" >
+                                    <h:outputLabel value="Total" >
+                                    </h:outputLabel>
+                                </f:facet>
                             </p:column>
                             <p:column headerText="Count" filterMatchMode="contains" sortBy="#{c.itemCount}" filterBy="#{c.itemCount}">
                                 <h:outputText value="#{c.itemCount}" ></h:outputText>

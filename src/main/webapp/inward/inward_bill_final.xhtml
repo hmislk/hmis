@@ -68,7 +68,7 @@
                                                  rendered="#{configOptionApplicationController.getBooleanValueByKey('Show Save Provisional on Final Bill Edit',false)}">
 
                                 </p:commandButton>
-                                <p:commandButton value="Settle" 
+                                <p:commandButton value="Settle"
                                                  action="#{bhtSummeryController.settle}"
                                                  id="settle"
                                                  ajax="false"
@@ -78,6 +78,18 @@
                                                  style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;">
 
                                 </p:commandButton>
+                                <h:panelGroup rendered="#{webUserController.hasPrivilege('InwardSearch')}">
+                                    <p:commandButton
+                                        ajax="false"
+                                        value="Inpatient Profile"
+                                        icon="fa fa-id-card"
+                                        styleClass="ui-button-secondary mx-1"
+                                        action="#{bhtSummeryController.navigateToInpatientProfile()}">
+                                        <f:setPropertyActionListener
+                                            target="#{admissionController.current}"
+                                            value="#{bhtSummeryController.patientEncounter}" />
+                                    </p:commandButton>
+                                </h:panelGroup>
                             </div>
                         </div>
                     </f:facet>
@@ -145,16 +157,7 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="Credit Company Details"/>
                                     </f:facet>
-
-<!--                                    <ui:repeat value="#{bhtSummeryController.encounterCreditCompanies}" var="ec">
-                                        <h:panelGrid columns="3" class="w-100">
-                                            <h:outputLabel value="#{ec.institution.name}"/>
-                                            <h:outputLabel value=":"/>
-                                            <p:inputText value="#{ec.creditLimit}"> 
-                                            </p:inputText>
-                                        </h:panelGrid>
-                                    </ui:repeat>-->
-
+                                    <h:outputLabel value="Click Process to view the credit company allocation." />
                                 </p:panel>
                             </h:panelGroup>
 
@@ -266,6 +269,25 @@
                             </p:inputText>
                         </p:column>
                     </p:dataTable>
+
+                    <p:panel id="creditAllocationPanel" styleClass="mx-1 my-3"
+                             rendered="#{bhtSummeryController.patientEncounter.paymentMethod eq 'Credit'
+                                         and not empty bhtSummeryController.creditCompanyAllocations}">
+                        <f:facet name="header">
+                            <h:outputLabel value="Credit Company Allocation" />
+                        </f:facet>
+                        <p:dataTable value="#{bhtSummeryController.creditCompanyAllocations}" var="alloc" styleClass="w-100">
+                            <p:column headerText="Company">
+                                <h:outputLabel value="#{alloc.companyName}" />
+                            </p:column>
+                            <p:column headerText="Allocated Amount" style="width: 200px;">
+                                <p:inputText value="#{alloc.allocatedAmount}" style="width: 150px;"
+                                             title="Allocated amount for #{alloc.companyName}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </p:inputText>
+                            </p:column>
+                        </p:dataTable>
+                    </p:panel>
 
                     <p:spacer height="100"/>
 

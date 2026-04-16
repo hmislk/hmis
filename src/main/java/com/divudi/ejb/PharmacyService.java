@@ -347,8 +347,6 @@ public class PharmacyService {
         PharmacyBundle bundle;
 
         List<BillTypeAtomic> billTypeAtomics = getPharmacyIncomeBillTypes();
-        for (BillTypeAtomic bta : billTypeAtomics) {
-        }
 
         List<BillLight> pharmacyIncomeBillLights = billService.fetchBillLightsWithFinanceDetailsAndPaymentScheme(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
 
@@ -420,7 +418,9 @@ public class PharmacyService {
     public PharmacyBundle fetchPharmacyAdjustmentValueByBillTypeDto(Date fromDate, Date toDate, Institution institution, Institution site, Department department, WebUser webUser, AdmissionType admissionType, PaymentScheme paymentScheme) {
         PharmacyBundle bundle;
         List<BillTypeAtomic> billTypeAtomics = getPharmacyAdjustmentBillTypes();
-        List<BillLight> pharmacyIncomeBillLights = billService.fetchBillLightsWithFinanceDetails(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
+        // Use the adjustment-specific fetch that prefers bfd.grossTotal/netTotal over bill.total/netTotal
+        // because some adjustment bills (e.g. retail rate adjustment) have bill.total=0 but correct BFD values
+        List<BillLight> pharmacyIncomeBillLights = billService.fetchBillLightsForAdjustmentsWithFinanceDetails(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
         bundle = new PharmacyBundle(pharmacyIncomeBillLights);
         bundle.generatePharmacyPurchaseGroupedByBillTypeDtos();
         return bundle;
@@ -515,6 +515,7 @@ public class PharmacyService {
                 BillTypeAtomic.PHARMACY_COST_RATE_ADJUSTMENT,
                 BillTypeAtomic.PHARMACY_WHOLESALE_RATE_ADJUSTMENT,
                 BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT,
+                BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT_BILL,
                 BillTypeAtomic.PHARMACY_ADJUSTMENT,
                 BillTypeAtomic.PHARMACY_ADJUSTMENT_CANCELLED
         );

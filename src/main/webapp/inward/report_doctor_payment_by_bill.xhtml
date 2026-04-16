@@ -37,6 +37,20 @@
                                     <f:selectItems  value="#{creditCompanyController.creditCompanies}" var="ccc"
                                                     itemValue="#{ccc}" itemLabel="#{ccc.name}"></f:selectItems>
                                 </p:selectOneMenu>
+                                <h:outputLabel value="Date Basis" />
+                                <p:selectOneMenu class="mx-4 w-100" value="#{inwardStaffPaymentBillController.dateBasis}">
+                                    <f:selectItem itemValue="createdAt" itemLabel="Created Date (default)" />
+                                    <f:selectItem itemValue="admissionDate" itemLabel="Admission Date" />
+                                </p:selectOneMenu>
+                                <h:outputLabel value="Site" />
+                                <p:selectOneMenu class="mx-4 w-100" value="#{inwardStaffPaymentBillController.site}" filter="true">
+                                    <f:selectItem itemLabel="All Sites" itemValue="#{null}" />
+                                    <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
+                                </p:selectOneMenu>
+                                <h:outputLabel value="Department" />
+                                <p:autoComplete class="mx-4 w-100" completeMethod="#{departmentController.completeDept}"
+                                                var="dept" itemLabel="#{dept.name}" itemValue="#{dept}"
+                                                forceSelection="true" value="#{inwardStaffPaymentBillController.department}" />
                                 <h:outputLabel  value="Speciality" ></h:outputLabel>
                                 <p:autoComplete class="mx-4 w-100" inputStyleClass="w-100" forceSelection="true" value="#{inwardStaffPaymentBillController.speciality}" id="acSpeciality"
                                                 completeMethod="#{specialityController.completeSpeciality}" var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"

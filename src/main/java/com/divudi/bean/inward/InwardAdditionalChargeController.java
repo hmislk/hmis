@@ -8,6 +8,8 @@
  */
 package com.divudi.bean.inward;
 import com.divudi.bean.common.SessionController;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.inward.Admission;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillNumberSuffix;
@@ -60,8 +62,11 @@ public class InwardAdditionalChargeController implements Serializable {
     //////////////
     @Inject
     private SessionController sessionController;
+    @Inject
+    private AdmissionController admissionController;
     //////////////
     private BilledBill current;
+    private Institution institution;
     private List<BillItem> billItemList;
 
     public InwardBeanController getInwardBean() {
@@ -78,6 +83,7 @@ public class InwardAdditionalChargeController implements Serializable {
     }
 
     public String navigateToAddOutsideChargeFromInpatientProfile() {
+        institution = sessionController.getInstitution();
         return "/inward/inward_bill_outside_charge?faces-redirect=true";
     }
 
@@ -128,6 +134,25 @@ public class InwardAdditionalChargeController implements Serializable {
         current = null;
         billItemList = null;
         inwardChargeType = null;
+        institution = sessionController.getInstitution();
+    }
+
+    public List<Admission> completePatientByInstitution(String query) {
+        return admissionController.completePatientNotFinalizedByInstitution(query, getInstitution());
+    }
+
+    public void onInstitutionChange() {
+        current = null;
+        billItemList = null;
+        inwardChargeType = null;
+    }
+
+    public Institution getInstitution() {
+        return institution;
+    }
+
+    public void setInstitution(Institution institution) {
+        this.institution = institution;
     }
 
     public void reset() {

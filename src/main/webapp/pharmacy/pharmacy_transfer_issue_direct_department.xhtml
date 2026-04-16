@@ -113,10 +113,10 @@
                                     <h:outputLabel value="Add Items" class="mx-4"></h:outputLabel>
                                 </f:facet>
 
-                                <div class="row" >
-                                    <div class="col-6" >
+                                <div class="row">
+                                    <div class="col-6">
                                         <h:panelGrid columns="1" class="w-100">
-                                            <p:outputLabel value="Medicines/Devices" ></p:outputLabel>
+                                            <p:outputLabel value="Medicines/Devices"/>
                                             <p:autoComplete
                                                 accesskey="i"
                                                 class="w-100"
@@ -128,53 +128,53 @@
                                                 var="i"
                                                 itemLabel="#{i.itemName}"
                                                 itemValue="#{i}"
-                                                maxResults="5"
-                                                >
+                                                maxResults="5">
                                                 <p:column headerText="Item">
-                                                    <h:outputText value="#{i.itemName}" >
-                                                    </h:outputText>
+                                                    <h:outputText value="#{i.itemName}"/>
                                                 </p:column>
-                                                <p:column headerText="Code" >
-                                                    <h:outputLabel value="#{i.code}" >
-                                                    </h:outputLabel>
+                                                <p:column headerText="Code">
+                                                    <h:outputLabel value="#{i.code}"/>
                                                 </p:column>
-                                                <p:column headerText="Expiry" >
-                                                    <h:outputLabel value="#{i.dateOfExpire}"
-                                                                   style="width: 100px!important;" >
-                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
+                                                <p:column headerText="Expiry">
+                                                    <h:outputLabel value="#{i.dateOfExpire}" style="width: 100px!important;">
+                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                                                     </h:outputLabel>
                                                 </p:column>
                                                 <p:column headerText="Stocks" styleClass="text-end">
-                                                    <h:outputLabel value="#{i.stockQty}" >
-                                                        <f:convertNumber pattern="#,###" ></f:convertNumber>
+                                                    <h:outputLabel value="#{i.stockQty}">
+                                                        <f:convertNumber pattern="#,###"/>
                                                     </h:outputLabel>
                                                 </p:column>
                                                 <p:column headerText="Retail Rate" styleClass="text-end">
-                                                    <h:outputLabel value="#{i.retailRate}" >
-                                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                    <h:outputLabel value="#{i.retailRate}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
                                                     </h:outputLabel>
                                                 </p:column>
-                                                <p:ajax event="itemSelect" update="txtQty txtRate focusQty" ></p:ajax>
+                                                <p:ajax event="itemSelect" update="txtQty focusQty rateValuePanel" listener="#{transferIssueDirectController.calculateCurrentBillItemValue}"/>
                                             </p:autoComplete>
                                         </h:panelGrid>
                                     </div>
-                                    <div class="col-4" >
+                                    <div class="col-3">
                                         <h:panelGrid columns="1" class="w-100">
-                                            <p:outputLabel value="Quantity" ></p:outputLabel>
+                                            <p:outputLabel value="Quantity"/>
                                             <p:inputText
                                                 accesskey="q"
                                                 autocomplete="off"
                                                 id="txtQty"
                                                 value="#{transferIssueDirectController.qty}"
                                                 class="w-100">
-
+                                                <p:ajax
+                                                    process="txtQty"
+                                                    event="keyup"
+                                                    update="rateValuePanel"
+                                                    listener="#{transferIssueDirectController.calculateCurrentBillItemValue}"/>
                                             </p:inputText>
                                         </h:panelGrid>
                                     </div>
-                                    <div class="col-2" >
+                                    <div class="col-3">
                                         <h:panelGrid columns="1" class="w-100">
-                                            <p:outputLabel value="&nbsp;" ></p:outputLabel>
-                                            <p:commandButton  
+                                            <p:outputLabel value="&nbsp;"/>
+                                            <p:commandButton
                                                 accesskey="a"
                                                 id="btnAdd"
                                                 icon="fa fa-plus"
@@ -182,15 +182,43 @@
                                                 class="ui-button-success"
                                                 action="#{transferIssueDirectController.addNewBillItem}"
                                                 ajax="false"
-                                                update="focusItem"
-                                                >
-                                            </p:commandButton>
-                                            <p:focus id="focusQty" for="txtQty"></p:focus>
-                                            <p:focus id="focusItem" for="acStock"></p:focus>
+                                                update="focusItem"/>
+                                            <p:focus id="focusQty" for="txtQty"/>
+                                            <p:focus id="focusItem" for="acStock"/>
                                         </h:panelGrid>
-
                                     </div>
                                 </div>
+                                <h:panelGroup id="rateValuePanel" layout="block">
+                                    <h:panelGroup layout="block" styleClass="row mt-2"
+                                                  rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Issue - Show Rate and Value', false) and webUserController.hasPrivilege('PharmacyTransferViewRates')}">
+                                        <div class="col-6">
+                                            <h:panelGrid columns="1" class="w-100">
+                                                <p:outputLabel value="Transfer Rate"/>
+                                                <p:inputText
+                                                    autocomplete="off"
+                                                    id="txtRate"
+                                                    value="#{transferIssueDirectController.transferRate}"
+                                                    class="w-100 text-end"
+                                                    readonly="true">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </p:inputText>
+                                            </h:panelGrid>
+                                        </div>
+                                        <div class="col-6">
+                                            <h:panelGrid columns="1" class="w-100">
+                                                <p:outputLabel value="Transfer Value"/>
+                                                <p:inputText
+                                                    autocomplete="off"
+                                                    id="txtBillItemValue"
+                                                    value="#{transferIssueDirectController.billItemValue}"
+                                                    class="w-100 text-end"
+                                                    readonly="true">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </p:inputText>
+                                            </h:panelGrid>
+                                        </div>
+                                    </h:panelGroup>
+                                </h:panelGroup>
                             </p:panel>
                             <p:panel >
                                 <f:facet name="header" >

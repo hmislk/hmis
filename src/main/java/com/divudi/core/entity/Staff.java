@@ -46,7 +46,7 @@ import javax.persistence.Transient;
 public class Staff implements Serializable, IdentifiableWithNameOrCode {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
 
     static final long serialVersionUID = 1L;

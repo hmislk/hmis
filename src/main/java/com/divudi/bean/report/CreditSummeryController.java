@@ -6,6 +6,7 @@
 package com.divudi.bean.report;
 
 import com.divudi.bean.common.BillController;
+import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.FeeType;
 import com.divudi.core.data.PaymentMethod;
@@ -32,6 +33,7 @@ import com.divudi.core.facade.CategoryFacade;
 import com.divudi.core.facade.DepartmentFacade;
 import com.divudi.core.facade.ItemFacade;
 import com.divudi.core.util.CommonFunctions;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -40,9 +42,22 @@ import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.RequestScoped;
+import javax.faces.context.ExternalContext;
+import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.DataFormat;
+import org.apache.poi.ss.usermodel.FillPatternType;
+import org.apache.poi.ss.usermodel.Font;
+import org.apache.poi.ss.usermodel.HorizontalAlignment;
+import org.apache.poi.ss.usermodel.IndexedColors;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 /**
  *
@@ -604,6 +619,476 @@ public class CreditSummeryController implements Serializable {
         dd.setValue1(opdCreditVatTotal);
         vatTableOpdCredit.add(dd);
 
+    }
+
+    public void exportToExcel() {
+        createDailyCashTable();
+
+        FacesContext facesContext = FacesContext.getCurrentInstance();
+        ExternalContext externalContext = facesContext.getExternalContext();
+
+        try (XSSFWorkbook workbook = new XSSFWorkbook()) {
+            Sheet sheet = workbook.createSheet("Credit Summary");
+            DataFormat dataFormat = workbook.createDataFormat();
+            short numberFormat = dataFormat.getFormat("#,##0.00");
+
+            // Column header style
+            CellStyle colHdrStyle = workbook.createCellStyle();
+            Font colHdrFont = workbook.createFont();
+            colHdrFont.setBold(true);
+            colHdrFont.setColor(IndexedColors.WHITE.getIndex());
+            colHdrStyle.setFont(colHdrFont);
+            colHdrStyle.setFillForegroundColor(IndexedColors.GREY_80_PERCENT.getIndex());
+            colHdrStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+
+            // Department header style
+            CellStyle deptHdrStyle = workbook.createCellStyle();
+            Font deptHdrFont = workbook.createFont();
+            deptHdrFont.setBold(true);
+            deptHdrFont.setColor(IndexedColors.WHITE.getIndex());
+            deptHdrStyle.setFont(deptHdrFont);
+            deptHdrStyle.setFillForegroundColor(IndexedColors.GREY_50_PERCENT.getIndex());
+            deptHdrStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+
+            // Category header style
+            CellStyle catHdrStyle = workbook.createCellStyle();
+            Font catHdrFont = workbook.createFont();
+            catHdrFont.setBold(true);
+            catHdrFont.setColor(IndexedColors.WHITE.getIndex());
+            catHdrStyle.setFont(catHdrFont);
+            catHdrStyle.setFillForegroundColor(IndexedColors.GREY_40_PERCENT.getIndex());
+            catHdrStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+
+            // Amount number style
+            CellStyle numStyle = workbook.createCellStyle();
+            numStyle.setDataFormat(numberFormat);
+            numStyle.setAlignment(HorizontalAlignment.RIGHT);
+
+            // Category footer label style
+            Font catFtrFont = workbook.createFont();
+            catFtrFont.setBold(true);
+            CellStyle catFtrLblStyle = workbook.createCellStyle();
+            catFtrLblStyle.setFont(catFtrFont);
+            catFtrLblStyle.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
+            catFtrLblStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+
+            // Category footer amount style
+            CellStyle catFtrAmtStyle = workbook.createCellStyle();
+            catFtrAmtStyle.setFont(catFtrFont);
+            catFtrAmtStyle.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
+            catFtrAmtStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            catFtrAmtStyle.setDataFormat(numberFormat);
+            catFtrAmtStyle.setAlignment(HorizontalAlignment.RIGHT);
+
+            // Department footer label style
+            Font deptFtrFont = workbook.createFont();
+            deptFtrFont.setBold(true);
+            CellStyle deptFtrLblStyle = workbook.createCellStyle();
+            deptFtrLblStyle.setFont(deptFtrFont);
+            deptFtrLblStyle.setFillForegroundColor(IndexedColors.GREY_40_PERCENT.getIndex());
+            deptFtrLblStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+
+            // Department footer amount style
+            CellStyle deptFtrAmtStyle = workbook.createCellStyle();
+            deptFtrAmtStyle.setFont(deptFtrFont);
+            deptFtrAmtStyle.setFillForegroundColor(IndexedColors.GREY_40_PERCENT.getIndex());
+            deptFtrAmtStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            deptFtrAmtStyle.setDataFormat(numberFormat);
+            deptFtrAmtStyle.setAlignment(HorizontalAlignment.RIGHT);
+
+            // Grand total label style
+            Font grandFont = workbook.createFont();
+            grandFont.setBold(true);
+            grandFont.setColor(IndexedColors.WHITE.getIndex());
+            CellStyle grandLblStyle = workbook.createCellStyle();
+            grandLblStyle.setFont(grandFont);
+            grandLblStyle.setFillForegroundColor(IndexedColors.GREY_80_PERCENT.getIndex());
+            grandLblStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+
+            // Grand total amount style
+            CellStyle grandAmtStyle = workbook.createCellStyle();
+            grandAmtStyle.setFont(grandFont);
+            grandAmtStyle.setFillForegroundColor(IndexedColors.GREY_80_PERCENT.getIndex());
+            grandAmtStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            grandAmtStyle.setDataFormat(numberFormat);
+            grandAmtStyle.setAlignment(HorizontalAlignment.RIGHT);
+
+            // Report title style
+            CellStyle titleStyle = workbook.createCellStyle();
+            Font titleFont = workbook.createFont();
+            titleFont.setBold(true);
+            titleFont.setFontHeightInPoints((short) 14);
+            titleStyle.setFont(titleFont);
+
+            // Filter label style
+            CellStyle filterLblStyle = workbook.createCellStyle();
+            Font filterLblFont = workbook.createFont();
+            filterLblFont.setBold(true);
+            filterLblStyle.setFont(filterLblFont);
+
+            int rowNum = 0;
+            java.text.SimpleDateFormat displaySdf = new java.text.SimpleDateFormat("dd MMM yyyy hh:mm a");
+
+            // Report title row
+            Row titleRow = sheet.createRow(rowNum++);
+            Cell titleCell = titleRow.createCell(0);
+            titleCell.setCellValue("Credit Summary - Report By Item");
+            titleCell.setCellStyle(titleStyle);
+            sheet.addMergedRegion(new CellRangeAddress(rowNum - 1, rowNum - 1, 0, 4));
+
+            // Blank separator row
+            sheet.createRow(rowNum++);
+
+            // Line 1: From Date | To Date
+            Row dateRow = sheet.createRow(rowNum++);
+            Cell fromLbl = dateRow.createCell(0);
+            fromLbl.setCellValue("From Date :");
+            fromLbl.setCellStyle(filterLblStyle);
+            dateRow.createCell(1).setCellValue(fromDate != null ? displaySdf.format(fromDate) : "");
+            Cell toLbl = dateRow.createCell(2);
+            toLbl.setCellValue("To Date :");
+            toLbl.setCellStyle(filterLblStyle);
+            dateRow.createCell(3).setCellValue(toDate != null ? displaySdf.format(toDate) : "");
+
+            // Line 2: Credit Company | Service
+            Row filterRow = sheet.createRow(rowNum++);
+            Cell ccLbl = filterRow.createCell(0);
+            ccLbl.setCellValue("Credit Company :");
+            ccLbl.setCellStyle(filterLblStyle);
+            filterRow.createCell(1).setCellValue(institution != null ? institution.getName() : "All");
+            Cell svcLbl = filterRow.createCell(2);
+            svcLbl.setCellValue("Service :");
+            svcLbl.setCellStyle(filterLblStyle);
+            filterRow.createCell(3).setCellValue(item != null ? item.getName() : "All");
+
+            // Blank separator row before data table
+            sheet.createRow(rowNum++);
+
+            // Column headers
+            Row headerRow = sheet.createRow(rowNum++);
+            String[] headers = {"Service Item Name", "Count", "Hospital Fee", "Professional Fee", "Total"};
+            for (int i = 0; i < headers.length; i++) {
+                Cell cell = headerRow.createCell(i);
+                cell.setCellValue(headers[i]);
+                cell.setCellStyle(colHdrStyle);
+            }
+
+            // Data rows
+            if (dailyCashSummery != null) {
+                for (DailyCash d : dailyCashSummery) {
+                    if (d.getDepartmentTotal() != 0) {
+
+                        // Department header row (merged full width)
+                        Row deptRow = sheet.createRow(rowNum++);
+                        for (int i = 0; i < 5; i++) {
+                            deptRow.createCell(i).setCellStyle(deptHdrStyle);
+                        }
+                        deptRow.getCell(0).setCellValue(d.getDepartment() != null ? d.getDepartment().getName() : "");
+                        sheet.addMergedRegion(new CellRangeAddress(rowNum - 1, rowNum - 1, 0, 4));
+
+                        for (CategoryWithItem s : d.getCategoryWitmItems()) {
+                            if (s.getSubTotal() != 0) {
+
+                                // Category header row (merged full width)
+                                Row catRow = sheet.createRow(rowNum++);
+                                for (int i = 0; i < 5; i++) {
+                                    catRow.createCell(i).setCellStyle(catHdrStyle);
+                                }
+                                catRow.getCell(0).setCellValue(s.getCategory() != null ? s.getCategory().getName() : "");
+                                sheet.addMergedRegion(new CellRangeAddress(rowNum - 1, rowNum - 1, 0, 4));
+
+                                // Item rows
+                                if (s.getItemWithFees() != null) {
+                                    for (ItemWithFee i : s.getItemWithFees()) {
+                                        if (i.getTotal() != 0) {
+                                            Row itemRow = sheet.createRow(rowNum++);
+                                            itemRow.createCell(0).setCellValue(i.getItem() != null ? i.getItem().getName() : "");
+                                            itemRow.createCell(1).setCellValue(i.getCount());
+                                            Cell hosCell = itemRow.createCell(2);
+                                            hosCell.setCellValue(i.getHospitalFee());
+                                            hosCell.setCellStyle(numStyle);
+                                            Cell proCell = itemRow.createCell(3);
+                                            proCell.setCellValue(i.getProFee());
+                                            proCell.setCellStyle(numStyle);
+                                            Cell totCell = itemRow.createCell(4);
+                                            totCell.setCellValue(i.getTotal());
+                                            totCell.setCellStyle(numStyle);
+                                        }
+                                    }
+                                }
+
+                                // Category footer row (label spans cols 0-1)
+                                Row catFtrRow = sheet.createRow(rowNum++);
+                                Cell catFtrLbl = catFtrRow.createCell(0);
+                                catFtrLbl.setCellValue((s.getCategory() != null ? s.getCategory().getName() : "") + " Sub Total :");
+                                catFtrLbl.setCellStyle(catFtrLblStyle);
+                                catFtrRow.createCell(1).setCellStyle(catFtrLblStyle);
+                                sheet.addMergedRegion(new CellRangeAddress(rowNum - 1, rowNum - 1, 0, 1));
+                                Cell catHosCell = catFtrRow.createCell(2);
+                                catHosCell.setCellValue(s.getSubHosTotal());
+                                catHosCell.setCellStyle(catFtrAmtStyle);
+                                Cell catProCell = catFtrRow.createCell(3);
+                                catProCell.setCellValue(s.getSubTotal() - s.getSubHosTotal());
+                                catProCell.setCellStyle(catFtrAmtStyle);
+                                Cell catTotCell = catFtrRow.createCell(4);
+                                catTotCell.setCellValue(s.getSubTotal());
+                                catTotCell.setCellStyle(catFtrAmtStyle);
+                            }
+                        }
+
+                        // Department footer row (label spans cols 0-3)
+                        Row deptFtrRow = sheet.createRow(rowNum++);
+                        Cell deptFtrLbl = deptFtrRow.createCell(0);
+                        deptFtrLbl.setCellValue((d.getDepartment() != null ? d.getDepartment().getName() : "") + " Total :");
+                        deptFtrLbl.setCellStyle(deptFtrLblStyle);
+                        for (int i = 1; i < 4; i++) {
+                            deptFtrRow.createCell(i).setCellStyle(deptFtrLblStyle);
+                        }
+                        sheet.addMergedRegion(new CellRangeAddress(rowNum - 1, rowNum - 1, 0, 3));
+                        Cell deptTotCell = deptFtrRow.createCell(4);
+                        deptTotCell.setCellValue(d.getDepartmentTotal());
+                        deptTotCell.setCellStyle(deptFtrAmtStyle);
+                    }
+                }
+            }
+
+            // Grand total rows (label spans cols 0-3)
+            if (vatTableOpdCredit != null) {
+                for (String1Value2 sm : vatTableOpdCredit) {
+                    Row grandRow = sheet.createRow(rowNum++);
+                    Cell grandLbl = grandRow.createCell(0);
+                    grandLbl.setCellValue(sm.getString());
+                    grandLbl.setCellStyle(grandLblStyle);
+                    for (int i = 1; i < 4; i++) {
+                        grandRow.createCell(i).setCellStyle(grandLblStyle);
+                    }
+                    sheet.addMergedRegion(new CellRangeAddress(rowNum - 1, rowNum - 1, 0, 3));
+                    Cell grandAmt = grandRow.createCell(4);
+                    grandAmt.setCellValue(sm.getValue1());
+                    grandAmt.setCellStyle(grandAmtStyle);
+                }
+            }
+
+            // Auto-size columns
+            for (int i = 0; i < 5; i++) {
+                sheet.autoSizeColumn(i);
+            }
+
+            java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd");
+            String fromStr = fromDate != null ? sdf.format(fromDate) : "unknown";
+            String toStr = toDate != null ? sdf.format(toDate) : "unknown";
+            String serviceStr = (item != null && item.getName() != null)
+                    ? "_" + item.getName().replaceAll("[^a-zA-Z0-9]", "_") : "";
+            String fileName = "credit_summary_report" + serviceStr + "_" + fromStr + "_to_" + toStr + ".xlsx";
+
+            externalContext.responseReset();
+            externalContext.setResponseContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            externalContext.setResponseHeader("Content-Disposition", "attachment; filename=\"" + fileName + "\"");
+            workbook.write(externalContext.getResponseOutputStream());
+            facesContext.responseComplete();
+
+        } catch (IOException e) {
+            JsfUtil.addErrorMessage("Error generating Excel: " + e.getMessage());
+        }
+    }
+
+    public void exportToExcelByBill() {
+        dailyCredit = null;
+        FacesContext facesContext = FacesContext.getCurrentInstance();
+        ExternalContext externalContext = facesContext.getExternalContext();
+
+        try (XSSFWorkbook workbook = new XSSFWorkbook()) {
+            Sheet sheet = workbook.createSheet("Credit Summary By Bill");
+            DataFormat dataFormat = workbook.createDataFormat();
+            short numberFormat = dataFormat.getFormat("#,##0.00");
+
+            CellStyle colHdrStyle = workbook.createCellStyle();
+            Font colHdrFont = workbook.createFont();
+            colHdrFont.setBold(true);
+            colHdrFont.setColor(IndexedColors.WHITE.getIndex());
+            colHdrStyle.setFont(colHdrFont);
+            colHdrStyle.setFillForegroundColor(IndexedColors.GREY_80_PERCENT.getIndex());
+            colHdrStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+
+            CellStyle deptHdrStyle = workbook.createCellStyle();
+            Font deptHdrFont = workbook.createFont();
+            deptHdrFont.setBold(true);
+            deptHdrFont.setColor(IndexedColors.WHITE.getIndex());
+            deptHdrStyle.setFont(deptHdrFont);
+            deptHdrStyle.setFillForegroundColor(IndexedColors.GREY_50_PERCENT.getIndex());
+            deptHdrStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+
+            CellStyle numStyle = workbook.createCellStyle();
+            numStyle.setDataFormat(numberFormat);
+            numStyle.setAlignment(HorizontalAlignment.RIGHT);
+
+            Font deptFtrFont = workbook.createFont();
+            deptFtrFont.setBold(true);
+            CellStyle deptFtrLblStyle = workbook.createCellStyle();
+            deptFtrLblStyle.setFont(deptFtrFont);
+            deptFtrLblStyle.setFillForegroundColor(IndexedColors.GREY_40_PERCENT.getIndex());
+            deptFtrLblStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            CellStyle deptFtrAmtStyle = workbook.createCellStyle();
+            deptFtrAmtStyle.setFont(deptFtrFont);
+            deptFtrAmtStyle.setFillForegroundColor(IndexedColors.GREY_40_PERCENT.getIndex());
+            deptFtrAmtStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            deptFtrAmtStyle.setDataFormat(numberFormat);
+            deptFtrAmtStyle.setAlignment(HorizontalAlignment.RIGHT);
+
+            Font grandFont = workbook.createFont();
+            grandFont.setBold(true);
+            grandFont.setColor(IndexedColors.WHITE.getIndex());
+            CellStyle grandLblStyle = workbook.createCellStyle();
+            grandLblStyle.setFont(grandFont);
+            grandLblStyle.setFillForegroundColor(IndexedColors.GREY_80_PERCENT.getIndex());
+            grandLblStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            CellStyle grandAmtStyle = workbook.createCellStyle();
+            grandAmtStyle.setFont(grandFont);
+            grandAmtStyle.setFillForegroundColor(IndexedColors.GREY_80_PERCENT.getIndex());
+            grandAmtStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            grandAmtStyle.setDataFormat(numberFormat);
+            grandAmtStyle.setAlignment(HorizontalAlignment.RIGHT);
+
+            CellStyle titleStyle = workbook.createCellStyle();
+            Font titleFont = workbook.createFont();
+            titleFont.setBold(true);
+            titleFont.setFontHeightInPoints((short) 14);
+            titleStyle.setFont(titleFont);
+
+            CellStyle filterLblStyle = workbook.createCellStyle();
+            Font filterLblFont = workbook.createFont();
+            filterLblFont.setBold(true);
+            filterLblStyle.setFont(filterLblFont);
+
+            java.text.SimpleDateFormat displaySdf = new java.text.SimpleDateFormat("dd MMM yyyy hh:mm a");
+            java.text.SimpleDateFormat fileSdf = new java.text.SimpleDateFormat("yyyy-MM-dd");
+            int rowNum = 0;
+
+            Row titleRow = sheet.createRow(rowNum++);
+            Cell titleCell = titleRow.createCell(0);
+            titleCell.setCellValue("Credit Summary - Report By Bill");
+            titleCell.setCellStyle(titleStyle);
+            sheet.addMergedRegion(new CellRangeAddress(rowNum - 1, rowNum - 1, 0, 6));
+
+            Row instRow = sheet.createRow(rowNum++);
+            instRow.createCell(0).setCellValue(institution != null ? institution.getName() : "");
+            sheet.addMergedRegion(new CellRangeAddress(rowNum - 1, rowNum - 1, 0, 6));
+
+            sheet.createRow(rowNum++);
+
+            Row dateRow = sheet.createRow(rowNum++);
+            Cell fromLbl = dateRow.createCell(0);
+            fromLbl.setCellValue("From Date :");
+            fromLbl.setCellStyle(filterLblStyle);
+            dateRow.createCell(1).setCellValue(fromDate != null ? displaySdf.format(fromDate) : "");
+            Cell toLbl = dateRow.createCell(3);
+            toLbl.setCellValue("To Date :");
+            toLbl.setCellStyle(filterLblStyle);
+            dateRow.createCell(4).setCellValue(toDate != null ? displaySdf.format(toDate) : "");
+
+            sheet.createRow(rowNum++);
+
+            String[] headers = {"Bill No", "Ref. Bill", "Patient Name", "Discount", "VAT", "Net Total", "VAT + Net Total"};
+            Row headerRow = sheet.createRow(rowNum++);
+            for (int i = 0; i < headers.length; i++) {
+                Cell cell = headerRow.createCell(i);
+                cell.setCellValue(headers[i]);
+                cell.setCellStyle(colHdrStyle);
+            }
+
+            for (DailyCredit d : getDailyCreditByBill()) {
+                Row deptRow = sheet.createRow(rowNum++);
+                for (int i = 0; i < 7; i++) {
+                    deptRow.createCell(i).setCellStyle(deptHdrStyle);
+                }
+                deptRow.getCell(0).setCellValue(d.getDepartment() != null ? d.getDepartment().getName() : "");
+                sheet.addMergedRegion(new CellRangeAddress(rowNum - 1, rowNum - 1, 0, 6));
+
+                if (d.getBills() != null) {
+                    for (Bill b : d.getBills()) {
+                        Row billRow = sheet.createRow(rowNum++);
+                        billRow.createCell(0).setCellValue(b.getDeptId() != null ? b.getDeptId() : "");
+
+                        String refBill = "";
+                        if (b.getBilledBill() != null) {
+                            refBill = b.getBilledBill().getDeptId() != null ? b.getBilledBill().getDeptId() : "";
+                            if (b.getBilledBill().getCreatedAt() != null) {
+                                refBill += " - " + displaySdf.format(b.getBilledBill().getCreatedAt());
+                            }
+                        }
+                        billRow.createCell(1).setCellValue(refBill);
+
+                        String patientName = "";
+                        if (b.getPatient() != null && b.getPatient().getPerson() != null) {
+                            patientName = b.getPatient().getPerson().getNameWithTitle() != null ? b.getPatient().getPerson().getNameWithTitle() : "";
+                        }
+                        billRow.createCell(2).setCellValue(patientName);
+
+                        Cell discCell = billRow.createCell(3);
+                        discCell.setCellValue(b.getDiscount());
+                        discCell.setCellStyle(numStyle);
+                        Cell vatCell = billRow.createCell(4);
+                        vatCell.setCellValue(b.getVat());
+                        vatCell.setCellStyle(numStyle);
+                        Cell netCell = billRow.createCell(5);
+                        netCell.setCellValue(b.getNetTotal());
+                        netCell.setCellStyle(numStyle);
+                        Cell totCell = billRow.createCell(6);
+                        totCell.setCellValue(b.getNetTotal() + b.getVat());
+                        totCell.setCellStyle(numStyle);
+                    }
+                }
+
+                Row deptFtrRow = sheet.createRow(rowNum++);
+                Cell deptFtrLbl = deptFtrRow.createCell(0);
+                deptFtrLbl.setCellValue((d.getDepartment() != null ? d.getDepartment().getName() : "") + " Total :");
+                deptFtrLbl.setCellStyle(deptFtrLblStyle);
+                deptFtrRow.createCell(1).setCellStyle(deptFtrLblStyle);
+                deptFtrRow.createCell(2).setCellStyle(deptFtrLblStyle);
+                sheet.addMergedRegion(new CellRangeAddress(rowNum - 1, rowNum - 1, 0, 2));
+                Cell dftDiscCell = deptFtrRow.createCell(3);
+                dftDiscCell.setCellValue(d.getDiscountTotal());
+                dftDiscCell.setCellStyle(deptFtrAmtStyle);
+                Cell dftVatCell = deptFtrRow.createCell(4);
+                dftVatCell.setCellValue(d.getVatTotal());
+                dftVatCell.setCellStyle(deptFtrAmtStyle);
+                Cell dftNetCell = deptFtrRow.createCell(5);
+                dftNetCell.setCellValue(d.getNetTotal());
+                dftNetCell.setCellStyle(deptFtrAmtStyle);
+                Cell dftTotCell = deptFtrRow.createCell(6);
+                dftTotCell.setCellValue(d.getVatTotal() + d.getNetTotal());
+                dftTotCell.setCellStyle(deptFtrAmtStyle);
+            }
+
+            Row grandRow = sheet.createRow(rowNum++);
+            Cell grandLbl = grandRow.createCell(0);
+            grandLbl.setCellValue("Total Collection :");
+            grandLbl.setCellStyle(grandLblStyle);
+            for (int i = 1; i < 6; i++) {
+                grandRow.createCell(i).setCellStyle(grandLblStyle);
+            }
+            sheet.addMergedRegion(new CellRangeAddress(rowNum - 1, rowNum - 1, 0, 5));
+            Cell grandAmt = grandRow.createCell(6);
+            grandAmt.setCellValue(getDepartmentTotalByBillWithVat());
+            grandAmt.setCellStyle(grandAmtStyle);
+
+            for (int i = 0; i < 7; i++) {
+                sheet.autoSizeColumn(i);
+            }
+
+            String fromStr = fromDate != null ? fileSdf.format(fromDate) : "unknown";
+            String toStr = toDate != null ? fileSdf.format(toDate) : "unknown";
+            String fileName = "credit_dep_by_bill_" + fromStr + "_to_" + toStr + ".xlsx";
+
+            externalContext.responseReset();
+            externalContext.setResponseContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            externalContext.setResponseHeader("Content-Disposition", "attachment; filename=\"" + fileName + "\"");
+            workbook.write(externalContext.getResponseOutputStream());
+            facesContext.responseComplete();
+
+        } catch (IOException e) {
+            JsfUtil.addErrorMessage("Error generating Excel: " + e.getMessage());
+        }
     }
 
     public CreditSummeryController() {
