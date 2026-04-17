@@ -72,6 +72,8 @@ public class EnumController implements Serializable {
     private List<BillTypeAtomic> allUtilizedBillTypeAtomics;
     private List<BillTypeAtomic> allUtilizedBillTypeAtomicsForPharmacy;
 
+    private List<PettyCashType> pettyCashBillTypes;
+
     @PostConstruct
     public void init() {
         enumList = new ArrayList<>();
@@ -79,6 +81,17 @@ public class EnumController implements Serializable {
         enumList.add(PaperType.class);
         enumList.add(ItemType.class);
         enumList.add(DiscountType.class);
+    }
+
+    public List<PettyCashType> getPettyCashBillTypes() {
+        if (pettyCashBillTypes == null) {
+            pettyCashBillTypes = new ArrayList<>();
+            pettyCashBillTypes.add(PettyCashType.STAFF);
+            pettyCashBillTypes.add(PettyCashType.DEPARTMENT);
+            pettyCashBillTypes.add(PettyCashType.PERSON);
+            pettyCashBillTypes.add(PettyCashType.NEWPERSON);
+        }
+        return pettyCashBillTypes;
     }
 
     public Sex[] getSex() {
@@ -280,10 +293,10 @@ public class EnumController implements Serializable {
             boolean include = false;
             if (pm == PaymentMethod.Cash) {
                 include = configOptionApplicationController.getBooleanValueByKey(
-                    pm.getLabel() + " is available for Petty Cash Billing", true); // DEFAULT TRUE
+                        pm.getLabel() + " is available for Petty Cash Billing", true); // DEFAULT TRUE
             } else {
                 include = configOptionApplicationController.getBooleanValueByKey(
-                    pm.getLabel() + " is available for Petty Cash Billing", false); // DEFAULT FALSE
+                        pm.getLabel() + " is available for Petty Cash Billing", false); // DEFAULT FALSE
             }
             if (include) {
                 paymentMethodsForPettyCashBilling.add(pm);
@@ -358,7 +371,7 @@ public class EnumController implements Serializable {
         list.add(Priority.HIGH);
         list.add(Priority.URGENT);
         list.add(Priority.CRITICAL);
-        
+
         return list;
     }
 
@@ -525,7 +538,7 @@ public class EnumController implements Serializable {
             LeaveType.No_Pay_Half};
         return ltp;
     }
-    
+
     public List<InvestigationItemType> getAvailbleInvestigationItemType() {
         List<InvestigationItemType> list = new ArrayList<>();
         list.add(InvestigationItemType.Value);
@@ -602,7 +615,7 @@ public class EnumController implements Serializable {
         btas.add(BillTypeAtomic.INWARD_SERVICE_BILL_REFUND);
         return btas;
     }
-    
+
     public List<RequestType> getRequestTypes() {
         List<RequestType> rt = new ArrayList<>();
         rt.add(RequestType.BILL_CANCELLATION);
@@ -611,13 +624,15 @@ public class EnumController implements Serializable {
         rt.add(RequestType.PARTIAL_REFUND);
         rt.add(RequestType.SERVICE_REFUND);
         rt.add(RequestType.DRAWER_ADJUSTMENT);
+        rt.add(RequestType.PETTYCASH_APROVEL);
+        rt.add(RequestType.PETTYCASH_CANCELLATION);
         //rt.add(RequestType.EDIT_REQUEST);
         //rt.add(RequestType.INFORMATION_UPDATE);
         //rt.add(RequestType.QUANTITY_CHANGE);
         //rt.add(RequestType.DATE_MODIFICATION);
         return rt;
     }
-    
+
     public List<RequestStatus> getRequestStatus() {
         List<RequestStatus> rs = new ArrayList<>();
         rs.add(RequestStatus.PENDING);
@@ -629,13 +644,13 @@ public class EnumController implements Serializable {
         rs.add(RequestStatus.EXPIRED);
         return rs;
     }
-    
+
     public List<AppointmentType> getAppointmentTypes() {
         List<AppointmentType> apt = new ArrayList<>();
         apt.add(AppointmentType.IP_APPOINTMENT);
         return apt;
     }
-    
+
     public List<AppointmentStatus> getAppointmentStatus() {
         List<AppointmentStatus> aps = new ArrayList<>();
         aps.add(AppointmentStatus.PENDING);
@@ -902,7 +917,7 @@ public class EnumController implements Serializable {
 
         return p;
     }
-    
+
     public PaymentMethod[] getPaymentMethodsForChannelAbsentReport() {
         PaymentMethod[] p = {
             PaymentMethod.Cash,
@@ -1041,6 +1056,7 @@ public class EnumController implements Serializable {
             PaymentMethod.Slip};
         return p;
     }
+
     public PaymentMethod[] getPaymentMethodsForIpReports() {
         PaymentMethod[] p = {
             PaymentMethod.Cash,

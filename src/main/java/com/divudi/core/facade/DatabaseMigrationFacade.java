@@ -6,12 +6,25 @@ package com.divudi.core.facade;
 
 import com.divudi.core.entity.DatabaseMigration;
 import com.divudi.core.data.MigrationStatus;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.sql.DataSource;
+import org.eclipse.persistence.internal.jpa.EntityManagerImpl;
+import org.eclipse.persistence.sessions.JNDIConnector;
+import org.eclipse.persistence.sessions.server.ServerSession;
 
 /**
  * Facade for DatabaseMigration entity operations
@@ -31,6 +44,116 @@ public class DatabaseMigrationFacade extends AbstractFacade<DatabaseMigration> {
 
     public DatabaseMigrationFacade() {
         super(DatabaseMigration.class);
+    }
+
+    /**
+     * Execute a DDL statement (CREATE TABLE, ALTER TABLE, SET, etc.) outside JTA.
+     *
+     * DDL statements cause MySQL to issue an implicit COMMIT, which
+     * desynchronises the JTA transaction manager and causes "Transaction
+     * aborted". This method obtains a raw JDBC connection directly from
+     * EclipseLink's datasource — bypassing JTA entirely — and sets
+     * autoCommit=true so MySQL's implicit commits are harmless.
+     *
+     * Must NOT be called inside an active JTA transaction; the
+     * NOT_SUPPORTED attribute suspends any surrounding transaction.
+     */
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+    public void executeDdlNative(String sql) throws Exception {
+        if (sql == null || sql.trim().isEmpty()) {
+            throw new IllegalArgumentException("SQL statement cannot be null or empty");
+        }
+        Connection conn = getRawJdbcConnection();
+        try {
+            conn.setAutoCommit(true);
+            try (Statement stmt = conn.createStatement()) {
+                stmt.execute(sql);
+            }
+        } finally {
+            // Restore autoCommit=false before returning connection to Payara's JTA pool.
+            // Without this, the pool hands the connection (with autoCommit=true) to the
+            // next JTA operation, which breaks JTA enlistment and causes
+            // java.lang.reflect.UndeclaredThrowableException wrapped in SQLException.
+            try { conn.setAutoCommit(false); } catch (Exception ignored) { }
+            conn.close();
+        }
+    }
+
+    private static final Logger LOGGER = Logger.getLogger(DatabaseMigrationFacade.class.getName());
+
+    /**
+     * Obtain a raw JDBC connection from EclipseLink's JNDI datasource,
+     * completely outside JTA. Caller is responsible for closing it.
+     */
+    private Connection getRawJdbcConnection() throws Exception {
+        EntityManagerImpl emImpl = em.unwrap(EntityManagerImpl.class);
+        ServerSession serverSession = emImpl.getServerSession();
+        DataSource ds = ((JNDIConnector) serverSession.getLogin().getConnector()).getDataSource();
+        return ds.getConnection();
+    }
+
+    /**
+     * Scan every table in the current schema for a BIGINT column named ID that
+     * lacks AUTO_INCREMENT and apply it.  Runs outside JTA so DDL implicit
+     * COMMITs cannot desync the transaction manager.
+     *
+     * Safe to call at every startup: tables that already have AUTO_INCREMENT are
+     * skipped by the information_schema query.  FK checks are disabled for the
+     * duration so child-table ALTER statements do not fail.
+     *
+     * @return list of table names that were altered (empty when nothing needed)
+     */
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+    public List<String> applyAutoIncrementToAllEntityTables() throws Exception {
+        List<String> altered = new ArrayList<>();
+        Connection conn = getRawJdbcConnection();
+        try {
+            conn.setAutoCommit(true);
+            // Find all BIGINT ID columns that do NOT yet have auto_increment
+            String query = "SELECT TABLE_NAME FROM information_schema.COLUMNS "
+                    + "WHERE TABLE_SCHEMA = DATABASE() "
+                    + "AND COLUMN_NAME = 'ID' "
+                    + "AND DATA_TYPE = 'bigint' "
+                    + "AND EXTRA NOT LIKE '%auto_increment%' "
+                    + "ORDER BY TABLE_NAME";
+            List<String> tables = new ArrayList<>();
+            try (PreparedStatement ps = conn.prepareStatement(query);
+                 ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    tables.add(rs.getString(1));
+                }
+            }
+            if (tables.isEmpty()) {
+                return altered;
+            }
+            // Disable FK checks so child-table ALTERs succeed
+            try (Statement fkOff = conn.createStatement()) {
+                fkOff.execute("SET FOREIGN_KEY_CHECKS=0");
+            }
+            try {
+                for (String tableName : tables) {
+                    try (Statement stmt = conn.createStatement()) {
+                        stmt.execute("ALTER TABLE `" + tableName + "` MODIFY COLUMN ID BIGINT NOT NULL AUTO_INCREMENT");
+                        altered.add(tableName);
+                        LOGGER.info("AutoIncrement: applied to table `" + tableName + "`");
+                    } catch (Exception e) {
+                        LOGGER.log(Level.WARNING, "AutoIncrement: could not alter `" + tableName + "` — skipping", e);
+                    }
+                }
+            } finally {
+                try (Statement fkOn = conn.createStatement()) {
+                    fkOn.execute("SET FOREIGN_KEY_CHECKS=1");
+                }
+            }
+        } finally {
+            // Restore autoCommit=false before returning connection to Payara's JTA pool.
+            // Without this, the pool hands the connection (with autoCommit=true) to the
+            // next JTA operation, which breaks JTA enlistment and causes
+            // java.lang.reflect.UndeclaredThrowableException wrapped in SQLException.
+            try { conn.setAutoCommit(false); } catch (Exception ignored) { }
+            conn.close();
+        }
+        return altered;
     }
 
     /**

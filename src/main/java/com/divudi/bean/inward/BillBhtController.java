@@ -442,6 +442,11 @@ public class BillBhtController implements Serializable {
         billItem.setCreater(wu);
         billItem.setBill(bill);
 
+        if (billItem.getInwardChargeType() == null && billItem.getItem() != null
+                && billItem.getItem().getInwardChargeType() != null) {
+            billItem.setInwardChargeType(billItem.getItem().getInwardChargeType());
+        }
+
         if (billItem.getId() == null) {
             getBillItemFacade().create(billItem);
         }

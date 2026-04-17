@@ -68,7 +68,7 @@ public class BankAccountController implements Serializable {
         HashMap params = new HashMap();
         jpql = "select b from BankAccount b "
                 + " where b.retired=false "
-                + " and (b.accountNo like :q or b.accountName like :q ) "
+                + " and (UPPER(b.accountNo) like :q or UPPER(b.accountName) like :q ) "
                 + " order by b.accountName";
         params.put("q", "%" + qry.toUpperCase() + "%");
         list = getFacade().findByJpql(jpql, params);
