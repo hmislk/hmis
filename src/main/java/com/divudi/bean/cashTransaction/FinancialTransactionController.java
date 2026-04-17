@@ -5571,11 +5571,14 @@ public class FinancialTransactionController implements Serializable {
             }
         }
 
-        Double maximumAllowedCashDifferenceForHandover = configOptionApplicationController.getDoubleValueByKey("Maximum Allowed Cash Difference for Handover", 1.0);
-        double expectedCashHandover = bundle.getCashValue() + bundle.getFloatNetTotal();
-        if (Math.abs(bundle.getDenominatorValue() - expectedCashHandover) > maximumAllowedCashDifferenceForHandover) {
-            JsfUtil.addErrorMessage("Cash Value Collected and the cash value Handing over are different. Cannot handover.");
-            return null;
+        boolean skipCashDiffValidation = configOptionApplicationController.getBooleanValueByKey("Skip Cash Difference Validation for Handover", false);
+        if (!skipCashDiffValidation) {
+            Double maximumAllowedCashDifferenceForHandover = configOptionApplicationController.getDoubleValueByKey("Maximum Allowed Cash Difference for Handover", 1.0);
+            double expectedCashHandover = bundle.getCashValue() + bundle.getFloatNetTotal();
+            if (Math.abs(bundle.getDenominatorValue() - expectedCashHandover) > maximumAllowedCashDifferenceForHandover) {
+                JsfUtil.addErrorMessage("Cash Value Collected and the cash value Handing over are different. Cannot handover.");
+                return null;
+            }
         }
         boolean shouldSelectAllCollectionsForHandover = configOptionApplicationController.getBooleanValueByKey("Should Select All Collections for Handover", false);
         boolean allBundlesSelected = true;
