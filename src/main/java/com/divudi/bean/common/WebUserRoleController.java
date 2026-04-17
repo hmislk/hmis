@@ -49,6 +49,7 @@ public class WebUserRoleController implements Serializable {
 
     private WebUserRole current;
     private List<WebUserRole> items = null;
+    private List<WebUserRole> activatediItems = null;
     private String comment;
 
     public String navigateToManageWebUserRoles(){
@@ -167,7 +168,17 @@ public class WebUserRoleController implements Serializable {
         String jpql = "Select r "
                 + " from WebUserRole r "
                 + " where r.retired=:ret "
-                + " and r.activated =:act"
+                + " order by r.name";
+        Map m = new HashMap<>();
+        m.put("ret", false);
+        return getFacade().findByJpql(jpql, m);
+    }
+    
+    private List<WebUserRole> findActivatedItems(){
+        String jpql = "Select r "
+                + " from WebUserRole r "
+                + " where r.retired=:ret "
+                + " and r.activated=:act "
                 + " order by r.name";
         Map m = new HashMap<>();
         m.put("ret", false);
@@ -216,6 +227,17 @@ public class WebUserRoleController implements Serializable {
 
     public void setComment(String comment) {
         this.comment = comment;
+    }
+
+    public List<WebUserRole> getActivatediItems() {
+        if(activatediItems == null){
+            activatediItems = findActivatedItems();
+        }
+        return activatediItems;
+    }
+
+    public void setActivatediItems(List<WebUserRole> activatediItems) {
+        this.activatediItems = activatediItems;
     }
 
     /**

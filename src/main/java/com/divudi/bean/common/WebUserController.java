@@ -515,6 +515,9 @@ public class WebUserController implements Serializable {
     public void prepareAdd() {
         current = new WebUser();
     }
+    
+    @Inject
+    WebUserRoleController webUserRoleController;
 
     public String navigateToAddNewUser() {
         setCurrent(new WebUser());
@@ -529,6 +532,7 @@ public class WebUserController implements Serializable {
         department = null;
         institution = null;
         loginPage = null;
+        webUserRoleController.setActivatediItems(null);
         return "/admin/users/user_add_new?faces-redirect=true";
     }
 
@@ -574,6 +578,13 @@ public class WebUserController implements Serializable {
             JsfUtil.addErrorMessage("User name already exists. Plese enter another user name");
             return "";
         }
+        if(webUserRole != null){
+            if(!webUserRole.isActivated()){
+                JsfUtil.addErrorMessage("Selected UserRole is Deactivated.");
+            return "";
+            }
+        }
+        
         getCurrent().setActivated(true);
         getCurrent().setActivatedAt(new Date());
         getCurrent().setActivator(getSessionController().getLoggedUser());
