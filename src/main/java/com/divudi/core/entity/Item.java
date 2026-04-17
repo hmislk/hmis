@@ -72,7 +72,7 @@ public class Item implements Serializable, Comparable<Item>, RetirableEntity {
     static final long serialVersionUID = 1L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
     int orderNo;
 
@@ -158,6 +158,7 @@ public class Item implements Serializable, Comparable<Item>, RetirableEntity {
     private double dblValue = 0.0f;
     SessionNumberType sessionNumberType;
     boolean priceByBatch;
+    @Deprecated // User Issue Unit
     @ManyToOne
     MeasurementUnit measurementUnit;
     @ManyToOne
@@ -818,10 +819,12 @@ public class Item implements Serializable, Comparable<Item>, RetirableEntity {
         this.priceByBatch = priceByBatch;
     }
 
+    @Deprecated // Use getIssueUnit
     public MeasurementUnit getMeasurementUnit() {
-        return measurementUnit;
+        return measurementUnit != null ? measurementUnit : issueUnit;
     }
 
+    @Deprecated // Use setMeasurementUnit
     public void setMeasurementUnit(MeasurementUnit measurementUnit) {
         this.measurementUnit = measurementUnit;
     }

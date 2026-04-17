@@ -12,6 +12,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.Temporal;
+import javax.persistence.Transient;
 
 /**
  *
@@ -22,7 +23,7 @@ public class WebUserRoleUser implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne
@@ -51,7 +52,14 @@ public class WebUserRoleUser implements Serializable {
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date editedAt;
 
+    //Last Update Properties
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date lastUpdateAt;
+    @ManyToOne
+    private WebUser lastUpdater;
 
+    @Transient
+    private Boolean needUpdateUserRole;
 
 
     public Long getId() {
@@ -173,5 +181,36 @@ public class WebUserRoleUser implements Serializable {
 
     public void setDepartment(Department department) {
         this.department = department;
+    }
+
+    public Boolean getNeedUpdateUserRole() {
+        if (webUserRole == null || webUserRole.getLastUpdateAt() == null) {
+            return false;
+        }
+        if (editedAt == null) {
+            return true;
+        }
+        needUpdateUserRole =  webUserRole.getLastUpdateAt().after(editedAt);
+        return needUpdateUserRole;
+    }
+
+    public void setNeedUpdateUserRole(Boolean needUpdateUserRole) {
+        this.needUpdateUserRole = needUpdateUserRole;
+    }
+
+    public Date getLastUpdateAt() {
+        return lastUpdateAt;
+    }
+
+    public void setLastUpdateAt(Date lastUpdateAt) {
+        this.lastUpdateAt = lastUpdateAt;
+    }
+
+    public WebUser getLastUpdater() {
+        return lastUpdater;
+    }
+
+    public void setLastUpdater(WebUser lastUpdater) {
+        this.lastUpdater = lastUpdater;
     }
 }

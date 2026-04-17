@@ -1,0 +1,77 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:head />
+    <h:body>
+        <ui:composition template="/pharmacy/adjustments/pharmacy_adjustment_index.xhtml">
+            <ui:define name="subcontent">
+                <h:form>
+                    <f:event type="preRenderView" listener="#{pharmacyStockTakeController.listPendingPhysicalCounts}"/>
+                    <div class="container-fluid">
+                        <h:panelGroup rendered="#{!webUserController.hasPrivilege('PharmacyStockTakeApprove')}">
+                            <div class="alert alert-danger" role="alert">
+                                You do not have permission to view pending physical count approvals.
+                            </div>
+                        </h:panelGroup>
+                        <h:panelGroup rendered="#{webUserController.hasPrivilege('PharmacyStockTakeApprove')}">
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h:outputText value="Pending Physical Count Approvals" styleClass="h2 mb-0"/>
+                                <p:commandButton value="Back to List" icon="fa fa-arrow-left" ajax="false"
+                                                 styleClass="ui-button-secondary"
+                                                 action="/pharmacy/pharmacy_stock_take_list?faces-redirect=true"/>
+                            </div>
+                            <div class="card-body">
+                                <p:dataTable id="tblPending"
+                                             value="#{pharmacyStockTakeController.pendingPhysicalCounts}"
+                                             var="row"
+                                             rows="25"
+                                             paginator="true"
+                                             paginatorPosition="both"
+                                             paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                             rowsPerPageTemplate="10,25,50,100"
+                                             styleClass="ui-datatable-striped ui-datatable-gridlines"
+                                             emptyMessage="No pending physical count approvals found.">
+
+                                    <p:column headerText="Bill No" style="width: 140px; font-family: monospace;">
+                                        <h:outputText value="#{row.deptId}"/>
+                                    </p:column>
+
+                                    <p:column headerText="Institution" style="min-width: 160px;">
+                                        <h:outputText value="#{row.institutionName}"/>
+                                    </p:column>
+
+                                    <p:column headerText="Department" style="min-width: 180px;">
+                                        <h:outputText value="#{row.departmentName}"/>
+                                    </p:column>
+
+                                    <p:column headerText="Date and Time" style="width: 170px;">
+                                        <h:outputText value="#{row.createdAt}">
+                                            <f:convertDateTime pattern="yyyy-MM-dd HH:mm"/>
+                                        </h:outputText>
+                                    </p:column>
+
+                                    <p:column headerText="Items" style="width: 80px; text-align: right;">
+                                        <h:outputText value="#{row.itemsCount}"/>
+                                    </p:column>
+
+                                    <p:column headerText="Action" style="width: 100px; text-align: center;">
+                                        <p:commandButton value="Review" icon="fa fa-eye" ajax="false"
+                                                         styleClass="ui-button-warning"
+                                                         action="#{pharmacyStockTakeController.viewPhysicalCountById(row.id)}"/>
+                                    </p:column>
+
+                                </p:dataTable>
+                            </div>
+                        </div>
+                        </h:panelGroup>
+                    </div>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

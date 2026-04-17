@@ -28,7 +28,7 @@ public class BillFee implements Serializable, RetirableEntity {
 
     static final long serialVersionUID = 1L;
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
     //Created Properties
     @ManyToOne
@@ -640,6 +640,17 @@ public class BillFee implements Serializable, RetirableEntity {
 
     public void setTmpChangedValue(Double tmpChangedValue) {
         this.tmpChangedValue = tmpChangedValue;
+    }
+
+    public double getDisplayRate() {
+        if (tmpChangedValue != null) {
+            return tmpChangedValue;
+        }
+        return fee != null ? fee.getFee() : 0.0;
+    }
+
+    public void setDisplayRate(double displayRate) {
+        this.tmpChangedValue = displayRate;
     }
 
     public Double getTmpSettleChangedValue() {

@@ -34,7 +34,7 @@ public class Payment implements Serializable, RetirableEntity {
     static final long serialVersionUID = 1L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
 
     @ManyToOne
@@ -190,6 +190,9 @@ public class Payment implements Serializable, RetirableEntity {
     private Institution fromInstitution;
     @ManyToOne
     private Institution toInstitution;
+
+    @ManyToOne
+    private WebUser floatRecipient;
 
     private Staff toStaff;
 
@@ -758,6 +761,14 @@ public class Payment implements Serializable, RetirableEntity {
 
     public void setCurrentHolder(WebUser currentHolder) {
         this.currentHolder = currentHolder;
+    }
+
+    public WebUser getFloatRecipient() {
+        return floatRecipient;
+    }
+
+    public void setFloatRecipient(WebUser floatRecipient) {
+        this.floatRecipient = floatRecipient;
     }
 
     public boolean isCancelled() {

@@ -1137,17 +1137,142 @@ public class GrnCostingController implements Serializable {
         }
     }
 
-    public void generateBillComponent() {
+    /**
+     * Bulk-loads received-quantity totals for every BillItem in the given PO
+     * with a single aggregate query, returning a map of BillItem.id →
+     * total qty (in pharmaceutical units).
+     */
+    private Map<Long, Double> buildReceivedQtyMap(Bill poBill, BillTypeAtomic billTypeAtomic) {
+        String jpql = "SELECT bi.referanceBillItem.id,"
+                + " COALESCE(SUM(COALESCE(bi.pharmaceuticalBillItem.qty, 0)), 0)"
+                + " FROM BillItem bi"
+                + " WHERE bi.referanceBillItem.bill = :poBill"
+                + " AND (bi.retired = false OR bi.retired IS NULL)"
+                + " AND (bi.bill.retired = false OR bi.bill.retired IS NULL)"
+                + " AND bi.bill.billTypeAtomic = :bta"
+                + " GROUP BY bi.referanceBillItem.id";
+        Map<String, Object> params = new HashMap<>();
+        params.put("poBill", poBill);
+        params.put("bta", billTypeAtomic);
+        Map<Long, Double> result = new HashMap<>();
+        List<Object> rows = getBillItemFacade().findObjects(jpql, params);
+        if (rows != null) {
+            for (Object row : rows) {
+                Object[] cols = (Object[]) row;
+                Long billItemId = ((Number) cols[0]).longValue();
+                double qty = cols[1] instanceof Number ? ((Number) cols[1]).doubleValue() : 0.0;
+                result.put(billItemId, qty);
+            }
+        }
+        return result;
+    }
 
-        for (PharmaceuticalBillItem pbiInApprovedOrder : getPharmaceuticalBillItemFacade().getPharmaceuticalBillItems(getApproveBill())) {
+    /**
+     * Bulk-loads received free-quantity totals for every BillItem in the given
+     * PO with a single aggregate query.
+     */
+    private Map<Long, Double> buildReceivedFreeQtyMap(Bill poBill, BillTypeAtomic billTypeAtomic) {
+        String jpql = "SELECT bi.referanceBillItem.id,"
+                + " COALESCE(SUM(COALESCE(bi.pharmaceuticalBillItem.freeQty, 0)), 0)"
+                + " FROM BillItem bi"
+                + " WHERE bi.referanceBillItem.bill = :poBill"
+                + " AND (bi.retired = false OR bi.retired IS NULL)"
+                + " AND (bi.bill.retired = false OR bi.bill.retired IS NULL)"
+                + " AND bi.bill.billTypeAtomic = :bta"
+                + " GROUP BY bi.referanceBillItem.id";
+        Map<String, Object> params = new HashMap<>();
+        params.put("poBill", poBill);
+        params.put("bta", billTypeAtomic);
+        Map<Long, Double> result = new HashMap<>();
+        List<Object> rows = getBillItemFacade().findObjects(jpql, params);
+        if (rows != null) {
+            for (Object row : rows) {
+                Object[] cols = (Object[]) row;
+                Long billItemId = ((Number) cols[0]).longValue();
+                double qty = cols[1] instanceof Number ? ((Number) cols[1]).doubleValue() : 0.0;
+                result.put(billItemId, qty);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Bulk-loads the last recorded purchase rate and retail rate for each item
+     * in the given list using a single query ordered by BillItem id descending.
+     * Only the most-recent BillItem row per item is kept (first occurrence in
+     * DESC order = latest).
+     *
+     * @return map of itemId → double[]{purchaseRate, retailRate}
+     */
+    private Map<Long, double[]> buildLastRatesMap(List<Item> items) {
+        if (items == null || items.isEmpty()) {
+            return new HashMap<>();
+        }
+        String jpql = "SELECT bi.item.id,"
+                + " bi.billItemFinanceDetails.lineGrossRate,"
+                + " bi.billItemFinanceDetails.retailSaleRate"
+                + " FROM BillItem bi"
+                + " WHERE bi.retired = false"
+                + " AND bi.bill.cancelled = false"
+                + " AND bi.item IN :items"
+                + " AND (bi.bill.billType = :t OR bi.bill.billType = :t1)"
+                + " ORDER BY bi.id DESC";
+        Map<String, Object> params = new HashMap<>();
+        params.put("items", items);
+        params.put("t", BillType.PharmacyGrnBill);
+        params.put("t1", BillType.PharmacyPurchaseBill);
+        Map<Long, double[]> result = new HashMap<>();
+        List<Object> rows = getBillItemFacade().findObjects(jpql, params);
+        if (rows != null) {
+            for (Object row : rows) {
+                Object[] cols = (Object[]) row;
+                Long itemId = ((Number) cols[0]).longValue();
+                if (!result.containsKey(itemId)) {
+                    double pr = cols[1] instanceof Number ? ((Number) cols[1]).doubleValue() : 0.0;
+                    double rr = cols[2] instanceof Number ? ((Number) cols[2]).doubleValue() : 0.0;
+                    result.put(itemId, new double[]{pr, rr});
+                }
+            }
+        }
+        return result;
+    }
+
+    public void generateBillComponent() {
+        // Pre-load all received/cancelled quantities for the entire PO in 4 bulk
+        // queries instead of 4 individual queries per line item (N×4 → 4 total).
+        Bill poBill = getApproveBill();
+        Map<Long, Double> grnQtyMap = buildReceivedQtyMap(poBill, BillTypeAtomic.PHARMACY_GRN);
+        Map<Long, Double> grnCancelledQtyMap = buildReceivedQtyMap(poBill, BillTypeAtomic.PHARMACY_GRN_CANCELLED);
+        Map<Long, Double> grnFreeQtyMap = buildReceivedFreeQtyMap(poBill, BillTypeAtomic.PHARMACY_GRN);
+        Map<Long, Double> grnCancelledFreeQtyMap = buildReceivedFreeQtyMap(poBill, BillTypeAtomic.PHARMACY_GRN_CANCELLED);
+
+        // Eager-fetch billItem + item + category in one query to avoid N×3 lazy loads.
+        List<PharmaceuticalBillItem> poBillItems = getPharmaceuticalBillItemFacade().getPharmaceuticalBillItemsWithItemAndCategory(poBill);
+
+        // Pre-collect all items so we can bulk-fetch last rates in one query
+        // instead of one query per item inside the loop (N×2 → 1 total).
+        List<Item> allPoItems = new ArrayList<>();
+        for (PharmaceuticalBillItem pbi : poBillItems) {
+            if (pbi.getBillItem() != null && pbi.getBillItem().getItem() != null) {
+                allPoItems.add(pbi.getBillItem().getItem());
+            }
+        }
+        Map<Long, double[]> lastRatesMap = buildLastRatesMap(allPoItems);
+
+        for (PharmaceuticalBillItem pbiInApprovedOrder : poBillItems) {
 
             if (pbiInApprovedOrder.getBillItem() == null) {
                 continue;
             }
 
-            double calculatedReturns = calculateRemainigQtyFromOrder(pbiInApprovedOrder);
-            double remains = Math.abs(pbiInApprovedOrder.getQty()) - Math.abs(calculatedReturns);
-            double remainFreeQty = pbiInApprovedOrder.getFreeQty() - calculateRemainingFreeQtyFromOrder(pbiInApprovedOrder);
+            Long poItemId = pbiInApprovedOrder.getBillItem().getId();
+            double receivedQty = Math.abs(grnQtyMap.getOrDefault(poItemId, 0.0))
+                    - Math.abs(grnCancelledQtyMap.getOrDefault(poItemId, 0.0));
+            double receivedFreeQty = Math.abs(grnFreeQtyMap.getOrDefault(poItemId, 0.0))
+                    - Math.abs(grnCancelledFreeQtyMap.getOrDefault(poItemId, 0.0));
+
+            double remains = Math.abs(pbiInApprovedOrder.getQty()) - Math.abs(receivedQty);
+            double remainFreeQty = pbiInApprovedOrder.getFreeQty() - Math.abs(receivedFreeQty);
 
             if (remains > 0 || remainFreeQty > 0) {
                 BillItem newlyCreatedBillItemForGrn = new BillItem();
@@ -1186,16 +1311,16 @@ public class GrnCostingController implements Serializable {
                 double rr = pbiInApprovedOrder.getRetailRate(); // This is per unit rate
 
                 if (pr == 0.0) {
-                    double fallbackPr = getPharmacyBean().getLastPurchaseRate(newlyCreatedBillItemForGrn.getItem(), sessionController.getDepartment());
-                    if (fallbackPr > 0.0) {
-                        pr = fallbackPr;
+                    double[] rates = lastRatesMap.get(newlyCreatedBillItemForGrn.getItem().getId());
+                    if (rates != null && rates[0] > 0.0) {
+                        pr = rates[0];
                     }
                 }
 
                 if (rr == 0.0) {
-                    double fallbackRr = getPharmacyBean().getLastRetailRateByBillItemFinanceDetails(newlyCreatedBillItemForGrn.getItem(), sessionController.getDepartment());
-                    if (fallbackRr > 0.0) {
-                        rr = fallbackRr;
+                    double[] rates = lastRatesMap.get(newlyCreatedBillItemForGrn.getItem().getId());
+                    if (rates != null && rates[1] > 0.0) {
+                        rr = rates[1];
                     }
                 }
 

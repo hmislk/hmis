@@ -29,8 +29,8 @@ import javax.inject.Named;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
- * Acting Consultant (Health Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
+ * Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -44,9 +44,7 @@ public class AdmissionTypeController implements Serializable {
     @EJB
     private AdmissionTypeFacade ejbFacade;
 
-
     private static final long serialVersionUID = 1L;
-
 
     List<AdmissionType> selectedItems;
     private AdmissionType current;
@@ -55,13 +53,11 @@ public class AdmissionTypeController implements Serializable {
     private List<AdmissionType> items = null;
     String selectText = "";
 
-
-
-    public String navigateToManageAdmissionTypes(){
+    public String navigateToManageAdmissionTypes() {
         return "/inward/inward_admission_type?faces-redirect=true";
     }
 
-     public String navigateToManageAdmissionItemsAndFees(){
+    public String navigateToManageAdmissionItemsAndFees() {
         return "/inward/inward_admission_items_and_fees?faces-redirect=true";
     }
 
@@ -74,12 +70,12 @@ public class AdmissionTypeController implements Serializable {
         current = new AdmissionType();
     }
 
-    public void addItemForAdmissionType(){
-        if(current==null){
+    public void addItemForAdmissionType() {
+        if (current == null) {
             JsfUtil.addErrorMessage("No Admission Type");
             return;
         }
-        if(currentItem==null){
+        if (currentItem == null) {
             JsfUtil.addErrorMessage("No Item");
             return;
         }
@@ -151,7 +147,7 @@ public class AdmissionTypeController implements Serializable {
         this.current = current;
     }
 
-    public void fillCategoryItems(){
+    public void fillCategoryItems() {
         categoryItemList = categoryItemController.fillCategoryItems(current);
     }
 
@@ -176,12 +172,10 @@ public class AdmissionTypeController implements Serializable {
         return ejbFacade;
     }
 
-
-
     public List<AdmissionType> getItems() {
         if (items == null) {
             String j;
-            j="select t "
+            j = "select t "
                     + " from AdmissionType t "
                     + " where t.retired=false "
                     + " order by t.name";
@@ -206,12 +200,10 @@ public class AdmissionTypeController implements Serializable {
         this.categoryItemList = categoryItemList;
     }
 
-
-
     /**
      *
      */
-    @FacesConverter(forClass = AdmissionType.class)
+    @FacesConverter(value = "admissionTypeConverter", forClass = AdmissionType.class)
     public static class AdmissionTypeControllerConverter implements Converter {
 
         @Override

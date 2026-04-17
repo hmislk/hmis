@@ -26,7 +26,7 @@ import javax.persistence.Temporal;
 public class StockVarientBillItem implements Serializable, RetirableEntity  {
 
      @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private static final long serialVersionUID = 1L;

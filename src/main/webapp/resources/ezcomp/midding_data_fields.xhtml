@@ -85,6 +85,20 @@
                                 value="Check Missing Fields"
                                 class="w-25"
                                 />
+                            <p:commandButton
+                                ajax="false"
+                                action="#{dataAdministrationController.checkMissingFieldsForced()}"
+                                value="Force Check (Bypass Wiki)"
+                                styleClass="ui-button-warning w-25 ml-2"
+                                title="Bypasses the wiki version shortcut and always scans all tables"
+                                />
+                            <p:commandButton
+                                ajax="false"
+                                action="#{dataAdministrationController.fixMissingFields()}"
+                                value="Fix Missing Fields"
+                                styleClass="ui-button-success w-25 ml-2"
+                                title="Requires DDL pasted in Tab 1. For each entity with missing columns, reads the CREATE TABLE from the DDL and executes ALTER TABLE ADD COLUMN on the selected database(s)."
+                                />
                         </f:facet>
 
                         <p:outputLabel value="Database Selection" />
@@ -97,6 +111,20 @@
                                 value="#{dataAdministrationController.runOnAuditDatabase}"
                                 class="mr-2"/>
                             <h:outputText value="Audit Database (hmisAuditPU)"/>
+                        </h:panelGroup>
+
+                        <p:outputLabel value="Wiki DDL Version" />
+                        <h:outputText value="#{dataAdministrationController.wikiDdlVersion != null ? dataAdministrationController.wikiDdlVersion : '(not yet fetched)'}" />
+
+                        <p:outputLabel value="Stored DB Version" />
+                        <h:panelGroup layout="block" class="d-flex align-items-center">
+                            <h:outputText value="#{dataAdministrationController.storedDdlVersion != null ? dataAdministrationController.storedDdlVersion : '(not set)'}" styleClass="me-3"/>
+                            <p:commandButton
+                                value="Mark Schema as Current"
+                                ajax="false"
+                                action="#{dataAdministrationController.markSchemaAsCurrent()}"
+                                rendered="#{not empty dataAdministrationController.wikiDdlVersion}"
+                                styleClass="ui-button-success" />
                         </h:panelGroup>
 
                         <p:outputLabel value="Combined Errors" ></p:outputLabel>

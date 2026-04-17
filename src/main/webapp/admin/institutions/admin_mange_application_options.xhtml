@@ -222,6 +222,14 @@
                                         formatToggle="true" 
                                         theme="large">
                                     </p:colorPicker>
+                                    
+                                    <!-- For INTEGER -->
+                                    <p:inputText 
+                                        class="w-100" 
+                                        id="valueInputInteger" 
+                                        value="#{configOptionController.option.optionValue}"
+                                        rendered="#{configOptionController.option.valueType eq 'INTEGER'}" >
+                                    </p:inputText>
 
                                     <p:selectOneMenu 
                                         id="enumValueSelector"

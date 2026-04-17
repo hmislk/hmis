@@ -51,6 +51,24 @@ public class PharmaceuticalBillItemFacade extends AbstractFacade<PharmaceuticalB
         return btm;
     }
 
+    /**
+     * Fetches PharmaceuticalBillItems for a bill with billItem, item, and
+     * item.category eagerly loaded in a single query. Use this in GRN entry
+     * flows where all three associations are accessed per item, to avoid
+     * N×3 lazy-load queries.
+     */
+    public List<PharmaceuticalBillItem> getPharmaceuticalBillItemsWithItemAndCategory(Bill bill) {
+        String sql = "SELECT p FROM PharmaceuticalBillItem p "
+                + "JOIN FETCH p.billItem bi "
+                + "JOIN FETCH bi.item i "
+                + "LEFT JOIN FETCH i.category "
+                + "WHERE bi.bill = :b "
+                + "AND bi.retired = false";
+        HashMap hm = new HashMap();
+        hm.put("b", bill);
+        return findByJpql(sql, hm);
+    }
+
     public List<ItemMovementSummaryDTO> findItemMovementSummaryDTOs(String jpql, Map<String, Object> parameters, TemporalType tt) {
         TypedQuery<ItemMovementSummaryDTO> qry = getEntityManager().createQuery(jpql, ItemMovementSummaryDTO.class);
         for (Map.Entry<String, Object> e : parameters.entrySet()) {
