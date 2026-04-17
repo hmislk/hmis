@@ -1,0 +1,47 @@
+{
+    "version": "v2.2.0",
+    "description": "Switch all entity tables from TABLE sequence generator to AUTO_INCREMENT (IDENTITY strategy) to eliminate SEQUENCE table lock contention",
+    "author": "Dr M H B Ariyaratne",
+    "date": "2026-04-12",
+    "githubIssue": "19941",
+    "branch": "feature/19941-generationtype-identity-fix",
+    "estimatedDurationMinutes": 15,
+    "requiresDowntime": true,
+    "affectedTables": ["ALL entity tables (187 tables)"],
+    "affectedModules": ["All modules — system-wide primary key generation change"],
+    "dependencies": [],
+    "preRequisites": [
+        "Full database backup completed and verified before running",
+        "Application server (Payara) must be STOPPED before running this migration",
+        "Ensure no active transactions on the database",
+        "New application build with GenerationType.IDENTITY deployed immediately after migration"
+    ],
+    "migrationSteps": [
+        {
+            "step": 1,
+            "description": "Verify database connection and check current SEQUENCE table",
+            "sql": "SELECT SEQ_NAME, SEQ_COUNT FROM SEQUENCE WHERE SEQ_NAME = 'SEQ_GEN'"
+        },
+        {
+            "step": 2,
+            "description": "Create and execute stored procedure to add AUTO_INCREMENT to all entity ID columns",
+            "sql": "CALL hmis_add_auto_increment()"
+        },
+        {
+            "step": 3,
+            "description": "Verify AUTO_INCREMENT was set on key tables",
+            "sql": "SELECT TABLE_NAME, AUTO_INCREMENT FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND LOWER(TABLE_NAME) IN ('bill','stock','billitem','pharmaceuticalbillitem','stockhistory') ORDER BY TABLE_NAME"
+        }
+    ],
+    "rollbackNotes": [
+        "Rollback removes AUTO_INCREMENT from all entity ID columns",
+        "After rollback, redeploy the previous application version (with GenerationType.AUTO)",
+        "The SEQUENCE table (SEQ_GEN) remains intact and will resume being used"
+    ],
+    "postMigrationVerification": [
+        "Start Payara and verify application deploys without errors",
+        "Create a test bill and confirm the new ID is MAX(id)+1 (not from SEQUENCE table)",
+        "Verify SEQUENCE table SEQ_COUNT is no longer incrementing",
+        "Check server logs for any sequence-related errors"
+    ]
+}

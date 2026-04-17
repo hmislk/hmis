@@ -1496,7 +1496,7 @@ public class CreditCompanyDueController implements Serializable {
     }
 
     public void createInwardCreditDue() {
-        List<Institution> companies = getCreditBean().getCreditCompaniesWithUnpaidInwardCCBills(getFromDate(), getToDate());
+        List<Institution> companies = getCreditBean().getCreditCompaniesWithUnpaidInwardCCBills(getFromDate(), getToDate(), admissionType, dateBasis);
         institutionEncounters = new ArrayList<>();
         finalTotal = 0.0;
         finalPaidTotal = 0.0;
@@ -1508,7 +1508,7 @@ public class CreditCompanyDueController implements Serializable {
             if (company == null) {
                 continue;
             }
-            List<Bill> bills = getCreditBean().getUnpaidInwardCCBills(company, getFromDate(), getToDate());
+            List<Bill> bills = getCreditBean().getUnpaidInwardCCBills(company, getFromDate(), getToDate(), admissionType, dateBasis);
             if (bills.isEmpty()) {
                 continue;
             }
