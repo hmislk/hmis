@@ -2019,7 +2019,7 @@ public class FinancialTransactionController implements Serializable {
                     + "AND p.handingOverStarted = true "
                     + "AND p.cashbookEntryStated = false "
                     + "AND b.billTypeAtomic IN :btas "
-                    + "AND p.id > :sid";
+                    + "AND b.id > :sid";
             floatParams.put("cu", selectedBill.getFromWebUser());
             floatParams.put("btas", floatTransferBtas);
             floatParams.put("sid", shiftStartBill.getId());
@@ -2098,7 +2098,7 @@ public class FinancialTransactionController implements Serializable {
                     + "AND p.handingOverStarted = true "
                     + "AND p.cashbookEntryStated = false "
                     + "AND b.billTypeAtomic IN :btas "
-                    + "AND p.id > :sid";
+                    + "AND b.id > :sid";
             floatParams.put("cu", selectedBill.getFromWebUser());
             floatParams.put("btas", floatTransferBtas);
             floatParams.put("sid", shiftStartBill.getId());
@@ -3241,14 +3241,24 @@ public class FinancialTransactionController implements Serializable {
             return null;
         }
 
-        // Guard: outgoing pending handover — block until recipient accepts (unconditional, #19824)
-        if (hasAtLeastOneHandoverBillToReceive(sessionController.getLoggedUser(), null, null, null)) {
+        boolean allowShiftEndWithoutHandoverAcceptance = configOptionApplicationController
+                .getBooleanValueByKey("Allow Shift End Without Handover Acceptance", false);
+
+        // Guard: outgoing pending handover — bypassed when 'Allow Shift End Without Handover Acceptance' is true
+        if (!allowShiftEndWithoutHandoverAcceptance
+                && hasAtLeastOneHandoverBillToReceive(sessionController.getLoggedUser(), null, null, null)) {
             JsfUtil.addErrorMessage("You have a handover awaiting acceptance by the recipient. Please wait for them to accept before closing your shift.");
             return null;
         }
 
-        // Guard: incoming pending handover — block until this user accepts (unconditional, #19824)
-        if (hasAtLeastOneHandoverBillToReceive(null, null, sessionController.getLoggedUser(), null)) {
+        if (allowShiftEndWithoutHandoverAcceptance
+                && hasAtLeastOneHandoverBillToReceive(sessionController.getLoggedUser(), null, null, null)) {
+            JsfUtil.addInfoMessage("Warning: You are ending your shift while a handover is still pending acceptance by the recipient.");
+        }
+
+        // Guard: incoming pending handover — bypassed when 'Allow Shift End Without Handover Acceptance' is true
+        if (!allowShiftEndWithoutHandoverAcceptance
+                && hasAtLeastOneHandoverBillToReceive(null, null, sessionController.getLoggedUser(), null)) {
             JsfUtil.addErrorMessage("You have a pending handover to accept. Please accept it before closing your shift.");
             return null;
         }
@@ -3833,14 +3843,13 @@ public class FinancialTransactionController implements Serializable {
         if (nonClosedShiftStartFundBill == null) {
             return;
         }
-        Long shiftStartBillId = nonClosedShiftStartFundBill.getId();
         String jpql = "SELECT p "
-                + "FROM Payment p "
+                + "FROM Payment p JOIN p.bill b "
                 + "WHERE p.creater = :cr "
                 + "AND p.retired = :ret "
-                + "AND p.id > :cid "
+                + "AND b.id > :cid "
                 + "AND p.cashbookEntryStated = :started "
-                + "ORDER BY p.id DESC";
+                + "ORDER BY b.id DESC";
         Map<String, Object> m = new HashMap<>();
         m.put("started", false);
         m.put("cr", nonClosedShiftStartFundBill.getCreater());
@@ -3924,21 +3933,18 @@ public class FinancialTransactionController implements Serializable {
         if (nonClosedShiftStartFundBill == null) {
             return;
         }
-        Long shiftStartBillId = nonClosedShiftStartFundBill.getId();
         Map<String, Object> m = new HashMap<>();
         String jpql = "SELECT p "
-                + "FROM Payment p "
+                + "FROM Payment p JOIN p.bill b "
                 + "WHERE p.creater = :cr "
                 + "AND p.retired = :ret "
-                + "AND p.id > :cid "
-                + "AND p.cashbookEntryStated = :started ";
+                + "AND b.id > :cid "
+                + "AND p.cashbookEntryStated = :started "
+                + "ORDER BY b.id DESC";
         m.put("started", false);
-
-        jpql += "ORDER BY p.id DESC";
-
         m.put("cr", nonClosedShiftStartFundBill.getCreater());
         m.put("ret", false);
-        m.put("cid", shiftStartBillId);
+        m.put("cid", nonClosedShiftStartFundBill.getId());
         paymentsFromShiftSratToNow = paymentFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
 
         atomicBillTypeTotalsByPayments = new AtomicBillTypeTotals();
@@ -4047,8 +4053,6 @@ public class FinancialTransactionController implements Serializable {
         if (nonClosedShiftStartFundBill == null) {
             return;
         }
-        Long shiftStartBillId = nonClosedShiftStartFundBill.getId();
-
         List<BillTypeAtomic> btas = new ArrayList<>();
         btas.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CASH_IN));
         btas.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CASH_OUT));
@@ -4057,12 +4061,12 @@ public class FinancialTransactionController implements Serializable {
         String jpql = "SELECT p FROM Payment p JOIN p.bill b "
                 + "WHERE p.creater = :cr "
                 + "AND p.retired = :ret "
-                + "AND p.id > :cid "
+                + "AND b.id > :cid "
                 + "AND b.billTypeAtomic IN :btas "
                 + "AND p.cashbookEntryStated = :started "
                 + "AND FUNCTION('DATE', p.createdAt) = :createdDate "
                 + "AND b.department = :dept "
-                + "ORDER BY p.id DESC";
+                + "ORDER BY b.id DESC";
 
         m.put("dept", cashbookDepartment);
         m.put("btas", btas);
@@ -4070,7 +4074,7 @@ public class FinancialTransactionController implements Serializable {
         m.put("started", false);
         m.put("cr", nonClosedShiftStartFundBill.getCreater());
         m.put("ret", false);
-        m.put("cid", shiftStartBillId);
+        m.put("cid", nonClosedShiftStartFundBill.getId());
         paymentsFromShiftSratToNow = paymentFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
 
 // Filter and collect unique cancelled bills
@@ -4254,15 +4258,15 @@ public class FinancialTransactionController implements Serializable {
                 .append("FROM Payment p ")
                 .append("JOIN p.bill b ")
                 .append("WHERE p.creater=:cr ")
-                .append("AND p.retired=:ret AND p.id>:sid ")
+                .append("AND p.retired=:ret AND b.createdAt>=:startTime ")
                 .append("AND b.billTypeAtomic IN :btas ");
         m.put("cr", paymentUser);
         m.put("ret", false);
-        m.put("sid", startBill.getId());
+        m.put("startTime", startBill.getCreatedAt());
         m.put("btas", btas);
-        if (endBill != null && endBill.getId() != null) {
-            jpqlBuilder.append("AND p.id<:eid ");
-            m.put("eid", endBill.getId());
+        if (endBill != null && endBill.getCreatedAt() != null) {
+            jpqlBuilder.append("AND b.createdAt<=:endTime ");
+            m.put("endTime", endBill.getCreatedAt());
         }
         jpqlBuilder
                 .append("AND p.cashbookEntryStated =:cbes ")
@@ -4411,13 +4415,13 @@ public class FinancialTransactionController implements Serializable {
                 .append("AND b.billTypeAtomic IN :btas  ")
                 .append("AND (p.creater=:cr OR p.floatRecipient=:cr) ")
                 .append("AND p.cancelled=:can ")
-                .append("AND p.id > :sid ");
+                .append("AND b.createdAt >= :startTime ");
         m.put("btas", btas);
         m.put("cr", paymentUser);
         m.put("pr", false);
         m.put("br", false);
         m.put("can", false);
-        m.put("sid", startBill.getId());
+        m.put("startTime", startBill.getCreatedAt());
 
         jpqlBuilder
                 .append("AND p.cashbookEntryStated =:cbes ")
@@ -4425,9 +4429,9 @@ public class FinancialTransactionController implements Serializable {
         m.put("cbes", false);
         m.put("hos", false);
 
-        if (endBill != null && endBill.getId() != null) {
-            jpqlBuilder.append("AND p.id < :eid ");
-            m.put("eid", endBill.getId());
+        if (endBill != null && endBill.getCreatedAt() != null) {
+            jpqlBuilder.append("AND b.createdAt <= :endTime ");
+            m.put("endTime", endBill.getCreatedAt());
         }
         jpqlBuilder.append("ORDER BY p.createdAt, b.department, p.creater");
         String jpql = jpqlBuilder.toString();
@@ -4466,17 +4470,17 @@ public class FinancialTransactionController implements Serializable {
                 .append("AND b.billTypeAtomic IN :btas  ")
                 .append("AND p.creater=:cr ")
                 .append("AND p.cancelled=:can ")
-                .append("AND p.id > :sid ");
+                .append("AND b.createdAt >= :startTime ");
         m.put("btas", btas);
         m.put("cr", paymentUser);
         m.put("pr", false);
         m.put("br", false);
         m.put("can", false);
-        m.put("sid", startBill.getId());
+        m.put("startTime", startBill.getCreatedAt());
 
-        if (endBill != null && endBill.getId() != null) {
-            jpqlBuilder.append("AND p.id < :eid ");
-            m.put("eid", endBill.getId());
+        if (endBill != null && endBill.getCreatedAt() != null) {
+            jpqlBuilder.append("AND b.createdAt <= :endTime ");
+            m.put("endTime", endBill.getCreatedAt());
         }
         jpqlBuilder.append("ORDER BY p.createdAt, b.department, p.creater");
         String jpql = jpqlBuilder.toString();
@@ -4754,10 +4758,10 @@ public class FinancialTransactionController implements Serializable {
         m.put("sid", startBill.getId());
 
         StringBuilder jpqlBuilder = new StringBuilder("SELECT p FROM Payment p JOIN p.bill b WHERE p.creater = :cr ")
-                .append("AND p.retired = :ret AND p.id > :sid ");
+                .append("AND p.retired = :ret AND b.id > :sid ");
 
         if (endBill != null && endBill.getId() != null) {
-            jpqlBuilder.append("AND p.id < :eid ");
+            jpqlBuilder.append("AND b.id < :eid ");
             m.put("eid", endBill.getId());
         }
 
@@ -4821,17 +4825,16 @@ public class FinancialTransactionController implements Serializable {
             JsfUtil.addErrorMessage("No User");
             return;
         }
-        Long shiftStartBillId = startBill.getId();
         String jpql = "SELECT p "
-                + "FROM Payment p "
+                + "FROM Payment p JOIN p.bill b "
                 + "WHERE p.creater = :cr "
                 + "AND p.retired = :ret "
-                + "AND p.id > :cid "
-                + "ORDER BY p.id DESC";
+                + "AND b.id > :cid "
+                + "ORDER BY b.id DESC";
         Map<String, Object> m = new HashMap<>();
         m.put("cr", user);
         m.put("ret", false);
-        m.put("cid", shiftStartBillId);
+        m.put("cid", startBill.getId());
         paymentsFromShiftSratToNow = paymentFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
         atomicBillTypeTotalsByPayments = new AtomicBillTypeTotals();
         for (Payment p : paymentsFromShiftSratToNow) {
@@ -4890,20 +4893,18 @@ public class FinancialTransactionController implements Serializable {
             JsfUtil.addErrorMessage("No User");
             return;
         }
-        Long shiftStartBillId = startBill.getId();
-        Long shiftEndBillId = endBill.getId();
         String jpql = "SELECT p "
-                + "FROM Payment p "
+                + "FROM Payment p JOIN p.bill b "
                 + "WHERE p.creater = :cr "
                 + "AND p.retired = :ret "
-                + "AND p.id > :sid "
-                + "AND p.id < :eid "
-                + "ORDER BY p.id DESC";
+                + "AND b.id > :sid "
+                + "AND b.id < :eid "
+                + "ORDER BY b.id DESC";
         Map<String, Object> m = new HashMap<>();
         m.put("cr", user);
         m.put("ret", false);
-        m.put("sid", shiftStartBillId);
-        m.put("eid", shiftEndBillId);
+        m.put("sid", startBill.getId());
+        m.put("eid", endBill.getId());
 
         paymentsFromShiftSratToNow = paymentFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
         atomicBillTypeTotalsByPayments = new AtomicBillTypeTotals();
@@ -4931,19 +4932,18 @@ public class FinancialTransactionController implements Serializable {
         billTypesToFilter.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.FLOAT_STARTING_BALANCE));
         billTypesToFilter.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.FLOAT_CLOSING_BALANCE));
 
-        Long shiftStartBillId = nonClosedShiftStartFundBill.getId();
         String jpql = "SELECT p "
                 + "FROM Bill p "
                 + "WHERE p.creater = :cr "
                 + "AND p.retired = :ret "
                 + "AND p.billTypeAtomic in :btas "
-                + "AND p.id > :cid "
-                + "ORDER BY p.id DESC";
+                + "AND p.createdAt >= :startTime "
+                + "ORDER BY p.createdAt DESC";
         Map<String, Object> m = new HashMap<>();
         m.put("cr", nonClosedShiftStartFundBill.getCreater());
         m.put("btas", billTypesToFilter);
         m.put("ret", false);
-        m.put("cid", shiftStartBillId);
+        m.put("startTime", nonClosedShiftStartFundBill.getCreatedAt());
         currentBills = billFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
 //        paymentMethodValues = new PaymentMethodValues(PaymentMethod.values());
         atomicBillTypeTotalsByBills = new AtomicBillTypeTotals();
@@ -5191,16 +5191,26 @@ public class FinancialTransactionController implements Serializable {
             return "";
         }
 
-        // Guard: outgoing pending handover — unconditional, must be accepted before shift closes (#19824)
-        if (hasAtLeastOneHandoverBillToReceive(sessionController.getLoggedUser(), null, null, null)) {
+        boolean allowShiftEndWithoutHandoverAcceptance = configOptionApplicationController
+                .getBooleanValueByKey("Allow Shift End Without Handover Acceptance", false);
+
+        // Guard: outgoing pending handover — bypassed when 'Allow Shift End Without Handover Acceptance' is true (#19963)
+        if (!allowShiftEndWithoutHandoverAcceptance
+                && hasAtLeastOneHandoverBillToReceive(sessionController.getLoggedUser(), null, null, null)) {
             JsfUtil.addErrorMessage("You have a handover awaiting acceptance by the recipient. Please wait for them to accept before closing your shift.");
             return "";
         }
 
-        // Guard: incoming pending handover — unconditional, must be accepted before shift closes (#19824)
-        if (hasAtLeastOneHandoverBillToReceive(null, null, sessionController.getLoggedUser(), null)) {
+        // Guard: incoming pending handover — bypassed when 'Allow Shift End Without Handover Acceptance' is true (#19963)
+        if (!allowShiftEndWithoutHandoverAcceptance
+                && hasAtLeastOneHandoverBillToReceive(null, null, sessionController.getLoggedUser(), null)) {
             JsfUtil.addErrorMessage("You have a pending handover to accept. Please accept it before closing your shift.");
             return "";
+        }
+
+        if (allowShiftEndWithoutHandoverAcceptance
+                && hasAtLeastOneHandoverBillToReceive(sessionController.getLoggedUser(), null, null, null)) {
+            JsfUtil.addInfoMessage("Warning: You are ending your shift while a handover is still pending acceptance by the recipient.");
         }
 
         if (mustReceiveAllFundTransfersBeforeClosingShift) {
@@ -5254,11 +5264,10 @@ public class FinancialTransactionController implements Serializable {
                     return null;
                 }
             }
-            // Also block if a handover has been created but not yet accepted by the recipient.
-            // This covers the case where all collections are already included in a pending handover
-            // (bundle.getTotal() == 0) but the recipient has not confirmed receipt yet.
+            // Also block if a handover has been created but not yet accepted by the recipient,
+            // unless 'Allow Shift End Without Handover Acceptance' is enabled (#19963).
             boolean hasPendingHandover = hasAtLeastOneHandoverBillToReceive(sessionController.getLoggedUser(), null, null, null);
-            if (hasPendingHandover) {
+            if (hasPendingHandover && !allowShiftEndWithoutHandoverAcceptance) {
                 JsfUtil.addErrorMessage("Handover pending acceptance. Please wait for the recipient to accept your handover before ending your shift.");
                 return null;
             }
@@ -5572,11 +5581,14 @@ public class FinancialTransactionController implements Serializable {
             }
         }
 
-        Double maximumAllowedCashDifferenceForHandover = configOptionApplicationController.getDoubleValueByKey("Maximum Allowed Cash Difference for Handover", 1.0);
-        double expectedCashHandover = bundle.getCashValue() + bundle.getFloatNetTotal();
-        if (Math.abs(bundle.getDenominatorValue() - expectedCashHandover) > maximumAllowedCashDifferenceForHandover) {
-            JsfUtil.addErrorMessage("Cash Value Collected and the cash value Handing over are different. Cannot handover.");
-            return null;
+        boolean skipCashDiffValidation = configOptionApplicationController.getBooleanValueByKey("Skip Cash Difference Validation for Handover", false);
+        if (!skipCashDiffValidation) {
+            Double maximumAllowedCashDifferenceForHandover = configOptionApplicationController.getDoubleValueByKey("Maximum Allowed Cash Difference for Handover", 1.0);
+            double expectedCashHandover = bundle.getCashValue() + bundle.getFloatNetTotal();
+            if (Math.abs(bundle.getDenominatorValue() - expectedCashHandover) > maximumAllowedCashDifferenceForHandover) {
+                JsfUtil.addErrorMessage("Cash Value Collected and the cash value Handing over are different. Cannot handover.");
+                return null;
+            }
         }
         boolean shouldSelectAllCollectionsForHandover = configOptionApplicationController.getBooleanValueByKey("Should Select All Collections for Handover", false);
         boolean allBundlesSelected = true;
@@ -5760,7 +5772,7 @@ public class FinancialTransactionController implements Serializable {
                     + "AND p.handingOverStarted = false "
                     + "AND p.cashbookEntryStated = false "
                     + "AND b.billTypeAtomic IN :btas "
-                    + "AND p.id > :sid";
+                    + "AND b.id > :sid";
             floatParams.put("cu", sessionController.getLoggedUser());
             floatParams.put("btas", floatTransferBtas);
             floatParams.put("sid", shiftStartBillForFloats.getId());
@@ -9369,6 +9381,12 @@ public class FinancialTransactionController implements Serializable {
         shiftEndMetadata.addConfigOption(new ConfigOptionInfo(
                 "Require Handover Before Shift End",
                 "When enabled, shift end is blocked until the total of all accepted handovers for the current shift matches the collection total within the configured tolerance (see 'Maximum Allowed Difference for Shift End Handover'). Shifts with no collections are unaffected. Default: false.",
+                OptionScope.APPLICATION
+        ));
+
+        shiftEndMetadata.addConfigOption(new ConfigOptionInfo(
+                "Allow Shift End Without Handover Acceptance",
+                "When enabled, a shift can be ended even if a handover has been created but not yet accepted by the recipient. A warning message is shown so the user is aware of the pending handover. Default: false (strict mode — shift end is blocked until all handovers are accepted).",
                 OptionScope.APPLICATION
         ));
 
