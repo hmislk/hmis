@@ -72,17 +72,13 @@
                                                             <p:inputText
                                                                 value="#{webUserRoleController.current.name}" 
                                                                 id="txtRole" 
-                                                                class="w-100"
-                                                                required="true" 
-                                                                requiredMessage="Please enter a Name" >
+                                                                class="w-100">
                                                             </p:inputText>
                                                             <p:outputLabel value="Description" for="txtComments" ></p:outputLabel>
                                                             <p:inputTextarea
                                                                 class="w-100"
                                                                 value="#{webUserRoleController.current.description}" 
-                                                                id="txtComments" 
-                                                                required="true" 
-                                                                requiredMessage="Please enter a Description" >
+                                                                id="txtComments">
                                                             </p:inputTextarea>
                                                             <p:outputLabel value="Active" for="tglswt" ></p:outputLabel>
                                                             <p:toggleSwitch id="tglswt" value="#{webUserRoleController.current.activated}" onIcon="pi pi-check" offIcon="pi pi-times" />
