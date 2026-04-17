@@ -1246,7 +1246,8 @@ public class GrnCostingController implements Serializable {
         Map<Long, Double> grnFreeQtyMap = buildReceivedFreeQtyMap(poBill, BillTypeAtomic.PHARMACY_GRN);
         Map<Long, Double> grnCancelledFreeQtyMap = buildReceivedFreeQtyMap(poBill, BillTypeAtomic.PHARMACY_GRN_CANCELLED);
 
-        List<PharmaceuticalBillItem> poBillItems = getPharmaceuticalBillItemFacade().getPharmaceuticalBillItems(poBill);
+        // Eager-fetch billItem + item + category in one query to avoid N×3 lazy loads.
+        List<PharmaceuticalBillItem> poBillItems = getPharmaceuticalBillItemFacade().getPharmaceuticalBillItemsWithItemAndCategory(poBill);
 
         // Pre-collect all items so we can bulk-fetch last rates in one query
         // instead of one query per item inside the loop (N×2 → 1 total).
