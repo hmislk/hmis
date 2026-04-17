@@ -49,6 +49,7 @@ public class WebUserRoleController implements Serializable {
 
     private WebUserRole current;
     private List<WebUserRole> items = null;
+    private List<WebUserRole> activatediItems = null;
     private String comment;
 
     public String navigateToManageWebUserRoles(){
@@ -112,9 +113,36 @@ public class WebUserRoleController implements Serializable {
     }
 
     public void saveCurrent(){
+        if (isRoleNameDuplicate(current)) {
+            JsfUtil.addErrorMessage("A User Role with this name already exists.");
+            return;
+        }
         save(current);
         items = findAllItems();
         JsfUtil.addSuccessMessage("Saved");
+    }
+
+    private boolean isRoleNameDuplicate(WebUserRole role) {
+        if (role == null || role.getName() == null || role.getName().trim().isEmpty()) {
+            return false;
+        }
+        String jpql;
+        Map<String, Object> m = new HashMap<>();
+        m.put("ret", false);
+        m.put("name", role.getName().trim());
+        if (role.getId() != null) {
+            jpql = "SELECT COUNT(r) FROM WebUserRole r "
+                 + "WHERE r.retired = :ret "
+                 + "AND lower(r.name) = lower(:name) "
+                 + "AND r.id != :id";
+            m.put("id", role.getId());
+        } else {
+            jpql = "SELECT COUNT(r) FROM WebUserRole r "
+                 + "WHERE r.retired = :ret "
+                 + "AND lower(r.name) = lower(:name)";
+        }
+        Long count = getFacade().findLongByJpql(jpql, m);
+        return count != null && count > 0;
     }
     
     public void deleteCurrent() {
@@ -167,7 +195,17 @@ public class WebUserRoleController implements Serializable {
         String jpql = "Select r "
                 + " from WebUserRole r "
                 + " where r.retired=:ret "
-                + " and r.activated =:act"
+                + " order by r.name";
+        Map m = new HashMap<>();
+        m.put("ret", false);
+        return getFacade().findByJpql(jpql, m);
+    }
+    
+    private List<WebUserRole> findActivatedItems(){
+        String jpql = "Select r "
+                + " from WebUserRole r "
+                + " where r.retired=:ret "
+                + " and r.activated=:act "
                 + " order by r.name";
         Map m = new HashMap<>();
         m.put("ret", false);
@@ -216,6 +254,17 @@ public class WebUserRoleController implements Serializable {
 
     public void setComment(String comment) {
         this.comment = comment;
+    }
+
+    public List<WebUserRole> getActivatediItems() {
+        if(activatediItems == null){
+            activatediItems = findActivatedItems();
+        }
+        return activatediItems;
+    }
+
+    public void setActivatediItems(List<WebUserRole> activatediItems) {
+        this.activatediItems = activatediItems;
     }
 
     /**
