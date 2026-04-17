@@ -27,21 +27,21 @@
             <property name="eclipselink.jdbc.batch-writing" value="JDBC"/>
             <property name="eclipselink.jdbc.batch-writing.size" value="1000"/>
 
-            <!-- Prepared statement cache: reuse parsed SQL instead of          -->
-            <!-- re-sending to the DB engine on every request. High impact for  -->
-            <!-- a system with repetitive billing, pharmacy and lab queries.     -->
-            <property name="eclipselink.jdbc.cache-statements" value="true"/>
-            <property name="eclipselink.jdbc.cache-statements.size" value="200"/>
+            <!-- NOTE: eclipselink.jdbc.cache-statements must NOT be set here.   -->
+            <!-- hmisPU uses transaction-type="JTA" with an external Payara     -->
+            <!-- connection pool; EclipseLink's internal statement cache        -->
+            <!-- conflicts with external pooling and can cause premature        -->
+            <!-- statement closure. Configure statement caching on the Payara   -->
+            <!-- pool instead: Admin Console → pool → statement-cache-size=200, -->
+            <!-- or add cachePrepStmts=true to the MySQL Connector/J URL.       -->
 
-            <!-- Allow per-expression parameter binding decisions instead of    -->
-            <!-- per-query, giving the optimizer more flexibility.              -->
-            <property name="eclipselink.jdbc.allow-partial-bind-parameters" value="true"/>
-
-            <!-- Increase shared L2 cache from the default 100 objects per      -->
-            <!-- entity class to 5000. The default causes constant eviction     -->
-            <!-- for frequently-looked-up entities (departments, items, users), -->
-            <!-- forcing unnecessary DB round trips on every cache miss.        -->
-            <property name="eclipselink.cache.size.default" value="5000"/>
+            <!-- Increase shared L2 cache default from 100 → 1000 per entity   -->
+            <!-- class. 100 causes constant eviction for reference data         -->
+            <!-- (departments, items, users); 1000 gives breathing room without -->
+            <!-- the heap risk of a blanket 5000 across all 188 entity classes. -->
+            <!-- For the busiest reference entities (Department, Item, WebUser, -->
+            <!-- Fee) add @Cache(size=5000) on those classes individually.      -->
+            <property name="eclipselink.cache.size.default" value="1000"/>
 
             <!-- Skip re-reading LOB columns (description, filters, columns,   -->
             <!-- rows, totals on ReportTemplate etc.) when the object is        -->
