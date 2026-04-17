@@ -113,9 +113,36 @@ public class WebUserRoleController implements Serializable {
     }
 
     public void saveCurrent(){
+        if (isRoleNameDuplicate(current)) {
+            JsfUtil.addErrorMessage("A User Role with this name already exists.");
+            return;
+        }
         save(current);
         items = findAllItems();
         JsfUtil.addSuccessMessage("Saved");
+    }
+
+    private boolean isRoleNameDuplicate(WebUserRole role) {
+        if (role == null || role.getName() == null || role.getName().trim().isEmpty()) {
+            return false;
+        }
+        String jpql;
+        Map<String, Object> m = new HashMap<>();
+        m.put("ret", false);
+        m.put("name", role.getName().trim());
+        if (role.getId() != null) {
+            jpql = "SELECT COUNT(r) FROM WebUserRole r "
+                 + "WHERE r.retired = :ret "
+                 + "AND lower(r.name) = lower(:name) "
+                 + "AND r.id != :id";
+            m.put("id", role.getId());
+        } else {
+            jpql = "SELECT COUNT(r) FROM WebUserRole r "
+                 + "WHERE r.retired = :ret "
+                 + "AND lower(r.name) = lower(:name)";
+        }
+        Long count = getFacade().findLongByJpql(jpql, m);
+        return count != null && count > 0;
     }
     
     public void deleteCurrent() {
