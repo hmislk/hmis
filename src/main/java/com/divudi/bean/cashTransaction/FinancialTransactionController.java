@@ -274,6 +274,7 @@ public class FinancialTransactionController implements Serializable {
     boolean floatTransferStarted = false;
 
     private List<Payment> fundTransferAvailablePayments;
+    private List<Payment> depositableNonCashPayments;
 
     // Float Out Cancellation Properties
     private List<Bill> myFundTransferBillsOut;
@@ -1336,6 +1337,7 @@ public class FinancialTransactionController implements Serializable {
     public String navigateToFundDepositBill() {
         resetClassVariables();
         prepareToAddNewFundDepositBill();
+        loadDepositableNonCashPayments();
         return "/cashier/deposit_funds?faces-redirect=true";
     }
 
@@ -2808,6 +2810,14 @@ public class FinancialTransactionController implements Serializable {
 
     public void setFundTransferAvailablePayments(List<Payment> fundTransferAvailablePayments) {
         this.fundTransferAvailablePayments = fundTransferAvailablePayments;
+    }
+
+    public List<Payment> getDepositableNonCashPayments() {
+        return depositableNonCashPayments;
+    }
+
+    public void setDepositableNonCashPayments(List<Payment> depositableNonCashPayments) {
+        this.depositableNonCashPayments = depositableNonCashPayments;
     }
 
     public void addPaymentToShiftEndFundBill() {
@@ -7321,6 +7331,62 @@ public class FinancialTransactionController implements Serializable {
 //    }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="DepositFundBill">
+
+    public void loadDepositableNonCashPayments() {
+        WebUser loggedUser = sessionController.getLoggedUser();
+        if (loggedUser == null) {
+            depositableNonCashPayments = new ArrayList<>();
+            return;
+        }
+        String jpql = "SELECT p FROM Payment p JOIN p.bill b "
+                + "WHERE p.retired = false "
+                + "AND p.cancelled = false "
+                + "AND p.deposited = false "
+                + "AND p.handingOverStarted = false "
+                + "AND p.currentHolder = :holder "
+                + "AND p.paymentMethod <> :cash "
+                + "AND p.paidValue > 0 "
+                + "ORDER BY p.createdAt DESC";
+        Map<String, Object> params = new HashMap<>();
+        params.put("holder", loggedUser);
+        params.put("cash", com.divudi.core.data.PaymentMethod.Cash);
+        depositableNonCashPayments = paymentFacade.findByJpql(jpql, params);
+    }
+
+    public void addNonCashPaymentToDepositBill(Payment original) {
+        if (original == null) {
+            return;
+        }
+        if (currentBillPayments == null) {
+            currentBillPayments = new ArrayList<>();
+        }
+        for (Payment p : currentBillPayments) {
+            if (original.equals(p.getReferancePayment())) {
+                JsfUtil.addErrorMessage("This payment is already added to the deposit.");
+                return;
+            }
+        }
+        Payment depositPayment = original.clonePaymentForNewBill();
+        depositPayment.setReferancePayment(original);
+        currentBillPayments.add(depositPayment);
+        if (depositableNonCashPayments != null) {
+            depositableNonCashPayments.remove(original);
+        }
+        calculateFundDepositBillTotal();
+    }
+
+    public void removeNonCashPaymentFromDepositBill(Payment depositPayment) {
+        if (currentBillPayments == null) {
+            return;
+        }
+        currentBillPayments.remove(depositPayment);
+        Payment original = depositPayment.getReferancePayment();
+        if (original != null && depositableNonCashPayments != null) {
+            depositableNonCashPayments.add(0, original);
+        }
+        calculateFundDepositBillTotal();
+    }
+
     //Lawan
     public void addPaymentToFundDepositBill() {
         if (currentBill == null) {
@@ -7608,6 +7674,11 @@ public class FinancialTransactionController implements Serializable {
             p.setPaidValue(0 - Math.abs(p.getPaidValue()));
             paymentController.save(p);
             drawerController.updateDrawerForOuts(p);
+            Payment original = p.getReferancePayment();
+            if (original != null) {
+                original.setDeposited(true);
+                paymentFacade.edit(original);
+            }
         }
         return "/cashier/deposit_funds_print?faces-redirect=true";
     }
