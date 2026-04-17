@@ -112,6 +112,8 @@ public class WebUserController implements Serializable {
     StaffImageController staffImageController;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    WebUserRoleController webUserRoleController;
 
     /**
      * Class Variables
@@ -515,9 +517,6 @@ public class WebUserController implements Serializable {
     public void prepareAdd() {
         current = new WebUser();
     }
-    
-    @Inject
-    WebUserRoleController webUserRoleController;
 
     public String navigateToAddNewUser() {
         setCurrent(new WebUser());
