@@ -349,11 +349,73 @@ public class AnthropicApiService implements Serializable {
                         .add("required", Json.createArrayBuilder().add("method")))
                 .build();
 
+        JsonObject collectingCentreFeesTool = Json.createObjectBuilder()
+                .add("name", "manage_collecting_centre_fees")
+                .add("description",
+                        "List, create, update, retire, or recalculate item fees for a collecting centre. "
+                        + "Use GET to list active fees for a centre (institutionId required). "
+                        + "Use POST to add a new fee (collectingCentreId, itemId, name, feeType, fee required). "
+                        + "Use PUT to update a fee (feeId required). "
+                        + "Use DELETE_ONE to soft-retire a single fee (feeId required). "
+                        + "Use DELETE_ALL to retire all active fees for a collecting centre (institutionId required). "
+                        + "Use RECALCULATE to refresh item totals after bulk changes (institutionId required).")
+                .add("input_schema", Json.createObjectBuilder()
+                        .add("type", "object")
+                        .add("properties", Json.createObjectBuilder()
+                                .add("method", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("enum", Json.createArrayBuilder()
+                                                .add("GET").add("POST").add("PUT")
+                                                .add("DELETE_ONE").add("DELETE_ALL").add("RECALCULATE"))
+                                        .add("description", "Operation: GET=list, POST=create, PUT=update, DELETE_ONE=retire single fee, DELETE_ALL=retire all fees for CC, RECALCULATE=refresh item totals"))
+                                .add("institutionId", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Collecting centre institution ID. Required for GET, DELETE_ALL, RECALCULATE."))
+                                .add("feeId", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Fee ID. Required for PUT and DELETE_ONE."))
+                                .add("collectingCentreId", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Collecting centre institution ID for POST (body field)."))
+                                .add("itemId", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Item (service/investigation) ID. Required for POST."))
+                                .add("name", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Fee name. Required for POST; optional for PUT."))
+                                .add("feeType", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Fee type enum value, e.g. OwnInstitution, OtherInstitution, Referral, Staff. Required for POST; optional for PUT."))
+                                .add("fee", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Local fee amount. Required for POST; optional for PUT."))
+                                .add("ffee", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Foreigner fee amount. Optional; defaults to fee if omitted."))
+                                .add("departmentId", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Department ID. Required for OwnInstitution/OtherInstitution/Referral fee types."))
+                                .add("discountAllowed", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Whether discount is allowed: true or false. Optional."))
+                                .add("query", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Filter by item name or code for GET. Optional."))
+                                .add("limit", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Max results for GET, default 100. Optional."))
+                                .add("retireComments", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Reason for retirement. Optional for DELETE_ONE and DELETE_ALL.")))
+                        .add("required", Json.createArrayBuilder().add("method")))
+                .build();
+
         return Json.createArrayBuilder()
                 .add(searchCodeTool)
                 .add(fetchFileTool)
                 .add(searchConfigTool)
                 .add(clinicalMetadataTool)
+                .add(collectingCentreFeesTool)
                 .build();
     }
 
@@ -397,6 +459,25 @@ public class AnthropicApiService implements Serializable {
                     String size   = toolInput.containsKey("size")  ? toolInput.getString("size", "20") : "20";
                     return callClinicalMetadataApi(method, type, id, name, code, desc, query, page, size,
                             hmisBaseUrl, hmisApiKey);
+                }
+                case "manage_collecting_centre_fees": {
+                    String method          = toolInput.getString("method", "GET");
+                    String institutionId   = toolInput.containsKey("institutionId")     ? toolInput.getString("institutionId", "")     : "";
+                    String feeId           = toolInput.containsKey("feeId")             ? toolInput.getString("feeId", "")             : "";
+                    String ccId            = toolInput.containsKey("collectingCentreId") ? toolInput.getString("collectingCentreId", "") : "";
+                    String itemId          = toolInput.containsKey("itemId")             ? toolInput.getString("itemId", "")            : "";
+                    String name            = toolInput.containsKey("name")              ? toolInput.getString("name", null)             : null;
+                    String feeType         = toolInput.containsKey("feeType")           ? toolInput.getString("feeType", null)          : null;
+                    String fee             = toolInput.containsKey("fee")               ? toolInput.getString("fee", null)              : null;
+                    String ffee            = toolInput.containsKey("ffee")              ? toolInput.getString("ffee", null)             : null;
+                    String departmentId    = toolInput.containsKey("departmentId")      ? toolInput.getString("departmentId", null)     : null;
+                    String discountAllowed = toolInput.containsKey("discountAllowed")   ? toolInput.getString("discountAllowed", null)  : null;
+                    String query           = toolInput.containsKey("query")             ? toolInput.getString("query", "")             : "";
+                    String limit           = toolInput.containsKey("limit")             ? toolInput.getString("limit", "100")          : "100";
+                    String retireComments  = toolInput.containsKey("retireComments")    ? toolInput.getString("retireComments", "")    : "";
+                    return callCollectingCentreFeesApi(method, institutionId, feeId, ccId, itemId,
+                            name, feeType, fee, ffee, departmentId, discountAllowed,
+                            query, limit, retireComments, hmisBaseUrl, hmisApiKey);
                 }
                 default:
                     return "Unknown tool: " + toolName;
@@ -660,6 +741,132 @@ public class AnthropicApiService implements Serializable {
             return "Clinical metadata API call interrupted.";
         } catch (Exception e) {
             return "Clinical metadata API error: " + e.getMessage();
+        }
+    }
+
+    private String callCollectingCentreFeesApi(
+            String method, String institutionId, String feeId, String ccId, String itemId,
+            String name, String feeType, String fee, String ffee, String departmentId,
+            String discountAllowed, String query, String limit, String retireComments,
+            String hmisBaseUrl, String hmisApiKey) {
+
+        if (hmisBaseUrl == null || hmisBaseUrl.trim().isEmpty()) {
+            return "Error: HMIS base URL is not configured.";
+        }
+        if (hmisApiKey == null || hmisApiKey.trim().isEmpty()) {
+            return "Error: No active HMIS API key found for the current user.";
+        }
+
+        try {
+            HttpClient client = HttpClient.newBuilder()
+                    .connectTimeout(Duration.ofSeconds(10))
+                    .build();
+
+            String base = hmisBaseUrl.trim().replaceAll("/+$", "") + "/api/pricing/collecting_centre_fees";
+            String url;
+            String requestBody = null;
+            String httpMethod;
+
+            switch (method.toUpperCase()) {
+                case "GET": {
+                    if (institutionId == null || institutionId.trim().isEmpty()) {
+                        return "Error: institutionId is required for GET.";
+                    }
+                    StringBuilder urlBuilder = new StringBuilder(base)
+                            .append("?institutionId=").append(URLEncoder.encode(institutionId.trim(), StandardCharsets.UTF_8));
+                    if (query != null && !query.isEmpty()) {
+                        urlBuilder.append("&query=").append(URLEncoder.encode(query, StandardCharsets.UTF_8));
+                    }
+                    if (limit != null && !limit.isEmpty()) {
+                        urlBuilder.append("&limit=").append(limit);
+                    }
+                    url = urlBuilder.toString();
+                    httpMethod = "GET";
+                    break;
+                }
+                case "POST": {
+                    url = base;
+                    httpMethod = "POST";
+                    javax.json.JsonObjectBuilder bodyBuilder = Json.createObjectBuilder();
+                    if (ccId != null && !ccId.isEmpty()) bodyBuilder.add("collectingCentreId", Long.parseLong(ccId.trim()));
+                    if (itemId != null && !itemId.isEmpty()) bodyBuilder.add("itemId", Long.parseLong(itemId.trim()));
+                    if (name != null) bodyBuilder.add("name", name);
+                    if (feeType != null) bodyBuilder.add("feeType", feeType);
+                    if (fee != null) bodyBuilder.add("fee", Double.parseDouble(fee.trim()));
+                    if (ffee != null && !ffee.isEmpty()) bodyBuilder.add("ffee", Double.parseDouble(ffee.trim()));
+                    if (departmentId != null && !departmentId.isEmpty()) bodyBuilder.add("departmentId", Long.parseLong(departmentId.trim()));
+                    if (discountAllowed != null) bodyBuilder.add("discountAllowed", Boolean.parseBoolean(discountAllowed.trim()));
+                    requestBody = bodyBuilder.build().toString();
+                    break;
+                }
+                case "PUT": {
+                    if (feeId == null || feeId.trim().isEmpty()) return "Error: feeId is required for PUT.";
+                    url = base + "/" + feeId.trim();
+                    httpMethod = "PUT";
+                    javax.json.JsonObjectBuilder bodyBuilder = Json.createObjectBuilder();
+                    if (name != null && !name.isEmpty()) bodyBuilder.add("name", name);
+                    if (feeType != null && !feeType.isEmpty()) bodyBuilder.add("feeType", feeType);
+                    if (fee != null && !fee.isEmpty()) bodyBuilder.add("fee", Double.parseDouble(fee.trim()));
+                    if (ffee != null && !ffee.isEmpty()) bodyBuilder.add("ffee", Double.parseDouble(ffee.trim()));
+                    if (departmentId != null && !departmentId.isEmpty()) bodyBuilder.add("departmentId", Long.parseLong(departmentId.trim()));
+                    if (discountAllowed != null && !discountAllowed.isEmpty()) bodyBuilder.add("discountAllowed", Boolean.parseBoolean(discountAllowed.trim()));
+                    requestBody = bodyBuilder.build().toString();
+                    break;
+                }
+                case "DELETE_ONE": {
+                    if (feeId == null || feeId.trim().isEmpty()) return "Error: feeId is required for DELETE_ONE.";
+                    StringBuilder urlBuilder = new StringBuilder(base).append("/").append(feeId.trim());
+                    if (retireComments != null && !retireComments.isEmpty()) {
+                        urlBuilder.append("?retireComments=").append(URLEncoder.encode(retireComments, StandardCharsets.UTF_8));
+                    }
+                    url = urlBuilder.toString();
+                    httpMethod = "DELETE";
+                    break;
+                }
+                case "DELETE_ALL": {
+                    if (institutionId == null || institutionId.trim().isEmpty()) return "Error: institutionId is required for DELETE_ALL.";
+                    StringBuilder urlBuilder = new StringBuilder(base)
+                            .append("?institutionId=").append(URLEncoder.encode(institutionId.trim(), StandardCharsets.UTF_8));
+                    if (retireComments != null && !retireComments.isEmpty()) {
+                        urlBuilder.append("&retireComments=").append(URLEncoder.encode(retireComments, StandardCharsets.UTF_8));
+                    }
+                    url = urlBuilder.toString();
+                    httpMethod = "DELETE";
+                    break;
+                }
+                case "RECALCULATE": {
+                    if (institutionId == null || institutionId.trim().isEmpty()) return "Error: institutionId is required for RECALCULATE.";
+                    url = base + "/recalculate?institutionId=" + URLEncoder.encode(institutionId.trim(), StandardCharsets.UTF_8);
+                    httpMethod = "POST";
+                    requestBody = "{}";
+                    break;
+                }
+                default:
+                    return "Error: Unknown method: " + method;
+            }
+
+            HttpRequest.Builder reqBuilder = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .timeout(Duration.ofSeconds(15))
+                    .header("Finance", hmisApiKey)
+                    .header("Content-Type", "application/json");
+
+            if (requestBody != null) {
+                reqBuilder.method(httpMethod, HttpRequest.BodyPublishers.ofString(requestBody));
+            } else if ("DELETE".equals(httpMethod)) {
+                reqBuilder.DELETE();
+            } else {
+                reqBuilder.GET();
+            }
+
+            HttpResponse<String> response = client.send(reqBuilder.build(), HttpResponse.BodyHandlers.ofString());
+            return "HTTP " + response.statusCode() + "\n" + response.body();
+
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return "Collecting centre fees API call interrupted.";
+        } catch (Exception e) {
+            return "Collecting centre fees API error: " + e.getMessage();
         }
     }
 
@@ -1117,6 +1324,22 @@ public class AnthropicApiService implements Serializable {
                     {"GET", "/apiMembership/savePatient/{title}/{name}/{sex}/{dob}/{address}/{phone}/{nic}",         "Register a new patient under the membership scheme"},
                     {"GET", "/apiMembership/patient/{patient_id}",                                                  "Get patient details by internal ID"},
                     {"GET", "/apiMembership/serviceValue",                                                           "Get membership service fee, VAT, and total payable amount"}
+                });
+
+        // ── Pricing / Collecting Centre Fees ─────────────────────────────────
+        appendModule(sb, "Collecting Centre Fees", "/pricing/collecting_centre_fees",
+                "Manage item fees for collecting centres (view from the centre perspective). "
+                + "GET lists active fees for a centre. POST adds a new fee. PUT updates a fee. "
+                + "DELETE /{feeId} retires a single fee. DELETE ?institutionId=X retires all fees for a centre. "
+                + "POST /recalculate?institutionId=X recalculates item totals after bulk changes.",
+                null,
+                new String[][]{
+                    {"GET",    "/pricing/collecting_centre_fees?institutionId=X",             "List active fees for a collecting centre. Optional: query, limit"},
+                    {"POST",   "/pricing/collecting_centre_fees",                              "Add a new fee. Body: collectingCentreId, itemId, name, feeType, fee, ffee, departmentId, discountAllowed"},
+                    {"PUT",    "/pricing/collecting_centre_fees/{feeId}",                      "Update a fee. Body: name, fee, ffee, feeType, departmentId, discountAllowed (all optional)"},
+                    {"DELETE", "/pricing/collecting_centre_fees/{feeId}",                      "Soft-retire a single fee. Optional query param: retireComments"},
+                    {"DELETE", "/pricing/collecting_centre_fees?institutionId=X",              "Retire ALL active fees for a collecting centre. Optional query param: retireComments"},
+                    {"POST",   "/pricing/collecting_centre_fees/recalculate?institutionId=X",  "Recalculate item totals for all items with fees for this centre"}
                 });
 
         // ── Inward / Admissions ───────────────────────────────────────────────
