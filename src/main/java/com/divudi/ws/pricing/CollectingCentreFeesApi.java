@@ -169,6 +169,9 @@ public class CollectingCentreFeesApi {
             if (msg != null && msg.contains("not found")) {
                 return errorResponse(msg, 404);
             }
+            if (msg != null && (msg.contains("required") || msg.contains("Invalid") || msg.contains("is not a collecting centre fee") || msg.contains("is retired"))) {
+                return errorResponse(msg, 400);
+            }
             return errorResponse("An error occurred: " + (msg != null ? msg : "Unknown error"), 500);
         }
     }
@@ -215,6 +218,9 @@ public class CollectingCentreFeesApi {
             if (msg != null && msg.contains("already retired")) {
                 return errorResponse(msg, 409);
             }
+            if (msg != null && (msg.contains("required") || msg.contains("Invalid") || msg.contains("is not a collecting centre fee"))) {
+                return errorResponse(msg, 400);
+            }
             return errorResponse("An error occurred: " + (msg != null ? msg : "Unknown error"), 500);
         }
     }
@@ -251,6 +257,9 @@ public class CollectingCentreFeesApi {
             }
             if (msg != null && msg.contains("already retired")) {
                 return errorResponse(msg, 409);
+            }
+            if (msg != null && (msg.contains("required") || msg.contains("Invalid") || msg.contains("is not a collecting centre fee"))) {
+                return errorResponse(msg, 400);
             }
             return errorResponse("An error occurred: " + (msg != null ? msg : "Unknown error"), 500);
         }
