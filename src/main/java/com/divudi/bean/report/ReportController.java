@@ -3045,7 +3045,20 @@ public class ReportController implements Serializable, ControllerWithReportFilte
                 table.addCell(textCell(row.getBillItem().getBill().getFromInstitution().getRoute()!= null ? row.getBillItem().getBill().getFromInstitution().getRoute().getName() : "-",bodyFontSmall));
                 table.addCell(textCell(row.getBillItem().getBill().getReferredInstituteOrDoctor()!=null ? row.getBillItem().getBill().getReferredInstituteOrDoctor().getName() : "-",bodyFontSmall));
                 table.addCell(textCell(row.getInvestigation()!= null ? row.getInvestigation().getName() : "-",bodyFontSmall));
-                table.addCell(textCell(row.getStatus()!= null ? row.getStatus().getLabel() : "-",bodyFontSmall));
+                StringBuilder statusBuilder = new StringBuilder();
+                statusBuilder.append(row.getStatus() != null ? row.getStatus().getLabel() : "-");
+
+                if (row.getBillItem() != null 
+                        && row.getBillItem().getBill() != null) {
+                    if (Boolean.TRUE.equals(row.getBillItem().getBill().isCancelled())) {
+                        statusBuilder.append(" [Cancelled]");
+                    }
+                    if (Boolean.TRUE.equals(row.getBillItem().getBill().isRefunded())) {
+                        statusBuilder.append(" [Refunded]");
+                    }
+                }
+                
+                table.addCell(textCell(statusBuilder.toString(),bodyFontSmall));
                 table.addCell(textCell(row.getPrintingUser()!= null ? row.getPrintingUser().getName() : "-",bodyFontSmall));
                 table.addCell(textCell(row.getPrintingAt() != null ? sdf.format(row.getPrintingAt()) : "-",bodyFontSmall));
                 indexNumber+=1;
