@@ -23,7 +23,7 @@ public class WebUserRoleUser implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne
@@ -51,6 +51,12 @@ public class WebUserRoleUser implements Serializable {
 
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date editedAt;
+
+    //Last Update Properties
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date lastUpdateAt;
+    @ManyToOne
+    private WebUser lastUpdater;
 
     @Transient
     private Boolean needUpdateUserRole;
@@ -190,5 +196,21 @@ public class WebUserRoleUser implements Serializable {
 
     public void setNeedUpdateUserRole(Boolean needUpdateUserRole) {
         this.needUpdateUserRole = needUpdateUserRole;
+    }
+
+    public Date getLastUpdateAt() {
+        return lastUpdateAt;
+    }
+
+    public void setLastUpdateAt(Date lastUpdateAt) {
+        this.lastUpdateAt = lastUpdateAt;
+    }
+
+    public WebUser getLastUpdater() {
+        return lastUpdater;
+    }
+
+    public void setLastUpdater(WebUser lastUpdater) {
+        this.lastUpdater = lastUpdater;
     }
 }

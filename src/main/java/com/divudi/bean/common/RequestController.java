@@ -1,9 +1,12 @@
 package com.divudi.bean.common;
 
+import com.divudi.bean.cashTransaction.DrawerController;
 import static com.divudi.core.data.BillTypeAtomic.OPD_BILL_WITH_PAYMENT;
-import com.divudi.core.data.BillType;
+import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.PettyCashType;
 import com.divudi.core.data.RequestStatus;
 import com.divudi.core.data.RequestType;
+import static com.divudi.core.data.RequestType.PETTYCASH_APROVEL;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.Patient;
 import com.divudi.core.entity.PatientEncounter;
@@ -84,26 +87,48 @@ public class RequestController implements Serializable {
     private RequestStatus status;
 
     private PatientEncounter patientEncounter;
-
+    private PettyCashType pettyCashPayeeType;
     // </editor-fold>
-    // <editor-fold defaultstate="collapsed" desc="Navigation Method">
 
+    // <editor-fold defaultstate="collapsed" desc="Navigation Method">
     public String navigateToSearchRequest() {
         requests = new ArrayList<>();
         return "/common/request/view_request?faces-redirect=true";
     }
 
+    public String navigateToPendingPettyCashRequests() {
+        requestType = RequestType.PETTYCASH_APROVEL;
+        status = null;
+        fromDate = com.divudi.core.util.CommonFunctions.getStartOfDay(new java.util.Date());
+        toDate = com.divudi.core.util.CommonFunctions.getEndOfDay(new java.util.Date());
+        searchRequest();
+        return "/common/request/view_request?faces-redirect=true";
+    }
+
+    public long getPendingPettyCashApprovalCount() {
+        String jpql = "SELECT COUNT(r) FROM Request r"
+                + " WHERE r.retired = :ret"
+                + " AND r.requestType = :type"
+                + " AND r.status IN :statuses";
+        java.util.Map<String, Object> params = new java.util.HashMap<>();
+        params.put("ret", false);
+        params.put("type", RequestType.PETTYCASH_APROVEL);
+        params.put("statuses", java.util.Arrays.asList(RequestStatus.PENDING, RequestStatus.UNDER_REVIEW));
+        return requestFacade.findLongByJpql(jpql, params);
+    }
+
     public String navigateToBackSearchBillList() {
-        
+
         switch (currentRequest.getBill().getBillTypeAtomic()) {
             case OPD_BATCH_BILL_WITH_PAYMENT:
                 return "/opd/opd_batch_bill_print?faces-redirect=true";
             case INWARD_SERVICE_BILL:
                 return "/lab/inward_search_service?faces-redirect=true";
+            case PETTY_CASH_ISSUE:
+                return "/petty_cash_bill_search_own?faces-redirect=true";
             default:
                 return "";
         }
-
     }
 
     public String navigateToBackSearchRequest() {
@@ -187,6 +212,9 @@ public class RequestController implements Serializable {
         return navigation;
     }
 
+    @Inject
+    PettyCashBillController pettyCashBillController;
+
     public String navigateToApproveRequest() {
         if (currentRequest == null) {
             JsfUtil.addErrorMessage("Not found for a request for Approvel");
@@ -212,29 +240,33 @@ public class RequestController implements Serializable {
                     return "";
                 }
                 break;
+            case PETTYCASH_CANCELLATION:
+                if (!webUserController.hasPrivilege("PettyCashCancellationApproval")) {
+                    JsfUtil.addErrorMessage("You are not authorized to review Petty Cash Cancellation requests.");
+                    return "";
+                }
+                break;
+            case PETTYCASH_APROVEL:
+                pettyCashBillController.setCurrentRequest(currentRequest);
+                break;
             default:
                 JsfUtil.addErrorMessage("Approval is not supported for this request type.");
                 return "";
-        }
-
-        if (currentRequest.getRequestType() == RequestType.DRAWER_ADJUSTMENT) {
-            bills = new ArrayList<>();
-            if (currentRequest.getStatus() == RequestStatus.PENDING) {
-                currentRequest.setReviewedBy(sessionController.getLoggedUser());
-                currentRequest.setReviewedAt(new Date());
-                currentRequest.setStatus(RequestStatus.UNDER_REVIEW);
-                requestService.save(currentRequest, sessionController.getLoggedUser());
-            }
-            comment = null;
-            return "/cashier/drawer_adjustment_approve?faces-redirect=true";
         }
 
         //Update Review Status
         if (currentRequest.getStatus() == RequestStatus.PENDING) {
             currentRequest.setReviewedBy(sessionController.getLoggedUser());
             currentRequest.setReviewedAt(new Date());
+            currentRequest.setReviewed(true);
             currentRequest.setStatus(RequestStatus.UNDER_REVIEW);
             requestService.save(currentRequest, sessionController.getLoggedUser());
+        }
+
+        if (currentRequest.getRequestType() == RequestType.DRAWER_ADJUSTMENT) {
+            bills = new ArrayList<>();
+            comment = null;
+            return "/cashier/drawer_adjustment_approve?faces-redirect=true";
         }
 
         bills = new ArrayList<>();
@@ -260,6 +292,16 @@ public class RequestController implements Serializable {
                 break;
             case OPD_BILL_WITH_PAYMENT:
                 navigation = "";
+                break;
+            case PETTY_CASH_PRE:
+                bills.add(currentRequest.getBill());
+                pettyCashPayeeType = resolvePettyCashPayeeType(currentRequest.getBill());
+                navigation = "/common/request/petty_cash_bill_cancel_request_approvel?faces-redirect=true";
+                break;
+            case PETTY_CASH_ISSUE:
+                bills.add(currentRequest.getBill());
+                pettyCashPayeeType = resolvePettyCashPayeeType(currentRequest.getBill());
+                navigation = "/common/request/petty_cash_bill_cancellation_request?faces-redirect=true";
                 break;
             default:
                 navigation = "";
@@ -301,13 +343,18 @@ public class RequestController implements Serializable {
             case OPD_BILL_WITH_PAYMENT:
                 navigation = "";
                 break;
+            case PETTY_CASH_PRE:
+                bills.add(currentRequest.getBill());
+                comment = null;
+                navigation = "/common/request/petty_cash_bill_request_cancel?faces-redirect=true";
+                break;
             default:
                 navigation = "";
         }
         return navigation;
     }
-
     // </editor-fold>
+
     // <editor-fold defaultstate="collapsed" desc="Function">
     public void makeNull() {
         patient = null;
@@ -392,6 +439,57 @@ public class RequestController implements Serializable {
         printPreview = true;
     }
 
+    public void createRequestforPettyCashBillCancellation(Bill pettyCashBill) {
+        System.out.println("pettyCashBill = " + pettyCashBill);
+
+        if (pettyCashBill == null) {
+            JsfUtil.addErrorMessage("Bill not found for Create Request ");
+            return;
+        }
+        if (comment == null || comment.trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Comment is mandatory.");
+            return;
+        }
+
+        if (!pettyCashBill.getDepartment().getId().equals(sessionController.getDepartment().getId())) {
+            JsfUtil.addErrorMessage("You must log in to " + pettyCashBill.getDepartment().getName() + " to cancel this bill.");
+            return;
+        }
+
+        Request req = requestService.findRequest(pettyCashBill);
+
+        if (req != null) {
+            JsfUtil.addErrorMessage("There is already a " + req.getRequestType().getDisplayName() + " requesr for this bill.");
+            return;
+        } else {
+
+            Request newlyRequest = new Request();
+
+            newlyRequest.setBill(pettyCashBill);
+            newlyRequest.setRequester(sessionController.getLoggedUser());
+            newlyRequest.setRequestAt(new Date());
+            newlyRequest.setRequestReason(comment);
+            newlyRequest.setRequestType(RequestType.PETTYCASH_CANCELLATION);
+            newlyRequest.setStatus(RequestStatus.PENDING);
+
+            newlyRequest.setInstitution(sessionController.getInstitution());
+            newlyRequest.setDepartment(sessionController.getDepartment());
+
+            String reqNo = billNumberGenerator.departmentRequestNumberGeneratorYearly(sessionController.getDepartment(), RequestType.PETTYCASH_CANCELLATION);
+            newlyRequest.setRequestNo(reqNo);
+
+            requestService.save(newlyRequest, sessionController.getLoggedUser());
+
+            //Update PettyCash Bill
+            pettyCashBill.setCurrentRequest(newlyRequest);
+            billFacade.edit(pettyCashBill);
+
+            setCurrentRequest(newlyRequest);
+        }
+
+        printPreview = true;
+    }
+
     public void createRequestforInpatientServiceBill() {
         if (batchBill == null) {
             JsfUtil.addErrorMessage("Bill not found for Create Request ");
@@ -448,7 +546,7 @@ public class RequestController implements Serializable {
 
     public void searchRequest() {
         requests = new ArrayList<>();
-        requests = requestService.fillAllRequest(fromDate, toDate, billNo, bhtNo, requestNo, requestType, status, sessionController.getDepartment().getDepartmentType());
+        requests = requestService.fillAllRequest(fromDate, toDate, billNo, bhtNo, requestNo, requestType, status, null);
     }
 
     public void approveRequest() {
@@ -467,6 +565,127 @@ public class RequestController implements Serializable {
             return;
         }
 
+        currentRequest.setApproved(true);
+        currentRequest.setApprovedAt(new Date());
+        currentRequest.setApprovedBy(sessionController.getLoggedUser());
+        currentRequest.setStatus(RequestStatus.APPROVED);
+        requestService.save(currentRequest, sessionController.getLoggedUser());
+
+        JsfUtil.addSuccessMessage("Successfully Approve");
+
+    }
+
+    @Inject
+    DrawerController drawerController;
+
+    public String approvePettyCashRequest() {
+        if (currentRequest == null) {
+            JsfUtil.addErrorMessage("Request not found for approval");
+            return "";
+        }
+
+        if (currentRequest.getStatus() == RequestStatus.APPROVED) {
+            JsfUtil.addErrorMessage("This Request is Already Approval");
+            return "";
+        }
+
+        if (currentRequest.getStatus() == RequestStatus.REJECTED) {
+            JsfUtil.addErrorMessage("This Request is Already Rejected");
+            return "";
+        }
+
+        if (currentRequest.getBill() == null) {
+            JsfUtil.addErrorMessage("Bill not found for request Cancel");
+            return "";
+        }
+
+        if (currentRequest.getBill().getPaymentMethod() == null) {
+            JsfUtil.addErrorMessage("Select the PaymentMethod");
+            return "";
+        }
+
+        if (currentRequest.getBill().getNetTotal() < 1) {
+            JsfUtil.addErrorMessage("Type Amount");
+            return "";
+        }
+
+        if (currentRequest.getBill().getInvoiceNumber() == null || currentRequest.getBill().getInvoiceNumber().trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Invoice No is Missing.");
+            return "";
+        }
+
+        if (pettyCashBillController.checkValidInvoiceNumber(BillTypeAtomic.PETTY_CASH_ISSUE, currentRequest.getBill().getInvoiceNumber())) {
+            JsfUtil.addErrorMessage("Invoice Number Already Exist");
+            return "";
+        }
+
+        Drawer loggedUserDrawer = drawerController.getUsersDrawer(sessionController.getLoggedUser());
+
+        System.out.println("loggedUserDrawer = " + loggedUserDrawer);
+
+        if (loggedUserDrawer == null) {
+            JsfUtil.addErrorMessage("Your Drawer have a Error.");
+            return "";
+        }
+        System.out.println("loggedUserDrawer.getCashInHandValue() = " + loggedUserDrawer.getCashInHandValue());
+
+        if (loggedUserDrawer != null && (loggedUserDrawer.getCashInHandValue() == null || loggedUserDrawer.getCashInHandValue() == 0)) {
+            JsfUtil.addErrorMessage("There is no cash in your drawer.");
+            return "";
+        }
+
+        if (loggedUserDrawer.getCashInHandValue() < currentRequest.getBill().getNetTotal()) {
+            JsfUtil.addErrorMessage("There is not enough cash in your drawer.");
+            return "";
+        }
+
+        pettyCashBillController.settleBill(currentRequest.getBill());
+
+        currentRequest.setApproved(true);
+        currentRequest.setApprovedAt(new Date());
+        currentRequest.setApprovedBy(sessionController.getLoggedUser());
+        currentRequest.setStatus(RequestStatus.APPROVED);
+        requestService.save(currentRequest, sessionController.getLoggedUser());
+
+        pettyCashBillController.setCurrent(currentRequest.getBill().getReferenceBill());
+
+        pettyCashBillController.setPrintPreview(true);
+        pettyCashBillController.setDuplicate(false);
+        pettyCashBillController.setPreBill(false);
+
+        JsfUtil.addSuccessMessage("Successfully Approve");
+
+        return "/petty_cash_bill_reprint?faces-redirect=true";
+
+    }
+
+    public void approvePettyCashCancellationRequest() {
+        if (currentRequest == null) {
+            JsfUtil.addErrorMessage("Request not found for approval");
+            return;
+        }
+
+        if (currentRequest.getStatus() == RequestStatus.APPROVED) {
+            JsfUtil.addErrorMessage("This Request is Already Approval");
+            return;
+        }
+
+        if (currentRequest.getStatus() == RequestStatus.REJECTED) {
+            JsfUtil.addErrorMessage("This Request is Already Rejected");
+            return;
+        }
+
+        if (currentRequest.getBill() == null) {
+            JsfUtil.addErrorMessage("Bill not found for request Cancel");
+            return;
+        }
+
+        if (currentRequest.getBill().getPaymentMethod() == null) {
+            JsfUtil.addErrorMessage("Select the PaymentMethod");
+            return;
+        }
+
+        currentRequest.setApproved(true);
         currentRequest.setApprovedAt(new Date());
         currentRequest.setApprovedBy(sessionController.getLoggedUser());
         currentRequest.setStatus(RequestStatus.APPROVED);
@@ -531,6 +750,7 @@ public class RequestController implements Serializable {
                 currentRequest.getBill(),
                 sessionController.getLoggedUser());
 
+        currentRequest.setApproved(true);
         currentRequest.setApprovedAt(new Date());
         currentRequest.setApprovedBy(sessionController.getLoggedUser());
         currentRequest.setStatus(RequestStatus.COMPLETED);
@@ -555,11 +775,20 @@ public class RequestController implements Serializable {
             return;
         }
 
-        if (!webUserController.hasPrivilege("BillCancelRequestApproval")) {
-            JsfUtil.addErrorMessage("You have not authorize to Approval this.");
-            return;
+        if (currentRequest.getRequestType() == RequestType.BILL_CANCELLATION) {
+            if (!webUserController.hasPrivilege("BillCancelRequestApproval")) {
+                JsfUtil.addErrorMessage("You have not authorize to Approval this.");
+                return;
+            }
+        } else if (currentRequest.getRequestType() == RequestType.PETTYCASH_CANCELLATION) {
+            if (!webUserController.hasPrivilege("PettyCashCancellationApproval")) {
+                JsfUtil.addErrorMessage("You have not authorize to Approval this.");
+                return;
+            }
         }
-
+        
+        
+        currentRequest.setApproved(false);
         currentRequest.setApprovedAt(null);
         currentRequest.setApprovedBy(null);
         currentRequest.setStatus(RequestStatus.UNDER_REVIEW);
@@ -582,6 +811,10 @@ public class RequestController implements Serializable {
         boolean canReject;
         if (currentRequest.getRequestType() == RequestType.DRAWER_ADJUSTMENT) {
             canReject = webUserController.hasPrivilege("DrawerAdjustmentRequestApproval");
+        } else if (currentRequest.getRequestType() == RequestType.PETTYCASH_APROVEL) {
+            canReject = true;
+        } else if (currentRequest.getRequestType() == RequestType.PETTYCASH_CANCELLATION) {
+            canReject = webUserController.hasPrivilege("PettyCashCancellationApproval");
         } else {
             canReject = webUserController.hasPrivilege("BillCancelRequestApproval");
         }
@@ -590,23 +823,26 @@ public class RequestController implements Serializable {
             return;
         }
 
+        currentRequest.setRejected(true);
         currentRequest.setRejectedAt(new Date());
         currentRequest.setRejectedBy(sessionController.getLoggedUser());
         currentRequest.setRejectionReason(comment);
         currentRequest.setStatus(RequestStatus.REJECTED);
         requestService.save(currentRequest, sessionController.getLoggedUser());
 
-        // Only update currentRequest on the bill if it has one set
-        if (currentRequest.getBill().getCurrentRequest() != null) {
-            currentRequest.getBill().setCurrentRequest(null);
-            billFacade.edit(currentRequest.getBill());
-        }
+        if (currentRequest.getRequestType() != RequestType.PETTYCASH_APROVEL) {
+            // Only update currentRequest on the bill if it has one set
+            if (currentRequest.getBill().getCurrentRequest() != null) {
+                currentRequest.getBill().setCurrentRequest(null);
+                billFacade.edit(currentRequest.getBill());
+            }
 
-        //Update Individual Bills of Batch Bill
-        if (bills != null) {
-            for (Bill b : bills) {
-                b.setCurrentRequest(null);
-                billFacade.edit(b);
+            //Update Individual Bills of Batch Bill
+            if (bills != null) {
+                for (Bill b : bills) {
+                    b.setCurrentRequest(null);
+                    billFacade.edit(b);
+                }
             }
         }
 
@@ -647,21 +883,24 @@ public class RequestController implements Serializable {
             return;
         }
 
+        currentRequest.setCancelled(true);
         currentRequest.setCancelledAt(new Date());
         currentRequest.setCancelledBy(sessionController.getLoggedUser());
         currentRequest.setCancellationReason(comment);
         currentRequest.setStatus(RequestStatus.CANCELLED);
         requestService.save(currentRequest, sessionController.getLoggedUser());
 
-        //Update Batch Bill
-        currentRequest.getBill().setCurrentRequest(null);
-        billFacade.edit(currentRequest.getBill());
+        if (currentRequest.getRequestType() != PETTYCASH_APROVEL) {
+            //Update Batch Bill
+            currentRequest.getBill().setCurrentRequest(null);
+            billFacade.edit(currentRequest.getBill());
 
-        //Update Induvidual Bills of Batch Bil
-        if (bills != null) {
-            for (Bill b : bills) {
-                b.setCurrentRequest(null);
-                billFacade.edit(b);
+            //Update Induvidual Bills of Batch Bil
+            if (bills != null) {
+                for (Bill b : bills) {
+                    b.setCurrentRequest(null);
+                    billFacade.edit(b);
+                }
             }
         }
 
@@ -698,6 +937,36 @@ public class RequestController implements Serializable {
 
     public void setPatientEncounter(PatientEncounter patientEncounter) {
         this.patientEncounter = patientEncounter;
+    }
+
+    public PettyCashType getPettyCashPayeeType() {
+        return pettyCashPayeeType;
+    }
+
+    public void setPettyCashPayeeType(PettyCashType pettyCashPayeeType) {
+        this.pettyCashPayeeType = pettyCashPayeeType;
+    }
+
+    private PettyCashType resolvePettyCashPayeeType(Bill bill) {
+        if (bill.getStaff() != null) {
+            return PettyCashType.STAFF;
+        }
+        if (bill.getToDepartment() != null) {
+            return PettyCashType.DEPARTMENT;
+        }
+        if (bill.getPerson() != null) {
+            return PettyCashType.PERSON;
+        }
+        return PettyCashType.NEWPERSON;
+    }
+
+    public void savePettyCashBillDetails() {
+        if (currentRequest == null || currentRequest.getBill() == null) {
+            JsfUtil.addErrorMessage("Bill not found.");
+            return;
+        }
+        billFacade.edit(currentRequest.getBill());
+        JsfUtil.addSuccessMessage("Bill details saved successfully.");
     }
 
     @FacesConverter(forClass = Request.class)
@@ -739,8 +1008,8 @@ public class RequestController implements Serializable {
             }
         }
     }
-
     // </editor-fold>
+
     // <editor-fold defaultstate="collapsed" desc="Getter & Setter">
     public boolean isPrintPreview() {
         return printPreview;
@@ -775,7 +1044,7 @@ public class RequestController implements Serializable {
     }
 
     public List<Bill> getBills() {
-        if(bills == null){
+        if (bills == null) {
             bills = new ArrayList<>();
         }
         return bills;
