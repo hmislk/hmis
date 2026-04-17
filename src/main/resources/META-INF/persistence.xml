@@ -14,10 +14,11 @@
             <property name="eclipselink.concurrency.manager.allow.concurrencyexception" value="true"/>
             <!-- Log cache contention warnings for early detection -->
             <property name="eclipselink.concurrency.manager.maxfrequencytodumptinymessage" value="5000"/>
-            <!-- Sequence pre-allocation fix for SEQUENCE table lock contention (issue #19626) - Do NOT Remove -->
-            <!-- Explicit preallocation of 50 reduces database sequence contention in high-throughput environments; -->
-            <!-- without this, each ID allocation acquires a table-level lock causing retail sale slowness -->
-            <property name="eclipselink.sequence.default-sequence-preallocation-size" value="50"/>
+            <!-- JDBC batch writing for UPDATE/DELETE statements (issue #19985) -->
+            <!-- IDENTITY strategy prevents batching of INSERT statements (EclipseLink limitation), -->
+            <!-- but batch-writing still improves UPDATE and DELETE throughput under concurrent load. -->
+            <property name="eclipselink.jdbc.batch-writing" value="JDBC"/>
+            <property name="eclipselink.jdbc.batch-writing.size" value="100"/>
         </properties>
     </persistence-unit>
     <persistence-unit name="hmisAuditPU" transaction-type="JTA">
