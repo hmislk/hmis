@@ -3241,14 +3241,24 @@ public class FinancialTransactionController implements Serializable {
             return null;
         }
 
-        // Guard: outgoing pending handover — block until recipient accepts (unconditional, #19824)
-        if (hasAtLeastOneHandoverBillToReceive(sessionController.getLoggedUser(), null, null, null)) {
+        boolean allowShiftEndWithoutHandoverAcceptance = configOptionApplicationController
+                .getBooleanValueByKey("Allow Shift End Without Handover Acceptance", false);
+
+        // Guard: outgoing pending handover — bypassed when 'Allow Shift End Without Handover Acceptance' is true
+        if (!allowShiftEndWithoutHandoverAcceptance
+                && hasAtLeastOneHandoverBillToReceive(sessionController.getLoggedUser(), null, null, null)) {
             JsfUtil.addErrorMessage("You have a handover awaiting acceptance by the recipient. Please wait for them to accept before closing your shift.");
             return null;
         }
 
-        // Guard: incoming pending handover — block until this user accepts (unconditional, #19824)
-        if (hasAtLeastOneHandoverBillToReceive(null, null, sessionController.getLoggedUser(), null)) {
+        if (allowShiftEndWithoutHandoverAcceptance
+                && hasAtLeastOneHandoverBillToReceive(sessionController.getLoggedUser(), null, null, null)) {
+            JsfUtil.addInfoMessage("Warning: You are ending your shift while a handover is still pending acceptance by the recipient.");
+        }
+
+        // Guard: incoming pending handover — bypassed when 'Allow Shift End Without Handover Acceptance' is true
+        if (!allowShiftEndWithoutHandoverAcceptance
+                && hasAtLeastOneHandoverBillToReceive(null, null, sessionController.getLoggedUser(), null)) {
             JsfUtil.addErrorMessage("You have a pending handover to accept. Please accept it before closing your shift.");
             return null;
         }
