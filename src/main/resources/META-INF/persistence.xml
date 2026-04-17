@@ -14,11 +14,40 @@
             <property name="eclipselink.concurrency.manager.allow.concurrencyexception" value="true"/>
             <!-- Log cache contention warnings for early detection -->
             <property name="eclipselink.concurrency.manager.maxfrequencytodumptinymessage" value="5000"/>
-            <!-- JDBC batch writing for UPDATE/DELETE statements (issue #19985) -->
-            <!-- IDENTITY strategy prevents batching of INSERT statements (EclipseLink limitation), -->
-            <!-- but batch-writing still improves UPDATE and DELETE throughput under concurrent load. -->
+            <!-- ================================================================ -->
+            <!-- PERFORMANCE TUNING (issue #19985)                             -->
+            <!-- ================================================================ -->
+
+            <!-- JDBC batch writing for UPDATE/DELETE statements.               -->
+            <!-- IDENTITY strategy prevents batching of INSERT statements       -->
+            <!-- (EclipseLink limitation), but batch-writing still improves     -->
+            <!-- UPDATE and DELETE throughput under concurrent load.            -->
+            <!-- IMPORTANT: requires rewriteBatchedStatements=true on the       -->
+            <!-- Payara JDBC pool — without it MySQL silently ignores batching. -->
             <property name="eclipselink.jdbc.batch-writing" value="JDBC"/>
-            <property name="eclipselink.jdbc.batch-writing.size" value="100"/>
+            <property name="eclipselink.jdbc.batch-writing.size" value="1000"/>
+
+            <!-- NOTE: eclipselink.jdbc.cache-statements must NOT be set here.   -->
+            <!-- hmisPU uses transaction-type="JTA" with an external Payara     -->
+            <!-- connection pool; EclipseLink's internal statement cache        -->
+            <!-- conflicts with external pooling and can cause premature        -->
+            <!-- statement closure. Configure statement caching on the Payara   -->
+            <!-- pool instead: Admin Console → pool → statement-cache-size=200, -->
+            <!-- or add cachePrepStmts=true to the MySQL Connector/J URL.       -->
+
+            <!-- Increase shared L2 cache default from 100 → 1000 per entity   -->
+            <!-- class. 100 causes constant eviction for reference data         -->
+            <!-- (departments, items, users); 1000 gives breathing room without -->
+            <!-- the heap risk of a blanket 5000 across all 188 entity classes. -->
+            <!-- For the busiest reference entities (Department, Item, WebUser, -->
+            <!-- Fee) add @Cache(size=5000) on those classes individually.      -->
+            <property name="eclipselink.cache.size.default" value="1000"/>
+
+            <!-- Skip re-reading LOB columns (description, filters, columns,   -->
+            <!-- rows, totals on ReportTemplate etc.) when the object is        -->
+            <!-- already in the L2 cache. Avoids fetching large blobs on        -->
+            <!-- every cache hit.                                               -->
+            <property name="eclipselink.jdbc.result-set-access-optimization" value="true"/>
         </properties>
     </persistence-unit>
     <persistence-unit name="hmisAuditPU" transaction-type="JTA">
