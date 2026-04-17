@@ -88,8 +88,8 @@ public class CollectingCentreFeesApiService implements Serializable {
                 + "AND f.forCategory IS NULL ");
 
         if (query != null && !query.trim().isEmpty()) {
-            jpql.append("AND (UPPER(f.item.name) LIKE :q OR UPPER(f.item.code) LIKE :q) ");
-            params.put("q", "%" + query.trim().toUpperCase() + "%");
+            jpql.append("AND (f.item.name LIKE :q OR f.item.code LIKE :q) ");
+            params.put("q", "%" + query.trim() + "%");
         }
 
         jpql.append("ORDER BY f.item.name, f.name");
@@ -391,6 +391,12 @@ public class CollectingCentreFeesApiService implements Serializable {
         }
         if (fee.isRetired()) {
             throw new Exception("Fee with ID " + feeId + " is already retired");
+        }
+        // Scope guard: only allow mutation of actual collecting-centre fees
+        if (fee.getForInstitution() == null
+                || fee.getForInstitution().getInstitutionType() != InstitutionType.CollectingCentre
+                || fee.getForCategory() != null) {
+            throw new Exception("Fee with ID " + feeId + " is not a collecting centre fee");
         }
         return fee;
     }

@@ -15,8 +15,8 @@ public class CollectingCentreFeeDTO {
     private Long id;
     private String name;
     private String feeType;
-    private double fee;
-    private double ffee;
+    private Double fee;
+    private Double ffee;
     private boolean discountAllowed;
     private boolean retired;
 
@@ -67,19 +67,19 @@ public class CollectingCentreFeeDTO {
         this.feeType = feeType;
     }
 
-    public double getFee() {
+    public Double getFee() {
         return fee;
     }
 
-    public void setFee(double fee) {
+    public void setFee(Double fee) {
         this.fee = fee;
     }
 
-    public double getFfee() {
+    public Double getFfee() {
         return ffee;
     }
 
-    public void setFfee(double ffee) {
+    public void setFfee(Double ffee) {
         this.ffee = ffee;
     }
 

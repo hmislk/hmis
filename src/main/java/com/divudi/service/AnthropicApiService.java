@@ -792,7 +792,7 @@ public class AnthropicApiService implements Serializable {
                     if (itemId != null && !itemId.isEmpty()) bodyBuilder.add("itemId", Long.parseLong(itemId.trim()));
                     if (name != null) bodyBuilder.add("name", name);
                     if (feeType != null) bodyBuilder.add("feeType", feeType);
-                    if (fee != null) bodyBuilder.add("fee", Double.parseDouble(fee.trim()));
+                    if (fee != null && !fee.trim().isEmpty()) bodyBuilder.add("fee", Double.parseDouble(fee.trim()));
                     if (ffee != null && !ffee.isEmpty()) bodyBuilder.add("ffee", Double.parseDouble(ffee.trim()));
                     if (departmentId != null && !departmentId.isEmpty()) bodyBuilder.add("departmentId", Long.parseLong(departmentId.trim()));
                     if (discountAllowed != null) bodyBuilder.add("discountAllowed", Boolean.parseBoolean(discountAllowed.trim()));
