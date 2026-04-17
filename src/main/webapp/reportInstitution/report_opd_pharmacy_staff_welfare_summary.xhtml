@@ -4,25 +4,22 @@
                 template="/reportInstitution/report_own.xhtml"
                 xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:f="http://xmlns.jcp.org/jsf/core"
-                xmlns:ca="http://xmlns.jcp.org/jsf/composite/cashSummery"
-                >
+                xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <ui:define name="subcontent">
-        <!--        <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>-->
         <h:form>
             <p:panel>
-                <f:facet name="header" >                
-                    <h:outputLabel value="OPD And Pharmacy Staff Welfare Bills"/>
+                <f:facet name="header">
+                    <h:outputLabel value="OPD And Pharmacy Staff Welfare Bills — Summary by Staff"/>
                 </f:facet>
                 <h:panelGrid columns="2" class="my-2">
                     <h:outputLabel value="From Date"/>
-                    <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="frmDate" value="#{serviceSummery.fromDate}" pattern="dd MMMM yyyy  HH:mm:ss" >
-                    </p:calendar>
+                    <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="frmDate"
+                                value="#{serviceSummery.fromDate}" pattern="dd MMMM yyyy  HH:mm:ss"/>
 
                     <h:outputLabel value="To Date"/>
-                    <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="toDate" value="#{serviceSummery.toDate}" pattern="dd MMMM yyyy  HH:mm:ss" >
-                    </p:calendar>
+                    <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="toDate"
+                                value="#{serviceSummery.toDate}" pattern="dd MMMM yyyy  HH:mm:ss"/>
 
                     <h:outputLabel value="Staff (optional)"/>
                     <p:autoComplete
@@ -42,87 +39,61 @@
                         </p:column>
                     </p:autoComplete>
                 </h:panelGrid>
-                <h:panelGrid columns="6" class="my-2" >
+                <h:panelGrid columns="6" class="my-2">
                     <p:commandButton id="btnRefresh" value="Process" ajax="false"
                                      class="ui-button-info m-1" icon="fas fa-cogs"
-                                     action="#{serviceSummery.opdPharmacyStaffWelfarePaymentsDto}"/>
+                                     action="#{serviceSummery.opdPharmacyStaffWelfareSummaryDto}"/>
                     <p:defaultCommand target="btnRefresh"/>
 
-                    <p:commandButton
-                        value="To Print"
-                        ajax="false"
-                        styleClass="ui-button-warning m-1"
-                        action="report_opd_pharmacy_staff_welfare_print?faces-redirect=true"
-                        icon="pi pi-print">
-                    </p:commandButton>
-
                     <p:commandButton value="Excel" ajax="false" class="ui-button-success m-1" icon="fas fa-file-excel">
-                        <p:dataExporter type="xlsx" target="opd" fileName="Staff_Welfare"/>
+                        <p:dataExporter type="xlsx" target="tblSummary" fileName="Staff_Welfare_Summary"/>
                     </p:commandButton>
 
                     <p:commandButton value="Reports Menu" ajax="false" class="ui-button-secondary m-1"
                                      icon="pi pi-home"
                                      action="/reportInstitution/report_own?faces-redirect=true"/>
                 </h:panelGrid>
-                <p:panel id="panelPrint"  styleClass="summeryBorder">
-                    <p:dataTable
-                        id="opd"
-                        rowIndexVar="i"
-                        value="#{serviceSummery.staffWelfarePayments}"
-                        var="p">
+
+                <p:panel styleClass="summeryBorder">
+                    <p:dataTable id="tblSummary"
+                                 rowIndexVar="i"
+                                 value="#{serviceSummery.staffWelfareSummary}"
+                                 var="row">
 
                         <f:facet name="header">
-                            <h:outputLabel value="Staff Welfare Payments" />
-                            <h:outputLabel value="&emsp;&emsp;From : &nbsp;" style="white-space:pre-line;" />
+                            <h:outputLabel value="Staff Welfare Summary"/>
+                            <h:outputLabel value="&emsp;&emsp;From : &nbsp;" style="white-space:pre-line;"/>
                             <h:outputLabel value="#{serviceSummery.fromDate}">
-                                <f:convertDateTime pattern="dd MMMM yyyy hh:mm:ss a" />
+                                <f:convertDateTime pattern="dd MMMM yyyy hh:mm:ss a"/>
                             </h:outputLabel>
-                            <h:outputLabel value="&emsp;&emsp;To : &nbsp;" />
+                            <h:outputLabel value="&emsp;&emsp;To : &nbsp;"/>
                             <h:outputLabel value="#{serviceSummery.toDate}">
-                                <f:convertDateTime pattern="dd MMMM yyyy hh:mm:ss a" />
+                                <f:convertDateTime pattern="dd MMMM yyyy hh:mm:ss a"/>
                             </h:outputLabel>
                         </f:facet>
 
                         <p:column headerText="No">
                             <f:facet name="header"><p:outputLabel value="No"/></f:facet>
-                            <h:outputLabel value="#{i + 1}" />
-                        </p:column>
-
-                        <p:column headerText="Bill No">
-                            <f:facet name="header"><p:outputLabel value="Bill No"/></f:facet>
-                            <p:outputLabel value="#{p.billDeptId}" />
+                            <h:outputLabel value="#{i + 1}"/>
                         </p:column>
 
                         <p:column headerText="Staff EPF No"
-                                  filterBy="#{p.staffEpfNo}"
+                                  filterBy="#{row.staffEpfNo}"
                                   filterMatchMode="contains">
                             <f:facet name="header"><p:outputLabel value="Staff EPF No"/></f:facet>
-                            <p:outputLabel value="#{p.staffEpfNo}" />
+                            <p:outputLabel value="#{row.staffEpfNo}"/>
                         </p:column>
 
                         <p:column headerText="Staff Name"
-                                  filterBy="#{p.staffNameWithTitle}"
+                                  filterBy="#{row.staffNameWithTitle}"
                                   filterMatchMode="contains">
                             <f:facet name="header"><p:outputLabel value="Staff Name"/></f:facet>
-                            <p:outputLabel value="#{p.staffNameWithTitle}" />
-                        </p:column>
-
-                        <p:column headerText="Bill Type">
-                            <f:facet name="header"><p:outputLabel value="Bill Type"/></f:facet>
-                            <p:outputLabel value="Pharmacy Bill" rendered="#{p.pharmacyBill}" />
-                            <p:outputLabel value="OPD Bill" rendered="#{not p.pharmacyBill}" />
-                        </p:column>
-
-                        <p:column headerText="Date">
-                            <f:facet name="header"><p:outputLabel value="Date"/></f:facet>
-                            <h:outputLabel value="#{p.createdAt}">
-                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
-                            </h:outputLabel>
+                            <p:outputLabel value="#{row.staffNameWithTitle}"/>
                         </p:column>
 
                         <p:column headerText="Gross Amount" style="text-align: right">
                             <f:facet name="header"><p:outputLabel value="Gross Amount"/></f:facet>
-                            <p:outputLabel value="#{p.grossAmount}">
+                            <p:outputLabel value="#{row.totalGrossAmount}">
                                 <f:convertNumber pattern="#,##0.00"/>
                             </p:outputLabel>
                             <f:facet name="footer">
@@ -134,7 +105,7 @@
 
                         <p:column headerText="Discount" style="text-align: right">
                             <f:facet name="header"><p:outputLabel value="Discount"/></f:facet>
-                            <p:outputLabel value="#{commonFunctionsProxy.reverseSign(p.discountValue)}">
+                            <p:outputLabel value="#{commonFunctionsProxy.reverseSign(row.totalDiscount)}">
                                 <f:convertNumber pattern="#,##0.00"/>
                             </p:outputLabel>
                             <f:facet name="footer">
@@ -146,7 +117,7 @@
 
                         <p:column headerText="Net Amount" style="text-align: right">
                             <f:facet name="header"><p:outputLabel value="Net Amount"/></f:facet>
-                            <p:outputLabel value="#{p.paidValue}">
+                            <p:outputLabel value="#{row.totalPaidValue}">
                                 <f:convertNumber pattern="#,##0.00"/>
                             </p:outputLabel>
                             <f:facet name="footer">
@@ -160,13 +131,9 @@
                             <h:outputLabel value="Printed By : #{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
                         </f:facet>
                     </p:dataTable>
-
-
                 </p:panel>
             </p:panel>
         </h:form>
-
     </ui:define>
-
 
 </ui:composition>
