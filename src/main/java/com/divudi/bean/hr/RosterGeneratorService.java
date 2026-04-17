@@ -368,6 +368,101 @@ public class RosterGeneratorService implements Serializable {
         return result;
     }
 
+    /**
+    * Fetches existing StaffShift records and builds a RosterTable
+    * in the same structure as generateRosterTable().
+    */
+    public RosterTable fetchExistingRosterTable(Date fromDate, Date toDate, Roster roster) {
+
+        RosterTable result = new RosterTable();
+        List<String> warnings = new ArrayList<>();
+
+        if (roster == null || fromDate == null || toDate == null) {
+            warnings.add("Roster, from date, and to date are required.");
+            result.setWarnings(warnings);
+            return result;
+        }
+
+        // --- Load shifts ---
+        List<Shift> shifts = fetchActiveShiftsOrdered(roster);
+        if (shifts.isEmpty()) {
+            warnings.add("No active shifts found for this roster.");
+            result.setWarnings(warnings);
+            return result;
+        }
+
+        // --- Load staff ---
+        List<Staff> allStaff = humanResourceBean.fetchStaff(roster);
+
+        // --- Build date list ---
+        List<Date> dates = buildDateList(fromDate, toDate);
+        result.setDates(dates);
+
+        // --- Pre-fetch all staff shifts for the range, grouped by date+shift ---
+        // Key: "staffId_shiftId_dateMillis"
+        Map<String, List<Staff>> cellMap = new HashMap<>();
+
+        for (Staff staff : allStaff) {
+            for (Date date : dates) {
+                List<StaffShift> staffShifts = humanResourceBean.fetchStaffShift(date, staff);
+                if (staffShifts == null) continue;
+                for (StaffShift ss : staffShifts) {
+                    if (ss.getShift() == null || ss.getRoster() == null) continue;
+                    if (!ss.getRoster().equals(roster)) continue;
+                    String key = ss.getShift().getId() + "_" + clearTime(date).getTime();
+                    cellMap.computeIfAbsent(key, k -> new ArrayList<>()).add(staff);
+                }
+            }
+        }
+
+        // --- Build rows (one per shift) ---
+        for (Shift shift : shifts) {
+            RosterRow row = new RosterRow();
+            row.setShift(shift);
+            row.setShiftName(shift.getName());
+            row.setShiftOrder(shift.getShiftOrder());
+            row.setDayOff(shift.isDayOff());
+            row.setCells(new ArrayList<>());
+
+            for (Date date : dates) {
+                RosterCell cell = new RosterCell();
+                cell.setDate(date);
+
+                String key = shift.getId() + "_" + clearTime(date).getTime();
+                List<Staff> assigned = cellMap.getOrDefault(key, new ArrayList<>());
+                cell.setAssignedStaff(assigned);
+
+                if (!shift.isDayOff()) {
+                    int requiredCount = resolveRequiredCount(shift.getStaffRequirement(), date);
+                    cell.setRequiredCount(requiredCount);
+                    if (assigned.size() < requiredCount) {
+                        warnings.add("Understaffed: " + shift.getName()
+                                + " on " + formatDate(date)
+                                + " - need " + requiredCount
+                                + ", have " + assigned.size());
+                    }
+                }
+
+                row.getCells().add(cell);
+            }
+
+            result.getRows().add(row);
+        }
+
+        result.setWarnings(warnings);
+        return result;
+    }
+
+    private Date clearTime(Date date) {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date);
+        cal.set(Calendar.HOUR_OF_DAY, 0);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+        return cal.getTime();
+    }
+
     // =========================================================================
     // UTILITIES
     // =========================================================================

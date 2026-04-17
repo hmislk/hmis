@@ -7,8 +7,10 @@ package com.divudi.bean.hr;
 
 import com.divudi.bean.common.SessionController;
 import com.divudi.core.util.JsfUtil;
-import com.divudi.core.data.dataStructure.ShiftTable;
+import com.divudi.core.data.dataStructure.DateGroup;
 import com.divudi.core.data.dataStructure.RosterTable;
+import com.divudi.core.data.dataStructure.RosterRow;
+import com.divudi.core.data.dataStructure.RosterCell;
 import com.divudi.core.data.hr.DayType;
 
 import com.divudi.ejb.HumanResourceBean;
@@ -16,24 +18,19 @@ import com.divudi.core.entity.Staff;
 import com.divudi.core.entity.hr.Roster;
 import com.divudi.core.entity.hr.Shift;
 import com.divudi.core.entity.hr.StaffShift;
-import com.divudi.core.entity.hr.StaffShiftExtra;
-import com.divudi.core.entity.hr.StaffShiftHistory;
-import com.divudi.core.facade.StaffFacade;
 import com.divudi.core.facade.StaffShiftFacade;
 import com.divudi.core.facade.StaffShiftHistoryFacade;
-import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.persistence.TemporalType;
 
 /**
  *
@@ -45,12 +42,10 @@ public class ShiftTableController implements Serializable {
 
     Date fromDate;
     Date toDate;
-    Long dateRange;
     Roster roster;
     Shift shift;
     StaffShift staffShift;
     RosterTable rosterTable;
-    List<ShiftTable> shiftTables;
 
     @EJB
     RosterGeneratorService rosterGeneratorService;
@@ -68,127 +63,21 @@ public class ShiftTableController implements Serializable {
     boolean all;
     Staff staff;
 
-    //FUNTIONS
+    private Integer activeDateIndex = -1;
+
+    // ── ACTIONS ──────────────────────────────────────────────────────────
+
     public void makeNull() {
         fromDate = null;
         toDate = null;
-        dateRange = 0l;
         roster = null;
-        shiftTables = null;
-        rosterTable = null;  
+        rosterTable = null;
+        clearAddDialogState();
     }
 
-    private boolean errorCheck() {
-        if (getFromDate() == null || getToDate() == null) {
-            return true;
-        }
-
-        return false;
-    }
-
-    @Inject
-    PhDateController phDateController;
-
-    public void fetchAndSetDayType(StaffShift ss) {
-        DayType dayType = null;
-        if (ss.getShift() != null) {
-            dayType = ss.getShift().getDayType();
-        }
-
-
-        ss.setDayType(null);
-
-        DayType dtp;
-        if (dayType == DayType.DayOff) {
-            dtp = dayType;
-        } else {
-            dtp = phDateController.getHolidayType(ss.getShiftDate());
-        }
-
-        ss.setDayType(dtp);
-        if (ss.getDayType() == null) {
-            if (ss.getShift() != null) {
-                ss.setDayType(ss.getShift().getDayType());
-            }
-        }
-    }
-
-    private void saveStaffShift() {
-        for (ShiftTable st : shiftTables) {
-            for (StaffShift ss : st.getStaffShift()) {
-                if (ss.getId()==null && ss.getShift() == null) {
-                    continue;
-                }
-
-                fetchAndSetDayType(ss);
-                ss.calShiftStartEndTime();
-                ss.calLieu();
-                if (ss.getId() == null) {
-                    getStaffShiftFacade().create(ss);
-                }
-
-                ss.setPreviousStaffShift(getHumanResourceBean().calPrevStaffShift(ss));
-                ss.setNextStaffShift(getHumanResourceBean().calFrwStaffShift(ss));
-                getStaffShiftFacade().edit(ss);
-            }
-        }
-    }
-
-    @EJB
-    StaffShiftHistoryFacade staffShiftHistoryFacade;
-
-    private void saveHistory() {
-        for (ShiftTable st : shiftTables) {
-            for (StaffShift ss : st.getStaffShift()) {
-
-                if (ss.getId() != null) {
-                    boolean flag = false;
-                    StaffShift fetchStaffShift = staffShiftFacade.find(ss.getId());
-                    if (fetchStaffShift.getRoster() != null && ss.getRoster() != null) {
-                        if (!fetchStaffShift.getRoster().equals(ss.getRoster())) {
-                            flag = true;
-                        }
-                    }
-
-                    if (fetchStaffShift.getStaff() != null && ss.getStaff() != null) {
-                        if (!fetchStaffShift.getStaff().equals(ss.getStaff())) {
-                            flag = true;
-                        }
-                    }
-                    if (fetchStaffShift.getShift() != null && ss.getShift() != null) {
-                        if (!fetchStaffShift.getShift().equals(ss.getShift())) {
-                            flag = true;
-                        }
-                    }
-
-                    if (flag) {
-                        StaffShiftHistory staffShiftHistory = new StaffShiftHistory();
-                        staffShiftHistory.setStaffShift(ss);
-                        staffShiftHistory.setCreatedAt(new Date());
-                        staffShiftHistory.setCreater(sessionController.getLoggedUser());
-                        //CHanges
-                        staffShiftHistory.setStaff(ss.getStaff());
-                        staffShiftHistory.setShift(ss.getShift());
-                        staffShiftHistory.setRoster(ss.getRoster());
-
-                        staffShiftHistoryFacade.create(staffShiftHistory);
-                    }
-                }
-
-            }
-        }
-    }
-
-    public void save() {
-        if (shiftTables == null) {
-            return;
-        }
-
-        saveHistory();
-
-        saveStaffShift();
-        saveStaffShift();
-
+    public void makeTableNull() {
+        rosterTable = null;
+        clearAddDialogState();
     }
 
     public void generateAutoRoster() {
@@ -208,528 +97,464 @@ public class ShiftTableController implements Serializable {
         }
     }
 
-    public void createShiftTable() {
-        Date startTime = new Date();
-
-        if (errorCheck()) {
-            return;
-        }
-
-        shiftTables = new ArrayList<>();
-
-        Calendar nc = Calendar.getInstance();
-        nc.setTime(getFromDate());
-        Date nowDate = nc.getTime();
-
-        nc.setTime(getToDate());
-        nc.add(Calendar.DATE, 1);
-        Date tmpToDate = nc.getTime();
-
-        //CREATE FIRTS TABLE For Indexing Purpuse
-        ShiftTable netT;
-
-        while (tmpToDate.after(nowDate)) {
-            netT = new ShiftTable();
-            netT.setDate(nowDate);
-
-            Calendar calNowDate = Calendar.getInstance();
-            calNowDate.setTime(nowDate);
-
-            Calendar calFromDate = Calendar.getInstance();
-            calFromDate.setTime(getFromDate());
-
-            if (calNowDate.get(Calendar.DATE) == calFromDate.get(Calendar.DATE)) {
-                netT.setFlag(Boolean.TRUE);
-            } else {
-                netT.setFlag(Boolean.FALSE);
-            }
-
-            for (Staff stf : getHumanResourceBean().fetchStaff(getRoster())) {
-                List<StaffShift> staffShifts = getHumanResourceBean().fetchStaffShift(nowDate, stf);
-                if (staffShifts.isEmpty()) {
-                    for (int i = getRoster().getShiftPerDay(); i > 0; i--) {
-                        StaffShift ss = new StaffShift();
-                        ss.setStaff(stf);
-                        ss.setShiftDate(nowDate);
-                        ss.setRoster(roster);
-                        netT.getStaffShift().add(ss);
-                    }
-                } else {
-                    for (StaffShift ss : staffShifts) {
-                        netT.getStaffShift().add(ss);
-                    }
-                }
-
-            }
-            shiftTables.add(netT);
-
-            Calendar c = Calendar.getInstance();
-            c.setTime(nowDate);
-            c.add(Calendar.DATE, 1);
-            nowDate = c.getTime();
-
-        }
-
-        Long range = CommonFunctions.getDayCount(getFromDate(), getToDate());
-        setDateRange(range + 1);
-
-
-    }
-
     public void fetchShiftTable() {
-        if (errorCheck()) {
+        if (roster == null) {
+            JsfUtil.addErrorMessage("Please select a roster.");
             return;
         }
-
-        shiftTables = new ArrayList<>();
-
-        Calendar nc = Calendar.getInstance();
-        nc.setTime(getFromDate());
-        Date nowDate = nc.getTime();
-
-        nc.setTime(getToDate());
-        nc.add(Calendar.DATE, 1);
-        Date tmpToDate = nc.getTime();
-
-        //CREATE FIRTS TABLE For Indexing Purpuse
-        ShiftTable netT;
-
-        while (tmpToDate.after(nowDate)) {
-            netT = new ShiftTable();
-            netT.setDate(nowDate);
-
-            Calendar calNowDate = Calendar.getInstance();
-            calNowDate.setTime(nowDate);
-
-            Calendar calFromDate = Calendar.getInstance();
-            calFromDate.setTime(getFromDate());
-
-            if (calNowDate.get(Calendar.DATE) == calFromDate.get(Calendar.DATE)) {
-                netT.setFlag(Boolean.TRUE);
-            } else {
-                netT.setFlag(Boolean.FALSE);
-            }
-
-//            List<StaffShift> staffShifts = getHumanResourceBean().fetchStaffShift(nowDate, roster);
-//
-//            for (StaffShift ss : staffShifts) {
-//                netT.getStaffShift().add(ss);
-//            }
-            List<Staff> staffs = getHumanResourceBean().fetchStaffShift(fromDate, toDate, roster);
-
-            for (Staff staff : staffs) {
-                List<StaffShift> ss = getHumanResourceBean().fetchStaffShift(nowDate, staff);
-                if (ss == null) {
-                    for (int i = 0; i < roster.getShiftPerDay(); i++) {
-                        StaffShift newStaffShift = new StaffShift();
-                        newStaffShift.setStaff(staff);
-                        newStaffShift.setShiftDate(nowDate);
-                        newStaffShift.setCreatedAt(new Date());
-                        newStaffShift.setCreater(sessionController.getLoggedUser());
-                        newStaffShift.setRoster(roster);
-                        netT.getStaffShift().add(newStaffShift);
-                    }
-                } else {
-                    netT.getStaffShift().addAll(ss);
-                    int ballance = roster.getShiftPerDay() - ss.size();
-                    if (ballance < 0) {
-                        continue;
-                    }
-                    for (int i = 0; i < ballance; i++) {
-                        StaffShift newStaffShift = new StaffShift();
-                        newStaffShift.setStaff(staff);
-                        newStaffShift.setShiftDate(nowDate);
-                        newStaffShift.setCreatedAt(new Date());
-                        newStaffShift.setCreater(sessionController.getLoggedUser());
-                        newStaffShift.setRoster(roster);
-                        netT.getStaffShift().add(newStaffShift);
-                    }
-
-                }
-            }
-
-            shiftTables.add(netT);
-
-            Calendar c = Calendar.getInstance();
-            c.setTime(nowDate);
-            c.add(Calendar.DATE, 1);
-            nowDate = c.getTime();
-
-        }
-
-        Long range = CommonFunctions.getDayCount(getFromDate(), getToDate());
-        setDateRange(range + 1);
-
-
-    }
-
-    public void fetchShiftTableByStaff() {
-        if (errorCheck()) {
+        if (fromDate == null || toDate == null) {
+            JsfUtil.addErrorMessage("Please select from and to dates.");
             return;
         }
-        if (staff == null) {
-            JsfUtil.addErrorMessage("Plaese Select Staff");
-            return;
+        rosterTable = rosterGeneratorService.fetchExistingRosterTable(fromDate, toDate, roster);
+        if (rosterTable == null || rosterTable.getRows() == null || rosterTable.getRows().isEmpty()) {
+            JsfUtil.addErrorMessage("No existing roster data found for the selected period.");
         }
-
-        shiftTables = new ArrayList<>();
-
-        Calendar nc = Calendar.getInstance();
-        nc.setTime(getFromDate());
-        Date nowDate = nc.getTime();
-
-        nc.setTime(getToDate());
-        nc.add(Calendar.DATE, 1);
-        Date tmpToDate = nc.getTime();
-
-        //CREATE FIRTS TABLE For Indexing Purpuse
-        ShiftTable netT;
-
-        while (tmpToDate.after(nowDate)) {
-            netT = new ShiftTable();
-            netT.setDate(nowDate);
-
-            Calendar calNowDate = Calendar.getInstance();
-            calNowDate.setTime(nowDate);
-
-            Calendar calFromDate = Calendar.getInstance();
-            calFromDate.setTime(getFromDate());
-
-            if (calNowDate.get(Calendar.DATE) == calFromDate.get(Calendar.DATE)) {
-                netT.setFlag(Boolean.TRUE);
-            } else {
-                netT.setFlag(Boolean.FALSE);
-            }
-
-//            List<StaffShift> staffShifts = getHumanResourceBean().fetchStaffShift(nowDate, roster);
-//
-//            for (StaffShift ss : staffShifts) {
-//                netT.getStaffShift().add(ss);
-//            }
-            List<StaffShift> ss = getHumanResourceBean().fetchStaffShift(nowDate, staff);
-            if (ss == null) {
-                JsfUtil.addErrorMessage("No Staff Shift");
-                return;
-            } else {
-                netT.getStaffShift().addAll(ss);
-
-            }
-
-            shiftTables.add(netT);
-
-            Calendar c = Calendar.getInstance();
-            c.setTime(nowDate);
-            c.add(Calendar.DATE, 1);
-            nowDate = c.getTime();
-
-        }
-
-        Long range = CommonFunctions.getDayCount(getFromDate(), getToDate());
-        setDateRange(range + 1);
     }
 
     public void selectRosterLstener() {
         makeTableNull();
         getShiftController().setCurrentRoster(roster);
-
     }
 
-    public void fetchShiftTableForCheck() {
-        Date startTime = new Date();
+    // ── DATE-GROUPED VIEW MODEL ──────────────────────────────────────────
 
-        if (errorCheck()) {
+    /**
+     * Returns the roster data grouped by date for the accordion UI.
+     * Each DateGroup contains ShiftGroups that reference the live RosterCells
+     * inside rosterTable, so any edit flows back to the underlying table.
+     */
+    public List<DateGroup> getDateGroups() {
+        List<DateGroup> groups = new ArrayList<>();
+        if (rosterTable == null || rosterTable.getDates() == null
+                || rosterTable.getRows() == null) {
+            return groups;
+        }
+
+        for (int dateIdx = 0; dateIdx < rosterTable.getDates().size(); dateIdx++) {
+            Date d = rosterTable.getDates().get(dateIdx);
+            DateGroup group = new DateGroup(d);
+
+            for (RosterRow row : rosterTable.getRows()) {
+                if (row.getCells() == null) continue;
+                if (dateIdx >= row.getCells().size()) continue;
+
+                RosterCell cell = row.getCells().get(dateIdx);
+                DateGroup.ShiftGroup sg = new DateGroup.ShiftGroup(
+                        row.getShift(),
+                        row.getShiftName(),
+                        cell
+                );
+                group.getShiftGroups().add(sg);
+            }
+
+            groups.add(group);
+        }
+        return groups;
+    }
+
+    /**
+     * Returns all non-day-off shifts available in this roster.
+     * Used to populate the per-staff shift-change dropdown.
+     */
+    public List<Shift> getAvailableShifts() {
+        List<Shift> shifts = new ArrayList<>();
+        if (rosterTable == null || rosterTable.getRows() == null) return shifts;
+        for (RosterRow row : rosterTable.getRows()) {
+            if (row.getShift() == null) continue;
+            if (row.isDayOff() || row.getShift().isDayOff()) continue;
+            shifts.add(row.getShift());
+        }
+        return shifts;
+    }
+
+    // ── PER-STAFF EDITS ──────────────────────────────────────────────────
+
+    /**
+     * Changes a staff's shift on the given date.
+     * Removes them from currentCell and adds them to the cell on the
+     * target shift for the same date.
+     */
+    public void changeStaffShift(RosterCell currentCell, Staff staffMember, Long targetShiftId) {
+        if (currentCell == null || staffMember == null || targetShiftId == null) {
             return;
         }
 
-        shiftTables = new ArrayList<>();
+        Shift currentShift = findShiftForCell(currentCell);
+        if (currentShift != null && targetShiftId.equals(currentShift.getId())) {
+            return; // no-op: same shift
+        }
 
-        Calendar nc = Calendar.getInstance();
-        nc.setTime(getFromDate());
-        Date nowDate = nc.getTime();
+        RosterCell targetCell = findCellForShiftAndDate(targetShiftId, currentCell.getDate());
+        if (targetCell == null) {
+            JsfUtil.addErrorMessage("Target shift not found.");
+            return;
+        }
 
-        nc.setTime(getToDate());
-        nc.add(Calendar.DATE, 1);
-        Date tmpToDate = nc.getTime();
-
-        //CREATE FIRTS TABLE For Indexing Purpuse
-        ShiftTable netT;
-
-        ShiftTable summeryTable = new ShiftTable();
-        summeryTable.setFlag(false);
-        boolean b = false;
-        int a = 0;
-        while (tmpToDate.after(nowDate)) {
-            netT = new ShiftTable();
-            netT.setDate(nowDate);
-
-            DayType dt = humanResourceBean.isHolidayWithDayType(nowDate);
-
-            if (dt == DayType.MurchantileHoliday) {
-                netT.setMerch(true);
-            } else {
-                netT.setMerch(false);
-            }
-
-            if (dt == DayType.Poya) {
-                netT.setPh(true);
-            } else {
-                netT.setPh(false);
-            }
-
-            Calendar calNowDate = Calendar.getInstance();
-            calNowDate.setTime(nowDate);
-
-            Calendar calFromDate = Calendar.getInstance();
-            calFromDate.setTime(getFromDate());
-
-            if (calNowDate.get(Calendar.DATE) == calFromDate.get(Calendar.DATE)) {
-                netT.setFlag(Boolean.TRUE);
-            } else {
-                netT.setFlag(Boolean.FALSE);
-            }
-
-//            List<StaffShift> staffShifts = getHumanResourceBean().fetchStaffShift(nowDate, roster);
-//
-//            for (StaffShift ss : staffShifts) {
-//                netT.getStaffShift().add(ss);
-//            }
-            List<Staff> staffs = getHumanResourceBean().fetchStaffShift(fromDate, toDate, roster);
-            if (b) {
-                a = 0;
-            }
-            for (Staff staff : staffs) {
-                List<StaffShift> ss = getHumanResourceBean().fetchStaffShift(nowDate, staff);
-                if (ss == null) {
-                    for (int i = 0; i < roster.getShiftPerDay(); i++) {
-                        StaffShift newStaffShift = new StaffShift();
-                        newStaffShift.setStaff(staff);
-                        newStaffShift.setShiftDate(nowDate);
-                        newStaffShift.setCreatedAt(new Date());
-                        newStaffShift.setCreater(sessionController.getLoggedUser());
-                        newStaffShift.setTransWorkTime(0.0);
-                        if (b) {
-                            summeryTable.getStaffShift().get(a).setTransWorkTime(summeryTable.getStaffShift().get(a).getTransWorkTime() + 0);
-                            summeryTable.getStaffShift().get(a).setTransShiftTime(summeryTable.getStaffShift().get(a).getTransShiftTime() + 0);
-                            a++;
-                        } else {
-                            StaffShift sss = new StaffShift();
-                            sss.setTransShiftTime(0);
-                            sss.setTransWorkTime(0);
-                            summeryTable.getStaffShift().add(sss);
-                        }
-                        netT.getStaffShift().add(newStaffShift);
-                    }
-                } else {
-                    for (StaffShift s : ss) {
-                        if (s.getShift().getDurationMin() > 0) {
-                            s.setTransWorkTime(fetchWorkTime(staff, nowDate));
-                            if (b) {
-                                //// // System.out.println("b = " + b);
-                                summeryTable.getStaffShift().get(a).setTransWorkTime(summeryTable.getStaffShift().get(a).getTransWorkTime() + s.getTransWorkTime());
-                                summeryTable.getStaffShift().get(a).setTransShiftTime(summeryTable.getStaffShift().get(a).getTransShiftTime() + s.getShift().getDurationMin());
-                                a++;
-                            } else {
-                                StaffShift sss = new StaffShift();
-                                sss.setTransShiftTime(s.getShift().getDurationMin());
-                                sss.setTransWorkTime(s.getTransWorkTime());
-                                summeryTable.getStaffShift().add(sss);
-                            }
-                        } else {
-                            if (b) {
-                                //// // System.out.println("b = " + b);
-                                summeryTable.getStaffShift().get(a).setTransWorkTime(summeryTable.getStaffShift().get(a).getTransWorkTime() + s.getTransWorkTime());
-                                summeryTable.getStaffShift().get(a).setTransShiftTime(summeryTable.getStaffShift().get(a).getTransShiftTime() + s.getShift().getDurationMin());
-                                a++;
-                            } else {
-                                StaffShift sss = new StaffShift();
-                                sss.setTransShiftTime(s.getShift().getDurationMin());
-                                sss.setTransWorkTime(s.getTransWorkTime());
-                                summeryTable.getStaffShift().add(sss);
-                            }
-                        }
-                    }
-                    netT.getStaffShift().addAll(ss);
-                    int ballance = roster.getShiftPerDay() - ss.size();
-                    if (ballance <= 0) {
-                        continue;
-                    }
-                    for (int i = 0; i < ballance; i++) {
-                        StaffShift newStaffShift = new StaffShift();
-                        newStaffShift.setStaff(staff);
-                        newStaffShift.setShiftDate(nowDate);
-                        newStaffShift.setCreatedAt(new Date());
-                        newStaffShift.setCreater(sessionController.getLoggedUser());
-                        if (b) {
-                            //// // System.out.println("b = " + b);
-                            summeryTable.getStaffShift().get(a).setTransWorkTime(summeryTable.getStaffShift().get(a).getTransWorkTime() + 0);
-                            summeryTable.getStaffShift().get(a).setTransShiftTime(summeryTable.getStaffShift().get(a).getTransShiftTime() + 0);
-                            a++;
-                        } else {
-                            StaffShift sss = new StaffShift();
-                            sss.setTransShiftTime(0);
-                            sss.setTransWorkTime(0);
-                            summeryTable.getStaffShift().add(sss);
-                        }
-                        netT.getStaffShift().add(newStaffShift);
-                    }
-
+        // Prevent duplicate in target
+        if (targetCell.getAssignedStaff() != null) {
+            for (Staff s : targetCell.getAssignedStaff()) {
+                if (s != null && s.getId() != null
+                        && s.getId().equals(staffMember.getId())) {
+                    JsfUtil.addErrorMessage(staffName(staffMember)
+                            + " is already in that shift.");
+                    return;
                 }
             }
-
-            shiftTables.add(netT);
-
-            Calendar c = Calendar.getInstance();
-            c.setTime(nowDate);
-            c.add(Calendar.DATE, 1);
-            nowDate = c.getTime();
-            b = true;
         }
 
-        //
-//        List<Staff> staffs = getHumanResourceBean().fetchStaffShift(fromDate, toDate, roster);
-//
-//        for (Staff staff : staffs) {
-//            //// // System.out.println("staff.getPerson().getName() = " + staff.getPerson().getName());
-//
-//            double timeRoster = 0.0;
-//            double timeWork = 0.0;
-//            //// // System.out.println("shiftTables = " + shiftTables);
-//            for (ShiftTable st : shiftTables) {
-//                //// // System.out.println("st.getStaffShift() = " + st.getStaffShift());
-//                List<StaffShift> ss = getHumanResourceBean().fetchStaffShift(st.getDate(), staff);
-//                //// // System.out.println("ss.size() = " + ss.size());
-//                for (StaffShift s : ss) {
-//                    if (s.getStaff() == staff) {
-//                        //// // System.out.println("s.getStaff() = " + s.getStaff().getPerson().getName());
-//                        //// // System.out.println("staff = " + staff.getPerson().getName());
-//                        //// // System.out.println("timeRoster = " + timeRoster);
-//                        //// // System.out.println("timeWork = " + timeWork);
-//                        timeRoster += s.getShift().getDurationHour();
-//                        timeWork += s.getTransWorkTime();
-//                        //// // System.out.println("timeRoster = " + timeRoster);
-//                        //// // System.out.println("timeWork = " + timeWork);
-//                    }
-//                }
-//            }
-//            //// // System.out.println("Total timeRoster = " + timeRoster);
-//            //// // System.out.println("Total timeWork = " + timeWork);
-//            StaffShift nss = new StaffShift();
-//            nss.setTransWorkTime(timeWork);
-//            nss.setTransShiftTime(timeRoster);
-//            summeryTable.getStaffShift().add(nss);
-//        }
-        shiftTables.add(summeryTable);
-        //
+        removeStaffById(currentCell, staffMember.getId());
 
-        Long range = CommonFunctions.getDayCount(getFromDate(), getToDate());
-        setDateRange(range + 1);
-
-
+        if (targetCell.getAssignedStaff() == null) {
+            targetCell.setAssignedStaff(new ArrayList<>());
+        }
+        targetCell.getAssignedStaff().add(staffMember);
     }
 
-    public double fetchWorkTime(Staff staff, Date date) {
+    /**
+     * Removes a staff from the given cell.
+     */
+    public void removeStaffFromCell(RosterCell cell, Staff staffMember) {
+        if (cell == null || staffMember == null) return;
+        removeStaffById(cell, staffMember.getId());
+    }
 
-        Object[] obj = fetchWorkedTimeByDateOnly(staff, date);
-
-
-        Double value = (Double) obj[0] != null ? (Double) obj[0] : 0;
-        Double valueExtra = (Double) obj[1] != null ? (Double) obj[1] : 0;
-        Double totalExtraDuty = (Double) obj[2] != null ? (Double) obj[2] : 0;
-        StaffShift ss = (StaffShift) obj[3] != null ? (StaffShift) obj[3] : new StaffShift();
-        Double leavedTimeValue = (Double) obj[4] != null ? (Double) obj[4] : 0;
-
-        if (ss.getShift() != null && ss.getShift().getLeaveHourHalf() != 0 && leavedTimeValue > 0) {
-            if ((ss.getShift().getDurationMin() * 60) < value) {
-                value = ss.getShift().getDurationMin() * 60;
+    private void removeStaffById(RosterCell cell, Long staffId) {
+        if (cell == null || staffId == null) return;
+        if (cell.getAssignedStaff() == null) return;
+        Iterator<Staff> it = cell.getAssignedStaff().iterator();
+        while (it.hasNext()) {
+            Staff s = it.next();
+            if (s != null && s.getId() != null && s.getId().equals(staffId)) {
+                it.remove();
+                return;
             }
         }
-
-        return value;
-
     }
 
-    private Object[] fetchWorkedTimeByDateOnly(Staff staff, Date date) {
-        String sql = "";
+    private Shift findShiftForCell(RosterCell cell) {
+        if (cell == null || rosterTable == null || rosterTable.getRows() == null) {
+            return null;
+        }
+        for (RosterRow row : rosterTable.getRows()) {
+            if (row.getCells() == null) continue;
+            for (RosterCell c : row.getCells()) {
+                if (c == cell) return row.getShift();
+            }
+        }
+        return null;
+    }
 
-        HashMap hm = new HashMap();
-        sql = "select "
-                + " sum(ss.workedWithinTimeFrameVarified+ss.leavedTime),"
-                + " sum(ss.extraTimeFromStartRecordVarified+ss.extraTimeFromEndRecordVarified),"
-                + " sum((ss.extraTimeFromStartRecordVarified+ss.extraTimeFromEndRecordVarified)*ss.multiplyingFactorOverTime*ss.overTimeValuePerSecond), "
-                + " ss, "
-                + " sum(ss.leavedTime)"
-                + " from StaffShift ss "
-                + " where ss.retired=false "
-                + " and type(ss)!=:tp"
-                + " and ss.staff=:stf"
-                //                + " and ss.leavedTime=0 "
-                + " and ss.dayType not in :dtp "
-                //                + " and ((ss.startRecord.recordTimeStamp is not null "
-                //                + " and ss.endRecord.recordTimeStamp is not null) "
-                //                + " or (ss.leaveType is not null) ) "
-                + " and ss.shiftDate=:date ";
-        hm.put("date", date);
-        hm.put("tp", StaffShiftExtra.class);
-        hm.put("stf", staff);
-        hm.put("dtp", Arrays.asList(new DayType[]{DayType.DayOff, DayType.MurchantileHoliday, DayType.SleepingDay, DayType.Poya}));
+    private RosterCell findCellForShiftAndDate(Long shiftId, Date date) {
+        if (shiftId == null || date == null || rosterTable == null
+                || rosterTable.getRows() == null) {
+            return null;
+        }
+        Date target = clearTime(date);
+        for (RosterRow row : rosterTable.getRows()) {
+            if (row.getShift() == null || row.getShift().getId() == null) continue;
+            if (!row.getShift().getId().equals(shiftId)) continue;
+            if (row.getCells() == null) continue;
+            for (RosterCell c : row.getCells()) {
+                if (c.getDate() != null && clearTime(c.getDate()).equals(target)) {
+                    return c;
+                }
+            }
+        }
+        return null;
+    }
 
-        if (staff != null) {
-            sql += " and ss.staff=:stf ";
-            hm.put("stf", staff);
+    // ── ADD STAFF DIALOG ─────────────────────────────────────────────────
+
+    private RosterCell addingToCell;
+    private Shift addingToShift;
+    private Long staffToAddId;
+    private List<Staff> availableStaffForAdd;
+
+    // Transient holder used as the bind target for the shift-change dropdown.
+    // We never actually read this value - changeStaffShift receives the target id
+    // directly from the dropdown's selected option via f:param-like resolution.
+    // Bound here only to prevent JSF from writing to Shift.id.
+    private Long selectedShiftId;
+
+    public Long getSelectedShiftId() {
+        return selectedShiftId;
+    }
+
+    public void setSelectedShiftId(Long selectedShiftId) {
+        this.selectedShiftId = selectedShiftId;
+    }
+
+    /**
+     * Opens the add-staff dialog for a specific shift on a specific date.
+     */
+    public void openAddStaffDialog(RosterCell cell, Shift shiftParam) {
+        this.addingToCell = cell;
+        this.addingToShift = shiftParam;
+        this.staffToAddId = null;
+        refreshAvailableStaffForAdd();
+    }
+
+    /**
+     * Rebuilds the dropdown list: roster staff NOT already in this cell.
+     * Staff assigned to other shifts on the same day ARE included (with a warning on add).
+     */
+    private void refreshAvailableStaffForAdd() {
+        availableStaffForAdd = new ArrayList<>();
+        if (addingToCell == null || roster == null) return;
+
+        List<Staff> rosterStaff = humanResourceBean.fetchStaff(roster);
+        if (rosterStaff == null) return;
+
+        List<Staff> inCell = addingToCell.getAssignedStaff() != null
+                ? addingToCell.getAssignedStaff() : new ArrayList<>();
+
+        for (Staff s : rosterStaff) {
+            if (s == null || s.getId() == null) continue;
+            boolean already = false;
+            for (Staff c : inCell) {
+                if (c != null && c.getId() != null && c.getId().equals(s.getId())) {
+                    already = true;
+                    break;
+                }
+            }
+            if (!already) availableStaffForAdd.add(s);
+        }
+    }
+
+    /**
+     * Confirms add from the dialog.
+     * Warns if staff is already assigned elsewhere on the same day,
+     * but still performs the add.
+     */
+    public void confirmAddStaff() {
+        if (addingToCell == null || staffToAddId == null) {
+            JsfUtil.addErrorMessage("Please select a staff member.");
+            return;
         }
 
-        sql += " order by ss.dayOfWeek,ss.staff.codeInterger ";
-        return staffShiftFacade.findAggregate(sql, hm, TemporalType.TIMESTAMP);
+        Staff resolved = null;
+        if (availableStaffForAdd != null) {
+            for (Staff s : availableStaffForAdd) {
+                if (s != null && s.getId() != null && s.getId().equals(staffToAddId)) {
+                    resolved = s;
+                    break;
+                }
+            }
+        }
+        if (resolved == null) {
+            JsfUtil.addErrorMessage("Selected staff not found.");
+            return;
+        }
+
+        String conflictShift = findSameDayAssignment(resolved.getId(), addingToCell.getDate());
+        if (conflictShift != null) {
+            JsfUtil.addErrorMessage("Warning: " + staffName(resolved)
+                    + " is also assigned to " + conflictShift + " on this day.");
+        }
+
+        if (addingToCell.getAssignedStaff() == null) {
+            addingToCell.setAssignedStaff(new ArrayList<>());
+        }
+        addingToCell.getAssignedStaff().add(resolved);
+
+        staffToAddId = null;
+        refreshAvailableStaffForAdd();
     }
+
+    private String findSameDayAssignment(Long staffId, Date date) {
+        if (staffId == null || date == null) return null;
+        if (rosterTable == null || rosterTable.getRows() == null) return null;
+
+        Date target = clearTime(date);
+
+        for (RosterRow row : rosterTable.getRows()) {
+            if (row.getCells() == null) continue;
+            for (RosterCell c : row.getCells()) {
+                if (c == addingToCell) continue;
+                if (c.getDate() == null) continue;
+                if (!clearTime(c.getDate()).equals(target)) continue;
+                if (c.getAssignedStaff() == null) continue;
+                for (Staff s : c.getAssignedStaff()) {
+                    if (s != null && s.getId() != null
+                            && s.getId().equals(staffId)) {
+                        return row.getShiftName();
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    private void clearAddDialogState() {
+        addingToCell = null;
+        addingToShift = null;
+        staffToAddId = null;
+        availableStaffForAdd = null;
+    }
+
+    private Date clearTime(Date date) {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date);
+        cal.set(Calendar.HOUR_OF_DAY, 0);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+        return cal.getTime();
+    }
+
+    /**
+     * Safely gets a staff's display name via Person.
+     * Staff.getName() returns null in this codebase, so always go through Person.
+     */
+    private String staffName(Staff s) {
+        if (s == null) return "";
+        if (s.getPerson() == null) return "";
+        String n = s.getPerson().getName();
+        return n != null ? n : "";
+    }
+
+    // ── SAVE ─────────────────────────────────────────────────────────────
+
+    @Inject
+    PhDateController phDateController;
 
     @EJB
-    StaffFacade staffFacade;
+    StaffShiftHistoryFacade staffShiftHistoryFacade;
 
-    public void fetchStaffShiftMoreThan() {
-        String sql = "Select distinct(ss.staff) from StaffShift ss "
-                + " where ss.retired=false "
-                + " order by ss.staff.codeInterger ";
+    public void save() {
+        if (rosterTable == null || rosterTable.getRows() == null || rosterTable.getRows().isEmpty()) {
+            JsfUtil.addErrorMessage("Nothing to save. Please generate a roster first.");
+            return;
+        }
+        if (roster == null || fromDate == null || toDate == null) {
+            JsfUtil.addErrorMessage("Roster and date range are required.");
+            return;
+        }
 
-        List<Staff> staffs = staffFacade.findByJpql(sql);
+        deleteExistingShiftsInRange();
+        saveRosterTable();
+        JsfUtil.addSuccessMessage("Roster saved successfully.");
+    }
 
-//        sql = "Select ss from StaffShift ss "
-//                + " where ss.retired=false "
-//                + " and ss.shiftDate is not null";
-//
-//        StaffShift staffShift = staffShiftFacade.findFirstByJpql(sql);
-        Calendar nc = Calendar.getInstance();
-        nc.setTime(new Date());
-        nc.set(2015, 00, 01, 00, 00, 00);
-        Date nowDate = nc.getTime();
+    /**
+     * Soft-deletes all StaffShift records for this roster within the
+     * date range so re-saving an edited roster doesn't create duplicates.
+     */
+    private void deleteExistingShiftsInRange() {
+        Date from = startOfDay(fromDate);
+        Date to = endOfDay(toDate);
 
-        nc.setTime(new Date());
-        nc.add(Calendar.DATE, 1);
-        Date tmpToDate = nc.getTime();
+        String jpql = "SELECT ss FROM StaffShift ss "
+                + " WHERE ss.retired = false "
+                + " AND ss.roster = :r "
+                + " AND ss.shiftDate BETWEEN :fd AND :td ";
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("r", roster);
+        params.put("fd", from);
+        params.put("td", to);
 
-        int i = 0;
-        while (tmpToDate.after(nowDate)) {
+        List<StaffShift> existing = staffShiftFacade.findByJpql(jpql, params);
+        if (existing == null) return;
 
-            for (Staff s : staffs) {
-                List<StaffShift> ss = humanResourceBean.fetchStaffShift(nowDate, s);
-                if (ss.size() > 2) {
-                    i++;
-                    for (StaffShift sss : ss) {
-                    }
-                }
-            }
-
-            Calendar c = Calendar.getInstance();
-            c.setTime(nowDate);
-            c.add(Calendar.DATE, 1);
-            nowDate = c.getTime();
+        for (StaffShift ss : existing) {
+            ss.setRetired(true);
+            ss.setRetiredAt(new Date());
+            ss.setRetirer(sessionController.getLoggedUser());
+            staffShiftFacade.edit(ss);
         }
     }
 
-    public void makeTableNull() {
-        shiftTables = null;
+    private Date startOfDay(Date d) {
+        Calendar c = Calendar.getInstance();
+        c.setTime(d);
+        c.set(Calendar.HOUR_OF_DAY, 0);
+        c.set(Calendar.MINUTE, 0);
+        c.set(Calendar.SECOND, 0);
+        c.set(Calendar.MILLISECOND, 0);
+        return c.getTime();
     }
 
-    //GETTER AND SETTERS
+    private Date endOfDay(Date d) {
+        Calendar c = Calendar.getInstance();
+        c.setTime(d);
+        c.set(Calendar.HOUR_OF_DAY, 23);
+        c.set(Calendar.MINUTE, 59);
+        c.set(Calendar.SECOND, 59);
+        c.set(Calendar.MILLISECOND, 999);
+        return c.getTime();
+    }
+
+    private void saveRosterTable() {
+        if (rosterTable == null || rosterTable.getRows() == null) {
+            return;
+        }
+        for (RosterRow row : rosterTable.getRows()) {
+            if (row.getCells() == null || row.getShift() == null) {
+                continue;
+            }
+            for (RosterCell cell : row.getCells()) {
+                if (cell.getAssignedStaff() == null || cell.getAssignedStaff().isEmpty()) {
+                    continue;
+                }
+                for (Staff st : cell.getAssignedStaff()) {
+                    StaffShift ss = new StaffShift();
+                    ss.setStaff(st);
+                    ss.setShift(row.getShift());
+                    ss.setShiftDate(cell.getDate());
+                    ss.setRoster(roster);
+                    ss.setCreatedAt(new Date());
+                    ss.setCreater(sessionController.getLoggedUser());
+
+                    fetchAndSetDayType(ss);
+                    ss.calShiftStartEndTime();
+                    ss.calLieu();
+
+                    staffShiftFacade.create(ss);
+
+                    ss.setPreviousStaffShift(humanResourceBean.calPrevStaffShift(ss));
+                    ss.setNextStaffShift(humanResourceBean.calFrwStaffShift(ss));
+                    staffShiftFacade.edit(ss);
+                }
+            }
+        }
+    }
+
+    public void fetchAndSetDayType(StaffShift ss) {
+        DayType dayType = null;
+        if (ss.getShift() != null) {
+            dayType = ss.getShift().getDayType();
+        }
+
+        ss.setDayType(null);
+
+        DayType dtp;
+        if (dayType == DayType.DayOff) {
+            dtp = dayType;
+        } else {
+            dtp = phDateController.getHolidayType(ss.getShiftDate());
+        }
+
+        ss.setDayType(dtp);
+        if (ss.getDayType() == null) {
+            if (ss.getShift() != null) {
+                ss.setDayType(ss.getShift().getDayType());
+            }
+        }
+    }
+
+    // ── HIDE / VISIBLE ───────────────────────────────────────────────────
+
+    public void visible() {
+        all = true;
+    }
+
+    public void hide() {
+        all = false;
+    }
+
+    // ── GETTERS AND SETTERS ──────────────────────────────────────────────
+
     public ShiftController getShiftController() {
         return shiftController;
     }
@@ -762,22 +587,6 @@ public class ShiftTableController implements Serializable {
         this.roster = roster;
     }
 
-    public Long getDateRange() {
-        return dateRange;
-    }
-
-    public void setDateRange(Long dateRange) {
-        this.dateRange = dateRange;
-    }
-
-    public List<ShiftTable> getShiftTables() {
-        return shiftTables;
-    }
-
-    public void setShiftTables(List<ShiftTable> shiftTables) {
-        this.shiftTables = shiftTables;
-    }
-
     public Date getFromDate() {
         return fromDate;
     }
@@ -800,14 +609,6 @@ public class ShiftTableController implements Serializable {
 
     public void setStaffShiftFacade(StaffShiftFacade staffShiftFacade) {
         this.staffShiftFacade = staffShiftFacade;
-    }
-
-    public void visible() {
-        all = true;
-    }
-
-    public void hide() {
-        all = false;
     }
 
     public boolean isAll() {
@@ -857,4 +658,43 @@ public class ShiftTableController implements Serializable {
     public void setRosterTable(RosterTable rosterTable) {
         this.rosterTable = rosterTable;
     }
+
+    public RosterCell getAddingToCell() {
+        return addingToCell;
+    }
+
+    public void setAddingToCell(RosterCell addingToCell) {
+        this.addingToCell = addingToCell;
+    }
+
+    public Shift getAddingToShift() {
+        return addingToShift;
+    }
+
+    public void setAddingToShift(Shift addingToShift) {
+        this.addingToShift = addingToShift;
+    }
+
+    public Long getStaffToAddId() {
+        return staffToAddId;
+    }
+
+    public void setStaffToAddId(Long staffToAddId) {
+        this.staffToAddId = staffToAddId;
+    }
+
+    public List<Staff> getAvailableStaffForAdd() {
+        if (availableStaffForAdd == null) {
+            availableStaffForAdd = new ArrayList<>();
+        }
+        return availableStaffForAdd;
+    }
+
+    public void setAvailableStaffForAdd(List<Staff> availableStaffForAdd) {
+        this.availableStaffForAdd = availableStaffForAdd;
+    }
+
+    public Integer getActiveDateIndex() { return activeDateIndex; }
+
+    public void setActiveDateIndex(Integer activeDateIndex) { this.activeDateIndex = activeDateIndex; }
 }
