@@ -113,6 +113,21 @@ public class WebUserRoleController implements Serializable {
     }
 
     public void saveCurrent(){
+        if(current == null){
+            JsfUtil.addErrorMessage("Error in User Role.");
+            return;
+        }
+        
+        if(current.getName() == null || current.getName().trim().isEmpty()){
+            JsfUtil.addErrorMessage("Please enter a Name.");
+            return;
+        }
+        
+        if(current.getDescription()== null || current.getDescription().trim().isEmpty()){
+            JsfUtil.addErrorMessage("Please enter a Description.");
+            return;
+        }
+        
         if (isRoleNameDuplicate(current)) {
             JsfUtil.addErrorMessage("A User Role with this name already exists.");
             return;
