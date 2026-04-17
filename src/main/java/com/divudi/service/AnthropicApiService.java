@@ -788,14 +788,14 @@ public class AnthropicApiService implements Serializable {
                     url = base;
                     httpMethod = "POST";
                     javax.json.JsonObjectBuilder bodyBuilder = Json.createObjectBuilder();
-                    if (ccId != null && !ccId.isEmpty()) bodyBuilder.add("collectingCentreId", Long.parseLong(ccId.trim()));
-                    if (itemId != null && !itemId.isEmpty()) bodyBuilder.add("itemId", Long.parseLong(itemId.trim()));
+                    if (ccId != null && !ccId.trim().isEmpty()) bodyBuilder.add("collectingCentreId", Long.parseLong(ccId.trim()));
+                    if (itemId != null && !itemId.trim().isEmpty()) bodyBuilder.add("itemId", Long.parseLong(itemId.trim()));
                     if (name != null) bodyBuilder.add("name", name);
                     if (feeType != null) bodyBuilder.add("feeType", feeType);
                     if (fee != null && !fee.trim().isEmpty()) bodyBuilder.add("fee", Double.parseDouble(fee.trim()));
-                    if (ffee != null && !ffee.isEmpty()) bodyBuilder.add("ffee", Double.parseDouble(ffee.trim()));
-                    if (departmentId != null && !departmentId.isEmpty()) bodyBuilder.add("departmentId", Long.parseLong(departmentId.trim()));
-                    if (discountAllowed != null) bodyBuilder.add("discountAllowed", Boolean.parseBoolean(discountAllowed.trim()));
+                    if (ffee != null && !ffee.trim().isEmpty()) bodyBuilder.add("ffee", Double.parseDouble(ffee.trim()));
+                    if (departmentId != null && !departmentId.trim().isEmpty()) bodyBuilder.add("departmentId", Long.parseLong(departmentId.trim()));
+                    if (discountAllowed != null && !discountAllowed.trim().isEmpty()) bodyBuilder.add("discountAllowed", Boolean.parseBoolean(discountAllowed.trim()));
                     requestBody = bodyBuilder.build().toString();
                     break;
                 }
@@ -806,10 +806,10 @@ public class AnthropicApiService implements Serializable {
                     javax.json.JsonObjectBuilder bodyBuilder = Json.createObjectBuilder();
                     if (name != null && !name.isEmpty()) bodyBuilder.add("name", name);
                     if (feeType != null && !feeType.isEmpty()) bodyBuilder.add("feeType", feeType);
-                    if (fee != null && !fee.isEmpty()) bodyBuilder.add("fee", Double.parseDouble(fee.trim()));
-                    if (ffee != null && !ffee.isEmpty()) bodyBuilder.add("ffee", Double.parseDouble(ffee.trim()));
-                    if (departmentId != null && !departmentId.isEmpty()) bodyBuilder.add("departmentId", Long.parseLong(departmentId.trim()));
-                    if (discountAllowed != null && !discountAllowed.isEmpty()) bodyBuilder.add("discountAllowed", Boolean.parseBoolean(discountAllowed.trim()));
+                    if (fee != null && !fee.trim().isEmpty()) bodyBuilder.add("fee", Double.parseDouble(fee.trim()));
+                    if (ffee != null && !ffee.trim().isEmpty()) bodyBuilder.add("ffee", Double.parseDouble(ffee.trim()));
+                    if (departmentId != null && !departmentId.trim().isEmpty()) bodyBuilder.add("departmentId", Long.parseLong(departmentId.trim()));
+                    if (discountAllowed != null && !discountAllowed.trim().isEmpty()) bodyBuilder.add("discountAllowed", Boolean.parseBoolean(discountAllowed.trim()));
                     requestBody = bodyBuilder.build().toString();
                     break;
                 }
