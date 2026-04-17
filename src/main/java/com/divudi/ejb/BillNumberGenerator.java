@@ -749,7 +749,7 @@ public class BillNumberGenerator {
         }
         jpql += " order by b.id desc";
         hm.put("yr", currentYear);
-        BillNumber billNumber = billNumberFacade.findFirstByJpql(jpql, hm);
+        BillNumber billNumber = billNumberFacade.findFreshByJpql(jpql, hm);
 
         if (billNumber == null) {
             billNumber = new BillNumber();
@@ -801,7 +801,7 @@ public class BillNumberGenerator {
         }
         jpql += " order by b.id desc";
         hm.put("yr", currentYear);
-        BillNumber billNumber = billNumberFacade.findFirstByJpql(jpql, hm);
+        BillNumber billNumber = billNumberFacade.findFreshByJpql(jpql, hm);
         if (billNumber == null) {
             billNumber = new BillNumber();
             billNumber.setBillTypeAtomic(null);
