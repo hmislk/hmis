@@ -49,6 +49,9 @@ public class DatabaseMigrationController implements Serializable {
     @Inject
     private SessionController sessionController;
 
+    @Inject
+    private WebUserController webUserController;
+
 
     // UI properties
     private List<MigrationInfo> availableMigrations;
@@ -73,10 +76,31 @@ public class DatabaseMigrationController implements Serializable {
         refreshMigrationLists();
     }
 
-    public String navigateToDatabaseMigration(){
+    /**
+     * Navigate to the database migration page.
+     * Authorization is enforced here (the correct place for {@code @SessionScoped}
+     * beans — see developer_docs/jsf/navigation-patterns.md).
+     * Unauthenticated users or users without the SuperAdmin privilege are
+     * redirected to the login page instead.
+     */
+    public String navigateToDatabaseMigration() {
+        if (!isAuthorized()) {
+            return "/index1?faces-redirect=true";
+        }
         return "/admin/database_migration?faces-redirect=true";
     }
-    
+
+    /**
+     * Returns true only when the current user is authenticated and holds the
+     * SuperAdmin privilege.  Used as a rendered guard on the migration form so
+     * that page content is never delivered to unauthorised sessions even when
+     * the page is reached by a direct URL rather than the navigation method.
+     */
+    public boolean isAuthorized() {
+        return sessionController.getLoggedUser() != null
+                && webUserController.hasPrivilege("SuperAdmin");
+    }
+
     /**
      * Refresh migration lists from database and filesystem
      */
