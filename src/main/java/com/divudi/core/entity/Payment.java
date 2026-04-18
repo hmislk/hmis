@@ -155,6 +155,8 @@ public class Payment implements Serializable, RetirableEntity {
     @ManyToOne
     private CashBook cashbook;
 
+    private boolean deposited;
+
     private boolean cancelled;
     @ManyToOne
     private WebUser cancelledBy;
@@ -769,6 +771,14 @@ public class Payment implements Serializable, RetirableEntity {
 
     public void setFloatRecipient(WebUser floatRecipient) {
         this.floatRecipient = floatRecipient;
+    }
+
+    public boolean isDeposited() {
+        return deposited;
+    }
+
+    public void setDeposited(boolean deposited) {
+        this.deposited = deposited;
     }
 
     public boolean isCancelled() {
