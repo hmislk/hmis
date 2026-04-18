@@ -1542,6 +1542,35 @@ public class BhtSummeryController implements Serializable {
         return false;
     }
 
+    /**
+     * Recalculates the patient co-payment row so it always equals:
+     *   net due  –  sum of all CC company allocations.
+     * Called via p:ajax whenever a CC company amount is changed by the user.
+     */
+    public void recalculatePatientPortion() {
+        if (creditCompanyAllocations == null || creditCompanyAllocations.isEmpty()) {
+            return;
+        }
+        double expected = Math.max(0.0, (grantTotal - discount) - paidByPatient - paidByCompany);
+        double ccSum = 0.0;
+        for (CreditCompanyAllocation alloc : creditCompanyAllocations) {
+            if (!alloc.isPatientPortion()) {
+                ccSum += alloc.getAllocatedAmount();
+            }
+        }
+        double patientShare = expected - ccSum;
+        for (CreditCompanyAllocation alloc : creditCompanyAllocations) {
+            if (alloc.isPatientPortion()) {
+                alloc.setAllocatedAmount(patientShare < 0 ? 0.0 : patientShare);
+                return;
+            }
+        }
+        // No patient row exists yet; add one if there is a remainder
+        if (patientShare > 0.01) {
+            creditCompanyAllocations.add(new CreditCompanyAllocation(patientShare, true));
+        }
+    }
+
     private void saveCCBillForAllocation(PatientEncounter pe, CreditCompanyAllocation alloc) {
         // Patient co-payment rows are NOT saved as CC commitment bills.
         // The patient settles their share via the normal inward payment flow.

@@ -282,20 +282,30 @@
                                 <h:outputLabel value="#{alloc.companyName}"
                                                style="#{alloc.patientPortion ? 'font-weight:bold;color:#1565c0;' : ''}"/>
                             </p:column>
-                            <p:column headerText="Allocated Amount" style="width: 200px;">
+                            <p:column headerText="Allocated Amount" style="width:220px;text-align:right;">
+                                <!-- CC company row: editable, auto-recalculates patient row on change -->
                                 <h:panelGroup rendered="#{!alloc.patientPortion}">
-                                    <p:inputText value="#{alloc.allocatedAmount}" style="width: 150px;"
+                                    <p:inputText value="#{alloc.allocatedAmount}"
+                                                 style="width:160px;text-align:right;"
+                                                 onfocus="this.select()"
                                                  title="Allocated amount for #{alloc.companyName}">
                                         <f:convertNumber pattern="#,##0.00"/>
+                                        <p:ajax event="change"
+                                                process="creditAllocationPanel"
+                                                update="creditAllocationPanel"
+                                                listener="#{bhtSummeryController.recalculatePatientPortion()}"/>
                                     </p:inputText>
                                 </h:panelGroup>
+                                <!-- Patient row: editable, shown in blue -->
                                 <h:panelGroup rendered="#{alloc.patientPortion}">
-                                    <h:outputLabel value="#{alloc.allocatedAmount}"
-                                                   style="font-weight:bold;color:#1565c0;">
+                                    <p:inputText value="#{alloc.allocatedAmount}"
+                                                 style="width:160px;text-align:right;font-weight:bold;color:#1565c0;"
+                                                 onfocus="this.select()"
+                                                 title="Patient co-payment portion">
                                         <f:convertNumber pattern="#,##0.00"/>
-                                    </h:outputLabel>
-                                    <h:outputLabel value=" (patient pays via co-payment collection)"
-                                                   style="color:#888;font-size:0.85em;margin-left:6px;"/>
+                                    </p:inputText>
+                                    <h:outputLabel value=" (patient co-payment)"
+                                                   style="color:#888;font-size:0.82em;margin-left:4px;"/>
                                 </h:panelGroup>
                             </p:column>
                         </p:dataTable>
