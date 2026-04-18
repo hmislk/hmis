@@ -1537,6 +1537,13 @@ public class BhtSummeryController implements Serializable {
             if (alloc.isPatientPortion()) {
                 patientAllocation = alloc;
             } else {
+                if (alloc.getEncounterCreditCompany() != null
+                        && alloc.getAllocatedAmount() - alloc.getEncounterCreditCompany().getCreditLimit() > 0.01) {
+                    JsfUtil.addErrorMessage("Allocation for " + alloc.getCompanyName()
+                            + " exceeds its credit limit ("
+                            + String.format("%.2f", alloc.getEncounterCreditCompany().getCreditLimit()) + ")");
+                    return true;
+                }
                 companyAllocated += alloc.getAllocatedAmount();
             }
         }

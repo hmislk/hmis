@@ -481,7 +481,7 @@
                                                         />
                                                 </h:panelGroup>
                                                 <!-- For non-Credit admissions: patient responsibility note -->
-                                                <h:panelGroup rendered="#{admissionController.current.paymentMethod ne 'Credit'}">
+                                                <h:panelGroup rendered="#{not empty admissionController.current.paymentMethod and admissionController.current.paymentMethod ne 'Credit'}">
                                                     <div class="alert alert-info p-2 mt-2" style="font-size:0.9em;">
                                                         <h:outputText styleClass="pi pi-info-circle me-1"/>
                                                         <h:outputText value="Patient is responsible for the full bill amount. No credit company assigned."/>
