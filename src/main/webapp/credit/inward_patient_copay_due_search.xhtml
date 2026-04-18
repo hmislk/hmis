@@ -19,13 +19,13 @@
                             <p:calendar class="mx-4 w-100" inputStyleClass="w-100" id="fromDate"
                                         value="#{creditCompanyDueController.fromDate}" navigator="true"
                                         pattern="#{sessionController.applicationPreference.longDateTimeFormat}">
-                                <f:ajax event="dateSelect" execute="toDate @this" render="lst"/>
+                                <f:ajax event="dateSelect" execute="toDate @this"/>
                             </p:calendar>
                             <h:outputLabel value="To Date &emsp;"/>
                             <p:calendar class="mx-4 w-100" inputStyleClass="w-100" id="toDate"
                                         value="#{creditCompanyDueController.toDate}" navigator="true"
                                         pattern="#{sessionController.applicationPreference.longDateTimeFormat}">
-                                <f:ajax event="dateSelect" execute="@this fromDate" render="lst"/>
+                                <f:ajax event="dateSelect" execute="@this fromDate"/>
                             </p:calendar>
                             <h:outputLabel value="Date Basis"/>
                             <p:selectOneMenu value="#{creditCompanyDueController.dateBasis}">
@@ -129,7 +129,7 @@
                                 <h:outputLabel value="#{creditCompanyDueController.getPatientCcStatus(pe)}"/>
                             </p:column>
                             <p:column style="text-align:right">
-                                <h:outputLabel value="#{pe.finalBill.netTotal - pe.creditUsedAmount}">
+                                <h:outputLabel value="#{(pe.finalBill.netTotal - pe.creditUsedAmount) gt 0 ? pe.finalBill.netTotal - pe.creditUsedAmount : 0}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </p:column>
