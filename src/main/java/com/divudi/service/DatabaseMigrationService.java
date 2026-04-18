@@ -14,6 +14,7 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.PostConstruct;
+import javax.annotation.security.PermitAll;
 import javax.ejb.EJB;
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
@@ -34,6 +35,7 @@ import javax.ejb.TransactionAttributeType;
  */
 @Singleton
 @Startup
+@PermitAll
 public class DatabaseMigrationService {
 
     private static final Logger LOGGER = Logger.getLogger(DatabaseMigrationService.class.getName());
