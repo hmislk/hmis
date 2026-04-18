@@ -191,6 +191,16 @@ public class CapabilityStatementResource {
                         "OPD and Inward service management including fees and categories",
                         "API Key",
                         "GET", "POST", "PUT", "PATCH", "DELETE"))
+                .add(resource("Collecting Centre Fees", "/api/pricing/collecting_centre_fees",
+                        "Manage item fees for collecting centres. "
+                        + "GET ?institutionId=X lists all active fees for that centre. "
+                        + "POST creates a new fee (body: collectingCentreId, itemId, name, feeType, fee, ffee, departmentId). "
+                        + "PUT /{feeId} updates a fee. "
+                        + "DELETE /{feeId} soft-retires a single fee. "
+                        + "DELETE ?institutionId=X soft-retires ALL active fees for that centre. "
+                        + "POST /recalculate?institutionId=X recalculates item totals for all items with CC fees.",
+                        "API Key",
+                        "GET", "POST", "PUT", "DELETE"))
                 .add(resource("FHIR Patient", "/api/fhir/Patient",
                         "FHIR R5 Patient search, read, create, update",
                         "API Key (use FHIR header, not Finance)",
