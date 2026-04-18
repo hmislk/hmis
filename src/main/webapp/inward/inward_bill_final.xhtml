@@ -693,6 +693,22 @@
                                         <p:ajax process="@this" update="@all"/>
                                     </p:selectBooleanCheckbox>
 
+                                    <!-- Collect payment button — routes to the right page based on payment method -->
+                                    <p:commandButton
+                                        value="Collect Patient Payment"
+                                        ajax="false"
+                                        icon="fas fa-money-bill-wave"
+                                        class="ui-button-success mx-1"
+                                        rendered="#{bhtSummeryController.patientEncounter.paymentMethod ne 'Credit'}"
+                                        action="#{bhtSummeryController.navigateToCollectPayment()}"/>
+                                    <p:commandButton
+                                        value="Collect Patient Co-payment"
+                                        ajax="false"
+                                        icon="fas fa-user-check"
+                                        class="ui-button-warning mx-1"
+                                        rendered="#{bhtSummeryController.patientEncounter.paymentMethod eq 'Credit'}"
+                                        action="#{bhtSummeryController.navigateToCollectPayment()}"/>
+
                                     <p:commandButton value="Final Bill" ajax="false"
                                                      class="ui-button-info mx-1" icon="fas fa-print">
                                         <p:printer target="finalBillOnly"/>

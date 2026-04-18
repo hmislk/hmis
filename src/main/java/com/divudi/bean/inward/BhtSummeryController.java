@@ -136,6 +136,8 @@ public class BhtSummeryController implements Serializable {
     ConfigOptionApplicationController configOptionApplicationController;
     @Inject
     AdmissionController admissionController;
+    @Inject
+    InwardPaymentController inwardPaymentController;
     ////////////////////////
     private List<DepartmentBillItems> departmentBillItems;
     private List<BillFee> profesionallFee;
@@ -1351,6 +1353,26 @@ public class BhtSummeryController implements Serializable {
         showOrginalBill = false;
         printPreview = true;
         originalBill = null;
+    }
+
+    /**
+     * Navigate to the appropriate payment collection page after the final bill
+     * is settled. For Cash/Card/Cheque patients this goes to the standard inward
+     * payment page; for Credit patients who have a patient co-payment portion it
+     * goes to the dedicated co-payment page.
+     */
+    public String navigateToCollectPayment() {
+        if (patientEncounter == null) {
+            JsfUtil.addErrorMessage("No patient encounter selected");
+            return "";
+        }
+        inwardPaymentController.makeNull();
+        inwardPaymentController.getCurrent().setPatientEncounter(patientEncounter);
+        inwardPaymentController.bhtListener();
+        if (patientEncounter.getPaymentMethod() == PaymentMethod.Credit) {
+            return "/credit/inward_patient_copay_payment?faces-redirect=true";
+        }
+        return "/inward/inward_bill_payment?faces-redirect=true";
     }
 
     public String settleProvisionalBill(Bill b) {
