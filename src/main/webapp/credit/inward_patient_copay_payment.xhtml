@@ -225,50 +225,43 @@
                 <h:panelGroup rendered="#{inwardPaymentController.printPreview}">
                     <p:panel>
                         <f:facet name="header">
-                            <h:outputLabel value="Inpatient Co-payment Bill" class="mt-2"/>
-                            <div class="d-flex gap-2" style="float:right;">
-                                <p:commandButton
-                                    value="New Payment"
-                                    icon="fa-solid fa-plus"
-                                    class="ui-button-success"
-                                    ajax="false"
-                                    action="#{inwardPaymentController.makeNull}"/>
-                                <p:commandButton
-                                    value="Print"
-                                    ajax="false"
-                                    icon="fa fa-print"
-                                    class="ui-button-info"
-                                    action="#">
-                                    <p:printer target="gpCopayBillPreview"/>
-                                </p:commandButton>
+                            <div class="d-flex align-items-center justify-content-between">
+                                <h:outputLabel value="Inpatient Co-payment Bill" class="mt-2"/>
+                                <div class="d-flex gap-2">
+                                    <p:commandButton
+                                        value="Print"
+                                        ajax="false"
+                                        icon="fa fa-print"
+                                        class="ui-button-info">
+                                        <p:printer target="gpCopayBillPreview"/>
+                                    </p:commandButton>
+                                    <p:commandButton
+                                        rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
+                                        value="Settings"
+                                        icon="fas fa-cog"
+                                        class="ui-button-secondary"
+                                        type="button"
+                                        onclick="PF('inwardCopayConfigDialog').show();"/>
+                                    <p:commandButton
+                                        value="New Payment"
+                                        icon="fa-solid fa-plus"
+                                        class="ui-button-success"
+                                        ajax="false"
+                                        action="#{inwardPaymentController.makeNull}"/>
+                                </div>
                             </div>
                         </f:facet>
-                        <div class="row">
-                            <div class="col-6"></div>
-                            <div class="col-6">
-                                <div class="d-flex gap-3" style="float:right;">
-                                    <p:outputLabel value="Paper Type" class="m-2"/>
-                                    <p:selectOneMenu value="#{sessionController.departmentPreference.inwardDepositPaymentBillPaper}"
-                                                     class="m-1" style="width:18em;">
-                                        <f:selectItem itemLabel="Please Select Paper Type"/>
-                                        <f:selectItems value="#{enumController.paperTypes}"/>
-                                    </p:selectOneMenu>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <h:panelGroup id="gpCopayBillPreview">
-                                <div class="d-flex justify-content-center">
-                                    <h:panelGroup rendered="#{sessionController.departmentPreference.inwardDepositPaymentBillPaper eq 'FiveFivePaper'}">
-                                        <bill:FiveFivePaymentBill bill="#{inwardPaymentController.current}"/>
-                                    </h:panelGroup>
-                                    <h:panelGroup rendered="#{sessionController.departmentPreference.inwardDepositPaymentBillPaper eq 'A4Paper'}">
-                                        <bill:A4PaperPaymentBill bill="#{inwardPaymentController.current}"/>
-                                    </h:panelGroup>
-                                    <h:panelGroup rendered="#{sessionController.departmentPreference.inwardDepositPaymentBillPaper eq 'PosPaper'}">
-                                        <bill:posPaperPaymentBill bill="#{inwardPaymentController.current}"/>
-                                    </h:panelGroup>
-                                </div>
+                        <div class="d-flex justify-content-center my-2">
+                            <h:panelGroup id="gpCopayBillPreview" layout="block">
+                                <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Inward Copayment Bill POS Paper', true)}">
+                                    <bill:posPaperPaymentBill bill="#{inwardPaymentController.current}"/>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Inward Copayment Bill Five Five Paper', false)}">
+                                    <bill:FiveFivePaymentBill bill="#{inwardPaymentController.current}"/>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Inward Copayment Bill A4 Paper', false)}">
+                                    <bill:A4PaperPaymentBill bill="#{inwardPaymentController.current}"/>
+                                </h:panelGroup>
                             </h:panelGroup>
                         </div>
                     </p:panel>
@@ -276,6 +269,58 @@
 
             </h:form>
         </h:panelGroup>
+
+        <!-- Inward Copayment Printer Configuration Dialog -->
+        <p:dialog id="inwardCopayConfigDialog"
+                  header="Inward Co-payment Bill Printer Configuration"
+                  widgetVar="inwardCopayConfigDialog"
+                  modal="true"
+                  width="560"
+                  resizable="false"
+                  closeOnEscape="true">
+            <p:ajax event="open" listener="#{pharmacyConfigController.loadCurrentConfig}" update="inwardCopayConfigForm"/>
+            <h:form id="inwardCopayConfigForm">
+                <div class="card config-section">
+                    <div class="card-header">
+                        <i class="fas fa-file-alt me-2"/>
+                        <h:outputText value="Paper Format Settings"/>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <h:selectBooleanCheckbox id="inwardCopayPOS"
+                                                     value="#{pharmacyConfigController.inwardCopaymentPosPaper}"/>
+                            <h:outputLabel for="inwardCopayPOS" value="POS Paper" class="ms-2"/>
+                            <small class="form-text text-muted d-block">Standard thermal/POS roll paper (default)</small>
+                        </div>
+                        <div class="mb-3">
+                            <h:selectBooleanCheckbox id="inwardCopayFiveFive"
+                                                     value="#{pharmacyConfigController.inwardCopaymentFiveFivePaper}"/>
+                            <h:outputLabel for="inwardCopayFiveFive" value="5×5 Paper" class="ms-2"/>
+                            <small class="form-text text-muted d-block">5.5-inch half-page format</small>
+                        </div>
+                        <div class="mb-3">
+                            <h:selectBooleanCheckbox id="inwardCopayA4"
+                                                     value="#{pharmacyConfigController.inwardCopaymentA4Paper}"/>
+                            <h:outputLabel for="inwardCopayA4" value="A4 Paper" class="ms-2"/>
+                            <small class="form-text text-muted d-block">Full A4 size paper</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="d-flex gap-2 mt-3">
+                    <p:commandButton value="Apply &amp; Close"
+                                     icon="fas fa-save"
+                                     class="ui-button-success"
+                                     ajax="false"
+                                     action="#{pharmacyConfigController.saveInwardCopaymentConfig}"/>
+                    <p:commandButton value="Cancel"
+                                     icon="fas fa-times"
+                                     class="ui-button-secondary"
+                                     type="button"
+                                     onclick="PF('inwardCopayConfigDialog').hide(); return false;"/>
+                </div>
+            </h:form>
+        </p:dialog>
+
     </ui:define>
 
 </ui:composition>
