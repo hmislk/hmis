@@ -13,6 +13,7 @@
         xmlns:bill="http://xmlns.jcp.org/jsf/composite/inward/bill/payment">
 
     <ui:define name="admin">
+        <h:panelGroup rendered="#{webUserController.hasPrivilege('InwardBilling')}">
         <h:panelGroup>
             <h:form id="copayForm">
                 <p:growl id="growl" showDetail="true"/>
@@ -77,7 +78,7 @@
                                         class="ui-button-success"
                                         style="width:150px;"
                                         ajax="false"
-                                        disabled="#{inwardPaymentController.due le 0}"
+                                        disabled="#{!inwardPaymentController.current.patientEncounter.paymentFinalized or inwardPaymentController.due le 0}"
                                         action="#{inwardPaymentController.pay()}"/>
                                     <p:commandButton
                                         value="New"
@@ -321,6 +322,7 @@
             </h:form>
         </p:dialog>
 
+        </h:panelGroup><!-- /InwardBilling privilege guard -->
     </ui:define>
 
 </ui:composition>

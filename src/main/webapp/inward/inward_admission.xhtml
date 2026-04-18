@@ -490,7 +490,9 @@
                                             </div>
                                             <!-- Companies table — always shown -->
                                             <div class="col-6">
-                                                <p:dataTable id="tblCreditCompanies" value="#{admissionController.encounterCreditCompanies}" var="ecc"
+                                                <p:dataTable id="tblCreditCompanies"
+                                                             rendered="#{admissionController.current.paymentMethod eq 'Credit'}"
+                                                             value="#{admissionController.encounterCreditCompanies}" var="ecc"
                                                              rowIndexVar="index"
                                                              emptyMessage="No credit companies added. Patient is responsible for the full amount.">
                                                     <f:facet name="header">

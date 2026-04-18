@@ -197,16 +197,11 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
         if (b == null) {
             return 0;
         }
-
-        return b.getNetTotal() - (b.getPaidAmount() + getCurrent().getPatientEncounter().getCreditPaidAmount());
-
-//        double billValue = Math.abs(b.getNetTotal());
-//        double paidByPatient = Math.abs(b.getPaidAmount());
-//        double creditUsedAmount = Math.abs(getCurrent().getPatientEncounter().getCreditUsedAmount());
-//        double creditPaidAmount = Math.abs(getCurrent().getPatientEncounter().getCreditPaidAmount());
-//        double netCredit = creditUsedAmount - creditPaidAmount;
-//
-//        return billValue - (paidByPatient + netCredit);
+        // Patient portion = bill total minus the CC committed amount (not paid yet).
+        // This correctly shows patient due before the company has actually remitted.
+        PatientEncounter pe = getCurrent().getPatientEncounter();
+        double patientPortion = Math.max(0.0, b.getNetTotal() - pe.getCreditUsedAmount());
+        return Math.max(0.0, patientPortion - b.getPaidAmount());
     }
 
     private boolean errorCheck() {

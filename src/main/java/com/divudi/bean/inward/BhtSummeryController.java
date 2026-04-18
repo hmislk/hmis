@@ -1526,18 +1526,32 @@ public class BhtSummeryController implements Serializable {
             JsfUtil.addErrorMessage("Please allocate the full credit due amount before settlement");
             return true;
         }
-        double totalAllocated = 0.0;
+        // Sum CC company rows and locate the patient row
+        double companyAllocated = 0.0;
+        CreditCompanyAllocation patientAllocation = null;
         for (CreditCompanyAllocation alloc : creditCompanyAllocations) {
             if (alloc.getAllocatedAmount() < 0) {
                 JsfUtil.addErrorMessage("Allocated amounts cannot be negative");
                 return true;
             }
-            totalAllocated += alloc.getAllocatedAmount();
+            if (alloc.isPatientPortion()) {
+                patientAllocation = alloc;
+            } else {
+                companyAllocated += alloc.getAllocatedAmount();
+            }
         }
-        if (Math.abs(totalAllocated - expected) > 0.01) {
-            JsfUtil.addErrorMessage("Credit allocation total (" + String.format("%.2f", totalAllocated)
-                    + ") does not match the net due amount (" + String.format("%.2f", expected) + ")");
+        // CC rows must not exceed the expected total
+        if (companyAllocated - expected > 0.01) {
+            JsfUtil.addErrorMessage("Credit company allocation (" + String.format("%.2f", companyAllocated)
+                    + ") exceeds the net due amount (" + String.format("%.2f", expected) + ")");
             return true;
+        }
+        // Auto-sync the patient row so total always equals expected
+        double patientShare = Math.max(0.0, expected - companyAllocated);
+        if (patientAllocation != null) {
+            patientAllocation.setAllocatedAmount(patientShare);
+        } else if (patientShare > 0.01) {
+            creditCompanyAllocations.add(new CreditCompanyAllocation(patientShare, true));
         }
         return false;
     }
