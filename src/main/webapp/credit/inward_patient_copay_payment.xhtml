@@ -77,6 +77,7 @@
                                         class="ui-button-success"
                                         style="width:150px;"
                                         ajax="false"
+                                        disabled="#{inwardPaymentController.due le 0}"
                                         action="#{inwardPaymentController.pay()}"/>
                                     <p:commandButton
                                         value="New"
@@ -138,7 +139,14 @@
                                         </div>
                                     </h:panelGroup>
 
-                                    <h:panelGroup rendered="#{inwardPaymentController.current.patientEncounter.paymentFinalized}">
+                                    <h:panelGroup rendered="#{inwardPaymentController.current.patientEncounter.paymentFinalized and inwardPaymentController.due le 0}">
+                                        <div class="alert alert-success">
+                                            <h:outputText styleClass="pi pi-check-circle me-2"/>
+                                            <h:outputText value="Patient outstanding balance is fully settled. No further payment is required."/>
+                                        </div>
+                                    </h:panelGroup>
+
+                                    <h:panelGroup rendered="#{inwardPaymentController.current.patientEncounter.paymentFinalized and inwardPaymentController.due gt 0}">
                                         <div class="row my-2 align-items-center">
                                             <div class="col-md-4">
                                                 <p:outputLabel value="Payment Mode" style="font-weight:bold;"/>
