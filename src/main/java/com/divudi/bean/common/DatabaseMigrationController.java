@@ -49,6 +49,9 @@ public class DatabaseMigrationController implements Serializable {
     @Inject
     private SessionController sessionController;
 
+    @Inject
+    private WebUserController webUserController;
+
 
     // UI properties
     private List<MigrationInfo> availableMigrations;
@@ -73,10 +76,31 @@ public class DatabaseMigrationController implements Serializable {
         refreshMigrationLists();
     }
 
-    public String navigateToDatabaseMigration(){
+    /**
+     * Navigate to the database migration page.
+     * Authorization is enforced here (the correct place for {@code @SessionScoped}
+     * beans — see developer_docs/jsf/navigation-patterns.md).
+     * Unauthenticated users or users without the SuperAdmin privilege are
+     * redirected to the login page instead.
+     */
+    public String navigateToDatabaseMigration() {
+        if (!isAuthorized()) {
+            return "/index1?faces-redirect=true";
+        }
         return "/admin/database_migration?faces-redirect=true";
     }
-    
+
+    /**
+     * Returns true only when the current user is authenticated and holds the
+     * SuperAdmin privilege.  Used as a rendered guard on the migration form so
+     * that page content is never delivered to unauthorised sessions even when
+     * the page is reached by a direct URL rather than the navigation method.
+     */
+    public boolean isAuthorized() {
+        return sessionController.getLoggedUser() != null
+                && webUserController.hasPrivilege("SuperAdmin");
+    }
+
     /**
      * Refresh migration lists from database and filesystem
      */
@@ -95,14 +119,10 @@ public class DatabaseMigrationController implements Serializable {
      */
     public List<MigrationInfo> getPendingMigrations() {
         List<MigrationInfo> pending = new ArrayList<>();
-        String lastExecutedVersion = getLastExecutedVersion();
 
         for (MigrationInfo info : availableMigrations) {
             if (!isMigrationExecuted(info.getVersion())) {
-                // Also check if this version is newer than last executed
-                if (lastExecutedVersion == null || compareVersions(info.getVersion(), lastExecutedVersion) > 0) {
-                    pending.add(info);
-                }
+                pending.add(info);
             }
         }
 
@@ -554,19 +574,20 @@ public class DatabaseMigrationController implements Serializable {
             List<String> statements = splitSqlStatements(sql);
 
             for (String stmt : statements) {
-                String trimmedStmt = stmt.trim();
-                if (trimmedStmt.isEmpty() || trimmedStmt.startsWith("--")) {
+                // Strip leading comment/blank lines to get to the executable SQL
+                String executableStmt = stripLeadingComments(stmt);
+                if (executableStmt.isEmpty()) {
                     continue;
                 }
-                logBuilder.append("Executing: ").append(trimmedStmt.substring(0, Math.min(100, trimmedStmt.length()))).append("...\n");
+                logBuilder.append("Executing: ").append(executableStmt.substring(0, Math.min(100, executableStmt.length()))).append("...\n");
                 try {
-                    if (isDdlStatement(trimmedStmt)) {
-                        migrationFacade.executeDdlNative(trimmedStmt);
+                    if (isDdlStatement(executableStmt)) {
+                        migrationFacade.executeDdlNative(executableStmt);
                     } else {
-                        migrationFacade.executeNativeSql(trimmedStmt);
+                        migrationFacade.executeNativeSql(executableStmt);
                     }
                 } catch (Exception e) {
-                    if (isCreateIndexStatement(trimmedStmt) && isDuplicateIndexError(e)) {
+                    if (isCreateIndexStatement(executableStmt) && isDuplicateIndexError(e)) {
                         logBuilder.append("Index already exists, skipping...\n");
                     } else {
                         throw e;
@@ -580,6 +601,30 @@ public class DatabaseMigrationController implements Serializable {
             logBuilder.append("Error executing SQL: ").append(e.getMessage()).append("\n");
             throw e;
         }
+    }
+
+    /**
+     * Strips leading comment lines (--) and blank lines from a SQL statement block,
+     * returning only the executable portion. This handles the common pattern of
+     * comment blocks accumulated with the following SQL statement by splitSqlStatements.
+     */
+    private String stripLeadingComments(String sql) {
+        if (sql == null) {
+            return "";
+        }
+        StringBuilder result = new StringBuilder();
+        boolean foundExecutable = false;
+        for (String line : sql.split("\n")) {
+            String trimmed = line.trim();
+            if (!foundExecutable) {
+                if (trimmed.isEmpty() || trimmed.startsWith("--")) {
+                    continue;
+                }
+                foundExecutable = true;
+            }
+            result.append(line).append("\n");
+        }
+        return result.toString().trim();
     }
 
     /**

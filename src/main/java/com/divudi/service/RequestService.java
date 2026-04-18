@@ -96,6 +96,7 @@ public class RequestService {
 
         String jpql = "Select q from Request q "
                 + " where q.retired =:ret "
+                + " and q.id is not null "
                 + " and q.createdAt between :frm and :to";
 
         if (requestNo != null && !requestNo.trim().equals("")) {

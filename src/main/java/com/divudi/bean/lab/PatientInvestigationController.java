@@ -6588,7 +6588,6 @@ public class PatientInvestigationController implements Serializable {
                         pts.setRetired(false);
                         patientSampleFacade.createAndFlush(pts);
                         
-                        System.out.println("Newly Created Sample = " + pts);
                     }
                     
                     rPatientSamplesMap.put(pts.getId(), pts);

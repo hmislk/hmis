@@ -1,0 +1,127 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/reportInstitution/report_own.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <ui:define name="subcontent">
+        <h:form>
+            <p:panel>
+                <f:facet name="header">
+                    <h:outputLabel value="All Payments on Staff Welfare Bills — Detail"/>
+                </f:facet>
+                <h:panelGrid columns="2" class="my-2">
+                    <h:outputLabel value="From Date"/>
+                    <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="frmDate"
+                                value="#{serviceSummery.fromDate}" pattern="dd MMMM yyyy  HH:mm:ss"/>
+
+                    <h:outputLabel value="To Date"/>
+                    <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="toDate"
+                                value="#{serviceSummery.toDate}" pattern="dd MMMM yyyy  HH:mm:ss"/>
+
+                    <h:outputLabel value="Staff (optional)"/>
+                    <p:autoComplete
+                        completeMethod="#{staffController.completeStaffWithoutDoctors}"
+                        class="w-100 mx-4"
+                        inputStyleClass="w-100"
+                        value="#{serviceSummery.staff}"
+                        var="w"
+                        scrollHeight="450"
+                        itemLabel="#{w.person.name}"
+                        itemValue="#{w}">
+                        <p:column headerText="Name">
+                            <h:outputText value="#{w.person.nameWithTitle}"/>
+                        </p:column>
+                        <p:column headerText="Code">
+                            <h:outputText value="#{w.staffCode}"/>
+                        </p:column>
+                    </p:autoComplete>
+                </h:panelGrid>
+                <h:panelGrid columns="6" class="my-2">
+                    <p:commandButton id="btnRefresh" value="Process" ajax="false"
+                                     class="ui-button-info m-1" icon="fas fa-cogs"
+                                     action="#{serviceSummery.opdPharmacyStaffWelfarePaymentBreakdownDto}"/>
+                    <p:defaultCommand target="btnRefresh"/>
+
+                    <p:commandButton value="Excel" ajax="false" class="ui-button-success m-1" icon="fas fa-file-excel">
+                        <p:dataExporter type="xlsx" target="tblBreakdown" fileName="Staff_Welfare_Payments"/>
+                    </p:commandButton>
+
+                    <p:commandButton value="Reports Menu" ajax="false" class="ui-button-secondary m-1"
+                                     icon="pi pi-home"
+                                     action="/reportInstitution/report_own?faces-redirect=true"/>
+                </h:panelGrid>
+
+                <p:panel styleClass="summeryBorder">
+                    <p:dataTable id="tblBreakdown"
+                                 rowIndexVar="i"
+                                 value="#{serviceSummery.staffWelfarePaymentBreakdown}"
+                                 var="row">
+
+                        <f:facet name="header">
+                            <h:outputLabel value="All Payments on Staff Welfare Bills"/>
+                            <h:outputLabel value="&emsp;&emsp;From : &nbsp;" style="white-space:pre-line;"/>
+                            <h:outputLabel value="#{serviceSummery.fromDate}">
+                                <f:convertDateTime pattern="dd MMMM yyyy hh:mm:ss a"/>
+                            </h:outputLabel>
+                            <h:outputLabel value="&emsp;&emsp;To : &nbsp;"/>
+                            <h:outputLabel value="#{serviceSummery.toDate}">
+                                <f:convertDateTime pattern="dd MMMM yyyy hh:mm:ss a"/>
+                            </h:outputLabel>
+                        </f:facet>
+
+                        <p:column headerText="No">
+                            <f:facet name="header"><p:outputLabel value="No"/></f:facet>
+                            <h:outputLabel value="#{i + 1}"/>
+                        </p:column>
+
+                        <p:column headerText="Bill No">
+                            <f:facet name="header"><p:outputLabel value="Bill No"/></f:facet>
+                            <p:outputLabel value="#{row.billDeptId}"/>
+                        </p:column>
+
+                        <p:column headerText="Staff EPF No"
+                                  filterBy="#{row.staffEpfNo}"
+                                  filterMatchMode="contains">
+                            <f:facet name="header"><p:outputLabel value="Staff EPF No"/></f:facet>
+                            <p:outputLabel value="#{row.staffEpfNo}"/>
+                        </p:column>
+
+                        <p:column headerText="Staff Name"
+                                  filterBy="#{row.staffNameWithTitle}"
+                                  filterMatchMode="contains">
+                            <f:facet name="header"><p:outputLabel value="Staff Name"/></f:facet>
+                            <p:outputLabel value="#{row.staffNameWithTitle}"/>
+                        </p:column>
+
+                        <p:column headerText="Payment Method"
+                                  filterBy="#{row.paymentMethodLabel}"
+                                  filterMatchMode="contains">
+                            <f:facet name="header"><p:outputLabel value="Payment Method"/></f:facet>
+                            <p:outputLabel value="#{row.paymentMethodLabel}"/>
+                        </p:column>
+
+                        <p:column headerText="Paid Value" style="text-align: right">
+                            <f:facet name="header"><p:outputLabel value="Paid Value"/></f:facet>
+                            <p:outputLabel value="#{row.paidValue}">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </p:outputLabel>
+                            <f:facet name="footer">
+                                <h:outputLabel value="#{serviceSummery.netTotalBill}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                            </f:facet>
+                        </p:column>
+
+                        <f:facet name="footer">
+                            <h:outputLabel value="Printed By : #{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
+                        </f:facet>
+                    </p:dataTable>
+                </p:panel>
+            </p:panel>
+        </h:form>
+    </ui:define>
+
+</ui:composition>
