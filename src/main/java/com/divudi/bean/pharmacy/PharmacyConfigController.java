@@ -160,6 +160,11 @@ public class PharmacyConfigController implements Serializable {
     private boolean patientDepositA4Paper;
     private boolean patientDepositCustomPaper;
 
+    // Inward Copayment Bill Settings
+    private boolean inwardCopaymentPosPaper;
+    private boolean inwardCopaymentFiveFivePaper;
+    private boolean inwardCopaymentA4Paper;
+
     // Petty Cash Settings
     private boolean pettyCashPosPaper;
     private boolean pettyCashA4Paper;
@@ -327,6 +332,11 @@ public class PharmacyConfigController implements Serializable {
         patientDepositPosPaper = configOptionController.getBooleanValueByKey("Patient Deposit Receipt POS Paper", true);
         patientDepositA4Paper = configOptionController.getBooleanValueByKey("Patient Deposit Receipt A4 Paper", false);
         patientDepositCustomPaper = configOptionController.getBooleanValueByKey("Patient Deposit Receipt Custom Paper", false);
+
+        // Inward Copayment Bill Settings
+        inwardCopaymentPosPaper = configOptionController.getBooleanValueByKey("Inward Copayment Bill POS Paper", true);
+        inwardCopaymentFiveFivePaper = configOptionController.getBooleanValueByKey("Inward Copayment Bill Five Five Paper", false);
+        inwardCopaymentA4Paper = configOptionController.getBooleanValueByKey("Inward Copayment Bill A4 Paper", false);
 
         // Petty Cash Settings
         pettyCashPosPaper = configOptionController.getBooleanValueByKey("Petty Cash Receipt POS Paper", true);
@@ -718,6 +728,21 @@ public class PharmacyConfigController implements Serializable {
 
         } catch (Exception e) {
             JsfUtil.addErrorMessage("Error saving Credit Settlement Cancellation configuration: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Save Inward Copayment Bill configuration changes specifically
+     */
+    public void saveInwardCopaymentConfig() {
+        try {
+            configOptionController.setBooleanValueByKey("Inward Copayment Bill POS Paper", inwardCopaymentPosPaper);
+            configOptionController.setBooleanValueByKey("Inward Copayment Bill Five Five Paper", inwardCopaymentFiveFivePaper);
+            configOptionController.setBooleanValueByKey("Inward Copayment Bill A4 Paper", inwardCopaymentA4Paper);
+            JsfUtil.addSuccessMessage("Inward Copayment Bill configuration saved successfully");
+            loadCurrentConfig();
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error saving Inward Copayment Bill configuration: " + e.getMessage());
         }
     }
 
@@ -1529,6 +1554,31 @@ public class PharmacyConfigController implements Serializable {
 
     public void setRetailSaleReturnRefundBillPosPaperCustom1(boolean retailSaleReturnRefundBillPosPaperCustom1) {
         this.retailSaleReturnRefundBillPosPaperCustom1 = retailSaleReturnRefundBillPosPaperCustom1;
+    }
+
+    // Inward Copayment Bill Getters and Setters
+    public boolean isInwardCopaymentPosPaper() {
+        return inwardCopaymentPosPaper;
+    }
+
+    public void setInwardCopaymentPosPaper(boolean inwardCopaymentPosPaper) {
+        this.inwardCopaymentPosPaper = inwardCopaymentPosPaper;
+    }
+
+    public boolean isInwardCopaymentFiveFivePaper() {
+        return inwardCopaymentFiveFivePaper;
+    }
+
+    public void setInwardCopaymentFiveFivePaper(boolean inwardCopaymentFiveFivePaper) {
+        this.inwardCopaymentFiveFivePaper = inwardCopaymentFiveFivePaper;
+    }
+
+    public boolean isInwardCopaymentA4Paper() {
+        return inwardCopaymentA4Paper;
+    }
+
+    public void setInwardCopaymentA4Paper(boolean inwardCopaymentA4Paper) {
+        this.inwardCopaymentA4Paper = inwardCopaymentA4Paper;
     }
 
     // Patient Deposit Getters and Setters
