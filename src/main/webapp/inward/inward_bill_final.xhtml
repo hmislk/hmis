@@ -276,15 +276,27 @@
                         <f:facet name="header">
                             <h:outputLabel value="Credit Company Allocation" />
                         </f:facet>
-                        <p:dataTable value="#{bhtSummeryController.creditCompanyAllocations}" var="alloc" styleClass="w-100">
-                            <p:column headerText="Company">
-                                <h:outputLabel value="#{alloc.companyName}" />
+                        <p:dataTable value="#{bhtSummeryController.creditCompanyAllocations}" var="alloc" styleClass="w-100"
+                                     rowStyleClass="#{alloc.patientPortion ? 'patient-copay-row' : ''}">
+                            <p:column headerText="Payer">
+                                <h:outputLabel value="#{alloc.companyName}"
+                                               style="#{alloc.patientPortion ? 'font-weight:bold;color:#1565c0;' : ''}"/>
                             </p:column>
                             <p:column headerText="Allocated Amount" style="width: 200px;">
-                                <p:inputText value="#{alloc.allocatedAmount}" style="width: 150px;"
-                                             title="Allocated amount for #{alloc.companyName}">
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </p:inputText>
+                                <h:panelGroup rendered="#{!alloc.patientPortion}">
+                                    <p:inputText value="#{alloc.allocatedAmount}" style="width: 150px;"
+                                                 title="Allocated amount for #{alloc.companyName}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </p:inputText>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{alloc.patientPortion}">
+                                    <h:outputLabel value="#{alloc.allocatedAmount}"
+                                                   style="font-weight:bold;color:#1565c0;">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                    <h:outputLabel value=" (patient pays via co-payment collection)"
+                                                   style="color:#888;font-size:0.85em;margin-left:6px;"/>
+                                </h:panelGroup>
                             </p:column>
                         </p:dataTable>
                     </p:panel>

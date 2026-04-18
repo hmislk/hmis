@@ -99,6 +99,13 @@
                                                 <p:commandButton styleClass="w-100 ui-button-info ui-button-outlined" ajax="false" icon="pi pi-calendar-times" value="Inward Due Age" title="View aged inward dues" action="/credit/inward_due_age_credit_company?faces-redirect=true"/>
                                                 <p:commandButton styleClass="w-100 ui-button-success" ajax="false" icon="pi pi-id-card" value="Inward Payment by BHT" title="Process inward payments by BHT" action="/credit/credit_compnay_bill_inward?faces-redirect=true"/>
                                                 <p:commandButton styleClass="w-100 ui-button-success" ajax="false" icon="pi pi-building" value="Inward Payment by Company" title="Process inward payments by company" action="/credit/credit_compnay_bill_payment_inward?faces-redirect=true"/>
+                                                <p:commandButton
+                                                    styleClass="w-100 ui-button-warning"
+                                                    ajax="false"
+                                                    icon="pi pi-user"
+                                                    value="Inward Patient Co-payment"
+                                                    title="Collect patient co-payment balance after credit company settlement"
+                                                    action="#{inwardPaymentController.navigateToInwardPatientCopayment()}"/>
                                             </div>
                                         </p:tab>
 

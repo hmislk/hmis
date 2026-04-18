@@ -1482,8 +1482,15 @@ public class BhtSummeryController implements Serializable {
                 creditCompanyAllocations.add(new CreditCompanyAllocation(ecc, alloc));
                 remaining -= alloc;
             }
+            // Any amount not covered by companies is the patient's co-payment share
+            if (remaining > 0.01) {
+                creditCompanyAllocations.add(new CreditCompanyAllocation(remaining, true));
+            }
         } else if (remaining > 0 && patientEncounter.getCreditCompany() != null) {
             creditCompanyAllocations.add(new CreditCompanyAllocation(patientEncounter.getCreditCompany(), remaining));
+        } else if (remaining > 0.01) {
+            // No companies registered at all — full amount falls on the patient
+            creditCompanyAllocations.add(new CreditCompanyAllocation(remaining, true));
         }
     }
 
@@ -1514,6 +1521,11 @@ public class BhtSummeryController implements Serializable {
     }
 
     private void saveCCBillForAllocation(PatientEncounter pe, CreditCompanyAllocation alloc) {
+        // Patient co-payment rows are NOT saved as CC commitment bills.
+        // The patient settles their share via the normal inward payment flow.
+        if (alloc.isPatientPortion()) {
+            return;
+        }
         if (alloc.getEncounterCreditCompany() != null) {
             saveCCBill(pe, alloc.getEncounterCreditCompany(), alloc.getAllocatedAmount());
         } else {
