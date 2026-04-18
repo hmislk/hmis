@@ -10,7 +10,9 @@ import com.divudi.core.data.MigrationStatus;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.util.MigrationDiscoveryService;
 import com.divudi.core.util.MigrationInfo;
+import java.io.IOException;
 import java.io.Serializable;
+import javax.faces.context.FacesContext;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import java.util.ArrayList;
@@ -49,6 +51,9 @@ public class DatabaseMigrationController implements Serializable {
     @Inject
     private SessionController sessionController;
 
+    @Inject
+    private WebUserController webUserController;
+
 
     // UI properties
     private List<MigrationInfo> availableMigrations;
@@ -76,7 +81,38 @@ public class DatabaseMigrationController implements Serializable {
     public String navigateToDatabaseMigration(){
         return "/admin/database_migration?faces-redirect=true";
     }
-    
+
+    /**
+     * preRenderView security gate.
+     * Redirects to login if the user is not authenticated or does not hold the
+     * SuperAdmin privilege.  Called via &lt;f:event type="preRenderView"&gt; in
+     * database_migration.xhtml so that unauthenticated GET requests are blocked
+     * before any page content is rendered.
+     */
+    public void preRenderSecurityCheck() {
+        if (sessionController.getLoggedUser() == null
+                || !webUserController.hasPrivilege("SuperAdmin")) {
+            try {
+                FacesContext.getCurrentInstance().getExternalContext()
+                        .redirect(FacesContext.getCurrentInstance()
+                                .getExternalContext().getRequestContextPath() + "/index1.xhtml");
+            } catch (IOException e) {
+                LOGGER.log(Level.SEVERE, "Security redirect failed", e);
+            }
+        }
+    }
+
+    /**
+     * Returns true only when the current user is authenticated and holds the
+     * SuperAdmin privilege.  Used as a rendered guard on the migration form so
+     * that the page content is never delivered to unauthorised sessions even if
+     * the redirect above is somehow skipped.
+     */
+    public boolean isAuthorized() {
+        return sessionController.getLoggedUser() != null
+                && webUserController.hasPrivilege("SuperAdmin");
+    }
+
     /**
      * Refresh migration lists from database and filesystem
      */
