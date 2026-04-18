@@ -11,7 +11,6 @@
         <ui:composition template="/dataAdmin/admin_data_administration.xhtml">
             <ui:define name="subcontent">
                 <h:form id="migrationForm">
-                    <f:event type="preRenderView" listener="#{databaseMigrationController.preRenderSecurityCheck}" />
                     <h:panelGroup layout="block" rendered="#{databaseMigrationController.authorized}">
                     <div class="container-fluid">
                         <!-- Page Header -->
