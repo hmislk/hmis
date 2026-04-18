@@ -1,0 +1,182 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="/payments/credit_company_pay_index.xhtml">
+            <ui:define name="admin">
+                <h:form>
+                    <p:panel>
+                        <f:facet name="header">
+                            <h:outputLabel value="INWARD PATIENT CO-PAYMENT DUE SEARCH"/>
+                        </f:facet>
+                        <h:panelGrid columns="2" class="my-2">
+                            <h:outputLabel value="From Date"/>
+                            <p:calendar class="mx-4 w-100" inputStyleClass="w-100" id="fromDate"
+                                        value="#{creditCompanyDueController.fromDate}" navigator="true"
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}">
+                                <f:ajax event="dateSelect" execute="toDate @this" render="lst"/>
+                            </p:calendar>
+                            <h:outputLabel value="To Date &emsp;"/>
+                            <p:calendar class="mx-4 w-100" inputStyleClass="w-100" id="toDate"
+                                        value="#{creditCompanyDueController.toDate}" navigator="true"
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}">
+                                <f:ajax event="dateSelect" execute="@this fromDate" render="lst"/>
+                            </p:calendar>
+                            <h:outputLabel value="Date Basis"/>
+                            <p:selectOneMenu value="#{creditCompanyDueController.dateBasis}">
+                                <f:selectItem itemValue="dischargeDate" itemLabel="Discharge Date"/>
+                                <f:selectItem itemValue="admissionDate" itemLabel="Admission Date"/>
+                            </p:selectOneMenu>
+                            <h:outputLabel value="Admission Type"/>
+                            <p:selectOneMenu value="#{creditCompanyDueController.admissionType}">
+                                <f:selectItem itemLabel="All Admission Types" itemValue="#{null}"/>
+                                <f:selectItems value="#{admissionTypeController.items}" var="at" itemValue="#{at}" itemLabel="#{at.name}"/>
+                            </p:selectOneMenu>
+                            <h:outputLabel value="Site"/>
+                            <p:selectOneMenu value="#{creditCompanyDueController.site}" filter="true">
+                                <f:selectItem itemLabel="All Sites" itemValue="#{null}"/>
+                                <f:selectItems value="#{institutionController.sites}" var="dueSite" itemLabel="#{dueSite.name}" itemValue="#{dueSite}"/>
+                            </p:selectOneMenu>
+                            <h:outputLabel value="Department"/>
+                            <p:selectOneMenu value="#{creditCompanyDueController.department}" filter="true" filterMatchMode="contains">
+                                <f:selectItem itemLabel="All Departments" itemValue="#{null}"/>
+                                <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite()}" var="d" itemLabel="#{d.name}" itemValue="#{d}"/>
+                            </p:selectOneMenu>
+                        </h:panelGrid>
+                        <h:panelGrid columns="6" class="my-2">
+                            <p:commandButton class="ui-button-warning" icon="fas fa-cogs" ajax="false" value="Process"
+                                             action="#{creditCompanyDueController.createInwardPatientCopaymentDueSearch()}"/>
+                            <p:commandButton class="ui-button-info mx-2" icon="fas fa-print" ajax="false" value="Print">
+                                <p:printer target="lst"/>
+                            </p:commandButton>
+                            <p:commandButton class="ui-button-success" icon="fas fa-file-excel"
+                                             actionListener="#{creditCompanyDueController.createInwardPatientCopaymentDueSearch()}"
+                                             ajax="false" value="Excel">
+                                <p:dataExporter type="xlsx" target="lst" fileName="Inward Patient Copayment Due"/>
+                            </p:commandButton>
+                        </h:panelGrid>
+
+                        <p:dataTable id="lst" value="#{creditCompanyDueController.patientEncounters}" var="pe"
+                                     emptyMessage="No records found">
+                            <f:facet name="header">
+                                <h:outputLabel value="Inward Patient Co-payment Due Search"/>
+                                <br/>
+                                <h:outputLabel value="From : " style="white-space: pre-line"/>
+                                <h:outputLabel value="#{creditCompanyDueController.fromDate}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                </h:outputLabel>
+                                <h:outputLabel value="  To : "/>
+                                <h:outputLabel value="#{creditCompanyDueController.toDate}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                </h:outputLabel>
+                            </f:facet>
+                            <p:columnGroup type="header">
+                                <p:row>
+                                    <p:column headerText="BHT No"/>
+                                    <p:column headerText="Patient Name"/>
+                                    <p:column headerText="Admission Date"/>
+                                    <p:column headerText="Discharge Date"/>
+                                    <p:column headerText="CC Company"/>
+                                    <p:column headerText="Final Bill Total" style="text-align:right"/>
+                                    <p:column headerText="CC Committed" style="text-align:right"/>
+                                    <p:column headerText="CC Paid" style="text-align:right"/>
+                                    <p:column headerText="CC Status"/>
+                                    <p:column headerText="Patient Portion" style="text-align:right"/>
+                                    <p:column headerText="Patient Paid" style="text-align:right"/>
+                                    <p:column headerText="Patient Outstanding" style="text-align:right"/>
+                                </p:row>
+                            </p:columnGroup>
+                            <p:column>
+                                <h:outputLabel value="#{pe.bhtNo}"/>
+                            </p:column>
+                            <p:column>
+                                <h:outputLabel value="#{pe.patient.person.nameWithTitle}"/>
+                            </p:column>
+                            <p:column>
+                                <h:outputLabel value="#{pe.dateOfAdmission}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                </h:outputLabel>
+                            </p:column>
+                            <p:column>
+                                <h:outputLabel value="#{pe.dateOfDischarge}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                </h:outputLabel>
+                            </p:column>
+                            <p:column>
+                                <h:outputLabel value="#{pe.creditCompany != null ? pe.creditCompany.name : 'Self-pay'}"/>
+                            </p:column>
+                            <p:column style="text-align:right">
+                                <h:outputLabel value="#{pe.finalBill.netTotal}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                            </p:column>
+                            <p:column style="text-align:right">
+                                <h:outputLabel value="#{pe.creditUsedAmount}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                            </p:column>
+                            <p:column style="text-align:right">
+                                <h:outputLabel value="#{pe.paidByCreditCompany}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                            </p:column>
+                            <p:column>
+                                <h:outputLabel value="#{creditCompanyDueController.getPatientCcStatus(pe)}"/>
+                            </p:column>
+                            <p:column style="text-align:right">
+                                <h:outputLabel value="#{pe.finalBill.netTotal - pe.creditUsedAmount}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                            </p:column>
+                            <p:column style="text-align:right">
+                                <h:outputLabel value="#{pe.finalBill.paidAmount}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                            </p:column>
+                            <p:column style="text-align:right">
+                                <h:outputLabel value="#{creditCompanyDueController.getPatientCopaymentDue(pe)}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                            </p:column>
+                            <p:columnGroup type="footer">
+                                <p:row>
+                                    <p:column footerText="Grand Total" colspan="5"/>
+                                    <p:column style="text-align:right">
+                                        <f:facet name="footer">
+                                            <h:outputLabel value="#{creditCompanyDueController.billed}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputLabel>
+                                        </f:facet>
+                                    </p:column>
+                                    <p:column colspan="4"/>
+                                    <p:column style="text-align:right">
+                                        <f:facet name="footer">
+                                            <h:outputLabel value="#{creditCompanyDueController.paidByPatient}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputLabel>
+                                        </f:facet>
+                                    </p:column>
+                                    <p:column style="text-align:right">
+                                        <f:facet name="footer">
+                                            <h:outputLabel value="#{creditCompanyDueController.payableByPatient}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputLabel>
+                                        </f:facet>
+                                    </p:column>
+                                </p:row>
+                            </p:columnGroup>
+                            <f:facet name="footer">
+                                <h:outputLabel class="my-2" value="Printed By : #{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
+                            </f:facet>
+                        </p:dataTable>
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>
