@@ -427,6 +427,14 @@
                                                 <p:ajax process="@this" update="crd pg1" event="change" listener="#{admissionController.findLastUsedCreditCompanies()}" />
                                             </p:selectOneMenu>
                                         </div>
+                                        <div class="mb-1 mt-2">
+                                            <p:outputLabel value="Discount Scheme" styleClass="d-block"/>
+                                            <p:selectOneMenu class="w-100" styleClass="form-control w-100" value="#{admissionController.paymentScheme}">
+                                                <f:selectItem itemLabel="No Discount Scheme" itemValue="#{null}"/>
+                                                <f:selectItems value="#{paymentSchemeController.paymentSchemesForInward}"
+                                                               var="ps" itemLabel="#{ps.name}" itemValue="#{ps}"/>
+                                            </p:selectOneMenu>
+                                        </div>
                                     </h:panelGroup>
                                 </div>
                                 <!-- Right: credit company form + table (always visible) -->
