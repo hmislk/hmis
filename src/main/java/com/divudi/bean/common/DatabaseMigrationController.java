@@ -587,8 +587,9 @@ public class DatabaseMigrationController implements Serializable {
                         migrationFacade.executeNativeSql(executableStmt);
                     }
                 } catch (Exception e) {
-                    if (isCreateIndexStatement(executableStmt) && isDuplicateIndexError(e)) {
-                        logBuilder.append("Index already exists, skipping...\n");
+                    String skipReason = getIdempotentSkipReason(executableStmt, e);
+                    if (skipReason != null) {
+                        logBuilder.append(skipReason).append("\n");
                     } else {
                         throw e;
                     }
@@ -687,24 +688,56 @@ public class DatabaseMigrationController implements Serializable {
                 || upper.startsWith("RENAME") || upper.startsWith("TRUNCATE");
     }
 
-    private boolean isCreateIndexStatement(String sql) {
+    /**
+     * Returns a non-null skip message if the failure is a benign idempotency
+     * error for the given DDL statement (e.g. CREATE INDEX on an existing
+     * index, ADD COLUMN for an existing column, DROP FOREIGN KEY on a
+     * non-existent key). Returns null when the error should propagate.
+     *
+     * This lets migrations be safely re-run against databases in mixed states
+     * — an earlier partial run, a JPA-generated schema, or a different
+     * vendor-style FK naming — without rewriting every script to guard each
+     * statement individually.
+     */
+    private String getIdempotentSkipReason(String sql, Exception e) {
         String upper = sql.toUpperCase().trim();
-        return upper.startsWith("CREATE INDEX") || upper.startsWith("CREATE UNIQUE INDEX");
+        String msg = collectCauseMessages(e);
+        if (msg == null) {
+            return null;
+        }
+        // CREATE INDEX on an index that already exists, or on a table whose
+        // casing doesn't match (e.g. userstock vs USER_STOCK).
+        if ((upper.startsWith("CREATE INDEX") || upper.startsWith("CREATE UNIQUE INDEX"))
+                && (msg.contains("1061") || msg.contains("Duplicate key name")
+                    || msg.contains("1146") || msg.contains("doesn't exist"))) {
+            return "Index already exists or target table missing, skipping...";
+        }
+        // ALTER TABLE ... ADD COLUMN that already exists (MySQL 1060).
+        if (upper.startsWith("ALTER TABLE") && upper.contains("ADD COLUMN")
+                && (msg.contains("1060") || msg.contains("Duplicate column name"))) {
+            return "Column already exists, skipping...";
+        }
+        // ALTER TABLE ... DROP FOREIGN KEY / DROP INDEX that doesn't exist
+        // (MySQL 1091 / 1025). Safe because the caller's intent is "ensure it's gone".
+        if (upper.startsWith("ALTER TABLE")
+                && (upper.contains("DROP FOREIGN KEY") || upper.contains("DROP INDEX") || upper.contains("DROP KEY"))
+                && (msg.contains("1091") || msg.contains("1025") || msg.contains("check that column/key exists")
+                    || msg.contains("needed in a foreign key constraint"))) {
+            return "Foreign key or index already absent, skipping...";
+        }
+        return null;
     }
 
-    private boolean isDuplicateIndexError(Exception e) {
-        // MySQL error 1061: Duplicate key name
-        // MySQL error 1146: Table doesn't exist (e.g., case-sensitive table name mismatch)
+    private String collectCauseMessages(Throwable e) {
+        StringBuilder sb = new StringBuilder();
         Throwable cause = e;
         while (cause != null) {
-            String message = cause.getMessage();
-            if (message != null && (message.contains("1061") || message.contains("Duplicate key name")
-                    || message.contains("1146") || message.contains("doesn't exist"))) {
-                return true;
+            if (cause.getMessage() != null) {
+                sb.append(cause.getMessage()).append('\n');
             }
             cause = cause.getCause();
         }
-        return false;
+        return sb.length() == 0 ? null : sb.toString();
     }
 
     /**
