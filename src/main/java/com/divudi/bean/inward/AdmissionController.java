@@ -2397,7 +2397,6 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             patientAllergies = clinicalFindingValueController.findClinicalFindingValues(patient, ClinicalFindingValueType.PatientAllergy);
         }
         selectPaymentSchemeAsPerPatientMembership();
-        PrimeFaces.current().ajax().update("pg1");
     }
 
     private void selectPaymentSchemeAsPerPatientMembership() {

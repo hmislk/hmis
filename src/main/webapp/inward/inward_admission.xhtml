@@ -128,7 +128,8 @@
                     <div class="row">
                         <div class="col-5">
                             <h:panelGroup id="ptd">
-                                <common:patient_details_for_addmission editable="true" controller="#{admissionController}"/>
+                                <common:patient_details_for_addmission editable="true" controller="#{admissionController}"
+                                                                       extraUpdateIds=":#{p:resolveFirstComponentWithId('pg1',view).clientId}"/>
                             </h:panelGroup>
                         </div>
 
