@@ -250,7 +250,8 @@ SELECT
     END AS data_integrity_status;
 
 -- NOTE: SIGNAL is a statement, not an expression — it cannot appear inside SELECT CASE...END.
--- Enforcement is handled by the data_integrity_status row above which already flags CRITICAL/WARNING/SUCCESS.
+-- Reporting is handled by the data_integrity_status row above, which flags CRITICAL/WARNING/SUCCESS.
+-- The current migration runner does not fail based on SELECT result rows.
 
 -- ==========================================
 -- MIGRATION COMPLETION WITH FINAL VERIFICATION
