@@ -72,24 +72,18 @@
 
                                 <div class="row mt-1">
                                     <div class="col-2">
-                                        <h:outputLabel value="Category / Subcategory" class="mt-2"/>
+                                        <h:outputLabel value="Category" class="mt-2"/>
                                     </div>
                                     <div class="col-10">
                                         <p:autoComplete
                                             value="#{inwardDiscountMatrixController.category}"
                                             forceSelection="true"
-                                            completeMethod="#{categoryController.completeCategoryService}"
+                                            completeMethod="#{categoryController.completeServiceInvestigationCategory}"
                                             var="cat"
                                             inputStyleClass="form-control"
                                             class="w-100"
-                                            itemLabel="#{cat.name} #{cat.parentCategory}"
+                                            itemLabel="#{cat.name}"
                                             itemValue="#{cat}">
-                                            <p:column headerText="Category">
-                                                <h:outputLabel value="#{cat.name}"/>
-                                            </p:column>
-                                            <p:column headerText="Parent Category">
-                                                <h:outputLabel value="#{cat.parentCategory.name}"/>
-                                            </p:column>
                                         </p:autoComplete>
                                     </div>
                                 </div>
