@@ -717,12 +717,13 @@ public class DatabaseMigrationController implements Serializable {
                 && (msg.contains("1060") || msg.contains("Duplicate column name"))) {
             return "Column already exists, skipping...";
         }
-        // ALTER TABLE ... DROP FOREIGN KEY / DROP INDEX that doesn't exist
-        // (MySQL 1091 / 1025). Safe because the caller's intent is "ensure it's gone".
+        // ALTER TABLE ... DROP FOREIGN KEY / DROP INDEX where the key doesn't exist (MySQL 1091).
+        // Only 1091 is safe to skip — it means "already absent". Errors like 1025 / 1553
+        // ("needed in a foreign key constraint") mean the index is still required and must
+        // surface so the operator can drop the owning FK first.
         if (upper.startsWith("ALTER TABLE")
                 && (upper.contains("DROP FOREIGN KEY") || upper.contains("DROP INDEX") || upper.contains("DROP KEY"))
-                && (msg.contains("1091") || msg.contains("1025") || msg.contains("check that column/key exists")
-                    || msg.contains("needed in a foreign key constraint"))) {
+                && (msg.contains("1091") || msg.contains("check that column/key exists"))) {
             return "Foreign key or index already absent, skipping...";
         }
         return null;
