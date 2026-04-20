@@ -691,7 +691,9 @@ public class BookingControllerViewScopeMonth implements Serializable {
             selectedBillSession.getBillItem().getBill().getPaidBill().setPrinted(true);
             selectedBillSession.getBillItem().getBill().getPaidBill().setPrintedAt(new Date());
             selectedBillSession.getBillItem().getBill().getPaidBill().setPrintedUser(sessionController.getLoggedUser());
-            billFacade.edit(selectedBillSession.getBillItem().getBill().getPaidBill());
+            // billFacade.edit(selectedBillSession.getBillItem().getBill().getPaidBill());
+            Bill manageBill = billFacade.find(selectedBillSession.getBillItem().getBill().getPaidBill().getId());
+            billFacade.edit(manageBill);
         } else {
         }
     }
@@ -2483,8 +2485,20 @@ public class BookingControllerViewScopeMonth implements Serializable {
             }
         }
         getItemsAddedToBooking().add(itemToAddToBooking);
+
+        String sql;
+        Map<String, Object> m = new HashMap<>();
+        sql = "Select f from ItemFee f where f.retired=false and f.item=:item order by f.id";
+        m.put("item", itemToAddToBooking);
+        List<ItemFee> feesOfNewItem = itemFeeFacade.findByJpql(sql, m);
+        if (feesOfNewItem != null) {
+            addedItemFees.addAll(feesOfNewItem);
+            selectedItemFees.addAll(feesOfNewItem);
+        }
+        calculateSelectedBillSessionTotal();
         itemToAddToBooking = null;
-        fillFees();
+        // fillFees();
+
     }
 
     public void removeAddedAditionalItem() {
@@ -2500,7 +2514,8 @@ public class BookingControllerViewScopeMonth implements Serializable {
             selectedBillSession.getBillItem().getBill().getBillFees().removeAll(billFeesToRemove);
         }
         selectedBillSession.getBillItem().getBill().getBillItems().remove(selectedBillItem);
-        calculateBillTotalsFromBillFees(selectedBillSession.getBillItem().getBill());
+        // calculateBillTotalsFromBillFees(selectedBillSession.getBillItem().getBill());
+        calculateSelectedBillSessionTotalForSettling();
     }
 
     public void addItemToBookingAtSettling() {
@@ -2566,8 +2581,8 @@ public class BookingControllerViewScopeMonth implements Serializable {
             newBillItem.setBillFees(billFeesToAdd);
         }
 
-        calculateBillTotalsFromBillFees(selectedBillSession.getBillItem().getBill());
-
+        // calculateBillTotalsFromBillFees(selectedBillSession.getBillItem().getBill());
+        calculateSelectedBillSessionTotalForSettling();
         itemToAddToBooking = null;
 //        fillFees();
     }
@@ -4783,6 +4798,12 @@ public class BookingControllerViewScopeMonth implements Serializable {
         savingBill.setBillFees(savingBillFees);
         savingBill.setCashPaid(cashPaid);
         savingBill.setCashBalance(cashBalance);
+
+        // additional items are added to bill -> billItems
+        if (additionalBillItems != null && !additionalBillItems.isEmpty()) {
+            savingBill.getBillItems().addAll(additionalBillItems);
+        }
+
         if (savingBill.getBillType() == BillType.ChannelAgent) {
             updateBallance(savingBill.getCreditCompany(), 0 - savingBill.getNetTotal(), HistoryType.ChannelBooking, savingBill, savingBillItem, savingBillSession, savingBillItem.getAgentRefNo());
             savingBill.setBalance(0.0);
@@ -5357,6 +5378,61 @@ public class BookingControllerViewScopeMonth implements Serializable {
         billToCaclculate.setNetTotal(calculatingNetBillTotal);
         billToCaclculate.setTotal(calculatingGrossBillTotal);
         getBillFacade().edit(billToCaclculate);
+        feeTotalForSelectedBill = calculatingGrossBillTotal;
+        feeNetTotalForSelectedBill = calculatingNetBillTotal;
+    }
+
+    public void calculateSelectedBillSessionTotalForSettling() {
+        if (getBillSession() == null || getBillSession().getBill() == null) {
+            return;
+        }
+
+        PaymentSchemeDiscount paymentSchemeDiscount = priceMatrixController.fetchChannellingMemberShipDiscount(settlePaymentMethod, paymentScheme, getBillSession().getSessionInstance().getOriginatingSession().getCategory());
+        feeTotalForSelectedBill = 0.0;
+        feeDiscountForSelectedBill = 0.0;
+        feeNetTotalForSelectedBill = 0.0;
+
+        List<BillFee> billFees = getBillSession().getBill().getBillFees();
+        if (billFees == null) {
+            billFees = billBeanController.getBillFee(getBillSession().getBill());
+        }
+        if (paymentSchemeDiscount != null) {
+            for (BillFee bf : billFees) {
+
+                ItemFee itmf = (ItemFee) bf.getFee();
+
+                if (foriegn) {
+                    feeTotalForSelectedBill += itmf.getFfee();
+                    if (itmf.isDiscountAllowed()) {
+                        feeDiscountForSelectedBill += itmf.getFfee() * (paymentSchemeDiscount.getDiscountPercent() / 100);
+                    }
+                } else {
+                    feeTotalForSelectedBill += itmf.getFee();
+                    if (itmf.isDiscountAllowed()) {
+                        feeDiscountForSelectedBill += itmf.getFee() * (paymentSchemeDiscount.getDiscountPercent() / 100);
+                    }
+                }
+            }
+        } else {
+            for (BillFee bf : billFees) {
+                ItemFee itmf = (ItemFee) bf.getFee();
+                if (foriegn) {
+                    feeTotalForSelectedBill += itmf.getFfee();
+                } else {
+                    feeTotalForSelectedBill += itmf.getFee();
+                }
+            }
+
+        }
+
+        feeNetTotalForSelectedBill = feeTotalForSelectedBill - feeDiscountForSelectedBill;
+        getBillSession().getBill().setNetTotal(feeNetTotalForSelectedBill);
+        getBillSession().getBill().setDiscount(feeDiscountForSelectedBill);
+        getBillSession().getBill().setTotal(feeTotalForSelectedBill);
+
+        if (settlePaymentMethod == PaymentMethod.Card) {
+            getPaymentMethodData().getCreditCard().setTotalValue(getBillSession().getBill().getNetTotal());
+        }
     }
 
     public void prepareBillSessionForReportLink() {
@@ -7200,6 +7276,10 @@ public class BookingControllerViewScopeMonth implements Serializable {
 
         System.out.println("feeTotalForSelectedBill = " + feeTotalForSelectedBill);
         feeNetTotalForSelectedBill = feeTotalForSelectedBill - feeDiscountForSelectedBill;
+        
+        if (settlePaymentMethod == PaymentMethod.Card) {
+            getPaymentMethodData().getCreditCard().setTotalValue(getBillSession().getBill().getNetTotal());
+        }
     }
 
     public SmsFacade getSmsFacade() {
@@ -7583,6 +7663,13 @@ public class BookingControllerViewScopeMonth implements Serializable {
     public void setStrTenderedValue(String strTenderedValue) {
 
         this.strTenderedValue = strTenderedValue;
+
+        // Null check and set cash paid to 0 if the input is null or empty
+        if (strTenderedValue == null || strTenderedValue.trim().isEmpty()) {
+            cashPaid = 0.0;
+            return;
+        }
+
         try {
             cashPaid = Double.parseDouble(strTenderedValue);
         } catch (NumberFormatException e) {

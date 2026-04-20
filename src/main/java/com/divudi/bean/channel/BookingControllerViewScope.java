@@ -3655,7 +3655,8 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             selectedBillSession.getBillItem().getBill().getBillFees().removeAll(billFeesToRemove);
         }
         selectedBillSession.getBillItem().getBill().getBillItems().remove(selectedBillItem);
-        calculateBillTotalsFromBillFees(selectedBillSession.getBillItem().getBill());
+        // calculateBillTotalsFromBillFees(selectedBillSession.getBillItem().getBill());
+        calculateSelectedBillSessionTotalForSettling();
         calculateCashBalance();
     }
 
@@ -3723,8 +3724,9 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             newBillItem.setBillFees(billFeesToAdd);
         }
 
-        calculateBillTotalsFromBillFees(selectedBillSession.getBillItem().getBill());
+        // calculateBillTotalsFromBillFees(selectedBillSession.getBillItem().getBill());
 //        fillBaseFees();  
+        calculateSelectedBillSessionTotalForSettling();
         calculateCashBalance();
 
         itemToAddToBooking = null;
@@ -9113,6 +9115,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 //        System.out.println("feeNetTotalForSelectedBill 4 = " + feeNetTotalForSelectedBill);
         getBillSession().getBill().setNetTotal(feeNetTotalForSelectedBill);
         getBillSession().getBill().setDiscount(feeDiscountForSelectedBill);
+        getBillSession().getBill().setTotal(feeTotalForSelectedBill);
 
         // for paymentMethod.CARD set the value after total calculation
         if (settlePaymentMethod == PaymentMethod.Card) {
@@ -9546,6 +9549,13 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
     public void setStrTenderedValue(String strTenderedValue) {
         this.strTenderedValue = strTenderedValue;
+        
+        // Null check and set cash paid to 0 if the input is null or empty
+        if (strTenderedValue == null || strTenderedValue.trim().isEmpty()) {
+            cashPaid = 0.0;
+            return;
+        }
+
         try {
             cashPaid = Double.parseDouble(strTenderedValue);
         } catch (NumberFormatException e) {

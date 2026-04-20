@@ -392,10 +392,11 @@
                                                             var="pm"
                                                             itemLabel="#{pm.label}"
                                                             itemValue="#{pm}"/>
-                                                        <p:ajax process="@this" 
-                                                                update="paymentDetails"
-                                                                event="change"
-                                                                listener="#{bookingControllerViewScopeMonth.listnerForPaymentMethodChangeOnCreditSettle()}"/>
+                                                        <p:ajax 
+                                                            process="@this"
+                                                            update="gdManageBookings :#{p:resolveFirstComponentWithId('totalsPanel',view).clientId} paymentDetails lstItems panelBillDetailsForSettling"
+                                                            event="change"
+                                                            listener="#{bookingControllerViewScopeMonth.calculateSelectedBillSessionTotalForSettling()}"/>
                                                     </p:selectOneMenu>
                                                 </div>
 
@@ -407,7 +408,6 @@
                                                             ajax="false"
                                                             icon="fa fa-check"
                                                             action="#{bookingControllerViewScopeMonth.settleCredit()}"
-                                                            immediate="true"
                                                             disabled="#{bookingControllerViewScopeMonth.selectedBillSession.bill.billType.parent ne 'ChannelCreditFlow'
                                                                         or bookingControllerViewScopeMonth.selectedBillSession.bill.cancelled==true
                                                                         or  bookingControllerViewScopeMonth.selectedBillSession.bill.paidAmount ne 0 or bookingControllerViewScopeMonth.selectedSessionInstance.completed}"
@@ -683,10 +683,10 @@
                                             </h:panelGroup>
 
                                             <h:panelGrid id="gdManageBookings" class="w-100 m-2" columns="2"  >
-                                                <p:outputLabel value="Tenderd Amount" />
+                                                <p:outputLabel value="Tendered Amount" />
                                                 <h:panelGroup class="w-100 my-2" style="font-weight: bolder" >
                                                     <p:inputText id="paid" value="#{bookingControllerViewScopeMonth.strTenderedValue}">
-                                                        <p:ajax event="keyup" process=" paid" update="@this"/>
+                                                        <p:ajax event="keyup" process="paid" update="balance"/>
                                                     </p:inputText>
                                                 </h:panelGroup>
 
@@ -714,9 +714,9 @@
                                                         itemValue="#{paysch}"  />
                                                     <p:ajax 
                                                         process="@this"
-                                                        update="gdManageBookings :#{p:resolveFirstComponentWithId('totalsPanel',view).clientId} paymentDetails lstItems"
+                                                        update="gdManageBookings :#{p:resolveFirstComponentWithId('totalsPanel',view).clientId} paymentDetails lstItems panelBillDetailsForSettling"
                                                         event="change"
-                                                        listener="#{bookingControllerViewScopeMonth.calculateSelectedBillSessionTotal()}"/>
+                                                        listener="#{bookingControllerViewScopeMonth.calculateSelectedBillSessionTotalForSettling()}"/>
                                                 </p:selectOneMenu>
                                             </h:panelGrid>
                                         </p:panel>
@@ -740,7 +740,7 @@
                                                 icon="fas fa-plus"
                                                 class="ui-button-success"
                                                 action="#{bookingControllerViewScopeMonth.addItemToBookingAtSettling()}"
-                                                update="lstItems tblBillItemsForAddingNewItem tblBillFeesForAddingNewItem panelBillDetailsForSettling"
+                                                update="@form"
                                                 ></p:commandButton>
 
 
@@ -756,9 +756,10 @@
                                                 <p:column >
                                                     <p:commandButton 
                                                         id="btnRemove"
-                                                        ajax="false"
                                                         icon="fas fa-trash"
                                                         class="ui-button-danger"
+                                                        update="@form"
+                                                        process="@this"
                                                         action="#{bookingControllerViewScopeMonth.removeAddedAditionalItem()}"
                                                         >
                                                         <f:setPropertyActionListener target="#{bookingControllerViewScopeMonth.selectedBillItem}" value="#{bi}"/>
