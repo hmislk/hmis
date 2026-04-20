@@ -759,7 +759,7 @@
                                                 </h:panelGroup>
                                             </h:panelGroup>
 
-                                            <h:panelGrid id="gdManageBookings" class="w-100 m-2" columns="2"  >
+                                            <h:panelGrid id="gdManageBookings" class="w-100 m-2 ui-fluid" columns="2"  style="table-layout: fixed;">
                                                 <p:outputLabel value="Tenderd Amount" rendered="#{bookingControllerViewScopeMonth.paymentMethod eq 'Cash'}"/>
                                                 <h:panelGroup class="w-100 my-2" style="font-weight: bolder" rendered="#{bookingControllerViewScopeMonth.paymentMethod eq 'Cash'}">
                                                     <p:inputText id="paid" value="#{bookingControllerViewScopeMonth.strTenderedValue}">
@@ -786,6 +786,7 @@
                                                         id="cmbPs"
                                                         filter="true"
                                                         filterMatchMode="contains"
+                                                        styleClass="form-control"
                                                         value="#{bookingControllerViewScopeMonth.paymentMethod}">
                                                         <f:selectItem itemLabel="Select Payment Method" ></f:selectItem>
                                                         <f:selectItems value="#{enumController.paymentMethodsForChanneling}"/>
@@ -812,6 +813,7 @@
                                                 <p:outputLabel value="Discount Scheme"/>
                                                 <p:selectOneMenu 
                                                     class="w-75" 
+                                                    styleClass="form-control"
                                                     autoWidth="false" 
                                                     id="cmbPs2" 
                                                     value="#{bookingControllerViewScopeMonth.paymentScheme}">
