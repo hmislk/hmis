@@ -121,6 +121,15 @@ public class CapabilityStatementResource {
                         "Inward patient workflows",
                         "API Key",
                         "GET", "POST"))
+                .add(resource("Inward Discount Matrix", "/api/inward-discount-matrix",
+                        "Manage inward discount matrix entries for services/investigations and pharmacy. "
+                        + "Supports scope=service|pharmacy to restrict category types. "
+                        + "Lookup sub-paths for resolving names to IDs: "
+                        + "/admission-types/search, /payment-schemes/search, "
+                        + "/pharmaceutical-item-categories/search, /payment-methods. "
+                        + "POST returns HTTP 409 with existing id when a duplicate combination exists.",
+                        "API Key",
+                        "GET", "POST", "PUT", "DELETE"))
                 .add(resource("LIMS", "/api/lims",
                         "Laboratory Information Management System integrations",
                         "API Key",
