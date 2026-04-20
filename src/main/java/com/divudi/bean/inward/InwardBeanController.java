@@ -118,6 +118,8 @@ public class InwardBeanController implements Serializable {
     SessionController sessionController;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    com.divudi.bean.common.PriceMatrixController priceMatrixController;
 
     private Long lastGeneratedBhtLong;
 
@@ -2316,9 +2318,49 @@ public class InwardBeanController implements Serializable {
             }
         }
 
+        applyInwardDiscountToBillFee(billFee, item, patientEncounter);
+
         double net = (billFee.getFeeGrossValue() + margin) - billFee.getFeeDiscount();
 
         billFee.setFeeValue(net);
+    }
+
+    /**
+     * Apply the Inward Discount Matrix discount to a BillFee.
+     *
+     * Runs on hospital-portion fees only (skips Staff fees, mirrors the margin
+     * rule) and requires the item to allow discount. The discount scheme is
+     * taken from the admission/encounter itself (set at admission time).
+     * BHT type is the encounter's paymentMethod. When no matrix row matches
+     * the discount is 0, so existing behaviour is preserved for sites that
+     * have not configured the matrix.
+     */
+    public void applyInwardDiscountToBillFee(BillFee billFee, Item item, PatientEncounter patientEncounter) {
+        if (billFee == null || item == null || patientEncounter == null) {
+            return;
+        }
+        if (!item.isDiscountAllowed()) {
+            return;
+        }
+        if (billFee.getFee() == null || billFee.getFee().getFeeType() == FeeType.Staff) {
+            return;
+        }
+        Department matrixDept = item.getDepartment();
+        if (matrixDept == null && billFee.getBillItem() != null && billFee.getBillItem().getBill() != null) {
+            matrixDept = billFee.getBillItem().getBill().getDepartment();
+        }
+        double pct = priceMatrixController.getInwardDiscountPercent(
+                patientEncounter.getPaymentMethod(),
+                patientEncounter.getPaymentScheme(),
+                patientEncounter.getAdmissionType(),
+                matrixDept,
+                item);
+        if (pct <= 0.0) {
+            return;
+        }
+        double gross = billFee.getFeeGrossValue();
+        double discount = (gross * pct) / 100.0;
+        billFee.setFeeDiscount(discount);
     }
 
     public void updateBillItemMargin(BillItem billItem, double serviceValue, PatientEncounter patientEncounter, Department matrixDepartment, PriceMatrix priceMatrix) {
@@ -2326,7 +2368,11 @@ public class InwardBeanController implements Serializable {
         List<BillFee> billFees = getBillBean().getBillFee(billItem);
 
         for (BillFee billFee : billFees) {
-            setBillFeeMargin(billFee, billItem.getItem(), priceMatrix);
+            if (patientEncounter != null && patientEncounter.getAdmissionType() != null) {
+                setBillFeeMargin(billFee, billItem.getItem(), priceMatrix, patientEncounter);
+            } else {
+                setBillFeeMargin(billFee, billItem.getItem(), priceMatrix);
+            }
 
             if (billFee.getId() != null) {
                 getBillFeeFacade().edit(billFee);
@@ -2337,7 +2383,11 @@ public class InwardBeanController implements Serializable {
 
     public void updateBillItemMargin(BillFee billFee, double serviceValue, PatientEncounter patientEncounter, Department matrixDepartment, PriceMatrix priceMatrix) {
 
-        setBillFeeMargin(billFee, billFee.getBillItem().getItem(), priceMatrix);
+        if (patientEncounter != null && patientEncounter.getAdmissionType() != null) {
+            setBillFeeMargin(billFee, billFee.getBillItem().getItem(), priceMatrix, patientEncounter);
+        } else {
+            setBillFeeMargin(billFee, billFee.getBillItem().getItem(), priceMatrix);
+        }
 
         if (billFee.getId() != null) {
             getBillFeeFacade().edit(billFee);

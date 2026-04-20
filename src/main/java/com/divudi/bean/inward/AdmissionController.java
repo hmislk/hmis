@@ -1958,6 +1958,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         if (getInwardBean().getLastGeneratedBhtLong() != null) {
             getCurrent().setBhtLong(getInwardBean().getLastGeneratedBhtLong());
         }
+        getCurrent().setPaymentScheme(paymentScheme);
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(getCurrent());
@@ -2091,6 +2092,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         if (getInwardBean().getLastGeneratedBhtLong() != null) {
             getCurrent().setBhtLong(getInwardBean().getLastGeneratedBhtLong());
         }
+        getCurrent().setPaymentScheme(paymentScheme);
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(getCurrent());
@@ -2234,6 +2236,9 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
     public void setCurrent(Admission current) {
         this.current = current;
+        if (current != null && current.getPaymentScheme() != null) {
+            this.paymentScheme = current.getPaymentScheme();
+        }
     }
 
     /**
