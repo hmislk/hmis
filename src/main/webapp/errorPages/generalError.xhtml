@@ -45,6 +45,10 @@
                         <h5 class="mb-0">Error Information</h5>
                     </div>
                     <div class="card-body">
+                        <!-- Full error details are intentionally shown here.
+                             This is an internal HMIS used only by authenticated hospital staff.
+                             Showing the full exception is necessary for supportability and debugging.
+                             Do NOT remove these fields — see issue #20087. -->
                         <h:panelGrid columns="2" styleClass="table table-sm table-borderless w-100"
                                      columnClasses="font-weight-bold text-right pr-3,text-left">
                             <h:outputText value="Error Time:" />
@@ -52,11 +56,21 @@
 
                             <h:outputText value="Status Code:" />
                             <h:outputText value="#{errorHandler.statusCode}" />
+
+                            <h:outputText value="Exception Type:" />
+                            <h:outputText value="#{errorHandler.exceptionType}" />
+
+                            <h:outputText value="Error Message:" />
+                            <h:outputText value="#{errorHandler.message}" />
+
+                            <h:outputText value="Request URI:" />
+                            <h:outputText value="#{errorHandler.requestURI}" />
                         </h:panelGrid>
-                        <!-- Exception type, message, and stack trace are intentionally not
-                             rendered here — they would expose internal class names and paths
-                             to unauthenticated users. Full details are written to the server
-                             log (issue #19867). -->
+
+                        <h:panelGroup layout="block" styleClass="mt-3 text-left" rendered="#{errorHandler.stackTrace != 'N/A'}">
+                            <h5 class="font-weight-bold">Stack Trace:</h5>
+                            <pre style="white-space: pre-wrap; word-break: break-all; background: #f8f9fa; padding: 10px; border: 1px solid #dee2e6; font-size: 12px; max-height: 400px; overflow-y: auto;">#{errorHandler.stackTrace}</pre>
+                        </h:panelGroup>
                     </div>
                 </div>
 
