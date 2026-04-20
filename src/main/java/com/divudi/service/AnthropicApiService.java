@@ -410,12 +410,75 @@ public class AnthropicApiService implements Serializable {
                         .add("required", Json.createArrayBuilder().add("method")))
                 .build();
 
+        JsonObject inwardDiscountMatrixTool = Json.createObjectBuilder()
+                .add("name", "manage_inward_discount_matrix")
+                .add("description",
+                        "Manage Inward Discount Matrix entries (backs the two UI pages "
+                        + "inward_discount_matrix_service_investigation.xhtml and inward_discount_matrix_pharmacy.xhtml). "
+                        + "Methods: LIST (filter+list), GET (one), POST (create — rejects duplicates), "
+                        + "PUT (update), DELETE (soft-retire). "
+                        + "Lookup helpers: LOOKUP_DEPARTMENTS, LOOKUP_SERVICE_CATEGORIES, "
+                        + "LOOKUP_PHARMACEUTICAL_ITEM_CATEGORIES, LOOKUP_ADMISSION_TYPES, "
+                        + "LOOKUP_PAYMENT_SCHEMES, LIST_PAYMENT_METHODS. "
+                        + "Always resolve names to IDs via the lookups before POST/PUT.")
+                .add("input_schema", Json.createObjectBuilder()
+                        .add("type", "object")
+                        .add("properties", Json.createObjectBuilder()
+                                .add("method", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("enum", Json.createArrayBuilder()
+                                                .add("LIST").add("GET").add("POST").add("PUT").add("DELETE")
+                                                .add("LOOKUP_DEPARTMENTS")
+                                                .add("LOOKUP_SERVICE_CATEGORIES")
+                                                .add("LOOKUP_PHARMACEUTICAL_ITEM_CATEGORIES")
+                                                .add("LOOKUP_ADMISSION_TYPES")
+                                                .add("LOOKUP_PAYMENT_SCHEMES")
+                                                .add("LIST_PAYMENT_METHODS"))
+                                        .add("description", "Operation to perform."))
+                                .add("scope", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("enum", Json.createArrayBuilder().add("service").add("pharmacy"))
+                                        .add("description", "Required for POST. Optional filter for LIST."))
+                                .add("id", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Entry id. Required for GET, PUT, DELETE."))
+                                .add("departmentId", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Department id. Optional for POST/PUT/LIST."))
+                                .add("categoryId", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Category id (service/investigation or pharmaceutical). Optional for POST/PUT/LIST."))
+                                .add("admissionTypeId", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "AdmissionType id. Optional."))
+                                .add("paymentSchemeId", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "PaymentScheme id. Required for POST."))
+                                .add("paymentMethod", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "PaymentMethod enum name, e.g. Cash, Credit, Card. Optional."))
+                                .add("discountPercent", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Discount percentage. Required for POST."))
+                                .add("query", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Search text for LOOKUP_* operations. Optional."))
+                                .add("limit", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Max results (1–200). Optional."))
+                                .add("retireComments", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Reason for retirement. Optional for DELETE.")))
+                        .add("required", Json.createArrayBuilder().add("method")))
+                .build();
+
         return Json.createArrayBuilder()
                 .add(searchCodeTool)
                 .add(fetchFileTool)
                 .add(searchConfigTool)
                 .add(clinicalMetadataTool)
                 .add(collectingCentreFeesTool)
+                .add(inwardDiscountMatrixTool)
                 .build();
     }
 
@@ -477,6 +540,23 @@ public class AnthropicApiService implements Serializable {
                     String retireComments  = toolInput.containsKey("retireComments")    ? toolInput.getString("retireComments", "")    : "";
                     return callCollectingCentreFeesApi(method, institutionId, feeId, ccId, itemId,
                             name, feeType, fee, ffee, departmentId, discountAllowed,
+                            query, limit, retireComments, hmisBaseUrl, hmisApiKey);
+                }
+                case "manage_inward_discount_matrix": {
+                    String method            = toolInput.getString("method", "LIST");
+                    String scope             = toolInput.containsKey("scope")            ? toolInput.getString("scope", "")            : "";
+                    String id                = toolInput.containsKey("id")               ? toolInput.getString("id", "")               : "";
+                    String departmentId      = toolInput.containsKey("departmentId")     ? toolInput.getString("departmentId", "")     : "";
+                    String categoryId        = toolInput.containsKey("categoryId")       ? toolInput.getString("categoryId", "")       : "";
+                    String admissionTypeId   = toolInput.containsKey("admissionTypeId")  ? toolInput.getString("admissionTypeId", "")  : "";
+                    String paymentSchemeId   = toolInput.containsKey("paymentSchemeId")  ? toolInput.getString("paymentSchemeId", "")  : "";
+                    String paymentMethodStr  = toolInput.containsKey("paymentMethod")    ? toolInput.getString("paymentMethod", "")    : "";
+                    String discountPercent   = toolInput.containsKey("discountPercent")  ? toolInput.getString("discountPercent", "")  : "";
+                    String query             = toolInput.containsKey("query")            ? toolInput.getString("query", "")            : "";
+                    String limit             = toolInput.containsKey("limit")            ? toolInput.getString("limit", "")            : "";
+                    String retireComments    = toolInput.containsKey("retireComments")   ? toolInput.getString("retireComments", "")   : "";
+                    return callInwardDiscountMatrixApi(method, scope, id, departmentId, categoryId,
+                            admissionTypeId, paymentSchemeId, paymentMethodStr, discountPercent,
                             query, limit, retireComments, hmisBaseUrl, hmisApiKey);
                 }
                 default:
@@ -870,6 +950,200 @@ public class AnthropicApiService implements Serializable {
         }
     }
 
+    private String callInwardDiscountMatrixApi(
+            String method, String scope, String id, String departmentId, String categoryId,
+            String admissionTypeId, String paymentSchemeId, String paymentMethod,
+            String discountPercent, String query, String limit, String retireComments,
+            String hmisBaseUrl, String hmisApiKey) {
+
+        if (hmisBaseUrl == null || hmisBaseUrl.trim().isEmpty()) {
+            return "Error: HMIS base URL is not configured.";
+        }
+        if (hmisApiKey == null || hmisApiKey.trim().isEmpty()) {
+            return "Error: No active HMIS API key found for the current user.";
+        }
+
+        try {
+            HttpClient client = HttpClient.newBuilder()
+                    .connectTimeout(Duration.ofSeconds(10))
+                    .build();
+
+            String root = hmisBaseUrl.trim().replaceAll("/+$", "");
+            String base = root + "/api/inward-discount-matrix";
+            String url;
+            String requestBody = null;
+            String httpMethod;
+
+            switch (method == null ? "" : method.toUpperCase()) {
+                case "LIST": {
+                    StringBuilder urlBuilder = new StringBuilder(base);
+                    boolean first = true;
+                    if (scope != null && !scope.isEmpty()) {
+                        urlBuilder.append(first ? "?" : "&").append("scope=")
+                                .append(URLEncoder.encode(scope, StandardCharsets.UTF_8));
+                        first = false;
+                    }
+                    if (departmentId != null && !departmentId.isEmpty()) {
+                        urlBuilder.append(first ? "?" : "&").append("departmentId=").append(departmentId);
+                        first = false;
+                    }
+                    if (categoryId != null && !categoryId.isEmpty()) {
+                        urlBuilder.append(first ? "?" : "&").append("categoryId=").append(categoryId);
+                        first = false;
+                    }
+                    if (admissionTypeId != null && !admissionTypeId.isEmpty()) {
+                        urlBuilder.append(first ? "?" : "&").append("admissionTypeId=").append(admissionTypeId);
+                        first = false;
+                    }
+                    if (paymentSchemeId != null && !paymentSchemeId.isEmpty()) {
+                        urlBuilder.append(first ? "?" : "&").append("paymentSchemeId=").append(paymentSchemeId);
+                        first = false;
+                    }
+                    if (paymentMethod != null && !paymentMethod.isEmpty()) {
+                        urlBuilder.append(first ? "?" : "&").append("paymentMethod=")
+                                .append(URLEncoder.encode(paymentMethod, StandardCharsets.UTF_8));
+                        first = false;
+                    }
+                    if (limit != null && !limit.isEmpty()) {
+                        urlBuilder.append(first ? "?" : "&").append("limit=").append(limit);
+                        first = false;
+                    }
+                    url = urlBuilder.toString();
+                    httpMethod = "GET";
+                    break;
+                }
+                case "GET": {
+                    if (id == null || id.trim().isEmpty()) return "Error: id is required for GET.";
+                    url = base + "/" + id.trim();
+                    httpMethod = "GET";
+                    break;
+                }
+                case "POST": {
+                    url = base;
+                    httpMethod = "POST";
+                    javax.json.JsonObjectBuilder bodyBuilder = Json.createObjectBuilder();
+                    if (scope != null && !scope.isEmpty()) bodyBuilder.add("scope", scope);
+                    if (departmentId != null && !departmentId.trim().isEmpty()) bodyBuilder.add("departmentId", Long.parseLong(departmentId.trim()));
+                    if (categoryId != null && !categoryId.trim().isEmpty()) bodyBuilder.add("categoryId", Long.parseLong(categoryId.trim()));
+                    if (admissionTypeId != null && !admissionTypeId.trim().isEmpty()) bodyBuilder.add("admissionTypeId", Long.parseLong(admissionTypeId.trim()));
+                    if (paymentSchemeId != null && !paymentSchemeId.trim().isEmpty()) bodyBuilder.add("paymentSchemeId", Long.parseLong(paymentSchemeId.trim()));
+                    if (paymentMethod != null && !paymentMethod.isEmpty()) bodyBuilder.add("paymentMethod", paymentMethod);
+                    if (discountPercent != null && !discountPercent.trim().isEmpty()) bodyBuilder.add("discountPercent", Double.parseDouble(discountPercent.trim()));
+                    requestBody = bodyBuilder.build().toString();
+                    break;
+                }
+                case "PUT": {
+                    if (id == null || id.trim().isEmpty()) return "Error: id is required for PUT.";
+                    url = base + "/" + id.trim();
+                    httpMethod = "PUT";
+                    javax.json.JsonObjectBuilder bodyBuilder = Json.createObjectBuilder();
+                    if (scope != null && !scope.isEmpty()) bodyBuilder.add("scope", scope);
+                    if (departmentId != null && !departmentId.trim().isEmpty()) bodyBuilder.add("departmentId", Long.parseLong(departmentId.trim()));
+                    if (categoryId != null && !categoryId.trim().isEmpty()) bodyBuilder.add("categoryId", Long.parseLong(categoryId.trim()));
+                    if (admissionTypeId != null && !admissionTypeId.trim().isEmpty()) bodyBuilder.add("admissionTypeId", Long.parseLong(admissionTypeId.trim()));
+                    if (paymentSchemeId != null && !paymentSchemeId.trim().isEmpty()) bodyBuilder.add("paymentSchemeId", Long.parseLong(paymentSchemeId.trim()));
+                    if (paymentMethod != null && !paymentMethod.isEmpty()) bodyBuilder.add("paymentMethod", paymentMethod);
+                    if (discountPercent != null && !discountPercent.trim().isEmpty()) bodyBuilder.add("discountPercent", Double.parseDouble(discountPercent.trim()));
+                    requestBody = bodyBuilder.build().toString();
+                    break;
+                }
+                case "DELETE": {
+                    if (id == null || id.trim().isEmpty()) return "Error: id is required for DELETE.";
+                    StringBuilder urlBuilder = new StringBuilder(base).append("/").append(id.trim());
+                    if (retireComments != null && !retireComments.isEmpty()) {
+                        urlBuilder.append("?retireComments=")
+                                .append(URLEncoder.encode(retireComments, StandardCharsets.UTF_8));
+                    }
+                    url = urlBuilder.toString();
+                    httpMethod = "DELETE";
+                    break;
+                }
+                case "LOOKUP_DEPARTMENTS": {
+                    StringBuilder urlBuilder = new StringBuilder(root).append("/api/departments/search");
+                    if (query != null && !query.isEmpty()) {
+                        urlBuilder.append("?query=").append(URLEncoder.encode(query, StandardCharsets.UTF_8));
+                        if (limit != null && !limit.isEmpty()) urlBuilder.append("&limit=").append(limit);
+                    } else if (limit != null && !limit.isEmpty()) {
+                        urlBuilder.append("?limit=").append(limit);
+                    }
+                    url = urlBuilder.toString();
+                    httpMethod = "GET";
+                    break;
+                }
+                case "LOOKUP_SERVICE_CATEGORIES": {
+                    StringBuilder urlBuilder = new StringBuilder(root).append("/api/services/categories/search");
+                    if (query != null && !query.isEmpty()) {
+                        urlBuilder.append("?query=").append(URLEncoder.encode(query, StandardCharsets.UTF_8));
+                        if (limit != null && !limit.isEmpty()) urlBuilder.append("&limit=").append(limit);
+                    } else if (limit != null && !limit.isEmpty()) {
+                        urlBuilder.append("?limit=").append(limit);
+                    }
+                    url = urlBuilder.toString();
+                    httpMethod = "GET";
+                    break;
+                }
+                case "LOOKUP_PHARMACEUTICAL_ITEM_CATEGORIES": {
+                    url = lookupUrl(base + "/pharmaceutical-item-categories/search", query, limit);
+                    httpMethod = "GET";
+                    break;
+                }
+                case "LOOKUP_ADMISSION_TYPES": {
+                    url = lookupUrl(base + "/admission-types/search", query, limit);
+                    httpMethod = "GET";
+                    break;
+                }
+                case "LOOKUP_PAYMENT_SCHEMES": {
+                    url = lookupUrl(base + "/payment-schemes/search", query, limit);
+                    httpMethod = "GET";
+                    break;
+                }
+                case "LIST_PAYMENT_METHODS": {
+                    url = base + "/payment-methods";
+                    httpMethod = "GET";
+                    break;
+                }
+                default:
+                    return "Error: Unknown method: " + method;
+            }
+
+            HttpRequest.Builder reqBuilder = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .timeout(Duration.ofSeconds(15))
+                    .header("Finance", hmisApiKey)
+                    .header("Content-Type", "application/json");
+
+            if (requestBody != null) {
+                reqBuilder.method(httpMethod, HttpRequest.BodyPublishers.ofString(requestBody));
+            } else if ("DELETE".equals(httpMethod)) {
+                reqBuilder.DELETE();
+            } else {
+                reqBuilder.GET();
+            }
+
+            HttpResponse<String> response = client.send(reqBuilder.build(), HttpResponse.BodyHandlers.ofString());
+            return "HTTP " + response.statusCode() + "\n" + response.body();
+
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return "Inward discount matrix API call interrupted.";
+        } catch (Exception e) {
+            return "Inward discount matrix API error: " + e.getMessage();
+        }
+    }
+
+    private String lookupUrl(String base, String query, String limit) {
+        StringBuilder urlBuilder = new StringBuilder(base);
+        boolean first = true;
+        if (query != null && !query.isEmpty()) {
+            urlBuilder.append("?query=").append(URLEncoder.encode(query, StandardCharsets.UTF_8));
+            first = false;
+        }
+        if (limit != null && !limit.isEmpty()) {
+            urlBuilder.append(first ? "?" : "&").append("limit=").append(limit);
+        }
+        return urlBuilder.toString();
+    }
+
     // -------------------------------------------------------------------------
     // Message building helpers
     // -------------------------------------------------------------------------
@@ -968,7 +1242,7 @@ public class AnthropicApiService implements Serializable {
         }
 
         sb.append("## Tools Available to You\n");
-        sb.append("You have four tools to ground your answers in the actual codebase, live configuration, and clinical master data:\n\n");
+        sb.append("You have six tools to ground your answers in the actual codebase, live configuration, clinical master data, collecting-centre fees, and inward discount matrix entries:\n\n");
         sb.append("### search_github_code\n");
         sb.append("Searches the hmislk/hmis repository source code for files matching keywords. ");
         sb.append("Use this first when a user asks about system behaviour, page logic, or wants to understand how something works.\n\n");
@@ -984,6 +1258,16 @@ public class AnthropicApiService implements Serializable {
           .append("race, religion, blood_group, civil_status, employment, relationship). ")
           .append("Use this when the user wants to add or manage clinical master data without navigating the UI. ")
           .append("Always confirm with the user before creating or deleting entries.\n\n");
+        sb.append("### manage_collecting_centre_fees\n");
+        sb.append("List, create, update, retire, or recalculate item fees for a collecting centre.\n\n");
+        sb.append("### manage_inward_discount_matrix\n");
+        sb.append("Manage Inward Discount Matrix entries for services/investigations and pharmacy. ")
+          .append("Use scope='service' or scope='pharmacy' to pick the correct category universe. ")
+          .append("Resolve names to IDs first using the lookup methods (LOOKUP_DEPARTMENTS, LOOKUP_SERVICE_CATEGORIES, ")
+          .append("LOOKUP_PHARMACEUTICAL_ITEM_CATEGORIES, LOOKUP_ADMISSION_TYPES, LOOKUP_PAYMENT_SCHEMES, LIST_PAYMENT_METHODS), ")
+          .append("then POST to create, PUT to update, or DELETE to retire. ")
+          .append("Always confirm with the user before POST, PUT, or DELETE — these changes affect live inward billing discounts. ")
+          .append("POST returns 'already_exists' with the existing id when a duplicate combination already exists.\n\n");
 
         sb.append("## How to Use the Tools\n");
         sb.append("- When a user describes a problem or asks why something behaves a certain way, search the source code first.\n");
@@ -1353,6 +1637,26 @@ public class AnthropicApiService implements Serializable {
                     {"GET",  "/apiInward/validateAdmission/{bht_no}/{phone}",                    "Validate BHT number and phone before payment"},
                     {"POST", "/apiInward/payment",                                                "Process online settlement payment for admitted patient (fields: bht_no, bank_id, reference_no, amount, payment_date)"},
                     {"GET",  "/apiInward/payment/{bht_no}/{bank_id}/{credit_card_ref}/{amount}", "Legacy GET-based payment endpoint"}
+                });
+
+        // ── Inward Discount Matrix ────────────────────────────────────────────
+        appendModule(sb, "Inward Discount Matrix", "/inward-discount-matrix",
+                "Manage inward discount matrix entries (backs the two UI pages "
+                + "inward_discount_matrix_service_investigation.xhtml and inward_discount_matrix_pharmacy.xhtml). "
+                + "Use scope=service or scope=pharmacy to choose the category universe. "
+                + "POST rejects duplicates with 409 + existing id. "
+                + "Lookup sub-paths resolve names to IDs.",
+                null,
+                new String[][]{
+                    {"GET",    "/inward-discount-matrix?scope=X",                               "List entries. Filters: scope, departmentId, categoryId, admissionTypeId, paymentSchemeId, paymentMethod, limit"},
+                    {"GET",    "/inward-discount-matrix/{id}",                                   "Fetch one entry"},
+                    {"POST",   "/inward-discount-matrix",                                         "Create. Body: scope (required), paymentSchemeId (required), discountPercent (required), departmentId, categoryId, admissionTypeId, paymentMethod"},
+                    {"PUT",    "/inward-discount-matrix/{id}",                                   "Update. Body fields all optional; send null to clear a field"},
+                    {"DELETE", "/inward-discount-matrix/{id}",                                   "Soft-retire entry. Optional: retireComments"},
+                    {"GET",    "/inward-discount-matrix/admission-types/search?query=",          "AdmissionType name → id lookup"},
+                    {"GET",    "/inward-discount-matrix/payment-schemes/search?query=",           "PaymentScheme name → id lookup"},
+                    {"GET",    "/inward-discount-matrix/pharmaceutical-item-categories/search?query=", "PharmaceuticalItemCategory name → id lookup"},
+                    {"GET",    "/inward-discount-matrix/payment-methods",                         "List PaymentMethod enum values (Cash, Credit, Card, ...)"}
                 });
 
         // ── Login History / Config ────────────────────────────────────────────
