@@ -7938,4 +7938,12 @@ public class BookingControllerViewScopeMonth implements Serializable {
         this.listAll = listAll;
     }
 
+    public boolean checkItemIsSessionInstance(BillItem bi) {
+        if (bi.getItem() != null) {
+            if (bi.getItem() instanceof ServiceSession) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

@@ -760,6 +760,7 @@
                                                         class="ui-button-danger"
                                                         update="@form"
                                                         process="@this"
+                                                        disabled="#{bookingControllerViewScopeMonth.checkItemIsSessionInstance(bi)}"
                                                         action="#{bookingControllerViewScopeMonth.removeAddedAditionalItem()}"
                                                         >
                                                         <f:setPropertyActionListener target="#{bookingControllerViewScopeMonth.selectedBillItem}" value="#{bi}"/>
