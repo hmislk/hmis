@@ -824,9 +824,10 @@ public class ReportController implements Serializable, ControllerWithReportFilte
             int indexRow = 1;
             for (ReportTemplateRow row : bundle.getReportTemplateRows()) {
                 table.addCell(textCell(String.valueOf(indexRow), bodyFontSmall));
-                table.addCell(textCell(row.getInstitution().getCode(), bodyFontSmall));
-                table.addCell(textCell(row.getInstitution().getName(), bodyFontSmall));
-                table.addCell(textCell(row.getInstitution().getRoute()!= null ? row.getInstitution().getRoute().getName(): "-", bodyFontSmall));
+                Institution cc = row.getInstitution();
+                table.addCell(textCell(cc !=null ? cc.getCode(): "-", bodyFontSmall));
+                table.addCell(textCell(cc!=null ? cc.getName() : "-", bodyFontSmall));
+                table.addCell(textCell(cc!=null && cc.getRoute()!= null ? cc.getRoute().getName(): "-", bodyFontSmall));
                 
                 table.addCell(numCell(row.getItemCount(), bodyFontSmall));
                 table.addCell(numCell(row.getItemHospitalFee(), bodyFontSmall));
