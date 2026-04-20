@@ -762,7 +762,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
     }
 
     public void exportCollectionCenterWiseSummaryReportToPDF() {
-        if (bundle.getReportTemplateRows() == null || bundle.getReportTemplateRows().isEmpty()) {
+        if (bundle == null || bundle.getReportTemplateRows() == null || bundle.getReportTemplateRows().isEmpty()) {
             JsfUtil.addErrorMessage("No data to export. Please process the report first.");
             return;
         }
