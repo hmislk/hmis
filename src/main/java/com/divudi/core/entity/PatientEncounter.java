@@ -49,7 +49,7 @@ public class PatientEncounter implements Serializable, RetirableEntity {
 
     static final long serialVersionUID = 1L;
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     //Main Properties
     Long id;
     String bhtNo;
@@ -85,6 +85,8 @@ public class PatientEncounter implements Serializable, RetirableEntity {
     String retireComments;
     @Enumerated(EnumType.STRING)
     PaymentMethod paymentMethod;
+    @ManyToOne
+    private PaymentScheme paymentScheme;
     @ManyToOne
     Institution creditCompany;
     @ManyToOne
@@ -683,6 +685,14 @@ public class PatientEncounter implements Serializable, RetirableEntity {
 
     public void setPaymentMethod(PaymentMethod paymentMethod) {
         this.paymentMethod = paymentMethod;
+    }
+
+    public PaymentScheme getPaymentScheme() {
+        return paymentScheme;
+    }
+
+    public void setPaymentScheme(PaymentScheme paymentScheme) {
+        this.paymentScheme = paymentScheme;
     }
 
     public double getCreditLimit() {

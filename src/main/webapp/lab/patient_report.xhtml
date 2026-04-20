@@ -108,17 +108,17 @@
                                         </div>
 
                                         <div class="d-flex gap-2">
-                                            
+
                                             <p:remoteCommand name="recordExportHistory"
-                                                actionListener="#{patientReportController.reportExport()}"
-                                                async="true">
+                                                             actionListener="#{patientReportController.reportExport()}"
+                                                             async="true">
                                             </p:remoteCommand>
-                                            
+
                                             <p:remoteCommand name="recordPrintHistory"
-                                                actionListener="#{patientReportController.printPatientReport()}"
-                                                async="true">
+                                                             actionListener="#{patientReportController.printPatientReport()}"
+                                                             async="true">
                                             </p:remoteCommand>
-                                            
+
                                             <p:commandButton 
                                                 value="Export PDF" 
                                                 class="ui-button-channelling" 
@@ -128,7 +128,7 @@
                                                 type="button"  
                                                 ajax="false">
                                             </p:commandButton>
-                                            
+
                                             <p:commandButton
                                                 type="button"
                                                 icon="fa-solid fa-print"
@@ -253,7 +253,7 @@
                         </h:panelGroup>
 
                         <div class="row">
-                            
+
                             <div class="col-5">
                                 <!--                            Enter Values                        -->
                                 <p:panel header="Enter Values"  
@@ -1017,12 +1017,12 @@
                                 </style>
 
                                 <script>
-                                                    function downloadPdf() {
-                                                        console.log("Downloading PDF...");
-                                                        recordExportHistory();
-                                                        console.log("Add History to Downloading PDF ...");
-                                                        const element = document.getElementById('pdf');
-                                                        element.classList.remove('print-only');
+                                    function downloadPdf() {
+                                        console.log("Downloading PDF...");
+                                        recordExportHistory();
+                                        console.log("Add History to Downloading PDF ...");
+                                        const element = document.getElementById('pdf');
+                                        element.classList.remove('print-only');
 
                                                         const opt = {
                                                             margin: [0, 0, 0, 0], // top, left, bottom, right
@@ -1036,12 +1036,12 @@
                                                             jsPDF: {unit: 'mm', format: [210, 297], orientation: 'portrait'}
                                                         };
 
-                                                        html2pdf().from(element).set(opt).toPdf().get('pdf').then(function (pdf) {
-                                                            pdf.deletePage(2); // Remove the second page if it exists
-                                                        }).save().then(() => {
-                                                            element.classList.add('print-only');
-                                                        });
-                                                    }
+                                        html2pdf().from(element).set(opt).toPdf().get('pdf').then(function (pdf) {
+                                            pdf.deletePage(2); // Remove the second page if it exists
+                                        }).save().then(() => {
+                                            element.classList.add('print-only');
+                                        });
+                                    }
                                 </script>
 
                                 <div class="d-flex justify-content-end m-3">

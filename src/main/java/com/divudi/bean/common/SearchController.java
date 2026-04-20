@@ -7155,9 +7155,65 @@ public class SearchController implements Serializable {
         }
 
         if (bills != null && !bills.isEmpty()) {
-            for (Bill b : bills) {
-                b.setListOfBill(getGrns(b, referenceBillTypes)); // N+1; refactor if needed
+            fillGrnsByBulkQuery(bills, referenceBillTypes);
+        }
+    }
+
+    /**
+     * Bulk-loads GRNs for every PO in the list using 2 queries instead of
+     * 2×N per-PO queries, then assigns the results to each Bill.listOfBill.
+     * Two query paths match the original getGrns() logic:
+     *   1. g.referenceBill = po
+     *   2. g.billedBill.referenceBill = po
+     */
+    private void fillGrnsByBulkQuery(List<Bill> poList, List<BillTypeAtomic> grnBillTypesAtomicsToList) {
+        Map<Long, List<Bill>> grnsByPoId = new HashMap<>();
+        for (Bill po : poList) {
+            grnsByPoId.put(po.getId(), new ArrayList<>());
+        }
+
+        // Path 1: GRN.referenceBill is the PO
+        String jpql1 = "SELECT g.referenceBill.id, g FROM Bill g "
+                + "WHERE g.retired = false "
+                + "AND g.billTypeAtomic IN :btas "
+                + "AND g.referenceBill IN :pos";
+        Map<String, Object> params1 = new HashMap<>();
+        params1.put("btas", grnBillTypesAtomicsToList);
+        params1.put("pos", poList);
+        List<Object> rows1 = getBillFacade().findObjects(jpql1, params1);
+        if (rows1 != null) {
+            for (Object row : rows1) {
+                Object[] cols = (Object[]) row;
+                Long poId = ((Number) cols[0]).longValue();
+                Bill grn = (Bill) cols[1];
+                grnsByPoId.computeIfAbsent(poId, k -> new ArrayList<>()).add(grn);
             }
+        }
+
+        // Path 2: GRN.billedBill.referenceBill is the PO
+        String jpql2 = "SELECT g.billedBill.referenceBill.id, g FROM Bill g "
+                + "WHERE g.retired = false "
+                + "AND g.billTypeAtomic IN :btas "
+                + "AND g.billedBill IS NOT NULL "
+                + "AND g.billedBill.referenceBill IN :pos";
+        Map<String, Object> params2 = new HashMap<>();
+        params2.put("btas", grnBillTypesAtomicsToList);
+        params2.put("pos", poList);
+        List<Object> rows2 = getBillFacade().findObjects(jpql2, params2);
+        if (rows2 != null) {
+            for (Object row : rows2) {
+                Object[] cols = (Object[]) row;
+                Long poId = ((Number) cols[0]).longValue();
+                Bill grn = (Bill) cols[1];
+                List<Bill> grnList = grnsByPoId.computeIfAbsent(poId, k -> new ArrayList<>());
+                if (!grnList.contains(grn)) {
+                    grnList.add(grn);
+                }
+            }
+        }
+
+        for (Bill po : poList) {
+            po.setListOfBill(grnsByPoId.getOrDefault(po.getId(), new ArrayList<>()));
         }
     }
 

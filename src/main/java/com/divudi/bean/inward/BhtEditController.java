@@ -51,6 +51,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import com.divudi.core.entity.EncounterCreditCompany;
 import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.PaymentScheme;
 import com.divudi.core.entity.clinical.ClinicalFindingValue;
 import com.divudi.core.facade.ClinicalFindingValueFacade;
 import com.divudi.core.facade.EmailFacade;
@@ -135,6 +136,7 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
 
     YearMonthDay yearMonthDay;
     private PaymentMethod paymentMethod;
+    private PaymentScheme paymentScheme;
 
     private Speciality referringSpeciality;
     private Speciality opdSpeciality;
@@ -482,6 +484,8 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
             }
         }
 
+        current.setPaymentScheme(paymentScheme);
+
         // Save Admission with immediate flush (flushes ALL entities without clear)
         if (current.getId() == null) {
             getEjbFacade().createAndFlush(current);  // SINGLE flush for ALL entities
@@ -725,7 +729,15 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
 
     public void setCurrent(Admission current) {
         this.current = current;
-
+        if (current != null && current.getPaymentScheme() != null) {
+            paymentScheme = current.getPaymentScheme();
+        } else if (current != null && current.getPatient() != null
+                && current.getPatient().getPerson() != null
+                && current.getPatient().getPerson().getMembershipScheme() != null) {
+            paymentScheme = current.getPatient().getPerson().getMembershipScheme().getPaymentScheme();
+        } else {
+            paymentScheme = null;
+        }
     }
 
     private AdmissionFacade getFacade() {
@@ -975,7 +987,15 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
     public void listnerForPaymentMethodChange() {
         // ToDo: Add Logic
     }
-    
+
+    public PaymentScheme getPaymentScheme() {
+        return paymentScheme;
+    }
+
+    public void setPaymentScheme(PaymentScheme paymentScheme) {
+        this.paymentScheme = paymentScheme;
+    }
+
     // Admission edit: prepare data to log audit event
     public void admissionToAuditMap(Map<String, Object> m, Admission o) {
         if (o == null || m == null) {

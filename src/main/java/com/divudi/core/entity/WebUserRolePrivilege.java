@@ -24,7 +24,7 @@ import javax.persistence.Temporal;
 public class WebUserRolePrivilege implements Serializable {
     static final long serialVersionUID = 1L;
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
     String name;
     String description;
@@ -48,6 +48,11 @@ public class WebUserRolePrivilege implements Serializable {
     String retireComments;
     String sname;
     String tname;
+    //Last Update Properties
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date lastUpdateAt;
+    @ManyToOne
+    private WebUser lastUpdater;
 
     public Long getId() {
         return id;
@@ -193,5 +198,20 @@ public class WebUserRolePrivilege implements Serializable {
         this.webUserRole = webUserRole;
     }
 
+    public Date getLastUpdateAt() {
+        return lastUpdateAt;
+    }
+
+    public void setLastUpdateAt(Date lastUpdateAt) {
+        this.lastUpdateAt = lastUpdateAt;
+    }
+
+    public WebUser getLastUpdater() {
+        return lastUpdater;
+    }
+
+    public void setLastUpdater(WebUser lastUpdater) {
+        this.lastUpdater = lastUpdater;
+    }
 
 }
