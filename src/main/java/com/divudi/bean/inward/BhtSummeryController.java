@@ -602,9 +602,11 @@ public class BhtSummeryController implements Serializable {
     }
 
     public void calculateDiscount() {
+        long cd0 = System.currentTimeMillis();
 
         for (ChargeItemTotal cit : chargeItemTotals) {
             double discountValue = 0;
+            long cds = System.currentTimeMillis();
             switch (cit.getInwardChargeType()) {
                 case MaintainCharges:
                     discountValue = updatePatientMaintainCharge(cit.getInwardChargeType());
@@ -636,11 +638,16 @@ public class BhtSummeryController implements Serializable {
                 default:
                     discountValue = discountSet(cit);
             }
+            long cde = System.currentTimeMillis() - cds;
+            if (cde > 10) {
+                System.out.println("[DISCOUNT] " + cit.getInwardChargeType() + ": " + cde + "ms");
+            }
 
             cit.setDiscount(discountValue);
             cit.setAdjustedTotal(cit.getTotal());
 
         }
+        System.out.println("[DISCOUNT] calculateDiscount total: " + (System.currentTimeMillis() - cd0) + "ms");
 
     }
 
@@ -1281,9 +1288,13 @@ public class BhtSummeryController implements Serializable {
             return;
         }
 
+        long sob0 = System.currentTimeMillis();
         saveOriginalBill();
+        System.out.println("[SETTLE] saveOriginalBill: " + (System.currentTimeMillis() - sob0) + "ms");
 
+        long sob1 = System.currentTimeMillis();
         saveOriginalBillItem();
+        System.out.println("[SETTLE] saveOriginalBillItem: " + (System.currentTimeMillis() - sob1) + "ms (chargeItems=" + (chargeItemTotals != null ? chargeItemTotals.size() : 0) + ")");
 
         JsfUtil.addSuccessMessage("Original Bill Saved");
 
@@ -1912,18 +1923,29 @@ public class BhtSummeryController implements Serializable {
             }
         }
 
+        long t0 = System.currentTimeMillis();
+        System.out.println("[SETTLE] START pe=" + patientEncounter.getId());
+
         childPatientEncouters = getInwardBean().fetchChildPatientEncounter(patientEncounter);
+        System.out.println("[SETTLE] fetchChildPatientEncounter: " + (System.currentTimeMillis() - t0) + "ms");
 
+        long t1 = System.currentTimeMillis();
         createTables();
+        System.out.println("[SETTLE] createTables: " + (System.currentTimeMillis() - t1) + "ms");
 
+        long t2 = System.currentTimeMillis();
         calculateDiscount();
+        System.out.println("[SETTLE] calculateDiscount: " + (System.currentTimeMillis() - t2) + "ms");
 
-        createPatientRooms();
-
+        long t3 = System.currentTimeMillis();
         updateTotal();
+        System.out.println("[SETTLE] updateTotal: " + (System.currentTimeMillis() - t3) + "ms");
 
+        long t4 = System.currentTimeMillis();
         settleOriginalBill();
+        System.out.println("[SETTLE] settleOriginalBill: " + (System.currentTimeMillis() - t4) + "ms");
 
+        System.out.println("[SETTLE] TOTAL: " + (System.currentTimeMillis() - t0) + "ms");
         return "inward_bill_final?faces-redirect=true";
 
     }
@@ -2329,31 +2351,53 @@ public class BhtSummeryController implements Serializable {
             childPatientEncouters = getInwardBean().fetchChildPatientEncounter(getPatientEncounter());
         }
 
+        long ct0 = System.currentTimeMillis();
         createPatientRooms();
+        System.out.println("[TABLES] createPatientRooms: " + (System.currentTimeMillis() - ct0) + "ms (rooms=" + (patientRooms != null ? patientRooms.size() : 0) + ")");
 
+        long ct1 = System.currentTimeMillis();
         createPatientItems();
+        System.out.println("[TABLES] createPatientItems: " + (System.currentTimeMillis() - ct1) + "ms");
 
+        long ct2 = System.currentTimeMillis();
         pharmacyIssues = getInwardBean().fetchIssueTable(getPatientEncounter(), BillType.PharmacyBhtPre, childPatientEncouters);
+        System.out.println("[TABLES] fetchIssueTable(Pharmacy): " + (System.currentTimeMillis() - ct2) + "ms");
 
+        long ct3 = System.currentTimeMillis();
         storeIssues = getInwardBean().fetchIssueTable(getPatientEncounter(), BillType.StoreBhtPre, childPatientEncouters);
+        System.out.println("[TABLES] fetchIssueTable(Store): " + (System.currentTimeMillis() - ct3) + "ms");
 
+        long ct4 = System.currentTimeMillis();
         departmentBillItems = getInwardBean().createDepartmentBillItemsOptimized(patientEncounter, null, childPatientEncouters);
+        System.out.println("[TABLES] createDepartmentBillItemsOptimized: " + (System.currentTimeMillis() - ct4) + "ms");
 
+        long ct5 = System.currentTimeMillis();
         additionalChargeBill = getInwardBean().fetchOutSideBill(getPatientEncounter(), childPatientEncouters);
+        System.out.println("[TABLES] fetchOutSideBill: " + (System.currentTimeMillis() - ct5) + "ms");
 
+        long ct6 = System.currentTimeMillis();
         getInwardBean().setProfesionallFeeAdjusted(getPatientEncounter(), childPatientEncouters);
+        System.out.println("[TABLES] setProfesionallFeeAdjusted: " + (System.currentTimeMillis() - ct6) + "ms");
 
+        long ct7 = System.currentTimeMillis();
         profesionallFee = getInwardBean().createProfesionallFee(getPatientEncounter(), childPatientEncouters);
+        System.out.println("[TABLES] createProfesionallFee: " + (System.currentTimeMillis() - ct7) + "ms (fees=" + (profesionallFee != null ? profesionallFee.size() : 0) + ")");
 
+        long ct8 = System.currentTimeMillis();
         doctorAndNurseFee = getInwardBean().createDoctorAndNurseFee(getPatientEncounter(), childPatientEncouters);
+        System.out.println("[TABLES] createDoctorAndNurseFee: " + (System.currentTimeMillis() - ct8) + "ms");
 
+        long ct9 = System.currentTimeMillis();
         paymentBill = getInwardBean().fetchPaymentBill(getPatientEncounter(), childPatientEncouters);
+        System.out.println("[TABLES] fetchPaymentBill: " + (System.currentTimeMillis() - ct9) + "ms");
 
-        updateRoomChargeList();
-
+        long ct10 = System.currentTimeMillis();
         createChargeItemTotals();
+        System.out.println("[TABLES] createChargeItemTotals: " + (System.currentTimeMillis() - ct10) + "ms");
 
+        long ct11 = System.currentTimeMillis();
         updateTotal();
+        System.out.println("[TABLES] updateTotal: " + (System.currentTimeMillis() - ct11) + "ms");
 
         JsfUtil.addSuccessMessage("Recalculated Successfully");
 
@@ -2391,7 +2435,6 @@ public class BhtSummeryController implements Serializable {
         doctorAndNurseFee = getInwardBean().createDoctorAndNurseFee(getPatientEncounter(), childPatientEncouters);
         paymentBill = getInwardBean().fetchPaymentBill(getPatientEncounter(), childPatientEncouters);
 
-        updateRoomChargeList();
         createChargeItemTotals();
 
         updateTotal();
@@ -2626,7 +2669,7 @@ public class BhtSummeryController implements Serializable {
     }
 
     private void setPatientRoomData() {
-
+        long sprd0 = System.currentTimeMillis();
         for (PatientRoom p : patientRooms) {
             if (p.getAdmittedAt() == null) {
                 p.setAdmittedAt(new Date());
@@ -2653,6 +2696,7 @@ public class BhtSummeryController implements Serializable {
             getPatientRoomFacade().edit(p);
 
         }
+        System.out.println("[ROOMS] setPatientRoomData: " + (System.currentTimeMillis() - sprd0) + "ms for " + patientRooms.size() + " rooms");
     }
 
     private void calculateLinenCharge(PatientRoom p) {
@@ -3049,6 +3093,8 @@ public class BhtSummeryController implements Serializable {
     private List<Bill> additionalChargeBill;
 
     private void setKnownChargeTot() {
+        // Fetch all 7 PatientRoom charge sums in a single query
+        Map<InwardChargeType, Double> roomSums = getInwardBean().getPatientRoomChargeSumsBulk(getPatientEncounter(), childPatientEncouters);
 
         for (ChargeItemTotal i : chargeItemTotals) {
             switch (i.getInwardChargeType()) {
@@ -3058,25 +3104,25 @@ public class BhtSummeryController implements Serializable {
                     }
                     break;
                 case RoomCharges:
-                    i.setTotal(getInwardBean().getRoomCharge(getPatientEncounter(), childPatientEncouters));
+                    i.setTotal(roomSums.getOrDefault(InwardChargeType.RoomCharges, 0.0));
                     break;
                 case MOCharges:
-                    i.setTotal(getInwardBean().getMoCharge(getPatientEncounter(), childPatientEncouters));
+                    i.setTotal(roomSums.getOrDefault(InwardChargeType.MOCharges, 0.0));
                     break;
                 case NursingCharges:
-                    i.setTotal(getInwardBean().getNursingCharge(getPatientEncounter(), childPatientEncouters));
+                    i.setTotal(roomSums.getOrDefault(InwardChargeType.NursingCharges, 0.0));
                     break;
                 case MaintainCharges:
-                    i.setTotal(getInwardBean().getMaintainCharge(getPatientEncounter(), childPatientEncouters));
+                    i.setTotal(roomSums.getOrDefault(InwardChargeType.MaintainCharges, 0.0));
                     break;
                 case MedicalCareICU:
-                    i.setTotal(getInwardBean().getMedicalCareIcuCharge(getPatientEncounter(), childPatientEncouters));
+                    i.setTotal(roomSums.getOrDefault(InwardChargeType.MedicalCareICU, 0.0));
                     break;
                 case AdministrationCharge:
-                    i.setTotal(getInwardBean().getAdminCharge(getPatientEncounter(), childPatientEncouters));
+                    i.setTotal(roomSums.getOrDefault(InwardChargeType.AdministrationCharge, 0.0));
                     break;
                 case LinenCharges:
-                    i.setTotal(getInwardBean().getLinenCharge(getPatientEncounter(), childPatientEncouters));
+                    i.setTotal(roomSums.getOrDefault(InwardChargeType.LinenCharges, 0.0));
                     break;
                 case Medicine:
                     List<BillTypeAtomic> btas = new ArrayList<>();

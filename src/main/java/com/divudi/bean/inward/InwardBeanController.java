@@ -63,6 +63,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.EnumMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 import javax.ejb.EJB;
@@ -654,32 +655,23 @@ public class InwardBeanController implements Serializable {
     }
 
     public void setProfesionallFeeAdjusted(PatientEncounter patientEncounter, List<PatientEncounter> cpts) {
-
-        HashMap hm = new HashMap();
-        String sql = "SELECT bt FROM BillFee bt"
-                + " WHERE bt.retired=false "
-                + " and type(bt.staff)=:class "
-                + " and bt.fee.feeType=:ftp "
-                + " and (bt.bill.billType=:btp)"
-                + " and bt.bill.patientEncounter in :pe ";
-        hm.put("class", Consultant.class);
-        hm.put("ftp", FeeType.Staff);
-        hm.put("btp", BillType.InwardProfessional);
         List<PatientEncounter> pts = new ArrayList<>();
         pts.add(patientEncounter);
         if (cpts != null && !cpts.isEmpty()) {
             pts.addAll(cpts);
         }
+        HashMap hm = new HashMap();
+        String sql = "UPDATE BillFee bt SET bt.feeAdjusted = bt.feeValue"
+                + " WHERE bt.retired=false"
+                + " AND type(bt.staff)=:class"
+                + " AND bt.fee.feeType=:ftp"
+                + " AND bt.bill.billType=:btp"
+                + " AND bt.bill.patientEncounter IN :pe";
+        hm.put("class", Consultant.class);
+        hm.put("ftp", FeeType.Staff);
+        hm.put("btp", BillType.InwardProfessional);
         hm.put("pe", pts);
-
-        List<BillFee> list = getBillFeeFacade().findByJpql(sql, hm);
-
-        for (BillFee bf : list) {
-            bf.setFeeAdjusted(bf.getFeeValue());
-            getBillFeeFacade().edit(bf);
-        }
-
-        //////// // System.out.println("Size : " + profesionallFee.size());
+        getBillFeeFacade().updateByJpql(sql, hm);
     }
 
     public List<Bill> fetchIssueTable(PatientEncounter patientEncounter, BillType billType, List<PatientEncounter> cpts) {
@@ -1139,6 +1131,54 @@ public class InwardBeanController implements Serializable {
         hm.put("pe", pts);
 
         return getPatientRoomFacade().findDoubleByJpql(sql, hm);
+    }
+
+    /**
+     * Fetches all seven PatientRoom charge sums for the given encounters
+     * in a single JPQL query instead of seven separate queries.
+     */
+    public Map<InwardChargeType, Double> getPatientRoomChargeSumsBulk(PatientEncounter patientEncounter, List<PatientEncounter> cpts) {
+        String sql = "SELECT SUM(p.calculatedRoomCharge),"
+                + " SUM(p.calculatedMoCharge),"
+                + " SUM(p.calculatedNursingCharge),"
+                + " SUM(p.calculatedMaintainCharge),"
+                + " SUM(p.calculatedMedicalCareCharge),"
+                + " SUM(p.calculatedAdministrationCharge),"
+                + " SUM(p.calculatedLinenCharge)"
+                + " FROM PatientRoom p"
+                + " WHERE p.retired=false"
+                + " AND p.patientEncounter IN :pe";
+        HashMap hm = new HashMap();
+        List<PatientEncounter> pts = new ArrayList<>();
+        pts.add(patientEncounter);
+        if (cpts != null && !cpts.isEmpty()) {
+            pts.addAll(cpts);
+        }
+        hm.put("pe", pts);
+
+        Map<InwardChargeType, Double> result = new EnumMap<>(InwardChargeType.class);
+        List<Object> rows = getPatientRoomFacade().findObjectByJpql(sql, hm, TemporalType.TIMESTAMP);
+        if (rows != null && !rows.isEmpty()) {
+            Object row = rows.get(0);
+            if (row instanceof Object[]) {
+                Object[] arr = (Object[]) row;
+                result.put(InwardChargeType.RoomCharges,          toDoubleOrZero(arr[0]));
+                result.put(InwardChargeType.MOCharges,            toDoubleOrZero(arr[1]));
+                result.put(InwardChargeType.NursingCharges,       toDoubleOrZero(arr[2]));
+                result.put(InwardChargeType.MaintainCharges,      toDoubleOrZero(arr[3]));
+                result.put(InwardChargeType.MedicalCareICU,       toDoubleOrZero(arr[4]));
+                result.put(InwardChargeType.AdministrationCharge, toDoubleOrZero(arr[5]));
+                result.put(InwardChargeType.LinenCharges,         toDoubleOrZero(arr[6]));
+            }
+        }
+        return result;
+    }
+
+    private double toDoubleOrZero(Object value) {
+        if (value instanceof Number) {
+            return ((Number) value).doubleValue();
+        }
+        return 0.0;
     }
 
     public PatientItemFacade getPatientItemFacade() {

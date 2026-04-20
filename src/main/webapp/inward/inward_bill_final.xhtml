@@ -291,8 +291,8 @@
                                                  title="Allocated amount for #{alloc.companyName}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                         <p:ajax event="change"
-                                                process="creditAllocationPanel"
-                                                update="creditAllocationPanel"
+                                                process=":creditAllocationPanel"
+                                                update=":creditAllocationPanel"
                                                 listener="#{bhtSummeryController.recalculatePatientPortion()}"/>
                                     </p:inputText>
                                 </h:panelGroup>
