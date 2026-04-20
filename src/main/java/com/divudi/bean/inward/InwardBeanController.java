@@ -2339,10 +2339,10 @@ public class InwardBeanController implements Serializable {
         if (billFee == null || item == null || patientEncounter == null) {
             return;
         }
-        if (!item.isDiscountAllowed()) {
-            return;
-        }
-        if (billFee.getFee() == null || billFee.getFee().getFeeType() == FeeType.Staff) {
+        if (!item.isDiscountAllowed()
+                || billFee.getFee() == null
+                || billFee.getFee().getFeeType() == FeeType.Staff) {
+            billFee.setFeeDiscount(0.0);
             return;
         }
         Department matrixDept = item.getDepartment();
@@ -2355,11 +2355,8 @@ public class InwardBeanController implements Serializable {
                 patientEncounter.getAdmissionType(),
                 matrixDept,
                 item);
-        if (pct <= 0.0) {
-            return;
-        }
         double gross = billFee.getFeeGrossValue();
-        double discount = (gross * pct) / 100.0;
+        double discount = pct > 0.0 ? (gross * pct) / 100.0 : 0.0;
         billFee.setFeeDiscount(discount);
     }
 

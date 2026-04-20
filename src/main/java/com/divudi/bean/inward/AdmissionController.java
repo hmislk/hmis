@@ -2238,6 +2238,12 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         this.current = current;
         if (current != null && current.getPaymentScheme() != null) {
             this.paymentScheme = current.getPaymentScheme();
+        } else if (current != null && current.getPatient() != null
+                && current.getPatient().getPerson() != null
+                && current.getPatient().getPerson().getMembershipScheme() != null) {
+            this.paymentScheme = current.getPatient().getPerson().getMembershipScheme().getPaymentScheme();
+        } else {
+            this.paymentScheme = null;
         }
     }
 

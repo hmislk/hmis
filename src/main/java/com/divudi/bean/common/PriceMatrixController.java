@@ -1016,13 +1016,13 @@ public class PriceMatrixController implements Serializable {
         }
 
         Double pct = fetchInwardDiscountPercentForItem(bhtType, scheme, admissionType, item);
-        if (pct == null || pct == 0.0) {
+        if (pct == null) {
             pct = fetchInwardDiscountPercentForCategory(bhtType, scheme, admissionType, department, category);
         }
-        if ((pct == null || pct == 0.0) && category != null) {
+        if (pct == null && category != null) {
             pct = fetchInwardDiscountPercentForCategory(bhtType, scheme, admissionType, department, category.getParentCategory());
         }
-        if (pct == null || pct == 0.0) {
+        if (pct == null) {
             pct = fetchInwardDiscountPercentForDepartment(bhtType, scheme, admissionType, department);
         }
         return pct != null ? pct : 0.0;
@@ -1034,7 +1034,7 @@ public class PriceMatrixController implements Serializable {
             return null;
         }
         Double pct = fetchInwardDiscountMatrixPercent(bhtType, scheme, admissionType, null, null, item);
-        if ((pct == null || pct == 0.0) && scheme != null) {
+        if (pct == null && scheme != null) {
             pct = fetchInwardDiscountMatrixPercent(bhtType, null, admissionType, null, null, item);
         }
         return pct;
@@ -1046,7 +1046,7 @@ public class PriceMatrixController implements Serializable {
             return null;
         }
         Double pct = fetchInwardDiscountMatrixPercent(bhtType, scheme, admissionType, department, category, null);
-        if ((pct == null || pct == 0.0) && scheme != null) {
+        if (pct == null && scheme != null) {
             pct = fetchInwardDiscountMatrixPercent(bhtType, null, admissionType, department, category, null);
         }
         return pct;
@@ -1058,7 +1058,7 @@ public class PriceMatrixController implements Serializable {
             return null;
         }
         Double pct = fetchInwardDiscountMatrixPercent(bhtType, scheme, admissionType, department, null, null);
-        if ((pct == null || pct == 0.0) && scheme != null) {
+        if (pct == null && scheme != null) {
             pct = fetchInwardDiscountMatrixPercent(bhtType, null, admissionType, department, null, null);
         }
         return pct;
@@ -1105,7 +1105,18 @@ public class PriceMatrixController implements Serializable {
             jpql.append(" and a.item is null");
         }
         try {
-            return getPriceMatrixFacade().findDoubleByJpql(jpql.toString(), params);
+            List<Object> rs = getPriceMatrixFacade().findObjects(jpql.toString(), params);
+            if (rs == null || rs.isEmpty()) {
+                return null;
+            }
+            Object v = rs.get(0);
+            if (v == null) {
+                return null;
+            }
+            if (v instanceof Number) {
+                return ((Number) v).doubleValue();
+            }
+            return null;
         } catch (Exception e) {
             return null;
         }
