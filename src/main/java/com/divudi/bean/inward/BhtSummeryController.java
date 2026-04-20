@@ -136,6 +136,8 @@ public class BhtSummeryController implements Serializable {
     ConfigOptionApplicationController configOptionApplicationController;
     @Inject
     AdmissionController admissionController;
+    @Inject
+    InwardPaymentController inwardPaymentController;
     ////////////////////////
     private List<DepartmentBillItems> departmentBillItems;
     private List<BillFee> profesionallFee;
@@ -1353,6 +1355,26 @@ public class BhtSummeryController implements Serializable {
         originalBill = null;
     }
 
+    /**
+     * Navigate to the appropriate payment collection page after the final bill
+     * is settled. For Cash/Card/Cheque patients this goes to the standard inward
+     * payment page; for Credit patients who have a patient co-payment portion it
+     * goes to the dedicated co-payment page.
+     */
+    public String navigateToCollectPayment() {
+        if (patientEncounter == null) {
+            JsfUtil.addErrorMessage("No patient encounter selected");
+            return "";
+        }
+        inwardPaymentController.makeNull();
+        inwardPaymentController.getCurrent().setPatientEncounter(patientEncounter);
+        inwardPaymentController.bhtListener();
+        if (patientEncounter.getPaymentMethod() == PaymentMethod.Credit) {
+            return "/credit/inward_patient_copay_payment?faces-redirect=true";
+        }
+        return "/inward/inward_bill_payment?faces-redirect=true";
+    }
+
     public String settleProvisionalBill(Bill b) {
 
         if (b == null) {
@@ -1482,8 +1504,15 @@ public class BhtSummeryController implements Serializable {
                 creditCompanyAllocations.add(new CreditCompanyAllocation(ecc, alloc));
                 remaining -= alloc;
             }
+            // Any amount not covered by companies is the patient's co-payment share
+            if (remaining > 0.01) {
+                creditCompanyAllocations.add(new CreditCompanyAllocation(remaining, true));
+            }
         } else if (remaining > 0 && patientEncounter.getCreditCompany() != null) {
             creditCompanyAllocations.add(new CreditCompanyAllocation(patientEncounter.getCreditCompany(), remaining));
+        } else if (remaining > 0.01) {
+            // No companies registered at all — full amount falls on the patient
+            creditCompanyAllocations.add(new CreditCompanyAllocation(remaining, true));
         }
     }
 
@@ -1497,23 +1526,78 @@ public class BhtSummeryController implements Serializable {
             JsfUtil.addErrorMessage("Please allocate the full credit due amount before settlement");
             return true;
         }
-        double totalAllocated = 0.0;
+        // Sum CC company rows and locate the patient row
+        double companyAllocated = 0.0;
+        CreditCompanyAllocation patientAllocation = null;
         for (CreditCompanyAllocation alloc : creditCompanyAllocations) {
             if (alloc.getAllocatedAmount() < 0) {
                 JsfUtil.addErrorMessage("Allocated amounts cannot be negative");
                 return true;
             }
-            totalAllocated += alloc.getAllocatedAmount();
+            if (alloc.isPatientPortion()) {
+                patientAllocation = alloc;
+            } else {
+                if (alloc.getEncounterCreditCompany() != null
+                        && alloc.getAllocatedAmount() - alloc.getEncounterCreditCompany().getCreditLimit() > 0.01) {
+                    JsfUtil.addErrorMessage("Allocation for " + alloc.getCompanyName()
+                            + " exceeds its credit limit ("
+                            + String.format("%.2f", alloc.getEncounterCreditCompany().getCreditLimit()) + ")");
+                    return true;
+                }
+                companyAllocated += alloc.getAllocatedAmount();
+            }
         }
-        if (Math.abs(totalAllocated - expected) > 0.01) {
-            JsfUtil.addErrorMessage("Credit allocation total (" + String.format("%.2f", totalAllocated)
-                    + ") does not match the net due amount (" + String.format("%.2f", expected) + ")");
+        // CC rows must not exceed the expected total
+        if (companyAllocated - expected > 0.01) {
+            JsfUtil.addErrorMessage("Credit company allocation (" + String.format("%.2f", companyAllocated)
+                    + ") exceeds the net due amount (" + String.format("%.2f", expected) + ")");
             return true;
+        }
+        // Auto-sync the patient row so total always equals expected
+        double patientShare = Math.max(0.0, expected - companyAllocated);
+        if (patientAllocation != null) {
+            patientAllocation.setAllocatedAmount(patientShare);
+        } else if (patientShare > 0.01) {
+            creditCompanyAllocations.add(new CreditCompanyAllocation(patientShare, true));
         }
         return false;
     }
 
+    /**
+     * Recalculates the patient co-payment row so it always equals:
+     *   net due  –  sum of all CC company allocations.
+     * Called via p:ajax whenever a CC company amount is changed by the user.
+     */
+    public void recalculatePatientPortion() {
+        if (creditCompanyAllocations == null || creditCompanyAllocations.isEmpty()) {
+            return;
+        }
+        double expected = Math.max(0.0, (grantTotal - discount) - paidByPatient - paidByCompany);
+        double ccSum = 0.0;
+        for (CreditCompanyAllocation alloc : creditCompanyAllocations) {
+            if (!alloc.isPatientPortion()) {
+                ccSum += alloc.getAllocatedAmount();
+            }
+        }
+        double patientShare = expected - ccSum;
+        for (CreditCompanyAllocation alloc : creditCompanyAllocations) {
+            if (alloc.isPatientPortion()) {
+                alloc.setAllocatedAmount(patientShare < 0 ? 0.0 : patientShare);
+                return;
+            }
+        }
+        // No patient row exists yet; add one if there is a remainder
+        if (patientShare > 0.01) {
+            creditCompanyAllocations.add(new CreditCompanyAllocation(patientShare, true));
+        }
+    }
+
     private void saveCCBillForAllocation(PatientEncounter pe, CreditCompanyAllocation alloc) {
+        // Patient co-payment rows are NOT saved as CC commitment bills.
+        // The patient settles their share via the normal inward payment flow.
+        if (alloc.isPatientPortion()) {
+            return;
+        }
         if (alloc.getEncounterCreditCompany() != null) {
             saveCCBill(pe, alloc.getEncounterCreditCompany(), alloc.getAllocatedAmount());
         } else {

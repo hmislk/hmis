@@ -1041,6 +1041,19 @@ public class EnumController implements Serializable {
         return p;
     }
 
+    /** Payment methods allowed on the inward patient co-payment page.
+     *  Excludes PatientDeposit and MultiplePaymentMethods which have no
+     *  corresponding input panel on that page. */
+    public PaymentMethod[] getPaymentMethodsForCopay() {
+        return new PaymentMethod[]{
+            PaymentMethod.Cash,
+            PaymentMethod.Card,
+            PaymentMethod.Cheque,
+            PaymentMethod.Slip,
+            PaymentMethod.ewallet,
+            PaymentMethod.OnlineSettlement};
+    }
+
     public PaymentMethod[] getPaymentMethodsForIou() {
         PaymentMethod[] p = {PaymentMethod.Cash,
             PaymentMethod.Cheque,

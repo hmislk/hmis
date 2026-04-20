@@ -162,7 +162,7 @@
                                         <h:outputLabel value="#{billItem.item.name}"></h:outputLabel>
                                         <h:outputLabel value=" (N)" rendered="#{billItem.item.speciality}"/>
                                     </div>
-                                    <h:panelGroup rendered="#{billItem.item.printSessionNumber}" style="">
+                                    <h:panelGroup rendered="#{not billItem.sessionId.blank}" style="">
                                         <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Individual Bill Item Session Number in OPD Bills')}" >
                                             <h:outputLabel  value="#{billItem.sessionId}" style="border: 1px solid black; border-radius: 50%; width: 22px; height: 22px; display: inline-flex; align-items: center; justify-content: center;"></h:outputLabel>
                                         </h:panelGroup>
