@@ -1496,6 +1496,17 @@ public class ChannelService {
                 wrapperDto.setAllCancelAppoinments(wrapperDto.getAllCancelAppoinments() + summery.getTotalCancelAppoinments());
                 wrapperDto.setAllRefundAppoinments(wrapperDto.getAllRefundAppoinments() + summery.getTotalRefundAppoinments());
                 wrapperDto.setTotalValidAppoinments(wrapperDto.getTotalValidAppoinments() + summery.getTotalActiveAppoinments());
+
+                // fee total calculation
+                wrapperDto.setAllHosFeeTotal(wrapperDto.getAllHosFeeTotal() + summery.getTotalHosFee());
+                wrapperDto.setAllDoctorFeeTotal(wrapperDto.getAllDoctorFeeTotal() + summery.getTotalDocFee());
+                wrapperDto.setAllTotalAmount(wrapperDto.getAllTotalAmount() + summery.getTotalAmount());
+            }
+        } else {
+            for (ChannelReportController.ChannelIncomeDetailDto dto : dtoList) {
+                wrapperDto.setAllHosFeeTotal(wrapperDto.getAllHosFeeTotal() + dto.getHosFee());
+                wrapperDto.setAllDoctorFeeTotal(wrapperDto.getAllDoctorFeeTotal() + dto.getDoctorFee());
+                wrapperDto.setAllTotalAmount(wrapperDto.getAllTotalAmount() + dto.getTotalAppoinmentFee());
             }
         }
 

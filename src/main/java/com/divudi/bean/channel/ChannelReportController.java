@@ -15,6 +15,7 @@ import com.divudi.core.data.BillClassType;
 
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.FeeType;
 import com.divudi.core.data.HistoryType;
 import com.divudi.core.data.InstitutionType;
@@ -723,6 +724,11 @@ public class ChannelReportController implements Serializable {
         private double allCancelAppoinments;
         private double allRefundAppoinments;
 
+        // fee Totals
+        private double allHosFeeTotal;
+        private double allDoctorFeeTotal;
+        private double allTotalAmount;
+
         public double getAllCashTotal() {
             return allCashTotal;
         }
@@ -825,6 +831,30 @@ public class ChannelReportController implements Serializable {
 
         public void setProcessedBy(String processedBy) {
             this.processedBy = processedBy;
+        }
+
+        public double getAllHosFeeTotal() {
+            return allHosFeeTotal;
+        }
+
+        public void setAllHosFeeTotal(double allHosFeeTotal) {
+            this.allHosFeeTotal = allHosFeeTotal;
+        }
+
+        public double getAllDoctorFeeTotal() {
+            return allDoctorFeeTotal;
+        }
+
+        public void setAllDoctorFeeTotal(double allDoctorFeeTotal) {
+            this.allDoctorFeeTotal = allDoctorFeeTotal;
+        }
+
+        public double getAllTotalAmount() {
+            return allTotalAmount;
+        }
+
+        public void setAllTotalAmount(double allTotalAmount) {
+            this.allTotalAmount = allTotalAmount;
         }
 
     }
@@ -5045,6 +5075,55 @@ public class ChannelReportController implements Serializable {
         return downloadingExcel;
     }
 
+    // PDF Export: Channel Income Daily Summary Report
+    public StreamedContent getChannelIncomeDailySummaryReportAsPdf() {
+        if (wrapperDto == null || wrapperDto.getIncomeDtos() == null || wrapperDto.getIncomeDtos().isEmpty()) {
+            JsfUtil.addErrorMessage("Please generate the Channel Income Daily Summary report before exporting.");
+            return null;
+        }
+
+        StreamedContent pdfSc = null;
+        try {
+            String fileName = "Channel_Income_Daily_Summary_Report";
+            
+            String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
+            if (dates != null && !dates.isEmpty()) {
+                fileName += "_" + dates;
+            }
+
+            pdfSc = pdfController.createPdfForChannelIncomeDailySummaryReport(wrapperDto, PageSize.A4.rotate(), true, getFiltersForChannelIncomeDailySummaryReport(), fileName);
+        } catch (IOException e) {
+            logger.error("getChannelIncomeDailySummaryReportAsPdf: Error creating pdfSc via pdfController.createPdfForChannelIncomeDailySummaryReport", e);
+            pdfSc = null;
+            JsfUtil.addErrorMessage("Failed to generate Channel Income Daily Summary Report PDF file. Please try again.");
+        }
+        return pdfSc;
+    }
+
+    // Excel Export: Channel Income Daily Summary Report
+    public StreamedContent getChannelIncomeDailySummaryReportAsExcel() {
+        if (wrapperDto == null || wrapperDto.getIncomeDtos() == null || wrapperDto.getIncomeDtos().isEmpty()) {
+            JsfUtil.addErrorMessage("Please generate the Channel Income Daily Summary report before exporting.");
+            return null;
+        }
+
+        StreamedContent downloadingExcel = null;
+        try {
+            String fileName = "Channel_Income_Daily_Summary_Report";
+            String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
+            if (dates != null && !dates.isEmpty()) {
+                fileName += "_" + dates;
+            }
+            
+            downloadingExcel = excelController.createExcelForChannelIncomeDailySummaryReport(wrapperDto, getFiltersForChannelIncomeDailySummaryReport(), fileName);
+        } catch (IOException e) {
+            logger.error("getChannelIncomeDailySummaryReportAsExcel: Error creating downloadingExcel via excelController.createExcelForChannelIncomeDailySummaryReport", e);
+            downloadingExcel = null;
+            JsfUtil.addErrorMessage("Failed to generate Channel Income Daily Summary Report Excel file. Please try again.");
+        }
+        return downloadingExcel;
+    }
+
     // Filters for Channel Scanning Income report
     public Map<String, Object> getFiltersForChannelScanningIncomeReport() {
         Map<String, Object> params = new LinkedHashMap<>();
@@ -5060,6 +5139,56 @@ public class ChannelReportController implements Serializable {
         params.put("To Date", formattedToDate);
         params.put("Institution", institution != null ? institution.getName() : "All Institutions");
         params.put("Report Status: ", reportStatusString);
+
+        return params;
+    }
+
+    // Helper method to convert selected category list to a comma-separated string
+    public String getCategoryListAsString() {
+
+        if (categoryList == null || categoryList.isEmpty()) {
+            return "All";
+        }
+
+        StringBuilder result = new StringBuilder();
+
+        for (int i = 0; i < categoryList.size(); i++) {
+            Category cat = categoryList.get(i);
+
+            if (cat != null && cat.getName() != null) {
+                result.append(cat.getName());
+            }
+
+            if (i < categoryList.size() - 1) {
+                result.append(", ");
+            }
+        }
+
+        return result.toString();
+    }
+
+    // Filters for Channel Income Daily Summary  Report
+    public Map<String, Object> getFiltersForChannelIncomeDailySummaryReport() {
+        Map<String, Object> params = new LinkedHashMap<>();
+        String dateTimeFormat = sessionController.getApplicationPreference().getLongDateTimeFormat();
+        String formattedFromDate = fromDate != null ? new SimpleDateFormat(dateTimeFormat).format(fromDate) : "Not available";
+        String formattedToDate = toDate != null ? new SimpleDateFormat(dateTimeFormat).format(toDate) : "Not available";
+
+        String reportStatusString = "";
+        if (reportStatus != null && !reportStatus.isEmpty()) {
+            if ("Summery".equalsIgnoreCase(reportStatus.trim())) {
+                reportStatusString = "Summary View";
+            } else if ("Details".equalsIgnoreCase(reportStatus.trim())) {
+                reportStatusString = "Details View";
+            }
+        }
+
+        params.put("From Date", formattedFromDate);
+        params.put("To Date", formattedToDate);
+        params.put("Institution", institution != null ? institution.getName() : "All Institutions");
+        params.put("Report Status", reportStatusString);
+        params.put("User", webUser != null ? webUser.getName() : "All Users");
+        params.put("Category", getCategoryListAsString());
 
         return params;
     }

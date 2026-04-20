@@ -19,14 +19,22 @@ public class CreditCompanyAllocation implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    /** Source record; null for the single-company fallback row. */
+    /** Source record; null for the single-company fallback row and patient rows. */
     private EncounterCreditCompany encounterCreditCompany;
 
-    /** The credit company institution. */
+    /** The credit company institution; null for patient-portion rows. */
     private Institution creditCompany;
 
-    /** Amount allocated to this company; editable by the cashier. */
+    /** Amount allocated to this company or to the patient; editable by the cashier. */
     private double allocatedAmount;
+
+    /**
+     * True when this row represents the patient's co-payment portion rather than
+     * a credit company commitment. Patient rows are displayed in the allocation
+     * table but are NOT saved as CC commitment bills — the patient settles via the
+     * normal inward payment flow.
+     */
+    private boolean patientPortion;
 
     /**
      * Constructor for normal rows built from an {@link EncounterCreditCompany}.
@@ -45,9 +53,29 @@ public class CreditCompanyAllocation implements Serializable {
         this.allocatedAmount = allocatedAmount;
     }
 
-    /** Display name derived from the institution. */
+    /**
+     * Constructor for a patient co-payment row. The patient is responsible for
+     * the given amount; no CC commitment bill is created for this row.
+     */
+    public CreditCompanyAllocation(double allocatedAmount, boolean patientPortion) {
+        this.allocatedAmount = allocatedAmount;
+        this.patientPortion = patientPortion;
+    }
+
+    /** Display name: "Patient" for patient rows, institution name otherwise. */
     public String getCompanyName() {
+        if (patientPortion) {
+            return "Patient";
+        }
         return creditCompany != null ? creditCompany.getName() : "";
+    }
+
+    public boolean isPatientPortion() {
+        return patientPortion;
+    }
+
+    public void setPatientPortion(boolean patientPortion) {
+        this.patientPortion = patientPortion;
     }
 
     public EncounterCreditCompany getEncounterCreditCompany() {
