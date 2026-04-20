@@ -50,6 +50,13 @@
                                         <p:commandButton ajax="false" value="BHT VAT Report" icon="fa fa-fw fa-receipt" action="inward_report_bht_inward_vat?faces-redirect=true" />
                                         <p:commandButton ajax="false" value="BHT Break Down (TAB Format)" icon="fa fa-fw fa-table" action="inward_bill_intrim_finalized?faces-redirect=true" actionListener="#{bhtSummeryFinalizedController.makeNull()}" />
                                         <p:commandButton ajax="false" value="BHT Break Down (Table Format)" icon="fa fa-fw fa-list-alt" action="inward_bill_final_break_down?faces-redirect=true" />
+                                        <p:commandButton
+                                            value="Inpatient Invoice Journal"
+                                            icon="fa fa-fw fa-book"
+                                            action="inward_report_invoice_journal?faces-redirect=true"
+                                            actionListener="#{inwardInvoiceJournalController.makeNull()}"
+                                            class="ui-button-success"
+                                            ajax="false" />
                                         <p:commandButton ajax="false" value="BHT Sevice Errror Diduction" icon="fa fa-fw fa-exclamation-triangle" action="inward_bill_final_break_down_error?faces-redirect=true" rendered="false" />
                                         <p:commandButton ajax="false" value="BHT Interim Error Correction" icon="fa fa-fw fa-wrench" action="inward_bill_intrim_finalized_error_correction?faces-redirect=true" />
                                         <p:commandButton ajax="false" value="Error" icon="fa fa-fw fa-bug" action="#{bhtSummeryFinalizedController.errorCheck}" rendered="false"/>
@@ -91,13 +98,6 @@
                                             icon="fa fa-fw fa-receipt"
                                             action="inward_report_bht_deposit_detail?faces-redirect=true"
                                             actionListener="#{bhtDepositDetailReportController.makeNull()}"
-                                            class="ui-button-success"
-                                            ajax="false" />
-                                        <p:commandButton
-                                            value="Inpatient Invoice Journal"
-                                            icon="fa fa-fw fa-book"
-                                            action="inward_report_invoice_journal?faces-redirect=true"
-                                            actionListener="#{inwardInvoiceJournalController.makeNull()}"
                                             class="ui-button-success"
                                             ajax="false" />
                                         <p:commandButton

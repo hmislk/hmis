@@ -89,6 +89,9 @@ public class InwardInvoiceJournalController implements Serializable {
     /** Column totals keyed by InwardChargeType. */
     private Map<InwardChargeType, Double> columnTotals = new EnumMap<>(InwardChargeType.class);
 
+    private double grandTotalGross;
+    private double grandTotalDiscount;
+    private double grandTotalServiceCharge;
     private double grandTotalCharges;
     private double grandTotalDeposits;
     private double grandTotalCreditSettlement;
@@ -101,6 +104,9 @@ public class InwardInvoiceJournalController implements Serializable {
         reportRows               = new ArrayList<>();
         columnTotals             = new EnumMap<>(InwardChargeType.class);
         activeChargeTypes        = EnumSet.noneOf(InwardChargeType.class);
+        grandTotalGross          = 0;
+        grandTotalDiscount       = 0;
+        grandTotalServiceCharge  = 0;
         grandTotalCharges        = 0;
         grandTotalDeposits       = 0;
         grandTotalCreditSettlement = 0;
@@ -110,8 +116,11 @@ public class InwardInvoiceJournalController implements Serializable {
             return;
         }
 
-        // --- bulk fetch charge totals for all encounters at once ---
+        // --- bulk fetch gross charges per InwardChargeType for all encounters ---
         Map<Long, Map<InwardChargeType, Double>> chargeMap = fetchChargesByEncounter(encounters);
+
+        // --- bulk fetch discount / service-charge totals per encounter ---
+        Map<Long, double[]> discountMarginMap = fetchDiscountAndMarginByEncounter(encounters);
 
         // --- bulk fetch deposit totals for all encounters at once ---
         Map<Long, Double> depositMap = fetchDepositTotalsByEncounter(encounters);
@@ -121,7 +130,7 @@ public class InwardInvoiceJournalController implements Serializable {
 
         // --- build one row per encounter ---
         for (PatientEncounter enc : encounters) {
-            InwardInvoiceJournalRowDto row = buildRow(enc, chargeMap, depositMap, creditMap);
+            InwardInvoiceJournalRowDto row = buildRow(enc, chargeMap, discountMarginMap, depositMap, creditMap);
             reportRows.add(row);
 
             // accumulate column totals and active types
@@ -132,6 +141,9 @@ public class InwardInvoiceJournalController implements Serializable {
                     columnTotals.merge(ct, v, Double::sum);
                 }
             }
+            grandTotalGross            += row.getGrossTotal();
+            grandTotalDiscount         += row.getTotalDiscount();
+            grandTotalServiceCharge    += row.getTotalServiceCharge();
             grandTotalCharges          += row.getGrandTotal();
             grandTotalDeposits         += row.getTotalDeposits();
             grandTotalCreditSettlement += row.getCreditSettlementTotal();
@@ -212,16 +224,20 @@ public class InwardInvoiceJournalController implements Serializable {
     }
 
     /**
-     * Single bulk query: sum(netValue) grouped by (patientEncounter, inwardChargeType)
+     * Single bulk query: sum(grossValue) grouped by (patientEncounter, inwardChargeType)
      * for all encounters in the set, covering all non-cancelled bill items.
      * Returns Map< encounterId, Map<InwardChargeType, total> >.
+     *
+     * Uses BillItem.grossValue (hospital fee before discount / margin). Discount
+     * and service-charge totals are fetched separately from BillFee because
+     * BillItem.discount is not rolled up for inpatient bills (see BillBhtController.calTotals).
      */
     private Map<Long, Map<InwardChargeType, Double>> fetchChargesByEncounter(
             List<PatientEncounter> encounters) {
 
         Map<Long, Map<InwardChargeType, Double>> result = new HashMap<>();
 
-        String jpql = "select bi.bill.patientEncounter.id, bi.inwardChargeType, sum(bi.netValue)"
+        String jpql = "select bi.bill.patientEncounter.id, bi.inwardChargeType, sum(bi.grossValue)"
                 + " from BillItem bi"
                 + " where bi.retired = false"
                 + " and bi.bill.retired = false"
@@ -243,6 +259,42 @@ public class InwardInvoiceJournalController implements Serializable {
                 Double           total = ((Number) r[2]).doubleValue();
                 result.computeIfAbsent(encId, k -> new EnumMap<>(InwardChargeType.class))
                       .put(type, total);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Single bulk query: sum(feeDiscount) and sum(feeMargin) from BillFee
+     * grouped by encounter, matching the same filter used for gross charges.
+     * Returns Map< encounterId, double[]{ discount, serviceCharge } >.
+     *
+     * Reads from BillFee (not BillItem) because BillItem.discount is not
+     * populated for inpatient bills — discount lives per-fee.
+     */
+    private Map<Long, double[]> fetchDiscountAndMarginByEncounter(List<PatientEncounter> encounters) {
+        Map<Long, double[]> result = new HashMap<>();
+
+        String jpql = "select bf.bill.patientEncounter.id, sum(bf.feeDiscount), sum(bf.feeMargin)"
+                + " from BillFee bf"
+                + " where bf.retired = false"
+                + " and bf.bill.retired = false"
+                + " and bf.bill.cancelled = false"
+                + " and bf.bill.billTypeAtomic != :originalFinalBillType"
+                + " and bf.bill.patientEncounter in :encs"
+                + " group by bf.bill.patientEncounter.id";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("encs", encounters);
+        params.put("originalFinalBillType", BillTypeAtomic.INWARD_ORIGINAL_FINAL_BILL);
+
+        List<Object[]> rows = patientEncounterFacade.findObjectArrayByJpql(jpql, params, TemporalType.TIMESTAMP);
+        if (rows != null) {
+            for (Object[] r : rows) {
+                Long encId = (Long) r[0];
+                double disc = r[1] == null ? 0.0 : ((Number) r[1]).doubleValue();
+                double marg = r[2] == null ? 0.0 : ((Number) r[2]).doubleValue();
+                result.put(encId, new double[]{disc, marg});
             }
         }
         return result;
@@ -313,6 +365,7 @@ public class InwardInvoiceJournalController implements Serializable {
     private InwardInvoiceJournalRowDto buildRow(
             PatientEncounter enc,
             Map<Long, Map<InwardChargeType, Double>> chargeMap,
+            Map<Long, double[]> discountMarginMap,
             Map<Long, Double> depositMap,
             Map<Long, double[]> creditMap) {
 
@@ -329,10 +382,17 @@ public class InwardInvoiceJournalController implements Serializable {
             row.setFinalBillNo(enc.getFinalBill().getIdStr());
         }
 
-        // charges
+        // charges (gross per InwardChargeType)
         Map<InwardChargeType, Double> charges = chargeMap.get(enc.getId());
         if (charges != null) {
             charges.forEach(row::addCharge);
+        }
+
+        // discount & service-charge totals
+        double[] dm = discountMarginMap.get(enc.getId());
+        if (dm != null) {
+            row.setTotalDiscount(dm[0]);
+            row.setTotalServiceCharge(dm[1]);
         }
 
         // deposits
@@ -393,6 +453,7 @@ public class InwardInvoiceJournalController implements Serializable {
         reportRows       = null;
         columnTotals     = new EnumMap<>(InwardChargeType.class);
         activeChargeTypes = EnumSet.noneOf(InwardChargeType.class);
+        grandTotalGross = grandTotalDiscount = grandTotalServiceCharge = 0;
         grandTotalCharges = grandTotalDeposits = grandTotalCreditSettlement = 0;
     }
 
@@ -443,6 +504,9 @@ public class InwardInvoiceJournalController implements Serializable {
 
     public Map<InwardChargeType, Double> getColumnTotals() { return columnTotals; }
 
+    public double getGrandTotalGross() { return grandTotalGross; }
+    public double getGrandTotalDiscount() { return grandTotalDiscount; }
+    public double getGrandTotalServiceCharge() { return grandTotalServiceCharge; }
     public double getGrandTotalCharges() { return grandTotalCharges; }
     public double getGrandTotalDeposits() { return grandTotalDeposits; }
     public double getGrandTotalCreditSettlement() { return grandTotalCreditSettlement; }
