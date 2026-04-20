@@ -2253,11 +2253,25 @@ public class DataAdministrationController implements Serializable {
     }
 
     public void markMigrationComplete() {
+        String version = fetchWikiDdlVersion();
+        if (version != null) {
+            configOptionApplicationController.saveShortTextOption(CONFIG_KEY_DDL_VERSION, version);
+            wikiDdlVersion = version;
+        } else {
+            JsfUtil.addErrorMessage("Could not reach wiki to save DDL version. Banner cleared for this session only — it may return after restart.");
+        }
         databaseMigrationService.markMigrationComplete();
         JsfUtil.addSuccessMessage("Migration marked as complete. The migration page is now restricted to administrators.");
     }
 
     public void markMigrationNotNecessary() {
+        String version = fetchWikiDdlVersion();
+        if (version != null) {
+            configOptionApplicationController.saveShortTextOption(CONFIG_KEY_DDL_VERSION, version);
+            wikiDdlVersion = version;
+        } else {
+            JsfUtil.addErrorMessage("Could not reach wiki to save DDL version. Banner cleared for this session only — it may return after restart.");
+        }
         databaseMigrationService.markMigrationNotNecessary();
         JsfUtil.addSuccessMessage("Migration marked as not necessary. The migration page is now restricted to administrators.");
     }
@@ -2324,6 +2338,7 @@ public class DataAdministrationController implements Serializable {
         if (wikiDdlVersion != null) {
             String storedVersion = configOptionApplicationController.getShortTextValueByKey(CONFIG_KEY_DDL_VERSION);
             if (wikiDdlVersion.equals(storedVersion) && !"UNCHECKED".equals(storedVersion)) {
+                databaseMigrationService.markMigrationComplete();
                 errors = "Schema is up to date (Wiki DDL version: " + wikiDdlVersion + "). No missing fields expected.";
                 return;
             }
