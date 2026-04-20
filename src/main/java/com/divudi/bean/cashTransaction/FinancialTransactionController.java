@@ -4642,12 +4642,17 @@ public class FinancialTransactionController implements Serializable {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         double floatOutAcc = 0.0;
         double floatInAcc = 0.0;
+        double cashFloatOutAcc = 0.0;
+        double cashFloatInAcc = 0.0;
 
         if (shiftPayments != null) {
             for (Payment p : shiftPayments) {
                 // Fund transfer payments are kept separate from collection rows to avoid
                 // mixing float adjustments with department-based collections. Their net
                 // effect is tracked in floatOutAcc/floatInAcc and stored on the parent bundle.
+                // Cash-only portions are tracked in cashFloatOutAcc/cashFloatInAcc for the
+                // Net To Handover formula, which must reflect physical cash only (non-cash
+                // floats are already tracked via the currentHolder mechanism on original payments).
                 if (isFundTransferPayment(p)) {
                     if (p.getBill() != null) {
                         BillTypeAtomic bta = p.getBill().getBillTypeAtomic();
@@ -4656,9 +4661,15 @@ public class FinancialTransactionController implements Serializable {
                                 && !p.getBill().isCancelled()) {
                             // Accepted float out — deducted from this user's drawer when recipient accepted
                             floatOutAcc += Math.abs(p.getPaidValue());
+                            if (p.getPaymentMethod() == PaymentMethod.Cash) {
+                                cashFloatOutAcc += Math.abs(p.getPaidValue());
+                            }
                         } else if (bta == BillTypeAtomic.FUND_TRANSFER_RECEIVED_BILL) {
                             // Float in received by this user
                             floatInAcc += Math.abs(p.getPaidValue());
+                            if (p.getPaymentMethod() == PaymentMethod.Cash) {
+                                cashFloatInAcc += Math.abs(p.getPaidValue());
+                            }
                         }
                         // Cancelled, declined, or pending — no drawer effect, skip
                     }
@@ -4736,6 +4747,8 @@ public class FinancialTransactionController implements Serializable {
         bundleToHoldDeptUserDayBundle.setEndBill(endBill);
         bundleToHoldDeptUserDayBundle.setFloatOutTotal(floatOutAcc);
         bundleToHoldDeptUserDayBundle.setFloatInTotal(floatInAcc);
+        bundleToHoldDeptUserDayBundle.setCashFloatOutTotal(cashFloatOutAcc);
+        bundleToHoldDeptUserDayBundle.setCashFloatInTotal(cashFloatInAcc);
         if (startBill != null) {
             bundleToHoldDeptUserDayBundle.setUser(startBill.getCreater());
         } else {
@@ -5594,7 +5607,7 @@ public class FinancialTransactionController implements Serializable {
         boolean skipCashDiffValidation = configOptionApplicationController.getBooleanValueByKey("Skip Cash Difference Validation for Handover", false);
         if (!skipCashDiffValidation) {
             Double maximumAllowedCashDifferenceForHandover = configOptionApplicationController.getDoubleValueByKey("Maximum Allowed Cash Difference for Handover", 1.0);
-            double expectedCashHandover = bundle.getCashValue() + bundle.getFloatNetTotal();
+            double expectedCashHandover = bundle.getCashValue() + bundle.getCashFloatNetTotal();
             if (Math.abs(bundle.getDenominatorValue() - expectedCashHandover) > maximumAllowedCashDifferenceForHandover) {
                 JsfUtil.addErrorMessage("Cash Value Collected and the cash value Handing over are different. Cannot handover.");
                 return null;

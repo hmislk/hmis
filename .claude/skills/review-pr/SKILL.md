@@ -4,7 +4,6 @@ description: >
   Handle CodeRabbit and Codex review comments on a GitHub PR. Fetches the PR,
   investigates each comment against the codebase, discusses validity with the user,
   batches valid fixes, and guides through push and reply steps.
-disable-model-invocation: true
 allowed-tools: Read, Grep, Glob, Bash
 argument-hint: "<pr-url-or-number>"
 ---

@@ -420,7 +420,7 @@
                             <p:outputLabel value="#{patientInvestigation.investigation.name}"/>
                         </p:column>
 
-                        <p:column headerText="Status" >
+                        <p:column headerText="Status" exportValue="#{patientInvestigation.status}#{patientInvestigation.billItem.bill.cancelled ? ' [Cancelled]' : ''}#{patientInvestigation.billItem.bill.refunded ? ' [Refunded]' : ''}">
                             <h:outputLabel value="#{patientInvestigation.status}"/>
                             <p:badge value="Cancelled" severity="warning" rendered="#{patientInvestigation.billItem.bill.cancelled}" ></p:badge>
                             <p:badge value="Refunded" severity="warning" rendered="#{patientInvestigation.billItem.bill.refunded}" ></p:badge>
