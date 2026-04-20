@@ -430,6 +430,22 @@ public class PaymentSchemeController implements Serializable {
         return createPaymentSchemes(false, true, false);
     }
 
+    public List<PaymentScheme> getPaymentSchemesForInward() {
+        StringBuilder jpql = new StringBuilder("SELECT i FROM PaymentScheme i WHERE i.retired = false AND i.validForInpatientBills = true");
+        Map<String, Object> parameters = new HashMap<>();
+        if (sessionController.getDepartment() != null) {
+            boolean departmentSpecific = configOptionApplicationController.getBooleanValueByKey(
+                    "Department Specific Discount Schemes for " + sessionController.getDepartment().getName(), false
+            );
+            if (departmentSpecific) {
+                jpql.append(" AND i.department = :dep");
+                parameters.put("dep", sessionController.getDepartment());
+            }
+        }
+        jpql.append(" ORDER BY i.orderNo, i.name");
+        return getFacade().findByJpql(jpql.toString(), parameters);
+    }
+
     public List<PaymentScheme> createPaymentSchemes(boolean includeOpd, boolean includePharmacy, boolean includeChannel) {
         StringBuilder jpql = new StringBuilder("SELECT i FROM PaymentScheme i WHERE i.retired = false");
         Map<String, Object> parameters = new HashMap<>();
