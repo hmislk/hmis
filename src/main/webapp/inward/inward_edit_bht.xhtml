@@ -449,9 +449,16 @@
                                         <h:outputLabel class="mx-2" value="#{bhtEditController.current.admissionType.name}"/>                               
 
                                         <h:outputLabel value="Select Payment Method"/>
-                                        <p:selectOneMenu  class="mx-2 w-100" id="cmbPs" value="#{bhtEditController.current.paymentMethod}">                       
+                                        <p:selectOneMenu  class="mx-2 w-100" id="cmbPs" value="#{bhtEditController.current.paymentMethod}">
                                             <f:selectItems value="#{enumController.paymentMethodForAdmission}" />
                                             <p:ajax process="@this" update="crd" event="change" />
+                                        </p:selectOneMenu>
+
+                                        <h:outputLabel value="Discount Scheme"/>
+                                        <p:selectOneMenu class="mx-2 w-100" value="#{bhtEditController.paymentScheme}">
+                                            <f:selectItem itemLabel="No Discount Scheme" itemValue="#{null}"/>
+                                            <f:selectItems value="#{paymentSchemeController.paymentSchemesForInward}"
+                                                           var="ps" itemLabel="#{ps.name}" itemValue="#{ps}"/>
                                         </p:selectOneMenu>
 
                                     </h:panelGrid>
