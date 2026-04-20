@@ -179,6 +179,8 @@ public class InwardDiscountMatrixApi {
             }
             return successResponse(payload);
 
+        } catch (IllegalArgumentException e) {
+            return errorResponse(e.getMessage(), 400);
         } catch (Exception e) {
             return errorResponse("An error occurred: " + e.getMessage(), 500);
         }
@@ -253,6 +255,10 @@ public class InwardDiscountMatrixApi {
             if (discountPercent == null) {
                 return errorResponse("discountPercent is required", 400);
             }
+            if (discountPercent.isNaN() || discountPercent.isInfinite()
+                    || discountPercent < 0.0 || discountPercent > 100.0) {
+                return errorResponse("discountPercent must be a finite number between 0 and 100", 400);
+            }
 
             Department department = null;
             Long departmentId = asLong(body.get("departmentId"));
@@ -324,6 +330,8 @@ public class InwardDiscountMatrixApi {
 
             return Response.status(201).entity(gson.toJson(successData(toDto(entry)))).build();
 
+        } catch (IllegalArgumentException e) {
+            return errorResponse(e.getMessage(), 400);
         } catch (Exception e) {
             return errorResponse("An error occurred: " + e.getMessage(), 500);
         }
@@ -385,11 +393,16 @@ public class InwardDiscountMatrixApi {
                         return errorResponse("Category not found: " + categoryId, 400);
                     }
                     String scope = asString(body.get("scope"));
-                    if (scope != null && !scope.trim().isEmpty()) {
-                        String mismatch = validateCategoryForScope(c, scope.trim().toLowerCase());
-                        if (mismatch != null) {
-                            return errorResponse(mismatch, 400);
-                        }
+                    if (scope == null || scope.trim().isEmpty()) {
+                        return errorResponse("scope is required when categoryId is supplied", 400);
+                    }
+                    scope = scope.trim().toLowerCase();
+                    if (!"service".equals(scope) && !"pharmacy".equals(scope)) {
+                        return errorResponse("Invalid scope. Use 'service' or 'pharmacy'.", 400);
+                    }
+                    String mismatch = validateCategoryForScope(c, scope);
+                    if (mismatch != null) {
+                        return errorResponse(mismatch, 400);
                     }
                     entry.setCategory(c);
                 }
@@ -438,6 +451,9 @@ public class InwardDiscountMatrixApi {
                 if (dp == null) {
                     return errorResponse("discountPercent cannot be null", 400);
                 }
+                if (dp.isNaN() || dp.isInfinite() || dp < 0.0 || dp > 100.0) {
+                    return errorResponse("discountPercent must be a finite number between 0 and 100", 400);
+                }
                 entry.setDiscountPercent(dp);
             }
 
@@ -457,6 +473,8 @@ public class InwardDiscountMatrixApi {
             priceMatrixFacade.edit(entry);
             return successResponse(toDto(entry));
 
+        } catch (IllegalArgumentException e) {
+            return errorResponse(e.getMessage(), 400);
         } catch (Exception e) {
             return errorResponse("An error occurred: " + e.getMessage(), 500);
         }
@@ -764,7 +782,7 @@ public class InwardDiscountMatrixApi {
         try {
             return Long.parseLong(v.trim());
         } catch (NumberFormatException e) {
-            return null;
+            throw new IllegalArgumentException("Invalid numeric value for '" + name + "': '" + v + "'");
         }
     }
 
@@ -793,7 +811,7 @@ public class InwardDiscountMatrixApi {
             if (s.endsWith(".0")) s = s.substring(0, s.length() - 2);
             return Long.parseLong(s);
         } catch (NumberFormatException e) {
-            return null;
+            throw new IllegalArgumentException("Invalid numeric id: '" + o + "'");
         }
     }
 
@@ -805,7 +823,7 @@ public class InwardDiscountMatrixApi {
         try {
             return Double.parseDouble(s);
         } catch (NumberFormatException e) {
-            return null;
+            throw new IllegalArgumentException("Invalid numeric value: '" + o + "'");
         }
     }
 
@@ -814,7 +832,7 @@ public class InwardDiscountMatrixApi {
     private WebUser validateApiKey(String key) {
         if (key == null || key.trim().isEmpty()) return null;
         ApiKey apiKey = apiKeyController.findApiKey(key);
-        if (apiKey == null) return null;
+        if (apiKey == null || apiKey.isRetired()) return null;
         WebUser user = apiKey.getWebUser();
         if (user == null || user.isRetired() || !user.isActivated()) return null;
         if (apiKey.getDateOfExpiary() == null || apiKey.getDateOfExpiary().before(new Date())) return null;
