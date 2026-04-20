@@ -105,10 +105,10 @@
                                             <td>
                                                 <h:outputText value="#{row.bill.deptId}"/>
                                                 <br/>
-                                                <h:outputText rendered="#{row.bill.cancelled}" value="Cancelled - #{row.bill.cancelledBill.deptId}" styleClass="text-danger" />
-                                                <h:outputText rendered="#{row.bill.refunded}" value="Refunded - #{row.bill.refundedBill.deptId}"  styleClass="text-warning" />
-                                                <h:outputText rendered="#{bookingControllerViewScope.checkBillClass(row.bill) eq 'RefundBill'}" value="Refund Bill"  styleClass="text-warning" />
-                                                <h:outputText rendered="#{row.bill.billTypeAtomic eq 'CHANNEL_CANCELLATION_WITH_PAYMENT'}" value="Cancel Bill" styleClass="text-danger" />
+                                                <h:outputText rendered="#{row.bill.cancelled}" value="(Cancelled - #{row.bill.cancelledBill.deptId})" style="color: red;" />
+                                                <h:outputText rendered="#{row.bill.refunded}" value="(Refunded - #{row.bill.refundedBill.deptId})"  style="color: rgba(255, 255, 0, 0.861);" />
+                                                <h:outputText rendered="#{bookingControllerViewScope.checkBillClass(row.bill) eq 'RefundBill'}" value="(Refund Bill)"  style="color: rgba(255, 255, 0, 0.861);" />
+                                                <h:outputText rendered="#{row.bill.billTypeAtomic eq 'CHANNEL_CANCELLATION_WITH_PAYMENT'}" value="(Cancel Bill)" style="color: red;" />
                                             </td>
                                             <td>
                                                 <h:outputText value="#{row.bill.billType}"/>

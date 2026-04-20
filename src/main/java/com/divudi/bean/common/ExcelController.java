@@ -4433,7 +4433,7 @@ public class ExcelController {
 
     // Excel Export: filter info to excel
     public int addMetaDataToExcelPostProcessor(XSSFWorkbook wb, XSSFSheet sheet, int rowIndex, String title, Map<String, Object> filters) {
-        if (wb == null || sheet == null || title == null) {
+        if (wb == null || sheet == null) {
             return rowIndex;
         }
         if (rowIndex < 0) {
@@ -4478,32 +4478,34 @@ public class ExcelController {
             titleCell.setCellValue(title);
             titleCell.setCellStyle(headerStyle);
         }
-        
-        int pairCounter = 0;
-        Row row = sheet.createRow(rowIndex++);
 
-        for (Map.Entry<String, Object> entry : filters.entrySet()) {
+        if (filters != null && !filters.isEmpty()) {
+            int pairCounter = 0;
+            Row row = sheet.createRow(rowIndex++);
 
-            // LABEL CELL
-            Cell labelCell = row.createCell(pairCounter * 3);
-            labelCell.setCellValue(entry.getKey());
-            labelCell.setCellStyle(metaStyleBold);
+            for (Map.Entry<String, Object> entry : filters.entrySet()) {
 
-            // VALUE CELL
-            Cell valueCell = row.createCell(pairCounter * 3 + 1);
-            Object value = entry.getValue();
+                // LABEL CELL
+                Cell labelCell = row.createCell(pairCounter * 3);
+                labelCell.setCellValue(entry.getKey());
+                labelCell.setCellStyle(metaStyleBold);
 
-            valueCell.setCellValue((value != null) ? value.toString() : "");
+                // VALUE CELL
+                Cell valueCell = row.createCell(pairCounter * 3 + 1);
+                Object value = entry.getValue();
 
-            pairCounter++;
+                valueCell.setCellValue((value != null) ? value.toString() : "");
 
-            // Start new row after 3 pairs
-            if (pairCounter == 3) {
-                pairCounter = 0;
-                row = sheet.createRow(rowIndex++);
+                pairCounter++;
+
+                // Start new row after 3 pairs
+                if (pairCounter == 3) {
+                    pairCounter = 0;
+                    row = sheet.createRow(rowIndex++);
+                }
             }
         }
-
+        
         // blank row after metadata
         rowIndex++;
 

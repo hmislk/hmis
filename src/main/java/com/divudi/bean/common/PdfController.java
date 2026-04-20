@@ -3172,7 +3172,7 @@ public class PdfController {
                 table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", b.getStaffFee())).setTextAlignment(TextAlignment.RIGHT).setFontSize(fontSize)));
                 table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", b.getTotal())).setTextAlignment(TextAlignment.RIGHT).setFontSize(fontSize)));
             } else {
-                for (int i = 0; i < 8; i++) {
+                for (int i = 0; i < 10; i++) {
                     table.addCell(new Cell().add(new Paragraph("").setTextAlignment(TextAlignment.LEFT).setFontSize(fontSize)));
                 }
             }

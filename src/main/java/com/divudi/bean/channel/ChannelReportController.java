@@ -5165,7 +5165,7 @@ public class ChannelReportController implements Serializable {
             return;
         }
 
-        workbook.setSheetName(0, "Income With Agent Booking Report");
+        workbook.setSheetName(0, "Income With Agent Booking");
         sheet.shiftRows(0, sheet.getLastRowNum(), 6);
 
         Map<String, Object> filters = getFiltersForChannelIncomeReports();
