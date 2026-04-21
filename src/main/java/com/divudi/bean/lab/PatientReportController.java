@@ -202,6 +202,14 @@ public class PatientReportController implements Serializable {
     }
 
     public String navigateToViewPatientReport(PatientReport patientReport) {
+        if(patientReport.getApproved()){
+            calculatedRequerd = false;
+            System.out.println("Navigate the Report. (Approved) ----> Calculated Requerd = " + calculatedRequerd);  
+        }else{
+            calculatedRequerd = true;
+            System.out.println("Navigate the Report. (Pending Approved) ----> Calculated Requerd = " + calculatedRequerd); 
+        }
+        
         if (null == patientReport.getReportType()) {
             setCurrentPatientReport(patientReport);
             return "/lab/patient_report?faces-redirect=true";
