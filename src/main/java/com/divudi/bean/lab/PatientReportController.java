@@ -188,6 +188,8 @@ public class PatientReportController implements Serializable {
     private boolean showBackground = false;
     private ClinicalFindingValue clinicalFindingValue;
     private String comment;
+    
+    private boolean calculatedRequerd = false;
 
     public StreamedContent getReportAsPdf() {
         StreamedContent pdfSc = null;
@@ -200,6 +202,12 @@ public class PatientReportController implements Serializable {
     }
 
     public String navigateToViewPatientReport(PatientReport patientReport) {
+        if(patientReport.getApproved()){
+            calculatedRequerd = false;
+        }else{
+            calculatedRequerd = true;
+        }
+        
         if (null == patientReport.getReportType()) {
             setCurrentPatientReport(patientReport);
             return "/lab/patient_report?faces-redirect=true";
@@ -262,6 +270,8 @@ public class PatientReportController implements Serializable {
         }
 
         System.out.println("Successfully Update Patient Name, Age, Gender.");
+        
+        calculatedRequerd = true;
 
         Boolean updateDynamicLabel = false;
 
@@ -1023,6 +1033,8 @@ public class PatientReportController implements Serializable {
         if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
             labTestHistoryController.addCalculateHistory(currentPtIx, currentPatientReport);
         }
+        
+        calculatedRequerd = false;
 
     }
 
@@ -1211,6 +1223,7 @@ public class PatientReportController implements Serializable {
                 pirivFacade.edit(v);
             }
         }
+        calculatedRequerd = true;
     }
 
     public void savePatientReport() {
@@ -1244,6 +1257,8 @@ public class PatientReportController implements Serializable {
         if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
             labTestHistoryController.addDataEnterHistory(currentPtIx, currentPatientReport);
         }
+        
+        calculatedRequerd = true;
 
         JsfUtil.addSuccessMessage("Saved");
     }
@@ -2093,6 +2108,11 @@ public class PatientReportController implements Serializable {
             JsfUtil.addErrorMessage(tbm.getMessage());
             return;
         }
+        
+        if(calculatedRequerd == true){
+            JsfUtil.addErrorMessage("Calculation is required after the report is saved.");
+            return;
+        }
 
         boolean authorized = configOptionApplicationController.getBooleanValueByKey("The relevant authorized user must approve the test report himself.", false);
         if (authorized) {
@@ -2226,6 +2246,8 @@ public class PatientReportController implements Serializable {
                 }
             }
         }
+        
+        calculatedRequerd = true;
 
         JsfUtil.addSuccessMessage("Approved");
 
@@ -2564,6 +2586,8 @@ public class PatientReportController implements Serializable {
         } catch (Exception e) {
         }
 
+        calculatedRequerd = true;
+        
     }
 
     public void printPatientReport() {
@@ -3088,6 +3112,7 @@ public class PatientReportController implements Serializable {
         } else {
             link = navigateToNewlyCreatedPatientReport(pi);
         }
+        calculatedRequerd = true;
         return link;
     }
 
@@ -3477,6 +3502,14 @@ public class PatientReportController implements Serializable {
     public void setGroupName(String groupName) {
         this.groupName = groupName;
 
+    }
+
+    public boolean isCalculatedRequerd() {
+        return calculatedRequerd;
+    }
+
+    public void setCalculatedRequerd(boolean calculatedRequerd) {
+        this.calculatedRequerd = calculatedRequerd;
     }
 
     @FacesConverter(forClass = PatientReport.class)
