@@ -655,7 +655,8 @@
                                                         <p:selectOneMenu class="w-75 mx-1" autoWidth="false" id="lstItems" value="#{bookingControllerViewScopeMonth.itemToAddToBooking}" >
                                                             <f:selectItem itemLabel="Select" ></f:selectItem>
                                                             <f:selectItems  value="#{bookingControllerViewScopeMonth.itemsAvailableToAddToBooking}" var="iata" itemValue="#{iata}"  itemLabel="#{iata.name}" ></f:selectItems>
-                                                            <p:ajax event="change" process="lstItems" update="totalsPanel :#{p:resolveFirstComponentWithId('gpFeeTotal',view).clientId}" listener="#{bookingControllerViewScopeMonth.fillFees}" ></p:ajax>
+                                                            <!-- <p:ajax event="change" process="lstItems" update="totalsPanel :#{p:resolveFirstComponentWithId('gpFeeTotal',view).clientId}" listener="#{bookingControllerViewScopeMonth.fillFees}" ></p:ajax> -->
+                                                             <p:ajax event="change" process="lstItems" update="totalsPanel :#{p:resolveFirstComponentWithId('gpFeeTotal',view).clientId}"></p:ajax>
                                                         </p:selectOneMenu>
                                                     </p:column>
                                                     <p:column >
@@ -666,7 +667,7 @@
                                                             icon="fas fa-plus"
                                                             class="ui-button-success"
                                                             action="#{bookingControllerViewScopeMonth.addItemToBooking}"
-                                                            update="totalsPanel paymentDetails :#{p:resolveFirstComponentWithId('gpFeeTotal',view).clientId} :#{p:resolveFirstComponentWithId('lstAddedItems',view).clientId} lstItems panelBookingDetails"
+                                                            update="totalsPanel gdManageBookings paymentDetails :#{p:resolveFirstComponentWithId('gpFeeTotal',view).clientId} :#{p:resolveFirstComponentWithId('lstAddedItems',view).clientId} lstItems panelBookingDetails"
                                                             ></p:commandButton>
                                                     </p:column>
                                                 </p:row>
@@ -683,7 +684,7 @@
                                                                     class="ui-button-danger" 
                                                                     action="#{bookingControllerViewScopeMonth.removeAddedAditionalItems(item)}" 
                                                                     process="btnRemoveAdditem" 
-                                                                    update=":#{p:resolveFirstComponentWithId('lstAddedItems',view).clientId} :#{p:resolveFirstComponentWithId('paymentDetails',view).clientId} :#{p:resolveFirstComponentWithId('gpFeeTotal',view).clientId} :#{p:resolveFirstComponentWithId('panelBookingDetails',view).clientId}"/>
+                                                                    update=":#{p:resolveFirstComponentWithId('lstAddedItems',view).clientId} :#{p:resolveFirstComponentWithId('paymentDetails',view).clientId} :#{p:resolveFirstComponentWithId('gpFeeTotal',view).clientId} :#{p:resolveFirstComponentWithId('panelBookingDetails',view).clientId} gdManageBookings"/>
                                                             </div>
                                                         </div>
                                                     </ui:repeat>
@@ -773,9 +774,24 @@
                                                 </h:panelGroup>
 
                                                 <h:outputLabel value="Foriegner"/>
-                                                <p:selectBooleanCheckbox class="w-75" id="f" value="#{bookingControllerViewScopeMonth.foriegn}">
-                                                    <f:ajax event="change" execute="@this" render="totalsPanel panelBookingDetails"/>
-                                                </p:selectBooleanCheckbox>
+                                                <h:panelGroup id="gpLocalForeign"  class="col-md-6" rendered="#{!configOptionApplicationController.getBooleanValueByKey('Save the Patient with Patient Status')}">
+                                                    <p:commandButton 
+                                                        value="Mark Foreigner" 
+                                                        action="#{bookingControllerViewScopeMonth.markAsForeigner}" 
+                                                        rendered="#{!bookingControllerViewScopeMonth.foriegn}" 
+                                                        process="@this" 
+                                                        update="gpLocalForeign totalsPanel panelBookingDetails gdManageBookings" 
+                                                        >
+                                                    </p:commandButton>
+                                                    <p:commandButton 
+                                                        value="Mark Local" 
+                                                        action="#{bookingControllerViewScopeMonth.markAsLocal}" 
+                                                        rendered="#{bookingControllerViewScopeMonth.foriegn}" 
+                                                        process="@this" 
+                                                        update="gpLocalForeign totalsPanel panelBookingDetails gdManageBookings" 
+                                                    >
+                                                    </p:commandButton>
+                                                </h:panelGroup>
 
 
                                                 <p:outputLabel value="Payment Method"/>

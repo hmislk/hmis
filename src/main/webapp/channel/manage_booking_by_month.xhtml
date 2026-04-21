@@ -396,7 +396,7 @@
                                                             process="@this"
                                                             update="gdManageBookings :#{p:resolveFirstComponentWithId('totalsPanel',view).clientId} paymentDetails lstItems panelBillDetailsForSettling"
                                                             event="change"
-                                                            listener="#{bookingControllerViewScopeMonth.calculateSelectedBillSessionTotalForSettling()}"/>
+                                                            listener="#{bookingControllerViewScopeMonth.calculateSelectedBillSessionTotalForSettlingByBillFees()}"/>
                                                     </p:selectOneMenu>
                                                 </div>
 
@@ -685,7 +685,7 @@
                                             <h:panelGroup id="gdManageBookings">
                                                 <div class="row w-100 m-2 ui-fluid" style="table-layout: fixed;">
                                                     <div class="col-4 align-self-center">
-                                                        <p:outputLabel value="Tendered Amount" />
+                                                        <p:outputLabel for="paid" value="Tendered Amount" />
                                                     </div>
                                                     <div class="col-8">
                                                         <p:inputText id="paid" style="font-weight: bolder; width: 65%;" value="#{bookingControllerViewScopeMonth.strTenderedValue}" styleClass="form-control">
@@ -704,9 +704,29 @@
                                                         <h:outputLabel value="Foriegner"/>
                                                     </div>
                                                     <div class="col-8">
-                                                        <p:selectBooleanCheckbox class="w-75" id="f" value="#{bookingControllerViewScopeMonth.foriegn}">
-                                                            <f:ajax event="change" execute="@this" render="totalsPanel panelBookingDetails"/>
-                                                        </p:selectBooleanCheckbox>
+                                                        <h:panelGroup id="gpLocalForeign" rendered="#{!configOptionApplicationController.getBooleanValueByKey('Save the Patient with Patient Status')}">
+                                                            <p:commandButton
+                                                                value="Mark Foreigner"
+                                                                style="width: 65%; margin-bottom: 10px;"
+                                                                disabled="#{bookingControllerViewScopeMonth.selectedSessionInstance.originatingSession.category ne 'Scanning'}"
+                                                                action="#{bookingControllerViewScopeMonth.markAsForeignerWithBillUpdate()}"
+                                                                rendered="#{!bookingControllerViewScopeMonth.foriegn}"
+                                                                process="@this"
+                                                                update="gpLocalForeign totalsPanel paymentDetails tblBillFeesForAddingNewItem tblBillItemsForAddingNewItem gdManageBookings msg"
+                                                                >
+                                                            </p:commandButton>
+                                                            <p:commandButton
+                                                                value="Mark Local"
+                                                                style="width: 65%;"
+                                                                disabled="#{bookingControllerViewScopeMonth.selectedSessionInstance.originatingSession.category ne 'Scanning'}"
+                                                                action="#{bookingControllerViewScopeMonth.markAsLocalWithBillUpdate()}"
+                                                                rendered="#{bookingControllerViewScopeMonth.foriegn}"
+                                                                process="@this"
+                                                                update="gpLocalForeign totalsPanel paymentDetails tblBillFeesForAddingNewItem tblBillItemsForAddingNewItem gdManageBookings msg"
+                                                                >
+                                                            </p:commandButton>
+
+                                                        </h:panelGroup>
                                                     </div>
 
                                                     <div class="col-4 align-self-center">
@@ -714,7 +734,8 @@
                                                     </div>
                                                     <div class="col-8">
                                                         <p:selectOneMenu 
-                                                            class="w-75" 
+                                                            styleClass="form-control"
+                                                            style="width: 65%;"
                                                             autoWidth="false" 
                                                             id="cmbPs2" 
                                                             value="#{bookingControllerViewScopeMonth.paymentScheme}">
@@ -728,7 +749,7 @@
                                                                 process="@this"
                                                                 update="gdManageBookings :#{p:resolveFirstComponentWithId('totalsPanel',view).clientId} paymentDetails lstItems panelBillDetailsForSettling"
                                                                 event="change"
-                                                                listener="#{bookingControllerViewScopeMonth.calculateSelectedBillSessionTotalForSettling()}"/>
+                                                                listener="#{bookingControllerViewScopeMonth.calculateSelectedBillSessionTotalForSettlingByBillFees()}"/>
                                                         </p:selectOneMenu>
                                                     </div>
                                                 </div>
@@ -788,6 +809,7 @@
                                                 </p:column>
                                             </p:dataTable>
 
+                                            <p:growl id="msg" life="2000"></p:growl>
                                             <p:dataTable 
                                                 id="tblBillFeesForAddingNewItem" 
                                                 value="#{bookingControllerViewScopeMonth.selectedBillSession.billItem.bill.billFeesWIthoutZeroValue}" 

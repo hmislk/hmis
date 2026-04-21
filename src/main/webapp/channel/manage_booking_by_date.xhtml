@@ -496,7 +496,7 @@
                                                     <p:ajax process="@this" 
                                                             update="gdManageBookings :#{p:resolveFirstComponentWithId('totalsPanel',view).clientId} paymentDetails"
                                                             event="change"
-                                                            listener="#{bookingControllerViewScope.calculateSelectedBillSessionTotalForSettling()}"/>
+                                                            listener="#{bookingControllerViewScope.calculateSelectedBillSessionTotalForSettlingByBillFees()}"/>
                                                 </p:selectOneMenu>
 
                                                 <p:outputLabel value="Discount Scheme"/>
@@ -515,7 +515,7 @@
                                                         process="@this "
                                                         update="gdManageBookings :#{p:resolveFirstComponentWithId('totalsPanel',view).clientId} paymentDetails lstItems"
                                                         event="change"
-                                                        listener="#{bookingControllerViewScope.calculateSelectedBillSessionTotalForSettling()}"/>
+                                                        listener="#{bookingControllerViewScope.calculateSelectedBillSessionTotalForSettlingByBillFees()}"/>
                                                 </p:selectOneMenu>
 
                                                 <p:outputLabel value="Citizenship" ></p:outputLabel>
