@@ -97,11 +97,21 @@ public class RequestController implements Serializable {
     }
 
     public String navigateToPendingPettyCashRequests() {
-        requestType = RequestType.PETTYCASH_APROVEL;
+        requestType = null;
+        List<RequestType> types = new ArrayList<>();
+        types.add(RequestType.PETTYCASH_APROVEL);
+        types.add(RequestType.PETTYCASH_CANCELLATION);
+        
         status = null;
-        fromDate = com.divudi.core.util.CommonFunctions.getStartOfDay(new java.util.Date());
-        toDate = com.divudi.core.util.CommonFunctions.getEndOfDay(new java.util.Date());
-        searchRequest();
+        List<RequestStatus> sts = new ArrayList<>();
+        sts.add(RequestStatus.PENDING);
+        sts.add(RequestStatus.UNDER_REVIEW);
+        
+        fromDate = null;
+        toDate = null;
+        
+        requests = new ArrayList<>();
+        requests = requestService.fillAllRequest(fromDate, toDate, billNo, bhtNo, requestNo, types, sts, null);
         return "/common/request/view_request?faces-redirect=true";
     }
 
