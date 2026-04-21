@@ -56,9 +56,13 @@
                         icon="pi pi-print">
                     </p:commandButton>
 
-                    <p:commandButton value="Excel" ajax="false" class="ui-button-success" icon="fas fa-file-excel" >
-                        <p:dataExporter type="xlsx" target="opd" fileName="Staff_Welfare"  />
+                    <p:commandButton value="Excel" ajax="false" class="ui-button-success m-1" icon="fas fa-file-excel">
+                        <p:dataExporter type="xlsx" target="opd" fileName="Staff_Welfare"/>
                     </p:commandButton>
+
+                    <p:commandButton value="Reports Menu" ajax="false" class="ui-button-secondary m-1"
+                                     icon="pi pi-home"
+                                     action="/reportInstitution/report_own?faces-redirect=true"/>
                 </h:panelGrid>
                 <p:panel id="panelPrint"  styleClass="summeryBorder">
                     <p:dataTable

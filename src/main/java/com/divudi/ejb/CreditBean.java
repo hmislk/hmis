@@ -10,6 +10,7 @@ import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.CountedServiceType;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.entity.*;
+import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.InstitutionFacade;
@@ -572,22 +573,60 @@ public class CreditBean {
         return getBillFacade().findByJpql(sql, hm, TemporalType.TIMESTAMP);
     }
 
+    public List<Bill> getUnpaidInwardCCBills(Institution creditCompany, Date fromDate, Date toDate,
+            AdmissionType admissionType, String dateBasis) {
+        String dateField = "admissionDate".equals(dateBasis)
+                ? "b.patientEncounter.dateOfAdmission"
+                : "b.patientEncounter.dateOfDischarge";
+        String sql = "Select b From Bill b "
+                + " where b.retired=false "
+                + " and (b.cancelled=false or b.cancelled is null) "
+                + " and b.billTypeAtomic=:bta "
+                + " and b.creditCompany=:cc "
+                + " and " + dateField + " between :frm and :to "
+                + " and (abs(b.netTotal)-abs(b.paidAmount)) >:val ";
+        HashMap hm = new HashMap();
+        hm.put("bta", BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
+        hm.put("cc", creditCompany);
+        hm.put("frm", fromDate);
+        hm.put("to", toDate);
+        hm.put("val", 0.01);
+        if (admissionType != null) {
+            sql += " and b.patientEncounter.admissionType =:at ";
+            hm.put("at", admissionType);
+        }
+        sql += " order by " + dateField;
+        return getBillFacade().findByJpql(sql, hm, TemporalType.TIMESTAMP);
+    }
+
     /**
      * Returns distinct credit companies that have unpaid InwardFinalBillCCPayment bills
      * within the given date range.
      */
     public List<Institution> getCreditCompaniesWithUnpaidInwardCCBills(Date fromDate, Date toDate) {
+        return getCreditCompaniesWithUnpaidInwardCCBills(fromDate, toDate, null, "dischargeDate");
+    }
+
+    public List<Institution> getCreditCompaniesWithUnpaidInwardCCBills(Date fromDate, Date toDate,
+            AdmissionType admissionType, String dateBasis) {
+        String dateField = "admissionDate".equals(dateBasis)
+                ? "b.patientEncounter.dateOfAdmission"
+                : "b.patientEncounter.dateOfDischarge";
         String sql = "Select distinct(b.creditCompany) From Bill b "
                 + " where b.retired=false "
                 + " and (b.cancelled=false or b.cancelled is null) "
                 + " and b.billTypeAtomic=:bta "
-                + " and b.billDate between :frm and :to "
+                + " and " + dateField + " between :frm and :to "
                 + " and (abs(b.netTotal)-abs(b.paidAmount)) >:val ";
         HashMap hm = new HashMap();
         hm.put("bta", BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
         hm.put("frm", fromDate);
         hm.put("to", toDate);
         hm.put("val", 0.01);
+        if (admissionType != null) {
+            sql += " and b.patientEncounter.admissionType =:at ";
+            hm.put("at", admissionType);
+        }
         return getInstitutionFacade().findByJpql(sql, hm, TemporalType.TIMESTAMP);
     }
 

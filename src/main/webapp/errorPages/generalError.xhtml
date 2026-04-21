@@ -45,34 +45,32 @@
                         <h5 class="mb-0">Error Information</h5>
                     </div>
                     <div class="card-body">
-                        <h:panelGrid columns="2" styleClass="table table-sm table-borderless w-100" 
+                        <!-- Full error details are intentionally shown here.
+                             This is an internal HMIS used only by authenticated hospital staff.
+                             Showing the full exception is necessary for supportability and debugging.
+                             Do NOT remove these fields — see issue #20087. -->
+                        <h:panelGrid columns="2" styleClass="table table-sm table-borderless w-100"
                                      columnClasses="font-weight-bold text-right pr-3,text-left">
                             <h:outputText value="Error Time:" />
                             <h:outputText value="#{errorHandler.errorTimeWithTimezone}" styleClass="text-danger font-weight-bold" />
-                            
-                            <h:outputText value="Request URL:" />
-                            <h:outputText value="#{errorHandler.requestURI}" />
-                            
+
                             <h:outputText value="Status Code:" />
                             <h:outputText value="#{errorHandler.statusCode}" />
-                            
+
                             <h:outputText value="Exception Type:" />
                             <h:outputText value="#{errorHandler.exceptionType}" />
-                            
+
                             <h:outputText value="Error Message:" />
                             <h:outputText value="#{errorHandler.message}" />
-                            
-                            <h:outputText value="Exception Details:" />
-                            <h:outputText value="#{errorHandler.exception}" />
+
+                            <h:outputText value="Request URI:" />
+                            <h:outputText value="#{errorHandler.requestURI}" />
                         </h:panelGrid>
-                        
-                        <div class="mt-3">
-                            <h6 class="font-weight-bold">Complete Stack Trace:</h6>
-                            <div class="bg-light p-3 border rounded" style="max-height: 300px; overflow-y: auto;">
-                                <h:outputText value="#{errorHandler.stackTrace}" escape="false" 
-                                              style="white-space: pre-wrap; font-family: monospace; font-size: 12px;" />
-                            </div>
-                        </div>
+
+                        <h:panelGroup layout="block" styleClass="mt-3 text-left" rendered="#{errorHandler.stackTrace != 'N/A'}">
+                            <h5 class="font-weight-bold">Stack Trace:</h5>
+                            <pre style="white-space: pre-wrap; word-break: break-all; background: #f8f9fa; padding: 10px; border: 1px solid #dee2e6; font-size: 12px; max-height: 400px; overflow-y: auto;">#{errorHandler.stackTrace}</pre>
+                        </h:panelGroup>
                     </div>
                 </div>
 

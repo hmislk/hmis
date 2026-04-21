@@ -11,11 +11,13 @@ import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.entity.BillFee;
 import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.PatientItem;
 import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.entity.inward.PatientRoom;
 import com.divudi.core.facade.BillFeeFacade;
 import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.PatientEncounterFacade;
+import com.divudi.core.facade.PatientItemFacade;
 import com.divudi.core.facade.PatientRoomFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -49,6 +51,8 @@ public class InwardChargeTypeBreakdownController implements Serializable {
     // -------------------------------------------------------------------------
     @EJB
     private BillItemFacade billItemFacade;
+    @EJB
+    private PatientItemFacade patientItemFacade;
     @EJB
     private PatientRoomFacade patientRoomFacade;
     @EJB
@@ -304,17 +308,22 @@ public class InwardChargeTypeBreakdownController implements Serializable {
     }
 
     // -------------------------------------------------------------------------
-    // BILL_ITEM
+    // BILL_ITEM — services, outside charges, and timed services
     // -------------------------------------------------------------------------
 
     private void buildFromBillItems() {
+        // --- Service / outside-charge BillItems ---
+        // LEFT JOIN bi.item so that InwardOutSideBill items (bi.item = null) are
+        // not dropped by implicit inner-join semantics when the OR clause navigates
+        // through i.inwardChargeType.
         StringBuilder jpql = new StringBuilder(
                 "select bi from BillItem bi join bi.bill b join b.patientEncounter enc"
+                + " left join bi.item i"
                 + " where bi.retired = false"
                 + " and b.retired = false"
                 + " and b.cancelled = false"
                 + " and b.billType in :btps"
-                + " and bi.inwardChargeType = :ct");
+                + " and (bi.inwardChargeType = :ct or i.inwardChargeType = :ct)");
 
         Map<String, Object> params = new HashMap<>();
         List<BillType> btps = new ArrayList<>();
@@ -324,11 +333,115 @@ public class InwardChargeTypeBreakdownController implements Serializable {
         params.put("ct", selectedChargeType);
         appendEncounterFilters(jpql, params, "enc");
 
-        List<BillItem> raw = billItemFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
-        if (raw == null) {
-            raw = new ArrayList<>();
+        List<BillItem> rawBillItems = billItemFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+        if (rawBillItems == null) {
+            rawBillItems = new ArrayList<>();
         }
-        buildPivotFromBillItems(raw);
+
+        // --- PatientItems (timed services) for the same charge type ---
+        // pi.billItem is null guards against double-counting if a PatientItem is
+        // ever linked back to a BillItem in the future.
+        StringBuilder jpql2 = new StringBuilder(
+                "select pi from PatientItem pi join pi.patientEncounter enc"
+                + " where pi.retired = false"
+                + " and pi.billItem is null"
+                + " and type(pi.item) = TimedItem"
+                + " and pi.item.inwardChargeType = :ct");
+        Map<String, Object> params2 = new HashMap<>();
+        params2.put("ct", selectedChargeType);
+        appendEncounterFilters(jpql2, params2, "enc");
+
+        List<PatientItem> rawPatientItems = patientItemFacade.findByJpql(jpql2.toString(), params2, TemporalType.TIMESTAMP);
+        if (rawPatientItems == null) {
+            rawPatientItems = new ArrayList<>();
+        }
+
+        buildPivotFromBillAndPatientItems(rawBillItems, rawPatientItems);
+    }
+
+    /**
+     * Builds the pivot from a mix of BillItems (services / outside charges) and
+     * PatientItems (timed services). Both item types are keyed by item.id so they
+     * share columns when the same item appears in both sources.
+     */
+    private void buildPivotFromBillAndPatientItems(List<BillItem> billItems, List<PatientItem> patientItems) {
+        // 1. Collect distinct columns from both sources
+        Map<String, String> keyToLabel = new LinkedHashMap<>();
+        for (BillItem bi : billItems) {
+            if (bi.getItem() == null) {
+                continue;
+            }
+            keyToLabel.put(String.valueOf(bi.getItem().getId()), bi.getItem().getName());
+        }
+        for (PatientItem pi : patientItems) {
+            if (pi.getItem() == null) {
+                continue;
+            }
+            keyToLabel.put(String.valueOf(pi.getItem().getId()), pi.getItem().getName());
+        }
+
+        // 2. Sort columns alphabetically by label
+        List<Map.Entry<String, String>> sortedEntries = new ArrayList<>(keyToLabel.entrySet());
+        sortedEntries.sort(Comparator.comparing(e -> e.getValue() == null ? "" : e.getValue()));
+        columnKeys   = new ArrayList<>();
+        columnLabels = new ArrayList<>();
+        for (Map.Entry<String, String> entry : sortedEntries) {
+            columnKeys.add(entry.getKey());
+            columnLabels.add(entry.getValue());
+        }
+
+        // 3. Accumulate BillItem values per BHT
+        Map<String, BhtBreakdownRow> bhtMap = new LinkedHashMap<>();
+        for (BillItem bi : billItems) {
+            if (bi.getItem() == null || bi.getBill() == null) {
+                continue;
+            }
+            PatientEncounter enc = bi.getBill().getPatientEncounter();
+            if (enc == null || enc.getBhtNo() == null) {
+                continue;
+            }
+            BhtBreakdownRow row = bhtMap.computeIfAbsent(enc.getBhtNo(), k -> createRow(enc));
+            row.getCellValues().merge(String.valueOf(bi.getItem().getId()), bi.getNetValue(), Double::sum);
+        }
+
+        // 4. Accumulate PatientItem (timed service) values per BHT
+        for (PatientItem pi : patientItems) {
+            if (pi.getItem() == null) {
+                continue;
+            }
+            PatientEncounter enc = pi.getPatientEncounter();
+            if (enc == null || enc.getBhtNo() == null) {
+                continue;
+            }
+            BhtBreakdownRow row = bhtMap.computeIfAbsent(enc.getBhtNo(), k -> createRow(enc));
+            double net = (pi.getServiceValue() != null ? pi.getServiceValue() : 0.0) - pi.getDiscount();
+            row.getCellValues().merge(String.valueOf(pi.getItem().getId()), net, Double::sum);
+        }
+
+        // 5. Sort rows and compute row totals
+        rows = new ArrayList<>(bhtMap.values());
+        rows.sort(Comparator.comparing(BhtBreakdownRow::getBhtNo,
+                Comparator.nullsLast(Comparator.naturalOrder())));
+        for (BhtBreakdownRow row : rows) {
+            double total = row.getCellValues().values().stream()
+                    .mapToDouble(Double::doubleValue).sum();
+            row.setRowTotal(total);
+        }
+
+        // 6. Compute column totals and grand total
+        columnTotals = new ArrayList<>();
+        grandTotal = 0.0;
+        for (String key : columnKeys) {
+            double colSum = 0;
+            for (BhtBreakdownRow row : rows) {
+                Double val = row.getCellValues().get(key);
+                if (val != null) {
+                    colSum += val;
+                }
+            }
+            columnTotals.add(colSum);
+            grandTotal += colSum;
+        }
     }
 
     // -------------------------------------------------------------------------

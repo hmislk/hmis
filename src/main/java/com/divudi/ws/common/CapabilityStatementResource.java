@@ -62,6 +62,13 @@ public class CapabilityStatementResource {
                         + "specialityId, institutionId, registration, qualification, description.",
                         "API Key (Token header)",
                         "POST", "PUT"))
+                .add(resource("Clinical Metadata", "/api/clinical/metadata",
+                        "CRUD for EMR clinical metadata types: symptom, sign, diagnosis, procedure, plan, vocabulary, "
+                        + "race, religion, blood_group, civil_status, employment, relationship. "
+                        + "Required param: type. GET supports query/page/size. "
+                        + "POST returns success, already_exists (with id), or error.",
+                        "API Key",
+                        "GET", "POST", "PUT", "DELETE"))
                 .add(resource("Clinical Favourite Medicines", "/api/clinical/favourite_medicines",
                         "Clinical favourite medicine management",
                         "API Key",
@@ -114,6 +121,15 @@ public class CapabilityStatementResource {
                         "Inward patient workflows",
                         "API Key",
                         "GET", "POST"))
+                .add(resource("Inward Discount Matrix", "/api/inward-discount-matrix",
+                        "Manage inward discount matrix entries for services/investigations and pharmacy. "
+                        + "Supports scope=service|pharmacy to restrict category types. "
+                        + "Lookup sub-paths for resolving names to IDs: "
+                        + "/admission-types/search, /payment-schemes/search, "
+                        + "/pharmaceutical-item-categories/search, /payment-methods. "
+                        + "POST returns HTTP 409 with existing id when a duplicate combination exists.",
+                        "API Key",
+                        "GET", "POST", "PUT", "DELETE"))
                 .add(resource("LIMS", "/api/lims",
                         "Laboratory Information Management System integrations",
                         "API Key",
@@ -184,6 +200,16 @@ public class CapabilityStatementResource {
                         "OPD and Inward service management including fees and categories",
                         "API Key",
                         "GET", "POST", "PUT", "PATCH", "DELETE"))
+                .add(resource("Collecting Centre Fees", "/api/pricing/collecting_centre_fees",
+                        "Manage item fees for collecting centres. "
+                        + "GET ?institutionId=X lists all active fees for that centre. "
+                        + "POST creates a new fee (body: collectingCentreId, itemId, name, feeType, fee, ffee, departmentId). "
+                        + "PUT /{feeId} updates a fee. "
+                        + "DELETE /{feeId} soft-retires a single fee. "
+                        + "DELETE ?institutionId=X soft-retires ALL active fees for that centre. "
+                        + "POST /recalculate?institutionId=X recalculates item totals for all items with CC fees.",
+                        "API Key",
+                        "GET", "POST", "PUT", "DELETE"))
                 .add(resource("FHIR Patient", "/api/fhir/Patient",
                         "FHIR R5 Patient search, read, create, update",
                         "API Key (use FHIR header, not Finance)",

@@ -58,7 +58,7 @@
 
     <!-- Session Configuration -->
     <session-config>
-        <session-timeout>180</session-timeout> <!-- minutes -->
+        <session-timeout>60</session-timeout> <!-- minutes (reduced from 180 for patient data security, issue #19867) -->
     </session-config>
 
 

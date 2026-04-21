@@ -35,7 +35,7 @@ public class PatientRoom implements Serializable, RetirableEntity {
     
     private static final long serialVersionUID = 1L;
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 //Main Properties
     private String name;

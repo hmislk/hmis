@@ -120,6 +120,8 @@ public class ReportTemplateRowBundle implements Serializable {
 
     private double floatOutTotal;
     private double floatInTotal;
+    private double cashFloatOutTotal;
+    private double cashFloatInTotal;
 
     // Booleans to track transactions
     private boolean hasOnCallTransaction;
@@ -1874,6 +1876,26 @@ public class ReportTemplateRowBundle implements Serializable {
         }
     }
 
+    // For channel bills
+    public void createRowValuesFromBillForChannelBills() {
+        if (this.reportTemplateRows != null && !this.reportTemplateRows.isEmpty()) {
+            for (ReportTemplateRow row : this.reportTemplateRows) {
+
+                if (row.getBill() == null) {
+                    continue;
+                }
+
+                // Setting values
+                row.setGrossTotal(row.getBill().getTotal());
+                row.setDiscount(row.getBill().getDiscount());
+                row.setTotal(row.getBill().getNetTotal());
+                row.setHospitalTotal(row.getBill().getHospitalFee());
+                row.setStaffTotal(row.getBill().getStaffFee());
+                row.setCcTotal(row.getBill().getTotalCenterFee());
+            }
+        }
+    }
+
     public Map<String, List<BillItem>> getGroupedBillItems() {
         return groupedBillItems;
     }
@@ -2307,6 +2329,26 @@ public class ReportTemplateRowBundle implements Serializable {
 
     public double getFloatNetTotal() {
         return floatInTotal - floatOutTotal;
+    }
+
+    public double getCashFloatOutTotal() {
+        return cashFloatOutTotal;
+    }
+
+    public void setCashFloatOutTotal(double cashFloatOutTotal) {
+        this.cashFloatOutTotal = cashFloatOutTotal;
+    }
+
+    public double getCashFloatInTotal() {
+        return cashFloatInTotal;
+    }
+
+    public void setCashFloatInTotal(double cashFloatInTotal) {
+        this.cashFloatInTotal = cashFloatInTotal;
+    }
+
+    public double getCashFloatNetTotal() {
+        return cashFloatInTotal - cashFloatOutTotal;
     }
 
     public void setTotal(Double total) {

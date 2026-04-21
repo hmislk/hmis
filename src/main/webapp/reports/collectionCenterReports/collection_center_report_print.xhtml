@@ -305,22 +305,26 @@
                             class="mx-2 ui-button-info"
                             style="width: 150px"
                             ajax="false" 
-                            value="Print">
-                            <p:printer target="tblExport" />
+                            value="To Print"
+                            action="collection_center_report_print_view?faces-redirect=true">
                         </p:commandButton>
                         <p:commandButton id="btnExcel" class="mx-2 ui-button-success"
                                          style="width: 150px"
                                          icon="fas fa-file-excel"
                                          ajax="false" value="Excel">
-                            <p:dataExporter type="xlsx" target="tblExport" fileName="Collection_Center_Report_print" />
+                            <p:dataExporter 
+                                type="xlsx" 
+                                target="tblExport" 
+                                fileName="Collection_Center_Report_print_#{reportController.fromDateFormatted()}_to_#{reportController.toDateFormatted()}"
+                                postProcessor="#{reportController.postProcessCollectionCenterReportPrintExcel}"/>
                         </p:commandButton>
                         <p:commandButton 
                             class="mx-2 ui-button-danger" 
                             style="width: 150px"
                             icon="fa-solid fa-file-pdf"
                             ajax="false" 
-                            value="PDF">
-                            <p:dataExporter type="pdf" target="tblExport"  fileName="Collection_Center_Report_print" ></p:dataExporter>
+                            value="PDF"
+                            action="#{reportController.exportCollectionCenterReportPrintToPDF()}">
                         </p:commandButton>
 
                     </p:panel>
@@ -363,7 +367,7 @@
 
                         <!-- Selection Box Column -->
                         <p:column headerText="S.NO" width="3em" >
-                            #{n+1}
+                            <p:outputLabel value="#{n+1}"/>
                         </p:column>
                         <p:column headerText="CC Code" width="3em">
                             <p:outputLabel value="#{patientInvestigation.billItem.bill.fromInstitution.code}"/>
@@ -372,12 +376,12 @@
                             <p:outputLabel value="#{patientInvestigation.billItem.bill.referenceNumber}"/>
                         </p:column>
                         <p:column headerText="MRN" width="10em" >
-                            #{patientInvestigation.billItem.bill.patient.phn}
+                            <p:outputLabel value="#{patientInvestigation.billItem.bill.patient.phn}"/> 
                         </p:column>
                         <p:column headerText="Patient" width="14em">
-                            #{patientInvestigation.billItem.bill.patient.person.nameWithTitle}
+                            <p:outputLabel value="#{patientInvestigation.billItem.bill.patient.person.nameWithTitle}"/>
                         </p:column>
-                        <p:column headerText="Invoice Number" width="18em">
+                        <p:column headerText="Invoice Number" width="18em" exportValue="#{patientInvestigation.billItem.bill.deptId}">
                             <h:outputText value="#{patientInvestigation.billItem.bill.deptId}" />
 
                             <p:commandButton 
@@ -392,7 +396,7 @@
                             <p:commandButton 
                                 ajax="false" 
                                 title="View Bill"
-                                icon="pi pi-eye" 
+                                icon="pi pi-eye"
                                 styleClass="ui-button-success m-1" 
                                 action="#{billSearch.navigateToViewBillByAtomicBillType()}">
                                 <f:setPropertyActionListener target="#{billSearch.bill}" value="#{patientInvestigation.billItem.bill}"/>
@@ -401,7 +405,7 @@
 
                         <p:column headerText="Order Date" >
                             <p:outputLabel value="#{patientInvestigation.investigation.createdAt}">
-                                <f:convertDateTime pattern="dd/mmyyyy HH:MM a"/>
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                             </p:outputLabel>
                         </p:column>
                         <p:column headerText="CC Route" >
@@ -413,10 +417,10 @@
                             </p:outputLabel>
                         </p:column>
                         <p:column headerText="Service Name">
-                            #{patientInvestigation.investigation.name}
+                            <p:outputLabel value="#{patientInvestigation.investigation.name}"/>
                         </p:column>
 
-                        <p:column headerText="Status" >
+                        <p:column headerText="Status" exportValue="#{patientInvestigation.status}#{patientInvestigation.billItem.bill.cancelled ? ' [Cancelled]' : ''}#{patientInvestigation.billItem.bill.refunded ? ' [Refunded]' : ''}">
                             <h:outputLabel value="#{patientInvestigation.status}"/>
                             <p:badge value="Cancelled" severity="warning" rendered="#{patientInvestigation.billItem.bill.cancelled}" ></p:badge>
                             <p:badge value="Refunded" severity="warning" rendered="#{patientInvestigation.billItem.bill.refunded}" ></p:badge>
@@ -424,9 +428,9 @@
                         <p:column headerText="Print" >
                             <h:outputLabel value="#{patientInvestigation.printingUser.name}"/>
                         </p:column>
-                        <p:column headerText="Last Printing TIme" >
+                        <p:column headerText="Last Printing Time" >
                             <p:outputLabel value="#{patientInvestigation.printingAt}">
-                                <f:convertDateTime pattern="dd/mm/yyyy HH:MM a"/>
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                             </p:outputLabel>
                         </p:column>
                         <!-- Ordered Institution and Department Column with Icons -->

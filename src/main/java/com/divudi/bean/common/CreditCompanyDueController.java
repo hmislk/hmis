@@ -1496,7 +1496,7 @@ public class CreditCompanyDueController implements Serializable {
     }
 
     public void createInwardCreditDue() {
-        List<Institution> companies = getCreditBean().getCreditCompaniesWithUnpaidInwardCCBills(getFromDate(), getToDate());
+        List<Institution> companies = getCreditBean().getCreditCompaniesWithUnpaidInwardCCBills(getFromDate(), getToDate(), admissionType, dateBasis);
         institutionEncounters = new ArrayList<>();
         finalTotal = 0.0;
         finalPaidTotal = 0.0;
@@ -1508,7 +1508,7 @@ public class CreditCompanyDueController implements Serializable {
             if (company == null) {
                 continue;
             }
-            List<Bill> bills = getCreditBean().getUnpaidInwardCCBills(company, getFromDate(), getToDate());
+            List<Bill> bills = getCreditBean().getUnpaidInwardCCBills(company, getFromDate(), getToDate(), admissionType, dateBasis);
             if (bills.isEmpty()) {
                 continue;
             }
@@ -3948,6 +3948,228 @@ public class CreditCompanyDueController implements Serializable {
 
     public void setBillType(String billType) {
         this.billType = billType;
+    }
+
+    // =========================================================================
+    // Inward Patient Co-payment Due Reports
+    // =========================================================================
+
+    /**
+     * Populates {@code patientEncounters} with all finalized inward admissions
+     * (with or without CC coverage) where the patient still has an outstanding
+     * co-payment balance.
+     *
+     * Patient due = max(0, finalBill.netTotal - creditUsedAmount) - finalBill.paidAmount
+     *
+     * Also resets {@code billed}, {@code paidByPatient}, {@code paidByCompany}
+     * and {@code payableByPatient} to the matching totals.
+     */
+    public void createInwardPatientCopaymentDueSearch() {
+        String dateField = "admissionDate".equals(dateBasis) ? "b.dateOfAdmission" : "b.dateOfDischarge";
+        HashMap m = new HashMap();
+        String sql = "SELECT b FROM PatientEncounter b"
+                + " JOIN b.finalBill fb"
+                + " WHERE b.retired = false"
+                + " AND b.paymentFinalized = true"
+                + " AND " + dateField + " BETWEEN :fd AND :td"
+                + " AND (abs(fb.netTotal) - abs(b.creditUsedAmount) - abs(fb.paidAmount)) > 0.01";
+        if (admissionType != null) {
+            sql += " AND b.admissionType = :ad";
+            m.put("ad", admissionType);
+        }
+        if (site != null) {
+            sql += " AND fb.department.site = :site";
+            m.put("site", site);
+        }
+        if (department != null) {
+            sql += " AND fb.department = :dep";
+            m.put("dep", department);
+        }
+        sql += " ORDER BY " + dateField;
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        patientEncounters = patientEncounterFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
+
+        billed = 0;
+        paidByPatient = 0;
+        paidByCompany = 0;
+        payableByPatient = 0;
+        if (patientEncounters != null) {
+            for (PatientEncounter pe : patientEncounters) {
+                if (pe.getFinalBill() == null) {
+                    continue;
+                }
+                billed += pe.getFinalBill().getNetTotal();
+                paidByPatient += pe.getFinalBill().getPaidAmount();
+                paidByCompany += Math.abs(pe.getCreditPaidAmount());
+                double portion = Math.max(0.0, pe.getFinalBill().getNetTotal() - pe.getCreditUsedAmount());
+                payableByPatient += Math.max(0.0, portion - pe.getFinalBill().getPaidAmount());
+            }
+        }
+    }
+
+    /**
+     * Populates {@code creditCompanyAge} with one {@link String1Value5} row per
+     * patient where the outstanding co-payment amount is placed in the age bucket
+     * that corresponds to days since discharge.
+     * Buckets: value1 = 0–30 days, value2 = 31–60, value3 = 61–90, value4 = 91+.
+     */
+    public void createInwardPatientCopaymentDueAge() {
+        createInwardPatientCopaymentDueSearch();
+        creditCompanyAge = new ArrayList<>();
+        if (patientEncounters == null) {
+            return;
+        }
+        Date today = new Date();
+        for (PatientEncounter pe : patientEncounters) {
+            if (pe.getFinalBill() == null) {
+                continue;
+            }
+            double due = Math.max(0.0,
+                    pe.getFinalBill().getNetTotal() - pe.getCreditUsedAmount() - pe.getFinalBill().getPaidAmount());
+            if (due <= 0.01) {
+                continue;
+            }
+            int days = 0;
+            if (pe.getDateOfDischarge() != null) {
+                days = (int) ((today.getTime() - pe.getDateOfDischarge().getTime()) / (1000L * 60 * 60 * 24));
+            }
+            String1Value5 row = new String1Value5();
+            String patientName = (pe.getPatient() != null && pe.getPatient().getPerson() != null)
+                    ? pe.getPatient().getPerson().getNameWithTitle() : "";
+            row.setString((pe.getBhtNo() != null ? pe.getBhtNo() : "") + " – " + patientName);
+            if (days <= 30) {
+                row.setValue1(due);
+            } else if (days <= 60) {
+                row.setValue2(due);
+            } else if (days <= 90) {
+                row.setValue3(due);
+            } else {
+                row.setValue4(due);
+            }
+            creditCompanyAge.add(row);
+        }
+    }
+
+    /**
+     * Populates {@code creditCompanyAge} with three aggregate summary rows:
+     * <ol>
+     *   <li>CC Receivable – total CC outstanding by age bucket</li>
+     *   <li>Patient Co-payment – total patient outstanding by age bucket</li>
+     *   <li>Both Outstanding – total where BOTH CC and patient owe, by age bucket</li>
+     * </ol>
+     * Designed as a management/CFO view of all inward receivables.
+     */
+    public void createInwardOutstandingSummary() {
+        String dateField = "admissionDate".equals(dateBasis) ? "b.dateOfAdmission" : "b.dateOfDischarge";
+        HashMap m = new HashMap();
+        String sql = "SELECT b FROM PatientEncounter b"
+                + " JOIN b.finalBill fb"
+                + " WHERE b.retired = false"
+                + " AND b.paymentFinalized = true"
+                + " AND " + dateField + " BETWEEN :fd AND :td";
+        if (admissionType != null) {
+            sql += " AND b.admissionType = :ad";
+            m.put("ad", admissionType);
+        }
+        if (site != null) {
+            sql += " AND fb.department.site = :site";
+            m.put("site", site);
+        }
+        if (department != null) {
+            sql += " AND fb.department = :dep";
+            m.put("dep", department);
+        }
+        sql += " ORDER BY " + dateField;
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        List<PatientEncounter> allAdmissions = patientEncounterFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
+
+        String1Value5 ccRow = new String1Value5();
+        ccRow.setString("CC Receivable");
+        String1Value5 patientRow = new String1Value5();
+        patientRow.setString("Patient Co-payment");
+        String1Value5 bothRow = new String1Value5();
+        bothRow.setString("Both Outstanding");
+
+        Date today = new Date();
+        if (allAdmissions != null) {
+            for (PatientEncounter pe : allAdmissions) {
+                if (pe.getFinalBill() == null) {
+                    continue;
+                }
+                double ccDue = Math.max(0.0, pe.getCreditUsedAmount() - Math.abs(pe.getCreditPaidAmount()));
+                double patientDue = Math.max(0.0,
+                        pe.getFinalBill().getNetTotal() - pe.getCreditUsedAmount() - pe.getFinalBill().getPaidAmount());
+                if (ccDue <= 0.01 && patientDue <= 0.01) {
+                    continue;
+                }
+                int days = 0;
+                if (pe.getDateOfDischarge() != null) {
+                    days = (int) ((today.getTime() - pe.getDateOfDischarge().getTime()) / (1000L * 60 * 60 * 24));
+                }
+                if (ccDue > 0.01) {
+                    addToAgeBucket(ccRow, ccDue, days);
+                }
+                if (patientDue > 0.01) {
+                    addToAgeBucket(patientRow, patientDue, days);
+                }
+                if (ccDue > 0.01 && patientDue > 0.01) {
+                    addToAgeBucket(bothRow, ccDue + patientDue, days);
+                }
+            }
+        }
+
+        creditCompanyAge = new ArrayList<>();
+        creditCompanyAge.add(ccRow);
+        creditCompanyAge.add(patientRow);
+        creditCompanyAge.add(bothRow);
+    }
+
+    /** Adds {@code amount} to the correct age bucket of {@code row}. */
+    private void addToAgeBucket(String1Value5 row, double amount, int days) {
+        if (days <= 30) {
+            row.setValue1(row.getValue1() + amount);
+        } else if (days <= 60) {
+            row.setValue2(row.getValue2() + amount);
+        } else if (days <= 90) {
+            row.setValue3(row.getValue3() + amount);
+        } else {
+            row.setValue4(row.getValue4() + amount);
+        }
+    }
+
+    /**
+     * Returns the CC adjudication status for a patient encounter.
+     * PENDING  – CC has committed but paid nothing
+     * PARTIAL  – CC has paid some but not all
+     * SETTLED  – CC has paid in full (or more)
+     * N/A      – no CC coverage on this encounter
+     */
+    public String getPatientCcStatus(PatientEncounter pe) {
+        if (pe.getCreditUsedAmount() <= 0.01) {
+            return "N/A";
+        }
+        double ccPaid = Math.abs(pe.getCreditPaidAmount());
+        if (ccPaid >= pe.getCreditUsedAmount() - 0.01) {
+            return "SETTLED";
+        }
+        if (ccPaid > 0.01) {
+            return "PARTIAL";
+        }
+        return "PENDING";
+    }
+
+    /**
+     * Returns the outstanding patient co-payment for a given encounter.
+     * Formula: max(0, finalBill.netTotal − creditUsedAmount) − finalBill.paidAmount
+     */
+    public double getPatientCopaymentDue(PatientEncounter pe) {
+        if (pe.getFinalBill() == null) {
+            return 0.0;
+        }
+        double portion = Math.max(0.0, pe.getFinalBill().getNetTotal() - pe.getCreditUsedAmount());
+        return Math.max(0.0, portion - pe.getFinalBill().getPaidAmount());
     }
 
 }
