@@ -52,7 +52,7 @@ public class RosterCell implements Serializable {
     }
 
     public void setAssignedStaff(List<Staff> assignedStaff) {
-        this.assignedStaff = assignedStaff;
+        this.assignedStaff = assignedStaff != null ? assignedStaff : new ArrayList<>();
     }
 
     public boolean isUnderstaffed() {
@@ -80,14 +80,14 @@ public class RosterCell implements Serializable {
             return "";
         }
         StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < assignedStaff.size(); i++) {
-            if (i > 0) {
+        for (Staff s : assignedStaff) {
+            if (s == null || s.getPerson() == null || s.getPerson().getName() == null) {
+                continue;
+            }
+            if (sb.length() > 0) {
                 sb.append(", ");
             }
-            Staff s = assignedStaff.get(i);
-            if (s.getPerson() != null && s.getPerson().getName() != null) {
-                sb.append(s.getPerson().getName());
-            }
+            sb.append(s.getPerson().getName());
         }
         return sb.toString();
     }

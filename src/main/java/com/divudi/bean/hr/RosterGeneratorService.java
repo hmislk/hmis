@@ -15,6 +15,7 @@ import com.divudi.core.data.dataStructure.RosterRow;
 import com.divudi.core.data.dataStructure.RosterTable;
 import com.divudi.core.data.hr.DayType;
 import com.divudi.core.entity.Staff;
+import com.divudi.core.entity.WebUser;
 import com.divudi.core.entity.hr.Roster;
 import com.divudi.core.entity.hr.Shift;
 import com.divudi.core.entity.hr.ShiftStaffRequirement;
@@ -345,17 +346,26 @@ public class RosterGeneratorService implements Serializable {
         Calendar cal = Calendar.getInstance();
         cal.setTime(fromDate);
         cal.add(Calendar.DATE, -1);
-        Date previousDay = clearTime(cal.getTime());
+        Date dayStart = clearTime(cal.getTime());
+
+        cal.setTime(dayStart);
+        cal.add(Calendar.DATE, 1);
+        cal.add(Calendar.MILLISECOND, -1);
+        Date dayEnd = cal.getTime();
 
         Shift lastShift = shifts.get(shifts.size() - 1);
 
         String jpql = "SELECT ss FROM StaffShift ss "
                 + " WHERE ss.retired = false "
                 + " AND ss.shift = :shift "
-                + " AND ss.shiftDate = :shiftDate";
+                + " AND ss.roster = :roster "
+                + " AND ss.shiftDate >= :dayStart "
+                + " AND ss.shiftDate <= :dayEnd";
         HashMap<String, Object> params = new HashMap<>();
         params.put("shift", lastShift);
-        params.put("shiftDate", previousDay);
+        params.put("roster", lastShift.getRoster());
+        params.put("dayStart", dayStart);
+        params.put("dayEnd", dayEnd);
 
         List<StaffShift> records = staffShiftFacade.findByJpql(jpql, params);
 
@@ -384,6 +394,12 @@ public class RosterGeneratorService implements Serializable {
 
         if (roster == null || fromDate == null || toDate == null) {
             warnings.add("Roster, from date, and to date are required.");
+            result.setWarnings(warnings);
+            return result;
+        }
+
+        if (fromDate.after(toDate)) {
+            warnings.add("From date must be before to date.");
             result.setWarnings(warnings);
             return result;
         }
@@ -505,5 +521,53 @@ public class RosterGeneratorService implements Serializable {
     private String formatDate(Date date) {
         java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd");
         return sdf.format(date);
+    }
+
+    /**
+     * Atomically replaces existing StaffShift records with new ones.
+     * Runs in a single transaction — either everything commits or everything rolls back.
+     */
+    public void replaceRosterShifts(Roster roster, Date fromDate, Date toDate, RosterTable rosterTable, WebUser retirer) {
+        // 1. Soft-delete existing
+        Date from = clearTime(fromDate);
+        Date to = clearTime(toDate);
+
+        String jpql = "SELECT ss FROM StaffShift ss "
+                + " WHERE ss.retired = false "
+                + " AND ss.roster = :r "
+                + " AND ss.shiftDate BETWEEN :fd AND :td";
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("r", roster);
+        params.put("fd", from);
+        params.put("td", to);
+
+        List<StaffShift> existing = staffShiftFacade.findByJpql(jpql, params);
+        if (existing != null) {
+            for (StaffShift ss : existing) {
+                ss.setRetired(true);
+                ss.setRetiredAt(new Date());
+                ss.setRetirer(retirer);
+                staffShiftFacade.edit(ss);
+            }
+        }
+
+        // 2. Create new records from rosterTable
+        if (rosterTable == null || rosterTable.getRows() == null) return;
+
+        for (RosterRow row : rosterTable.getRows()) {
+            if (row.isDayOff() || row.getCells() == null) continue;
+            for (RosterCell cell : row.getCells()) {
+                if (cell.getAssignedStaff() == null) continue;
+                for (Staff staff : cell.getAssignedStaff()) {
+                    StaffShift ss = new StaffShift();
+                    ss.setStaff(staff);
+                    ss.setShift(row.getShift());
+                    ss.setRoster(roster);
+                    ss.setShiftDate(cell.getDate());
+                    // set any other fields you need
+                    staffShiftFacade.create(ss);
+                }
+            }
+        }
     }
 }

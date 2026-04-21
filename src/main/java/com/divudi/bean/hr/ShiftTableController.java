@@ -444,9 +444,12 @@ public class ShiftTableController implements Serializable {
             return;
         }
 
-        deleteExistingShiftsInRange();
-        saveRosterTable();
-        JsfUtil.addSuccessMessage("Roster saved successfully.");
+        try {
+            rosterGeneratorService.replaceRosterShifts(roster, fromDate, toDate, rosterTable,sessionController.getLoggedUser());
+            JsfUtil.addSuccessMessage("Roster saved successfully.");
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Save failed — no changes were made. " + e.getMessage());
+        }
     }
 
     /**
