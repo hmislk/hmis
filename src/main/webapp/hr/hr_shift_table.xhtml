@@ -212,7 +212,7 @@
                                 <!-- Staff rows -->
                                 <div style="padding: 6px 12px;">
 
-                                    <h:panelGroup rendered="#{empty shiftGroup.cell.assignedStaff}">
+                                    <h:panelGroup layout="block" rendered="#{empty shiftGroup.cell.assignedStaff}">
                                         <div style="color: #888; font-style: italic;
                                                     padding: 6px 0; font-size: 12px;">
                                             No staff assigned.
@@ -290,8 +290,7 @@
                       modal="true" resizable="false" width="450"
                       closeOnEscape="true">
 
-                <h:panelGroup id="addStaffContent"
-                              rendered="#{shiftTableController.addingToCell != null}">
+                <h:panelGroup id="addStaffContent" layout="block" rendered="#{shiftTableController.addingToCell != null}">
 
                     <div style="background: #f8f9fa; padding: 10px; margin-bottom: 12px;
                                 border-left: 3px solid #007bff; font-size: 13px;">

@@ -523,6 +523,14 @@ public class RosterGeneratorService implements Serializable {
         return sdf.format(date);
     }
 
+    private void populateDayType(StaffShift ss) {
+        DayType shiftDayType = ss.getShift() != null ? ss.getShift().getDayType() : null;
+        DayType resolved = shiftDayType == DayType.DayOff
+                ? shiftDayType
+                : phDateController.getHolidayType(ss.getShiftDate());
+        ss.setDayType(resolved != null ? resolved : shiftDayType);
+    }
+
     /**
      * Atomically replaces existing StaffShift records with new ones.
      * Runs in a single transaction — either everything commits or everything rolls back.
@@ -564,8 +572,15 @@ public class RosterGeneratorService implements Serializable {
                     ss.setShift(row.getShift());
                     ss.setRoster(roster);
                     ss.setShiftDate(cell.getDate());
-                    // set any other fields you need
+                    ss.setCreatedAt(new Date());
+                    ss.setCreater(retirer);
+                    populateDayType(ss);
+                    ss.calShiftStartEndTime();
+                    ss.calLieu();
                     staffShiftFacade.create(ss);
+                    ss.setPreviousStaffShift(humanResourceBean.calPrevStaffShift(ss));
+                    ss.setNextStaffShift(humanResourceBean.calFrwStaffShift(ss));
+                    staffShiftFacade.edit(ss);
                 }
             }
         }

@@ -111,6 +111,11 @@ public class ShiftTableController implements Serializable {
             return;
         }
         rosterTable = rosterGeneratorService.fetchExistingRosterTable(fromDate, toDate, roster);
+        if (rosterTable != null && rosterTable.getWarnings() != null) {
+            for (String w : rosterTable.getWarnings()) {
+                JsfUtil.addErrorMessage(w);
+            }
+        }
         if (rosterTable == null || rosterTable.getRows() == null || rosterTable.getRows().isEmpty()) {
             JsfUtil.addErrorMessage("No existing roster data found for the selected period.");
         }
