@@ -188,6 +188,8 @@ public class PatientReportController implements Serializable {
     private boolean showBackground = false;
     private ClinicalFindingValue clinicalFindingValue;
     private String comment;
+    
+    private boolean calculatedRequerd = false;
 
     public StreamedContent getReportAsPdf() {
         StreamedContent pdfSc = null;
@@ -962,6 +964,9 @@ public class PatientReportController implements Serializable {
         if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
             labTestHistoryController.addCalculateHistory(currentPtIx, currentPatientReport);
         }
+        
+        calculatedRequerd = false;
+        System.out.println("Calculation Complete. ----> Calculated Requerd = " + calculatedRequerd);  
 
     }
 
@@ -1150,6 +1155,8 @@ public class PatientReportController implements Serializable {
                 pirivFacade.edit(v);
             }
         }
+        calculatedRequerd = true;
+        System.out.println("Saved Report Values (Result) ----> Calculated Requerd = " + calculatedRequerd);  
     }
 
     public void savePatientReport() {
@@ -1183,6 +1190,9 @@ public class PatientReportController implements Serializable {
         if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
             labTestHistoryController.addDataEnterHistory(currentPtIx, currentPatientReport);
         }
+        
+        calculatedRequerd = true;
+        System.out.println("Saved Report Values (Result) ----> Calculated Requerd = " + calculatedRequerd);  
 
         JsfUtil.addSuccessMessage("Saved");
     }
@@ -2073,6 +2083,11 @@ public class PatientReportController implements Serializable {
             JsfUtil.addErrorMessage(tbm.getMessage());
             return;
         }
+        
+        if(calculatedRequerd == true){
+            JsfUtil.addErrorMessage("Calculation is required after the report is saved.");
+            return;
+        }
 
         boolean authorized = configOptionApplicationController.getBooleanValueByKey("The relevant authorized user must approve the test report himself.", false);
         if (authorized) {
@@ -2206,6 +2221,9 @@ public class PatientReportController implements Serializable {
                 }
             }
         }
+        
+        calculatedRequerd = true;
+        System.out.println("After Approvel, Reset the Calculated Requerd Value ----> Calculated Requerd = " + calculatedRequerd);  
 
         JsfUtil.addSuccessMessage("Approved");
 
@@ -2544,6 +2562,9 @@ public class PatientReportController implements Serializable {
         } catch (Exception e) {
         }
 
+        calculatedRequerd = true;
+        System.out.println("After Cancel Approvel, Reset the Calculated Requerd Value ----> Calculated Requerd = " + calculatedRequerd);  
+        
     }
 
     public void printPatientReport() {
@@ -3068,6 +3089,8 @@ public class PatientReportController implements Serializable {
         } else {
             link = navigateToNewlyCreatedPatientReport(pi);
         }
+        calculatedRequerd = true;
+        System.out.println("Saved Report Values (Result) ----> Calculated Requerd = " + calculatedRequerd);  
         return link;
     }
 
@@ -3457,6 +3480,14 @@ public class PatientReportController implements Serializable {
     public void setGroupName(String groupName) {
         this.groupName = groupName;
 
+    }
+
+    public boolean isCalculatedRequerd() {
+        return calculatedRequerd;
+    }
+
+    public void setCalculatedRequerd(boolean calculatedRequerd) {
+        this.calculatedRequerd = calculatedRequerd;
     }
 
     @FacesConverter(forClass = PatientReport.class)
