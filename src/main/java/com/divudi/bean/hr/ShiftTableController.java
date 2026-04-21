@@ -271,10 +271,8 @@ public class ShiftTableController implements Serializable {
     private Long staffToAddId;
     private List<Staff> availableStaffForAdd;
 
-    // Transient holder used as the bind target for the shift-change dropdown.
-    // We never actually read this value - changeStaffShift receives the target id
-    // directly from the dropdown's selected option via f:param-like resolution.
-    // Bound here only to prevent JSF from writing to Shift.id.
+    // Bound to the shift-change dropdown. The onShiftChange listener reads
+    // this value, then nulls it so each row re-renders with its own shift.
     private Long selectedShiftId;
 
     public Long getSelectedShiftId() {
@@ -541,6 +539,34 @@ public class ShiftTableController implements Serializable {
                 ss.setDayType(ss.getShift().getDayType());
             }
         }
+    }
+
+    /**
+     * AJAX listener for per-row shift-change dropdown.
+     * Reads the cell and staff from f:attribute, and the new shift id
+     * from the component's submitted value.
+     */
+    public void onShiftChange(javax.faces.event.AjaxBehaviorEvent event) {
+        javax.faces.component.UIComponent component = event.getComponent();
+
+        // The selectedShiftId was already set by JSF from the dropdown value binding
+        Long targetShiftId = this.selectedShiftId;
+
+        Object cellObj = component.getAttributes().get("cellRef");
+        Object staffObj = component.getAttributes().get("staffRef");
+
+        if (!(cellObj instanceof RosterCell) || !(staffObj instanceof Staff)) {
+            JsfUtil.addErrorMessage("Could not resolve cell or staff.");
+            return;
+        }
+
+        RosterCell currentCell = (RosterCell) cellObj;
+        Staff staffMember = (Staff) staffObj;
+
+        changeStaffShift(currentCell, staffMember, targetShiftId);
+
+        // Reset so dropdowns render with their row's current shift after update
+        this.selectedShiftId = null;
     }
 
     // ── HIDE / VISIBLE ───────────────────────────────────────────────────

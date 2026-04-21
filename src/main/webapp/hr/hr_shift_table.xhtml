@@ -232,21 +232,24 @@
                                                  changeStaffShift receives the new target shift id
                                                  via selectedShiftId on the controller. -->
                                             <p:selectOneMenu
-                                                value="#{shiftTableController.selectedShiftId}"
-                                                style="min-width: 140px; font-size: 12px;">
-                                                <f:selectItem
-                                                    itemLabel="#{shiftGroup.shiftName}"
-                                                    itemValue="#{shiftGroup.shift.id}" />
-                                                <f:selectItems
-                                                    value="#{shiftTableController.availableShifts}"
-                                                    var="sh"
-                                                    itemLabel="#{sh.name}"
-                                                    itemValue="#{sh.id}" />
-                                                <p:ajax event="change"
-                                                        listener="#{shiftTableController.changeStaffShift(shiftGroup.cell, assigned, shiftTableController.selectedShiftId)}"
-                                                        update=":form:rosterTablePanel :form:editPanel"
-                                                        process="@this" />
-                                            </p:selectOneMenu>
+    value="#{shiftTableController.selectedShiftId}"
+    appendTo="@this"
+    style="min-width: 140px; font-size: 12px;">
+    <f:selectItem
+        itemLabel="#{shiftGroup.shiftName}"
+        itemValue="#{shiftGroup.shift.id}" />
+    <f:selectItems
+        value="#{shiftTableController.availableShifts}"
+        var="sh"
+        itemLabel="#{sh.name}"
+        itemValue="#{sh.id}" />
+    <f:attribute name="cellRef" value="#{shiftGroup.cell}" />
+    <f:attribute name="staffRef" value="#{assigned}" />
+    <p:ajax event="change"
+            listener="#{shiftTableController.onShiftChange}"
+            update=":form:rosterTablePanel :form:editPanel"
+            process="@this" />
+</p:selectOneMenu>
 
                                             <!-- Remove button -->
                                             <p:commandButton value="Remove"
