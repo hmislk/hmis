@@ -2563,11 +2563,16 @@ public class InwardBeanController implements Serializable {
         if (patientEncounter == null) {
             return 0.0;
         }
+        return calculateInwardTotal(patientEncounter, fetchChildPatientEncounter(patientEncounter));
+    }
 
-        List<PatientEncounter> childPatientEncounters = fetchChildPatientEncounter(patientEncounter);
+    public double calculateInwardTotal(PatientEncounter patientEncounter, List<PatientEncounter> childPatientEncounters) {
+        if (patientEncounter == null) {
+            return 0.0;
+        }
+
         double total = 0.0;
 
-        // Base charges from interim bill summary.
         total += getAdmissionCharge(patientEncounter, childPatientEncounters);
         total += getRoomCharge(patientEncounter, childPatientEncounters);
         total += getMoCharge(patientEncounter, childPatientEncounters);
