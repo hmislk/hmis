@@ -161,6 +161,7 @@
                         rendered="#{dpr.item ne dpr.patientInvestigation.billItem.item and false}"
                         ajax="false" action="/lab/patient_report?faces-redirect=true">
                         <f:setPropertyActionListener value="#{dpr}" target="#{patientReportController.currentPatientReport}" />
+                        <f:setPropertyActionListener value="true" target="#{patientReportController.calculatedRequerd}" />
                     </p:commandLink>
                     <h:panelGroup rendered="#{webUserController.hasPrivilege('Developers')}" >
                         <h:outputLabel value="Investigation ID : #{dpr.patientInvestigation.id}" /><br/>
