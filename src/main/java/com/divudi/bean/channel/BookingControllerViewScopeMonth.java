@@ -2935,10 +2935,11 @@ public class BookingControllerViewScopeMonth implements Serializable {
             }
         }
 
-        if (selectedSessionInstance.getMaxNo() != 0) {
+        if (selectedSessionInstance.getMaxNo() != 0 && configOptionApplicationController.getBooleanValueByKey("Limited appoinments session can't get appoinement more than max amount.")) {
             if (selectedSessionInstance.getBookedPatientCount() != null) {
                 int maxNo = selectedSessionInstance.getMaxNo();
                 long bookedPatientCount = selectedSessionInstance.getBookedPatientCount();
+                long reservedBookingCount = selectedSessionInstance.getReservedBookingCount() != null ? selectedSessionInstance.getReservedBookingCount() : 0L;
                 long totalPatientCount;
 
                 List<Integer> reservedNumbers = CommonFunctions.convertStringToIntegerList(selectedSessionInstance.getReserveNumbers());
@@ -2946,7 +2947,7 @@ public class BookingControllerViewScopeMonth implements Serializable {
                 if (reservedBooking) {
                     bookedPatientCount = bookedPatientCount;
                 } else {
-                    bookedPatientCount = bookedPatientCount + reservedNumbers.size();
+                    bookedPatientCount = bookedPatientCount + reservedNumbers.size() - reservedBookingCount;
                 }
 
                 if (selectedSessionInstance.getCancelPatientCount() != null) {

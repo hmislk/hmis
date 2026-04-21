@@ -4193,13 +4193,14 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             if (selectedSessionInstance.getBookedPatientCount() != null) {
                 int maxNo = selectedSessionInstance.getMaxNo();
                 long bookedPatientCount = selectedSessionInstance.getBookedPatientCount();
+                long reservedNumberCount = selectedSessionInstance.getReservedBookingCount() != null ? selectedSessionInstance.getReservedBookingCount() : 0L;
                 long totalPatientCount;
 
                 List<Integer> reservedNumbers = CommonFunctions.convertStringToIntegerList(selectedSessionInstance.getReserveNumbers());
                 if (reservedBooking) {
                     bookedPatientCount = bookedPatientCount;
                 } else {
-                    bookedPatientCount = bookedPatientCount + reservedNumbers.size();
+                    bookedPatientCount = bookedPatientCount + reservedNumbers.size() - reservedNumberCount;
                 }
 
                 if (selectedSessionInstance.getCancelPatientCount() != null) {
