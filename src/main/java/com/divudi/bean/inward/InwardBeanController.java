@@ -424,6 +424,23 @@ public class InwardBeanController implements Serializable {
 
     }
 
+    public double calNetCostOfIssue(PatientEncounter patientEncounter, BillType billType, List<PatientEncounter> cpts) {
+        String sql = "SELECT sum(b.netTotal)"
+                + " FROM Bill b"
+                + " WHERE b.retired=false"
+                + " and b.billType=:btp"
+                + " and b.patientEncounter IN :pe";
+        HashMap hm = new HashMap();
+        hm.put("btp", billType);
+        List<PatientEncounter> pts = new ArrayList<>();
+        pts.add(patientEncounter);
+        if (cpts != null && !cpts.isEmpty()) {
+            pts.addAll(cpts);
+        }
+        hm.put("pe", pts);
+        return getBillFacade().findDoubleByJpql(sql, hm);
+    }
+
     public double calCostOfIssueByBill(PatientEncounter patientEncounter, List<BillTypeAtomic> btas, List<PatientEncounter> cpts) {
         String sql;
         HashMap hm;
@@ -711,35 +728,6 @@ public class InwardBeanController implements Serializable {
         hm.put("pe", patientEncounter);
         hm.put("inw", inwardChargeType);
         getPatientItemFacade().updateByJpql(sql, hm);
-    }
-
-    public void bulkApplyIssueBillItemDiscount(InwardChargeType inwardChargeType, BillType billType, PatientEncounter patientEncounter, double discountPercent) {
-        String sql = "UPDATE BillItem s"
-                + " SET s.discount = (s.grossValue + s.marginValue) * :pct / 100,"
-                + " s.netValue = (s.grossValue + s.marginValue) - ((s.grossValue + s.marginValue) * :pct / 100)"
-                + " WHERE s.retired = false"
-                + " AND s.bill.billType = :btp"
-                + " AND s.bill.patientEncounter = :pe"
-                + " AND s.item.inwardChargeType = :inw";
-        HashMap hm = new HashMap();
-        hm.put("pct", discountPercent);
-        hm.put("btp", billType);
-        hm.put("pe", patientEncounter);
-        hm.put("inw", inwardChargeType);
-        getBillItemFacade().updateByJpql(sql, hm);
-    }
-
-    public void bulkRecalcIssueBillTotals(BillType billType, PatientEncounter patientEncounter) {
-        String sql = "UPDATE Bill b"
-                + " SET b.discount = (SELECT COALESCE(SUM(i.discount), 0) FROM BillItem i WHERE i.bill = b AND i.retired = false),"
-                + " b.netTotal = (SELECT COALESCE(SUM(i.netValue), 0) FROM BillItem i WHERE i.bill = b AND i.retired = false)"
-                + " WHERE b.retired = false"
-                + " AND b.billType = :btp"
-                + " AND b.patientEncounter = :pe";
-        HashMap hm = new HashMap();
-        hm.put("btp", billType);
-        hm.put("pe", patientEncounter);
-        getBillFacade().updateByJpql(sql, hm);
     }
 
     public List<Bill> fetchIssueTable(PatientEncounter patientEncounter, BillType billType, List<PatientEncounter> cpts) {
