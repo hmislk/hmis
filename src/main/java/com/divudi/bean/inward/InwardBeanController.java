@@ -419,6 +419,7 @@ public class InwardBeanController implements Serializable {
         if (cpts != null && !cpts.isEmpty()) {
             pts.addAll(cpts);
         }
+        hm.put("pe", pts);
         return getBillItemFacade().findDoubleByJpql(sql, hm);
 
     }

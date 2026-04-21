@@ -118,28 +118,11 @@ import com.lowagie.text.Paragraph;
 import com.lowagie.text.Phrase;
 import com.lowagie.text.pdf.PdfPCell;
 import com.lowagie.text.pdf.PdfPTable;
-import com.lowagie.text.pdf.PdfTable;
-import java.io.OutputStream;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.text.DecimalFormat;
-import javax.faces.context.ExternalContext;
-import javax.faces.context.FacesContext;
-import javax.servlet.http.HttpServletResponse;
-
-import com.lowagie.text.Document;
-import com.lowagie.text.DocumentException;
-import com.lowagie.text.Element;
-import com.lowagie.text.FontFactory;
-import com.lowagie.text.Paragraph;
-import com.lowagie.text.Phrase;
-import com.lowagie.text.pdf.PdfPCell;
-import com.lowagie.text.pdf.PdfPTable;
 import java.io.OutputStream;
 import javax.faces.context.ExternalContext;
-
 import javax.faces.context.FacesContext;
 import javax.persistence.TemporalType;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  *
@@ -1490,6 +1473,7 @@ public class InwardReportController implements Serializable {
         String sql = "SELECT b.patientEncounter.id, SUM(b.netTotal) "
                 + "FROM Bill b "
                 + "WHERE b.retired = false "
+                + "  AND b.cancelled = false "
                 + "  AND b.billType = :btp "
                 + "  AND b.patientEncounter.id IN :ids "
                 + "GROUP BY b.patientEncounter.id";
