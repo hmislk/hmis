@@ -46,6 +46,7 @@ public class ShiftTableController implements Serializable {
     Shift shift;
     StaffShift staffShift;
     RosterTable rosterTable;
+    private List<DateGroup> dateGroups = new ArrayList<>();
 
     @EJB
     RosterGeneratorService rosterGeneratorService;
@@ -73,11 +74,13 @@ public class ShiftTableController implements Serializable {
         roster = null;
         rosterTable = null;
         clearAddDialogState();
+        dateGroups = new ArrayList<>();
     }
 
     public void makeTableNull() {
         rosterTable = null;
         clearAddDialogState();
+        dateGroups = new ArrayList<>();
     }
 
     public void generateAutoRoster() {
@@ -95,6 +98,7 @@ public class ShiftTableController implements Serializable {
                 JsfUtil.addErrorMessage(w);
             }
         }
+        rebuildDateGroups();
     }
 
     public void fetchShiftTable() {
@@ -110,6 +114,7 @@ public class ShiftTableController implements Serializable {
         if (rosterTable == null || rosterTable.getRows() == null || rosterTable.getRows().isEmpty()) {
             JsfUtil.addErrorMessage("No existing roster data found for the selected period.");
         }
+        rebuildDateGroups();
     }
 
     public void selectRosterLstener() {
@@ -120,15 +125,22 @@ public class ShiftTableController implements Serializable {
     // ── DATE-GROUPED VIEW MODEL ──────────────────────────────────────────
 
     /**
+     * Returns the cached date-grouped view model for the accordion UI.
+     */
+    public List<DateGroup> getDateGroups() {
+        return dateGroups;
+    }
+
+    /**
      * Returns the roster data grouped by date for the accordion UI.
      * Each DateGroup contains ShiftGroups that reference the live RosterCells
      * inside rosterTable, so any edit flows back to the underlying table.
      */
-    public List<DateGroup> getDateGroups() {
-        List<DateGroup> groups = new ArrayList<>();
+    private void rebuildDateGroups() {
+        dateGroups = new ArrayList<>();
         if (rosterTable == null || rosterTable.getDates() == null
                 || rosterTable.getRows() == null) {
-            return groups;
+            return;
         }
 
         for (int dateIdx = 0; dateIdx < rosterTable.getDates().size(); dateIdx++) {
@@ -148,9 +160,8 @@ public class ShiftTableController implements Serializable {
                 group.getShiftGroups().add(sg);
             }
 
-            groups.add(group);
+            dateGroups.add(group);
         }
-        return groups;
     }
 
     /**
@@ -209,6 +220,7 @@ public class ShiftTableController implements Serializable {
             targetCell.setAssignedStaff(new ArrayList<>());
         }
         targetCell.getAssignedStaff().add(staffMember);
+        rebuildDateGroups();
     }
 
     /**
@@ -217,6 +229,7 @@ public class ShiftTableController implements Serializable {
     public void removeStaffFromCell(RosterCell cell, Staff staffMember) {
         if (cell == null || staffMember == null) return;
         removeStaffById(cell, staffMember.getId());
+        rebuildDateGroups();
     }
 
     private void removeStaffById(RosterCell cell, Long staffId) {
@@ -358,6 +371,7 @@ public class ShiftTableController implements Serializable {
 
         staffToAddId = null;
         refreshAvailableStaffForAdd();
+        rebuildDateGroups();
     }
 
     private String findSameDayAssignment(Long staffId, Date date) {

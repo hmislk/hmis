@@ -15,30 +15,32 @@
                 <div class="col-3">
                     <div class="row m-3">
                         <div class="col-3">
-                            <h:outputLabel value="From Date" />
+                            <h:outputLabel for="frmDate" value="From Date" />
                         </div>
                         <div class="col-3">
                             <p:calendar navigator="true" id="frmDate"
-                                        value="#{shiftTableController.fromDate}"
-                                        pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                value="#{shiftTableController.fromDate}"
+                                title="Roster start date"
+                                pattern="#{sessionController.applicationPreference.longDateFormat}" />
                         </div>
                     </div>
                     <div class="row m-3">
                         <div class="col-3">
-                            <h:outputLabel value="To Date" />
+                            <h:outputLabel for="toDate" value="To Date" />
                         </div>
                         <div class="col-3">
                             <p:calendar navigator="true" id="toDate"
-                                        value="#{shiftTableController.toDate}"
-                                        pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                value="#{shiftTableController.toDate}"
+                                title="Roster end date"
+                                pattern="#{sessionController.applicationPreference.longDateFormat}" />
                         </div>
                     </div>
                     <div class="row m-3">
                         <div class="col-3">
-                            <h:outputLabel value="Roster" />
+                            <h:outputLabel for="roster" value="Roster" />
                         </div>
                         <div class="col-3">
-                            <p:selectOneMenu id="roster" value="#{shiftTableController.roster}" >
+                            <p:selectOneMenu id="roster" value="#{shiftTableController.roster}" title="Select a roster">
                                 <f:selectItem itemLabel="Select Roster"/>
                                 <f:selectItems value="#{rosterController.items}" var="r"
                                                itemLabel="#{r.name}" itemValue="#{r}"/>

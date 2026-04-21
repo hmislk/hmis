@@ -20,6 +20,7 @@ import com.divudi.core.entity.hr.Shift;
 import com.divudi.core.entity.hr.ShiftStaffRequirement;
 import com.divudi.core.entity.hr.StaffShift;
 import com.divudi.core.facade.ShiftFacade;
+import com.divudi.core.facade.StaffShiftFacade;
 import com.divudi.ejb.HumanResourceBean;
 
 import java.io.Serializable;
@@ -40,6 +41,9 @@ import javax.inject.Inject;
 
 @Stateless
 public class RosterGeneratorService implements Serializable {
+
+    @EJB
+    private StaffShiftFacade staffShiftFacade;
 
     @EJB
     private HumanResourceBean humanResourceBean;
@@ -155,7 +159,7 @@ public class RosterGeneratorService implements Serializable {
                     continue;
                 }
 
-                int requiredCount = resolveRequiredCount(shift.getStaffRequirement(), date);
+                int requiredCount = resolveRequiredCount(shift.getStaffRequirement(), date, holidayType);
                 cell.setRequiredCount(requiredCount);
 
                 if (requiredCount <= 0 || allStaff.isEmpty()) {
@@ -240,11 +244,10 @@ public class RosterGeneratorService implements Serializable {
     // REQUIRED COUNT
     // =========================================================================
 
-    private int resolveRequiredCount(ShiftStaffRequirement req, Date date) {
+    private int resolveRequiredCount(ShiftStaffRequirement req, Date date, DayType holidayType) {
         if (req == null) return 0;
 
         // Check holiday first (priority)
-        DayType holidayType = phDateController.getHolidayType(date);
         if (holidayType != null) {
             if (holidayType == DayType.Poya)               return safe(req.getPoyaDayCount());
             if (holidayType == DayType.PublicHoliday)       return safe(req.getPublicHolidayCount());
@@ -333,37 +336,39 @@ public class RosterGeneratorService implements Serializable {
         return shiftFacade.findByJpql(jpql, m);
     }
 
-    private Map<Long, Set<Long>> loadPreviousDayAssignments(
-            Date fromDate, List<Staff> allStaff, List<Shift> shifts) {
-
+    private Map<Long, Set<Long>> loadPreviousDayAssignments(Date fromDate, List<Staff> allStaff, List<Shift> shifts) {
         Map<Long, Set<Long>> result = new HashMap<>();
-        if (shifts.isEmpty()) {
+        if (shifts.isEmpty() || allStaff.isEmpty()) {
             return result;
         }
 
         Calendar cal = Calendar.getInstance();
         cal.setTime(fromDate);
         cal.add(Calendar.DATE, -1);
-        Date previousDay = cal.getTime();
+        Date previousDay = clearTime(cal.getTime());
 
         Shift lastShift = shifts.get(shifts.size() - 1);
-        Set<Long> lastShiftStaff = new HashSet<>();
 
-        for (Staff staff : allStaff) {
-            List<StaffShift> prevDayShifts = humanResourceBean.fetchStaffShift(previousDay, staff);
-            if (prevDayShifts != null) {
-                for (StaffShift ss : prevDayShifts) {
-                    if (ss.getShift() != null
-                            && ss.getShift().getId() != null
-                            && ss.getShift().getId().equals(lastShift.getId())) {
-                        lastShiftStaff.add(staff.getId());
-                    }
+        String jpql = "SELECT ss FROM StaffShift ss "
+                + " WHERE ss.retired = false "
+                + " AND ss.shift = :shift "
+                + " AND ss.shiftDate = :shiftDate";
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("shift", lastShift);
+        params.put("shiftDate", previousDay);
+
+        List<StaffShift> records = staffShiftFacade.findByJpql(jpql, params);
+
+        Set<Long> staffIds = new HashSet<>();
+        if (records != null) {
+            for (StaffShift ss : records) {
+                if (ss.getStaff() != null && ss.getStaff().getId() != null) {
+                    staffIds.add(ss.getStaff().getId());
                 }
             }
         }
-
-        if (!lastShiftStaff.isEmpty()) {
-            result.put(lastShift.getId(), lastShiftStaff);
+        if (!staffIds.isEmpty()) {
+            result.put(lastShift.getId(), staffIds);
         }
         return result;
     }
@@ -415,6 +420,11 @@ public class RosterGeneratorService implements Serializable {
             }
         }
 
+        Map<Long, DayType> holidayTypeMap = new HashMap<>();
+        for (Date date : dates) {
+            holidayTypeMap.put(clearTime(date).getTime(), phDateController.getHolidayType(date));
+        }
+
         // --- Build rows (one per shift) ---
         for (Shift shift : shifts) {
             RosterRow row = new RosterRow();
@@ -425,6 +435,7 @@ public class RosterGeneratorService implements Serializable {
             row.setCells(new ArrayList<>());
 
             for (Date date : dates) {
+                DayType holidayType = holidayTypeMap.get(clearTime(date).getTime());
                 RosterCell cell = new RosterCell();
                 cell.setDate(date);
 
@@ -433,7 +444,7 @@ public class RosterGeneratorService implements Serializable {
                 cell.setAssignedStaff(assigned);
 
                 if (!shift.isDayOff()) {
-                    int requiredCount = resolveRequiredCount(shift.getStaffRequirement(), date);
+                    int requiredCount = resolveRequiredCount(shift.getStaffRequirement(), date, holidayType);
                     cell.setRequiredCount(requiredCount);
                     if (assigned.size() < requiredCount) {
                         warnings.add("Understaffed: " + shift.getName()

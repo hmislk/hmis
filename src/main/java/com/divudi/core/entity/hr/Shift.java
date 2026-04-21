@@ -223,6 +223,9 @@ public class Shift implements Serializable {
     }
 
     public void setStaffRequirement(ShiftStaffRequirement staffRequirement) {
+        if (this.staffRequirement != null && this.staffRequirement != staffRequirement) {
+            this.staffRequirement.setShift(null);
+        }
         this.staffRequirement = staffRequirement;
         if (this.staffRequirement != null) {
             this.staffRequirement.setShift(this);
