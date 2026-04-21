@@ -990,6 +990,138 @@ public class PriceMatrixController implements Serializable {
 
     }
 
+    // -------------------------------------------------------------------------
+    // Inward Discount Matrix lookup (used by inpatient service/investigation
+    // billing and surgery service add flows)
+    // -------------------------------------------------------------------------
+
+    /**
+     * Walk the InwardDiscountMatrix for a discount percent applicable to the
+     * given bill context. Order: Item → Category → Parent Category → Department.
+     * At each level the matching scheme is preferred; if not found, a row with
+     * a null paymentScheme is accepted as a plain per-BHT/admission-type rule.
+     *
+     * Returns 0.0 when no matching row exists — the caller can treat that as
+     * "no discount" without any feature toggle.
+     */
+    public double getInwardDiscountPercent(PaymentMethod bhtType, PaymentScheme scheme,
+            AdmissionType admissionType, Department department, Item item) {
+        if (bhtType == null || admissionType == null) {
+            return 0.0;
+        }
+
+        Category category = null;
+        if (item != null) {
+            category = item.getCategory();
+        }
+
+        Double pct = fetchInwardDiscountPercentForItem(bhtType, scheme, admissionType, item);
+        if (pct == null) {
+            pct = fetchInwardDiscountPercentForCategory(bhtType, scheme, admissionType, department, category);
+        }
+        if (pct == null && category != null) {
+            pct = fetchInwardDiscountPercentForCategory(bhtType, scheme, admissionType, department, category.getParentCategory());
+        }
+        if (pct == null) {
+            pct = fetchInwardDiscountPercentForDepartment(bhtType, scheme, admissionType, department);
+        }
+        return pct != null ? pct : 0.0;
+    }
+
+    private Double fetchInwardDiscountPercentForItem(PaymentMethod bhtType, PaymentScheme scheme,
+            AdmissionType admissionType, Item item) {
+        if (item == null) {
+            return null;
+        }
+        Double pct = fetchInwardDiscountMatrixPercent(bhtType, scheme, admissionType, null, null, item);
+        if (pct == null && scheme != null) {
+            pct = fetchInwardDiscountMatrixPercent(bhtType, null, admissionType, null, null, item);
+        }
+        return pct;
+    }
+
+    private Double fetchInwardDiscountPercentForCategory(PaymentMethod bhtType, PaymentScheme scheme,
+            AdmissionType admissionType, Department department, Category category) {
+        if (category == null) {
+            return null;
+        }
+        Double pct = fetchInwardDiscountMatrixPercent(bhtType, scheme, admissionType, department, category, null);
+        if (pct == null && scheme != null) {
+            pct = fetchInwardDiscountMatrixPercent(bhtType, null, admissionType, department, category, null);
+        }
+        return pct;
+    }
+
+    private Double fetchInwardDiscountPercentForDepartment(PaymentMethod bhtType, PaymentScheme scheme,
+            AdmissionType admissionType, Department department) {
+        if (department == null) {
+            return null;
+        }
+        Double pct = fetchInwardDiscountMatrixPercent(bhtType, scheme, admissionType, department, null, null);
+        if (pct == null && scheme != null) {
+            pct = fetchInwardDiscountMatrixPercent(bhtType, null, admissionType, department, null, null);
+        }
+        return pct;
+    }
+
+    /**
+     * Single-row matrix fetch. Each argument except bhtType and admissionType
+     * may be null; a null argument is translated to an IS NULL filter so the
+     * row-matching semantics are exact.
+     */
+    private Double fetchInwardDiscountMatrixPercent(PaymentMethod bhtType, PaymentScheme scheme,
+            AdmissionType admissionType, Department department, Category category, Item item) {
+        StringBuilder jpql = new StringBuilder(
+                "select a.discountPercent from InwardDiscountMatrix a"
+                + " where a.retired = false"
+                + " and a.paymentMethod = :pm"
+                + " and a.admissionType = :admTp");
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("pm", bhtType);
+        params.put("admTp", admissionType);
+
+        if (scheme != null) {
+            jpql.append(" and a.paymentScheme = :sch");
+            params.put("sch", scheme);
+        } else {
+            jpql.append(" and a.paymentScheme is null");
+        }
+        if (department != null) {
+            jpql.append(" and a.department = :dep");
+            params.put("dep", department);
+        } else {
+            jpql.append(" and a.department is null");
+        }
+        if (category != null) {
+            jpql.append(" and a.category = :cat");
+            params.put("cat", category);
+        } else {
+            jpql.append(" and a.category is null");
+        }
+        if (item != null) {
+            jpql.append(" and a.item = :itm");
+            params.put("itm", item);
+        } else {
+            jpql.append(" and a.item is null");
+        }
+        try {
+            List<Object> rs = getPriceMatrixFacade().findObjects(jpql.toString(), params);
+            if (rs == null || rs.isEmpty()) {
+                return null;
+            }
+            Object v = rs.get(0);
+            if (v == null) {
+                return null;
+            }
+            if (v instanceof Number) {
+                return ((Number) v).doubleValue();
+            }
+            return null;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
     // Add business logic below. (Right-click in editor and choose
     // "Insert Code > Add Business Method")
     public PriceMatrixFacade getPriceMatrixFacade() {

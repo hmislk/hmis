@@ -128,7 +128,8 @@
                     <div class="row">
                         <div class="col-5">
                             <h:panelGroup id="ptd">
-                                <common:patient_details_for_addmission editable="true" controller="#{admissionController}"/>
+                                <common:patient_details_for_addmission editable="true" controller="#{admissionController}"
+                                                                       extraUpdateIds=":#{p:resolveFirstComponentWithId('pg1',view).clientId}"/>
                             </h:panelGroup>
                         </div>
 
@@ -427,14 +428,24 @@
                                                 <p:ajax process="@this" update="crd pg1" event="change" listener="#{admissionController.findLastUsedCreditCompanies()}" />
                                             </p:selectOneMenu>
                                         </div>
+                                        <div class="mb-1 mt-2">
+                                            <p:outputLabel value="Discount Scheme" styleClass="d-block"/>
+                                            <p:selectOneMenu class="w-100" styleClass="form-control w-100" value="#{admissionController.paymentScheme}">
+                                                <f:selectItem itemLabel="No Discount Scheme" itemValue="#{null}"/>
+                                                <f:selectItems value="#{paymentSchemeController.paymentSchemesForInward}"
+                                                               var="ps" itemLabel="#{ps.name}" itemValue="#{ps}"/>
+                                            </p:selectOneMenu>
+                                        </div>
                                     </h:panelGroup>
                                 </div>
-                                <!-- Right: credit company form + table (fills remaining space) -->
+                                <!-- Right: credit company form + table (always visible) -->
                                 <div class="col-md-9">
-                                    <h:panelGroup id="crd" style="display: #{admissionController.current.paymentMethod eq 'Credit' ? 'block' : 'none'};">
+                                    <h:panelGroup id="crd">
                                         <div class="row my-2">
+                                            <!-- Add Credit Company form — only for Credit payment method -->
                                             <div class="col-6">
-                                                <h:panelGroup id="gpCreditDetails">
+                                                <h:panelGroup id="gpCreditDetails"
+                                                              rendered="#{admissionController.current.paymentMethod eq 'Credit'}">
                                                     <div class="mb-2">
                                                         <h:outputLabel value="Company Name" styleClass="form-label"/>
                                                         <p:autoComplete class="w-100" inputStyleClass="w-100" id="acCreditCompany" forceSelection="true"
@@ -478,21 +489,34 @@
                                                         action="#{admissionController.addCreditCompnay}"
                                                         />
                                                 </h:panelGroup>
+                                                <!-- For non-Credit admissions: patient responsibility note -->
+                                                <h:panelGroup rendered="#{not empty admissionController.current.paymentMethod and admissionController.current.paymentMethod ne 'Credit'}">
+                                                    <div class="alert alert-info p-2 mt-2" style="font-size:0.9em;">
+                                                        <h:outputText styleClass="pi pi-info-circle me-1"/>
+                                                        <h:outputText value="Patient is responsible for the full bill amount. No credit company assigned."/>
+                                                    </div>
+                                                </h:panelGroup>
                                             </div>
+                                            <!-- Companies table — always shown -->
                                             <div class="col-6">
-                                                <p:dataTable id="tblCreditCompanies" value="#{admissionController.encounterCreditCompanies}" var="ecc"
-                                                             rowIndexVar="index">
+                                                <p:dataTable id="tblCreditCompanies"
+                                                             rendered="#{admissionController.current.paymentMethod eq 'Credit'}"
+                                                             value="#{admissionController.encounterCreditCompanies}" var="ecc"
+                                                             rowIndexVar="index"
+                                                             emptyMessage="No credit companies added. Patient is responsible for the full amount.">
                                                     <f:facet name="header">
-                                                        <h:outputText value="Companies"/>
+                                                        <h:outputText value="Payment Responsibility"/>
                                                     </f:facet>
-                                                    <p:column  width="2em">
+                                                    <p:column width="2em">
                                                         <h:outputText value="#{index + 1}" />
                                                     </p:column>
                                                     <p:column style="font-weight:bolder;" width="10em">
                                                         <h:outputText value="#{ecc.institution.name}" />
                                                     </p:column>
                                                     <p:column styleClass="text-end" headerText="Credit Limit" width="5em">
-                                                        <h:outputText value="#{ecc.creditLimit}" />
+                                                        <h:outputText value="#{ecc.creditLimit}">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
                                                     </p:column>
                                                     <p:column headerText="Policy No" width="5em">
                                                         <h:outputText value="#{ecc.policyNo}" />
@@ -500,7 +524,8 @@
                                                     <p:column headerText="Reference No" width="5em">
                                                         <h:outputText value="#{ecc.referanceNo}" />
                                                     </p:column>
-                                                    <p:column style="text-align: right;font-weight: bolder"  width="2em">
+                                                    <p:column style="text-align: right;font-weight: bolder" width="2em"
+                                                              rendered="#{admissionController.current.paymentMethod eq 'Credit'}">
                                                         <p:commandButton
                                                             id="btnRemoveCredit"
                                                             process="@this"
@@ -511,6 +536,13 @@
                                                             />
                                                     </p:column>
                                                 </p:dataTable>
+                                                <!-- Patient balance note -->
+                                                <h:panelGroup rendered="#{admissionController.current.paymentMethod eq 'Credit' and not empty admissionController.encounterCreditCompanies}">
+                                                    <div class="alert alert-warning p-2 mt-2" style="font-size:0.9em;">
+                                                        <h:outputText styleClass="pi pi-exclamation-triangle me-1"/>
+                                                        <h:outputText value="Patient is responsible for any balance above the credit limits. Exact patient portion is determined at discharge."/>
+                                                    </div>
+                                                </h:panelGroup>
                                             </div>
                                         </div>
                                     </h:panelGroup>

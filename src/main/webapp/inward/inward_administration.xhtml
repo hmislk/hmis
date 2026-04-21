@@ -70,6 +70,13 @@
                                         </div>
                                     </p:tab>
 
+                                    <p:tab title="Discount Matrix">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton ajax="false" value="Inward Discount Matrix - Services and Investigations" class="w-100" action="#{inwardDiscountMatrixController.navigateToDiscountMatrixServiceInvestigation()}"></p:commandButton>
+                                            <p:commandButton ajax="false" value="Inward Discount Matrix - Pharmacy" class="w-100" action="#{inwardDiscountMatrixController.navigateToDiscountMatrixPharmacy()}"></p:commandButton>
+                                        </div>
+                                    </p:tab>
+
                                     <p:tab title="Analytics">
                                         <div class="d-grid gap-2">
                                             <p:commandButton ajax="false" value="Inward Prices" class="w-100" action="/inward/?faces-redirect=true" ></p:commandButton>

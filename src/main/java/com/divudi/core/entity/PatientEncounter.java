@@ -86,6 +86,8 @@ public class PatientEncounter implements Serializable, RetirableEntity {
     @Enumerated(EnumType.STRING)
     PaymentMethod paymentMethod;
     @ManyToOne
+    private PaymentScheme paymentScheme;
+    @ManyToOne
     Institution creditCompany;
     @ManyToOne
     private Staff referringDoctor;
@@ -683,6 +685,14 @@ public class PatientEncounter implements Serializable, RetirableEntity {
 
     public void setPaymentMethod(PaymentMethod paymentMethod) {
         this.paymentMethod = paymentMethod;
+    }
+
+    public PaymentScheme getPaymentScheme() {
+        return paymentScheme;
+    }
+
+    public void setPaymentScheme(PaymentScheme paymentScheme) {
+        this.paymentScheme = paymentScheme;
     }
 
     public double getCreditLimit() {
