@@ -484,6 +484,8 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
             }
         }
 
+        current.setPaymentScheme(paymentScheme);
+
         // Save Admission with immediate flush (flushes ALL entities without clear)
         if (current.getId() == null) {
             getEjbFacade().createAndFlush(current);  // SINGLE flush for ALL entities
@@ -727,7 +729,9 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
 
     public void setCurrent(Admission current) {
         this.current = current;
-        if (current != null && current.getPatient() != null
+        if (current != null && current.getPaymentScheme() != null) {
+            paymentScheme = current.getPaymentScheme();
+        } else if (current != null && current.getPatient() != null
                 && current.getPatient().getPerson() != null
                 && current.getPatient().getPerson().getMembershipScheme() != null) {
             paymentScheme = current.getPatient().getPerson().getMembershipScheme().getPaymentScheme();
