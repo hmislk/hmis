@@ -176,6 +176,10 @@
                         </f:facet>
 
                         <p:growl id="messages" showDetail="false" /> 
+                        
+                        <div class="card">
+                            #{patientReportController.reportCalculated}
+                        </div>
 
                         <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Display the priority Alert Note in Patient Report View',false)}">
 
