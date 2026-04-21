@@ -272,6 +272,9 @@ public class PatientReportController implements Serializable {
         }
 
         System.out.println("Successfully Update Patient Name, Age, Gender.");
+        
+        calculatedRequerd = true;
+        System.out.println("Patient Details Update. ----> Calculated Requerd = " + calculatedRequerd); 
 
         Boolean updateDynamicLabel = false;
 
