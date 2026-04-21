@@ -204,10 +204,8 @@ public class PatientReportController implements Serializable {
     public String navigateToViewPatientReport(PatientReport patientReport) {
         if(patientReport.getApproved()){
             calculatedRequerd = false;
-            System.out.println("Navigate the Report. (Approved) ----> Calculated Requerd = " + calculatedRequerd);  
         }else{
             calculatedRequerd = true;
-            System.out.println("Navigate the Report. (Pending Approved) ----> Calculated Requerd = " + calculatedRequerd); 
         }
         
         if (null == patientReport.getReportType()) {
@@ -274,7 +272,6 @@ public class PatientReportController implements Serializable {
         System.out.println("Successfully Update Patient Name, Age, Gender.");
         
         calculatedRequerd = true;
-        System.out.println("Patient Details Update. ----> Calculated Requerd = " + calculatedRequerd); 
 
         Boolean updateDynamicLabel = false;
 
@@ -1038,7 +1035,6 @@ public class PatientReportController implements Serializable {
         }
         
         calculatedRequerd = false;
-        System.out.println("Calculation Complete. ----> Calculated Requerd = " + calculatedRequerd);  
 
     }
 
@@ -1228,7 +1224,6 @@ public class PatientReportController implements Serializable {
             }
         }
         calculatedRequerd = true;
-        System.out.println("Saved Report Values (Result) ----> Calculated Requerd = " + calculatedRequerd);  
     }
 
     public void savePatientReport() {
@@ -1264,7 +1259,6 @@ public class PatientReportController implements Serializable {
         }
         
         calculatedRequerd = true;
-        System.out.println("Saved Report Values (Result) ----> Calculated Requerd = " + calculatedRequerd);  
 
         JsfUtil.addSuccessMessage("Saved");
     }
@@ -2254,7 +2248,6 @@ public class PatientReportController implements Serializable {
         }
         
         calculatedRequerd = true;
-        System.out.println("After Approvel, Reset the Calculated Requerd Value ----> Calculated Requerd = " + calculatedRequerd);  
 
         JsfUtil.addSuccessMessage("Approved");
 
@@ -2594,7 +2587,6 @@ public class PatientReportController implements Serializable {
         }
 
         calculatedRequerd = true;
-        System.out.println("After Cancel Approvel, Reset the Calculated Requerd Value ----> Calculated Requerd = " + calculatedRequerd);  
         
     }
 
@@ -3121,7 +3113,6 @@ public class PatientReportController implements Serializable {
             link = navigateToNewlyCreatedPatientReport(pi);
         }
         calculatedRequerd = true;
-        System.out.println("Saved Report Values (Result) ----> Calculated Requerd = " + calculatedRequerd);  
         return link;
     }
 
