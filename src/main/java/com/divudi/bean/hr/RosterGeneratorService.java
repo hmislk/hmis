@@ -374,9 +374,9 @@ public class RosterGeneratorService implements Serializable {
     }
 
     /**
-    * Fetches existing StaffShift records and builds a RosterTable
-    * in the same structure as generateRosterTable().
-    */
+     * Fetches existing StaffShift records and builds a RosterTable
+     * in the same structure as generateRosterTable().
+     */
     public RosterTable fetchExistingRosterTable(Date fromDate, Date toDate, Roster roster) {
 
         RosterTable result = new RosterTable();
@@ -396,30 +396,14 @@ public class RosterGeneratorService implements Serializable {
             return result;
         }
 
-        // --- Load staff ---
-        List<Staff> allStaff = humanResourceBean.fetchStaff(roster);
-
         // --- Build date list ---
         List<Date> dates = buildDateList(fromDate, toDate);
         result.setDates(dates);
 
-        // --- Pre-fetch all staff shifts for the range, grouped by date+shift ---
-        // Key: "staffId_shiftId_dateMillis"
-        Map<String, List<Staff>> cellMap = new HashMap<>();
+        // --- Bulk fetch all StaffShift records for this roster + date range ---
+        Map<String, List<Staff>> cellMap = buildCellMap(roster, fromDate, toDate);
 
-        for (Staff staff : allStaff) {
-            for (Date date : dates) {
-                List<StaffShift> staffShifts = humanResourceBean.fetchStaffShift(date, staff);
-                if (staffShifts == null) continue;
-                for (StaffShift ss : staffShifts) {
-                    if (ss.getShift() == null || ss.getRoster() == null) continue;
-                    if (!ss.getRoster().equals(roster)) continue;
-                    String key = ss.getShift().getId() + "_" + clearTime(date).getTime();
-                    cellMap.computeIfAbsent(key, k -> new ArrayList<>()).add(staff);
-                }
-            }
-        }
-
+        // --- Pre-compute holiday types once per date ---
         Map<Long, DayType> holidayTypeMap = new HashMap<>();
         for (Date date : dates) {
             holidayTypeMap.put(clearTime(date).getTime(), phDateController.getHolidayType(date));
@@ -462,6 +446,35 @@ public class RosterGeneratorService implements Serializable {
 
         result.setWarnings(warnings);
         return result;
+    }
+
+    /**
+     * Single bulk query: fetches all StaffShift records for a roster + date range,
+     * then groups them into a map keyed by "shiftId_dateMillis" -> list of Staff.
+     */
+    private Map<String, List<Staff>> buildCellMap(Roster roster, Date fromDate, Date toDate) {
+        Map<String, List<Staff>> cellMap = new HashMap<>();
+
+        String jpql = "SELECT ss FROM StaffShift ss "
+                + " WHERE ss.retired = false "
+                + " AND ss.roster = :roster "
+                + " AND ss.shiftDate >= :fromDate "
+                + " AND ss.shiftDate <= :toDate";
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("roster", roster);
+        params.put("fromDate", clearTime(fromDate));
+        params.put("toDate", clearTime(toDate));
+
+        List<StaffShift> records = staffShiftFacade.findByJpql(jpql, params);
+        if (records == null) return cellMap;
+
+        for (StaffShift ss : records) {
+            if (ss.getShift() == null || ss.getStaff() == null) continue;
+            String key = ss.getShift().getId() + "_" + clearTime(ss.getShiftDate()).getTime();
+            cellMap.computeIfAbsent(key, k -> new ArrayList<>()).add(ss.getStaff());
+        }
+
+        return cellMap;
     }
 
     private Date clearTime(Date date) {
