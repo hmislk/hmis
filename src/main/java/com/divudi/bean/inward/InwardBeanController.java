@@ -674,6 +674,74 @@ public class InwardBeanController implements Serializable {
         getBillFeeFacade().updateByJpql(sql, hm);
     }
 
+    public void bulkClearServiceBillFeesWithOutMatrix(InwardChargeType inwardChargeType, PatientEncounter patientEncounter) {
+        String sql = "UPDATE BillFee s SET s.feeDiscount = 0.0, s.feeValue = s.feeGrossValue + s.feeMargin"
+                + " WHERE s.retired = false"
+                + " AND s.billItem.bill.billType = :btp"
+                + " AND s.billItem.bill.patientEncounter = :pe"
+                + " AND s.billItem.item.inwardChargeType = :inw"
+                + " AND s.fee.feeType != :st";
+        HashMap hm = new HashMap();
+        hm.put("btp", BillType.InwardBill);
+        hm.put("pe", patientEncounter);
+        hm.put("inw", inwardChargeType);
+        hm.put("st", FeeType.Staff);
+        getBillFeeFacade().updateByJpql(sql, hm);
+
+        String biSql = "UPDATE BillItem s SET s.discount = 0.0, s.netValue = s.grossValue + s.marginValue"
+                + " WHERE s.retired = false"
+                + " AND s.bill.billType = :btp"
+                + " AND s.bill.patientEncounter = :pe"
+                + " AND s.item.inwardChargeType = :inw";
+        HashMap biHm = new HashMap();
+        biHm.put("btp", BillType.InwardBill);
+        biHm.put("pe", patientEncounter);
+        biHm.put("inw", inwardChargeType);
+        getBillItemFacade().updateByJpql(biSql, biHm);
+    }
+
+    public void bulkClearPatientItemsWithOutMatrix(InwardChargeType inwardChargeType, PatientEncounter patientEncounter) {
+        String sql = "UPDATE PatientItem s SET s.discount = 0.0"
+                + " WHERE s.retired = false"
+                + " AND type(s.item) = :cls"
+                + " AND s.patientEncounter = :pe"
+                + " AND s.item.inwardChargeType = :inw";
+        HashMap hm = new HashMap();
+        hm.put("cls", TimedItem.class);
+        hm.put("pe", patientEncounter);
+        hm.put("inw", inwardChargeType);
+        getPatientItemFacade().updateByJpql(sql, hm);
+    }
+
+    public void bulkApplyIssueBillItemDiscount(InwardChargeType inwardChargeType, BillType billType, PatientEncounter patientEncounter, double discountPercent) {
+        String sql = "UPDATE BillItem s"
+                + " SET s.discount = (s.grossValue + s.marginValue) * :pct / 100,"
+                + " s.netValue = (s.grossValue + s.marginValue) - ((s.grossValue + s.marginValue) * :pct / 100)"
+                + " WHERE s.retired = false"
+                + " AND s.bill.billType = :btp"
+                + " AND s.bill.patientEncounter = :pe"
+                + " AND s.item.inwardChargeType = :inw";
+        HashMap hm = new HashMap();
+        hm.put("pct", discountPercent);
+        hm.put("btp", billType);
+        hm.put("pe", patientEncounter);
+        hm.put("inw", inwardChargeType);
+        getBillItemFacade().updateByJpql(sql, hm);
+    }
+
+    public void bulkRecalcIssueBillTotals(BillType billType, PatientEncounter patientEncounter) {
+        String sql = "UPDATE Bill b"
+                + " SET b.discount = (SELECT COALESCE(SUM(i.discount), 0) FROM BillItem i WHERE i.bill = b AND i.retired = false),"
+                + " b.netTotal = (SELECT COALESCE(SUM(i.netValue), 0) FROM BillItem i WHERE i.bill = b AND i.retired = false)"
+                + " WHERE b.retired = false"
+                + " AND b.billType = :btp"
+                + " AND b.patientEncounter = :pe";
+        HashMap hm = new HashMap();
+        hm.put("btp", billType);
+        hm.put("pe", patientEncounter);
+        getBillFacade().updateByJpql(sql, hm);
+    }
+
     public List<Bill> fetchIssueTable(PatientEncounter patientEncounter, BillType billType, List<PatientEncounter> cpts) {
         List<Bill> list = new ArrayList<>();
         String sql;
