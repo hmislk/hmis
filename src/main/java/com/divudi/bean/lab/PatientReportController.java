@@ -299,6 +299,14 @@ public class PatientReportController implements Serializable {
                 System.out.println("Successfully Update DynamicLabel in Report");
             }
         }
+        
+        if (currentPatientReport.getPatientInvestigation().getInvestigation().isCalculatedRequerd()) {
+            calculatedRequerd = true;
+            System.out.println("Patient Details Update ----> Calculated Requerd = " + calculatedRequerd);
+        } else {
+            calculatedRequerd = false;
+            System.out.println("Not Allow to Calculate Requerd. ----> Calculated Requerd = " + calculatedRequerd);
+        }
 
     }
 
@@ -1286,7 +1294,6 @@ public class PatientReportController implements Serializable {
             calculatedRequerd = false;
             System.out.println("Not Allow to Calculate Requerd. ----> Calculated Requerd = " + calculatedRequerd);
         }
-
 
         JsfUtil.addSuccessMessage("Saved");
     }
