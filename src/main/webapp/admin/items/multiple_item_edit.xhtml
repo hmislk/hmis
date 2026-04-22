@@ -153,6 +153,22 @@
                                 icon="pi pi-times-circle"  
                                 styleClass="ui-button-danger">
                             </p:commandButton>
+                            
+                            <p:commandButton 
+                                ajax="false" 
+                                value="Mark selected items allow to Calculated Requerd."
+                                action="#{itemController.markSelectedItemsToAllowCalculatedRequerd()}"
+                                icon="pi pi-check-square" 
+                                styleClass="ui-button-success">
+                            </p:commandButton>
+
+                            <p:commandButton 
+                                ajax="false" 
+                                value="Unmark selected items allow to Calculated Requerd."
+                                action="#{itemController.unMarkSelectedItemsToAllowCalculatedRequerd()}"
+                                icon="pi pi-times-circle"  
+                                styleClass="ui-button-danger">
+                            </p:commandButton>
 
 
                             <p:commandButton 
@@ -162,6 +178,7 @@
                                 icon="pi pi-times-circle"  
                                 styleClass="ui-button-danger">
                             </p:commandButton>
+                            
 
 
 
@@ -252,6 +269,18 @@
                                         <h:outputLabel value="Category" />
                                     </f:facet>
                                     <h:outputLabel value="#{i.category.name}" ></h:outputLabel>
+                                </p:column>
+                                
+                                <p:column
+                                    width="9em;"
+                                    sortBy="#{i.clazz}"
+                                    style="padding: 12px;"
+                                    filterMatchMode="contains"
+                                    filterBy="#{i.clazz}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Type" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.clazz}" ></h:outputLabel>
                                 </p:column>
 
                                 <p:column
@@ -408,6 +437,19 @@
                                         </h:outputLabel>
                                     </f:facet>
                                     <span style="background:#{i.allowToSendSMS ? '#28a745' : '#dc3545'};color:#fff;padding:2px 8px;border-radius:4px;font-size:1em;">#{i.allowToSendSMS ? 'Yes' : 'No'}</span>
+                                </p:column>
+                                
+                                <p:column
+                                    width="4em;"
+                                    sortBy="#{i.calculatedRequerd}"
+                                    style="padding: 12px;"
+                                    filterMatchMode="contains"
+                                    filterBy="#{i.calculatedRequerd}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Calculated Requerd" >
+                                        </h:outputLabel>
+                                    </f:facet>
+                                    <span style="background:#{i.calculatedRequerd ? '#28a745' : '#dc3545'};color:#fff;padding:2px 8px;border-radius:4px;font-size:1em;">#{i.calculatedRequerd ? 'Yes' : 'No'}</span>
                                 </p:column>
 
 
