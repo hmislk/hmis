@@ -9845,55 +9845,34 @@ public class PharmacyController implements Serializable {
 
     SimpleDateFormat sdf = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
 
+    Map<String,Object> filters = getFiltersForGRNDetailReport();
+    
     try (XSSFWorkbook workbook = new XSSFWorkbook(); OutputStream out = response.getOutputStream()) {
 
         XSSFSheet sheet = workbook.createSheet("GRN Detail Report");
         int rowIndex = 0;
 
-        // =====================
-        // 1️⃣ Title Row (Row 0) - GRN Header with gray background
-        // =====================
-        XSSFRow titleRow = sheet.createRow(rowIndex++);
-        titleRow.setHeightInPoints(40);
-        XSSFCell titleCell = titleRow.createCell(0);
-        titleCell.setCellValue(GRNHeader());
+        if (filters != null && !filters.isEmpty()){
+            rowIndex = addMetaDataToExcelSheet(workbook, sheet, rowIndex, "GRN and Direct Purchase Report", filters);
+        }
+        // I want to add current data and time as generated 
+        // Add "Generated On" row with current date and time
+        Row generatedOnRow = sheet.createRow(rowIndex++);
+        CellStyle generatedOnStyle = workbook.createCellStyle();
+        XSSFFont generatedOnFont = workbook.createFont();
+        generatedOnFont.setBold(true);
+        generatedOnStyle.setFont(generatedOnFont);
 
-        XSSFCellStyle titleStyle = workbook.createCellStyle();
-        XSSFFont titleFont = workbook.createFont();
-        titleFont.setBold(true);
-        titleFont.setFontHeightInPoints((short) 12);
-        titleFont.setColor(IndexedColors.BLACK.getIndex());
-        titleStyle.setFont(titleFont);
-        titleStyle.setWrapText(true);
-        titleStyle.setVerticalAlignment(VerticalAlignment.CENTER);
-        titleStyle.setAlignment(HorizontalAlignment.CENTER);
-        titleStyle.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
-        titleStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
-        titleCell.setCellStyle(titleStyle);
+        Cell generatedLabelCell = generatedOnRow.createCell(0);
+        generatedLabelCell.setCellValue("Generated On:");
+        generatedLabelCell.setCellStyle(generatedOnStyle);
 
-        // =====================
-        // 2️⃣ Subtitle Row (Row 1) - Generated date italic
-        // =====================
-        XSSFRow subRow = sheet.createRow(rowIndex++);
-        subRow.setHeightInPoints(20);
-        XSSFCell subCell = subRow.createCell(0);
-        subCell.setCellValue("Generated on: " + new java.util.Date());
+        Cell generatedValueCell = generatedOnRow.createCell(1);
+        generatedValueCell.setCellValue(sdf.format(new Date()));
 
-        XSSFCellStyle subStyle = workbook.createCellStyle();
-        XSSFFont subFont = workbook.createFont();
-        subFont.setItalic(true);
-        subFont.setFontHeightInPoints((short) 12);
-        subStyle.setFont(subFont);
-        subStyle.setAlignment(HorizontalAlignment.CENTER);
-        subCell.setCellStyle(subStyle);
+        // Add an empty row as spacing before the header
+        sheet.createRow(rowIndex++);
 
-        // Merge title and subtitle across all 21 columns (0–20)
-        sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 20));
-        sheet.addMergedRegion(new CellRangeAddress(1, 1, 0, 20));
-
-        // =====================
-        // 3️⃣ Header Row (Row 2)
-        // =====================
         Row headerRow = sheet.createRow(rowIndex++);
         headerRow.createCell(0).setCellValue("S. No");
         headerRow.createCell(1).setCellValue("GRN No");
@@ -9918,12 +9897,11 @@ public class PharmacyController implements Serializable {
         headerRow.createCell(20).setCellValue("GRN Sub Total");
 
         int count = 0;
-
         for (Bill bill : bills) {
             Row emptyRow = sheet.createRow(rowIndex++);
             emptyRow.createCell(0).setCellValue("-");
             emptyRow.createCell(1).setCellValue(bill.getDeptId());
-            emptyRow.createCell(2).setCellValue(bill.getReferenceBill().getDeptId());
+            emptyRow.createCell(2).setCellValue(bill.getReferenceBill()!= null ? bill.getReferenceBill().getDeptId():"-");
             emptyRow.createCell(3).setCellValue(
                     bill.getInvoiceNumber() != null ? bill.getInvoiceNumber()
                     : (bill.getReferenceBill() != null && bill.getReferenceBill().getInvoiceNumber() != null
@@ -9950,7 +9928,7 @@ public class PharmacyController implements Serializable {
             emptyRow.createCell(18).setCellValue("-");
             emptyRow.createCell(19).setCellValue(bill.getBillTypeAtomic().equals(BillTypeAtomic.PHARMACY_GRN_CANCELLED)
                     || bill.getBillTypeAtomic().equals(BillTypeAtomic.PHARMACY_GRN_RETURN)
-                    ? -1 * bill.getReferenceBill().getNetTotal() : bill.getReferenceBill().getNetTotal());
+                    ? -1 *(bill.getReferenceBill() != null ? bill.getReferenceBill().getNetTotal() : 0 )  : (bill.getReferenceBill() != null ? bill.getReferenceBill().getNetTotal() : 0 ));
             emptyRow.createCell(20).setCellValue(bill.getNetTotal());
 
             for (BillItem billItem : bill.getBillItems()) {
@@ -10019,7 +9997,6 @@ public class PharmacyController implements Serializable {
         footerRow.getCell(0).setCellValue("TOTAL");
         footerRow.createCell(19).setCellValue(Math.round(calculateTotalPOAmount() * 100.0) / 100.0);
         footerRow.createCell(20).setCellValue(Math.round(calculateTotalGrnAmount() * 100.0) / 100.0);
-
         workbook.write(out);
         context.responseComplete();
 
@@ -10112,7 +10089,8 @@ public class PharmacyController implements Serializable {
         com.itextpdf.text.Font headerFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 7);
         com.itextpdf.text.Font bodyFont   = FontFactory.getFont(FontFactory.HELVETICA, 6);
         com.itextpdf.text.Font footerFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8);
-
+        String institutionName = sessionController.getInstitution() != null ? sessionController.getInstitution().getName() : "";
+        
         try (OutputStream out = response.getOutputStream()) {
 
             // ✅ landscape + small margins (important for 21 columns)
@@ -10120,11 +10098,21 @@ public class PharmacyController implements Serializable {
             PdfWriter.getInstance(document, out);
             document.open();
 
-            String headerName = GRNHeader();
-            document.add(new Paragraph(fileName, titleFont));
-            document.add(new Paragraph(headerName, FontFactory.getFont(FontFactory.HELVETICA, 7)));
-            document.add(new Paragraph("Date: " + sdf.format(new Date()), FontFactory.getFont(FontFactory.HELVETICA, 7)));
+            if (!institutionName.isEmpty()) {
+                document.add(new Paragraph(institutionName,
+                        FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18)));
+            }
+            document.add(new Paragraph("GRN and Direct Purchase Report",
+                    FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16)));
+            document.add(new Paragraph("Generated On: " + sdf.format(new Date()),
+                    FontFactory.getFont(FontFactory.HELVETICA, 12)));
             document.add(new Paragraph(" "));
+            
+            Map<String, Object> filters = getFiltersForGRNDetailReport();
+            PdfPTable infoTable = createInfoTablePdfExport(sdf, filters);
+            if (infoTable != null) {
+                document.add(infoTable);
+            }
 
             PdfPTable table = new PdfPTable(21);
             table.setWidthPercentage(100);
