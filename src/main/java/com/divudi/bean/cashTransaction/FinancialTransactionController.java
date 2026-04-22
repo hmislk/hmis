@@ -1864,17 +1864,22 @@ public class FinancialTransactionController implements Serializable {
         bundle.aggregateTotalsFromAllChildBundles();
         bundle.collectDepartments();
 
-        // Restore cash float net from the stored handover bill: at creation time
-        // we persisted selectedBill.total = (payment-based total) + cashFloatNetTotal.
-        // The rebuild above recomputes the payment-based total from persisted payments,
-        // so the difference is the float net that was physically in hand at handover.
-        double storedTotal = selectedBill.getTotal();
-        double rebuiltTotal = bundle.getTotal() != null ? bundle.getTotal() : 0.0;
-        double floatNet = storedTotal - rebuiltTotal;
-        if (floatNet > 0) {
-            bundle.setCashFloatInTotal(floatNet);
-        } else if (floatNet < 0) {
-            bundle.setCashFloatOutTotal(-floatNet);
+        // Restore cash float net for display. The denomination bill holds the
+        // physical cash the sender counted at handover; bundle.cashValue is the
+        // cash portion collected during the shift (float-exclusive). Their
+        // difference is the net cash float carried into the handover. Using
+        // the denomination bill (instead of selectedBill.total) is independent
+        // of how total was persisted, so legacy handovers created before the
+        // total-persistence fix also restore correctly.
+        if (denoBill != null) {
+            double physicalCash = denoBill.getNetTotal();
+            double rebuiltCash = bundle.getCashValue();
+            double floatNet = physicalCash - rebuiltCash;
+            if (floatNet > 0.001) {
+                bundle.setCashFloatInTotal(floatNet);
+            } else if (floatNet < -0.001) {
+                bundle.setCashFloatOutTotal(-floatNet);
+            }
         }
 
         return "/cashier/handover_accept?faces-redirect=true";
@@ -5657,8 +5662,15 @@ public class FinancialTransactionController implements Serializable {
 
         currentBill.setBillDate(new Date());
         currentBill.setBillTime(new Date());
-        currentBill.setTotal(bundle.getTotal() + bundle.getCashFloatNetTotal());
-        currentBill.setNetTotal(bundle.getTotal() + bundle.getCashFloatNetTotal());
+        // Persist the amount actually handed over (totalOut tracks selected
+        // payment rows) plus the net cash float. Using bundle.getTotal() here
+        // would inflate the bill when the cashier partially selected non-cash
+        // rows, and the accept page would then credit phantom float to the
+        // receiver.
+        double totalOut = bundle.getTotalOut() != null ? bundle.getTotalOut() : 0.0;
+        double handoverBillTotal = totalOut + bundle.getCashFloatNetTotal();
+        currentBill.setTotal(handoverBillTotal);
+        currentBill.setNetTotal(handoverBillTotal);
 
         currentBill.setCreatedAt(new Date());
         currentBill.setCreater(sessionController.getLoggedUser());
@@ -7130,6 +7142,9 @@ public class FinancialTransactionController implements Serializable {
         // because the sender's float payments stay attributed to the sender (creater=sender,
         // floatRecipient was never set for shift-handover floats). Without this, the receiver's
         // Shift Handover Create page shows no float row and a missing "Net To Handover" line.
+        // The payment's paidValue preserves the signed net (positive = receiver gains cash,
+        // negative = receiver transfers cash out); we use updateDrawer (sign-preserving)
+        // instead of updateDrawerForIns (which takes Math.abs).
         double cashFloatNet = bundle.getCashFloatNetTotal();
         if (Math.abs(cashFloatNet) > 0.001) {
             Bill floatReceivedBill = new Bill();
@@ -7170,7 +7185,7 @@ public class FinancialTransactionController implements Serializable {
             floatPayment.setInstitution(null);
             floatPayment.setCreatedAt(new Date());
             paymentController.save(floatPayment);
-            drawerController.updateDrawerForIns(floatPayment, reciver);
+            drawerController.updateDrawer(floatPayment, cashFloatNet, reciver);
         }
 
         billController.save(currentBill);
