@@ -84,8 +84,7 @@
                     <p:commandLink 
                         value="#{dpr.patientInvestigation.investigation.name}" 
                         rendered="#{webUserController.hasPrivilege('Developers')}" 
-                        action="#{investigationController.navigateToManageInvestigation()}">
-                        <f:setPropertyActionListener value="#{dpr.patientInvestigation.investigation}" target="#{investigationController.current}"/>
+                        action="#{investigationController.navigateToManageInvestigation(dpr.patientInvestigation.investigation.id)}">
                     </p:commandLink>
                 </p:column>
 
