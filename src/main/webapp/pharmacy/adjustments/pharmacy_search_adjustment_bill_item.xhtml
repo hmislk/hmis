@@ -40,6 +40,10 @@
                                 <h:outputLabel/><h:outputLabel/>
 
                                 <p:inputText autocomplete="off" value="#{searchController.searchKeyword.code}" class="w-100"/>
+                                <h:outputLabel value="Adjustment Type"/>
+                                <p:selectManyCheckbox value="#{searchController.selectedPharmacyAdjustmentTypes}" layout="grid" columns="1">
+                                    <f:selectItems value="#{searchController.pharmacyAdjustmentTypeSelectItems}"/>
+                                </p:selectManyCheckbox>
                             </div>
                             <div class="col-md-10">
 

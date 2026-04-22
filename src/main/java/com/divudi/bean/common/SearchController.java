@@ -123,6 +123,7 @@ import java.util.Set;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.context.FacesContext;
+import javax.faces.model.SelectItem;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
@@ -280,6 +281,7 @@ public class SearchController implements Serializable {
     private int maxResult = 50;
     private BillType billType;
     private BillTypeAtomic billTypeAtomic;
+    private List<BillTypeAtomic> selectedPharmacyAdjustmentTypes = new ArrayList<>();
     private PaymentMethod paymentMethod;
     private List<PaymentMethod> paymentMethods;
     private double allCashierSummaryGrandTotal;
@@ -2447,6 +2449,34 @@ public class SearchController implements Serializable {
 
     public void setBillTypeAtomic(BillTypeAtomic billTypeAtomic) {
         this.billTypeAtomic = billTypeAtomic;
+    }
+
+    public List<BillTypeAtomic> getSelectedPharmacyAdjustmentTypes() {
+        return selectedPharmacyAdjustmentTypes;
+    }
+
+    public void setSelectedPharmacyAdjustmentTypes(List<BillTypeAtomic> selectedPharmacyAdjustmentTypes) {
+        this.selectedPharmacyAdjustmentTypes = selectedPharmacyAdjustmentTypes;
+    }
+
+    public List<SelectItem> getPharmacyAdjustmentTypeSelectItems() {
+        List<SelectItem> items = new ArrayList<>();
+        List<BillTypeAtomic> types = Arrays.asList(
+                BillTypeAtomic.PHARMACY_ADJUSTMENT,
+                BillTypeAtomic.PHARMACY_ADJUSTMENT_CANCELLED,
+                BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT,
+                BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT_BILL,
+                BillTypeAtomic.PHARMACY_STAFF_STOCK_ADJUSTMENT,
+                BillTypeAtomic.PHARMACY_PURCHASE_RATE_ADJUSTMENT,
+                BillTypeAtomic.PHARMACY_RETAIL_RATE_ADJUSTMENT,
+                BillTypeAtomic.PHARMACY_WHOLESALE_RATE_ADJUSTMENT,
+                BillTypeAtomic.PHARMACY_COST_RATE_ADJUSTMENT,
+                BillTypeAtomic.PHARMACY_STOCK_EXPIRY_DATE_AJUSTMENT
+        );
+        for (BillTypeAtomic type : types) {
+            items.add(new SelectItem(type, type.getLabel()));
+        }
+        return items;
     }
 
     public Date getMaxDate() {
@@ -5380,19 +5410,24 @@ public class SearchController implements Serializable {
         m.put("fromDate", fromDate);
         m.put("ins", getSessionController().getInstitution());
 
-        // Set bill type atomics for pharmacy adjustments
-        List<BillTypeAtomic> billTypeAtomics = Arrays.asList(
-                BillTypeAtomic.PHARMACY_ADJUSTMENT,
-                BillTypeAtomic.PHARMACY_ADJUSTMENT_CANCELLED,
-                BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT,
-                BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT_BILL,
-                BillTypeAtomic.PHARMACY_STAFF_STOCK_ADJUSTMENT,
-                BillTypeAtomic.PHARMACY_PURCHASE_RATE_ADJUSTMENT,
-                BillTypeAtomic.PHARMACY_RETAIL_RATE_ADJUSTMENT,
-                BillTypeAtomic.PHARMACY_WHOLESALE_RATE_ADJUSTMENT,
-                BillTypeAtomic.PHARMACY_COST_RATE_ADJUSTMENT,
-                BillTypeAtomic.PHARMACY_STOCK_EXPIRY_DATE_AJUSTMENT
-        );
+        // Use selected adjustment types when provided, otherwise include all adjustment types
+        List<BillTypeAtomic> billTypeAtomics;
+        if (selectedPharmacyAdjustmentTypes != null && !selectedPharmacyAdjustmentTypes.isEmpty()) {
+            billTypeAtomics = selectedPharmacyAdjustmentTypes;
+        } else {
+            billTypeAtomics = Arrays.asList(
+                    BillTypeAtomic.PHARMACY_ADJUSTMENT,
+                    BillTypeAtomic.PHARMACY_ADJUSTMENT_CANCELLED,
+                    BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT,
+                    BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT_BILL,
+                    BillTypeAtomic.PHARMACY_STAFF_STOCK_ADJUSTMENT,
+                    BillTypeAtomic.PHARMACY_PURCHASE_RATE_ADJUSTMENT,
+                    BillTypeAtomic.PHARMACY_RETAIL_RATE_ADJUSTMENT,
+                    BillTypeAtomic.PHARMACY_WHOLESALE_RATE_ADJUSTMENT,
+                    BillTypeAtomic.PHARMACY_COST_RATE_ADJUSTMENT,
+                    BillTypeAtomic.PHARMACY_STOCK_EXPIRY_DATE_AJUSTMENT
+            );
+        }
         m.put("billTypeAtomics", billTypeAtomics);
 
         jpql = "select bi from BillItem bi"
