@@ -101,7 +101,7 @@ public class PettyCashBillController implements Serializable {
 
     private PettyCashType currentBillType;
     private String financialYear;
-    private Integer invoiceNo;
+    private String invoiceNo;
 
     public PettyCashBillController() {
     }
@@ -366,12 +366,12 @@ public class PettyCashBillController implements Serializable {
         }
     }
 
-    private String getFullyInvoiceNo(String financialYear, Integer invoiceNo) {
+    private String getFullyInvoiceNo(String financialYear, String invoiceNo) {
         DecimalFormat df = new DecimalFormat("00000");
         System.out.println("Entered Financial Year = " + financialYear);
-        System.out.println("Entered Integer Invoice Number = " + invoiceNo);
+        System.out.println("Entered Invoice Number = " + invoiceNo);
 
-        String insNo = df.format(invoiceNo.intValue());
+        String insNo = df.format(Integer.parseInt(invoiceNo));
         System.out.println("s = " + insNo);
 
         return (financialYear + "-" + insNo);
@@ -769,10 +769,31 @@ public class PettyCashBillController implements Serializable {
             return true;
         }
 
-        if (invoiceNo == null) {
+        if (!financialYear.trim().matches("\\d{4}")) {
+            JsfUtil.addErrorMessage("Financial Year must be 4 digits.");
+            return true;
+        }
+
+        financialYear = financialYear.trim();
+
+        int firstYear = Integer.parseInt(financialYear.substring(0, 2));
+        int secondYear = Integer.parseInt(financialYear.substring(2, 4));
+        if (secondYear != (firstYear + 1) % 100) {
+            JsfUtil.addErrorMessage("Invalid Financial Year. The two halves must be consecutive years.");
+            return true;
+        }
+
+        if (invoiceNo == null || invoiceNo.trim().isEmpty()) {
             JsfUtil.addErrorMessage("Invoice No is Missing.");
             return true;
         }
+
+        if (!invoiceNo.trim().matches("\\d+")) {
+            JsfUtil.addErrorMessage("Invoice No must contain digits only.");
+            return true;
+        }
+
+        invoiceNo = invoiceNo.trim();
 
         if (checkInvoiceNo()) {
             JsfUtil.addErrorMessage("Invoice Number Already Exist");
@@ -1093,11 +1114,11 @@ public class PettyCashBillController implements Serializable {
         this.financialYear = financialYear;
     }
 
-    public Integer getInvoiceNo() {
+    public String getInvoiceNo() {
         return invoiceNo;
     }
 
-    public void setInvoiceNo(Integer invoiceNo) {
+    public void setInvoiceNo(String invoiceNo) {
         this.invoiceNo = invoiceNo;
     }
 
