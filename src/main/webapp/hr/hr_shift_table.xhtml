@@ -122,11 +122,12 @@
                         <h:panelGroup layout="block"
                                       rendered="#{shiftTableController.viewMode eq 'SINGLE'}"
                                       style="display: inline-flex; align-items: center; gap: 6px;">
-                            <h:outputLabel value="Staff: "
-                                           style="font-size: 13px; font-weight: bold;" />
-                            <p:selectOneMenu value="#{shiftTableController.selectedFilterStaffId}"
-                                             style="min-width: 250px; font-size: 12px;"
-                                             filter="true" filterMatchMode="contains">
+                            <h:outputLabel for="singleStaffSelector" value="Staff: " style="font-size: 13px; font-weight: bold;" />
+                            <p:selectOneMenu id="singleStaffSelector"
+                                            value="#{shiftTableController.selectedFilterStaffId}"
+                                            title="Select staff for single-staff roster view"
+                                            style="min-width: 250px; font-size: 12px;"
+                                            filter="true" filterMatchMode="contains">
                                 <f:selectItem itemLabel="-- Select Staff --"
                                               itemValue="#{null}" />
                                 <f:selectItems value="#{shiftTableController.rosterStaffList}"
@@ -424,7 +425,16 @@
                                                 <td style="border: 1px solid black; padding: 0;
                                                         text-align: center; vertical-align: middle;
                                                         font-size: 16px; font-weight: bold;">
+
+                                                    <!-- Day-off: non-clickable dash -->
+                                                    <h:outputText value="-"
+                                                                rendered="#{row.dayOff}"
+                                                                style="display: block; padding: 4px;
+                                                                        background-color: #f9f9f9; color: gray;" />
+
+                                                    <!-- Normal shift: clickable toggle -->
                                                     <p:commandLink
+                                                        rendered="#{not row.dayOff}"
                                                         action="#{shiftTableController.toggleStaffInCell(cell)}"
                                                         update=":form:viewModePanel"
                                                         process="@this"
