@@ -321,6 +321,8 @@ public class Item implements Serializable, Comparable<Item>, RetirableEntity {
 
     private boolean allowedForBillingPriority;
     private boolean allowToSendSMS;
+    
+    private boolean calculatedRequerd = false;
 
 
     public double getVatPercentage() {
@@ -1702,6 +1704,14 @@ public class Item implements Serializable, Comparable<Item>, RetirableEntity {
 
     public void setAllowToSendSMS(boolean allowToSendSMS) {
         this.allowToSendSMS = allowToSendSMS;
+    }
+
+    public boolean isCalculatedRequerd() {
+        return calculatedRequerd;
+    }
+
+    public void setCalculatedRequerd(boolean calculatedRequerd) {
+        this.calculatedRequerd = calculatedRequerd;
     }
     
     static class ReportItemComparator implements Comparator<ReportItem> {

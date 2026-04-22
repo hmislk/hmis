@@ -6,6 +6,8 @@ import com.divudi.core.data.ReportTemplateRow;
 import com.divudi.core.data.ReportTemplateRowBundle;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.CancelledBill;
 import com.divudi.core.entity.RefundBill;
 import com.divudi.core.entity.ServiceSession;
 import com.divudi.core.entity.channel.SessionInstance;
@@ -4429,6 +4431,156 @@ public class ExcelController {
         return rowIndex;
     }
 
+    // Excel Export: filter info to excel
+    public int addMetaDataToExcelPostProcessor(XSSFWorkbook wb, XSSFSheet sheet, int rowIndex, String title, Map<String, Object> filters) {
+        if (wb == null || sheet == null) {
+            return rowIndex;
+        }
+        if (rowIndex < 0) {
+            return 0;
+        }
+        
+        // Bold style for labels
+        CellStyle headerStyle = wb.createCellStyle();
+        org.apache.poi.ss.usermodel.Font headerFont = wb.createFont();
+        headerFont.setFontHeightInPoints((short) 14);
+        headerFont.setBold(true);
+        headerStyle.setFont(headerFont);
+        headerStyle.setAlignment(HorizontalAlignment.CENTER);
+        org.apache.poi.ss.usermodel.Font metaFontBold = wb.createFont();
+        metaFontBold.setBold(true);
+        CellStyle metaStyleBold = wb.createCellStyle();
+        metaStyleBold.setFont(metaFontBold);
+
+        CellStyle instStyle = wb.createCellStyle();
+        org.apache.poi.ss.usermodel.Font instFont = wb.createFont();
+        instFont.setFontHeightInPoints((short) 16);
+        instFont.setBold(true);
+        instStyle.setFont(instFont);
+        instStyle.setAlignment(HorizontalAlignment.CENTER);
+
+        String institutionName = sessionController.getInstitution() != null
+                ? sessionController.getInstitution().getName()
+                : "";
+
+        if (!institutionName.isEmpty()) {
+            sheet.addMergedRegion(new CellRangeAddress(rowIndex, rowIndex, 0, 7));
+            Row institutionRow = sheet.createRow(rowIndex++);
+            Cell institutionCell = institutionRow.createCell(0);
+            institutionCell.setCellValue(institutionName);
+            institutionCell.setCellStyle(instStyle);
+        }
+
+        if (title != null && !title.isEmpty()) {
+            sheet.addMergedRegion(new CellRangeAddress(rowIndex, rowIndex, 0, 7));
+            Row titleRow = sheet.createRow(rowIndex++);
+            Cell titleCell = titleRow.createCell(0);
+            titleCell.setCellValue(title);
+            titleCell.setCellStyle(headerStyle);
+        }
+
+        if (filters != null && !filters.isEmpty()) {
+            int pairCounter = 0;
+            Row row = sheet.createRow(rowIndex++);
+
+            for (Map.Entry<String, Object> entry : filters.entrySet()) {
+
+                // LABEL CELL
+                Cell labelCell = row.createCell(pairCounter * 3);
+                labelCell.setCellValue(entry.getKey());
+                labelCell.setCellStyle(metaStyleBold);
+
+                // VALUE CELL
+                Cell valueCell = row.createCell(pairCounter * 3 + 1);
+                Object value = entry.getValue();
+
+                valueCell.setCellValue((value != null) ? value.toString() : "");
+
+                pairCounter++;
+
+                // Start new row after 3 pairs
+                if (pairCounter == 3) {
+                    pairCounter = 0;
+                    row = sheet.createRow(rowIndex++);
+                }
+            }
+        }
+        
+        // blank row after metadata
+        rowIndex++;
+
+        return rowIndex;
+    }
+
+    // Channel Income Reports Payment Method headers
+    private int addPaymentMethodHeadersChannelIncomeReports(Row headerRow, int colIndex, ChannelReportController.PaymentMethodFlags f) {
+        if (headerRow == null || f == null) {
+            return colIndex;
+        }
+
+        if (f.hasCash)             { headerRow.createCell(colIndex++).setCellValue("Cash"); }
+        if (f.hasCard)             { headerRow.createCell(colIndex++).setCellValue("Card"); }
+        if (f.hasCredit)           { headerRow.createCell(colIndex++).setCellValue("Credit"); }
+        if (f.hasStaffWelfare)     { headerRow.createCell(colIndex++).setCellValue("Staff Welfare"); }
+        if (f.hasVoucher)          { headerRow.createCell(colIndex++).setCellValue("Voucher"); }
+        if (f.hasIou)              { headerRow.createCell(colIndex++).setCellValue("IOU"); }
+        if (f.hasAgent)            { headerRow.createCell(colIndex++).setCellValue("Agent"); }
+        if (f.hasCheque)           { headerRow.createCell(colIndex++).setCellValue("Cheque"); }
+        if (f.hasSlip)             { headerRow.createCell(colIndex++).setCellValue("Slip"); }
+        if (f.hasEWallet)          { headerRow.createCell(colIndex++).setCellValue("eWallet"); }
+        if (f.hasPatientDeposit)   { headerRow.createCell(colIndex++).setCellValue("Patient Deposit"); }
+        if (f.hasPatientPoints)    { headerRow.createCell(colIndex++).setCellValue("Patient Points"); }
+        if (f.hasOnlineSettlement) { headerRow.createCell(colIndex++).setCellValue("Online Settlement");}
+        
+        return colIndex;
+    }
+
+    // Channel Income Reports Payment Method Data
+    private int addPaymentMethodDataChannelIncomeReports(Row dataRow, ReportTemplateRow row,int colIndex, ChannelReportController.PaymentMethodFlags f) {
+        if (dataRow == null || f == null || row == null) {
+            return colIndex;
+        }
+
+        if (f.hasCash)             { dataRow.createCell(colIndex++).setCellValue(row.getCashValue()); }
+        if (f.hasCard)             { dataRow.createCell(colIndex++).setCellValue(row.getCardValue()); }
+        if (f.hasCredit)           { dataRow.createCell(colIndex++).setCellValue(row.getCreditValue()); }
+        if (f.hasStaffWelfare)     { dataRow.createCell(colIndex++).setCellValue(row.getStaffWelfareValue()); }
+        if (f.hasVoucher)          { dataRow.createCell(colIndex++).setCellValue(row.getVoucherValue()); }
+        if (f.hasIou)              { dataRow.createCell(colIndex++).setCellValue(row.getIouValue()); }
+        if (f.hasAgent)            { dataRow.createCell(colIndex++).setCellValue(row.getAgentValue()); }
+        if (f.hasCheque)           { dataRow.createCell(colIndex++).setCellValue(row.getChequeValue()); }
+        if (f.hasSlip)             { dataRow.createCell(colIndex++).setCellValue(row.getSlipValue()); }
+        if (f.hasEWallet)          { dataRow.createCell(colIndex++).setCellValue(row.getEwalletValue()); }
+        if (f.hasPatientDeposit)   { dataRow.createCell(colIndex++).setCellValue(row.getPatientDepositValue()); }
+        if (f.hasPatientPoints)    { dataRow.createCell(colIndex++).setCellValue(row.getPatientPointsValue()); }
+        if (f.hasOnlineSettlement) { dataRow.createCell(colIndex++).setCellValue(row.getOnlineSettlementValue()); }
+        
+        return colIndex;
+    }
+
+    // Channel Income Reports Payment Method Footer
+    private int addPaymentMethodFooterDataChannelIncomeReports(Row dataRow, ReportTemplateRowBundle bundle,int colIndex, ChannelReportController.PaymentMethodFlags f) {
+        if (dataRow == null || f == null || bundle == null) {
+            return colIndex;
+        }
+
+        if (f.hasCash)             { dataRow.createCell(colIndex++).setCellValue(bundle.getCashValue()); }
+        if (f.hasCard)             { dataRow.createCell(colIndex++).setCellValue(bundle.getCardValue()); }
+        if (f.hasCredit)           { dataRow.createCell(colIndex++).setCellValue(bundle.getCreditValue()); }
+        if (f.hasStaffWelfare)     { dataRow.createCell(colIndex++).setCellValue(bundle.getStaffWelfareValue()); }
+        if (f.hasVoucher)          { dataRow.createCell(colIndex++).setCellValue(bundle.getVoucherValue()); }
+        if (f.hasIou)              { dataRow.createCell(colIndex++).setCellValue(bundle.getIouValue()); }
+        if (f.hasAgent)            { dataRow.createCell(colIndex++).setCellValue(bundle.getAgentValue()); }
+        if (f.hasCheque)           { dataRow.createCell(colIndex++).setCellValue(bundle.getChequeValue()); }
+        if (f.hasSlip)             { dataRow.createCell(colIndex++).setCellValue(bundle.getSlipValue()); }
+        if (f.hasEWallet)          { dataRow.createCell(colIndex++).setCellValue(bundle.getEwalletValue()); }
+        if (f.hasPatientDeposit)   { dataRow.createCell(colIndex++).setCellValue(bundle.getPatientDepositValue()); }
+        if (f.hasPatientPoints)    { dataRow.createCell(colIndex++).setCellValue(bundle.getPatientPointsValue()); }
+        if (f.hasOnlineSettlement) { dataRow.createCell(colIndex++).setCellValue(bundle.getOnlineSettlementValue()); }
+        
+        return colIndex;
+    }
+
     // Channel Scanning Income Report
     private void addDataToChannelScanningIncomeReport(XSSFSheet dataSheet, int startRow, ReportTemplateRowBundle bundle) {
         if (bundle == null) {
@@ -4448,19 +4600,8 @@ public class ExcelController {
         int headerColIndex = 0;
 
         // PaymentsMethod Column boolean values
-        boolean hasCash             = false;
-        boolean hasCard             = false;
-        boolean hasCredit           = false;
-        boolean hasStaffWelfare     = false;
-        boolean hasVoucher          = false;
-        boolean hasIou              = false;
-        boolean hasAgent            = false;
-        boolean hasCheque           = false;
-        boolean hasSlip             = false;
-        boolean hasEWallet          = false;
-        boolean hasPatientDeposit   = false;
-        boolean hasPatientPoints    = false;
-        boolean hasOnlineSettlement = false;
+        ChannelReportController.PaymentMethodFlags pmFlags = new ChannelReportController.PaymentMethodFlags();
+        pmFlags.setFlagsReportTemplateRowBundle(bundle);
 
         headerRow.createCell(headerColIndex++).setCellValue("Serial No");
         headerRow.createCell(headerColIndex++).setCellValue("Bill Id");
@@ -4475,59 +4616,8 @@ public class ExcelController {
         headerRow.createCell(headerColIndex++).setCellValue("Doctor Fee");
         headerRow.createCell(headerColIndex++).setCellValue("Gross Total");
 
-        // Dynamic headers mirroring rendered conditions
-        if (bundle.isHasCashTransaction()) {
-            headerRow.createCell(headerColIndex++).setCellValue("Cash");
-            hasCash = true;
-        }
-        if (bundle.isHasCardTransaction()) {
-            headerRow.createCell(headerColIndex++).setCellValue("Card");
-            hasCard = true;
-        }
-        if (bundle.isHasCreditTransaction()) {
-            headerRow.createCell(headerColIndex++).setCellValue("Credit");
-            hasCredit = true;
-        }
-        if (bundle.isHasStaffWelfareTransaction()) {
-            headerRow.createCell(headerColIndex++).setCellValue("Staff Welfare");
-            hasStaffWelfare = true;
-        }
-        if (bundle.isHasVoucherTransaction()) {
-            headerRow.createCell(headerColIndex++).setCellValue("Voucher");
-            hasVoucher = true;
-        }
-        if (bundle.isHasIouTransaction()) {
-            headerRow.createCell(headerColIndex++).setCellValue("IOU");
-            hasIou = true;
-        }
-        if (bundle.isHasAgentTransaction()) {
-            headerRow.createCell(headerColIndex++).setCellValue("Agent");
-            hasAgent = true;
-        }
-        if (bundle.isHasChequeTransaction()) {
-            headerRow.createCell(headerColIndex++).setCellValue("Cheque");
-            hasCheque = true;
-        }
-        if (bundle.isHasSlipTransaction()) {
-            headerRow.createCell(headerColIndex++).setCellValue("Slip");
-            hasSlip = true;
-        }
-        if (bundle.isHasEWalletTransaction()) {
-            headerRow.createCell(headerColIndex++).setCellValue("eWallet");
-            hasEWallet = true;
-        }
-        if (bundle.isHasPatientDepositTransaction()) {
-            headerRow.createCell(headerColIndex++).setCellValue("Patient Deposit");
-            hasPatientDeposit = true;
-        }
-        if (bundle.isHasPatientPointsTransaction()) {
-            headerRow.createCell(headerColIndex++).setCellValue("Patient Points");
-            hasPatientPoints = true;
-        }
-        if (bundle.isHasOnlineSettlementTransaction()) {
-            headerRow.createCell(headerColIndex++).setCellValue("Online Settlement");
-            hasOnlineSettlement = true;
-        }
+        // PaymentMethod Column Headers
+        addPaymentMethodHeadersChannelIncomeReports(headerRow, headerColIndex, pmFlags);
 
         int serialNo = 1;
         int colIndex = 0;
@@ -4592,45 +4682,8 @@ public class ExcelController {
                 }
             }
 
-            if (hasCash) {
-                excelRow.createCell(colIndex++).setCellValue(row.getCashValue());
-            }
-            if (hasCard) {
-                excelRow.createCell(colIndex++).setCellValue(row.getCardValue());
-            }
-            if (hasCredit) {
-                excelRow.createCell(colIndex++).setCellValue(row.getCreditValue());
-            }
-            if (hasStaffWelfare) {
-                excelRow.createCell(colIndex++).setCellValue(row.getStaffWelfareValue());
-            }
-            if (hasVoucher) {
-                excelRow.createCell(colIndex++).setCellValue(row.getVoucherValue());
-            }
-            if (hasIou) {
-                excelRow.createCell(colIndex++).setCellValue(row.getIouValue());
-            }
-            if (hasAgent) {
-                excelRow.createCell(colIndex++).setCellValue(row.getAgentValue());
-            }
-            if (hasCheque) {
-                excelRow.createCell(colIndex++).setCellValue(row.getChequeValue());
-            }
-            if (hasSlip) {
-                excelRow.createCell(colIndex++).setCellValue(row.getSlipValue());
-            }
-            if (hasEWallet) {
-                excelRow.createCell(colIndex++).setCellValue(row.getEwalletValue());
-            }
-            if (hasPatientDeposit) {
-                excelRow.createCell(colIndex++).setCellValue(row.getPatientDepositValue());
-            }
-            if (hasPatientPoints) {
-                excelRow.createCell(colIndex++).setCellValue(row.getPatientPointsValue());
-            }
-            if (hasOnlineSettlement) {
-                excelRow.createCell(colIndex++).setCellValue(row.getOnlineSettlementValue());
-            }
+            // PaymentMethod Column Data
+            addPaymentMethodDataChannelIncomeReports(excelRow, row, colIndex, pmFlags);
         }
 
         // Footer Row
@@ -4641,46 +4694,8 @@ public class ExcelController {
         footerRow.createCell(footerColIndex++).setCellValue(bundle.getLong3() != null ? bundle.getLong3() : 0);
         footerRow.createCell(footerColIndex++).setCellValue(bundle.getLong1() != null ? bundle.getLong1() : 0);
 
-        // Dynamic footer cells mirroring rendered conditions
-        if (hasCash) {
-            footerRow.createCell(footerColIndex++).setCellValue(bundle.getCashValue());
-        }
-        if (hasCard) {
-            footerRow.createCell(footerColIndex++).setCellValue(bundle.getCardValue());
-        }
-        if (hasCredit) {
-            footerRow.createCell(footerColIndex++).setCellValue(bundle.getCreditValue());
-        }
-        if (hasStaffWelfare) {
-            footerRow.createCell(footerColIndex++).setCellValue(bundle.getStaffWelfareValue());
-        }
-        if (hasVoucher) {
-            footerRow.createCell(footerColIndex++).setCellValue(bundle.getVoucherValue());
-        }
-        if (hasIou) {
-            footerRow.createCell(footerColIndex++).setCellValue(bundle.getIouValue());
-        }
-        if (hasAgent) {
-            footerRow.createCell(footerColIndex++).setCellValue(bundle.getAgentValue());
-        }
-        if (hasCheque) {
-            footerRow.createCell(footerColIndex++).setCellValue(bundle.getChequeValue());
-        }
-        if (hasSlip) {
-            footerRow.createCell(footerColIndex++).setCellValue(bundle.getSlipValue());
-        }
-        if (hasEWallet) {
-            footerRow.createCell(footerColIndex++).setCellValue(bundle.getEwalletValue());
-        }
-        if (hasPatientDeposit) {
-            footerRow.createCell(footerColIndex++).setCellValue(bundle.getPatientDepositValue());
-        }
-        if (hasPatientPoints) {
-            footerRow.createCell(footerColIndex++).setCellValue(bundle.getPatientPointsValue());
-        }
-        if (hasOnlineSettlement) {
-            footerRow.createCell(footerColIndex++).setCellValue(bundle.getOnlineSettlementValue());
-        }
+        // PaymentMethod Column Footers
+        addPaymentMethodFooterDataChannelIncomeReports(footerRow, bundle, footerColIndex, pmFlags);
 
         return;
     }
