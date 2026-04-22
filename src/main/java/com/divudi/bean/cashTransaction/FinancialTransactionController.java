@@ -1864,29 +1864,19 @@ public class FinancialTransactionController implements Serializable {
         bundle.aggregateTotalsFromAllChildBundles();
         bundle.collectDepartments();
 
-        // Create and configure the current bill
-//        currentBill = new Bill();
-//        currentBill.setBillType(BillType.CashHandoverAcceptBill);
-//        currentBill.setBillTypeAtomic(BillTypeAtomic.FUND_SHIFT_HANDOVER_ACCEPT);
-//        currentBill.setBillClassType(BillClassType.Bill);
-//        currentBill.setReferenceBill(selectedBill);
-//        currentBill.setFromDepartment(selectedBill.getFromDepartment());
-//        currentBill.setFromDate(selectedBill.getFromDate());
-//        currentBill.setDepartment(sessionController.getDepartment());
-//        currentBill.setInstitution(sessionController.getInstitution());
-//        currentBill.setStaff(sessionController.getLoggedUser().getStaff());
-//        currentBill.setWebUser(sessionController.getLoggedUser());
-//        currentBill.setToWebUser(sessionController.getLoggedUser());
-//        currentBill.setFromWebUser(selectedBill.getCreater());
-//        currentBill.setCreatedAt(new Date());
-//        currentBill.setCreater(sessionController.getLoggedUser());
-//        currentBill.setBillDate(new Date());
-//        currentBill.setBillTime(new Date());
-//        currentBill.setTotal(bundle.getTotal());
-//        currentBill.setNetTotal(bundle.getTotal());
-//
-//        // Save the current bill
-//        billController.save(currentBill);
+        // Restore cash float net from the stored handover bill: at creation time
+        // we persisted selectedBill.total = (payment-based total) + cashFloatNetTotal.
+        // The rebuild above recomputes the payment-based total from persisted payments,
+        // so the difference is the float net that was physically in hand at handover.
+        double storedTotal = selectedBill.getTotal();
+        double rebuiltTotal = bundle.getTotal() != null ? bundle.getTotal() : 0.0;
+        double floatNet = storedTotal - rebuiltTotal;
+        if (floatNet > 0) {
+            bundle.setCashFloatInTotal(floatNet);
+        } else if (floatNet < 0) {
+            bundle.setCashFloatOutTotal(-floatNet);
+        }
+
         return "/cashier/handover_accept?faces-redirect=true";
     }
 
@@ -5667,8 +5657,8 @@ public class FinancialTransactionController implements Serializable {
 
         currentBill.setBillDate(new Date());
         currentBill.setBillTime(new Date());
-        currentBill.setTotal(bundle.getTotal());
-        currentBill.setNetTotal(bundle.getTotalOut());
+        currentBill.setTotal(bundle.getTotal() + bundle.getCashFloatNetTotal());
+        currentBill.setNetTotal(bundle.getTotal() + bundle.getCashFloatNetTotal());
 
         currentBill.setCreatedAt(new Date());
         currentBill.setCreater(sessionController.getLoggedUser());
@@ -7132,6 +7122,55 @@ public class FinancialTransactionController implements Serializable {
             if (p.getPaymentMethod() != null && p.getPaymentMethod() != PaymentMethod.Cash) {
                 drawerController.updateDrawer(currentBill, p.getPaidValue(), p.getPaymentMethod(), reciver);
             }
+        }
+
+        // Propagate net cash float to the receiver so it appears on their shift handover.
+        // Floats are marked by department=null; accepting a handover that carries a net
+        // float must create a receiver-side float payment (new FUND_TRANSFER_RECEIVED_BILL),
+        // because the sender's float payments stay attributed to the sender (creater=sender,
+        // floatRecipient was never set for shift-handover floats). Without this, the receiver's
+        // Shift Handover Create page shows no float row and a missing "Net To Handover" line.
+        double cashFloatNet = bundle.getCashFloatNetTotal();
+        if (Math.abs(cashFloatNet) > 0.001) {
+            Bill floatReceivedBill = new Bill();
+            floatReceivedBill.setBillType(BillType.FundTransferReceivedBill);
+            floatReceivedBill.setBillTypeAtomic(BillTypeAtomic.FUND_TRANSFER_RECEIVED_BILL);
+            floatReceivedBill.setBillClassType(BillClassType.Bill);
+            floatReceivedBill.setReferenceBill(currentBill);
+            floatReceivedBill.setDepartment(sessionController.getDepartment());
+            floatReceivedBill.setInstitution(sessionController.getInstitution());
+            floatReceivedBill.setFromDepartment(sender != null ? sender.getDepartment() : null);
+            floatReceivedBill.setToDepartment(sessionController.getDepartment());
+            floatReceivedBill.setFromInstitution(sender != null ? sender.getInstitution() : sessionController.getInstitution());
+            floatReceivedBill.setToInstitution(sessionController.getInstitution());
+            floatReceivedBill.setStaff(reciver.getStaff());
+            floatReceivedBill.setToStaff(reciver.getStaff());
+            floatReceivedBill.setFromStaff(sender != null ? sender.getStaff() : null);
+            floatReceivedBill.setFromWebUser(sender);
+            floatReceivedBill.setToWebUser(reciver);
+            floatReceivedBill.setCreater(reciver);
+            floatReceivedBill.setCreatedAt(new Date());
+            floatReceivedBill.setBillDate(new Date());
+            floatReceivedBill.setBillTime(new Date());
+            floatReceivedBill.setTotal(cashFloatNet);
+            floatReceivedBill.setNetTotal(cashFloatNet);
+            String floatDeptId = billNumberGenerator.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.FUND_TRANSFER_RECEIVED_BILL);
+            floatReceivedBill.setDeptId(floatDeptId);
+            floatReceivedBill.setInsId(floatDeptId);
+            billController.save(floatReceivedBill);
+
+            Payment floatPayment = new Payment();
+            floatPayment.setBill(floatReceivedBill);
+            floatPayment.setPaymentMethod(PaymentMethod.Cash);
+            floatPayment.setPaidValue(cashFloatNet);
+            floatPayment.setCreater(sender);
+            floatPayment.setFloatRecipient(reciver);
+            floatPayment.setCurrentHolder(reciver);
+            floatPayment.setDepartment(null);
+            floatPayment.setInstitution(null);
+            floatPayment.setCreatedAt(new Date());
+            paymentController.save(floatPayment);
+            drawerController.updateDrawerForIns(floatPayment, reciver);
         }
 
         billController.save(currentBill);
