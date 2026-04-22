@@ -353,11 +353,11 @@ public class BookingControllerViewScopeMonth implements Serializable {
 
                 // }
 
-                List<Integer> reservedNumbers = CommonFunctions.convertStringToIntegerList(selectedSessionInstance.getReserveNumbers());
+                List<Integer> reservedNumbers = CommonFunctions.convertStringToIntegerList(getSelectedSessionInstanceForRechedule().getReserveNumbers());
                 bookedPatientCount = bookedPatientCount + reservedNumbers.size() - reservedNumberCount;
 
-                if (selectedSessionInstance.getCancelPatientCount() != null) {
-                    long canceledPatientCount = selectedSessionInstance.getCancelPatientCount();
+                if (getSelectedSessionInstanceForRechedule().getCancelPatientCount() != null) {
+                    long canceledPatientCount = getSelectedSessionInstanceForRechedule().getCancelPatientCount();
                     totalPatientCount = bookedPatientCount - canceledPatientCount;
                 } else {
                     totalPatientCount = bookedPatientCount;
