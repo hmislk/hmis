@@ -543,14 +543,31 @@ public class BookingController implements Serializable, ControllerWithPatient, C
             return;
         }
 
-        if (getSelectedSessionInstanceForRechedule().getMaxNo() != 0) {
+        if (getSelectedSessionInstanceForRechedule().getMaxNo() != 0 && configOptionApplicationController.getBooleanValueByKey("Limited appoinments session can't get appoinement more than max amount.")) {
             if (getSelectedSessionInstanceForRechedule().getBookedPatientCount() != null) {
                 int maxNo = getSelectedSessionInstanceForRechedule().getMaxNo();
                 long bookedPatientCount = getSelectedSessionInstanceForRechedule().getBookedPatientCount();
-                if (maxNo <= bookedPatientCount) {
+                long reservedNumberCount = getSelectedSessionInstanceForRechedule().getReservedBookingCount() != null ? getSelectedSessionInstanceForRechedule().getReservedBookingCount() : 0L;
+                long totalPatientCount;
+
+                // if (maxNo <= bookedPatientCount) {
+                //     JsfUtil.addErrorMessage("Cannot reschedule the selected session: The session has reached its maximum booking capacity.");
+                //     return;
+
+                // }
+
+                List<Integer> reservedNumbers = CommonFunctions.convertStringToIntegerList(selectedSessionInstance.getReserveNumbers());
+                bookedPatientCount = bookedPatientCount + reservedNumbers.size() - reservedNumberCount;
+
+                if (selectedSessionInstance.getCancelPatientCount() != null) {
+                    long canceledPatientCount = selectedSessionInstance.getCancelPatientCount();
+                    totalPatientCount = bookedPatientCount - canceledPatientCount;
+                } else {
+                    totalPatientCount = bookedPatientCount;
+                }
+                if (maxNo <= totalPatientCount) {
                     JsfUtil.addErrorMessage("Cannot reschedule the selected session: The session has reached its maximum booking capacity.");
                     return;
-
                 }
             }
         }
