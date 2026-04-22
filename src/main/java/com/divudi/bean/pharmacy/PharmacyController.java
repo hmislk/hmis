@@ -10309,7 +10309,7 @@ public class PharmacyController implements Serializable {
         SimpleDateFormat sdf = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
         com.itextpdf.text.Font bodyFontSmall =
                 com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA, 7);
-
+        String institutionName = sessionController.getInstitution() != null ? sessionController.getInstitution().getName() : "";
         com.itextpdf.text.Document document = null;
         OutputStream out = null;
 
@@ -10324,13 +10324,21 @@ public class PharmacyController implements Serializable {
             com.itextpdf.text.pdf.PdfWriter.getInstance(document, out);
             document.open();
 
-            document.add(new com.itextpdf.text.Paragraph(fileName,
-                    com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA, 8)));
-            document.add(new com.itextpdf.text.Paragraph(GRNHeader(),
-                    com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA, 8)));
-            document.add(new com.itextpdf.text.Paragraph("Generated On: " + sdf.format(new Date()),
-                    com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA, 8)));
-            document.add(new com.itextpdf.text.Paragraph(" "));
+           if (!institutionName.isEmpty()) {
+                document.add(new Paragraph(institutionName,
+                        FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18)));
+            }
+            document.add(new Paragraph("GRN and Direct Purchase Summary report",
+                    FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16)));
+            document.add(new Paragraph("Generated On: " + sdf.format(new Date()),
+                    FontFactory.getFont(FontFactory.HELVETICA, 12)));
+            document.add(new Paragraph(" "));
+            
+            Map<String, Object> filters = getFiltersForGRNDetailReport();
+            PdfPTable infoTable = createInfoTablePdfExport(sdf, filters);
+            if (infoTable != null) {
+                document.add(infoTable);
+            }
 
             com.itextpdf.text.pdf.PdfPTable table = new com.itextpdf.text.pdf.PdfPTable(8);
             table.setWidthPercentage(100);
@@ -10350,18 +10358,18 @@ public class PharmacyController implements Serializable {
                 cell.setBackgroundColor(com.itextpdf.text.BaseColor.LIGHT_GRAY);
                 table.addCell(cell);
             }
-
+            
             int index = 1;
             for (Bill f : rows) {
                 table.addCell(numCell(index++, bodyFontSmall));
                 table.addCell(textCell(f.getDeptId(), bodyFontSmall));
-                table.addCell(textCell(f.getReferenceBill().getDeptId(), bodyFontSmall));
-                table.addCell(textCell(f.getInvoiceNumber() == null ? f.getReferenceBill().getInvoiceNumber() : f.getInvoiceNumber() , bodyFontSmall));
+                table.addCell(textCell(f.getReferenceBill() != null ? f.getReferenceBill().getDeptId() : "-", bodyFontSmall));
+                table.addCell(textCell(f.getInvoiceNumber() == null ? (f.getReferenceBill() != null ? f.getReferenceBill().getInvoiceNumber() : "-") : f.getInvoiceNumber() , bodyFontSmall));
                 table.addCell(textCell(
                         f.getCreatedAt() != null ? sdf.format(f.getCreatedAt()) : "-",
                         bodyFontSmall));
-                table.addCell(textCell(f.getBillTypeAtomic() == BillTypeAtomic.PHARMACY_GRN_RETURN ? f.getToInstitution().getName() : f.getFromInstitution().getName(), bodyFontSmall));
-                table.addCell(numCell(f.getBillTypeAtomic()==BillTypeAtomic.PHARMACY_GRN_RETURN || f.getBillTypeAtomic()==BillTypeAtomic.PHARMACY_GRN_CANCELLED ? -1*f.getReferenceBill().getNetTotal() : f.getReferenceBill().getNetTotal() , bodyFontSmall));
+                table.addCell(textCell(f.getBillTypeAtomic() == BillTypeAtomic.PHARMACY_GRN_RETURN ? (f.getToInstitution()!= null ? f.getToInstitution().getName() : "-") : (f.getFromInstitution() != null ? f.getFromInstitution().getName() : "-"), bodyFontSmall));
+                table.addCell(numCell(f.getBillTypeAtomic()==BillTypeAtomic.PHARMACY_GRN_RETURN || f.getBillTypeAtomic()==BillTypeAtomic.PHARMACY_GRN_CANCELLED ? -1*(f.getReferenceBill() != null ? f.getReferenceBill().getNetTotal() : 0) : (f.getReferenceBill() != null ? f.getReferenceBill().getNetTotal() : 0) , bodyFontSmall));
                 table.addCell(numCell(f.getNetTotal(), bodyFontSmall));
             }
 
