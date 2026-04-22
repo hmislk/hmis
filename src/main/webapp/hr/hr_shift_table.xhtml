@@ -45,7 +45,7 @@
                                 <f:selectItems value="#{rosterController.items}" var="r"
                                                itemLabel="#{r.name}" itemValue="#{r}"/>
                                 <f:ajax event="change" execute="@this"
-                                        render="rosterTablePanel editPanel"
+                                        render="viewModePanel"
                                         listener="#{shiftTableController.selectRosterLstener()}" />
                             </p:selectOneMenu>
                         </div>
@@ -79,212 +79,388 @@
                 </div>
             </div>
 
-            <!-- ── Roster Table Panel (read-only preview) ─────────────────── -->
-            <p:panel id="rosterTablePanel" class="m-3"
-                     rendered="#{shiftTableController.rosterTable != null
-                                 and not empty shiftTableController.rosterTable.rows}">
+            <!-- ── Everything below buttons: tabs + content ───────────── -->
+            <p:outputPanel id="viewModePanel">
 
-                <f:facet name="header">
-                    <h:outputLabel value="Roster: #{shiftTableController.roster.name}" />
-                    <br/>
-                    <h:outputLabel value="#{shiftTableController.fromDate}">
-                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
-                    </h:outputLabel>
-                    <h:outputLabel value="   To  "/>
-                    <h:outputLabel value="#{shiftTableController.toDate}">
-                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
-                    </h:outputLabel>
-                </f:facet>
+                <!-- ── View Mode Tabs (inside viewModePanel so they re-render) ── -->
+                <h:panelGroup layout="block" class="row m-3"
+                              rendered="#{shiftTableController.rosterTable != null
+                                          and not empty shiftTableController.rosterTable.rows}">
+                    <div class="col-12" style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap;">
+                        <div style="display: inline-flex; border: 1px solid #dee2e6;
+                                    border-radius: 6px; overflow: hidden;">
+                            <p:commandButton value="All Staff"
+                                             style="border: none; border-radius: 0;
+                                                    padding: 8px 20px; font-size: 13px;
+                                                    #{shiftTableController.viewMode eq 'ALL'
+                                                      ? 'background: #2196F3; color: white;'
+                                                      : 'background: white; color: #333;'}"
+                                             update=":form:viewModePanel"
+                                             process="@this">
+                                <f:setPropertyActionListener
+                                    target="#{shiftTableController.viewMode}" value="ALL" />
+                                <f:setPropertyActionListener
+                                    target="#{shiftTableController.selectedFilterStaffId}" value="#{null}" />
+                                <f:setPropertyActionListener
+                                    target="#{shiftTableController.selectedFilterStaff}" value="#{null}" />
+                            </p:commandButton>
+                            <p:commandButton value="Single Staff"
+                                             style="border: none; border-radius: 0;
+                                                    border-left: 1px solid #dee2e6;
+                                                    padding: 8px 20px; font-size: 13px;
+                                                    #{shiftTableController.viewMode eq 'SINGLE'
+                                                      ? 'background: #2196F3; color: white;'
+                                                      : 'background: white; color: #333;'}"
+                                             update=":form:viewModePanel"
+                                             process="@this">
+                                <f:setPropertyActionListener
+                                    target="#{shiftTableController.viewMode}" value="SINGLE" />
+                            </p:commandButton>
+                        </div>
 
-                <ui:repeat value="#{shiftTableController.rosterTable.warnings}" var="warn">
-                    <div class="alert alert-warning" style="padding: 4px 8px; margin: 2px 0; font-size: 12px;">
-                        #{warn}
+                        <!-- Staff dropdown (only in SINGLE mode) -->
+                        <h:panelGroup layout="block"
+                                      rendered="#{shiftTableController.viewMode eq 'SINGLE'}"
+                                      style="display: inline-flex; align-items: center; gap: 6px;">
+                            <h:outputLabel value="Staff: "
+                                           style="font-size: 13px; font-weight: bold;" />
+                            <p:selectOneMenu value="#{shiftTableController.selectedFilterStaffId}"
+                                             style="min-width: 250px; font-size: 12px;"
+                                             filter="true" filterMatchMode="contains">
+                                <f:selectItem itemLabel="-- Select Staff --"
+                                              itemValue="#{null}" />
+                                <f:selectItems value="#{shiftTableController.rosterStaffList}"
+                                               var="rs"
+                                               itemLabel="#{rs.person.name}"
+                                               itemValue="#{rs.id}" />
+                                <p:ajax event="change"
+                                        listener="#{shiftTableController.onFilterStaffChange()}"
+                                        update=":form:viewModePanel"
+                                        process="@this" />
+                            </p:selectOneMenu>
+                        </h:panelGroup>
                     </div>
-                </ui:repeat>
+                </h:panelGroup>
 
-                <div style="overflow-x: auto;">
-                    <table style="width: 100%; border-collapse: collapse; font-family: serif; font-size: 12px;"
-                           border="1">
-                        <tr>
-                            <th rowspan="2"
-                                style="border: 1px solid black; text-align: center;
-                                       padding: 4px 8px; min-width: 120px; background-color: #f0f0f0;">
-                                Shifts
-                            </th>
-                            <ui:repeat value="#{shiftTableController.rosterTable.dates}" var="colDate">
-                                <th style="border: 1px solid black; text-align: center;
-                                           padding: 4px; min-width: 100px; background-color: #f0f0f0;">
-                                    <h:outputText value="#{colDate}">
-                                        <f:convertDateTime pattern="yyyy.MM.dd"/>
-                                    </h:outputText>
-                                </th>
-                            </ui:repeat>
-                        </tr>
-                        <tr>
-                            <ui:repeat value="#{shiftTableController.rosterTable.dates}" var="colDate">
-                                <th style="border: 1px solid black; text-align: center;
-                                           padding: 4px; background-color: #f0f0f0;">
-                                    <h:outputText value="#{colDate}">
-                                        <f:convertDateTime pattern="EEE"/>
-                                    </h:outputText>
-                                </th>
-                            </ui:repeat>
-                        </tr>
-                        <ui:repeat value="#{shiftTableController.rosterTable.rows}" var="row">
-                            <tr>
-                                <td style="border: 1px solid black; padding: 4px 8px;
-                                           font-weight: bold; white-space: nowrap;
-                                           background-color: #{row.dayOff ? '#f9f9f9' : '#ffffff'};">
-                                    <h:outputText value="#{row.shiftName}"
-                                                  style="#{row.dayOff ? 'color: gray; font-style: italic;' : ''}"/>
-                                </td>
-                                <ui:repeat value="#{row.cells}" var="cell">
-                                    <td style="border: 1px solid black; padding: 4px;
-                                               text-align: center; vertical-align: top;
-                                               #{cell.understaffed ? 'background-color: #fff3cd;' : ''}">
-                                        <ui:repeat value="#{cell.assignedStaff}" var="staffMember"
-                                                   varStatus="status">
-                                            <h:outputText value="#{staffMember.person.name}"
-                                                          style="font-size: 11px;"/>
-                                            <h:panelGroup rendered="#{!status.last}"><br/></h:panelGroup>
-                                        </ui:repeat>
-                                        <h:outputText value="(need #{cell.requiredCount})"
-                                                      rendered="#{cell.understaffed}"
-                                                      style="color: red; font-size: 10px; display: block;"/>
-                                    </td>
-                                </ui:repeat>
-                            </tr>
-                        </ui:repeat>
-                    </table>
-                </div>
-            </p:panel>
+                <!-- ════════════════════════════════════════════════════════ -->
+                <!-- ════ ALL STAFF VIEW                               ════ -->
+                <!-- ════════════════════════════════════════════════════════ -->
+                <h:panelGroup layout="block"
+                              rendered="#{shiftTableController.viewMode eq 'ALL'}">
 
-            <p:commandButton value="Print Roster" ajax="false" action="#" class="mx-3 mb-3"
+                    <p:panel id="rosterTablePanel" class="m-3"
                              rendered="#{shiftTableController.rosterTable != null
                                          and not empty shiftTableController.rosterTable.rows}">
-                <p:printer target="rosterTablePanel"/>
-            </p:commandButton>
 
-            <!-- ── EDIT PANEL: Accordion by date ──────────────────────────── -->
-            <p:panel id="editPanel" class="m-3" header="Edit Roster"
-                     rendered="#{shiftTableController.rosterTable != null
-                                 and not empty shiftTableController.rosterTable.rows}">
-
-                <div style="padding: 6px 10px; margin-bottom: 10px;
-                            background: #e7f3ff; border-left: 3px solid #2196f3;
-                            font-size: 12px;">
-                    Expand a date to edit shifts and staff. Changes apply to the
-                    table above but are only written to the database when you
-                    click <b>Save</b>.
-                </div>
-
-                <p:accordionPanel id="dateAccordion"
-                  value="#{shiftTableController.dateGroups}"
-                  var="dayGroup"
-                  multiple="false"
-                  activeIndex="#{shiftTableController.activeDateIndex}">
-                  <p:ajax event="tabChange" process="@this" />
-                  <p:ajax event="tabClose" process="@this" />
-
-                    <p:tab>
-                        <f:facet name="title">
-                            <h:outputText value="#{dayGroup.date}">
-                                <f:convertDateTime pattern="EEE, yyyy-MM-dd"/>
-                            </h:outputText>
+                        <f:facet name="header">
+                            <h:outputLabel value="Roster: #{shiftTableController.roster.name}" />
+                            <br/>
+                            <h:outputLabel value="#{shiftTableController.fromDate}">
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                            </h:outputLabel>
+                            <h:outputLabel value="   To  "/>
+                            <h:outputLabel value="#{shiftTableController.toDate}">
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                            </h:outputLabel>
                         </f:facet>
 
-                        <!-- For each shift on this date -->
-                        <ui:repeat value="#{dayGroup.shiftGroups}" var="shiftGroup">
+                        <ui:repeat value="#{shiftTableController.rosterTable.warnings}" var="warn">
+                            <div class="alert alert-warning" style="padding: 4px 8px; margin: 2px 0; font-size: 12px;">
+                                #{warn}
+                            </div>
+                        </ui:repeat>
 
-                            <div style="border: 1px solid #ddd; margin-bottom: 12px;
-                                        border-radius: 4px; background: #fafafa;">
+                        <div style="overflow-x: auto;">
+                            <table style="width: 100%; border-collapse: collapse; font-family: serif; font-size: 12px;"
+                                   border="1">
+                                <tr>
+                                    <th rowspan="2"
+                                        style="border: 1px solid black; text-align: center;
+                                               padding: 4px 8px; min-width: 120px; background-color: #f0f0f0;">
+                                        Shifts
+                                    </th>
+                                    <ui:repeat value="#{shiftTableController.rosterTable.dates}" var="colDate">
+                                        <th style="border: 1px solid black; text-align: center;
+                                                   padding: 4px; min-width: 100px; background-color: #f0f0f0;">
+                                            <h:outputText value="#{colDate}">
+                                                <f:convertDateTime pattern="yyyy.MM.dd"/>
+                                            </h:outputText>
+                                        </th>
+                                    </ui:repeat>
+                                </tr>
+                                <tr>
+                                    <ui:repeat value="#{shiftTableController.rosterTable.dates}" var="colDate">
+                                        <th style="border: 1px solid black; text-align: center;
+                                                   padding: 4px; background-color: #f0f0f0;">
+                                            <h:outputText value="#{colDate}">
+                                                <f:convertDateTime pattern="EEE"/>
+                                            </h:outputText>
+                                        </th>
+                                    </ui:repeat>
+                                </tr>
+                                <ui:repeat value="#{shiftTableController.rosterTable.rows}" var="row">
+                                    <tr>
+                                        <td style="border: 1px solid black; padding: 4px 8px;
+                                                   font-weight: bold; white-space: nowrap;
+                                                   background-color: #{row.dayOff ? '#f9f9f9' : '#ffffff'};">
+                                            <h:outputText value="#{row.shiftName}"
+                                                          style="#{row.dayOff ? 'color: gray; font-style: italic;' : ''}"/>
+                                        </td>
+                                        <ui:repeat value="#{row.cells}" var="cell">
+                                            <td style="border: 1px solid black; padding: 4px;
+                                                       text-align: center; vertical-align: top;
+                                                       #{cell.understaffed ? 'background-color: #fff3cd;' : ''}">
+                                                <ui:repeat value="#{cell.assignedStaff}" var="staffMember"
+                                                           varStatus="status">
+                                                    <h:outputText value="#{staffMember.person.name}"
+                                                                  style="font-size: 11px;"/>
+                                                    <h:panelGroup rendered="#{!status.last}"><br/></h:panelGroup>
+                                                </ui:repeat>
+                                                <h:outputText value="(need #{cell.requiredCount})"
+                                                              rendered="#{cell.understaffed}"
+                                                              style="color: red; font-size: 10px; display: block;"/>
+                                            </td>
+                                        </ui:repeat>
+                                    </tr>
+                                </ui:repeat>
+                            </table>
+                        </div>
+                    </p:panel>
 
-                                <!-- Shift header -->
-                                <div style="padding: 8px 12px; background: #f0f0f0;
-                                            border-bottom: 1px solid #ddd;
-                                            font-weight: bold;">
-                                    <h:outputText value="#{shiftGroup.shiftName}" />
-                                    <h:outputText value=" (need #{shiftGroup.cell.requiredCount})"
-                                                  rendered="#{shiftGroup.cell.requiredCount gt 0}"
-                                                  style="font-weight: normal; color: #666; font-size: 11px;" />
-                                </div>
+                    <p:commandButton value="Print Roster" ajax="false" action="#" class="mx-3 mb-3"
+                                     rendered="#{shiftTableController.rosterTable != null
+                                                 and not empty shiftTableController.rosterTable.rows}">
+                        <p:printer target="rosterTablePanel"/>
+                    </p:commandButton>
 
-                                <!-- Staff rows -->
-                                <div style="padding: 6px 12px;">
+                    <p:panel id="editPanel" class="m-3" header="Edit Roster"
+                             rendered="#{shiftTableController.rosterTable != null
+                                         and not empty shiftTableController.rosterTable.rows}">
 
-                                    <h:panelGroup layout="block" rendered="#{empty shiftGroup.cell.assignedStaff}">
-                                        <div style="color: #888; font-style: italic;
-                                                    padding: 6px 0; font-size: 12px;">
-                                            No staff assigned.
+                        <div style="padding: 6px 10px; margin-bottom: 10px;
+                                    background: #e7f3ff; border-left: 3px solid #2196f3;
+                                    font-size: 12px;">
+                            Expand a date to edit shifts and staff. Changes apply to the
+                            table above but are only written to the database when you
+                            click <b>Save</b>.
+                        </div>
+
+                        <p:accordionPanel id="dateAccordion"
+                          value="#{shiftTableController.dateGroups}"
+                          var="dayGroup"
+                          multiple="false"
+                          activeIndex="#{shiftTableController.activeDateIndex}">
+                          <p:ajax event="tabChange" process="@this" />
+                          <p:ajax event="tabClose" process="@this" />
+
+                            <p:tab>
+                                <f:facet name="title">
+                                    <h:outputText value="#{dayGroup.date}">
+                                        <f:convertDateTime pattern="EEE, yyyy-MM-dd"/>
+                                    </h:outputText>
+                                </f:facet>
+
+                                <ui:repeat value="#{dayGroup.shiftGroups}" var="shiftGroup">
+
+                                    <div style="border: 1px solid #ddd; margin-bottom: 12px;
+                                                border-radius: 4px; background: #fafafa;">
+
+                                        <div style="padding: 8px 12px; background: #f0f0f0;
+                                                    border-bottom: 1px solid #ddd;
+                                                    font-weight: bold;">
+                                            <h:outputText value="#{shiftGroup.shiftName}" />
+                                            <h:outputText value=" (need #{shiftGroup.cell.requiredCount})"
+                                                          rendered="#{shiftGroup.cell.requiredCount gt 0}"
+                                                          style="font-weight: normal; color: #666; font-size: 11px;" />
                                         </div>
-                                    </h:panelGroup>
 
-                                    <ui:repeat value="#{shiftGroup.cell.assignedStaff}" var="assigned">
-                                        <div style="display: flex; align-items: center;
-                                                    gap: 10px; padding: 4px 0;
-                                                    border-bottom: 1px dotted #eee;">
+                                        <div style="padding: 6px 12px;">
 
-                                            <div style="flex: 1; font-size: 13px;">
-                                                <h:outputText value="#{assigned.person.name}" />
+                                            <h:panelGroup layout="block" rendered="#{empty shiftGroup.cell.assignedStaff}">
+                                                <div style="color: #888; font-style: italic;
+                                                            padding: 6px 0; font-size: 12px;">
+                                                    No staff assigned.
+                                                </div>
+                                            </h:panelGroup>
+
+                                            <ui:repeat value="#{shiftGroup.cell.assignedStaff}" var="assigned">
+                                                <div style="display: flex; align-items: center;
+                                                            gap: 10px; padding: 4px 0;
+                                                            border-bottom: 1px dotted #eee;">
+
+                                                    <div style="flex: 1; font-size: 13px;">
+                                                        <h:outputText value="#{assigned.person.name}" />
+                                                    </div>
+
+                                                    <p:selectOneMenu
+                                                        value="#{shiftTableController.selectedShiftId}"
+                                                        appendTo="@this"
+                                                        style="min-width: 140px; font-size: 12px;">
+                                                        <f:selectItem
+                                                            itemLabel="#{shiftGroup.shiftName}"
+                                                            itemValue="#{shiftGroup.shift.id}" />
+                                                        <f:selectItems
+                                                            value="#{shiftTableController.availableShifts}"
+                                                            var="sh"
+                                                            itemLabel="#{sh.name}"
+                                                            itemValue="#{sh.id}" />
+                                                        <f:attribute name="cellRef" value="#{shiftGroup.cell}" />
+                                                        <f:attribute name="staffRef" value="#{assigned}" />
+                                                        <p:ajax event="change"
+                                                                listener="#{shiftTableController.onShiftChange}"
+                                                                update=":form:viewModePanel"
+                                                                process="@this" />
+                                                    </p:selectOneMenu>
+
+                                                    <p:commandButton value="Remove"
+                                                                     icon="pi pi-times"
+                                                                     action="#{shiftTableController.removeStaffFromCell(shiftGroup.cell, assigned)}"
+                                                                     update=":form:viewModePanel"
+                                                                     process="@this"
+                                                                     styleClass="ui-button-danger"
+                                                                     style="font-size: 11px;" />
+                                                </div>
+                                            </ui:repeat>
+
+                                            <div style="margin-top: 8px;">
+                                                <p:commandButton value="Add Staff"
+                                                                 icon="pi pi-plus"
+                                                                 action="#{shiftTableController.openAddStaffDialog(shiftGroup.cell, shiftGroup.shift)}"
+                                                                 update=":form:addStaffDialog"
+                                                                 oncomplete="PF('addStaffDlg').show()"
+                                                                 process="@this"
+                                                                 style="font-size: 11px;" />
                                             </div>
 
-                                            <!-- Shift-change dropdown.
-                                                 The current shift appears first (as label),
-                                                 followed by all available shifts. On change,
-                                                 changeStaffShift receives the new target shift id
-                                                 via selectedShiftId on the controller. -->
-                                            <p:selectOneMenu
-    value="#{shiftTableController.selectedShiftId}"
-    appendTo="@this"
-    style="min-width: 140px; font-size: 12px;">
-    <f:selectItem
-        itemLabel="#{shiftGroup.shiftName}"
-        itemValue="#{shiftGroup.shift.id}" />
-    <f:selectItems
-        value="#{shiftTableController.availableShifts}"
-        var="sh"
-        itemLabel="#{sh.name}"
-        itemValue="#{sh.id}" />
-    <f:attribute name="cellRef" value="#{shiftGroup.cell}" />
-    <f:attribute name="staffRef" value="#{assigned}" />
-    <p:ajax event="change"
-            listener="#{shiftTableController.onShiftChange}"
-            update=":form:rosterTablePanel :form:editPanel"
-            process="@this" />
-</p:selectOneMenu>
-
-                                            <!-- Remove button -->
-                                            <p:commandButton value="Remove"
-                                                             icon="pi pi-times"
-                                                             action="#{shiftTableController.removeStaffFromCell(shiftGroup.cell, assigned)}"
-                                                             update=":form:rosterTablePanel :form:editPanel"
-                                                             process="@this"
-                                                             styleClass="ui-button-danger"
-                                                             style="font-size: 11px;" />
                                         </div>
-                                    </ui:repeat>
-
-                                    <!-- Add staff button -->
-                                    <div style="margin-top: 8px;">
-                                        <p:commandButton value="Add Staff"
-                                                         icon="pi pi-plus"
-                                                         action="#{shiftTableController.openAddStaffDialog(shiftGroup.cell, shiftGroup.shift)}"
-                                                         update=":form:addStaffDialog"
-                                                         oncomplete="PF('addStaffDlg').show()"
-                                                         process="@this"
-                                                         style="font-size: 11px;" />
                                     </div>
 
-                                </div>
+                                </ui:repeat>
+                            </p:tab>
+
+                        </p:accordionPanel>
+                    </p:panel>
+
+                </h:panelGroup>
+
+                <!-- ════════════════════════════════════════════════════════ -->
+                <!-- ════ SINGLE STAFF VIEW                            ════ -->
+                <!-- ════════════════════════════════════════════════════════ -->
+                <h:panelGroup layout="block"
+                              rendered="#{shiftTableController.viewMode eq 'SINGLE'}">
+
+                    <h:panelGroup layout="block"
+                                  rendered="#{shiftTableController.selectedFilterStaff == null}">
+                        <div class="m-3" style="color: #888; font-style: italic; font-size: 13px;
+                                                padding: 20px; text-align: center;
+                                                background: #f8f9fa; border-radius: 6px;">
+                            Please select a staff member from the dropdown above.
+                        </div>
+                    </h:panelGroup>
+
+                    <h:panelGroup layout="block"
+                                  rendered="#{shiftTableController.selectedFilterStaff != null
+                                              and shiftTableController.rosterTable != null
+                                              and not empty shiftTableController.rosterTable.rows}">
+
+                        <p:panel id="singleStaffTablePanel" class="m-3">
+                            <f:facet name="header">
+                                <h:outputText value="Roster for: #{shiftTableController.selectedFilterStaff.person.name}" />
+                                <span style="margin-left: 12px; font-weight: normal; font-size: 12px; color: #666;">
+                                    <h:outputText value="#{shiftTableController.fromDate}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                                    </h:outputText>
+                                    <h:outputText value="  to  "/>
+                                    <h:outputText value="#{shiftTableController.toDate}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                                    </h:outputText>
+                                </span>
+                            </f:facet>
+
+                            <div style="overflow-x: auto;">
+                                <table style="width: 100%; border-collapse: collapse;
+                                              font-family: serif; font-size: 12px;"
+                                       border="1">
+                                    <tr>
+                                        <th rowspan="2"
+                                            style="border: 1px solid black; text-align: center;
+                                                   padding: 4px 8px; min-width: 120px;
+                                                   background-color: #f0f0f0;">
+                                            Shifts
+                                        </th>
+                                        <ui:repeat value="#{shiftTableController.rosterTable.dates}"
+                                                   var="colDate">
+                                            <th style="border: 1px solid black; text-align: center;
+                                                       padding: 4px; min-width: 60px;
+                                                       background-color: #f0f0f0;">
+                                                <h:outputText value="#{colDate}">
+                                                    <f:convertDateTime pattern="yyyy.MM.dd"/>
+                                                </h:outputText>
+                                            </th>
+                                        </ui:repeat>
+                                    </tr>
+                                    <tr>
+                                        <ui:repeat value="#{shiftTableController.rosterTable.dates}"
+                                                   var="colDate">
+                                            <th style="border: 1px solid black; text-align: center;
+                                                       padding: 4px; background-color: #f0f0f0;">
+                                                <h:outputText value="#{colDate}">
+                                                    <f:convertDateTime pattern="EEE"/>
+                                                </h:outputText>
+                                            </th>
+                                        </ui:repeat>
+                                    </tr>
+                                    <ui:repeat value="#{shiftTableController.rosterTable.rows}"
+                                               var="row">
+                                        <tr>
+                                            <td style="border: 1px solid black; padding: 4px 8px;
+                                                       font-weight: bold; white-space: nowrap;
+                                                       background-color: #{row.dayOff ? '#f9f9f9' : '#ffffff'};">
+                                                <h:outputText value="#{row.shiftName}"
+                                                              style="#{row.dayOff
+                                                                ? 'color: gray; font-style: italic;' : ''}"/>
+                                            </td>
+                                            <ui:repeat value="#{row.cells}" var="cell">
+                                                <td style="border: 1px solid black; padding: 0;
+                                                        text-align: center; vertical-align: middle;
+                                                        font-size: 16px; font-weight: bold;">
+                                                    <p:commandLink
+                                                        action="#{shiftTableController.toggleStaffInCell(cell)}"
+                                                        update=":form:viewModePanel"
+                                                        process="@this"
+                                                        style="display: block; width: 100%; padding: 4px;
+                                                            text-decoration: none; cursor: pointer;
+                                                            #{shiftTableController.isStaffAssignedToCell(cell)
+                                                                ? 'background-color: #d4edda; color: #155724;'
+                                                                : 'background-color: #f8d7da; color: #721c24;'}">
+                                                        <h:outputText
+                                                            value="&#10004;"
+                                                            rendered="#{shiftTableController.isStaffAssignedToCell(cell)}"
+                                                            escape="false" />
+                                                        <h:outputText
+                                                            value="&#10008;"
+                                                            rendered="#{!shiftTableController.isStaffAssignedToCell(cell)}"
+                                                            escape="false" />
+                                                    </p:commandLink>
+                                                </td>
+                                            </ui:repeat>
+                                        </tr>
+                                    </ui:repeat>
+                                </table>
                             </div>
+                        </p:panel>
 
-                        </ui:repeat>
-                    </p:tab>
+                        <p:commandButton value="Print Staff Roster" ajax="false" action="#" class="mx-3 mb-3">
+                            <p:printer target="singleStaffTablePanel"/>
+                        </p:commandButton>
 
-                </p:accordionPanel>
-            </p:panel>
+                    </h:panelGroup>
 
-            <!-- ── Add Staff Dialog ──────────────────────────────────────── -->
+                </h:panelGroup>
+
+            </p:outputPanel>
+
+            <!-- ── Add Staff Dialog ──────────────────────────────────── -->
             <p:dialog id="addStaffDialog" widgetVar="addStaffDlg"
                       header="Add Staff to Shift"
                       modal="true" resizable="false" width="450"
@@ -330,7 +506,7 @@
                         <p:commandButton value="Add"
                                          icon="pi pi-plus"
                                          action="#{shiftTableController.confirmAddStaff()}"
-                                         update=":form:rosterTablePanel :form:editPanel :form:addStaffDialog"
+                                         update=":form:viewModePanel :form:addStaffDialog"
                                          oncomplete="if (args &amp;&amp; !args.validationFailed) PF('addStaffDlg').hide();"
                                          process="@this addStaffContent" />
                     </div>
