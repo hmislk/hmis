@@ -7411,11 +7411,13 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     public void markAsForeigner() {
         setForiegn(true);
         calculateSelectedBillSessionTotal();
+        calculateCashBalance();
     }
 
     public void markAsLocal() {
         setForiegn(false);
         calculateSelectedBillSessionTotal();
+        calculateCashBalance();
     }
 
     public void markAsForeignerWithBillUpdate() {
@@ -7981,7 +7983,13 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                     JsfUtil.addErrorMessage("Please Enter Tenderd Amount");
                     return;
                 }
-                Double tend = Double.valueOf(strTenderedValue);
+                Double tend;
+                try {
+                    tend = Double.parseDouble(strTenderedValue);
+                } catch (NumberFormatException e) {
+                    JsfUtil.addErrorMessage("Please Enter valid Tenderd Amount");
+                    return;
+                }
                 if (getSelectedBillSession().getBillItem().getBill().getNetTotal() > tend) {
                     JsfUtil.addErrorMessage("Please Enter correct Tenderd Amount");
                     return;
@@ -9041,21 +9049,16 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
         for (BillFee billFee : billFees) {
             BillItem billItem = billFee.getBillItem();
-            System.out.println("billItem = " + billItem.getItem().getName());
 
             if (isForiegn()) {
-                System.out.println("billFee.getFee().getFfee() = " + billFee.getFee().getFfee());
                 if (billFee.getFee().getFeeType().equals(FeeType.Staff)) {
-                    System.out.println("billFee.getFee().getProfessionalFfee() = " + billFee.getFee().getProfessionalFfee());
                     billItem.setStaffFee(billFee.getFee().getProfessionalFfee());
                 } else if (billFee.getFee().getFeeType().equals(FeeType.OwnInstitution)) {
-                    System.out.println("billFee.getFee().getHospitalFfee() = " + billFee.getFee().getHospitalFfee());
                     billItem.setHospitalFee(billFee.getFee().getHospitalFfee());
                 }
 
                 billItem.setNetValue(billFee.getFee().getFfee());
             } else {
-                System.out.println("local");
                 if (billFee.getFee().getFeeType().equals(FeeType.Staff)) {
                     billItem.setStaffFee(billFee.getFee().getProfessionalFee());
                 } else if (billFee.getFee().getFeeType().equals(FeeType.OwnInstitution)) {

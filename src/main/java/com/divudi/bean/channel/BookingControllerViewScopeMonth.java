@@ -3006,7 +3006,13 @@ public class BookingControllerViewScopeMonth implements Serializable {
                     JsfUtil.addErrorMessage("Please Enter Tenderd Amount");
                     return;
                 }
-                Double tend = Double.valueOf(strTenderedValue);
+                Double tend;
+                try {
+                    tend = Double.parseDouble(strTenderedValue);
+                } catch (NumberFormatException e) {
+                    JsfUtil.addErrorMessage("Please Enter valid Tenderd Amount");
+                    return;
+                }
                 if (feeNetTotalForSelectedBill > tend) {
                     JsfUtil.addErrorMessage("Please Enter Tenderd Amount");
                     return;

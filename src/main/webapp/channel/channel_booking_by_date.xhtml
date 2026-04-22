@@ -535,7 +535,7 @@
                                                             action="#{bookingControllerViewScope.markAsForeigner}" 
                                                             rendered="#{!bookingControllerViewScope.foriegn}" 
                                                             process="@this" 
-                                                            update="gpLocalForeign totalsPanel panelBookingDetails lstAddedItems" 
+                                                            update="gpLocalForeign totalsPanel panelBookingDetails lstAddedItems paymentDetails" 
                                                             >
                                                         </p:commandButton>
                                                         <p:commandButton 
@@ -544,7 +544,7 @@
                                                             action="#{bookingControllerViewScope.markAsLocal}" 
                                                             rendered="#{bookingControllerViewScope.foriegn}" 
                                                             process="@this" 
-                                                            update="gpLocalForeign totalsPanel panelBookingDetails lstAddedItems" 
+                                                            update="gpLocalForeign totalsPanel panelBookingDetails lstAddedItems paymentDetails" 
                                                             >
                                                         </p:commandButton>
 
