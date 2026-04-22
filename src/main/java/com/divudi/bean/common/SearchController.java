@@ -78,6 +78,7 @@ import com.divudi.core.data.dto.BillListReportDTO;
 import com.divudi.core.data.dto.OpdBillItemDTO;
 import com.divudi.core.data.dto.OpdSaleSummaryDTO;
 import com.divudi.core.data.dto.PharmacyCashierPreBillSearchDTO;
+import com.divudi.core.data.dto.PharmacyAdjustmentBillItemDTO;
 import com.divudi.core.data.dto.PharmacyItemPurchaseDTO;
 import com.divudi.core.data.dto.PharmacyPreBillSearchDTO;
 import com.divudi.core.data.dto.PharmacyTransferRequestIssueDTO;
@@ -306,6 +307,8 @@ public class SearchController implements Serializable {
     // DTO lists for disposal issue search results
     private List<PharmacyItemPurchaseDTO> disposalIssueBillDtos;
     private List<PharmacyItemPurchaseDTO> disposalIssueBillItemDtos;
+    // DTO list for pharmacy adjustment bill item search
+    private List<PharmacyAdjustmentBillItemDTO> pharmacyAdjustmentBillItemDtos;
     // DTO list for pharmacy purchase orders
     private List<PharmacyPurchaseOrderDTO> pharmacyPurchaseOrderDtos;
     private List<Payment> payments;
@@ -5403,7 +5406,6 @@ public class SearchController implements Serializable {
     }
 
     public void createPharmacyAdjustmentBillItemTable() {
-        String jpql;
         Map<String, Object> m = new HashMap<>();
 
         m.put("toDate", toDate);
@@ -5430,31 +5432,40 @@ public class SearchController implements Serializable {
         }
         m.put("billTypeAtomics", billTypeAtomics);
 
-        jpql = "select bi from BillItem bi"
-                + " where (bi.bill.retired is null or bi.bill.retired=false) "
-                + " and bi.bill.institution = :ins"
-                + " and bi.bill.billTypeAtomic in :billTypeAtomics"
-                + " and bi.bill.createdAt between :fromDate and :toDate ";
+        String jpql = "select new com.divudi.core.data.dto.PharmacyAdjustmentBillItemDTO("
+                + "b.id, b.deptId, b.createdAt, b.billTypeAtomic,"
+                + "bi.item.code, bi.item.name,"
+                + "rb.cancelled, cb.createdAt,"
+                + "rb.refunded, rbib.createdAt"
+                + ") from BillItem bi"
+                + " join bi.bill b"
+                + " left join b.referenceBill rb"
+                + " left join rb.cancelledBill cb"
+                + " left join bi.referanceBillItem rbi"
+                + " left join rbi.bill rbib"
+                + " where (b.retired is null or b.retired=false)"
+                + " and b.institution = :ins"
+                + " and b.billTypeAtomic in :billTypeAtomics"
+                + " and b.createdAt between :fromDate and :toDate";
 
         if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().isEmpty()) {
-            jpql += " and (bi.bill.deptId) like :billNo ";
+            jpql += " and b.deptId like :billNo";
             m.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
         }
 
         if (getSearchKeyword().getItemName() != null && !getSearchKeyword().getItemName().trim().isEmpty()) {
-            jpql += " and (bi.item.name) like :itm ";
+            jpql += " and bi.item.name like :itm";
             m.put("itm", "%" + getSearchKeyword().getItemName().trim().toUpperCase() + "%");
         }
 
         if (getSearchKeyword().getCode() != null && !getSearchKeyword().getCode().trim().isEmpty()) {
-            jpql += " and (bi.item.code) like :cde ";
+            jpql += " and bi.item.code like :cde";
             m.put("cde", "%" + getSearchKeyword().getCode().trim().toUpperCase() + "%");
         }
 
-        jpql += " order by bi.id desc";
+        jpql += " order by b.id desc";
 
-        billItems = getBillItemFacade().findByJpql(jpql, m, TemporalType.TIMESTAMP);
-
+        pharmacyAdjustmentBillItemDtos = (List<PharmacyAdjustmentBillItemDTO>) getBillItemFacade().findLightsByJpql(jpql, m, TemporalType.TIMESTAMP);
     }
 
     public void createPharmacyAdjustmentBillItemTableForStockTaking() {
@@ -22558,6 +22569,14 @@ public class SearchController implements Serializable {
 
     public void setDisposalIssueBillItemDtos(List<PharmacyItemPurchaseDTO> disposalIssueBillItemDtos) {
         this.disposalIssueBillItemDtos = disposalIssueBillItemDtos;
+    }
+
+    public List<PharmacyAdjustmentBillItemDTO> getPharmacyAdjustmentBillItemDtos() {
+        return pharmacyAdjustmentBillItemDtos;
+    }
+
+    public void setPharmacyAdjustmentBillItemDtos(List<PharmacyAdjustmentBillItemDTO> pharmacyAdjustmentBillItemDtos) {
+        this.pharmacyAdjustmentBillItemDtos = pharmacyAdjustmentBillItemDtos;
     }
 
     public List<PharmacyPurchaseOrderDTO> getPharmacyPurchaseOrderDtos() {

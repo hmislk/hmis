@@ -47,11 +47,11 @@
                             </div>
                             <div class="col-md-10">
 
-                                <p:dataTable 
-                                    rowIndexVar="i" 
-                                    id="tblBills" 
-                                    value="#{searchController.billItems}" 
-                                    var="pi" 
+                                <p:dataTable
+                                    rowIndexVar="i"
+                                    id="tblBills"
+                                    value="#{searchController.pharmacyAdjustmentBillItemDtos}"
+                                    var="pi"
                                     paginator="true"
                                     rows="15"
                                     paginatorPosition="bottom"
@@ -59,68 +59,49 @@
                                     rowsPerPageTemplate="10,15,25"
                                     >
 
-
-                                    <p:column headerText="Bill No" styleClass="alignTop"  >
-                                        <h:outputLabel value="#{pi.bill.deptId}"/>
-                                    </p:column>
-
-                                    <p:column headerText="Item Code">
-                                        <f:facet name="header">
-                                            <h:outputLabel value="Code"/>
-                                        </f:facet>
-                                        <h:outputLabel value="#{pi.item.code}" style="width: 100px!important;" >
-
-                                        </h:outputLabel>
-                                    </p:column>
-
-                                    <p:column headerText="Item Name"  styleClass="alignTop" >
-                                        <h:outputLabel value="#{pi.item.name}" />    
-                                    </p:column>
-
-                                    <p:column headerText="Billed At"  >
-                                        <h:outputLabel value="#{pi.bill.createdAt}" >
-                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                        </h:outputLabel>
-                                        <br/>
-                                        <h:panelGroup rendered="#{pi.bill.referenceBill.cancelled}" >
-                                            <h:outputLabel style="color: red;" value="Cancelled at " />
-                                            <h:outputLabel style="color: red;" 
-                                                           rendered="#{pi.bill.referenceBill.cancelled}" 
-                                                           value="#{pi.bill.referenceBill.cancelledBill.createdAt}" >
-                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                            </h:outputLabel>
-                                        </h:panelGroup>
-                                        <h:panelGroup rendered="#{pi.bill.referenceBill.refunded}" >
-                                            <h:outputLabel style="color: red;" value="Refunded at " />
-                                            <h:outputLabel style="color: red;" 
-                                                           rendered="#{pi.bill.referenceBill.refunded}" 
-                                                           value="#{pi.referanceBillItem.bill.createdAt}" >
-                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                            </h:outputLabel>
-                                        </h:panelGroup>
-                                    </p:column>     
-
-                                    <!--                                    <p:column headerText="Befory Qty" >
-                                                                            <h:outputLabel value="#{pi.pharmaceuticalBillItem.stockHistory.stockQty}" >
-                                                                                <f:convertNumber pattern="#,##0"/>
-                                                                            </h:outputLabel>
-                                                                        </p:column>   
-                                    
-                                                                        <p:column headerText="After Qty" >
-                                                                            <h:outputLabel value="#{pi.qty}" >
-                                                                                <f:convertNumber pattern="##,##0"/>
-                                                                            </h:outputLabel>
-                                                                        </p:column>-->
-
-                                    <p:column headerText="Adjustment Type" >
-                                        <h:outputText value="#{pi.bill.billTypeAtomic.label}"/>
+                                    <p:column headerText="Bill No" styleClass="alignTop">
+                                        <h:outputLabel value="#{pi.billDeptId}"/>
                                     </p:column>
 
                                     <p:column>
-                                        <p:commandButton 
+                                        <f:facet name="header">
+                                            <h:outputLabel value="Code"/>
+                                        </f:facet>
+                                        <h:outputLabel value="#{pi.itemCode}" style="width: 100px!important;"/>
+                                    </p:column>
+
+                                    <p:column headerText="Item Name" styleClass="alignTop">
+                                        <h:outputLabel value="#{pi.itemName}"/>
+                                    </p:column>
+
+                                    <p:column headerText="Billed At">
+                                        <h:outputLabel value="#{pi.billCreatedAt}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                        </h:outputLabel>
+                                        <br/>
+                                        <h:panelGroup rendered="#{pi.referenceBillCancelled}">
+                                            <h:outputLabel style="color: red;" value="Cancelled at "/>
+                                            <h:outputLabel style="color: red;" value="#{pi.cancelledAt}">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                            </h:outputLabel>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{pi.referenceBillRefunded}">
+                                            <h:outputLabel style="color: red;" value="Refunded at "/>
+                                            <h:outputLabel style="color: red;" value="#{pi.refundedAt}">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                            </h:outputLabel>
+                                        </h:panelGroup>
+                                    </p:column>
+
+                                    <p:column headerText="Adjustment Type">
+                                        <h:outputText value="#{pi.billTypeAtomic.label}"/>
+                                    </p:column>
+
+                                    <p:column>
+                                        <p:commandButton
                                             id="btnViewReceipt"
-                                            ajax="false" 
-                                            action="#{billSearch.navigateToViewBillByAtomicBillTypeByBillId(pi.bill.id)}" 
+                                            ajax="false"
+                                            action="#{billSearch.navigateToViewBillByAtomicBillTypeByBillId(pi.billId)}"
                                             value="View Bill">
                                         </p:commandButton>
                                     </p:column>
