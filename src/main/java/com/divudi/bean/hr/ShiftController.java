@@ -9,6 +9,7 @@ import com.divudi.bean.common.SessionController;
 
 import com.divudi.core.entity.hr.Roster;
 import com.divudi.core.entity.hr.Shift;
+import com.divudi.core.entity.hr.ShiftStaffRequirement;
 import com.divudi.core.facade.RosterFacade;
 import com.divudi.core.facade.ShiftFacade;
 import com.divudi.core.util.JsfUtil;
@@ -60,6 +61,24 @@ public class ShiftController implements Serializable {
 
         if (getCurrent().getDayType() == null) {
             JsfUtil.addErrorMessage("Select Day Type");
+            return true;
+        }
+
+        ShiftStaffRequirement sr = getCurrent().getStaffRequirement();
+
+        if (sr != null && (
+                isNegative(sr.getMondayCount()) ||
+                isNegative(sr.getTuesdayCount()) ||
+                isNegative(sr.getWednesdayCount()) ||
+                isNegative(sr.getThursdayCount()) ||
+                isNegative(sr.getFridayCount()) ||
+                isNegative(sr.getSaturdayCount()) ||
+                isNegative(sr.getSundayCount()) ||
+                isNegative(sr.getPoyaDayCount()) ||
+                isNegative(sr.getPublicHolidayCount()) ||
+                isNegative(sr.getMercantileHolidayCount())
+        )) {
+            JsfUtil.addErrorMessage("Staff count cannot be negative.");
             return true;
         }
 
@@ -184,12 +203,17 @@ public class ShiftController implements Serializable {
         current = null;
     }
 
+    private boolean isNegative(Integer value) {
+        return value != null && value < 0;
+    }
+
     public ShiftController() {
     }
 
     public void prepareAdd() {
         current = new Shift();
         current.setRoster(getCurrentRoster());
+        current.setStaffRequirement(new ShiftStaffRequirement());
     }
 
     private void recreateModel() {
@@ -223,6 +247,9 @@ public class ShiftController implements Serializable {
         if (current == null) {
             current = new Shift();
             current.setRoster(getCurrentRoster());
+            current.setStaffRequirement(new ShiftStaffRequirement());
+        } else if (current.getStaffRequirement() == null) {
+            current.setStaffRequirement(new ShiftStaffRequirement());
         }
         return current;
     }

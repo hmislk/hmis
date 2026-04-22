@@ -726,6 +726,17 @@ public class StaffShift implements Serializable {
 
     }
 
+    private Date clearTime(Date date) {
+        if (date == null) return null;
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date);
+        cal.set(Calendar.HOUR_OF_DAY, 0);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+        return cal.getTime();
+    }
+
     public double getEarlyInLogged() {
         return earlyInLogged;
     }
@@ -998,7 +1009,7 @@ public class StaffShift implements Serializable {
     }
 
     public void setShiftDate(Date shiftDate) {
-        this.shiftDate = shiftDate;
+        this.shiftDate = clearTime(shiftDate);
         calShiftStartEndTime();
         calDayOfWeek();
     }

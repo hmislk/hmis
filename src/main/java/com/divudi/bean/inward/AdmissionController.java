@@ -61,6 +61,7 @@ import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Staff;
 import com.divudi.core.entity.clinical.ClinicalFindingValue;
 import com.divudi.core.entity.inward.AdmissionType;
+import com.divudi.core.entity.PaymentScheme;
 import com.divudi.core.entity.inward.Reservation;
 import com.divudi.core.facade.ClinicalFindingValueFacade;
 import com.divudi.core.facade.ReservationFacade;
@@ -191,6 +192,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     private Institution site;
 
     private PaymentMethod paymentMethod;
+    private PaymentScheme paymentScheme;
     private boolean admittingProcessStarted;
     private Reservation latestfoundReservation;
 
@@ -1956,6 +1958,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         if (getInwardBean().getLastGeneratedBhtLong() != null) {
             getCurrent().setBhtLong(getInwardBean().getLastGeneratedBhtLong());
         }
+        getCurrent().setPaymentScheme(paymentScheme);
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(getCurrent());
@@ -2089,6 +2092,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         if (getInwardBean().getLastGeneratedBhtLong() != null) {
             getCurrent().setBhtLong(getInwardBean().getLastGeneratedBhtLong());
         }
+        getCurrent().setPaymentScheme(paymentScheme);
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(getCurrent());
@@ -2232,6 +2236,15 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
     public void setCurrent(Admission current) {
         this.current = current;
+        if (current != null && current.getPaymentScheme() != null) {
+            this.paymentScheme = current.getPaymentScheme();
+        } else if (current != null && current.getPatient() != null
+                && current.getPatient().getPerson() != null
+                && current.getPatient().getPerson().getMembershipScheme() != null) {
+            this.paymentScheme = current.getPatient().getPerson().getMembershipScheme().getPaymentScheme();
+        } else {
+            this.paymentScheme = null;
+        }
     }
 
     /**
@@ -2393,6 +2406,19 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         if (current != null) {
             current.setPatient(patient);
             patientAllergies = clinicalFindingValueController.findClinicalFindingValues(patient, ClinicalFindingValueType.PatientAllergy);
+        }
+        selectPaymentSchemeAsPerPatientMembership();
+    }
+
+    private void selectPaymentSchemeAsPerPatientMembership() {
+        if (patient == null) {
+            paymentScheme = null;
+            return;
+        }
+        if (patient.getPerson() == null || patient.getPerson().getMembershipScheme() == null) {
+            paymentScheme = null;
+        } else {
+            paymentScheme = patient.getPerson().getMembershipScheme().getPaymentScheme();
         }
     }
 
@@ -2670,6 +2696,14 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     @Override
     public void listnerForPaymentMethodChange() {
         // ToDo: Add Logic
+    }
+
+    public PaymentScheme getPaymentScheme() {
+        return paymentScheme;
+    }
+
+    public void setPaymentScheme(PaymentScheme paymentScheme) {
+        this.paymentScheme = paymentScheme;
     }
 
     public Department getLoggedDepartment() {

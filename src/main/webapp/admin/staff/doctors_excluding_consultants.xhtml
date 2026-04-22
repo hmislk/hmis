@@ -40,17 +40,25 @@
                                                                  return false;" action="#{doctorController.delete()}"  value="Delete" 
                                 class="m-1 ui-button-danger w-25" >
                             </p:commandButton>
-                            <p:commandButton 
-                                value="Excel" 
+                            <p:commandButton
+                                value="Excel"
                                 icon="fa-solid fa-file-excel"
                                 class="ui-button-success w-25"
                                 ajax="false"
                                 action="#{doctorController.downloadAsExcel()}"
                                 />
+                            <p:commandButton
+                                id="btnReload"
+                                value="Reload"
+                                icon="fa-solid fa-rotate"
+                                class="m-1 ui-button-info w-25"
+                                process="@this"
+                                update="lstSelect"
+                                action="#{doctorController.reloadDoctorsExcludingConsultants()}"/>
 
 
 
-                            <p:selectOneListbox  
+                            <p:selectOneListbox
                                 class="w-100" 
                                 filterMatchMode="contains" 
                                 id="lstSelect" 

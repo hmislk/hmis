@@ -11,19 +11,25 @@
         <ui:composition template="/channel/channel_reports.xhtml" >
 
             <ui:define name="subContent">
+                <h:outputStylesheet library="css" name="eight_col_filter_panel.css" />
                 <h:form>
                     <p:panel header="Income By User for Bookings" >
                         <div class="row">
                             <div class="col-12">
-                                <h:panelGrid columns="15" class="my-2" styleClass="w-100 form-grid">
+                                <h:panelGrid columns="8" class="my-2 ui-fluid" style="table-layout: fixed; width: 100%;" 
+                                            columnClasses="fp-col-label1,fp-col-input1,fp-col-space1,
+                                        fp-col-label2,fp-col-input2,fp-col-space2,
+                                        fp-col-label3,fp-col-input3">
 
-                                    <h:outputText class="mx-2" value="&#xf073;"
-                                                  styleClass="fa mr-2"/>
-                                    <h:outputLabel class="mx-2" value="From " />
-                                    <h:outputLabel value=":" />
+                                    <h:panelGroup layout="block" styleClass="form-group fp-label">
+                                        <h:outputText value="&#xf073;" styleClass="fa" />
+                                        <div class="fp-label-text">
+                                            <h:outputLabel value="From"/>
+                                        </div>
+                                    </h:panelGroup>
 
                                     <p:datePicker 
-                                        class="mx-4 w-100"
+                                        class="w-100"
                                         inputStyleClass="form-control"
                                         showTime="true"
                                         showButtonBar="true"
@@ -32,13 +38,15 @@
                                         pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                     <p:spacer width="50"/>
 
-                                    <h:outputText class="mx-2" value="&#xf073;"
-                                                  styleClass="fa mr-2"/>
-                                    <h:outputLabel class="mx-2" value="To" />
-                                    <h:outputLabel value=":" />
+                                    <h:panelGroup layout="block" styleClass="form-group fp-label">
+                                        <h:outputText value="&#xf073;" styleClass="fa" />
+                                        <div class="fp-label-text">
+                                            <h:outputLabel value="To"/>
+                                        </div>
+                                    </h:panelGroup>
 
                                     <p:datePicker
-                                        class="mx-4 w-100"
+                                        class="w-100"
                                         inputStyleClass="form-control"
                                         showTime="true"
                                         showButtonBar="true"
@@ -46,54 +54,66 @@
                                         value="#{channelReportController.toDate}" 
                                         pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                     <p:spacer width="50"/>
-                                    <h:outputText class="mx-2" value="&#xf0e8;"
-                                                  styleClass="fa mr-2"/>
-                                    <h:outputLabel class="mx-2"  value="Institution"  />
-                                    <h:outputLabel value=":" />
-                                    <p:selectOneMenu class="w-100 mx-4" value="#{channelReportController.institution}" filter="true" >
+
+                                    <h:panelGroup layout="block" styleClass="form-group fp-label">
+                                        <h:outputText value="&#xf0e8;" styleClass="fa" />
+                                        <div class="fp-label-text">
+                                            <h:outputLabel value="Institution"/>
+                                        </div>
+                                    </h:panelGroup>
+                                    
+                                    <p:selectOneMenu styleClass="w-100 form-control" value="#{channelReportController.institution}" filter="true" >
                                         <f:selectItem itemLabel="All Institutions" />
                                         <f:selectItems value="#{channelReportController.institutionForChannelReports}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
                                         <p:ajax event="change" process="@this"/>
                                     </p:selectOneMenu>
-                                    <p:spacer width="50"/>
 
-                                    <i class="fa-solid fa-circle-check"/>
-                                    <h:outputLabel class="mx-2 my-2"  value="Report Status"  />
-                                    <h:outputLabel value=":" />
+                                    <h:panelGroup layout="block" styleClass="form-group fp-label">
+                                        <h:outputText value="&#xf058;" styleClass="fa-solid" />
+                                        <div class="fp-label-text">
+                                            <h:outputLabel value="Report Status"/>
+                                        </div>
+                                    </h:panelGroup>
+
                                     <p:selectOneMenu
                                         id="cmbDept"
-                                        style="width: 350px;"
-                                        class="w-100 mx-4"
+                                        styleClass="w-100 form-control"
                                         value="#{channelReportController.reportStatus}"
                                         >
-                                        <f:selectItem itemLabel="Summery View" itemValue="Summery" />
+                                        <f:selectItem itemLabel="Summary View" itemValue="Summery" />
                                         <f:selectItem itemLabel="Details View" itemValue="Details"/>
 
                                     </p:selectOneMenu>
-
                                     <p:spacer width="50"/>
-                                    <h:outputText class="mx-2" styleClass="fas fa-user mr-2"/>
-                                    <h:outputLabel value="User" class="mx-2"/>
-                                    <h:outputLabel value=":" />
+
+                                    <h:panelGroup layout="block" styleClass="form-group fp-label">
+                                        <h:outputText value="&#xf007;" styleClass="fa" />
+                                        <div class="fp-label-text">
+                                            <h:outputLabel value="User"/>
+                                        </div>
+                                    </h:panelGroup>
+
                                     <p:selectOneMenu
-                                        class="w-100 mx-4"
+                                        styleClass="w-100 form-control"
                                         filter="true"
                                         value="#{channelReportController.webUser}" id="acIx">
                                         <f:selectItem itemLabel="All Users"/>
                                         <f:selectItems value="#{webUserController.items}" var="st" itemLabel="#{st.name}"
                                                        itemValue="#{st}"/>
                                     </p:selectOneMenu>
-
                                     <p:spacer width="50"/>
-                                    <h:outputText class="mx-2" value="&#xf0e8;"
-                                                  styleClass="fa mr-2"/>
-                                    <h:outputLabel class="mx-2"  value="Category"  />
-                                    <h:outputLabel value=":" />
+                            
+                                    <h:panelGroup layout="block" styleClass="form-group fp-label">
+                                        <h:outputText value="&#xf0e8;" styleClass="fa" />
+                                        <div class="fp-label-text">
+                                            <h:outputLabel value="Category"/>
+                                        </div>
+                                    </h:panelGroup>
 
                                     <p:selectCheckboxMenu value="#{channelReportController.categoryList}" label="Select Categories"
                                                           id="supplierMenu"
                                                           filter="true"
-                                                          class="w-100 mx-4"
+                                                          styleClass="w-100"
                                                           converter="categoryConverter"
                                                           filterMatchMode="contains">
                                         <f:selectItems value="#{serviceCategoryController.items}" var="item"
@@ -108,14 +128,12 @@
                         <h:panelGrid columns="6" class="my-2">
                             <p:commandButton class="ui-button-warning mt-2 mb-2" icon="fas fa-cogs" value="Process" action="#{channelReportController.fetchChannelIncomeSummeryByUserWise}" ajax="false" />
 
-                            <p:commandButton
-                                id="btnPdf"
-                                class="m-2 ui-button-info"
-                                ajax="false"
-                                rendered="true"
+                            <p:commandButton 
+                                value="Export as PDF" 
+                                ajax="false" 
                                 icon="fas fa-file-pdf"
-                                value="Export as PDF">
-                                <p:dataExporter type="pdf" target="tableForReport" fileName="Channel_Agent_Income_Report"/>
+                                class="m-1 ui-button-info">
+                                <p:fileDownload value="#{channelReportController.channelIncomeDailySummaryReportAsPdf}" />
                             </p:commandButton>
 
                             <p:commandButton
@@ -124,15 +142,15 @@
                                 icon="fas fa-print"
                                 ajax="false"
                                 value="Print Table"
-                                action="income_with_agent_bookings_print?faces-redirect=true">
+                                action="income_with_summery_by_user_print?faces-redirect=true">
                             </p:commandButton>
 
-                            <p:commandButton
-                                id="btnExcel"
-                                class="m-1 ui-button-success"
+                            <p:commandButton 
+                                value="Export to Excel" 
+                                ajax="false" 
                                 icon="fas fa-file-excel"
-                                ajax="false" value="Export to Excel">
-                                <p:dataExporter type="xlsx" target="tableForReport" fileName="Channel_Agent_Income_Report"/>
+                                class="m-1 ui-button-success">
+                                <p:fileDownload value="#{channelReportController.channelIncomeDailySummaryReportAsExcel}" />
                             </p:commandButton>
 
                         </h:panelGrid>
@@ -153,7 +171,7 @@
                                          paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                          rowsPerPageTemplate="5,10,20,{ShowAll|'Show All'}"
                                          rowKey="#{row.bsId}">
-                                <!--                                <p:ajax event="page" oncomplete="updateTotals()" />-->
+                                                               <p:ajax event="page" oncomplete="updateTotals()" />
                                 <f:facet name="header">
 
                                     <h:outputLabel value="#{channelReportController.institution.name}"/>
