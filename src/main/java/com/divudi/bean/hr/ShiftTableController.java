@@ -128,6 +128,8 @@ public class ShiftTableController implements Serializable {
 
     public void selectRosterLstener() {
         makeTableNull();
+        selectedFilterStaffId = null;
+        selectedFilterStaff = null;
         getShiftController().setCurrentRoster(roster);
     }
 
