@@ -188,7 +188,7 @@ public class PatientReportController implements Serializable {
     private boolean showBackground = false;
     private ClinicalFindingValue clinicalFindingValue;
     private String comment;
-    
+
     private boolean calculatedRequerd = false;
 
     public StreamedContent getReportAsPdf() {
@@ -202,12 +202,19 @@ public class PatientReportController implements Serializable {
     }
 
     public String navigateToViewPatientReport(PatientReport patientReport) {
-        if(patientReport.getApproved()){
+        if (patientReport.getPatientInvestigation().getInvestigation().isCalculatedRequerd()) {
+            if (patientReport.getApproved()) {
+                calculatedRequerd = false;
+                System.out.println("Navigate the Report. (Approved) ----> Calculated Requerd = " + calculatedRequerd);
+            } else {
+                calculatedRequerd = true;
+                System.out.println("Navigate the Report. (Pending Approved) ----> Calculated Requerd = " + calculatedRequerd);
+            }
+        } else {
             calculatedRequerd = false;
-        }else{
-            calculatedRequerd = true;
+            System.out.println("Not Allow to Calculate Requerd. ----> Calculated Requerd = " + calculatedRequerd);
         }
-        
+
         if (null == patientReport.getReportType()) {
             setCurrentPatientReport(patientReport);
             return "/lab/patient_report?faces-redirect=true";
@@ -1033,9 +1040,15 @@ public class PatientReportController implements Serializable {
         if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
             labTestHistoryController.addCalculateHistory(currentPtIx, currentPatientReport);
         }
-        
-        calculatedRequerd = false;
 
+        if (currentPatientReport.getPatientInvestigation().getInvestigation().isCalculatedRequerd()) {
+            calculatedRequerd = false;
+            System.out.println("Calculation Complete. ----> Calculated Requerd = " + calculatedRequerd);
+        } else {
+            calculatedRequerd = false;
+            System.out.println("Not Allow to Calculate Requerd. ----> Calculated Requerd = " + calculatedRequerd);
+        }
+        
     }
 
     private String generateModifiedJavascriptFromBaseJavaScript(PatientReport pr, String baseJs) {
@@ -1223,7 +1236,15 @@ public class PatientReportController implements Serializable {
                 pirivFacade.edit(v);
             }
         }
-        calculatedRequerd = true;
+
+        if (currentPatientReport.getPatientInvestigation().getInvestigation().isCalculatedRequerd()) {
+            calculatedRequerd = true;
+            System.out.println("Saved Report Values (Result) ----> Calculated Requerd = " + calculatedRequerd);
+        } else {
+            calculatedRequerd = false;
+            System.out.println("Not Allow to Calculate Requerd. ----> Calculated Requerd = " + calculatedRequerd);
+        }
+        
     }
 
     public void savePatientReport() {
@@ -1257,8 +1278,15 @@ public class PatientReportController implements Serializable {
         if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
             labTestHistoryController.addDataEnterHistory(currentPtIx, currentPatientReport);
         }
-        
-        calculatedRequerd = true;
+
+        if (currentPatientReport.getPatientInvestigation().getInvestigation().isCalculatedRequerd()) {
+            calculatedRequerd = true;
+            System.out.println("Saved Report Values (Result) ----> Calculated Requerd = " + calculatedRequerd);
+        } else {
+            calculatedRequerd = false;
+            System.out.println("Not Allow to Calculate Requerd. ----> Calculated Requerd = " + calculatedRequerd);
+        }
+
 
         JsfUtil.addSuccessMessage("Saved");
     }
@@ -2108,12 +2136,14 @@ public class PatientReportController implements Serializable {
             JsfUtil.addErrorMessage(tbm.getMessage());
             return;
         }
-        
-        if(calculatedRequerd == true){
-            JsfUtil.addErrorMessage("Calculation is required after the report is saved.");
-            return;
-        }
 
+        if (currentPatientReport.getPatientInvestigation().getInvestigation().isCalculatedRequerd()) {
+            if (calculatedRequerd == true) {
+                JsfUtil.addErrorMessage("Calculation is required after the report is saved.");
+                return;
+            }
+        }
+        
         boolean authorized = configOptionApplicationController.getBooleanValueByKey("The relevant authorized user must approve the test report himself.", false);
         if (authorized) {
             if (currentPatientReport.getPatientInvestigation().getInvestigation().getStaff() != null) {
@@ -2246,8 +2276,9 @@ public class PatientReportController implements Serializable {
                 }
             }
         }
-        
+
         calculatedRequerd = true;
+        System.out.println("After Approvel, Reset the Calculated Requerd Value ----> Calculated Requerd = " + calculatedRequerd);
 
         JsfUtil.addSuccessMessage("Approved");
 
@@ -2586,8 +2617,14 @@ public class PatientReportController implements Serializable {
         } catch (Exception e) {
         }
 
-        calculatedRequerd = true;
-        
+        if (currentPatientReport.getPatientInvestigation().getInvestigation().isCalculatedRequerd()) {
+            calculatedRequerd = true;
+            System.out.println("After Cancel Approvel, Reset the Calculated Requerd Value ----> Calculated Requerd = " + calculatedRequerd);
+        } else {
+            calculatedRequerd = false;
+            System.out.println("Not Allow to Calculate Requerd. ----> Calculated Requerd = " + calculatedRequerd);
+        }
+
     }
 
     public void printPatientReport() {
@@ -3112,7 +3149,16 @@ public class PatientReportController implements Serializable {
         } else {
             link = navigateToNewlyCreatedPatientReport(pi);
         }
-        calculatedRequerd = true;
+
+        System.out.println(pi.getInvestigation().getName() + " Test Allow to Calculate = " + pi.getInvestigation().isCalculatedRequerd());
+        if (pi.getInvestigation().isCalculatedRequerd()) {
+            calculatedRequerd = true;
+            System.out.println("Create New Report and Allow Calculate. ----> Calculated Requerd = " + calculatedRequerd);
+        } else {
+            calculatedRequerd = false;
+            System.out.println("Create New Report and not Allow Calculate. ----> Calculated Requerd = " + calculatedRequerd);
+        }
+
         return link;
     }
 
