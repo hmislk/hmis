@@ -189,6 +189,8 @@ public class PatientReportController implements Serializable {
     private ClinicalFindingValue clinicalFindingValue;
     private String comment;
 
+    private boolean calculatedRequerd = false;
+
     public StreamedContent getReportAsPdf() {
         StreamedContent pdfSc = null;
         try {
@@ -200,6 +202,19 @@ public class PatientReportController implements Serializable {
     }
 
     public String navigateToViewPatientReport(PatientReport patientReport) {
+        if (patientReport.getPatientInvestigation().getInvestigation().isCalculatedRequerd()) {
+            if (patientReport.getApproved()) {
+                calculatedRequerd = false;
+                System.out.println("Navigate the Report. (Approved) ----> Calculated Requerd = " + calculatedRequerd);
+            } else {
+                calculatedRequerd = true;
+                System.out.println("Navigate the Report. (Pending Approved) ----> Calculated Requerd = " + calculatedRequerd);
+            }
+        } else {
+            calculatedRequerd = false;
+            System.out.println("Not Allow to Calculate Requerd. ----> Calculated Requerd = " + calculatedRequerd);
+        }
+
         if (null == patientReport.getReportType()) {
             setCurrentPatientReport(patientReport);
             return "/lab/patient_report?faces-redirect=true";
@@ -963,6 +978,14 @@ public class PatientReportController implements Serializable {
             labTestHistoryController.addCalculateHistory(currentPtIx, currentPatientReport);
         }
 
+        if (currentPatientReport.getPatientInvestigation().getInvestigation().isCalculatedRequerd()) {
+            calculatedRequerd = false;
+            System.out.println("Calculation Complete. ----> Calculated Requerd = " + calculatedRequerd);
+        } else {
+            calculatedRequerd = false;
+            System.out.println("Not Allow to Calculate Requerd. ----> Calculated Requerd = " + calculatedRequerd);
+        }
+        
     }
 
     private String generateModifiedJavascriptFromBaseJavaScript(PatientReport pr, String baseJs) {
@@ -1150,6 +1173,13 @@ public class PatientReportController implements Serializable {
                 pirivFacade.edit(v);
             }
         }
+        if (currentPatientReport.getPatientInvestigation().getInvestigation().isCalculatedRequerd()) {
+            calculatedRequerd = true;
+            System.out.println("Saved Report Values (Result) ----> Calculated Requerd = " + calculatedRequerd);
+        } else {
+            calculatedRequerd = false;
+            System.out.println("Not Allow to Calculate Requerd. ----> Calculated Requerd = " + calculatedRequerd);
+        }
     }
 
     public void savePatientReport() {
@@ -1182,6 +1212,14 @@ public class PatientReportController implements Serializable {
 
         if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
             labTestHistoryController.addDataEnterHistory(currentPtIx, currentPatientReport);
+        }
+
+        if (currentPatientReport.getPatientInvestigation().getInvestigation().isCalculatedRequerd()) {
+            calculatedRequerd = true;
+            System.out.println("Saved Report Values (Result) ----> Calculated Requerd = " + calculatedRequerd);
+        } else {
+            calculatedRequerd = false;
+            System.out.println("Not Allow to Calculate Requerd. ----> Calculated Requerd = " + calculatedRequerd);
         }
 
         JsfUtil.addSuccessMessage("Saved");
@@ -2074,6 +2112,13 @@ public class PatientReportController implements Serializable {
             return;
         }
 
+        if (currentPatientReport.getPatientInvestigation().getInvestigation().isCalculatedRequerd()) {
+            if (calculatedRequerd == true) {
+                JsfUtil.addErrorMessage("Calculation is required after the report is saved.");
+                return;
+            }
+        }
+        
         boolean authorized = configOptionApplicationController.getBooleanValueByKey("The relevant authorized user must approve the test report himself.", false);
         if (authorized) {
             if (currentPatientReport.getPatientInvestigation().getInvestigation().getStaff() != null) {
@@ -2207,6 +2252,9 @@ public class PatientReportController implements Serializable {
             }
         }
 
+        calculatedRequerd = true;
+        System.out.println("After Approvel, Reset the Calculated Requerd Value ----> Calculated Requerd = " + calculatedRequerd);
+
         JsfUtil.addSuccessMessage("Approved");
 
     }
@@ -2270,7 +2318,7 @@ public class PatientReportController implements Serializable {
             JsfUtil.addErrorMessage("First Approve report");
             return;
         }
-        
+
         String currentSMSReceipientNumber = currentPtIx.getBillItem().getBill().getPatient().getPerson().getSmsNumber();
 
         if (currentSMSReceipientNumber != null && !currentSMSReceipientNumber.trim().isEmpty()) {
@@ -2286,7 +2334,7 @@ public class PatientReportController implements Serializable {
             Sms currentSMS = null;
 
             String ptMobile = currentSMSReceipientNumber.trim();
-            
+
             if (sms != null) {
 
                 if (!sms.getReceipientNumber().equalsIgnoreCase(ptMobile)) {
@@ -2297,7 +2345,7 @@ public class PatientReportController implements Serializable {
                 currentSMS = sms;
 
             } else {
-                
+
                 Sms e = new Sms();
                 e.setCreatedAt(new Date());
                 e.setCreater(sessionController.getLoggedUser());
@@ -2313,14 +2361,14 @@ public class PatientReportController implements Serializable {
                 e.setInstitution(getSessionController().getLoggedUser().getInstitution());
                 e.setPending(true);
                 getSmsFacade().create(e);
-                
+
                 currentSMS = e;
 
                 if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
                     labTestHistoryController.addReportCreateSentManualSMSHistory(currentPtIx, currentPatientReport, e);
                 }
             }
-            
+
             Boolean sent = smsManager.sendSms(currentSMS);
 
             if (sent) {
@@ -2337,17 +2385,17 @@ public class PatientReportController implements Serializable {
                     labTestHistoryController.addReportSentManualSMSHistory(currentPatientReport.getPatientInvestigation(), currentPatientReport, currentSMS);
                 }
                 JsfUtil.addSuccessMessage("SMS Sent");
-                
+
             } else {
-                currentSMS.setSendingFailed(true);    
+                currentSMS.setSendingFailed(true);
                 smsFacade.edit(currentSMS);
-                                    
+
                 if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
                     labTestHistoryController.addSentSMSFailureHistory(currentPatientReport.getPatientInvestigation(), currentPatientReport, currentSMS, currentSMS.getReceivedMessage());
                 }
-                
+
                 JsfUtil.addErrorMessage("SMS Sent Failed");
-            }     
+            }
         } else {
             JsfUtil.addErrorMessage("Parient Mobile Number is Missing");
         }
@@ -2542,6 +2590,14 @@ public class PatientReportController implements Serializable {
             }
 
         } catch (Exception e) {
+        }
+
+        if (currentPatientReport.getPatientInvestigation().getInvestigation().isCalculatedRequerd()) {
+            calculatedRequerd = true;
+            System.out.println("After Cancel Approvel, Reset the Calculated Requerd Value ----> Calculated Requerd = " + calculatedRequerd);
+        } else {
+            calculatedRequerd = false;
+            System.out.println("Not Allow to Calculate Requerd. ----> Calculated Requerd = " + calculatedRequerd);
         }
 
     }
@@ -3068,6 +3124,15 @@ public class PatientReportController implements Serializable {
         } else {
             link = navigateToNewlyCreatedPatientReport(pi);
         }
+        System.out.println(pi.getInvestigation().getName() + " Test Allow to Calculate = " + pi.getInvestigation().isCalculatedRequerd());
+        if (pi.getInvestigation().isCalculatedRequerd()) {
+            calculatedRequerd = true;
+            System.out.println("Create New Report and Allow Calculate. ----> Calculated Requerd = " + calculatedRequerd);
+        } else {
+            calculatedRequerd = false;
+            System.out.println("Create New Report and not Allow Calculate. ----> Calculated Requerd = " + calculatedRequerd);
+        }
+
         return link;
     }
 
@@ -3457,6 +3522,14 @@ public class PatientReportController implements Serializable {
     public void setGroupName(String groupName) {
         this.groupName = groupName;
 
+    }
+
+    public boolean isCalculatedRequerd() {
+        return calculatedRequerd;
+    }
+
+    public void setCalculatedRequerd(boolean calculatedRequerd) {
+        this.calculatedRequerd = calculatedRequerd;
     }
 
     @FacesConverter(forClass = PatientReport.class)
