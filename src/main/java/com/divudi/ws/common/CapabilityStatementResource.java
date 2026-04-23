@@ -62,6 +62,14 @@ public class CapabilityStatementResource {
                         + "specialityId, institutionId, registration, qualification, description.",
                         "API Key (Token header)",
                         "POST", "PUT"))
+                .add(resource("Doctor Speciality", "/api/channel/speciality",
+                        "CRUD for DoctorSpeciality records. "
+                        + "GET lists active specialities (supports ?query=&page=&size=). "
+                        + "POST creates a speciality (required: name; optional: code, description); returns 200 with status=already_exists if a duplicate name exists. "
+                        + "PUT /{id} updates name, code, or description (only supplied fields changed). "
+                        + "DELETE /{id} soft-retires the speciality.",
+                        "API Key (Token header)",
+                        "GET", "POST", "PUT", "DELETE"))
                 .add(resource("Clinical Metadata", "/api/clinical/metadata",
                         "CRUD for EMR clinical metadata types: symptom, sign, diagnosis, procedure, plan, vocabulary, "
                         + "race, religion, blood_group, civil_status, employment, relationship. "
