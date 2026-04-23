@@ -82,19 +82,26 @@ public class ChannelSpecialityApi {
         if (size > 200) {
             size = 200;
         }
-        int offset = page * size;
+        long offsetLong = (long) page * size;
+        long endLong = offsetLong + size - 1L;
+        if (offsetLong > Integer.MAX_VALUE || endLong > Integer.MAX_VALUE) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(errorResponse(400, "page is too large").toString()).build();
+        }
+        int offset = (int) offsetLong;
+        int end = (int) endLong;
 
         Map<String, Object> params = new HashMap<>();
         String jpql;
         if (query != null && !query.trim().isEmpty()) {
             jpql = "select d from DoctorSpeciality d where d.retired = false"
-                    + " and upper(d.name) like :q order by d.name";
-            params.put("q", "%" + query.trim().toUpperCase() + "%");
+                    + " and d.name like :q order by d.name";
+            params.put("q", "%" + query.trim() + "%");
         } else {
             jpql = "select d from DoctorSpeciality d where d.retired = false order by d.name";
         }
 
-        List<DoctorSpeciality> items = doctorSpecialityFacade.findByJpql(jpql, params, offset, offset + size - 1);
+        List<DoctorSpeciality> items = doctorSpecialityFacade.findByJpql(jpql, params, offset, end);
         List<Map<String, Object>> result = new ArrayList<>();
         for (DoctorSpeciality ds : items) {
             result.add(toMap(ds));
@@ -126,15 +133,20 @@ public class ChannelSpecialityApi {
                     .entity(errorMessageNotValidKey().toString()).build();
         }
 
+        if (requestBody == null) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(errorResponse(400, "request body is required").toString()).build();
+        }
+
         String name = requestBody.get("name") != null ? requestBody.get("name").toString().trim() : "";
         if (name.isEmpty()) {
             return Response.status(Response.Status.BAD_REQUEST)
                     .entity(errorResponse(400, "name is required").toString()).build();
         }
 
-        String dupJpql = "select d from DoctorSpeciality d where d.retired = false and upper(d.name) = :n";
+        String dupJpql = "select d from DoctorSpeciality d where d.retired = false and d.name = :n";
         Map<String, Object> dupParams = new HashMap<>();
-        dupParams.put("n", name.toUpperCase());
+        dupParams.put("n", name);
         List<DoctorSpeciality> existing = doctorSpecialityFacade.findByJpql(dupJpql, dupParams);
         if (!existing.isEmpty()) {
             DoctorSpeciality dup = existing.get(0);
@@ -185,6 +197,11 @@ public class ChannelSpecialityApi {
                     .entity(errorMessageNotValidKey().toString()).build();
         }
 
+        if (requestBody == null) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(errorResponse(400, "request body is required").toString()).build();
+        }
+
         DoctorSpeciality ds = doctorSpecialityFacade.find(id);
         if (ds == null || ds.isRetired()) {
             return Response.status(Response.Status.NOT_FOUND)
@@ -194,7 +211,24 @@ public class ChannelSpecialityApi {
         if (requestBody.containsKey("name")) {
             Object v = requestBody.get("name");
             if (v != null && !v.toString().trim().isEmpty()) {
-                ds.setName(v.toString().trim());
+                String newName = v.toString().trim();
+                if (!newName.equalsIgnoreCase(ds.getName())) {
+                    String dupJpql = "select d from DoctorSpeciality d"
+                            + " where d.retired = false and d.id <> :id and d.name = :n";
+                    Map<String, Object> dupParams = new HashMap<>();
+                    dupParams.put("id", id);
+                    dupParams.put("n", newName);
+                    List<DoctorSpeciality> existing = doctorSpecialityFacade.findByJpql(dupJpql, dupParams);
+                    if (!existing.isEmpty()) {
+                        DoctorSpeciality dup = existing.get(0);
+                        Map<String, Object> dupResponse = new HashMap<>();
+                        dupResponse.put("status", "already_exists");
+                        dupResponse.put("id", dup.getId());
+                        dupResponse.put("name", dup.getName());
+                        return Response.ok(dupResponse).build();
+                    }
+                }
+                ds.setName(newName);
             }
         }
         if (requestBody.containsKey("code")) {
