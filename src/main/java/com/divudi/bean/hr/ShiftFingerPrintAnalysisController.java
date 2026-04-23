@@ -44,6 +44,7 @@ import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import java.util.Objects;
 
 /**
  *
@@ -1285,10 +1286,8 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
             Date date2 = fingerPrintRecord.getRecordTimeStamp();
 
 
-            if (date1 != null && date2 != null) {
-                if (!date1.equals(date2)) {
-                    flag = true;
-                }
+            if (!Objects.equals(date1, date2)) {
+                flag = true;
             }
         }
 
