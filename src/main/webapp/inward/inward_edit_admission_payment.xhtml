@@ -1,0 +1,155 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:credit="http://xmlns.jcp.org/jsf/composite/inward/creditCompany">
+
+    <ui:define name="content">
+        <h:form>
+            <p:panel>
+                <f:facet name="header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="fa-solid fa-credit-card fa-lg text-primary me-3"></i>
+                            <h:outputLabel value="Edit Admission Payment Details" class="fw-bold" />
+                            <h:panelGroup rendered="#{bhtEditController.current ne null}" layout="block">
+                                <small class="text-muted">
+                                    BHT: #{bhtEditController.current.bhtNo} —
+                                    #{bhtEditController.current.patient.person.nameWithTitle}
+                                </small>
+                            </h:panelGroup>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <p:commandButton
+                                value="Save"
+                                icon="fa fa-check"
+                                ajax="false"
+                                action="#{bhtEditController.saveCurrent}"
+                                class="ui-button-success">
+                            </p:commandButton>
+                            <p:commandButton
+                                value="Inpatient Dashboard"
+                                icon="fa fa-id-card"
+                                ajax="false"
+                                action="#{admissionController.navigateToAdmissionProfilePage}"
+                                class="ui-button-secondary">
+                                <f:setPropertyActionListener value="#{bhtEditController.current}" target="#{admissionController.current}" />
+                            </p:commandButton>
+                        </div>
+                    </div>
+                </f:facet>
+
+                <h:panelGroup rendered="#{bhtEditController.current eq null}" layout="block">
+                    <div class="alert alert-warning">
+                        <i class="fa fa-exclamation-triangle me-2"></i>
+                        No admission selected. Please navigate from the Inpatient Dashboard.
+                    </div>
+                </h:panelGroup>
+
+                <h:panelGroup rendered="#{bhtEditController.current ne null}" layout="block">
+                    <div class="row">
+                        <div class="col-12 col-lg-6">
+                            <p:panel class="mb-3">
+                                <f:facet name="header">
+                                    <h:outputText styleClass="fa-solid fa-money-bill-wave" />
+                                    <h:outputLabel value="Payment Details" class="mx-3" />
+                                </f:facet>
+                                <h:panelGrid columns="2" class="w-100">
+
+                                    <h:outputLabel value="Select Payment Method" />
+                                    <p:selectOneMenu class="w-100" id="cmbPs" value="#{bhtEditController.current.paymentMethod}">
+                                        <f:selectItems value="#{enumController.paymentMethodForAdmission}" />
+                                        <p:ajax process="@this" update="crd" event="change" />
+                                    </p:selectOneMenu>
+
+                                    <h:outputLabel value="Discount Scheme" />
+                                    <p:selectOneMenu class="w-100" value="#{bhtEditController.paymentScheme}">
+                                        <f:selectItem itemLabel="No Discount Scheme" itemValue="#{null}" />
+                                        <f:selectItems value="#{paymentSchemeController.paymentSchemesForInward}"
+                                                       var="ps" itemLabel="#{ps.name}" itemValue="#{ps}" />
+                                    </p:selectOneMenu>
+
+                                    <h:outputLabel value="Claimable/Non-Claimable" />
+                                    <p:selectBooleanCheckbox
+                                        value="#{bhtEditController.current.claimable}"
+                                        itemLabel="Claimable">
+                                    </p:selectBooleanCheckbox>
+
+                                </h:panelGrid>
+
+                                <h:panelGroup id="crd" rendered="#{bhtEditController.current.paymentMethod eq 'Credit'}">
+                                    <credit:inputCredit patientEncounter="#{bhtEditController.current}" />
+                                </h:panelGroup>
+                            </p:panel>
+
+                            <p:panel class="mb-3">
+                                <f:facet name="header">
+                                    <div class="d-flex justify-content-between align-items-center w-100">
+                                        <div>
+                                            <h:outputText styleClass="fa-solid fa-building" />
+                                            <h:outputLabel value="Credit Companies" class="mx-3" />
+                                        </div>
+                                        <p:commandButton
+                                            value="Load Patient's Credit Companies"
+                                            id="btnLoad"
+                                            icon="fas fa-sync"
+                                            class="ui-button-warning"
+                                            action="#{bhtEditController.fillCreditCompaniesByPatient()}"
+                                            process="btnLoad"
+                                            update="tblCom">
+                                        </p:commandButton>
+                                    </div>
+                                </f:facet>
+
+                                <p:dataTable
+                                    id="tblCom"
+                                    value="#{bhtEditController.encounterCreditCompanys}"
+                                    var="ecc"
+                                    rowIndexVar="i"
+                                    emptyMessage="No credit companies. Click 'Load Patient's Credit Companies' to populate.">
+                                    <p:column headerText="#" width="2em;">
+                                        <h:outputText value="#{i+1}" />
+                                    </p:column>
+                                    <p:column headerText="Credit Company">
+                                        <h:outputText value="#{ecc.institution.name}" />
+                                    </p:column>
+                                    <p:column headerText="Action" width="23em;">
+                                        <div class="d-flex gap-2">
+                                            <p:commandButton
+                                                value="Select"
+                                                icon="fas fa-check-circle"
+                                                ajax="false"
+                                                class="ui-button-success"
+                                                action="#{bhtEditController.setSelectedCompany(ecc)}">
+                                            </p:commandButton>
+                                            <p:commandButton
+                                                ajax="false"
+                                                value="Send Mail"
+                                                title="Send confirmation mail to Company"
+                                                action="#{bhtEditController.navigateToSendMailToCompany(ecc)}"
+                                                icon="fa fa-paper-plane"
+                                                class="ui-button-secondary">
+                                            </p:commandButton>
+                                            <p:commandButton
+                                                ajax="false"
+                                                value="Remove"
+                                                icon="fas fa-trash"
+                                                action="#{bhtEditController.removeCreditCompany(ecc)}"
+                                                styleClass="ui-button-danger">
+                                            </p:commandButton>
+                                        </div>
+                                    </p:column>
+                                </p:dataTable>
+                            </p:panel>
+                        </div>
+                    </div>
+                </h:panelGroup>
+            </p:panel>
+        </h:form>
+    </ui:define>
+
+</ui:composition>

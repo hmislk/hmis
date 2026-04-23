@@ -109,6 +109,26 @@
                                     </f:setPropertyActionListener>
                                 </p:commandButton>
                                 <p:commandButton
+                                    value="Edit Payment Details"
+                                    ajax="false"
+                                    action="#{bhtEditController.navigateToEditPaymentDetails()}"
+                                    icon="fa-solid fa-credit-card"
+                                    class="w-100 ui-button-info">
+                                    <f:setPropertyActionListener
+                                        value="#{admissionController.current}"
+                                        target="#{bhtEditController.current}" />
+                                </p:commandButton>
+                                <p:commandButton
+                                    value="Cancel Admission"
+                                    ajax="false"
+                                    action="#{bhtEditController.navigateToCancelAdmission()}"
+                                    icon="fas fa-ban"
+                                    class="w-100 ui-button-danger">
+                                    <f:setPropertyActionListener
+                                        value="#{admissionController.current}"
+                                        target="#{bhtEditController.current}" />
+                                </p:commandButton>
+                                <p:commandButton
                                     value="Manage Allergies"
                                     ajax="false"
                                     action="#{bhtEditController.navigateToManageAllergies()}"
