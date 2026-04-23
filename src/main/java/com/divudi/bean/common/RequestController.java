@@ -306,11 +306,13 @@ public class RequestController implements Serializable {
             case PETTY_CASH_PRE:
                 bills.add(currentRequest.getBill());
                 pettyCashPayeeType = resolvePettyCashPayeeType(currentRequest.getBill());
+                comment = null;
                 navigation = "/common/request/petty_cash_bill_cancel_request_approvel?faces-redirect=true";
                 break;
             case PETTY_CASH_ISSUE:
                 bills.add(currentRequest.getBill());
                 pettyCashPayeeType = resolvePettyCashPayeeType(currentRequest.getBill());
+                comment = null;
                 navigation = "/common/request/petty_cash_bill_cancellation_request?faces-redirect=true";
                 break;
             default:
@@ -815,6 +817,11 @@ public class RequestController implements Serializable {
         }
         if (currentRequest.getBill() == null) {
             JsfUtil.addErrorMessage("Bill not found for request Cancel");
+            return;
+        }
+        
+        if(comment == null || comment.trim().isEmpty()){
+            JsfUtil.addErrorMessage("Comment is Missing");
             return;
         }
 
