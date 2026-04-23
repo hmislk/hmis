@@ -212,8 +212,8 @@
                     <p:panel header="Links">
                         <h:panelGrid columns="1" styleClass="sfa-links-grid">
                             <p:commandLink ajax="false" value="Roster Table"
-                                           action="/hr/hr_shift_table"
-                                           actionListener="#{shiftFingerPrintAnalysisController.toShiftTableController}"/>
+                                            action="#{staffShiftController.navigateToShiftTable()}"
+                                            actionListener="#{shiftFingerPrintAnalysisController.toShiftTableController}"/>
                         </h:panelGrid>
                     </p:panel>
 
