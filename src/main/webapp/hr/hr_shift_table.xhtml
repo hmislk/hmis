@@ -443,19 +443,20 @@
                                                         action="#{shiftTableController.toggleStaffInCell(cell)}"
                                                         update=":form:viewModePanel"
                                                         process="@this"
+                                                        title="#{shiftTableController.isStaffAssignedToCell(cell)
+                                                                ? 'Assigned — click to remove staff from this shift'
+                                                                : 'Not assigned — click to assign staff to this shift'}"
                                                         style="display: block; width: 100%; padding: 4px;
                                                             text-decoration: none; cursor: pointer;
                                                             #{shiftTableController.isStaffAssignedToCell(cell)
                                                                 ? 'background-color: #d4edda; color: #155724;'
                                                                 : 'background-color: #f8d7da; color: #721c24;'}">
-                                                        <h:outputText
-                                                            value="&#10004;"
-                                                            rendered="#{shiftTableController.isStaffAssignedToCell(cell)}"
-                                                            escape="false" />
-                                                        <h:outputText
-                                                            value="&#10008;"
-                                                            rendered="#{!shiftTableController.isStaffAssignedToCell(cell)}"
-                                                            escape="false" />
+                                                        <h:outputText value="&#10004;"
+                                                                    rendered="#{shiftTableController.isStaffAssignedToCell(cell)}"
+                                                                    escape="false" />
+                                                        <h:outputText value="&#10008;"
+                                                                    rendered="#{!shiftTableController.isStaffAssignedToCell(cell)}"
+                                                                    escape="false" />
                                                     </p:commandLink>
                                                 </td>
                                             </ui:repeat>
