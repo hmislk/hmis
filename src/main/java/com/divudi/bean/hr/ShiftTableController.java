@@ -369,7 +369,8 @@ public class ShiftTableController implements Serializable {
             return;
         }
 
-        String conflictShift = findSameDayAssignment(resolved.getId(), addingToCell.getDate());
+        String conflictShift = findSameDayAssignment(resolved.getId(),
+                addingToCell.getDate(), addingToCell);
         if (conflictShift != null) {
             JsfUtil.addErrorMessage("Warning: " + staffName(resolved)
                     + " is also assigned to " + conflictShift + " on this day.");
@@ -385,16 +386,16 @@ public class ShiftTableController implements Serializable {
         rebuildDateGroups();
     }
 
-    private String findSameDayAssignment(Long staffId, Date date) {
+    private String findSameDayAssignment(Long staffId, Date date, RosterCell excludeCell) {
         if (staffId == null || date == null) return null;
         if (rosterTable == null || rosterTable.getRows() == null) return null;
-
+    
         Date target = clearTime(date);
-
+    
         for (RosterRow row : rosterTable.getRows()) {
             if (row.getCells() == null) continue;
             for (RosterCell c : row.getCells()) {
-                if (c == addingToCell) continue;
+                if (c == excludeCell) continue;
                 if (c.getDate() == null) continue;
                 if (!clearTime(c.getDate()).equals(target)) continue;
                 if (c.getAssignedStaff() == null) continue;
@@ -526,10 +527,16 @@ public class ShiftTableController implements Serializable {
      */
     public void toggleStaffInCell(RosterCell cell) {
         if (cell == null || selectedFilterStaff == null) return;
-
+    
         if (isStaffAssignedToCell(cell)) {
             removeStaffById(cell, selectedFilterStaff.getId());
         } else {
+            String conflictShift = findSameDayAssignment(
+                    selectedFilterStaff.getId(), cell.getDate(), cell);
+            if (conflictShift != null) {
+                JsfUtil.addErrorMessage("Warning: " + staffLabel(selectedFilterStaff)
+                        + " is also assigned to " + conflictShift + " on this day.");
+            }
             if (cell.getAssignedStaff() == null) {
                 cell.setAssignedStaff(new ArrayList<>());
             }
