@@ -306,11 +306,11 @@
                                     <div class="col-3"><p:outputLabel value="Petty Cash Voucher No" class="mt-2"/></div>
                                     <div class="col-9">
                                         <div class="d-flex gap-4">
-                                            <p:inputText 
-                                                onfocus="this.select()" 
-                                                value="#{pettyCashBillController.financialYear}" 
-                                                class="text-center" 
-                                                readonly="true"
+                                            <p:inputText
+                                                onfocus="this.select()"
+                                                value="#{pettyCashBillController.financialYear}"
+                                                class="text-center"
+                                                readonly="#{!webUserController.hasPrivilege('PettyCashEditFinancialYear')}"
                                                 style="width: 5em;">
                                             </p:inputText>
                                             <p:outputLabel value="-" class="mt-2"/>
