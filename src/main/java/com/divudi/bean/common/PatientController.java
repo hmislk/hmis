@@ -3387,9 +3387,11 @@ public class PatientController implements Serializable, ControllerWithPatient {
         String mobile = p.getPerson().getMobile();
         boolean hasPhone = phone != null && !phone.trim().isEmpty();
         boolean hasMobile = mobile != null && !mobile.trim().isEmpty();
-        if (!hasPhone && !hasMobile) {
-            JsfUtil.addErrorMessage("Please enter at least one contact number (Phone or Mobile)");
-            return false;
+        if (sessionController.getApplicationPreference().isNeedPhoneNumberForPatientRegistration()) {
+            if (!hasPhone && !hasMobile) {
+                JsfUtil.addErrorMessage("Please enter at least one contact number (Phone or Mobile)");
+                return false;
+            }
         }
         if (hasPhone && !hasMobile) {
             p.setMobileNumberStringTransient(phone.trim());

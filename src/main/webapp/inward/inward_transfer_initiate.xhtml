@@ -421,7 +421,7 @@
                         class="ui-button-secondary"
                         action="#{admissionController.navigateToAdmissionProfilePage}">
                         <f:setPropertyActionListener
-                            value="#{patientTransferController.lastInitiatedRequest.admission}"
+                            value="#{patientTransferController.current}"
                             target="#{admissionController.current}" />
                     </p:commandButton>
                 </div>

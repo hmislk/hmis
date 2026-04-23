@@ -35,6 +35,7 @@
                                 value="Inpatient Dashboard"
                                 icon="fa fa-id-card"
                                 ajax="false"
+                                rendered="#{bhtEditController.current ne null}"
                                 action="#{admissionController.navigateToAdmissionProfilePage}"
                                 class="ui-button-secondary">
                                 <f:setPropertyActionListener value="#{bhtEditController.current}" target="#{admissionController.current}" />
