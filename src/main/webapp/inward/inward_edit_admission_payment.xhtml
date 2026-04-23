@@ -63,7 +63,6 @@
                                     <h:outputLabel value="Select Payment Method" />
                                     <p:selectOneMenu class="w-100" id="cmbPs" value="#{bhtEditController.current.paymentMethod}">
                                         <f:selectItems value="#{enumController.paymentMethodForAdmission}" />
-                                        <p:ajax process="@this" update="crd" event="change" />
                                     </p:selectOneMenu>
 
                                     <h:outputLabel value="Discount Scheme" />
