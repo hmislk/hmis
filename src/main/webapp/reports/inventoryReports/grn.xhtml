@@ -315,7 +315,7 @@
                             <p:dataExporter type="xlsx"
                                             target="tbl1"
                                             fileName="GRN_Summary_report_#{pharmacyController.fromDateFormatted()}_to_#{pharmacyController.toDateFormatted()}"
-                                            postProcessor="#{pharmacyController.postProcessExcel}"/>
+                                            postProcessor="#{pharmacyController.postProcessGRNAndDirectPurchaseReportExcel}"/>
                         </p:commandButton>
                         <p:commandButton class="ui-button-success mx-1"
                                          icon="fas fa-file-excel"
@@ -378,6 +378,11 @@
                             <p:column headerText="Supplier" width="5em">
                                 <h:outputText
                                         value="#{bill.billTypeAtomic eq 'PHARMACY_GRN_RETURN' ? bill.toInstitution.name : bill.fromInstitution.name}"/>
+                                <f:facet name="footer">
+                                    <h:outputText value="Total"
+                                                  style="font-weight: bold;">
+                                    </h:outputText>
+                                </f:facet>
                             </p:column>
                             <p:column headerText="PO Sub Total" width="5em" styleClass="text-end">
                                 <h:outputText rendered="#{bill.billTypeAtomic eq 'PHARMACY_GRN_CANCELLED' or
