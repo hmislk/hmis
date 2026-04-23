@@ -1047,19 +1047,14 @@ public class InpatientClinicalDataController implements Serializable {
         int maxTokens = (maxTokensConfig != null && maxTokensConfig > 0) ? Math.max(maxTokensConfig, 8192) : 8192;
 
         String clinicalSummary = buildClinicalDataSummary(current);
-        String systemPrompt;
-        String cardTitle;
+        String systemPrompt = buildDiagnosisCardSystemPrompt();
+        String cardTitle = "AI Generated Diagnosis Card";
         if (selectedDocumentTemplate != null
                 && selectedDocumentTemplate.getContents() != null
                 && !selectedDocumentTemplate.getContents().trim().isEmpty()) {
-            systemPrompt = "You are a clinical document formatter for a hospital information system.\n\n"
-                    + "TEMPLATE INSTRUCTIONS (follow these exactly):\n"
-                    + selectedDocumentTemplate.getContents().trim() + "\n\n"
-                    + "Output ONLY the HTML table markup. No markdown fencing, no explanations, no preamble.";
+            systemPrompt += "\n\nTEMPLATE INSTRUCTIONS (follow these exactly while preserving the rules above):\n"
+                    + selectedDocumentTemplate.getContents().trim();
             cardTitle = selectedDocumentTemplate.getName();
-        } else {
-            systemPrompt = buildDiagnosisCardSystemPrompt();
-            cardTitle = "AI Generated Diagnosis Card";
         }
 
         try {
@@ -1118,17 +1113,10 @@ public class InpatientClinicalDataController implements Serializable {
         String institutionName = (e.getInstitution() != null && e.getInstitution().getName() != null)
                 ? e.getInstitution().getName() : sessionController.getInstitution() != null ? sessionController.getInstitution().getName() : "";
 
-        // Prefer date from the ClinicalDischarge record; fall back to encounter discharge date
+        // Prefer the confirmed clinical discharge datetime on the admission; fall back to encounter discharge date
         String dod;
-        Map<String, Object> dodParams = new HashMap<>();
-        dodParams.put("parent", e);
-        dodParams.put("type", PatientEncounterType.ClinicalDischarge);
-        dodParams.put("ret", false);
-        List<PatientEncounter> dodRecords = ejbFacade.findByJpql(
-                "select pe from PatientEncounter pe where pe.parentEncounter=:parent and pe.patientEncounterType=:type and pe.retired=:ret order by pe.id desc",
-                dodParams, 1);
-        if (dodRecords != null && !dodRecords.isEmpty() && dodRecords.get(0).getEncounterDateTime() != null) {
-            dod = CommonFunctions.formatDate(dodRecords.get(0).getEncounterDateTime(), sessionController.getApplicationPreference().getLongDateFormat());
+        if (e.getClinicalDischargeDateTime() != null) {
+            dod = CommonFunctions.formatDate(e.getClinicalDischargeDateTime(), sessionController.getApplicationPreference().getLongDateFormat());
         } else if (e.getDateOfDischarge() != null) {
             dod = CommonFunctions.formatDate(e.getDateOfDischarge(), sessionController.getApplicationPreference().getLongDateFormat());
         } else {
@@ -1242,43 +1230,46 @@ public class InpatientClinicalDataController implements Serializable {
             sb.append("SURGERIES / OPERATIONS:\n");
             for (Bill surgBill : surgeryBills) {
                 PatientEncounter proc = surgBill.getProcedure();
-                if (proc == null) continue;
-                String surgName = proc.getItem() != null ? proc.getItem().getName() : (surgBill.getItem() != null ? surgBill.getItem().getName() : "Surgery");
+                String surgName = (proc != null && proc.getItem() != null)
+                        ? proc.getItem().getName()
+                        : (surgBill.getItem() != null ? surgBill.getItem().getName() : "Surgery");
                 sb.append("  Procedure: **").append(surgName).append("**\n");
-                if (proc.getFromTime() != null) {
+                if (proc != null && proc.getFromTime() != null) {
                     sb.append("  Start: ").append(proc.getFromTime()).append("\n");
                 }
-                if (proc.getToTime() != null) {
+                if (proc != null && proc.getToTime() != null) {
                     sb.append("  End: ").append(proc.getToTime()).append("\n");
                 }
-                // Surgical team
-                Map<String, Object> compParams = new HashMap<>();
-                compParams.put("proc", proc);
-                compParams.put("ret", false);
-                List<EncounterComponent> components = encounterComponentFacade.findByJpql(
-                        "select ec from EncounterComponent ec where ec.patientEncounter=:proc and ec.retired=:ret",
-                        compParams);
-                if (components != null) {
-                    for (EncounterComponent ec : components) {
-                        if (ec.getPatientEncounterComponentType() == null || ec.getStaff() == null) continue;
-                        String staffName = ec.getStaff().getPerson() != null ? ec.getStaff().getPerson().getNameWithTitle() : ec.getStaff().getName();
-                        switch (ec.getPatientEncounterComponentType()) {
-                            case Performed_By:
-                                sb.append("  Surgeon: ").append(staffName).append("\n");
-                                break;
-                            case Assisted_by:
-                                sb.append("  Assistant: ").append(staffName).append("\n");
-                                break;
-                            case Ananesthesia_by:
-                                sb.append("  Anaesthetist: ").append(staffName).append("\n");
-                                break;
-                            default:
-                                break;
+                if (proc != null) {
+                    // Surgical team
+                    Map<String, Object> compParams = new HashMap<>();
+                    compParams.put("proc", proc);
+                    compParams.put("ret", false);
+                    List<EncounterComponent> components = encounterComponentFacade.findByJpql(
+                            "select ec from EncounterComponent ec where ec.patientEncounter=:proc and ec.retired=:ret",
+                            compParams);
+                    if (components != null) {
+                        for (EncounterComponent ec : components) {
+                            if (ec.getPatientEncounterComponentType() == null || ec.getStaff() == null) continue;
+                            String staffName = ec.getStaff().getPerson() != null ? ec.getStaff().getPerson().getNameWithTitle() : ec.getStaff().getName();
+                            switch (ec.getPatientEncounterComponentType()) {
+                                case Performed_By:
+                                    sb.append("  Surgeon: ").append(staffName).append("\n");
+                                    break;
+                                case Assisted_by:
+                                    sb.append("  Assistant: ").append(staffName).append("\n");
+                                    break;
+                                case Ananesthesia_by:
+                                    sb.append("  Anaesthetist: ").append(staffName).append("\n");
+                                    break;
+                                default:
+                                    break;
+                            }
                         }
                     }
-                }
-                if (proc.getComments() != null && !proc.getComments().isEmpty()) {
-                    sb.append("  Operative Notes: ").append(proc.getComments()).append("\n");
+                    if (proc.getComments() != null && !proc.getComments().isEmpty()) {
+                        sb.append("  Operative Notes: ").append(proc.getComments()).append("\n");
+                    }
                 }
             }
             sb.append("\n");
