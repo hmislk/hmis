@@ -221,6 +221,10 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
             return;
         }
 
+        if (staffShift.getStartRecord() == null) {
+            return;
+        }
+
         if (staffShift.getStartRecord().getLoggedRecord() != null) {
             return;
         }
@@ -228,6 +232,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
         if (staffShift.getShift() != null
                 && staffShift.getLeaveType() != null
                 && !staffShift.getLeaveType().isFullDayLeave()
+                && staffShift.getEndRecord() != null
                 && staffShift.getEndRecord().getRecordTimeStamp() != null) {
 
             Calendar cal = Calendar.getInstance();
@@ -248,7 +253,11 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
         if (staffShift == null) {
             return;
         }
-
+    
+        if (staffShift.getEndRecord() == null) {
+            return;
+        }
+    
         if (staffShift.getEndRecord().getLoggedRecord() != null) {
             return;
         }
@@ -256,6 +265,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
         if (staffShift.getShift() != null
                 && staffShift.getLeaveType() != null
                 && !staffShift.getLeaveType().isFullDayLeave()
+                && staffShift.getStartRecord() != null
                 && staffShift.getStartRecord().getRecordTimeStamp() != null) {
 
             Calendar cal = Calendar.getInstance();
