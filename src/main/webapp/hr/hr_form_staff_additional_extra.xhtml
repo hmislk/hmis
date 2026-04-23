@@ -82,10 +82,11 @@
                             <p:fieldset legend="Shift &amp; Time" toggleable="true" styleClass="ui-fluid">
                                 <div class="ui-g">
                                     <div class="ui-g-12 ui-md-4">
-                                        <h:outputLabel value="Shift Date" />
+                                        <h:outputLabel for="shiftDate" value="Shift Date" />
                                     </div>
                                     <div class="ui-g-12 ui-md-8">
-                                        <p:calendar value="#{staffAdditionalFormController.date}"
+                                         <p:calendar id="shiftDate"
++                                                    value="#{staffAdditionalFormController.date}"
                                                     navigator="true"
                                                     pattern="yyyy MM dd"
                                                     showIcon="true">
@@ -148,7 +149,7 @@
                                     </div>
 
                                     <div class="ui-g-12 ui-md-4">
-                                        <h:outputLabel value="From Time" />
+                                        <h:outputLabel for="fromDate" value="From Time" />
                                     </div>
                                     <div class="ui-g-12 ui-md-8">
                                         <h:panelGroup layout="block" styleClass="ez-datetime-wrap">
@@ -162,7 +163,7 @@
                                     </div>
 
                                     <div class="ui-g-12 ui-md-4">
-                                        <h:outputLabel value="To Time" />
+                                        <h:outputLabel for="toDate" value="To Time" />
                                     </div>
                                     <div class="ui-g-12 ui-md-8">
                                         <h:panelGroup layout="block" styleClass="ez-datetime-wrap">
@@ -240,36 +241,37 @@
 
                             <div class="ui-g">
                                 <div class="ui-g-12 ui-md-4">
-                                    <h:outputLabel value="From Date" />
+                                    <h:outputLabel for="searchFromDate" value="From Date" />
                                 </div>
                                 <div class="ui-g-12 ui-md-8">
-                                    <p:calendar value="#{staffAdditionalFormController.fromDate}"
+                                    <p:calendar id="searchFromDate"
+                                                value="#{staffAdditionalFormController.fromDate}"
                                                 pattern="yyyy MM dd HH:mm:ss"
                                                 showIcon="true" />
                                 </div>
 
                                 <div class="ui-g-12 ui-md-4">
-                                    <h:outputLabel value="To Date" />
+                                    <h:outputLabel for="searchToDate" value="To Date" />
                                 </div>
                                 <div class="ui-g-12 ui-md-8">
-                                    <p:calendar id="forDateS"
+                                    <p:calendar id="searchToDate"
                                                 value="#{staffAdditionalFormController.toDate}"
                                                 pattern="yyyy MM dd HH:mm:ss"
                                                 showIcon="true" />
                                 </div>
 
                                 <div class="ui-g-12 ui-md-4">
-                                    <h:outputLabel value="Staff" />
+                                    <h:outputLabel for="searchStaff" value="Staff" />
                                 </div>
                                 <div class="ui-g-12 ui-md-8">
-                                    <au:completeStaff value="#{staffAdditionalFormController.staff}" />
+                                    <au:completeStaff id="searchStaff" value="#{staffAdditionalFormController.staff}" />
                                 </div>
 
                                 <div class="ui-g-12 ui-md-4">
-                                    <h:outputLabel value="Approved Person" />
+                                    <h:outputLabel for="searchApprovedStaff" value="Approved Person" />
                                 </div>
                                 <div class="ui-g-12 ui-md-8">
-                                    <au:completeStaff value="#{staffAdditionalFormController.approvedStaff}" />
+                                    <au:completeStaff id="searchApprovedStaff" value="#{staffAdditionalFormController.approvedStaff}" />
                                 </div>
 
                                 <div class="ui-g-12">
