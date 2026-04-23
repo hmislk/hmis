@@ -2464,7 +2464,14 @@ public class SearchController implements Serializable {
 
     public List<SelectItem> getPharmacyAdjustmentTypeSelectItems() {
         List<SelectItem> items = new ArrayList<>();
-        List<BillTypeAtomic> types = Arrays.asList(
+        for (BillTypeAtomic type : pharmacyAdjustmentAllTypes()) {
+            items.add(new SelectItem(type, type.getLabel()));
+        }
+        return items;
+    }
+
+    private List<BillTypeAtomic> pharmacyAdjustmentAllTypes() {
+        return Arrays.asList(
                 BillTypeAtomic.PHARMACY_ADJUSTMENT,
                 BillTypeAtomic.PHARMACY_ADJUSTMENT_CANCELLED,
                 BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT,
@@ -2476,10 +2483,14 @@ public class SearchController implements Serializable {
                 BillTypeAtomic.PHARMACY_COST_RATE_ADJUSTMENT,
                 BillTypeAtomic.PHARMACY_STOCK_EXPIRY_DATE_AJUSTMENT
         );
-        for (BillTypeAtomic type : types) {
-            items.add(new SelectItem(type, type.getLabel()));
-        }
-        return items;
+    }
+
+    public void selectAllPharmacyAdjustmentTypes() {
+        selectedPharmacyAdjustmentTypes = new ArrayList<>(pharmacyAdjustmentAllTypes());
+    }
+
+    public void clearPharmacyAdjustmentTypes() {
+        selectedPharmacyAdjustmentTypes = new ArrayList<>();
     }
 
     public Date getMaxDate() {

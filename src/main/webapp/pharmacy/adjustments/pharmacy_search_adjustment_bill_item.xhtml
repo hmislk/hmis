@@ -9,128 +9,171 @@
     <h:body>
         <ui:composition template="/pharmacy/adjustments/pharmacy_adjustment_index.xhtml">
             <ui:define name="subcontent">
-                <h:form>
+                <h:form id="frmSearch">
                     <p:panel>
-                        <f:facet name="header" >
-                            <h:outputText styleClass="fa-solid fa-file-invoice"/>
-                            <h:outputLabel value="Search Pharmacy Bill Item " class="mx-2"/>    
-                        </f:facet>
-                        <div class="row">
-                            <div class="col-md-2">
-                                <h:outputLabel value="From Date"/>
-                                <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
-                                            class="w-100" inputStyleClass="w-100">      
-                                </p:calendar>
-                                <h:outputLabel value="To Date"/>
-                                <p:calendar id="toDate" value="#{searchController.toDate}" 
-                                            navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
-                                            class="w-100" inputStyleClass="w-100">                                                                              
-                                </p:calendar>
-                                <p:commandButton id="btnSearch" ajax="false" value="Search" 
-                                                 class="w-100 ui-button-warning my-1" 
-                                                 icon="fas fa-search" 
-                                                 action="#{searchController.createPharmacyAdjustmentBillItemTable()}"/>
-                                <p:spacer height="10"/>
-
-                                <h:outputLabel value="Bill No"/>
-                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" class="w-100"/>
-                                <h:outputLabel value="Item Name"/>  
-                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.itemName}" class="w-100"/>
-                                <h:outputLabel  value="Item Code"/>
-                                <h:outputLabel/><h:outputLabel/>
-
-                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.code}" class="w-100"/>
-                                <h:outputLabel value="Adjustment Type"/>
-                                <p:selectManyCheckbox value="#{searchController.selectedPharmacyAdjustmentTypes}" layout="grid" columns="1">
-                                    <f:selectItems value="#{searchController.pharmacyAdjustmentTypeSelectItems}"/>
-                                </p:selectManyCheckbox>
+                        <f:facet name="header">
+                            <div class="d-flex align-items-center justify-content-between w-100">
+                                <div>
+                                    <h:outputText styleClass="fas fa-list-alt me-2"/>
+                                    <h:outputText value="Search Pharmacy Adjustment Bill Items" styleClass="fw-bold"/>
+                                </div>
+                                <div>
+                                    <p:commandButton id="btnSearch"
+                                                     ajax="false"
+                                                     value="Search"
+                                                     icon="fas fa-search"
+                                                     styleClass="ui-button-warning me-2"
+                                                     action="#{searchController.createPharmacyAdjustmentBillItemTable()}"/>
+                                    <p:commandButton id="btnDownload"
+                                                     ajax="false"
+                                                     value="Download Excel"
+                                                     icon="fas fa-file-excel"
+                                                     styleClass="ui-button-success"
+                                                     title="Download results as Excel spreadsheet">
+                                        <p:dataExporter type="xlsx" target="tblBills" fileName="Pharmacy_Adjustment_Bill_Items"/>
+                                    </p:commandButton>
+                                </div>
                             </div>
-                            <div class="col-md-10">
+                        </f:facet>
 
-                                <p:dataTable
-                                    rowIndexVar="i"
-                                    id="tblBills"
-                                    value="#{searchController.pharmacyAdjustmentBillItemDtos}"
-                                    var="pi"
-                                    paginator="true"
-                                    rows="15"
-                                    paginatorPosition="bottom"
-                                    paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                    rowsPerPageTemplate="10,15,25"
-                                    >
+                        <div class="row mt-2">
+                            <!-- Filter Column -->
+                            <div class="col-md-3">
+                                <p:panel header="Filters" styleClass="h-100">
+                                    <div class="mb-2">
+                                        <p:outputLabel for="fromDate" value="From Date"/>
+                                        <p:calendar id="fromDate"
+                                                    value="#{searchController.fromDate}"
+                                                    navigator="false"
+                                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                                    styleClass="w-100"
+                                                    inputStyleClass="w-100"/>
+                                    </div>
+                                    <div class="mb-2">
+                                        <p:outputLabel for="toDate" value="To Date"/>
+                                        <p:calendar id="toDate"
+                                                    value="#{searchController.toDate}"
+                                                    navigator="false"
+                                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                                    styleClass="w-100"
+                                                    inputStyleClass="w-100"/>
+                                    </div>
+                                    <div class="mb-2">
+                                        <p:outputLabel for="billNo" value="Bill No"/>
+                                        <p:inputText id="billNo"
+                                                     autocomplete="off"
+                                                     value="#{searchController.searchKeyword.billNo}"
+                                                     styleClass="w-100"/>
+                                    </div>
+                                    <div class="mb-2">
+                                        <p:outputLabel for="itemName" value="Item Name"/>
+                                        <p:inputText id="itemName"
+                                                     autocomplete="off"
+                                                     value="#{searchController.searchKeyword.itemName}"
+                                                     styleClass="w-100"/>
+                                    </div>
+                                    <div class="mb-2">
+                                        <p:outputLabel for="itemCode" value="Item Code"/>
+                                        <p:inputText id="itemCode"
+                                                     autocomplete="off"
+                                                     value="#{searchController.searchKeyword.code}"
+                                                     styleClass="w-100"/>
+                                    </div>
+                                    <div class="mb-1">
+                                        <p:outputLabel value="Adjustment Type"/>
+                                        <div class="mt-1">
+                                            <p:commandButton value="Select All"
+                                                             icon="fas fa-check-double"
+                                                             styleClass="ui-button-secondary ui-button-sm me-1"
+                                                             action="#{searchController.selectAllPharmacyAdjustmentTypes()}"
+                                                             update="adjustmentTypeFilter"
+                                                             process="@this"/>
+                                            <p:commandButton value="Clear"
+                                                             icon="fas fa-times"
+                                                             styleClass="ui-button-secondary ui-button-sm"
+                                                             action="#{searchController.clearPharmacyAdjustmentTypes()}"
+                                                             update="adjustmentTypeFilter"
+                                                             process="@this"/>
+                                        </div>
+                                        <p:selectManyCheckbox id="adjustmentTypeFilter"
+                                                              value="#{searchController.selectedPharmacyAdjustmentTypes}"
+                                                              layout="grid"
+                                                              columns="1"
+                                                              styleClass="mt-1">
+                                            <f:selectItems value="#{searchController.pharmacyAdjustmentTypeSelectItems}"/>
+                                        </p:selectManyCheckbox>
+                                    </div>
+                                </p:panel>
+                            </div>
 
-                                    <p:column headerText="Bill No" styleClass="alignTop">
-                                        <h:outputLabel value="#{pi.billDeptId}"/>
+                            <!-- Results Column -->
+                            <div class="col-md-9">
+                                <p:dataTable id="tblBills"
+                                             rowIndexVar="i"
+                                             value="#{searchController.pharmacyAdjustmentBillItemDtos}"
+                                             var="pi"
+                                             paginator="true"
+                                             rows="15"
+                                             paginatorPosition="bottom"
+                                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                             rowsPerPageTemplate="10,15,25,50"
+                                             emptyMessage="No records found. Select filters and click Search."
+                                             styleClass="w-100">
+
+                                    <p:column headerText="#" style="width:40px; text-align:center;">
+                                        <h:outputText value="#{i + 1}"/>
                                     </p:column>
 
-                                    <p:column>
-                                        <f:facet name="header">
-                                            <h:outputLabel value="Code"/>
-                                        </f:facet>
-                                        <h:outputLabel value="#{pi.itemCode}" style="width: 100px!important;"/>
+                                    <p:column headerText="Bill No" styleClass="alignTop">
+                                        <h:outputText value="#{pi.billDeptId}"/>
+                                    </p:column>
+
+                                    <p:column headerText="Code" styleClass="alignTop">
+                                        <h:outputText value="#{pi.itemCode}"/>
                                     </p:column>
 
                                     <p:column headerText="Item Name" styleClass="alignTop">
-                                        <h:outputLabel value="#{pi.itemName}"/>
+                                        <h:outputText value="#{pi.itemName}"/>
                                     </p:column>
 
-                                    <p:column headerText="Billed At">
-                                        <h:outputLabel value="#{pi.billCreatedAt}">
-                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                        </h:outputLabel>
-                                        <br/>
-                                        <h:panelGroup rendered="#{pi.referenceBillCancelled}">
-                                            <h:outputLabel style="color: red;" value="Cancelled at "/>
-                                            <h:outputLabel style="color: red;" value="#{pi.cancelledAt}">
-                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                            </h:outputLabel>
-                                        </h:panelGroup>
-                                        <h:panelGroup rendered="#{pi.referenceBillRefunded}">
-                                            <h:outputLabel style="color: red;" value="Refunded at "/>
-                                            <h:outputLabel style="color: red;" value="#{pi.refundedAt}">
-                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                            </h:outputLabel>
-                                        </h:panelGroup>
-                                    </p:column>
-
-                                    <p:column headerText="Adjustment Type">
+                                    <p:column headerText="Adjustment Type" styleClass="alignTop">
                                         <h:outputText value="#{pi.billTypeAtomic.label}"/>
                                     </p:column>
 
-                                    <p:column>
-                                        <p:commandButton
-                                            id="btnViewReceipt"
-                                            ajax="false"
-                                            action="#{billSearch.navigateToViewBillByAtomicBillTypeByBillId(pi.billId)}"
-                                            value="View Bill">
-                                        </p:commandButton>
+                                    <p:column headerText="Billed At" styleClass="alignTop">
+                                        <h:outputText value="#{pi.billCreatedAt}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                        </h:outputText>
+                                        <h:panelGroup rendered="#{pi.referenceBillCancelled}">
+                                            <br/>
+                                            <h:outputText style="color:red;" value="Cancelled: "/>
+                                            <h:outputText style="color:red;" value="#{pi.cancelledAt}">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                            </h:outputText>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{pi.referenceBillRefunded}">
+                                            <br/>
+                                            <h:outputText style="color:red;" value="Refunded: "/>
+                                            <h:outputText style="color:red;" value="#{pi.refundedAt}">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                            </h:outputText>
+                                        </h:panelGroup>
                                     </p:column>
 
-                                    <!--                                    <p:column headerText="Befory Purchase Rate" >
-                                                                            <h:outputLabel value="#{pi.pharmaceuticalBillItem.purchaseRate}" >
-                                                                            </h:outputLabel>
-                                                                        </p:column> 
-                                    
-                                                                        <p:column headerText="After Purchase Rate" >
-                                                                            <h:outputLabel value="#{pi.pharmaceuticalBillItem.stock.itemBatch.purcahseRate}" >
-                                                                            </h:outputLabel>
-                                                                        </p:column>
-                                    
-                                                                        <p:column headerText="Befory Sale Rate" >
-                                                                            <h:outputLabel value="#{pi.pharmaceuticalBillItem.retailRate}" >
-                                                                            </h:outputLabel>
-                                                                        </p:column> 
-                                    
-                                                                        <p:column headerText="After Sale Rate" >
-                                                                            <h:outputLabel value="#{pi.pharmaceuticalBillItem.stock.itemBatch.retailsaleRate}" >
-                                                                            </h:outputLabel>
-                                                                        </p:column>-->
+                                    <p:column headerText="Action" style="width:100px; text-align:center;">
+                                        <p:commandButton id="btnViewReceipt"
+                                                         ajax="false"
+                                                         value="View"
+                                                         icon="fas fa-eye"
+                                                         styleClass="ui-button-info ui-button-sm"
+                                                         action="#{billSearch.navigateToViewBillByAtomicBillTypeByBillId(pi.billId)}"
+                                                         title="View this adjustment bill"/>
+                                    </p:column>
 
                                 </p:dataTable>
-
                             </div>
                         </div>
-                    </p:panel>    
+                    </p:panel>
                 </h:form>
             </ui:define>
         </ui:composition>
