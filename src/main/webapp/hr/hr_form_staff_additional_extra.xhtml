@@ -71,10 +71,10 @@
                                     </div>
 
                                     <div class="ui-g-12 ui-md-4">
-                                        <h:outputLabel value="Staff" />
+                                        <h:outputLabel for="staff" value="Staff" />
                                     </div>
                                     <div class="ui-g-12 ui-md-8">
-                                        <au:completeStaff value="#{staffAdditionalFormController.currentAdditionalForm.staff}" />
+                                        <au:completeStaff id="staff" value="#{staffAdditionalFormController.currentAdditionalForm.staff}" />
                                     </div>
                                 </div>
                             </p:fieldset>
@@ -181,10 +181,10 @@
                             <p:fieldset legend="Approval &amp; Notes" toggleable="true" styleClass="ui-fluid">
                                 <div class="ui-g">
                                     <div class="ui-g-12 ui-md-4">
-                                        <h:outputLabel value="Approved Staff" />
+                                        <h:outputLabel for="approvedStaff" value="Approved Staff" />
                                     </div>
                                     <div class="ui-g-12 ui-md-8">
-                                        <au:completeStaff value="#{staffAdditionalFormController.currentAdditionalForm.approvedStaff}" />
+                                        <au:completeStaff id="approvedStaff" value="#{staffAdditionalFormController.currentAdditionalForm.approvedStaff}" />
                                     </div>
 
                                     <div class="ui-g-12 ui-md-4">
