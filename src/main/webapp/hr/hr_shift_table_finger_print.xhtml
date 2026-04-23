@@ -303,7 +303,9 @@
                                 <h:panelGroup rendered="#{sts.startRecord ne null}">
                                     <p:calendar value="#{sts.startRecord.recordTimeStamp}"
                                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}">
-                                        <p:ajax event="click" process="@this" update="@this"
+                                        <p:ajax event="dateSelect" process="@this" update="@this"
+                                                listener="#{shiftFingerPrintAnalysisController.listenStart(sts)}"/>
+                                        <p:ajax event="change" process="@this" update="@this"
                                                 listener="#{shiftFingerPrintAnalysisController.listenStart(sts)}"/>
                                     </p:calendar>
                                     <h:panelGroup rendered="#{sts.startRecord.allowedExtraDuty}">
@@ -320,7 +322,9 @@
                                 <h:panelGroup rendered="#{sts.endRecord ne null}">
                                     <p:calendar value="#{sts.endRecord.recordTimeStamp}"
                                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}">
-                                        <p:ajax event="click" process="@this" update="@this"
+                                        <p:ajax event="dateSelect" process="@this" update="@this"
+                                                listener="#{shiftFingerPrintAnalysisController.listenEnd(sts)}"/>
+                                        <p:ajax event="change" process="@this" update="@this"
                                                 listener="#{shiftFingerPrintAnalysisController.listenEnd(sts)}"/>
                                     </p:calendar>
                                     <h:panelGroup rendered="#{sts.endRecord.allowedExtraDuty}">
