@@ -1575,11 +1575,16 @@
                         </p:tab>
 
                         <p:tab title="Status" >
-                            <p:outputLabel value="Mark As Present / Absent"/>
-                            <p:selectBooleanButton onLabel="Absent" offLabel="Absent" disabled="#{bookingControllerViewScopeMonth.selectedBillSession.bill.refunded==true
-                                                                                                  or bookingControllerViewScopeMonth.selectedBillSession.bill.cancelled==true}"  value="#{bookingControllerViewScopeMonth.selectedBillSession.absent}" >
-                                <p:ajax process="@this" listener="#{bookingControllerViewScopeMonth.updateSelectedBillSessionPatient()}" ></p:ajax>
-                            </p:selectBooleanButton>
+                            
+                            <div class="d-flex gap-2 align-items-center">
+                               <p:outputLabel value="Mark As Present / Absent"/>
+                                <p:selectBooleanButton onLabel="Absent" offLabel="Absent" disabled="#{bookingControllerViewScopeMonth.selectedBillSession.bill.refunded==true
+                                                                                                    or bookingControllerViewScopeMonth.selectedBillSession.bill.cancelled==true}"  value="#{bookingControllerViewScopeMonth.selectedBillSession.absent}" >
+                                    <p:ajax process="@this" listener="#{bookingControllerViewScopeMonth.updateSelectedBillSessionPatient()}" ></p:ajax>
+                                </p:selectBooleanButton>
+
+                                <p:outputLabel class="mx-3" value="Can't change the status. Staff pay already done for this appoinment." rendered="#{bookingControllerViewScopeMonth.checkPaid()}" style="color: red; font-weight: bold"/>
+                            </div> 
 
                         </p:tab>
 
@@ -1726,33 +1731,36 @@
 
 
                         <p:tab title="Views">
-                            <h:panelGrid columns="2">
-                                <p:panel header="Selected Session">
-                                    <h:panelGrid columns="1">
-                                        <p:commandButton value="Nurse View " 
-                                                         action="#{bookingControllerViewScopeMonth.navigateToNurseView}" 
-                                                         onclick="onSubmitButton();" >                                       
-                                        </p:commandButton>
-                                        <p:commandButton value="Doctor View " action="#{bookingControllerViewScopeMonth.navigateToDoctorView}" ajax="false" onclick="onSubmitButton();">                                        
-                                        </p:commandButton>
-                                        <p:commandButton value="Session View " action="#{bookingControllerViewScopeMonth.navigateToSessionView}" ajax="false" onclick="onSubmitButton();">                                        
-                                        </p:commandButton>
-                                        <p:commandButton value="Phone View " action="#{bookingControllerViewScopeMonth.navigateToPhoneView}" ajax="false" onclick="onSubmitButton();">                                        
-                                        </p:commandButton>
-                                        <p:commandButton value="User View " action="#{bookingControllerViewScopeMonth.navigateToUserView}" ajax="false" onclick="onSubmitButton();">                                        
-                                        </p:commandButton>
-                                    </h:panelGrid>
-
-                                </p:panel>
-                                <p:panel header="Today's">
-                                    <h:panelGrid columns="1">
-                                        <p:commandButton value="All Patient" action="channel_patient_view_today" ajax="false" onclick="onSubmitButton();">                                        
-                                        </p:commandButton>
-                                        <p:commandButton value="All Doctor" action="channel_doctor_view_today" ajax="false" onclick="onSubmitButton();">                                        
-                                        </p:commandButton>
-                                    </h:panelGrid>                                    
-                                </p:panel>
-                            </h:panelGrid>
+                            <div class="row">
+                                <div class="col-2">
+                                    <p:panel header="Selected Session">
+                                        <div class="d-flex flex-column gap-2">
+                                            <p:commandButton value="Nurse View " 
+                                                            action="#{bookingControllerViewScopeMonth.navigateToNurseView}" 
+                                                            onclick="onSubmitButton();" >                                       
+                                            </p:commandButton>
+                                            <p:commandButton value="Doctor View " action="#{bookingControllerViewScopeMonth.navigateToDoctorView}" ajax="false" onclick="onSubmitButton();">                                        
+                                            </p:commandButton>
+                                            <p:commandButton value="Session View " action="#{bookingControllerViewScopeMonth.navigateToSessionView}" ajax="false" onclick="onSubmitButton();">                                        
+                                            </p:commandButton>
+                                            <p:commandButton value="Phone View " action="#{bookingControllerViewScopeMonth.navigateToPhoneView}" ajax="false" onclick="onSubmitButton();">                                        
+                                            </p:commandButton>
+                                            <p:commandButton value="User View " action="#{bookingControllerViewScopeMonth.navigateToUserView}" ajax="false" onclick="onSubmitButton();">                                        
+                                            </p:commandButton>
+                                        </div>
+                                    </p:panel>
+                                </div>
+                                <div class="col-2">
+                                    <p:panel header="Today's">
+                                        <div class="d-flex flex-column gap-2">
+                                            <p:commandButton value="All Patient" action="channel_patient_view_today" ajax="false" onclick="onSubmitButton();">                                        
+                                            </p:commandButton>
+                                            <p:commandButton value="All Doctor" action="channel_doctor_view_today" ajax="false" onclick="onSubmitButton();">                                        
+                                            </p:commandButton>
+                                        </div>
+                                    </p:panel>
+                                </div>
+                            </div>
 
                         </p:tab>
                         <p:tab title="Doctor Payment">
