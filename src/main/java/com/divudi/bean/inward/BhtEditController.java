@@ -142,6 +142,7 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
     private Speciality opdSpeciality;
     private List<EncounterCreditCompany> encounterCreditCompanys;
     EncounterCreditCompany encounterCreditCompany;
+    private EncounterCreditCompany newEncounterCreditCompany;
     private ClinicalFindingValue currentPatientAllergy;
     private List<ClinicalFindingValue> patientAllergies;
     private EncounterCreditCompany currecntEncounterCreditCompany;
@@ -221,6 +222,44 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
         hm.put("pEnc", current);
         encounterCreditCompanys = encounterCreditCompanyFacade.findByJpql(sql, hm);
 
+    }
+
+    public void addNewCreditCompany() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("No admission selected");
+            return;
+        }
+        if (newEncounterCreditCompany == null || newEncounterCreditCompany.getInstitution() == null) {
+            JsfUtil.addErrorMessage("Please select a credit company");
+            return;
+        }
+        newEncounterCreditCompany.setPatientEncounter(current);
+        newEncounterCreditCompany.setCreatedAt(new Date());
+        newEncounterCreditCompany.setCreater(sessionController.getLoggedUser());
+        newEncounterCreditCompany.setRetired(false);
+        encounterCreditCompanyFacade.create(newEncounterCreditCompany);
+        encounterCreditCompanys.add(newEncounterCreditCompany);
+        newEncounterCreditCompany = new EncounterCreditCompany();
+        JsfUtil.addSuccessMessage("Credit company added");
+    }
+
+    public void saveEncounterCreditCompany(EncounterCreditCompany ecc) {
+        if (ecc == null) {
+            return;
+        }
+        encounterCreditCompanyFacade.edit(ecc);
+        JsfUtil.addSuccessMessage("Saved");
+    }
+
+    public EncounterCreditCompany getNewEncounterCreditCompany() {
+        if (newEncounterCreditCompany == null) {
+            newEncounterCreditCompany = new EncounterCreditCompany();
+        }
+        return newEncounterCreditCompany;
+    }
+
+    public void setNewEncounterCreditCompany(EncounterCreditCompany newEncounterCreditCompany) {
+        this.newEncounterCreditCompany = newEncounterCreditCompany;
     }
 
     public void resetSpecialities() {

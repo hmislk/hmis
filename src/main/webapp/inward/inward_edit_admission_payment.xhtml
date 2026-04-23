@@ -88,62 +88,10 @@
 
                             <p:panel class="mb-3">
                                 <f:facet name="header">
-                                    <div class="d-flex justify-content-between align-items-center w-100">
-                                        <div>
-                                            <h:outputText styleClass="fa-solid fa-building" />
-                                            <h:outputLabel value="Credit Companies" class="mx-3" />
-                                        </div>
-                                        <p:commandButton
-                                            value="Load Patient's Credit Companies"
-                                            id="btnLoad"
-                                            icon="fas fa-sync"
-                                            class="ui-button-warning"
-                                            action="#{bhtEditController.fillCreditCompaniesByPatient()}"
-                                            process="btnLoad"
-                                            update="tblCom">
-                                        </p:commandButton>
-                                    </div>
+                                    <h:outputText styleClass="fa-solid fa-building" />
+                                    <h:outputLabel value="Credit Companies" class="mx-3" />
                                 </f:facet>
-
-                                <p:dataTable
-                                    id="tblCom"
-                                    value="#{bhtEditController.encounterCreditCompanys}"
-                                    var="ecc"
-                                    rowIndexVar="i"
-                                    emptyMessage="No credit companies. Click 'Load Patient's Credit Companies' to populate.">
-                                    <p:column headerText="#" width="2em;">
-                                        <h:outputText value="#{i+1}" />
-                                    </p:column>
-                                    <p:column headerText="Credit Company">
-                                        <h:outputText value="#{ecc.institution.name}" />
-                                    </p:column>
-                                    <p:column headerText="Action" width="23em;">
-                                        <div class="d-flex gap-2">
-                                            <p:commandButton
-                                                value="Select"
-                                                icon="fas fa-check-circle"
-                                                ajax="false"
-                                                class="ui-button-success"
-                                                action="#{bhtEditController.setSelectedCompany(ecc)}">
-                                            </p:commandButton>
-                                            <p:commandButton
-                                                ajax="false"
-                                                value="Send Mail"
-                                                title="Send confirmation mail to Company"
-                                                action="#{bhtEditController.navigateToSendMailToCompany(ecc)}"
-                                                icon="fa fa-paper-plane"
-                                                class="ui-button-secondary">
-                                            </p:commandButton>
-                                            <p:commandButton
-                                                ajax="false"
-                                                value="Remove"
-                                                icon="fas fa-trash"
-                                                action="#{bhtEditController.removeCreditCompany(ecc)}"
-                                                styleClass="ui-button-danger">
-                                            </p:commandButton>
-                                        </div>
-                                    </p:column>
-                                </p:dataTable>
+                                <credit:creditCompanyListEdit controller="#{bhtEditController}" />
                             </p:panel>
                         </div>
                     </div>
