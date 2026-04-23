@@ -3658,6 +3658,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         selectedBillSession.getBillItem().getBill().getBillItems().remove(selectedBillItem);
         // calculateBillTotalsFromBillFees(selectedBillSession.getBillItem().getBill());
         calculateSelectedBillSessionTotalForSettlingByBillFees();
+        getBillFacade().edit(selectedBillSession.getBillItem().getBill());
         calculateCashBalance();
     }
 
@@ -3728,6 +3729,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         // calculateBillTotalsFromBillFees(selectedBillSession.getBillItem().getBill());
 //        fillBaseFees();  
         calculateSelectedBillSessionTotalForSettlingByBillFees();
+        getBillFacade().edit(selectedBillSession.getBillItem().getBill());
         calculateCashBalance();
 
         itemToAddToBooking = null;

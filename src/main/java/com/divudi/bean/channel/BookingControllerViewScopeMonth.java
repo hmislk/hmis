@@ -2531,6 +2531,7 @@ public class BookingControllerViewScopeMonth implements Serializable {
         selectedBillSession.getBillItem().getBill().getBillItems().remove(selectedBillItem);
         // calculateBillTotalsFromBillFees(selectedBillSession.getBillItem().getBill());
         calculateSelectedBillSessionTotalForSettlingByBillFees();
+        getBillFacade().edit(selectedBillSession.getBillItem().getBill());
     }
 
     public void addItemToBookingAtSettling() {
@@ -2598,6 +2599,7 @@ public class BookingControllerViewScopeMonth implements Serializable {
 
         // calculateBillTotalsFromBillFees(selectedBillSession.getBillItem().getBill());
         calculateSelectedBillSessionTotalForSettlingByBillFees();
+        getBillFacade().edit(selectedBillSession.getBillItem().getBill());
         itemToAddToBooking = null;
 //        fillFees();
     }
