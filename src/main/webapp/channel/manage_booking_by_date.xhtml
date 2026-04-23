@@ -496,7 +496,7 @@
                                                     <p:ajax process="@this" 
                                                             update="gdManageBookings :#{p:resolveFirstComponentWithId('totalsPanel',view).clientId} paymentDetails"
                                                             event="change"
-                                                            listener="#{bookingControllerViewScope.calculateSelectedBillSessionTotalForSettling()}"/>
+                                                            listener="#{bookingControllerViewScope.calculateSelectedBillSessionTotalForSettlingByBillFees()}"/>
                                                 </p:selectOneMenu>
 
                                                 <p:outputLabel value="Discount Scheme"/>
@@ -515,7 +515,7 @@
                                                         process="@this "
                                                         update="gdManageBookings :#{p:resolveFirstComponentWithId('totalsPanel',view).clientId} paymentDetails lstItems"
                                                         event="change"
-                                                        listener="#{bookingControllerViewScope.calculateSelectedBillSessionTotalForSettling()}"/>
+                                                        listener="#{bookingControllerViewScope.calculateSelectedBillSessionTotalForSettlingByBillFees()}"/>
                                                 </p:selectOneMenu>
 
                                                 <p:outputLabel value="Citizenship" ></p:outputLabel>
@@ -807,7 +807,7 @@
                                                 icon="fas fa-plus"
                                                 class="ui-button-success"
                                                 action="#{bookingControllerViewScope.addItemToBookingAtSettling()}"
-                                                update="lstItems tblBillItemsForAddingNewItem tblBillFeesForAddingNewItem totalsPanel gdManageBookings balance :#{p:resolveFirstComponentWithId('balance',view).clientId} "
+                                                update="paymentDetails lstItems tblBillItemsForAddingNewItem tblBillFeesForAddingNewItem totalsPanel gdManageBookings balance :#{p:resolveFirstComponentWithId('balance',view).clientId} "
                                                 ></p:commandButton>
 
                                             <p:dataTable id="tblBillItemsForAddingNewItem" 
@@ -822,10 +822,11 @@
                                                 <p:column >
                                                     <p:commandButton 
                                                         id="btnRemove"
-                                                        ajax="false"
                                                         icon="fas fa-trash"
                                                         disabled="#{bookingControllerViewScope.checkItemIsSessionInstance(bi)}"
                                                         class="ui-button-danger"
+                                                        update="@form"
+                                                        process="@this"
                                                         action="#{bookingControllerViewScope.removeAddedAditionalItem()}"
                                                         >
                                                         <f:setPropertyActionListener target="#{bookingControllerViewScope.selectedBillItem}" value="#{bi}"/>
