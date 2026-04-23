@@ -318,7 +318,6 @@ public class RequestController implements Serializable {
             default:
                 navigation = "";
         }
-
         return navigation;
     }
 
