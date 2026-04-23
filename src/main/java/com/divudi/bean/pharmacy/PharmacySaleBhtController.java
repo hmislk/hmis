@@ -94,7 +94,6 @@ import java.math.BigDecimal;
 import java.util.Optional;
 import org.primefaces.event.RowEditEvent;
 import org.primefaces.event.SelectEvent;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 @Named
@@ -252,6 +251,10 @@ public class PharmacySaleBhtController implements Serializable {
     private ConcurrentHashMap<String, List<Long>> searchMetadataCache = new ConcurrentHashMap<>();
     private ConcurrentHashMap<String, Long> cacheTimestamps = new ConcurrentHashMap<>();
     private static final long CACHE_TTL_MS = 30000; // 30 seconds
+
+    // Cached price-matrix config flag (resolved lazily, cleared on resetAll)
+    private Boolean cachedMatrixByAdmissionDepartment;
+
     private Item item;
     private PatientEncounter patientEncounter;
     int activeIndex;
@@ -684,6 +687,7 @@ public class PharmacySaleBhtController implements Serializable {
         replaceableStocks = new ArrayList<>();
         itemsWithoutStocks = new ArrayList<>();
         errorMessage = "";
+        cachedMatrixByAdmissionDepartment = null;
     }
 
     public void selectReplaceableStocksNew() {
@@ -1666,7 +1670,7 @@ public class PharmacySaleBhtController implements Serializable {
     }
 
     public void addBillItem() {
-        long t0 = System.currentTimeMillis();
+        long t0 = LOGGER.isLoggable(Level.FINE) ? System.currentTimeMillis() : 0L;
 
         if (getPreBill() == null) {
             JsfUtil.addErrorMessage("No Prebill");
@@ -1699,14 +1703,9 @@ public class PharmacySaleBhtController implements Serializable {
             return;
         }
 
-        long t1 = System.currentTimeMillis();
-        System.out.println("[addBillItem] validation: " + (t1 - t0) + "ms");
-
         // Stock and ItemBatch proxies for FK persistence; Item already loaded in handleStockSelect
         Stock stockRef = getStockFacade().getReference(selectedStockId);
         ItemBatch itemBatchRef = getItemBatchFacade().getReference(selectedStockDto.getItemBatchId());
-        long t2 = System.currentTimeMillis();
-        System.out.println("[addBillItem] getReferences: " + (t2 - t1) + "ms");
 
         billItem.getPharmaceuticalBillItem().setStock(stockRef);
         billItem.getPharmaceuticalBillItem().setItemBatch(itemBatchRef);
@@ -1740,8 +1739,6 @@ public class PharmacySaleBhtController implements Serializable {
         billItem.getPharmaceuticalBillItem().setQty(0 - Math.abs(qty));
 
         calculateRates(billItem, selectedStockDto.getRetailRate());
-        long t3 = System.currentTimeMillis();
-        System.out.println("[addBillItem] calculateRates: " + (t3 - t2) + "ms");
 
         billItem.setInwardChargeType(InwardChargeType.Medicine);
         billItem.setBill(getPreBill());
@@ -1749,9 +1746,11 @@ public class PharmacySaleBhtController implements Serializable {
         getPreBill().getBillItems().add(billItem);
 
         calTotal();
-        long t4 = System.currentTimeMillis();
-        System.out.println("[addBillItem] calTotal: " + (t4 - t3) + "ms");
-        System.out.println("[addBillItem] TOTAL: " + (t4 - t0) + "ms");
+
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.log(Level.FINE, "[addBillItem] TOTAL: {0}ms",
+                    (System.currentTimeMillis() - t0));
+        }
 
         clearBillItem();
         errorMessage = "";
@@ -2002,16 +2001,47 @@ public class PharmacySaleBhtController implements Serializable {
 
     }
 
-    public void calculateRates(BillItem bi) {
-        long calcStartTime = System.currentTimeMillis();
+    private Department resolveMatrixDepartment() {
+        // Read config once per prebill lifecycle (cleared on resetAll) rather than on every rate calc
+        if (cachedMatrixByAdmissionDepartment == null) {
+            cachedMatrixByAdmissionDepartment = configOptionApplicationController.getBooleanValueByKey(
+                    "Price Matrix is calculated from Inpatient Department for "
+                    + sessionController.getDepartment().getName(), true);
+        }
 
-        if (bi == null
-                || bi.getPharmaceuticalBillItem() == null
-                || bi.getPharmaceuticalBillItem().getStock() == null
-                || bi.getPharmaceuticalBillItem().getStock().getItemBatch() == null
-                || bi.getItem() == null) {
+        if (cachedMatrixByAdmissionDepartment) {
+            if (getPatientEncounter() == null) {
+                return getSessionController().getDepartment();
+            }
+            if (getPatientEncounter().getCurrentPatientRoom() == null) {
+                return getPatientEncounter().getDepartment();
+            }
+            if (getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge() != null) {
+                return getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment();
+            }
+            return null;
+        }
+        return getSessionController().getDepartment();
+    }
+
+    public void calculateRates(BillItem bi) {
+        if (bi == null || bi.getPharmaceuticalBillItem() == null || bi.getItem() == null) {
             return;
         }
+
+        if (selectedStockDto != null
+                && bi.getPharmaceuticalBillItem().getStock() != null
+                && Objects.equals(selectedStockDto.getId(), bi.getPharmaceuticalBillItem().getStock().getId())) {
+            calculateRates(bi, selectedStockDto.getRetailRate());
+            return;
+        }
+
+        if (bi.getPharmaceuticalBillItem().getStock() == null
+                || bi.getPharmaceuticalBillItem().getStock().getItemBatch() == null) {
+            return;
+        }
+
+        long calcStartTime = LOGGER.isLoggable(Level.FINE) ? System.currentTimeMillis() : 0L;
 
         double originalRate;
         double estimatedValueBeforeAddingMarginToCalculateMatrix;
@@ -2022,25 +2052,7 @@ public class PharmacySaleBhtController implements Serializable {
         double grossValue;
         double netValue;
 
-        Department matrixDept = null;
-        boolean matrixByAdmissionDepartment;
-        boolean matrixByIssuingDepartment;
-        long t1 = System.currentTimeMillis();
-        matrixByAdmissionDepartment = configOptionApplicationController.getBooleanValueByKey("Price Matrix is calculated from Inpatient Department for " + sessionController.getDepartment().getName(), true);
-        matrixByIssuingDepartment = configOptionApplicationController.getBooleanValueByKey("Price Matrix is calculated from Issuing Department for " + sessionController.getDepartment().getName(), true);
-        System.out.println("[calculateRates] configOptions: " + (System.currentTimeMillis() - t1) + "ms");
-
-        if (matrixByAdmissionDepartment) {
-            if (getPatientEncounter() == null) {
-                matrixDept = getSessionController().getDepartment();
-            } else if (getPatientEncounter().getCurrentPatientRoom() == null) {
-                matrixDept = getPatientEncounter().getDepartment();
-            } else if (getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge() != null) {
-                matrixDept = getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment();
-            }
-        } else {
-            matrixDept = getSessionController().getDepartment();
-        }
+        Department matrixDept = resolveMatrixDepartment();
 
         quantity = bi.getQty();
         originalRate = bi.getPharmaceuticalBillItem().getStock().getItemBatch().getRetailsaleRate();
@@ -2051,7 +2063,6 @@ public class PharmacySaleBhtController implements Serializable {
             paymentMethod = getPatientEncounter().getPaymentMethod();
         }
 
-        long t2 = System.currentTimeMillis();
         PriceMatrix priceMatrix = null;
         if (bi.getItem() != null) {
             priceMatrix = getPriceMatrixController().fetchInwardMargin(
@@ -2061,7 +2072,6 @@ public class PharmacySaleBhtController implements Serializable {
                     paymentMethod
             );
         }
-        System.out.println("[calculateRates] fetchInwardMargin: " + (System.currentTimeMillis() - t2) + "ms");
 
         if (priceMatrix != null) {
             marginPercentage = priceMatrix.getMargin() / 100;
@@ -2083,48 +2093,33 @@ public class PharmacySaleBhtController implements Serializable {
         bi.setAdjustedValue(netValue);
         bi.setDiscount(0);
 
-        System.out.println("[calculateRates] TOTAL: " + (System.currentTimeMillis() - calcStartTime) + "ms");
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.log(Level.FINE, "[calculateRates] TOTAL: {0}ms",
+                    (System.currentTimeMillis() - calcStartTime));
+        }
     }
 
     /**
      * Rate-aware overload: accepts retailRate from DTO to avoid loading the Stock/ItemBatch entity.
      */
     public void calculateRates(BillItem bi, double retailRate) {
-        long calcStartTime = System.currentTimeMillis();
-
         if (bi == null || bi.getPharmaceuticalBillItem() == null) {
             return;
         }
 
-        Department matrixDept = null;
-        boolean matrixByAdmissionDepartment = configOptionApplicationController.getBooleanValueByKey(
-                "Price Matrix is calculated from Inpatient Department for " + sessionController.getDepartment().getName(), true);
-        boolean matrixByIssuingDepartment = configOptionApplicationController.getBooleanValueByKey(
-                "Price Matrix is calculated from Issuing Department for " + sessionController.getDepartment().getName(), true);
+        long calcStartTime = LOGGER.isLoggable(Level.FINE) ? System.currentTimeMillis() : 0L;
 
-        if (matrixByAdmissionDepartment) {
-            if (getPatientEncounter() == null) {
-                matrixDept = getSessionController().getDepartment();
-            } else if (getPatientEncounter().getCurrentPatientRoom() == null) {
-                matrixDept = getPatientEncounter().getDepartment();
-            } else if (getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge() != null) {
-                matrixDept = getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment();
-            }
-        } else {
-            matrixDept = getSessionController().getDepartment();
-        }
+        Department matrixDept = resolveMatrixDepartment();
 
         double quantity = bi.getQty();
         double estimatedValue = retailRate * quantity;
 
         PaymentMethod paymentMethod = getPatientEncounter() != null ? getPatientEncounter().getPaymentMethod() : null;
 
-        long t2 = System.currentTimeMillis();
         PriceMatrix priceMatrix = null;
         if (bi.getItem() != null) {
             priceMatrix = getPriceMatrixController().fetchInwardMargin(bi, estimatedValue, matrixDept, paymentMethod);
         }
-        System.out.println("[calculateRates] fetchInwardMargin: " + (System.currentTimeMillis() - t2) + "ms");
 
         double marginPercentage = priceMatrix != null ? priceMatrix.getMargin() / 100 : 0.0;
         double marginRate = marginPercentage * retailRate;
@@ -2140,7 +2135,10 @@ public class PharmacySaleBhtController implements Serializable {
         bi.setAdjustedValue(netValue);
         bi.setDiscount(0);
 
-        System.out.println("[calculateRates] TOTAL: " + (System.currentTimeMillis() - calcStartTime) + "ms");
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.log(Level.FINE, "[calculateRates(rate)] TOTAL: {0}ms",
+                    (System.currentTimeMillis() - calcStartTime));
+        }
     }
 
     /**

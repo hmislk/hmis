@@ -308,12 +308,6 @@
                                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
                                                     </h:outputLabel>
                                                 </p:column>
-                                                <p:ajax
-                                                    event="blur"
-                                                    listener="#{pharmacySaleBhtController.handleSelect}"
-                                                    update="txtRate txtValue"
-                                                    process="acStockWithoutTotalStock"
-                                                    />
                                             </p:autoComplete>
                                         </h:panelGroup>
 
