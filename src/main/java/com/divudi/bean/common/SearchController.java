@@ -2493,6 +2493,15 @@ public class SearchController implements Serializable {
         selectedPharmacyAdjustmentTypes = new ArrayList<>();
     }
 
+    public String navigateToPharmacyAdjustmentBillItemSearch() {
+        institution = getSessionController().getInstitution();
+        site = getSessionController().getLoggedSite();
+        department = getSessionController().getDepartment();
+        pharmacyAdjustmentBillItemDtos = null;
+        selectedPharmacyAdjustmentTypes = new ArrayList<>();
+        return "/pharmacy/adjustments/pharmacy_search_adjustment_bill_item?faces-redirect=true";
+    }
+
     public Date getMaxDate() {
         maxDate = CommonFunctions.getEndOfDay(new Date());
         return maxDate;
@@ -5421,7 +5430,10 @@ public class SearchController implements Serializable {
 
         m.put("toDate", toDate);
         m.put("fromDate", fromDate);
-        m.put("ins", getSessionController().getInstitution());
+
+        // Fall back to logged institution if none selected
+        Institution effectiveInstitution = (institution != null) ? institution : getSessionController().getInstitution();
+        m.put("ins", effectiveInstitution);
 
         // Use selected adjustment types when provided, otherwise include all adjustment types
         List<BillTypeAtomic> billTypeAtomics;
@@ -5458,6 +5470,16 @@ public class SearchController implements Serializable {
                 + " and b.institution = :ins"
                 + " and b.billTypeAtomic in :billTypeAtomics"
                 + " and b.createdAt between :fromDate and :toDate";
+
+        if (site != null) {
+            jpql += " and b.department.site = :site";
+            m.put("site", site);
+        }
+
+        if (department != null) {
+            jpql += " and b.department = :dept";
+            m.put("dept", department);
+        }
 
         if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().isEmpty()) {
             jpql += " and b.deptId like :billNo";

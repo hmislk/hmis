@@ -41,6 +41,42 @@
                             <div class="col-md-3">
                                 <p:panel header="Filters" styleClass="h-100">
                                     <div class="mb-2">
+                                        <p:outputLabel for="cmbInstitution" value="Institution"/>
+                                        <p:autoComplete id="cmbInstitution"
+                                                        styleClass="w-100"
+                                                        inputStyleClass="w-100"
+                                                        value="#{searchController.institution}"
+                                                        completeMethod="#{institutionController.completeInstitution}"
+                                                        var="ins"
+                                                        itemLabel="#{ins.name}"
+                                                        itemValue="#{ins}"
+                                                        forceSelection="true"/>
+                                    </div>
+                                    <div class="mb-2">
+                                        <p:outputLabel for="cmbSite" value="Site"/>
+                                        <p:autoComplete id="cmbSite"
+                                                        styleClass="w-100"
+                                                        inputStyleClass="w-100"
+                                                        value="#{searchController.site}"
+                                                        completeMethod="#{institutionController.completeSite}"
+                                                        var="st"
+                                                        itemLabel="#{st.name}"
+                                                        itemValue="#{st}"
+                                                        forceSelection="true"/>
+                                    </div>
+                                    <div class="mb-2">
+                                        <p:outputLabel for="cmbDepartment" value="Department"/>
+                                        <p:autoComplete id="cmbDepartment"
+                                                        styleClass="w-100"
+                                                        inputStyleClass="w-100"
+                                                        value="#{searchController.department}"
+                                                        completeMethod="#{departmentController.completeDepartments}"
+                                                        var="dep"
+                                                        itemLabel="#{dep.name}"
+                                                        itemValue="#{dep}"
+                                                        forceSelection="true"/>
+                                    </div>
+                                    <div class="mb-2">
                                         <p:outputLabel for="fromDate" value="From Date"/>
                                         <p:calendar id="fromDate"
                                                     value="#{searchController.fromDate}"
