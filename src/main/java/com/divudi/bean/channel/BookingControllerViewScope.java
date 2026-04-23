@@ -9163,6 +9163,8 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         } else {
             for (BillFee bf : billFees) {
                 feeTotalForSelectedBill += bf.getFeeGrossValue();
+                feeNetTotalForSelectedBill += bf.getFeeValue();
+                feeDiscountForSelectedBill += bf.getFeeDiscount();
             }
 
         }
@@ -9172,7 +9174,6 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         getBillSession().getBill().setDiscount(feeDiscountForSelectedBill);
         getBillSession().getBill().setTotal(feeTotalForSelectedBill);
 
-        // for paymentMethod.CARD set the value after total calculation
         if (settlePaymentMethod == PaymentMethod.Card) {
             getPaymentMethodData().getCreditCard().setTotalValue(getBillSession().getBill().getNetTotal());
         }

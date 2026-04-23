@@ -5437,6 +5437,8 @@ public class BookingControllerViewScopeMonth implements Serializable {
         } else {
             for (BillFee bf : billFees) {
                 feeTotalForSelectedBill += bf.getFeeGrossValue();
+                feeNetTotalForSelectedBill += bf.getFeeValue();
+                feeDiscountForSelectedBill += bf.getFeeDiscount();
             }
 
         }
