@@ -104,13 +104,6 @@
                         <h:outputLabel value="#{sts.shift.durationMin}"/>
                     </p:column>
 
-                    <p:column>
-                        <f:facet name="header">
-                            <h:outputLabel value="Staff Code"/>
-                        </f:facet>
-                        <h:outputLabel value="#{sts.staff.code}"/>
-                    </p:column> 
-
                     <p:column headerText="ID" styleClass="singleLine" >
                         <h:outputLabel value="#{sts.id}" />
                     </p:column>
@@ -159,7 +152,7 @@
                                 <p:selectOneMenu  value="#{sts.endRecord}">  
                                     <f:selectItem itemLabel="Select"/>
                                     <f:selectItems value="#{sts.fingerPrintRecordList}" var="i" itemLabel="#{i.timeLabel}"  itemValue="#{i}" />
-                                    <f:ajax event="change" execute="@this" render="endRc "
+                                    <f:ajax event="change" execute="@this" render="endRc"
                                             listener="#{shiftFingerPrintAnalysisController.fingerPrintSelectListenerEndRecord(sts)}"/>
                                 </p:selectOneMenu>   
                             </h:panelGroup>
