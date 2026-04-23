@@ -307,6 +307,14 @@ public class InvestigationController implements Serializable {
         
         return "/admin/lims/investigation?faces-redirect=true";
     }
+    
+    public String navigateToManageInvestigation() {
+        if(current == null){
+            JsfUtil.addErrorMessage("Not Found Investigation");
+            return "";
+        }
+        return "/admin/lims/investigation?faces-redirect=true";
+    }
 
     public String navigateToListInvestigationsForAdmin() {
         fillItems();
