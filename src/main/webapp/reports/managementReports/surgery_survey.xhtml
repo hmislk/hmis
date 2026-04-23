@@ -292,7 +292,7 @@
                                     <p:column
                                         headerText="Total"
                                         styleClass="text-center"
-                                        style="background-color: #a0a0a0; color: black; font-weight: bold; width: 80px;">
+                                        style="#{row.grandTotal ? 'font-weight:bold; background-color: #ebebef;' : ''}; color: black; font-weight: bold; width: 80px;">
 
                                         <h:outputText value="#{row.total}" />
                                     </p:column>
