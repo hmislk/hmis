@@ -119,6 +119,7 @@
                         </div>
 
                         <!-- Staff dropdown (only in SINGLE mode) -->
+                        <!-- CHANGED: itemLabel now shows name + (staffCode) -->
                         <h:panelGroup layout="block"
                                       rendered="#{shiftTableController.viewMode eq 'SINGLE'}"
                                       style="display: inline-flex; align-items: center; gap: 6px;">
@@ -132,7 +133,7 @@
                                               itemValue="#{null}" />
                                 <f:selectItems value="#{shiftTableController.rosterStaffList}"
                                                var="rs"
-                                               itemLabel="#{rs.person.name}"
+                                               itemLabel="#{shiftTableController.staffLabel(rs)}"
                                                itemValue="#{rs.id}" />
                                 <p:ajax event="change"
                                         listener="#{shiftTableController.onFilterStaffChange()}"
@@ -213,8 +214,10 @@
                                                        #{cell.understaffed ? 'background-color: #fff3cd;' : ''}">
                                                 <ui:repeat value="#{cell.assignedStaff}" var="staffMember"
                                                            varStatus="status">
-                                                    <h:outputText value="#{staffMember.person.name}"
-                                                                  style="font-size: 11px;"/>
+                                                    <!-- CHANGED: name + (staffCode) -->
+                                                    <h:outputText
+                                                        value="#{shiftTableController.staffLabel(staffMember)}"
+                                                        style="font-size: 11px;"/>
                                                     <h:panelGroup rendered="#{!status.last}"><br/></h:panelGroup>
                                                 </ui:repeat>
                                                 <h:outputText value="(need #{cell.requiredCount})"
@@ -289,8 +292,9 @@
                                                             gap: 10px; padding: 4px 0;
                                                             border-bottom: 1px dotted #eee;">
 
+                                                    <!-- CHANGED: name + (staffCode) in accordion -->
                                                     <div style="flex: 1; font-size: 13px;">
-                                                        <h:outputText value="#{assigned.person.name}" />
+                                                        <h:outputText value="#{shiftTableController.staffLabel(assigned)}" />
                                                     </div>
 
                                                     <p:selectOneMenu
@@ -366,7 +370,8 @@
 
                         <p:panel id="singleStaffTablePanel" class="m-3">
                             <f:facet name="header">
-                                <h:outputText value="Roster for: #{shiftTableController.selectedFilterStaff.person.name}" />
+                                <!-- CHANGED: header also shows staffCode -->
+                                <h:outputText value="Roster for: #{shiftTableController.staffLabel(shiftTableController.selectedFilterStaff)}" />
                                 <span style="margin-left: 12px; font-weight: normal; font-size: 12px; color: #666;">
                                     <h:outputText value="#{shiftTableController.fromDate}">
                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
@@ -495,13 +500,14 @@
                     <div style="margin-bottom: 15px;">
                         <h:outputLabel value="Select Staff: "
                                        style="display: block; margin-bottom: 4px; font-size: 12px;" />
+                        <!-- CHANGED: itemLabel shows name + (staffCode) -->
                         <p:selectOneMenu value="#{shiftTableController.staffToAddId}"
                                          style="width: 100%;"
                                          filter="true" filterMatchMode="contains">
                             <f:selectItem itemLabel="-- Select Staff --" itemValue="#{null}" />
                             <f:selectItems value="#{shiftTableController.availableStaffForAdd}"
                                            var="s"
-                                           itemLabel="#{s.person.name}"
+                                           itemLabel="#{shiftTableController.staffLabel(s)}"
                                            itemValue="#{s.id}" />
                         </p:selectOneMenu>
                     </div>

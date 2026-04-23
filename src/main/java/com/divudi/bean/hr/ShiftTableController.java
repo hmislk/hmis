@@ -554,6 +554,34 @@ public class ShiftTableController implements Serializable {
         return false;
     }
 
+    /**
+     * Safe display label: "Name (code)" with fallbacks at every level.
+     * Name fallback: "Staff #id" if person or name is null.
+     * Code fallback: code field (which auto-derives from name), then id.
+     */
+    public String staffLabel(Staff s) {
+        if (s == null) return "(unknown)";
+
+        // --- name part ---
+        String name = "";
+        if (s.getPerson() != null && s.getPerson().getName() != null
+                && !s.getPerson().getName().trim().isEmpty()) {
+            name = s.getPerson().getName().trim();
+        } else {
+            name = "Staff #" + (s.getId() != null ? s.getId() : "?");
+        }
+
+        // --- code part ---
+        String code = s.getCode(); // already has name-based fallback in getCode()
+        if (code == null || code.trim().isEmpty()) {
+            code = s.getId() != null ? String.valueOf(s.getId()) : "?";
+        } else {
+            code = code.trim();
+        }
+
+        return name + " (" + code + ")";
+    }
+
     // ── GETTERS AND SETTERS ──────────────────────────────────────────────
 
     public ShiftController getShiftController() {

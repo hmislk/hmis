@@ -1432,6 +1432,11 @@ public class SearchController implements Serializable {
 
     }
 
+    public String navigateToInpatientDirectIssuesByBill() {
+        makeListNull();
+        return "/inward/pharmacy_search_sale_bill_bht?faces-redirect=true";
+    }
+
     public void makeListNull() {
         maxResult = configOptionApplicationController.getIntegerValueByKey("Maximum Number of records for default search", 50);
         bills = null;

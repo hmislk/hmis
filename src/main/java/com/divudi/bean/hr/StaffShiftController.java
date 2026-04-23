@@ -191,6 +191,16 @@ public class StaffShiftController implements Serializable {
         }
     }
 
+    public String navigateToShiftTable() {
+        updateStaffShiftWithoutRoster();
+        return "/hr/hr_shift_table?faces-redirect=true";
+    }
+
+    public String navigateToShiftTableFingerPrint() {
+        updateStaffShiftWithoutRoster();
+        return "/hr/hr_shift_table_finger_print?faces-redirect=true";
+    }
+
     @EJB
     StaffShiftFacade staffShiftFacade;
     @Inject
