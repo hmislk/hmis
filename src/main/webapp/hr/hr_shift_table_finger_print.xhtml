@@ -50,11 +50,6 @@
             .sfa-actions .sfa-spacer { flex: 1 1 auto; }
             .sfa-actions .ui-button { margin: 0; }
 
-            .sfa-btn-primary .ui-button { background: #2c7be5; border-color: #2c7be5; color: #fff; }
-            .sfa-btn-save    .ui-button { background: #28a745; border-color: #28a745; color: #fff; }
-            .sfa-btn-danger  .ui-button { background: #fff; border: 1px solid #c0392b; color: #c0392b; }
-            .sfa-btn-danger  .ui-button:hover { background: #c0392b; color: #fff; }
-
             .sfa-links-grid td { padding: 6px 10px !important; }
 
             /* ============================================================ */
@@ -173,14 +168,13 @@
                         </h:panelGrid>
 
                         <div class="sfa-actions">
-                            <span class="sfa-btn-primary">
-                                <p:commandButton value="Fill"
-                                                 icon="ui-icon-check"
-                                                 process="@this frmDate toDate roster"
-                                                 update="lst"
-                                                 actionListener="#{shiftFingerPrintAnalysisController.makeTableNull()}"
-                                                 action="#{shiftFingerPrintAnalysisController.createShiftTable()}" />
-                            </span>
+                            <p:commandButton value="Fill"
+                                            icon="ui-icon-check"
+                                            styleClass="ui-button-info"
+                                            process="@this frmDate toDate roster"
+                                            update="lst"
+                                            actionListener="#{shiftFingerPrintAnalysisController.makeTableNull()}"
+                                            action="#{shiftFingerPrintAnalysisController.createShiftTable()}" />
 
                             <p:commandButton value="Fill Additional Only"
                                              process="@this frmDate toDate roster"
@@ -188,24 +182,22 @@
                                              actionListener="#{shiftFingerPrintAnalysisController.makeTableNull()}"
                                              action="#{shiftFingerPrintAnalysisController.createShiftTableAdditional()}" />
 
-                            <span class="sfa-btn-save">
-                                <p:commandButton value="Save"
-                                                 icon="ui-icon-disk"
-                                                 process="lst"
-                                                 update="lst"
-                                                 action="#{shiftFingerPrintAnalysisController.save()}" />
-                            </span>
+                            <p:commandButton value="Save"
+                                            icon="ui-icon-disk"
+                                            styleClass="ui-button-success"
+                                            process="lst"
+                                            update="lst"
+                                            action="#{shiftFingerPrintAnalysisController.save()}" />
 
                             <span class="sfa-spacer"></span>
 
-                            <span class="sfa-btn-danger">
-                                <p:commandButton value="Reset &amp; Fill"
-                                                 icon="ui-icon-refresh"
-                                                 process="@this frmDate toDate roster"
-                                                 update="lst"
-                                                 actionListener="#{shiftFingerPrintAnalysisController.makeTableNull()}"
-                                                 action="#{shiftFingerPrintAnalysisController.createShiftTableReset()}" />
-                            </span>
+                            <p:commandButton value="Reset &amp; Fill"
+                                            icon="ui-icon-refresh"
+                                            styleClass="ui-button-danger"
+                                            process="@this frmDate toDate roster"
+                                            update="lst"
+                                            actionListener="#{shiftFingerPrintAnalysisController.makeTableNull()}"
+                                            action="#{shiftFingerPrintAnalysisController.createShiftTableReset()}" />
                         </div>
                     </p:panel>
 
