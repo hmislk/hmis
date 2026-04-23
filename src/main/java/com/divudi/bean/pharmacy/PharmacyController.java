@@ -9855,7 +9855,7 @@ public class PharmacyController implements Serializable {
         if (filters != null && !filters.isEmpty()){
             rowIndex = addMetaDataToExcelSheet(workbook, sheet, rowIndex, "GRN and Direct Purchase Report", filters);
         }
-        // I want to add current data and time as generated 
+        
         // Add "Generated On" row with current date and time
         Row generatedOnRow = sheet.createRow(rowIndex++);
         CellStyle generatedOnStyle = workbook.createCellStyle();
@@ -10397,60 +10397,50 @@ public class PharmacyController implements Serializable {
             context.responseComplete();
         }
     }
+    
+    // PostProcessor for grn and direct purchase summary report excel export
+    public void postProcessGRNAndDirectPurchaseReportExcel(Object document) {
+        if (document == null) {
+            Logger.getLogger(PharmacyController.class.getName()).log(Level.SEVERE, "Document is null in postProcessBillWiseItemMovementReportExcel");
+            return;
+        }
+        if (!(document instanceof XSSFWorkbook)) {
+            Logger.getLogger(PharmacyController.class.getName()).log(Level.SEVERE, "Expected document to be an instance of XSSFWorkbook, but got: {0}", document.getClass().getName());
+            return;
+        }
+        XSSFWorkbook workbook = (XSSFWorkbook) document;
+        XSSFSheet sheet = workbook.getSheetAt(0);
+        if (sheet == null) {
+            return;
+        }
 
+        workbook.setSheetName(0, "GRN and Direct Purchase Report");
+        sheet.shiftRows(0, sheet.getLastRowNum(), 7);
 
-   public void postProcessExcel(Object document) {
-    XSSFWorkbook workbook = (XSSFWorkbook) document;
-    XSSFSheet sheet = workbook.getSheetAt(0);
+        Map<String, Object> filters = getFiltersForGRNDetailReport();
 
-    int titleRows = 2;
-    sheet.shiftRows(0, sheet.getLastRowNum(), titleRows);
+        if (filters != null && !filters.isEmpty()) {
+            addMetaDataToExcelSheet(workbook, sheet, 0, "GRN and Direct Purchase Report", filters);
+        }
+        int rowIndex = 5;
+        SimpleDateFormat sdf = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
+        // Add "Generated On" row with current date and time
+        Row generatedOnRow = sheet.createRow(rowIndex++);
+        CellStyle generatedOnStyle = workbook.createCellStyle();
+        XSSFFont generatedOnFont = workbook.createFont();
+        generatedOnFont.setBold(true);
+        generatedOnStyle.setFont(generatedOnFont);
 
-    // --- ✅ Calculate actual max columns AFTER shifting ---
-    int lastCol = 0;
-    for (Row row : sheet) {
-        if (row.getRowNum() < titleRows) continue; // skip the empty title rows we just created
-        short cellNum = row.getLastCellNum();
-        if (cellNum > lastCol) lastCol = cellNum;
+        Cell generatedLabelCell = generatedOnRow.createCell(0);
+        generatedLabelCell.setCellValue("Generated On:");
+        generatedLabelCell.setCellStyle(generatedOnStyle);
+
+        Cell generatedValueCell = generatedOnRow.createCell(1);
+        generatedValueCell.setCellValue(sdf.format(new Date()));
+
+        // Add an empty row as spacing before the header
+        sheet.createRow(rowIndex++);
     }
-    lastCol = lastCol - 1; // convert from count to 0-based index
-    if (lastCol < 1) lastCol = 9; // fallback only if sheet is truly empty
-
-    // --- Row 0: Main Title ---
-    XSSFRow titleRow = sheet.createRow(0);
-    titleRow.setHeightInPoints(40);
-    XSSFCell titleCell = titleRow.createCell(0);
-    titleCell.setCellValue(GRNHeader());
-    XSSFCellStyle titleStyle = workbook.createCellStyle();
-    XSSFFont titleFont = workbook.createFont();
-    titleFont.setBold(true);
-    titleFont.setFontHeightInPoints((short) 12);
-    titleFont.setColor(IndexedColors.BLACK.getIndex());
-    titleStyle.setFont(titleFont);
-    titleStyle.setWrapText(true);
-    titleStyle.setVerticalAlignment(VerticalAlignment.CENTER);
-    titleStyle.setAlignment(HorizontalAlignment.CENTER);
-    titleStyle.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
-    titleStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
-    titleCell.setCellStyle(titleStyle);
-
-    // --- Row 1: Subtitle ---
-    XSSFRow subRow = sheet.createRow(1);
-    subRow.setHeightInPoints(20);
-    XSSFCell subCell = subRow.createCell(0);
-    subCell.setCellValue("Generated on: " + new java.util.Date());
-    XSSFCellStyle subStyle = workbook.createCellStyle();
-    XSSFFont subFont = workbook.createFont();
-    subFont.setItalic(true);
-    subFont.setFontHeightInPoints((short) 12);
-    subStyle.setFont(subFont);
-    subStyle.setAlignment(HorizontalAlignment.CENTER);
-    subCell.setCellStyle(subStyle);
-
-    // --- ✅ Merge using actual column count ---
-    sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, lastCol));
-    sheet.addMergedRegion(new CellRangeAddress(1, 1, 0, lastCol));
-}
     public SessionController getSessionController() {
         return sessionController;
     }
