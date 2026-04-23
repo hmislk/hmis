@@ -610,6 +610,8 @@ public class PharmacySaleBhtController implements Serializable {
      * @param event SelectEvent containing the selected StockDTO
      */
     public void handleStockSelect(SelectEvent event) {
+        long tStart = System.currentTimeMillis();
+        System.out.println("[BHT-SELECT] >>> handleStockSelect ENTRY");
         try {
             StockDTO selectedDto = (StockDTO) event.getObject();
             this.selectedStockDto = selectedDto;
@@ -623,21 +625,33 @@ public class PharmacySaleBhtController implements Serializable {
                 if (getBillItem().getPharmaceuticalBillItem() == null) {
                     getBillItem().setPharmaceuticalBillItem(new PharmaceuticalBillItem());
                 }
+                long t1 = System.currentTimeMillis();
                 if (selectedDto.getId() != null) {
                     getBillItem().getPharmaceuticalBillItem().setStock(getStockFacade().getReference(selectedDto.getId()));
                 }
+                System.out.println("[BHT-SELECT]   Stock.getReference: " + (System.currentTimeMillis() - t1) + "ms");
+
+                long t2 = System.currentTimeMillis();
                 if (selectedDto.getItemBatchId() != null) {
                     getBillItem().getPharmaceuticalBillItem().setItemBatch(getItemBatchFacade().getReference(selectedDto.getItemBatchId()));
                 }
+                System.out.println("[BHT-SELECT]   ItemBatch.getReference: " + (System.currentTimeMillis() - t2) + "ms");
+
+                long t3 = System.currentTimeMillis();
                 if (selectedDto.getItemId() != null) {
                     // Use find (not getReference) so item.category is available for price matrix
                     getBillItem().setItem(getItemFacade().find(selectedDto.getItemId()));
                 }
+                System.out.println("[BHT-SELECT]   Item.find (DB): " + (System.currentTimeMillis() - t3) + "ms");
+
+                long t4 = System.currentTimeMillis();
                 calculateRatesFromDto(getBillItem(), selectedDto);
+                System.out.println("[BHT-SELECT]   calculateRatesFromDto: " + (System.currentTimeMillis() - t4) + "ms");
             }
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Error in handleStockSelect", e);
         }
+        System.out.println("[BHT-SELECT] <<< handleStockSelect TOTAL: " + (System.currentTimeMillis() - tStart) + "ms");
     }
 
     public void setReplaceableStocks(List<Stock> replaceableStocks) {
@@ -1670,7 +1684,8 @@ public class PharmacySaleBhtController implements Serializable {
     }
 
     public void addBillItem() {
-        long t0 = LOGGER.isLoggable(Level.FINE) ? System.currentTimeMillis() : 0L;
+        long t0 = System.currentTimeMillis();
+        System.out.println("[BHT-ADD] >>> addBillItem ENTRY");
 
         if (getPreBill() == null) {
             JsfUtil.addErrorMessage("No Prebill");
@@ -1738,19 +1753,20 @@ public class PharmacySaleBhtController implements Serializable {
         billItem.getPharmaceuticalBillItem().setQtyInUnit(0 - qty);
         billItem.getPharmaceuticalBillItem().setQty(0 - Math.abs(qty));
 
+        long tRates = System.currentTimeMillis();
         calculateRates(billItem, selectedStockDto.getRetailRate());
+        System.out.println("[BHT-ADD]   calculateRates(bi,rate): " + (System.currentTimeMillis() - tRates) + "ms");
 
         billItem.setInwardChargeType(InwardChargeType.Medicine);
         billItem.setBill(getPreBill());
         billItem.setSearialNo(getPreBill().getBillItems().size() + 1);
         getPreBill().getBillItems().add(billItem);
 
+        long tCal = System.currentTimeMillis();
         calTotal();
+        System.out.println("[BHT-ADD]   calTotal: " + (System.currentTimeMillis() - tCal) + "ms");
 
-        if (LOGGER.isLoggable(Level.FINE)) {
-            LOGGER.log(Level.FINE, "[addBillItem] TOTAL: {0}ms",
-                    (System.currentTimeMillis() - t0));
-        }
+        System.out.println("[BHT-ADD] <<< addBillItem TOTAL: " + (System.currentTimeMillis() - t0) + "ms");
 
         clearBillItem();
         errorMessage = "";
@@ -2107,9 +2123,11 @@ public class PharmacySaleBhtController implements Serializable {
             return;
         }
 
-        long calcStartTime = LOGGER.isLoggable(Level.FINE) ? System.currentTimeMillis() : 0L;
+        long calcStartTime = System.currentTimeMillis();
 
+        long tDept = System.currentTimeMillis();
         Department matrixDept = resolveMatrixDepartment();
+        System.out.println("[BHT-CALC]   resolveMatrixDepartment: " + (System.currentTimeMillis() - tDept) + "ms");
 
         double quantity = bi.getQty();
         double estimatedValue = retailRate * quantity;
@@ -2118,7 +2136,9 @@ public class PharmacySaleBhtController implements Serializable {
 
         PriceMatrix priceMatrix = null;
         if (bi.getItem() != null) {
+            long tFetch = System.currentTimeMillis();
             priceMatrix = getPriceMatrixController().fetchInwardMargin(bi, estimatedValue, matrixDept, paymentMethod);
+            System.out.println("[BHT-CALC]   fetchInwardMargin: " + (System.currentTimeMillis() - tFetch) + "ms pm=" + (priceMatrix != null ? "HIT" : "MISS"));
         }
 
         double marginPercentage = priceMatrix != null ? priceMatrix.getMargin() / 100 : 0.0;
@@ -2135,10 +2155,7 @@ public class PharmacySaleBhtController implements Serializable {
         bi.setAdjustedValue(netValue);
         bi.setDiscount(0);
 
-        if (LOGGER.isLoggable(Level.FINE)) {
-            LOGGER.log(Level.FINE, "[calculateRates(rate)] TOTAL: {0}ms",
-                    (System.currentTimeMillis() - calcStartTime));
-        }
+        System.out.println("[BHT-CALC] calculateRates(rate) TOTAL: " + (System.currentTimeMillis() - calcStartTime) + "ms");
     }
 
     /**
@@ -2835,8 +2852,11 @@ public class PharmacySaleBhtController implements Serializable {
     }
 
     public List<StockDTO> completeAvailableStockOptimizedDto(String qry) {
+        long tStart = System.currentTimeMillis();
+        System.out.println("[BHT-AC] >>> completeAvailableStockOptimizedDto qry=[" + qry + "]");
         if (qry == null || qry.trim().isEmpty()) {
             lastAutocompleteResults = new ArrayList<>();
+            System.out.println("[BHT-AC] <<< empty qry, returning empty");
             return lastAutocompleteResults;
         }
 
@@ -2851,15 +2871,18 @@ public class PharmacySaleBhtController implements Serializable {
         List<StockDTO> results;
 
         if (cachedStockIds != null) {
-            // Cache HIT: Fetch fresh data for cached IDs
+            long t1 = System.currentTimeMillis();
             results = getFreshStockDataForIds(cachedStockIds);
+            System.out.println("[BHT-AC]   cache HIT getFreshStockDataForIds: " + (System.currentTimeMillis() - t1) + "ms size=" + (results != null ? results.size() : 0));
         } else {
-            // Cache MISS: Execute full search and cache metadata
+            long t1 = System.currentTimeMillis();
             results = executeFullSearchAndCacheMetadata(qry, cacheKey);
+            System.out.println("[BHT-AC]   cache MISS executeFullSearch: " + (System.currentTimeMillis() - t1) + "ms size=" + (results != null ? results.size() : 0));
         }
 
         // Store results for JSF converter (zero-query postback handling)
         lastAutocompleteResults = results != null ? results : new ArrayList<>();
+        System.out.println("[BHT-AC] <<< completeAvailableStockOptimizedDto TOTAL: " + (System.currentTimeMillis() - tStart) + "ms");
         return lastAutocompleteResults;
     }
 

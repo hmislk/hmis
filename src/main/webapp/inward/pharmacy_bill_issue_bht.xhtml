@@ -13,6 +13,8 @@
     <ui:define name="content">
         <h:form id="bill" >
 
+            <p:growl id="panelErrorMsg" showDetail="true" life="4000" />
+
             <h:panelGroup rendered="#{pharmacySaleBhtController.patientEncounter eq null}" class="row">
                 <div class="col-12">
                     <p:panel styleClass="shadow-sm">
@@ -373,7 +375,7 @@
                                             icon="fa-solid fa-plus"
                                             action="#{pharmacySaleBhtController.addBillItem}"
                                             process="@this txtQty acStock"
-                                            update="pBis acStock txtQty txtRate txtValue focusItem" />
+                                            update="pBis acStock txtQty txtRate txtValue focusItem panelErrorMsg" />
                                     </div>
                                 </div>
                                 <p:focus id="focusQty" for="txtQty" ></p:focus>
@@ -409,7 +411,7 @@
                                             <p:ajax
                                                 event="change"
                                                 listener="#{pharmacySaleBhtController.onEdit(bi)}"
-                                                update=":bill:pBis" />
+                                                update=":bill:pBis panelErrorMsg" />
                                         </p:inputText>
                                     </p:column>
                                     <p:column headerText="Rate"  width="8em"  class="text-end" rendered="#{webUserController.hasPrivilege('ShowDrugCharges')}">
