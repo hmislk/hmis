@@ -54,6 +54,7 @@
 
 ### When Working with Database
 - [MySQL Developer Guide](developer_docs/database/mysql-developer-guide.md) - Credentials and debugging
+- [Migration Development Guide § Cross-deployment case sensitivity](developer_docs/database/migration-development-guide.md#cross-deployment-case-sensitivity-must) - Migration scripts must detect actual table-name case via `INFORMATION_SCHEMA` + prepared statements; hardcoding either `UPPER` or `lower` breaks half the customer DBs. Reference: `v2.1.12/migration-universal.sql`, `v2.1.17/migration.sql`.
 
 ### When Adding Excel Export to a Report
 - [Excel Export for HTML Tables](developer_docs/feature/excel-export-html-table.md) - Pattern for exporting HTML-based (non-DataTable) report tables to Excel using Apache POI via `HttpServletResponse`

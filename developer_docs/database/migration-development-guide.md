@@ -302,6 +302,32 @@ try {
 3. **Data Preservation**: Avoid data loss operations
 4. **Performance Impact**: Consider query execution time
 5. **Index Management**: Add/drop indexes strategically
+6. **Cross-deployment case sensitivity**: See below
+
+### Cross-deployment case sensitivity (MUST)
+
+HMIS is deployed to customer MySQL instances with different `lower_case_table_names` settings. Some store tables as `PATIENTSAMPLE` (Linux, `lower_case_table_names=0`, JPA/EclipseLink default), others as `patientsample` (Windows or Linux with `lower_case_table_names=1`). A migration that hardcodes either case — `ALTER TABLE patientsample ...` or `ALTER TABLE PATIENTSAMPLE ...` — breaks on the other set of databases with "Table doesn't exist".
+
+**Rule:** any migration/rollback script that references user tables by name MUST detect the actual stored case at runtime and execute DDL via prepared statements.
+
+**Pattern (reference: `v2.1.12/migration-universal.sql`, `v2.1.17/migration.sql`):**
+
+```sql
+SET @ps_table = (
+    SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES
+    WHERE TABLE_SCHEMA = DATABASE() AND UPPER(TABLE_NAME) = 'PATIENTSAMPLE'
+    LIMIT 1
+);
+
+SET @sql = CONCAT('ALTER TABLE ', @ps_table, ' DROP FOREIGN KEY FK_PATIENTSAMPLE_RETIRER_ID');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+```
+
+Notes:
+- The `INFORMATION_SCHEMA` schema keyword and its metadata table names (`TABLES`, `COLUMNS`, `STATISTICS`) are case-insensitive on all platforms — only the *values* in `TABLE_NAME`/`COLUMN_NAME` reflect the stored case, which is why `UPPER(TABLE_NAME) = '...'` is needed.
+- Detect every user table referenced anywhere in the script (including `REFERENCES <table>(ID)` targets in FK rollbacks — e.g. `WEBUSER`, `DEPARTMENT`, `INSTITUTION`, `ITEM`).
+- Constraint and index names are stored as declared and are **not** affected by `lower_case_table_names`, so they can stay as literals in the `CONCAT`ed SQL.
+- Column names used in predicates (`WHERE`, `SET`, `REFERENCES (...)`) follow the same case-sensitivity rules as table names on some platforms; detect them via `INFORMATION_SCHEMA.COLUMNS` when uncertain (see `v2.1.12/migration-universal.sql`).
 
 ### Version Management
 
