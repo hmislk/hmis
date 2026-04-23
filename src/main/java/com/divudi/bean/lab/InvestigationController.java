@@ -1524,11 +1524,18 @@ public class InvestigationController implements Serializable {
     }
 
     public void saveSelected() {
-
-        if (getCurrent() == null) {
+        if (getCurrent() == null){
+            JsfUtil.addErrorMessage("Please add investigation");
             return;
         }
-
+        if (getCurrent().getName() == null || getCurrent().getName().trim().isEmpty()){
+            JsfUtil.addErrorMessage("Please enter a Investigation Name before saving");
+            return;
+        }
+        if (getCurrent().getCode() == null || getCurrent().getCode().trim().isEmpty()){
+            JsfUtil.addErrorMessage("Please enter a Investigation Code before saving");
+            return;
+        }
         getCurrent().setSymanticType(SymanticType.Laboratory_Procedure);
         if (getCurrent().getInwardChargeType() == null) {
             getCurrent().setInwardChargeType(InwardChargeType.Laboratory);
