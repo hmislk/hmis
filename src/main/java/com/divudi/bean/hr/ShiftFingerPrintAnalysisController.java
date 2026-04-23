@@ -1378,14 +1378,22 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
                 if (additionalForm != null) {
                     switch (additionalForm.getTimes()) {
                         case inTime:
-                            startRecord.setAllowedExtraDuty(true);
+                            if (startRecord != null) {
+                                startRecord.setAllowedExtraDuty(true);
+                            }
                             break;
                         case outTime:
-                            endRecord.setAllowedExtraDuty(true);
+                            if (endRecord != null) {
+                                endRecord.setAllowedExtraDuty(true);
+                            }
                             break;
                         case All:
-                            startRecord.setAllowedExtraDuty(true);
-                            endRecord.setAllowedExtraDuty(true);
+                            if (startRecord != null) {
+                                startRecord.setAllowedExtraDuty(true);
+                            }
+                            if (endRecord != null) {
+                                endRecord.setAllowedExtraDuty(true);
+                            }
                             break;
                     }
                 } else {
