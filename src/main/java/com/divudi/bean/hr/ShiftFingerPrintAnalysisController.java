@@ -1334,8 +1334,6 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
             newSh.setFlag(st.isFlag());
 
             for (StaffShift ss : st.getStaffShift()) {
-                System.out.println("ss = " + ss);
-
                 if (errorCheckForSave(ss, newSh)) {
                     continue;
                 }
@@ -1424,11 +1422,8 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
                 ss.calLeaveTime();
                 // Update Lieu Leave
                 ss.calLieu();
-                System.out.println("ss = " + ss);
 
                 getStaffShiftFacade().edit(ss);
-
-                System.out.println("ss = " + ss);
             }
 
             if (newSh.getStaffShift() != null && !newSh.getStaffShift().isEmpty()) {
