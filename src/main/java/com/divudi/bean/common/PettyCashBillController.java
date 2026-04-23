@@ -393,15 +393,23 @@ public class PettyCashBillController implements Serializable {
         Calendar c = Calendar.getInstance();
         c.set(year.get(Calendar.YEAR), 3, 1, 0, 0, 0);
         Date fd = c.getTime();
+        
+        List<RequestStatus> ststus = new ArrayList<>();
+        ststus.add(RequestStatus.PENDING);
+        ststus.add(RequestStatus.UNDER_REVIEW);
+        ststus.add(RequestStatus.APPROVED);
+        ststus.add(RequestStatus.COMPLETED);
 
         String sql = "Select b From BilledBill b where "
                 + " b.retired=false "
                 + " and b.cancelled=false "
                 + " and b.billTypeAtomic= :bta "
+                + " and b.currentRequest.status in :st "
                 + " and b.createdAt > :fd "
                 + " and b.invoiceNumber =:inv ";
         HashMap h = new HashMap();
         h.put("bta", type);
+        h.put("st", ststus);
         h.put("fd", fd);
         h.put("inv", invoiceNumber);
         Bill tmp = getBillFacade().findFirstByJpql(sql, h, TemporalType.TIMESTAMP);
