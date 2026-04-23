@@ -1321,7 +1321,6 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
         List<ShiftTable> tmpShiftTable = new ArrayList<>();
         errorMessage = new ArrayList<>();
 
-//        Set<StaffShift> staffShiftsTmp = new HashSet<>();
         if (shiftTables == null) {
             final String empty_List = "Empty List";
             JsfUtil.addErrorMessage(empty_List);
@@ -1329,50 +1328,22 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
             return;
         }
 
-//        System.err.println("2");
-//        if (errorCheckForSave()) {
-////            JsfUtil.addErrorMessage("Staff Shift Not Updated");
-//            return;
-//        }
         for (ShiftTable st : shiftTables) {
             ShiftTable newSh = new ShiftTable();
             newSh.setDate(st.getDate());
             newSh.setFlag(st.isFlag());
+
             for (StaffShift ss : st.getStaffShift()) {
                 System.out.println("ss = " + ss);
-//                Collections.sort(ss.getFingerPrintRecordList(), new FingerPrintComparator());
+
                 if (errorCheckForSave(ss, newSh)) {
                     continue;
                 }
 
-                //UPDATE START RECORD
                 FingerPrintRecord startRecord = ss.getStartRecord();
-                System.out.println("startRecord = " + startRecord);
-                if (startRecord != null) {
-                    startRecord.setStaffShift(ss);
-                    saveHistory(startRecord);
-
-                    if (startRecord.getId() != null) {
-                        getFingerPrintRecordFacade().edit(startRecord);
-                    } else {
-                        getFingerPrintRecordFacade().create(startRecord);
-                    }
-                }
-
-                //UPDATE END RECORD
                 FingerPrintRecord endRecord = ss.getEndRecord();
-                if (endRecord != null) {
-                    endRecord.setStaffShift(ss);
-                    saveHistory(endRecord);
 
-                    if (endRecord.getId() != null) {
-                        getFingerPrintRecordFacade().edit(endRecord);
-                    } else {
-                        getFingerPrintRecordFacade().create(endRecord);
-                    }
-                }
-
-                //Update Extra Duty
+                // 1. Set allowedExtraDuty FIRST, while we still have in-memory references
                 HrForm additionalForm = ss.getAdditionalForm();
                 if (additionalForm != null) {
                     switch (additionalForm.getTimes()) {
@@ -1404,20 +1375,43 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
                     }
                 }
 
-                //Ress Old Calculated Data
+                // 2. Now persist — allowedExtraDuty is included in the edit/create
+                if (startRecord != null) {
+                    startRecord.setStaffShift(ss);
+                    saveHistory(startRecord);
+
+                    if (startRecord.getId() != null) {
+                        getFingerPrintRecordFacade().edit(startRecord);
+                    } else {
+                        getFingerPrintRecordFacade().create(startRecord);
+                    }
+                }
+
+                if (endRecord != null) {
+                    endRecord.setStaffShift(ss);
+                    saveHistory(endRecord);
+
+                    if (endRecord.getId() != null) {
+                        getFingerPrintRecordFacade().edit(endRecord);
+                    } else {
+                        getFingerPrintRecordFacade().create(endRecord);
+                    }
+                }
+
+                // Reset old calculated data
                 ss.reset();
 
-                //Fetch Value for Oer Time per Month
+                // Fetch value for overtime per month
                 double valueForOverTime = humanResourceBean.getOverTimeValue(ss.getStaff(), ss.getShiftDate());
 
-                //Chang to Second
+                // Change to second
                 ss.setOverTimeValuePerSecond(valueForOverTime / (200 * 60 * 60));
 
-                //UPDATE Staff Shift Time Only if working days
+                // UPDATE Staff Shift Time Only if working days
                 ss.calCulateTimes();
-                //Update Extra Time
+                // Update Extra Time
                 ss.calExtraTimeWithStartOrEndRecord();
-                //Update Staff Shift OT time if DayOff or Sleeping Day
+                // Update Staff Shift OT time if DayOff or Sleeping Day
                 ss.calExtraTimeComplete();
 
                 ss.calMultiplyingFactor(ss.getShift().getDayType());
@@ -1426,16 +1420,15 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
                     ss.calMultiplyingFactor(dt);
                 }
 
-                //UPDATE Leave
+                // UPDATE Leave
                 ss.calLeaveTime();
-                //Update Lieu Leave
+                // Update Lieu Leave
                 ss.calLieu();
                 System.out.println("ss = " + ss);
 
                 getStaffShiftFacade().edit(ss);
-                
-                System.out.println("ss = " + ss);
 
+                System.out.println("ss = " + ss);
             }
 
             if (newSh.getStaffShift() != null && !newSh.getStaffShift().isEmpty()) {
@@ -1449,7 +1442,6 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
         if (shiftTables.isEmpty()) {
             JsfUtil.addSuccessMessage("All Record Successfully Updated");
         }
-
     }
 
     public boolean isBackButtonIsActive() {
