@@ -142,15 +142,23 @@ public class PlanController implements Serializable {
     }
 
     public void saveSelected() {
+        if (getCurrent().getName() == null || getCurrent().getName().trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Please enter a Plan Name before saving.");
+            return;
+        }
+        if (getCurrent().getCode() == null || getCurrent().getCode().trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Please enter a Plan Code before saving.");
+            return;
+        }
         current.setSymanticType(SymanticType.Preventive_Procedure);
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
-            JsfUtil.addSuccessMessage("Saved");
+            JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
             current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
-            JsfUtil.addSuccessMessage("Updated");
+            JsfUtil.addSuccessMessage("Saved Successfully.");
         }
         recreateModel();
         getItems();
