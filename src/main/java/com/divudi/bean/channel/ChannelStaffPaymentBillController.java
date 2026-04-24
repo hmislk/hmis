@@ -471,10 +471,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
             hm.put("ss", getSelectedServiceSession());
         }
 
-        if (configOptionApplicationController.getBooleanValueByKey("Only Show Completed Channel Bookings On Doctor Payments")) {
-            sql += " and b.bill.singleBillSession.completed=:com ";
-            hm.put("com", true);
-        }
+        sql += " and b.bill.singleBillSession.completed=true";
 
 //        sql += " and b.bill.singleBillSession.absent=false "
 //                + " order by b.bill.singleBillSession.serviceSession.sessionDate,"
