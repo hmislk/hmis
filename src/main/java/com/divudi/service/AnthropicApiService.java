@@ -472,6 +472,93 @@ public class AnthropicApiService implements Serializable {
                         .add("required", Json.createArrayBuilder().add("method")))
                 .build();
 
+        JsonObject inwardRoomsTool = Json.createObjectBuilder()
+                .add("name", "manage_inward_rooms")
+                .add("description",
+                        "Manage inward room master data: room categories, rooms, and room facility charges (room fee configs). "
+                        + "Methods: LIST_CATEGORIES, POST_CATEGORY, PUT_CATEGORY, DELETE_CATEGORY, "
+                        + "LIST_ROOMS, POST_ROOM, PUT_ROOM, DELETE_ROOM, "
+                        + "LIST_CHARGES, POST_CHARGE, PUT_CHARGE, DELETE_CHARGE. "
+                        + "Always confirm with the user before creating, updating, or retiring records.")
+                .add("input_schema", Json.createObjectBuilder()
+                        .add("type", "object")
+                        .add("properties", Json.createObjectBuilder()
+                                .add("method", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("enum", Json.createArrayBuilder()
+                                                .add("LIST_CATEGORIES").add("POST_CATEGORY").add("PUT_CATEGORY").add("DELETE_CATEGORY")
+                                                .add("LIST_ROOMS").add("POST_ROOM").add("PUT_ROOM").add("DELETE_ROOM")
+                                                .add("LIST_CHARGES").add("POST_CHARGE").add("PUT_CHARGE").add("DELETE_CHARGE"))
+                                        .add("description", "Operation to perform."))
+                                .add("id", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Record id. Required for PUT and DELETE methods."))
+                                .add("name", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Name of the record. Required for POST methods."))
+                                .add("code", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Short code. Optional."))
+                                .add("description", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Description. Optional."))
+                                .add("roomCategoryId", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Room category id. Used for POST_ROOM/PUT_ROOM and as filter for LIST_ROOMS/LIST_CHARGES."))
+                                .add("roomId", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Room id. Used for POST_CHARGE/PUT_CHARGE and as filter for LIST_CHARGES."))
+                                .add("departmentId", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Department id. Optional for POST_CHARGE/PUT_CHARGE."))
+                                .add("filled", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Whether room is under construction (true/false). Optional for POST_ROOM/PUT_ROOM."))
+                                .add("roomCharge", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Room charge per block. Optional for POST_CHARGE/PUT_CHARGE."))
+                                .add("maintananceCharge", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Maintenance charge per block. Optional."))
+                                .add("linenCharge", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Linen charge per day. Optional."))
+                                .add("nursingCharge", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Nursing charge per block. Optional."))
+                                .add("moCharge", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "MO charge per block. Optional."))
+                                .add("moChargeForAfterDuration", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "MO charge for after duration. Optional."))
+                                .add("adminstrationCharge", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Administration charge per block. Optional."))
+                                .add("medicalCareCharge", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Medical care charge per block. Optional."))
+                                .add("timedItemFeeDurationHours", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Fee calculation block duration in hours. Optional."))
+                                .add("timedItemFeeOverShootHours", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Over-shoot hours for last block. Optional."))
+                                .add("timedItemFeeDurationDaysForMoCharge", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Duration days for MO charge calculation. Optional."))
+                                .add("query", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Search text for LIST methods. Optional."))
+                                .add("size", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Max results (1–1000). Optional."))
+                                .add("retireComments", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Reason for retirement. Optional for DELETE methods.")))
+                        .add("required", Json.createArrayBuilder().add("method")))
+                .build();
+
         return Json.createArrayBuilder()
                 .add(searchCodeTool)
                 .add(fetchFileTool)
@@ -479,6 +566,7 @@ public class AnthropicApiService implements Serializable {
                 .add(clinicalMetadataTool)
                 .add(collectingCentreFeesTool)
                 .add(inwardDiscountMatrixTool)
+                .add(inwardRoomsTool)
                 .build();
     }
 
@@ -558,6 +646,36 @@ public class AnthropicApiService implements Serializable {
                     return callInwardDiscountMatrixApi(method, scope, id, departmentId, categoryId,
                             admissionTypeId, paymentSchemeId, paymentMethodStr, discountPercent,
                             query, limit, retireComments, hmisBaseUrl, hmisApiKey);
+                }
+                case "manage_inward_rooms": {
+                    String method         = toolInput.getString("method", "LIST_CATEGORIES");
+                    String id             = toolInput.containsKey("id")                             ? toolInput.getString("id", "")                             : "";
+                    String name           = toolInput.containsKey("name")                           ? toolInput.getString("name", "")                           : "";
+                    String code           = toolInput.containsKey("code")                           ? toolInput.getString("code", "")                           : "";
+                    String desc           = toolInput.containsKey("description")                    ? toolInput.getString("description", "")                    : "";
+                    String roomCategoryId = toolInput.containsKey("roomCategoryId")                 ? toolInput.getString("roomCategoryId", "")                 : "";
+                    String roomId         = toolInput.containsKey("roomId")                         ? toolInput.getString("roomId", "")                         : "";
+                    String departmentId   = toolInput.containsKey("departmentId")                   ? toolInput.getString("departmentId", "")                   : "";
+                    String filled         = toolInput.containsKey("filled")                         ? toolInput.getString("filled", "")                         : "";
+                    String roomCharge     = toolInput.containsKey("roomCharge")                     ? toolInput.getString("roomCharge", "")                     : "";
+                    String maintCharge    = toolInput.containsKey("maintananceCharge")              ? toolInput.getString("maintananceCharge", "")              : "";
+                    String linenCharge    = toolInput.containsKey("linenCharge")                    ? toolInput.getString("linenCharge", "")                    : "";
+                    String nursingCharge  = toolInput.containsKey("nursingCharge")                  ? toolInput.getString("nursingCharge", "")                  : "";
+                    String moCharge       = toolInput.containsKey("moCharge")                       ? toolInput.getString("moCharge", "")                       : "";
+                    String moAfterCharge  = toolInput.containsKey("moChargeForAfterDuration")       ? toolInput.getString("moChargeForAfterDuration", "")       : "";
+                    String adminCharge    = toolInput.containsKey("adminstrationCharge")            ? toolInput.getString("adminstrationCharge", "")            : "";
+                    String medCareCharge  = toolInput.containsKey("medicalCareCharge")              ? toolInput.getString("medicalCareCharge", "")              : "";
+                    String durationHours  = toolInput.containsKey("timedItemFeeDurationHours")      ? toolInput.getString("timedItemFeeDurationHours", "")      : "";
+                    String overShoot      = toolInput.containsKey("timedItemFeeOverShootHours")     ? toolInput.getString("timedItemFeeOverShootHours", "")     : "";
+                    String durationDays   = toolInput.containsKey("timedItemFeeDurationDaysForMoCharge") ? toolInput.getString("timedItemFeeDurationDaysForMoCharge", "") : "";
+                    String query          = toolInput.containsKey("query")                          ? toolInput.getString("query", "")                          : "";
+                    String size           = toolInput.containsKey("size")                           ? toolInput.getString("size", "")                           : "";
+                    String retireComments = toolInput.containsKey("retireComments")                 ? toolInput.getString("retireComments", "")                 : "";
+                    return callInwardRoomsApi(method, id, name, code, desc, roomCategoryId, roomId,
+                            departmentId, filled, roomCharge, maintCharge, linenCharge, nursingCharge,
+                            moCharge, moAfterCharge, adminCharge, medCareCharge,
+                            durationHours, overShoot, durationDays,
+                            query, size, retireComments, hmisBaseUrl, hmisApiKey);
                 }
                 default:
                     return "Unknown tool: " + toolName;
@@ -1144,6 +1262,205 @@ public class AnthropicApiService implements Serializable {
         return urlBuilder.toString();
     }
 
+    private String callInwardRoomsApi(
+            String method, String id, String name, String code, String description,
+            String roomCategoryId, String roomId, String departmentId, String filled,
+            String roomCharge, String maintananceCharge, String linenCharge, String nursingCharge,
+            String moCharge, String moChargeForAfterDuration, String adminstrationCharge, String medicalCareCharge,
+            String timedItemFeeDurationHours, String timedItemFeeOverShootHours, String timedItemFeeDurationDaysForMoCharge,
+            String query, String size, String retireComments,
+            String hmisBaseUrl, String hmisApiKey) {
+
+        if (hmisBaseUrl == null || hmisBaseUrl.trim().isEmpty()) {
+            return "Error: HMIS base URL is not configured.";
+        }
+        if (hmisApiKey == null || hmisApiKey.trim().isEmpty()) {
+            return "Error: HMIS API key is not configured.";
+        }
+
+        try {
+            HttpClient client = HttpClient.newBuilder()
+                    .connectTimeout(Duration.ofSeconds(10))
+                    .build();
+
+            String baseUrl = hmisBaseUrl.endsWith("/") ? hmisBaseUrl.substring(0, hmisBaseUrl.length() - 1) : hmisBaseUrl;
+
+            HttpRequest request;
+
+            switch (method) {
+                case "LIST_CATEGORIES": {
+                    StringBuilder url = new StringBuilder(baseUrl).append("/api/inward/room-categories");
+                    boolean first = true;
+                    if (query != null && !query.isEmpty()) { url.append("?query=").append(java.net.URLEncoder.encode(query, java.nio.charset.StandardCharsets.UTF_8)); first = false; }
+                    if (size != null && !size.isEmpty()) { url.append(first ? "?" : "&").append("size=").append(size); }
+                    request = HttpRequest.newBuilder().uri(URI.create(url.toString()))
+                            .timeout(Duration.ofSeconds(15)).header("Finance", hmisApiKey).GET().build();
+                    break;
+                }
+                case "POST_CATEGORY": {
+                    java.util.Map<String, Object> bodyMap = new java.util.LinkedHashMap<>();
+                    bodyMap.put("name", name);
+                    if (code != null && !code.isEmpty()) bodyMap.put("code", code);
+                    if (description != null && !description.isEmpty()) bodyMap.put("description", description);
+                    String bodyJson = new com.google.gson.Gson().toJson(bodyMap);
+                    request = HttpRequest.newBuilder().uri(URI.create(baseUrl + "/api/inward/room-categories"))
+                            .timeout(Duration.ofSeconds(15)).header("Finance", hmisApiKey)
+                            .header("Content-Type", "application/json")
+                            .POST(HttpRequest.BodyPublishers.ofString(bodyJson)).build();
+                    break;
+                }
+                case "PUT_CATEGORY": {
+                    if (id == null || id.isEmpty()) return "Error: id is required for PUT_CATEGORY.";
+                    java.util.Map<String, Object> bodyMap = new java.util.LinkedHashMap<>();
+                    if (name != null && !name.isEmpty()) bodyMap.put("name", name);
+                    if (code != null && !code.isEmpty()) bodyMap.put("code", code);
+                    if (description != null && !description.isEmpty()) bodyMap.put("description", description);
+                    String bodyJson = new com.google.gson.Gson().toJson(bodyMap);
+                    request = HttpRequest.newBuilder().uri(URI.create(baseUrl + "/api/inward/room-categories/" + id))
+                            .timeout(Duration.ofSeconds(15)).header("Finance", hmisApiKey)
+                            .header("Content-Type", "application/json")
+                            .PUT(HttpRequest.BodyPublishers.ofString(bodyJson)).build();
+                    break;
+                }
+                case "DELETE_CATEGORY": {
+                    if (id == null || id.isEmpty()) return "Error: id is required for DELETE_CATEGORY.";
+                    StringBuilder url = new StringBuilder(baseUrl).append("/api/inward/room-categories/").append(id);
+                    if (retireComments != null && !retireComments.isEmpty()) url.append("?retireComments=").append(java.net.URLEncoder.encode(retireComments, java.nio.charset.StandardCharsets.UTF_8));
+                    request = HttpRequest.newBuilder().uri(URI.create(url.toString()))
+                            .timeout(Duration.ofSeconds(15)).header("Finance", hmisApiKey)
+                            .DELETE().build();
+                    break;
+                }
+                case "LIST_ROOMS": {
+                    StringBuilder url = new StringBuilder(baseUrl).append("/api/inward/rooms");
+                    boolean first = true;
+                    if (query != null && !query.isEmpty()) { url.append("?query=").append(java.net.URLEncoder.encode(query, java.nio.charset.StandardCharsets.UTF_8)); first = false; }
+                    if (roomCategoryId != null && !roomCategoryId.isEmpty()) { url.append(first ? "?" : "&").append("roomCategoryId=").append(roomCategoryId); first = false; }
+                    if (size != null && !size.isEmpty()) { url.append(first ? "?" : "&").append("size=").append(size); }
+                    request = HttpRequest.newBuilder().uri(URI.create(url.toString()))
+                            .timeout(Duration.ofSeconds(15)).header("Finance", hmisApiKey).GET().build();
+                    break;
+                }
+                case "POST_ROOM": {
+                    java.util.Map<String, Object> bodyMap = new java.util.LinkedHashMap<>();
+                    bodyMap.put("name", name);
+                    if (code != null && !code.isEmpty()) bodyMap.put("code", code);
+                    if (description != null && !description.isEmpty()) bodyMap.put("description", description);
+                    if (roomCategoryId != null && !roomCategoryId.isEmpty()) bodyMap.put("roomCategoryId", Long.parseLong(roomCategoryId));
+                    if (filled != null && !filled.isEmpty()) bodyMap.put("filled", Boolean.parseBoolean(filled));
+                    String bodyJson = new com.google.gson.Gson().toJson(bodyMap);
+                    request = HttpRequest.newBuilder().uri(URI.create(baseUrl + "/api/inward/rooms"))
+                            .timeout(Duration.ofSeconds(15)).header("Finance", hmisApiKey)
+                            .header("Content-Type", "application/json")
+                            .POST(HttpRequest.BodyPublishers.ofString(bodyJson)).build();
+                    break;
+                }
+                case "PUT_ROOM": {
+                    if (id == null || id.isEmpty()) return "Error: id is required for PUT_ROOM.";
+                    java.util.Map<String, Object> bodyMap = new java.util.LinkedHashMap<>();
+                    if (name != null && !name.isEmpty()) bodyMap.put("name", name);
+                    if (code != null && !code.isEmpty()) bodyMap.put("code", code);
+                    if (description != null && !description.isEmpty()) bodyMap.put("description", description);
+                    if (roomCategoryId != null && !roomCategoryId.isEmpty()) bodyMap.put("roomCategoryId", Long.parseLong(roomCategoryId));
+                    if (filled != null && !filled.isEmpty()) bodyMap.put("filled", Boolean.parseBoolean(filled));
+                    String bodyJson = new com.google.gson.Gson().toJson(bodyMap);
+                    request = HttpRequest.newBuilder().uri(URI.create(baseUrl + "/api/inward/rooms/" + id))
+                            .timeout(Duration.ofSeconds(15)).header("Finance", hmisApiKey)
+                            .header("Content-Type", "application/json")
+                            .PUT(HttpRequest.BodyPublishers.ofString(bodyJson)).build();
+                    break;
+                }
+                case "DELETE_ROOM": {
+                    if (id == null || id.isEmpty()) return "Error: id is required for DELETE_ROOM.";
+                    StringBuilder url = new StringBuilder(baseUrl).append("/api/inward/rooms/").append(id);
+                    if (retireComments != null && !retireComments.isEmpty()) url.append("?retireComments=").append(java.net.URLEncoder.encode(retireComments, java.nio.charset.StandardCharsets.UTF_8));
+                    request = HttpRequest.newBuilder().uri(URI.create(url.toString()))
+                            .timeout(Duration.ofSeconds(15)).header("Finance", hmisApiKey)
+                            .DELETE().build();
+                    break;
+                }
+                case "LIST_CHARGES": {
+                    StringBuilder url = new StringBuilder(baseUrl).append("/api/inward/room-facility-charges");
+                    boolean first = true;
+                    if (query != null && !query.isEmpty()) { url.append("?query=").append(java.net.URLEncoder.encode(query, java.nio.charset.StandardCharsets.UTF_8)); first = false; }
+                    if (roomId != null && !roomId.isEmpty()) { url.append(first ? "?" : "&").append("roomId=").append(roomId); first = false; }
+                    if (roomCategoryId != null && !roomCategoryId.isEmpty()) { url.append(first ? "?" : "&").append("roomCategoryId=").append(roomCategoryId); first = false; }
+                    if (size != null && !size.isEmpty()) { url.append(first ? "?" : "&").append("size=").append(size); }
+                    request = HttpRequest.newBuilder().uri(URI.create(url.toString()))
+                            .timeout(Duration.ofSeconds(15)).header("Finance", hmisApiKey).GET().build();
+                    break;
+                }
+                case "POST_CHARGE": {
+                    java.util.Map<String, Object> bodyMap = new java.util.LinkedHashMap<>();
+                    bodyMap.put("name", name);
+                    if (roomId != null && !roomId.isEmpty()) bodyMap.put("roomId", Long.parseLong(roomId));
+                    if (roomCategoryId != null && !roomCategoryId.isEmpty()) bodyMap.put("roomCategoryId", Long.parseLong(roomCategoryId));
+                    if (departmentId != null && !departmentId.isEmpty()) bodyMap.put("departmentId", Long.parseLong(departmentId));
+                    if (roomCharge != null && !roomCharge.isEmpty()) bodyMap.put("roomCharge", Double.parseDouble(roomCharge));
+                    if (maintananceCharge != null && !maintananceCharge.isEmpty()) bodyMap.put("maintananceCharge", Double.parseDouble(maintananceCharge));
+                    if (linenCharge != null && !linenCharge.isEmpty()) bodyMap.put("linenCharge", Double.parseDouble(linenCharge));
+                    if (nursingCharge != null && !nursingCharge.isEmpty()) bodyMap.put("nursingCharge", Double.parseDouble(nursingCharge));
+                    if (moCharge != null && !moCharge.isEmpty()) bodyMap.put("moCharge", Double.parseDouble(moCharge));
+                    if (moChargeForAfterDuration != null && !moChargeForAfterDuration.isEmpty()) bodyMap.put("moChargeForAfterDuration", Double.parseDouble(moChargeForAfterDuration));
+                    if (adminstrationCharge != null && !adminstrationCharge.isEmpty()) bodyMap.put("adminstrationCharge", Double.parseDouble(adminstrationCharge));
+                    if (medicalCareCharge != null && !medicalCareCharge.isEmpty()) bodyMap.put("medicalCareCharge", Double.parseDouble(medicalCareCharge));
+                    if (timedItemFeeDurationHours != null && !timedItemFeeDurationHours.isEmpty()) bodyMap.put("timedItemFeeDurationHours", Double.parseDouble(timedItemFeeDurationHours));
+                    if (timedItemFeeOverShootHours != null && !timedItemFeeOverShootHours.isEmpty()) bodyMap.put("timedItemFeeOverShootHours", Double.parseDouble(timedItemFeeOverShootHours));
+                    if (timedItemFeeDurationDaysForMoCharge != null && !timedItemFeeDurationDaysForMoCharge.isEmpty()) bodyMap.put("timedItemFeeDurationDaysForMoCharge", Long.parseLong(timedItemFeeDurationDaysForMoCharge));
+                    String bodyJson = new com.google.gson.Gson().toJson(bodyMap);
+                    request = HttpRequest.newBuilder().uri(URI.create(baseUrl + "/api/inward/room-facility-charges"))
+                            .timeout(Duration.ofSeconds(15)).header("Finance", hmisApiKey)
+                            .header("Content-Type", "application/json")
+                            .POST(HttpRequest.BodyPublishers.ofString(bodyJson)).build();
+                    break;
+                }
+                case "PUT_CHARGE": {
+                    if (id == null || id.isEmpty()) return "Error: id is required for PUT_CHARGE.";
+                    java.util.Map<String, Object> bodyMap = new java.util.LinkedHashMap<>();
+                    if (name != null && !name.isEmpty()) bodyMap.put("name", name);
+                    if (roomId != null && !roomId.isEmpty()) bodyMap.put("roomId", Long.parseLong(roomId));
+                    if (roomCategoryId != null && !roomCategoryId.isEmpty()) bodyMap.put("roomCategoryId", Long.parseLong(roomCategoryId));
+                    if (departmentId != null && !departmentId.isEmpty()) bodyMap.put("departmentId", Long.parseLong(departmentId));
+                    if (roomCharge != null && !roomCharge.isEmpty()) bodyMap.put("roomCharge", Double.parseDouble(roomCharge));
+                    if (maintananceCharge != null && !maintananceCharge.isEmpty()) bodyMap.put("maintananceCharge", Double.parseDouble(maintananceCharge));
+                    if (linenCharge != null && !linenCharge.isEmpty()) bodyMap.put("linenCharge", Double.parseDouble(linenCharge));
+                    if (nursingCharge != null && !nursingCharge.isEmpty()) bodyMap.put("nursingCharge", Double.parseDouble(nursingCharge));
+                    if (moCharge != null && !moCharge.isEmpty()) bodyMap.put("moCharge", Double.parseDouble(moCharge));
+                    if (moChargeForAfterDuration != null && !moChargeForAfterDuration.isEmpty()) bodyMap.put("moChargeForAfterDuration", Double.parseDouble(moChargeForAfterDuration));
+                    if (adminstrationCharge != null && !adminstrationCharge.isEmpty()) bodyMap.put("adminstrationCharge", Double.parseDouble(adminstrationCharge));
+                    if (medicalCareCharge != null && !medicalCareCharge.isEmpty()) bodyMap.put("medicalCareCharge", Double.parseDouble(medicalCareCharge));
+                    if (timedItemFeeDurationHours != null && !timedItemFeeDurationHours.isEmpty()) bodyMap.put("timedItemFeeDurationHours", Double.parseDouble(timedItemFeeDurationHours));
+                    if (timedItemFeeOverShootHours != null && !timedItemFeeOverShootHours.isEmpty()) bodyMap.put("timedItemFeeOverShootHours", Double.parseDouble(timedItemFeeOverShootHours));
+                    if (timedItemFeeDurationDaysForMoCharge != null && !timedItemFeeDurationDaysForMoCharge.isEmpty()) bodyMap.put("timedItemFeeDurationDaysForMoCharge", Long.parseLong(timedItemFeeDurationDaysForMoCharge));
+                    String bodyJson = new com.google.gson.Gson().toJson(bodyMap);
+                    request = HttpRequest.newBuilder().uri(URI.create(baseUrl + "/api/inward/room-facility-charges/" + id))
+                            .timeout(Duration.ofSeconds(15)).header("Finance", hmisApiKey)
+                            .header("Content-Type", "application/json")
+                            .PUT(HttpRequest.BodyPublishers.ofString(bodyJson)).build();
+                    break;
+                }
+                case "DELETE_CHARGE": {
+                    if (id == null || id.isEmpty()) return "Error: id is required for DELETE_CHARGE.";
+                    StringBuilder url = new StringBuilder(baseUrl).append("/api/inward/room-facility-charges/").append(id);
+                    if (retireComments != null && !retireComments.isEmpty()) url.append("?retireComments=").append(java.net.URLEncoder.encode(retireComments, java.nio.charset.StandardCharsets.UTF_8));
+                    request = HttpRequest.newBuilder().uri(URI.create(url.toString()))
+                            .timeout(Duration.ofSeconds(15)).header("Finance", hmisApiKey)
+                            .DELETE().build();
+                    break;
+                }
+                default:
+                    return "Unknown method: " + method;
+            }
+
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            return "HTTP " + response.statusCode() + ": " + response.body();
+
+        } catch (Exception e) {
+            LOG.log(java.util.logging.Level.WARNING, "callInwardRoomsApi error: {0}", e.getMessage());
+            return "Error calling Inward Rooms API: " + e.getMessage();
+        }
+    }
+
     // -------------------------------------------------------------------------
     // Message building helpers
     // -------------------------------------------------------------------------
@@ -1268,6 +1585,14 @@ public class AnthropicApiService implements Serializable {
           .append("then POST to create, PUT to update, or DELETE to retire. ")
           .append("Always confirm with the user before POST, PUT, or DELETE — these changes affect live inward billing discounts. ")
           .append("POST returns 'already_exists' with the existing id when a duplicate combination already exists.\n\n");
+        sb.append("### manage_inward_rooms\n");
+        sb.append("Manage inward room master data: room categories (/inward/room-categories), ")
+          .append("rooms (/inward/rooms), and room facility charges — i.e. room fee configurations — (/inward/room-facility-charges). ")
+          .append("Use LIST_CATEGORIES / LIST_ROOMS / LIST_CHARGES to browse. ")
+          .append("POST_CATEGORY / POST_ROOM / POST_CHARGE to create new records. ")
+          .append("PUT_CATEGORY / PUT_ROOM / PUT_CHARGE to update. ")
+          .append("DELETE_CATEGORY / DELETE_ROOM / DELETE_CHARGE to soft-retire. ")
+          .append("Always confirm with the user before POST, PUT, or DELETE — these changes affect live inward room billing.\n\n");
 
         sb.append("## How to Use the Tools\n");
         sb.append("- When a user describes a problem or asks why something behaves a certain way, search the source code first.\n");
