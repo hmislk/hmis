@@ -245,9 +245,8 @@
                         <p:panel header="Links" toggleable="true">
                             <div class="ui-g">
                                 <div class="ui-g-12">
-                                    <p:commandLink value="Finger Print Analysis"
-                                                   action="/hr/hr_shift_table_finger_print_by_staff"
-                                                   ajax="false" />
+                                    <h:link value="Finger Print Analysis"
+                                            outcome="/hr/hr_shift_table_finger_print_by_staff" />
                                 </div>
                             </div>
                         </p:panel>
@@ -294,10 +293,11 @@
 
                                 <div class="ui-g-12">
                                     <p:commandButton ajax="false"
-                                                     value="Search"
-                                                     icon="pi pi-search"
-                                                     styleClass="ui-button-primary"
-                                                     action="#{staffAdditionalFormController.createAmmendmentTableShiftDateExtraShift()}" />
+                                                    value="Search"
+                                                    icon="pi pi-search"
+                                                    styleClass="ui-button-primary"
+                                                    process="@this searchFromDate searchToDate searchStaff searchApprovedStaff"
+                                                    action="#{staffAdditionalFormController.createAmmendmentTableShiftDateExtraShift()}" />
                                 </div>
                             </div>
 
@@ -311,9 +311,10 @@
 
                                 <p:column headerText="View" style="width:70px;text-align:center;">
                                     <p:commandButton ajax="false"
-                                                     value="View"
-                                                     action="#{staffAdditionalFormController.viewAdditionalForm(add)}"
-                                                     disabled="#{add.retired}" />
+                                                    value="View"
+                                                    process="@this"
+                                                    action="#{staffAdditionalFormController.viewAdditionalForm(add)}"
+                                                    disabled="#{add.retired}" />
                                 </p:column>
                                 <p:column headerText="Id" style="width:70px;">
                                     <h:outputText value="#{add.id}" />
