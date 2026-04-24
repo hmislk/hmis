@@ -3381,6 +3381,24 @@ public class PatientController implements Serializable, ControllerWithPatient {
             }
         }
 
+        // If only one of phone/mobile is provided, copy it to the other.
+        // Both fields are used interchangeably; at least one must be present.
+        String phone = p.getPerson().getPhone();
+        String mobile = p.getPerson().getMobile();
+        boolean hasPhone = phone != null && !phone.trim().isEmpty();
+        boolean hasMobile = mobile != null && !mobile.trim().isEmpty();
+        if (sessionController.getApplicationPreference().isNeedPhoneNumberForPatientRegistration()) {
+            if (!hasPhone && !hasMobile) {
+                JsfUtil.addErrorMessage("Please enter at least one contact number (Phone or Mobile)");
+                return false;
+            }
+        }
+        if (hasPhone && !hasMobile) {
+            p.setMobileNumberStringTransient(phone.trim());
+        } else if (hasMobile && !hasPhone) {
+            p.setPhoneNumberStringTransient(mobile.trim());
+        }
+
         //applyPatientNameCapitalization(p);
         // Generate PHN upfront if needed
         if (p.getPhn() == null || p.getPhn().trim().equals("")) {
@@ -3882,8 +3900,10 @@ public class PatientController implements Serializable, ControllerWithPatient {
             }
         }
         if (sessionController.getApplicationPreference().isNeedPhoneNumberForPatientRegistration()) {
-            if (p.getPerson().getPhone() == null || p.getPerson().getPhone().equals("")) {
-                JsfUtil.addErrorMessage("Please Enter a Phone Number");
+            boolean phonePresent = p.getPerson().getPhone() != null && !p.getPerson().getPhone().trim().isEmpty();
+            boolean mobilePresent = p.getPerson().getMobile() != null && !p.getPerson().getMobile().trim().isEmpty();
+            if (!phonePresent && !mobilePresent) {
+                JsfUtil.addErrorMessage("Please Enter a Phone or Mobile Number");
                 return true;
             }
         }
