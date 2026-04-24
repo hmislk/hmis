@@ -427,6 +427,24 @@ public class PharmaceuticalBillItem implements Serializable {
         }
     }
 
+    /**
+     * Attach an ItemBatch reference without dereferencing it to read rates.
+     * The legacy {@link #setItemBatch(ItemBatch)} reads retailRate and
+     * purchaseRate off the argument, which triggers lazy-proxy initialization.
+     * That pulls in the whole ItemBatch object graph eagerly (Item, Category,
+     * Institution, BillItem, chains of WebUser/Staff/Person) — ~46 SQL queries
+     * the first time any user hits it. See issue #20138.
+     *
+     * Callers that already know the rates (e.g. from a StockDTO) should use
+     * this method to pass them in directly, so a thin
+     * {@code em.getReference()} proxy can be attached without a round-trip.
+     */
+    public void setItemBatchWithRates(ItemBatch itemBatch, double retailRate, double purchaseRate) {
+        this.itemBatch = itemBatch;
+        this.retailRate = retailRate;
+        this.purchaseRate = purchaseRate;
+    }
+
     public double getQty() {
 //        if (getBillItem() != null && getBillItem().getItem() instanceof Ampp || getBillItem() != null && getBillItem().getItem() instanceof Vmpp) {
 //            return qty / getBillItem().getItem().getDblValue();

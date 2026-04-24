@@ -625,28 +625,14 @@ public class PharmacySaleBhtController implements Serializable {
                 if (getBillItem().getPharmaceuticalBillItem() == null) {
                     getBillItem().setPharmaceuticalBillItem(new PharmaceuticalBillItem());
                 }
-                long t1 = System.currentTimeMillis();
-                if (selectedDto.getId() != null) {
-                    getBillItem().getPharmaceuticalBillItem().setStock(getStockFacade().getReference(selectedDto.getId()));
-                }
-                System.out.println("[BHT-SELECT]   Stock.getReference: " + (System.currentTimeMillis() - t1) + "ms");
 
-                long t2 = System.currentTimeMillis();
-                if (selectedDto.getItemBatchId() != null) {
-                    getBillItem().getPharmaceuticalBillItem().setItemBatch(getItemBatchFacade().getReference(selectedDto.getItemBatchId()));
-                }
-                System.out.println("[BHT-SELECT]   ItemBatch.getReference: " + (System.currentTimeMillis() - t2) + "ms");
-
-                long t3 = System.currentTimeMillis();
-                if (selectedDto.getItemId() != null) {
-                    // Use find (not getReference) so item.category is available for price matrix
-                    getBillItem().setItem(getItemFacade().find(selectedDto.getItemId()));
-                }
-                System.out.println("[BHT-SELECT]   Item.find (DB): " + (System.currentTimeMillis() - t3) + "ms");
-
-                long t4 = System.currentTimeMillis();
+                // Stock/ItemBatch proxies are deferred to addBillItem(). Loading them here
+                // was causing 20-26s first-touch lag per batch because EclipseLink weaves
+                // the descriptor and Payara's JDBC pool validates a connection on first
+                // borrow per entity class. We only need DTO values for preliminary display.
+                long tCalc = System.currentTimeMillis();
                 calculateRatesFromDto(getBillItem(), selectedDto);
-                System.out.println("[BHT-SELECT]   calculateRatesFromDto: " + (System.currentTimeMillis() - t4) + "ms");
+                System.out.println("[BHT-SELECT]   calculateRatesFromDto: " + (System.currentTimeMillis() - tCalc) + "ms");
             }
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Error in handleStockSelect", e);
@@ -1718,12 +1704,50 @@ public class PharmacySaleBhtController implements Serializable {
             return;
         }
 
-        // Stock and ItemBatch proxies for FK persistence; Item already loaded in handleStockSelect
+        long tStockRef = System.currentTimeMillis();
         Stock stockRef = getStockFacade().getReference(selectedStockId);
-        ItemBatch itemBatchRef = getItemBatchFacade().getReference(selectedStockDto.getItemBatchId());
+        System.out.println("[BHT-ADD]   Stock.getReference: " + (System.currentTimeMillis() - tStockRef) + "ms");
 
+        // Use getReference() — a thin, uninitialised proxy — instead of find().
+        // find(ItemBatch) triggers a cascading eager load of Item, Category,
+        // Institution, BillItem and their transitive graphs (~46 SQL queries,
+        // ~20s first time). We don't need the full entity — only the ID, the
+        // retailRate and the purchaseRate, and we already have the last two on
+        // selectedStockDto. The DTO-aware setter below writes them without
+        // dereferencing the proxy, keeping it a pure reference. Issue #20138.
+        long tBatchRef = System.currentTimeMillis();
+        ItemBatch itemBatchRef = getItemBatchFacade().getReference(selectedStockDto.getItemBatchId());
+        System.out.println("[BHT-ADD]   ItemBatch.getReference: " + (System.currentTimeMillis() - tBatchRef) + "ms");
+
+        long tSetStock = System.currentTimeMillis();
         billItem.getPharmaceuticalBillItem().setStock(stockRef);
-        billItem.getPharmaceuticalBillItem().setItemBatch(itemBatchRef);
+        System.out.println("[BHT-ADD]   pbi.setStock: " + (System.currentTimeMillis() - tSetStock) + "ms");
+
+        long tSetBatch = System.currentTimeMillis();
+        double dtoRetailRate = selectedStockDto.getRetailRate() != null ? selectedStockDto.getRetailRate() : 0.0;
+        double dtoPurchaseRate = selectedStockDto.getPurchaseRate() != null ? selectedStockDto.getPurchaseRate() : 0.0;
+        billItem.getPharmaceuticalBillItem().setItemBatchWithRates(itemBatchRef, dtoRetailRate, dtoPurchaseRate);
+        System.out.println("[BHT-ADD]   pbi.setItemBatchWithRates: " + (System.currentTimeMillis() - tSetBatch) + "ms");
+
+        long tGetItem = System.currentTimeMillis();
+        Item currentItem = billItem.getItem();
+        System.out.println("[BHT-ADD]   billItem.getItem(): " + (System.currentTimeMillis() - tGetItem) + "ms itemNull=" + (currentItem == null));
+
+        long tItemFind = System.currentTimeMillis();
+        if (currentItem == null && selectedStockDto.getItemId() != null) {
+            // Use getReference — a proxy — instead of find. BillItem.setItem()
+            // has no side effects (it does not read any field off the item),
+            // so the proxy stays uninitialised and the cascading eager load of
+            // Item's graph never fires. Issue #20138.
+            long tFacadeFind = System.currentTimeMillis();
+            Item itemRef = getItemFacade().getReference(selectedStockDto.getItemId());
+            System.out.println("[BHT-ADD]     itemFacade.getReference: " + (System.currentTimeMillis() - tFacadeFind) + "ms");
+
+            long tSetItem = System.currentTimeMillis();
+            billItem.setItem(itemRef);
+            System.out.println("[BHT-ADD]     billItem.setItem: " + (System.currentTimeMillis() - tSetItem) + "ms");
+        }
+        System.out.println("[BHT-ADD]   Item.find block TOTAL: " + (System.currentTimeMillis() - tItemFind) + "ms");
 
         if (checkItemBatch()) {
             errorMessage = "Already added this item batch";
