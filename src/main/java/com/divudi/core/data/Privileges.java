@@ -130,6 +130,7 @@ public enum Privileges {
     //<editor-fold defaultstate="collapsed" desc="Finance">
     PettyCashBillCancellationApprove("Petty Cash Bill Cancellation Approval"),
     PettyCashBillApprove("Petty Cash Bill Approval"),
+    PettyCashEditFinancialYear("Petty Cash Edit Financial Year"),
     AllCashierSummery("All Cashier Summary"),
     CashTransactionCashIn("Cash Transaction Cash In"),
     CashTransactionCashOut("Cash Transaction Cash Out"),
