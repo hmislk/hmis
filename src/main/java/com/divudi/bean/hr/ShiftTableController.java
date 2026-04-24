@@ -552,8 +552,14 @@ public class ShiftTableController implements Serializable {
 
     /**
      * Safe display label: "Name (code)" with fallbacks at every level.
+     *
+     * Reads Staff.code via getCodeRaw() to avoid the render-time mutation
+     * side effect in Staff.getCode() (which writes a derived code back to
+     * the field on blank values, dirtying the JPA entity).
+     *
      * Name fallback: "Staff #id" if person or name is null.
-     * Code fallback: code field (which auto-derives from name), then id.
+     * Code fallback: raw code field; then 5-char name-derived string
+     * (same logic as getCode(), but read-only); then id.
      */
     public String staffLabel(Staff s) {
         if (s == null) return "(unknown)";
@@ -567,10 +573,17 @@ public class ShiftTableController implements Serializable {
             name = "Staff #" + (s.getId() != null ? s.getId() : "?");
         }
 
-        // --- code part ---
-        String code = s.getCode(); // already has name-based fallback in getCode()
+        // --- code part (read-only; avoids Staff.getCode() side effect) ---
+        String code = s.getCodeRaw();
         if (code == null || code.trim().isEmpty()) {
-            code = s.getId() != null ? String.valueOf(s.getId()) : "?";
+            // Mirror getCode()'s name-based fallback, but WITHOUT writing back.
+            if (s.getPerson() != null && s.getPerson().getName() != null
+                    && !s.getPerson().getName().trim().isEmpty()) {
+                String temName = s.getPerson().getName() + "      ";
+                code = temName.substring(0, 5);
+            } else {
+                code = s.getId() != null ? String.valueOf(s.getId()) : "?";
+            }
         } else {
             code = code.trim();
         }
