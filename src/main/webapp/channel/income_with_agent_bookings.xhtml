@@ -86,12 +86,12 @@
                             </p:selectOneMenu>
                         </h:panelGrid>
 
-                        <h:panelGrid columns="6" class="my-2">
-                            <p:commandButton class="ui-button-warning mt-2 mb-2" icon="fas fa-cogs" value="Process" action="#{channelReportController.fetchAgentSessionIncome}" ajax="false" />
+                        <div class="d-flex align-items-center my-2">
+                            <p:commandButton class="ui-button-warning mx-1" icon="fas fa-cogs" value="Process" action="#{channelReportController.fetchAgentSessionIncome}" ajax="false" />
 
                             <p:commandButton
                                 id="btnPdf"
-                                class="m-1 ui-button-info"
+                                class="mx-1 ui-button-info"
                                 ajax="false"
                                 rendered="true"
                                 icon="fas fa-file-pdf"
@@ -101,7 +101,7 @@
 
                             <p:commandButton
                                 id="btnPrint"
-                                class="m-1 ui-button-danger mx-2"
+                                class="mx-1 ui-button-danger mx-2"
                                 icon="fas fa-print"
                                 ajax="false"
                                 value="Print Table"
@@ -110,13 +110,12 @@
 
                             <p:commandButton
                                 id="btnExcel"
-                                class="m-1 ui-button-success"
+                                class="mx-1 ui-button-success"
                                 icon="fas fa-file-excel"
                                 ajax="false" value="Export to Excel">
                                 <p:dataExporter type="xlsx" exportFooter="true" target="tableForReport" fileName="#{channelReportController.incomeWithAgentBookingReportFileName}" postProcessor="#{channelReportController.postProcessIncomeWithAgentBookingReportExcel}"/>
                             </p:commandButton>
-
-                        </h:panelGrid>
+                        </div>
 
 
                         <p:panel header="Income With Agent Booking" >

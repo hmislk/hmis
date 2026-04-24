@@ -125,8 +125,8 @@
                             </div>
                         </div>
 
-                        <h:panelGrid columns="6" class="my-2">
-                            <p:commandButton class="ui-button-warning mt-2 mb-2" icon="fas fa-cogs" value="Process" action="#{channelReportController.fetchChannelIncomeSummeryByUserWise}" ajax="false" />
+                        <div class="d-flex align-items-center my-2">
+                            <p:commandButton class="ui-button-warning mt-2 mb-2 mx-2" icon="fas fa-cogs" value="Process" action="#{channelReportController.fetchChannelIncomeSummeryByUserWise}" ajax="false" />
 
                             <p:commandButton 
                                 value="Export as PDF" 
@@ -152,9 +152,7 @@
                                 class="m-1 ui-button-success">
                                 <p:fileDownload value="#{channelReportController.channelIncomeDailySummaryReportAsExcel}" />
                             </p:commandButton>
-
-                        </h:panelGrid>
-
+                        </div>
 
                         <p:panel >
 

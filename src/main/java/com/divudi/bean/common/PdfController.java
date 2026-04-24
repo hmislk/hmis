@@ -3764,7 +3764,7 @@ public class PdfController {
                     .setMarginBottom(2);
             document.add(tableTitle);
 
-            Table detailTable = new Table(new float[]{2f, 3f, 3f, 4f, 3f, 4f, 3f, 4f, 4f, 4f, 4f, 2f, 4f}).useAllAvailableWidth().setFixedLayout();
+            Table detailTable = new Table(new float[]{2f, 3f, 3f, 4f, 3.5f, 4f, 3f, 4f, 4f, 4f, 4f, 2.5f, 4f}).useAllAvailableWidth().setFixedLayout();
             String[] headers = {"Serial No", "Bill Id", "Created At", "Bill No", "Bill Type", "Patient", "Cashier", "Hospital Fee", "Doctor Fee", "Bill Gross Total", "Card Total", "Card Last 4 Numbers", "Bank"};
 
             for (String header : headers) {
@@ -3814,7 +3814,7 @@ public class PdfController {
             detailTable.addCell(new Cell().add(new Paragraph(String.format("%,.2f", wrapperDto.getAllHosFeeTotal())).setBold()).setTextAlignment(TextAlignment.RIGHT).setFontSize(8).setBackgroundColor(new DeviceRgb(192, 192, 192)));
             detailTable.addCell(new Cell().add(new Paragraph(String.format("%,.2f", wrapperDto.getAllDoctorFeeTotal())).setBold()).setTextAlignment(TextAlignment.RIGHT).setFontSize(8).setBackgroundColor(new DeviceRgb(192, 192, 192)));
             detailTable.addCell(new Cell().add(new Paragraph(String.format("%,.2f", wrapperDto.getAllTotalAmount())).setBold()).setTextAlignment(TextAlignment.RIGHT).setFontSize(8).setBackgroundColor(new DeviceRgb(192, 192, 192)));
-            detailTable.addCell(new Cell().add(new Paragraph(String.format("%,.2f", wrapperDto.getAllCardTotal())).setTextAlignment(TextAlignment.RIGHT).setFontSize(8)));
+            detailTable.addCell(new Cell().add(new Paragraph(String.format("%,.2f", wrapperDto.getAllCardTotal())).setBold()).setTextAlignment(TextAlignment.RIGHT).setFontSize(8).setBackgroundColor(new DeviceRgb(192, 192, 192)));
 
             document.add(detailTable);
         } else {

@@ -1465,7 +1465,6 @@ public class ChannelService {
         if (dtoList == null || dtoList.isEmpty()) {
             return null;
         }
-        System.out.println("size retrieved>>>>>>>>>>>>>>>>: " + dtoList.size());
 
         ChannelReportController.WrapperDtoForChannelFutureIncome wrapperDto = new ChannelReportController.WrapperDtoForChannelFutureIncome();
         wrapperDto.setIncomeDtos(dtoList);
@@ -1477,8 +1476,7 @@ public class ChannelService {
             wrapperDto.setAllTotalAmount(wrapperDto.getAllTotalAmount() + dto.getTotalAppoinmentFee());
             wrapperDto.setAllCardTotal(wrapperDto.getAllCardTotal() + dto.getCardFee());
         }
-        
-        System.out.println( "calculations DONE...............................");
+
         return wrapperDto;
 
     }

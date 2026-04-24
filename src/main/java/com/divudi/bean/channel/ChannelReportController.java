@@ -507,12 +507,7 @@ public class ChannelReportController implements Serializable {
             return;
         }
 
-        paymentsFromCardAppoinments = channelService.fetchCardPaymentsFromChannelIncome(fromDate, toDate, institution, reportStatus);
         cardPaymentDetails = channelService.fetchCardPaymentDetailsForChannelIncome(fromDate, toDate, institution, reportStatus);
-
-        for (ChannelIncomeDetailDto dto : cardPaymentDetails.getIncomeDtos()) {
-            System.out.println("billId=" + dto.getBillId() + ", billedDate=" + dto.getBilledDate() + ", billDeptId=" + dto.getBillDeptId() + ", billTypeAtomic=" + dto.getBillTypeAtomic() + ", billType=" + dto.getBillType() + ", patientName=" + dto.getPatientName() + ", billedBy=" + dto.getBilledBy() + ", isCancelled=" + dto.isIsCancelled() + ", cancelledBillDeptId=" + dto.getCancelledBillDeptId() + ", isRefunded=" + dto.isIsRefunded() + ", refundBillDeptId=" + dto.getRefundBillDeptId() + ", hosFee=" + dto.getHosFee() + ", doctorFee=" + dto.getDoctorFee() + ", totalAppoinmentFee=" + dto.getTotalAppoinmentFee() + ", cardFee=" + dto.getCardFee() + ", paymentReference=" + dto.getPaymentReference() + ", creditCompanyName=" + dto.getCreditCompanyName());
-        }
     }
 
     public double calculateTotalsFromPayment(List<Payment> payments, String type) {
