@@ -3468,6 +3468,18 @@ public class DataUploadController implements Serializable {
 //        return itemFees;
 //
 //    }
+    private String readCellAsString(Cell cell) {
+        if (cell == null) {
+            return "";
+        }
+        DataFormatter formatter = new DataFormatter(Locale.ENGLISH);
+        FormulaEvaluator evaluator = cell.getSheet()
+                .getWorkbook()
+                .getCreationHelper()
+                .createFormulaEvaluator();
+        return formatter.formatCellValue(cell, evaluator).trim();
+    }
+
     private List<Consultant> readConsultantsFromExcel(InputStream inputStream) throws IOException {
         List<Consultant> cons = new ArrayList<>();
         Workbook workbook = new XSSFWorkbook(inputStream);
@@ -3533,17 +3545,10 @@ public class DataUploadController implements Serializable {
             }
 
             Cell sexCell = row.getCell(5);
-            if (sexCell != null) {
-                sexString = sexCell.getStringCellValue();
-
-            }
+            sexString = readCellAsString(sexCell);
 
             Cell mobileCell = row.getCell(6);
-            if (mobileCell != null && mobileCell.getCellType() == CellType.STRING) {
-                mobileNumber = mobileCell.getStringCellValue();
-            } else if (mobileCell != null && mobileCell.getCellType() == CellType.NUMERIC) {
-                mobileNumber = "" + mobileCell.getNumericCellValue();
-            }
+            mobileNumber = readCellAsString(mobileCell);
 
             Cell specialityCell = row.getCell(7);
             if (specialityCell != null && specialityCell.getCellType() == CellType.STRING) {
@@ -3652,17 +3657,10 @@ public class DataUploadController implements Serializable {
             }
 
             Cell sexCell = row.getCell(5);
-            if (sexCell != null) {
-                sexString = sexCell.getStringCellValue();
-
-            }
+            sexString = readCellAsString(sexCell);
 
             Cell mobileCell = row.getCell(6);
-            if (mobileCell != null && mobileCell.getCellType() == CellType.STRING) {
-                mobileNumber = mobileCell.getStringCellValue();
-            } else if (mobileCell != null && mobileCell.getCellType() == CellType.NUMERIC) {
-                mobileNumber = "" + mobileCell.getNumericCellValue();
-            }
+            mobileNumber = readCellAsString(mobileCell);
 
             Cell specialityCell = row.getCell(7);
             if (specialityCell != null && specialityCell.getCellType() == CellType.STRING) {
