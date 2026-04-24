@@ -14,7 +14,7 @@
                 <h:outputStylesheet library="css" name="eight_col_filter_panel.css" />
                 <h:form>
                     <p:panel header="Income By Institution with Agent Bookings" >
-                        <h:panelGrid columns="12" class="my-2 ui-fluid" style="table-layout: fixed; width: 100%;" 
+                        <h:panelGrid columns="11" class="my-2 ui-fluid" style="table-layout: fixed; width: 100%;" 
                                             columnClasses="fp-col-label1,fp-col-input1,fp-col-space1,
                                         fp-col-label2,fp-col-input2,fp-col-space2,
                                         fp-col-label3,fp-col-input3, fp-col-space1,fp-col-label1,fp-col-input1">
@@ -76,7 +76,7 @@
 
                             <p:selectOneMenu
                                 id="cmbDept"
-                                sstyleClass="w-100 form-control"
+                                styleClass="w-100 form-control"
                                 value="#{channelReportController.reportStatus}"
                                 >
                                 <f:selectItem itemLabel="Details View" itemValue="Details"/>
@@ -101,7 +101,7 @@
 
                             <p:commandButton
                                 id="btnPrint"
-                                class="mx-1 ui-button-danger mx-2"
+                                class="mx-1 ui-button-danger"
                                 icon="fas fa-print"
                                 ajax="false"
                                 value="Print Table"

@@ -1430,6 +1430,7 @@ public class ChannelService {
                 + " left join p.bank ba "
                 + " where p.bill.billType in :bt and p.bill.billTypeAtomic in :bta "
                 + " and p.paymentMethod = :type"
+                + " and p.retired = false "
                 + " and p.bill.retired = false "
                 + " and p.bill.createdAt between :fromDate and :toDate ";
 

@@ -474,16 +474,8 @@ public class ChannelReportController implements Serializable {
         shiftStartBills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
 
-    private List<Payment> paymentsFromCardAppoinments;
     private WrapperDtoForChannelFutureIncome cardPaymentDetails;
 
-    public List<Payment> getPaymentsFromCardAppoinments() {
-        return paymentsFromCardAppoinments;
-    }
-
-    public void setPaymentsFromCardAppoinments(List<Payment> paymentsFromCardAppoinments) {
-        this.paymentsFromCardAppoinments = paymentsFromCardAppoinments;
-    }
     public WrapperDtoForChannelFutureIncome getCardPaymentDetails() {
         return cardPaymentDetails;
     }

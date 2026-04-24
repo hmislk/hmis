@@ -141,21 +141,13 @@
                                                         </h:outputText>
                                                     </td>
 
-                                                    <h:panelGroup >
-                                                        <td style="text-align: right;">
-                                                            <h:outputText styleClass="discountValue" value="#{row.paymentReference}">
+                                                    <td style="text-align: right;">
+                                                        <h:outputText value="#{row.paymentReference}"/>
+                                                    </td>
 
-                                                            </h:outputText>
-                                                        </td>
-                                                    </h:panelGroup>
-
-                                                    <h:panelGroup>
-                                                        <td style="text-align: left;">
-                                                            <h:outputText value="#{row.creditCompanyName}"/>
-                                                        </td>
-                                                    </h:panelGroup>
-
-
+                                                    <td style="text-align: left;">
+                                                        <h:outputText value="#{row.creditCompanyName}"/>
+                                                    </td>
                                                 </tr>
                                             </ui:repeat>
                                         </tbody>
