@@ -225,10 +225,15 @@
                                 </p:toolbarGroup>
                                 <p:toolbarGroup align="right">
                                     <p:commandButton ajax="false"
-                                                     value="Delete"
-                                                     icon="pi pi-trash"
-                                                     styleClass="ui-button-danger"
-                                                     action="#{staffAdditionalFormController.deleteAdditionalForm()}" />
+                                                    value="Delete"
+                                                    icon="pi pi-trash"
+                                                    styleClass="ui-button-danger"
+                                                    disabled="#{staffAdditionalFormController.currentAdditionalForm.id eq null}"
+                                                    action="#{staffAdditionalFormController.deleteAdditionalForm()}">
+                                        <p:confirm header="Confirm Delete"
+                                                message="Delete this additional extra time form?"
+                                                icon="pi pi-exclamation-triangle" />
+                                    </p:commandButton>
                                 </p:toolbarGroup>
                             </p:toolbar>
 
@@ -364,6 +369,15 @@
                 </div>
 
             </p:panel>
+
+            <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
+                <p:commandButton value="Yes" type="button"
+                                styleClass="ui-confirmdialog-yes ui-button-danger"
+                                icon="pi pi-check" />
+                <p:commandButton value="No" type="button"
+                                styleClass="ui-confirmdialog-no ui-button-secondary"
+                                icon="pi pi-times" />
+            </p:confirmDialog>
 
         </h:form>
     </ui:define>
