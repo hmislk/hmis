@@ -486,9 +486,9 @@ public class AnthropicApiService implements Serializable {
                                 .add("method", Json.createObjectBuilder()
                                         .add("type", "string")
                                         .add("enum", Json.createArrayBuilder()
-                                                .add("LIST_CATEGORIES").add("POST_CATEGORY").add("PUT_CATEGORY").add("DELETE_CATEGORY")
-                                                .add("LIST_ROOMS").add("POST_ROOM").add("PUT_ROOM").add("DELETE_ROOM")
-                                                .add("LIST_CHARGES").add("POST_CHARGE").add("PUT_CHARGE").add("DELETE_CHARGE"))
+                                                .add("LIST_CATEGORIES").add("GET_CATEGORY").add("POST_CATEGORY").add("PUT_CATEGORY").add("DELETE_CATEGORY")
+                                                .add("LIST_ROOMS").add("GET_ROOM").add("POST_ROOM").add("PUT_ROOM").add("DELETE_ROOM")
+                                                .add("LIST_CHARGES").add("GET_CHARGE").add("POST_CHARGE").add("PUT_CHARGE").add("DELETE_CHARGE"))
                                         .add("description", "Operation to perform."))
                                 .add("id", Json.createObjectBuilder()
                                         .add("type", "string")
@@ -1297,6 +1297,12 @@ public class AnthropicApiService implements Serializable {
                             .timeout(Duration.ofSeconds(15)).header("Finance", hmisApiKey).GET().build();
                     break;
                 }
+                case "GET_CATEGORY": {
+                    if (id == null || id.isEmpty()) return "Error: id is required for GET_CATEGORY.";
+                    request = HttpRequest.newBuilder().uri(URI.create(baseUrl + "/api/inward/room-categories/" + id))
+                            .timeout(Duration.ofSeconds(15)).header("Finance", hmisApiKey).GET().build();
+                    break;
+                }
                 case "POST_CATEGORY": {
                     java.util.Map<String, Object> bodyMap = new java.util.LinkedHashMap<>();
                     bodyMap.put("name", name);
@@ -1338,6 +1344,12 @@ public class AnthropicApiService implements Serializable {
                     if (roomCategoryId != null && !roomCategoryId.isEmpty()) { url.append(first ? "?" : "&").append("roomCategoryId=").append(roomCategoryId); first = false; }
                     if (size != null && !size.isEmpty()) { url.append(first ? "?" : "&").append("size=").append(size); }
                     request = HttpRequest.newBuilder().uri(URI.create(url.toString()))
+                            .timeout(Duration.ofSeconds(15)).header("Finance", hmisApiKey).GET().build();
+                    break;
+                }
+                case "GET_ROOM": {
+                    if (id == null || id.isEmpty()) return "Error: id is required for GET_ROOM.";
+                    request = HttpRequest.newBuilder().uri(URI.create(baseUrl + "/api/inward/rooms/" + id))
                             .timeout(Duration.ofSeconds(15)).header("Finance", hmisApiKey).GET().build();
                     break;
                 }
@@ -1387,6 +1399,12 @@ public class AnthropicApiService implements Serializable {
                     if (roomCategoryId != null && !roomCategoryId.isEmpty()) { url.append(first ? "?" : "&").append("roomCategoryId=").append(roomCategoryId); first = false; }
                     if (size != null && !size.isEmpty()) { url.append(first ? "?" : "&").append("size=").append(size); }
                     request = HttpRequest.newBuilder().uri(URI.create(url.toString()))
+                            .timeout(Duration.ofSeconds(15)).header("Finance", hmisApiKey).GET().build();
+                    break;
+                }
+                case "GET_CHARGE": {
+                    if (id == null || id.isEmpty()) return "Error: id is required for GET_CHARGE.";
+                    request = HttpRequest.newBuilder().uri(URI.create(baseUrl + "/api/inward/room-facility-charges/" + id))
                             .timeout(Duration.ofSeconds(15)).header("Finance", hmisApiKey).GET().build();
                     break;
                 }
@@ -1982,6 +2000,28 @@ public class AnthropicApiService implements Serializable {
                     {"GET",    "/inward-discount-matrix/payment-schemes/search?query=",           "PaymentScheme name → id lookup"},
                     {"GET",    "/inward-discount-matrix/pharmaceutical-item-categories/search?query=", "PharmaceuticalItemCategory name → id lookup"},
                     {"GET",    "/inward-discount-matrix/payment-methods",                         "List PaymentMethod enum values (Cash, Credit, Card, ...)"}
+                });
+
+        appendModule(sb, "Inward Room Management", "/inward/room-categories, /inward/rooms, /inward/room-facility-charges",
+                "Manage inward room master data: room categories, rooms, and room facility charges (fee configurations). "
+                + "POST returns 409 with existing id when a duplicate name exists.",
+                githubUrl(branch, "developer_docs/API_INWARD_ROOM.md"),
+                new String[][]{
+                    {"GET",    "/inward/room-categories",          "List room categories. Filters: query, size"},
+                    {"GET",    "/inward/room-categories/{id}",     "Fetch one room category"},
+                    {"POST",   "/inward/room-categories",          "Create room category. Body: name (required), code, description"},
+                    {"PUT",    "/inward/room-categories/{id}",     "Update room category"},
+                    {"DELETE", "/inward/room-categories/{id}",     "Soft-retire room category"},
+                    {"GET",    "/inward/rooms",                    "List rooms. Filters: query, roomCategoryId, size"},
+                    {"GET",    "/inward/rooms/{id}",               "Fetch one room"},
+                    {"POST",   "/inward/rooms",                    "Create room. Body: name (required), code, description, roomCategoryId, filled"},
+                    {"PUT",    "/inward/rooms/{id}",               "Update room"},
+                    {"DELETE", "/inward/rooms/{id}",               "Soft-retire room"},
+                    {"GET",    "/inward/room-facility-charges",    "List room facility charges. Filters: query, roomId, roomCategoryId, size"},
+                    {"GET",    "/inward/room-facility-charges/{id}", "Fetch one room facility charge"},
+                    {"POST",   "/inward/room-facility-charges",    "Create room facility charge. Body: name (required), roomId, roomCategoryId, departmentId, charge fields, timedItemFee fields"},
+                    {"PUT",    "/inward/room-facility-charges/{id}", "Update room facility charge"},
+                    {"DELETE", "/inward/room-facility-charges/{id}", "Soft-retire room facility charge"}
                 });
 
         // ── Login History / Config ────────────────────────────────────────────

@@ -69,7 +69,7 @@ public class InwardRoomCategoryApi {
 
     /**
      * List room categories with optional name search.
-     * GET /api/inward/room-categories?query=&size=&page=
+     * GET /api/inward/room-categories?query=&size=
      */
     @GET
     @Produces(MediaType.APPLICATION_JSON)

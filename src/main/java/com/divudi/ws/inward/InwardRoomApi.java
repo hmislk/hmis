@@ -205,7 +205,11 @@ public class InwardRoomApi {
             }
             room.setParentCategory(roomCategory);
             if (body.containsKey("filled")) {
-                room.setFilled(asBoolean(body.get("filled")));
+                Boolean filledVal = asBooleanStrict(body.get("filled"));
+                if (filledVal == null) {
+                    return errorResponse("Invalid value for 'filled': must be true or false", 400);
+                }
+                room.setFilled(filledVal);
             }
             room.setCreatedAt(new Date());
             room.setCreater(user);
@@ -290,7 +294,11 @@ public class InwardRoomApi {
                 }
             }
             if (body.containsKey("filled")) {
-                room.setFilled(asBoolean(body.get("filled")));
+                Boolean filledVal = asBooleanStrict(body.get("filled"));
+                if (filledVal == null) {
+                    return errorResponse("Invalid value for 'filled': must be true or false", 400);
+                }
+                room.setFilled(filledVal);
             }
 
             roomFacade.edit(room);
@@ -397,11 +405,13 @@ public class InwardRoomApi {
         return o.toString();
     }
 
-    private boolean asBoolean(Object o) {
-        if (o == null) return false;
+    private Boolean asBooleanStrict(Object o) {
+        if (o == null) return null;
         if (o instanceof Boolean) return (Boolean) o;
         String s = o.toString().trim();
-        return "true".equalsIgnoreCase(s) || "1".equals(s) || "yes".equalsIgnoreCase(s);
+        if ("true".equalsIgnoreCase(s) || "1".equals(s)) return true;
+        if ("false".equalsIgnoreCase(s) || "0".equals(s)) return false;
+        return null; // caller must reject
     }
 
     private Long asLong(Object o) {

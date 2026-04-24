@@ -30,6 +30,14 @@ GET /api/inward/room-categories?query=&size=
 }
 ```
 
+### GET — Fetch by ID
+
+```
+GET /api/inward/room-categories/{id}
+```
+
+Returns a single room category or 404 if not found / retired.
+
 ### POST — Create
 
 ```
@@ -99,6 +107,14 @@ GET /api/inward/rooms?query=&roomCategoryId=&size=
   ]
 }
 ```
+
+### GET — Fetch by ID
+
+```
+GET /api/inward/rooms/{id}
+```
+
+Returns a single room or 404 if not found / retired.
 
 ### POST — Create
 
@@ -181,6 +197,14 @@ GET /api/inward/room-facility-charges?query=&roomId=&roomCategoryId=&size=
   ]
 }
 ```
+
+### GET — Fetch by ID
+
+```
+GET /api/inward/room-facility-charges/{id}
+```
+
+Returns a single room facility charge or 404 if not found / retired.
 
 ### POST — Create
 
