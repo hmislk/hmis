@@ -264,8 +264,8 @@
                             <h:panelGroup rendered="#{sts.previousStaffShift eq null}">
                                 <p:selectOneMenu value="#{sts.startRecord}">
                                     <f:selectItem itemLabel="Select"/>
-                                    <f:selectItems value="#{sts.fingerPrintRecordList}" var="i"
-                                                   itemLabel="#{i.timeLabel}" itemValue="#{i}" />
+                                    <f:selectItems value="#{sts.fingerPrintRecordList}" var="rec"
+                                                   itemLabel="#{rec.timeLabel}" itemValue="#{rec}" />
                                     <f:ajax event="change" execute="@this" render="strRc"
                                             listener="#{shiftFingerPrintAnalysisController.fingerPrintSelectListenerStartRecord(sts)}"/>
                                 </p:selectOneMenu>
@@ -282,8 +282,8 @@
                             <h:panelGroup rendered="#{sts.nextStaffShift eq null}">
                                 <p:selectOneMenu value="#{sts.endRecord}">
                                     <f:selectItem itemLabel="Select"/>
-                                    <f:selectItems value="#{sts.fingerPrintRecordList}" var="i"
-                                                   itemLabel="#{i.timeLabel}" itemValue="#{i}" />
+                                    <f:selectItems value="#{sts.fingerPrintRecordList}" var="rec"
+                                                   itemLabel="#{rec.timeLabel}" itemValue="#{rec}" />
                                     <f:ajax event="change" execute="@this" render="endRc"
                                             listener="#{shiftFingerPrintAnalysisController.fingerPrintSelectListenerEndRecord(sts)}"/>
                                 </p:selectOneMenu>
