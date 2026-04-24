@@ -892,13 +892,14 @@ public class ChannelApi {
             if (session.getBookedPatientCount() != null) {
                 int maxNo = session.getMaxNo();
                 long bookedPatientCount = session.getBookedPatientCount();
+                long reservedBookingCount = session.getReservedBookingCount() != null ? session.getReservedBookingCount() : 0L;
                 long totalPatientCount;
 
                 List<Integer> reservedNumbers = CommonFunctions.convertStringToIntegerList(session.getReserveNumbers());
                 if (false) {
                     bookedPatientCount = bookedPatientCount;
                 } else {
-                    bookedPatientCount = bookedPatientCount + reservedNumbers.size();
+                    bookedPatientCount = bookedPatientCount + reservedNumbers.size() - reservedBookingCount;
                 }
 
                 if (session.getCancelPatientCount() != null) {

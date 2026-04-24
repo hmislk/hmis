@@ -37,6 +37,7 @@ public class ApplicationConfig extends Application {
      */
     private void addRestResourceClasses(Set<Class<?>> resources) {
         resources.add(com.divudi.ws.channel.ChannelApi.class);
+        resources.add(com.divudi.ws.channel.ChannelSpecialityApi.class);
         resources.add(com.divudi.ws.channel.CorsResponseFilter.class);
         resources.add(com.divudi.ws.clinical.ClinicalMetadataApi.class);
         resources.add(com.divudi.ws.clinical.FavouriteMedicineApi.class);
