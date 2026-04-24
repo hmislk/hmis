@@ -130,11 +130,21 @@
                                                 <div class="row mb-2">
                                                     <div class="col-4"><h:outputLabel value="Voucher No"></h:outputLabel></div>
                                                     <div class="col-8">
-                                                        <p:inputText
-                                                            class="w-100"
-                                                            value="#{requestController.currentRequest.bill.invoiceNumber}"
-                                                            disabled="#{(requestController.currentRequest.status eq 'REJECTED' or requestController.currentRequest.status eq 'APPROVED' or requestController.currentRequest.status eq 'COMPLETED' or requestController.currentRequest.status eq 'CANCELLED')}">
-                                                        </p:inputText>
+                                                        <div class="d-flex gap-2 align-items-center">
+                                                            <p:inputText
+                                                                style="width: 6em;"
+                                                                class="text-center"
+                                                                value="#{requestController.pettyCashFinancialYear}"
+                                                                readonly="#{!webUserController.hasPrivilege('PettyCashEditFinancialYear')}"
+                                                                disabled="#{(requestController.currentRequest.status eq 'REJECTED' or requestController.currentRequest.status eq 'APPROVED' or requestController.currentRequest.status eq 'COMPLETED' or requestController.currentRequest.status eq 'CANCELLED')}">
+                                                            </p:inputText>
+                                                            <h:outputLabel value="-"></h:outputLabel>
+                                                            <p:inputText
+                                                                class="w-100"
+                                                                value="#{requestController.pettyCashReceiptNo}"
+                                                                disabled="#{(requestController.currentRequest.status eq 'REJECTED' or requestController.currentRequest.status eq 'APPROVED' or requestController.currentRequest.status eq 'COMPLETED' or requestController.currentRequest.status eq 'CANCELLED')}">
+                                                            </p:inputText>
+                                                        </div>
                                                     </div>
                                                 </div>
                                                 <div class="row mb-2">
