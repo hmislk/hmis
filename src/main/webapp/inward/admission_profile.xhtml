@@ -83,6 +83,33 @@
                         <div class="m-1">
                             <common:admission_details admission="#{admissionController.current}" class="w-100 m-1"/>
                         </div>
+                        <div class="m-1">
+                            <p:panel class="w-100 m-1">
+                                <f:facet name="header">
+                                    <h:outputText styleClass="fa-solid fa-allergies"/>
+                                    <h:outputLabel value="Allergies" class="mx-4"/>
+                                </f:facet>
+                                <h:panelGroup rendered="#{empty bhtEditController.patientAllergies}">
+                                    <p:outputLabel value="No known allergies" styleClass="text-muted"/>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{not empty bhtEditController.patientAllergies}">
+                                    <ui:repeat value="#{bhtEditController.patientAllergies}" var="al">
+                                        <div class="alert alert-warning py-1 px-2 my-1" role="alert">
+                                            <h:outputText styleClass="fa-solid fa-triangle-exclamation me-1"/>
+                                            <h:outputText
+                                                rendered="#{not empty al.itemValue and not empty al.stringValue}"
+                                                value="#{al.itemValue.name} - #{al.stringValue}"/>
+                                            <h:outputText
+                                                rendered="#{empty al.stringValue}"
+                                                value="#{al.itemValue.name}"/>
+                                            <h:outputText
+                                                rendered="#{empty al.itemValue}"
+                                                value="#{al.stringValue}"/>
+                                        </div>
+                                    </ui:repeat>
+                                </h:panelGroup>
+                            </p:panel>
+                        </div>
                     </div>
 
                     <!-- Column 2: Admission / Billing / Services / Room Management -->

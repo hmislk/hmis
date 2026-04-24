@@ -730,8 +730,39 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         }
         setCurrent(ad);
         current.setParentEncounter(parentAdmission);
+        patient = null;
+        yearMonthDay = null;
+        getPatient();
+        copyGuardianFromParentAdmission();
         setPrintPreview(false);
         return "/inward/inward_admission_child?faces-redirect=true";
+    }
+
+    private void copyGuardianFromParentAdmission() {
+        if (parentAdmission == null) {
+            return;
+        }
+        Person parentGuardian = parentAdmission.getGuardian();
+        if (parentGuardian == null) {
+            return;
+        }
+        Person babyGuardian = current.getGuardian();
+        babyGuardian.setTitle(parentGuardian.getTitle());
+        babyGuardian.setName(parentGuardian.getName());
+        babyGuardian.setNic(parentGuardian.getNic());
+        babyGuardian.setAddress(parentGuardian.getAddress());
+        babyGuardian.setMobile(parentGuardian.getMobile());
+        babyGuardian.setPhone(parentGuardian.getPhone());
+        if (parentAdmission.getGuardianRelationshipToPatient() != null) {
+            current.setGuardianRelationshipToPatient(parentAdmission.getGuardianRelationshipToPatient());
+        }
+    }
+
+    public String navigateCancelBabyAdmission() {
+        if (parentAdmission != null) {
+            current = parentAdmission;
+        }
+        return navigateToAdmissionProfilePage();
     }
 
 //    // Services & Items Submenu Methods
@@ -1514,7 +1545,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             JsfUtil.addErrorMessage("Please select Admission Type");
             return true;
         }
-        if (getCurrent().getPaymentMethod() == null) {
+        if (parentAdmission == null && getCurrent().getPaymentMethod() == null) {
             JsfUtil.addErrorMessage("Select Paymentmethod");
             return true;
         }

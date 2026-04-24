@@ -145,6 +145,7 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
     private EncounterCreditCompany newEncounterCreditCompany;
     private ClinicalFindingValue currentPatientAllergy;
     private List<ClinicalFindingValue> patientAllergies;
+    private Long patientAllergiesLoadedForPatientId;
     private EncounterCreditCompany currecntEncounterCreditCompany;
     
     Map<String, Object> originalAdmission;
@@ -157,12 +158,19 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
             JsfUtil.addErrorMessage("Please select the allergy drug.");
             return;
         }
+        if (currentPatientAllergy.getPatient() == null) {
+            currentPatientAllergy.setPatient(getCurrent().getPatient());
+        }
+        if (currentPatientAllergy.getClinicalFindingValueType() == null) {
+            currentPatientAllergy.setClinicalFindingValueType(ClinicalFindingValueType.PatientAllergy);
+        }
+        clinicalFindingValueFacade.create(currentPatientAllergy);
         patientAllergies.add(currentPatientAllergy);
         currentPatientAllergy = null;
     }
 
     public void removePatientAllergy(ClinicalFindingValue pa) {
-        if (currentPatientAllergy == null) {
+        if (pa == null) {
             return;
         }
         pa.setRetired(true);
@@ -192,9 +200,11 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
         }
         patientAllergies = new ArrayList<>();
         Map params = new HashMap<>();
-        String s = "SELECT c FROM ClinicalFindingValue c WHERE c.retired = false AND c.patient = :pt";
+        String s = "SELECT c FROM ClinicalFindingValue c WHERE c.retired = false AND c.patient = :pt AND c.clinicalFindingValueType = :type";
         params.put("pt", pt);
+        params.put("type", ClinicalFindingValueType.PatientAllergy);
         patientAllergies = clinicalFindingValueFacade.findByJpql(s, params);
+        patientAllergiesLoadedForPatientId = pt.getId();
     }
 
     public void setSelectedCompany(EncounterCreditCompany ecc) {
@@ -324,12 +334,14 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
         }
 
         if (checkPaymentIsMade()) {
-            JsfUtil.addErrorMessage("Some Is made for this Bht please cancel all bills added for this bht ");
+            JsfUtil.addErrorMessage("This BHT has one or more active (non-cancelled) bills. "
+                    + "Please cancel all bills associated with BHT " + current.getBhtNo()
+                    + " before cancelling the admission.");
             return "";
         }
 
         if (getComment() == null || getComment().trim().equals("")) {
-            JsfUtil.addErrorMessage("Type a Comment");
+            JsfUtil.addErrorMessage("A cancellation reason is required. Please enter the reason before proceeding.");
             return "";
         }
 
@@ -536,6 +548,9 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
             getEjbFacade().editAndFlush(current);    // SINGLE flush for ALL entities
             
             auditService.logAudit(originalAdmission, updatedAdmission, sessionController.getLoggedUser(), "PatientEncounter", "UpdateAdmission", current.getId());
+            if (originalAdmission == null) {
+                originalAdmission = new HashMap<>();
+            }
             originalAdmission.putAll(updatedAdmission);
             updatedAdmission = null;
         }
@@ -600,6 +615,10 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
         if (current == null) {
             JsfUtil.addErrorMessage("No Admission selected");
             return "";
+        }
+        if (current.getId() != null) {
+            originalAdmission = new HashMap<>();
+            admissionToAuditMap(originalAdmission, current);
         }
         admissionController.setCurrent(current);
         fillCreditCompaniesByPatient();
@@ -945,6 +964,18 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
     }
 
     public List<ClinicalFindingValue> getPatientAllergies() {
+        Patient pt = null;
+        if (current != null && current.getPatient() != null) {
+            pt = current.getPatient();
+        } else if (admissionController.getCurrent() != null && admissionController.getCurrent().getPatient() != null) {
+            pt = admissionController.getCurrent().getPatient();
+        }
+        if (pt == null) {
+            return patientAllergies;
+        }
+        if (patientAllergies == null || !pt.getId().equals(patientAllergiesLoadedForPatientId)) {
+            fillCurrentPatientAllergies(pt);
+        }
         return patientAllergies;
     }
 

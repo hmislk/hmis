@@ -8,9 +8,7 @@
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:bill="http://xmlns.jcp.org/jsf/composite/inward"
                 xmlns:in="http://xmlns.jcp.org/jsf/composite/patient"
-                xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common"
-                xmlns:credit="http://xmlns.jcp.org/jsf/composite/inward/creditCompany">
-
+                xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common">
 
     <ui:define name="content">
         <h:form>
@@ -25,14 +23,12 @@
                             <div>
                                 <p:commandButton
                                     ajax="false"
+                                    immediate="true"
                                     value="Inpatient Dashboard"
                                     icon="fa fa-id-card"
                                     class="ui-button-secondary mx-1"
                                     rendered="#{admissionController.parentAdmission ne null and admissionController.parentAdmission.id ne null}"
-                                    action="#{admissionController.navigateToAdmissionProfilePage}">
-                                    <f:setPropertyActionListener
-                                        value="#{admissionController.parentAdmission}"
-                                        target="#{admissionController.current}" />
+                                    action="#{admissionController.navigateCancelBabyAdmission()}">
                                 </p:commandButton>
                                 <p:commandButton
                                     id="admt"
@@ -201,25 +197,6 @@
                                         </p:autoComplete>
 
                                     </h:panelGrid>
-                                </p:panel>
-                            </div>
-                            <div class="row my-2">
-                                <p:panel header="Payment Detail">
-
-                                    <h:panelGrid columns="2">
-                                        <h:outputLabel value="BHT Type"/>
-                                        <p:selectOneMenu   id="cmbPs" value="#{admissionController.current.paymentMethod}"  >
-                                            <f:selectItem itemLabel="Select" />                           
-                                            <f:selectItems value="#{enumController.paymentMethodForAdmission}" />
-                                            <p:ajax process="@this" update="crd" event="change" />
-                                        </p:selectOneMenu>
-                                    </h:panelGrid>
-
-                                    <h:panelGroup id="crd" style="display: #{admissionController.current.paymentMethod eq 'Credit' ? 'block' : 'none'} ;min-width: 100%; ">
-                                        <credit:inputCredit  patientEncounter="#{admissionController.current}"/>
-                                    </h:panelGroup>
-
-
                                 </p:panel>
                             </div>
                         </div>
