@@ -3468,6 +3468,30 @@ public class DataUploadController implements Serializable {
 //        return itemFees;
 //
 //    }
+    private String readCellAsString(Cell cell) {
+        if (cell == null) {
+            return "";
+        }
+        CellType type = cell.getCellType();
+        if (type == CellType.FORMULA) {
+            type = cell.getCachedFormulaResultType();
+        }
+        switch (type) {
+            case STRING:
+                return cell.getStringCellValue().trim();
+            case NUMERIC:
+                double d = cell.getNumericCellValue();
+                if (!Double.isInfinite(d) && !Double.isNaN(d) && d == Math.floor(d)) {
+                    return String.valueOf((long) d);
+                }
+                return String.valueOf(d);
+            case BOOLEAN:
+                return String.valueOf(cell.getBooleanCellValue());
+            default:
+                return "";
+        }
+    }
+
     private List<Consultant> readConsultantsFromExcel(InputStream inputStream) throws IOException {
         List<Consultant> cons = new ArrayList<>();
         Workbook workbook = new XSSFWorkbook(inputStream);
@@ -3533,17 +3557,10 @@ public class DataUploadController implements Serializable {
             }
 
             Cell sexCell = row.getCell(5);
-            if (sexCell != null) {
-                sexString = sexCell.getStringCellValue();
-
-            }
+            sexString = readCellAsString(sexCell);
 
             Cell mobileCell = row.getCell(6);
-            if (mobileCell != null && mobileCell.getCellType() == CellType.STRING) {
-                mobileNumber = mobileCell.getStringCellValue();
-            } else if (mobileCell != null && mobileCell.getCellType() == CellType.NUMERIC) {
-                mobileNumber = "" + mobileCell.getNumericCellValue();
-            }
+            mobileNumber = readCellAsString(mobileCell);
 
             Cell specialityCell = row.getCell(7);
             if (specialityCell != null && specialityCell.getCellType() == CellType.STRING) {
@@ -3652,17 +3669,10 @@ public class DataUploadController implements Serializable {
             }
 
             Cell sexCell = row.getCell(5);
-            if (sexCell != null) {
-                sexString = sexCell.getStringCellValue();
-
-            }
+            sexString = readCellAsString(sexCell);
 
             Cell mobileCell = row.getCell(6);
-            if (mobileCell != null && mobileCell.getCellType() == CellType.STRING) {
-                mobileNumber = mobileCell.getStringCellValue();
-            } else if (mobileCell != null && mobileCell.getCellType() == CellType.NUMERIC) {
-                mobileNumber = "" + mobileCell.getNumericCellValue();
-            }
+            mobileNumber = readCellAsString(mobileCell);
 
             Cell specialityCell = row.getCell(7);
             if (specialityCell != null && specialityCell.getCellType() == CellType.STRING) {
