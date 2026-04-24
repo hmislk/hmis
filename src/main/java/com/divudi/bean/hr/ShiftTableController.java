@@ -218,7 +218,7 @@ public class ShiftTableController implements Serializable {
             for (Staff s : targetCell.getAssignedStaff()) {
                 if (s != null && s.getId() != null
                         && s.getId().equals(staffMember.getId())) {
-                    JsfUtil.addErrorMessage(staffName(staffMember)
+                    JsfUtil.addErrorMessage(staffLabel(staffMember)
                             + " is already in that shift.");
                     return;
                 }
@@ -372,7 +372,7 @@ public class ShiftTableController implements Serializable {
         String conflictShift = findSameDayAssignment(resolved.getId(),
                 addingToCell.getDate(), addingToCell);
         if (conflictShift != null) {
-            JsfUtil.addErrorMessage("Warning: " + staffName(resolved)
+            JsfUtil.addErrorMessage("Warning: " + staffLabel(resolved)
                     + " is also assigned to " + conflictShift + " on this day.");
         }
 
@@ -425,17 +425,6 @@ public class ShiftTableController implements Serializable {
         cal.set(Calendar.SECOND, 0);
         cal.set(Calendar.MILLISECOND, 0);
         return cal.getTime();
-    }
-
-    /**
-     * Safely gets a staff's display name via Person.
-     * Staff.getName() returns null in this codebase, so always go through Person.
-     */
-    private String staffName(Staff s) {
-        if (s == null) return "";
-        if (s.getPerson() == null) return "";
-        String n = s.getPerson().getName();
-        return n != null ? n : "";
     }
 
     // ── SAVE ─────────────────────────────────────────────────────────────
