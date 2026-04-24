@@ -39,7 +39,7 @@ import javax.persistence.TemporalType;
 @Named
 @SessionScoped
 public class StaffShiftController implements Serializable {
-
+    
     private static final long serialVersionUID = 1L;
     @EJB
     StaffShiftFacade ejbFacade;
@@ -53,6 +53,7 @@ public class StaffShiftController implements Serializable {
     List<StaffShift> staffShifts;
     Staff staff;
     StaffShift staffshift;
+    private boolean staffShiftRosterBackfillDone = false;
 
     public void selectRosterListener() {
         shiftController.setCurrentRoster(getReportKeyWord().getRoster());
@@ -177,18 +178,17 @@ public class StaffShiftController implements Serializable {
     }
 
     public void updateStaffShiftWithoutRoster() {
-
-        String sql = "Select s from StaffShift s where s.roster is null and s.staff.roster is not null order by s.id desc";
-        List<StaffShift> lststaffShifts = ejbFacade.findByJpql(sql);
-        for (StaffShift ss : lststaffShifts) {
-            if (ss.getRoster() == null) {
-                if (ss.getStaff().getRoster() != null) {
-                    ss.setRoster(ss.getStaff().getRoster());
-                    ejbFacade.edit(ss);
-                } else {
-                }
-            }
+        if (staffShiftRosterBackfillDone) {
+            return;
         }
+
+        String jpql = "UPDATE StaffShift ss "
+                    + "   SET ss.roster = ss.staff.roster "
+                    + " WHERE ss.roster IS NULL "
+                    + "   AND ss.staff.roster IS NOT NULL";
+
+        ejbFacade.updateByJpql(jpql, new HashMap<>());
+        staffShiftRosterBackfillDone = true;
     }
 
     public String navigateToShiftTable() {
