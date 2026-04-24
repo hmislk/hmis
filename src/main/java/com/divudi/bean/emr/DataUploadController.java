@@ -3507,53 +3507,14 @@ public class DataUploadController implements Serializable {
             Sex sex;
             Title title;
 
-            String code = null;
-            String name = null;
-            String titleString = "";
-
-            String registration = "";
-            String description = "";
-            String sexString = null;
-            String mobileNumber = "";
-
-            String specialityString = null;
-
-            Cell codeCell = row.getCell(0);
-            if (codeCell != null && codeCell.getCellType() == CellType.STRING) {
-                code = codeCell.getStringCellValue();
-            }
-
-            Cell titleCell = row.getCell(1);
-            if (titleCell != null && titleCell.getCellType() == CellType.STRING) {
-                titleString = titleCell.getStringCellValue();
-            }
-
-            Cell nameCell = row.getCell(2);
-            if (nameCell != null && nameCell.getCellType() == CellType.STRING) {
-                name = nameCell.getStringCellValue();
-
-            }
-
-            Cell registrationCell = row.getCell(3);
-            if (registrationCell != null && registrationCell.getCellType() == CellType.STRING) {
-                registration = registrationCell.getStringCellValue();
-            }
-
-            Cell descriptionCell = row.getCell(4);
-            if (descriptionCell != null && descriptionCell.getCellType() == CellType.STRING) {
-                description = descriptionCell.getStringCellValue();
-            }
-
-            Cell sexCell = row.getCell(5);
-            sexString = readCellAsString(sexCell);
-
-            Cell mobileCell = row.getCell(6);
-            mobileNumber = readCellAsString(mobileCell);
-
-            Cell specialityCell = row.getCell(7);
-            if (specialityCell != null && specialityCell.getCellType() == CellType.STRING) {
-                specialityString = specialityCell.getStringCellValue();
-            }
+            String code = readCellAsString(row.getCell(0));
+            String titleString = readCellAsString(row.getCell(1));
+            String name = readCellAsString(row.getCell(2));
+            String registration = readCellAsString(row.getCell(3));
+            String description = readCellAsString(row.getCell(4));
+            String sexString = readCellAsString(row.getCell(5));
+            String mobileNumber = readCellAsString(row.getCell(6));
+            String specialityString = readCellAsString(row.getCell(7));
 
             if (name == null || name.trim().equals("")) {
                 continue;
@@ -3619,53 +3580,14 @@ public class DataUploadController implements Serializable {
             Sex sex;
             Title title;
 
-            String code = null;
-            String name = null;
-            String titleString = "";
-
-            String registration = "";
-            String description = "";
-            String sexString = null;
-            String mobileNumber = "";
-
-            String specialityString = null;
-
-            Cell codeCell = row.getCell(0);
-            if (codeCell != null && codeCell.getCellType() == CellType.STRING) {
-                code = codeCell.getStringCellValue();
-            }
-
-            Cell titleCell = row.getCell(1);
-            if (titleCell != null && titleCell.getCellType() == CellType.STRING) {
-                titleString = titleCell.getStringCellValue();
-            }
-
-            Cell nameCell = row.getCell(2);
-            if (nameCell != null && nameCell.getCellType() == CellType.STRING) {
-                name = nameCell.getStringCellValue();
-
-            }
-
-            Cell registrationCell = row.getCell(3);
-            if (registrationCell != null && registrationCell.getCellType() == CellType.STRING) {
-                registration = registrationCell.getStringCellValue();
-            }
-
-            Cell descriptionCell = row.getCell(4);
-            if (descriptionCell != null && descriptionCell.getCellType() == CellType.STRING) {
-                description = descriptionCell.getStringCellValue();
-            }
-
-            Cell sexCell = row.getCell(5);
-            sexString = readCellAsString(sexCell);
-
-            Cell mobileCell = row.getCell(6);
-            mobileNumber = readCellAsString(mobileCell);
-
-            Cell specialityCell = row.getCell(7);
-            if (specialityCell != null && specialityCell.getCellType() == CellType.STRING) {
-                specialityString = specialityCell.getStringCellValue();
-            }
+            String code = readCellAsString(row.getCell(0));
+            String titleString = readCellAsString(row.getCell(1));
+            String name = readCellAsString(row.getCell(2));
+            String registration = readCellAsString(row.getCell(3));
+            String description = readCellAsString(row.getCell(4));
+            String sexString = readCellAsString(row.getCell(5));
+            String mobileNumber = readCellAsString(row.getCell(6));
+            String specialityString = readCellAsString(row.getCell(7));
 
             System.out.println("name = " + name);
             if (name == null || name.trim().equals("")) {
