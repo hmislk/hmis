@@ -9,6 +9,8 @@ import com.divudi.bean.hr.StaffController;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.MessageType;
 import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.Sex;
+import com.divudi.core.data.Title;
 import com.divudi.ejb.ChannelBean;
 import com.divudi.ejb.SmsManagerEjb;
 import com.divudi.core.entity.Bill;
@@ -327,6 +329,33 @@ public class PatientPortalController implements Serializable {
     public void GoBackfromPatientAddAction() {
         addNewPatient = false;
         patient = null;
+    }
+
+    public void updateSexByTitle() {
+        if (patient == null || patient.getPerson() == null) {
+            return;
+        }
+        Title title = patient.getPerson().getTitle();
+        if (title == null) {
+            return;
+        }
+        switch (title) {
+            case Mrs:
+            case Ms:
+            case Miss:
+            case DrMrs:
+            case DrMs:
+            case DrMiss:
+            case ProfMrs:
+                patient.getPerson().setSex(Sex.Female);
+                break;
+            case Mr:
+            case Master:
+                patient.getPerson().setSex(Sex.Male);
+                break;
+            default:
+                break;
+        }
     }
 
 //    public void addNewPatientAction() {
