@@ -7007,8 +7007,7 @@ public class DataUploadController implements Serializable {
         Sheet sheet = workbook.getSheetAt(0);
         Iterator<Row> rowIterator = sheet.rowIterator();
 
-        List<Institution> CreditCompanyList = new ArrayList<>();
-        Institution creditCompany;
+        List<Institution> creditCompanyList = new ArrayList<>();
 
         // Assuming the first row contains headers, skip it
         if (rowIterator.hasNext()) {
@@ -7017,89 +7016,45 @@ public class DataUploadController implements Serializable {
 
         while (rowIterator.hasNext()) {
             Row row = rowIterator.next();
-            creditCompany = null;
-            String creditCompanyName = null;
-            String creditCompanyPrintingName = null;
-            String creditCompanyPhone = null;
-            String creditCompanyEmail = null;
-            String creditCompanyaddress = null;
 
-            //    Item masterItem = itemController.findMasterItemByName(code);
-            Cell agentNameCell = row.getCell(1);
+            String creditCompanyName = readCellAsString(row.getCell(0));
+            String creditCompanyPrintingName = readCellAsString(row.getCell(1));
+            String creditCompanyPhone = readCellAsString(row.getCell(2));
+            String creditCompanyEmail = readCellAsString(row.getCell(3));
+            String creditCompanyAddress = readCellAsString(row.getCell(4));
 
-            if (agentNameCell != null && agentNameCell.getCellType() == CellType.STRING) {
-                creditCompanyName = agentNameCell.getStringCellValue();
-            }
-            if (creditCompanyName == null || creditCompanyName.trim().equals("")) {
+            if (creditCompanyName == null || creditCompanyName.trim().isEmpty()) {
                 continue;
             }
 
-            Cell agentPrintingNameCell = row.getCell(2);
-
-            if (agentPrintingNameCell != null && agentPrintingNameCell.getCellType() == CellType.STRING) {
-                creditCompanyPrintingName = agentPrintingNameCell.getStringCellValue();
-
+            if (creditCompanyPrintingName == null || creditCompanyPrintingName.trim().isEmpty()) {
+                creditCompanyPrintingName = creditCompanyName;
             }
-            if (creditCompanyPrintingName == null || creditCompanyPrintingName.trim().equals("")) {
-                creditCompanyPrintingName = creditCompanyPrintingName;
-            }
-
-            Cell contactNumberCell = row.getCell(3);
-
-            if (contactNumberCell != null) {
-                if (contactNumberCell.getCellType() == CellType.NUMERIC) {
-                    DecimalFormat decimalFormat = new DecimalFormat("#");
-                    creditCompanyPhone = decimalFormat.format(contactNumberCell.getNumericCellValue());
-
-                } else if (contactNumberCell.getCellType() == CellType.STRING) {
-                    creditCompanyPhone = contactNumberCell.getStringCellValue();
-                }
-            }
-            if (creditCompanyPhone == null || creditCompanyPhone.trim().equals("")) {
+            if (creditCompanyPhone != null && creditCompanyPhone.trim().isEmpty()) {
                 creditCompanyPhone = null;
             }
-
-            Cell emailAddressCell = row.getCell(4);
-
-            if (emailAddressCell != null && emailAddressCell.getCellType() == CellType.STRING) {
-                creditCompanyEmail = emailAddressCell.getStringCellValue();
-
-            }
-            if (creditCompanyEmail == null || creditCompanyEmail.trim().equals("")) {
+            if (creditCompanyEmail != null && creditCompanyEmail.trim().isEmpty()) {
                 creditCompanyEmail = null;
             }
-
-            Cell addressCell = row.getCell(5);
-
-            if (addressCell != null && addressCell.getCellType() == CellType.STRING) {
-                creditCompanyaddress = addressCell.getStringCellValue();
-            }
-            if (creditCompanyaddress == null || creditCompanyaddress.trim().equals("")) {
-                creditCompanyaddress = null;
+            if (creditCompanyAddress != null && creditCompanyAddress.trim().isEmpty()) {
+                creditCompanyAddress = null;
             }
 
-            if (creditCompanyName.trim().equals("")) {
-                continue;
-            }
-
-            creditCompany = creditCompanyController.findCreditCompanyByName(creditCompanyName);
-
+            Institution creditCompany = creditCompanyController.findCreditCompanyByName(creditCompanyName);
             if (creditCompany == null) {
                 creditCompany = new Institution();
             }
-//            collectingCentre = new Institution();
-            creditCompany.setInstitutionType(InstitutionType.CollectingCentre);
             creditCompany.setName(creditCompanyName);
             creditCompany.setChequePrintingName(creditCompanyPrintingName);
             creditCompany.setPhone(creditCompanyPhone);
             creditCompany.setEmail(creditCompanyEmail);
-            creditCompany.setAddress(creditCompanyaddress);
+            creditCompany.setAddress(creditCompanyAddress);
             creditCompany.setInstitutionType(InstitutionType.CreditCompany);
             creditCompanyController.save(creditCompany);
-            CreditCompanyList.add(creditCompany);
+            creditCompanyList.add(creditCompany);
         }
 
-        return CreditCompanyList;
+        return creditCompanyList;
     }
 
     public void uploadItemFeesToUpdateFees() {
@@ -9137,11 +9092,11 @@ public class DataUploadController implements Serializable {
         XSSFWorkbook workbook = new XSSFWorkbook();
 
         // Creating the first sheet for data entry
-        XSSFSheet dataSheet = workbook.createSheet("Collecting Centres");
+        XSSFSheet dataSheet = workbook.createSheet("Credit Companies");
 
         // Create header row in data sheet
         Row headerRow = dataSheet.createRow(0);
-        String[] columnHeaders = {"Name", "Printing Name", "Contact No", "Email Address", "Agent Address"};
+        String[] columnHeaders = {"Name", "Printing Name", "Contact No", "Email Address", "Address"};
         for (int i = 0; i < columnHeaders.length; i++) {
             Cell cell = headerRow.createCell(i);
             cell.setCellValue(columnHeaders[i]);
