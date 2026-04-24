@@ -1,0 +1,123 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui">
+
+    <ui:define name="content">
+        <h:form>
+            <p:panel>
+                <f:facet name="header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="fas fa-ban fa-lg text-danger me-3"></i>
+                            <h:outputLabel value="Cancel Admission" class="fw-bold text-danger" />
+                            <h:panelGroup rendered="#{bhtEditController.current ne null}" layout="block">
+                                <small class="text-muted">
+                                    BHT: #{bhtEditController.current.bhtNo} —
+                                    #{bhtEditController.current.patient.person.nameWithTitle}
+                                </small>
+                            </h:panelGroup>
+                        </div>
+                        <div>
+                            <p:commandButton
+                                value="Inpatient Dashboard"
+                                icon="fa fa-id-card"
+                                ajax="false"
+                                action="#{admissionController.navigateToAdmissionProfilePage}"
+                                class="ui-button-secondary">
+                                <f:setPropertyActionListener value="#{bhtEditController.current}" target="#{admissionController.current}" />
+                            </p:commandButton>
+                        </div>
+                    </div>
+                </f:facet>
+
+                <h:panelGroup rendered="#{bhtEditController.current eq null}" layout="block">
+                    <div class="alert alert-warning">
+                        <i class="fa fa-exclamation-triangle me-2"></i>
+                        No admission selected. Please navigate from the Inpatient Dashboard.
+                    </div>
+                </h:panelGroup>
+
+                <h:panelGroup rendered="#{bhtEditController.current ne null}" layout="block">
+                    <div class="row justify-content-center">
+                        <div class="col-12 col-lg-8">
+
+                            <p:panel class="mb-3">
+                                <f:facet name="header">
+                                    <h:outputText styleClass="fa-solid fa-info-circle" />
+                                    <h:outputLabel value="Admission Summary" class="mx-3" />
+                                </f:facet>
+                                <h:panelGrid columns="2" class="w-100">
+                                    <h:outputLabel value="Patient" />
+                                    <h:outputText class="fw-bold" value="#{bhtEditController.current.patient.person.nameWithTitle}" />
+
+                                    <h:outputLabel value="BHT No" />
+                                    <h:outputText class="fw-bold text-primary" value="#{bhtEditController.current.bhtNo}" />
+
+                                    <h:outputLabel value="Date of Admission" />
+                                    <h:outputText value="#{bhtEditController.current.dateOfAdmission}">
+                                        <f:convertDateTime pattern="dd/MMM/yyyy hh:mm:ss a" />
+                                    </h:outputText>
+
+                                    <h:outputLabel value="Consultant" />
+                                    <h:outputText value="#{bhtEditController.current.referringConsultant.person.nameWithTitle}" />
+
+                                    <h:outputLabel value="Payment Method" />
+                                    <h:outputText value="#{bhtEditController.current.paymentMethod}" />
+
+                                    <h:outputLabel value="Status" />
+                                    <h:panelGroup>
+                                        <p:badge value="Discharged" styleClass="ui-badge-danger" rendered="#{bhtEditController.current.discharged}" />
+                                        <p:badge value="Active" styleClass="ui-badge-success" rendered="#{!bhtEditController.current.discharged}" />
+                                    </h:panelGroup>
+                                </h:panelGrid>
+                            </p:panel>
+
+                            <p:panel class="mb-3 border-danger">
+                                <f:facet name="header">
+                                    <h:outputText styleClass="fas fa-ban text-danger" />
+                                    <h:outputLabel value="Cancellation" class="mx-3 text-danger" />
+                                </f:facet>
+
+                                <div class="alert alert-danger mb-3">
+                                    <i class="fa fa-exclamation-triangle me-2"></i>
+                                    <strong>Warning:</strong> Cancelling an admission is irreversible.
+                                    All associated patient room records will also be retired.
+                                    Ensure all bills for this BHT have been cancelled before proceeding.
+                                </div>
+
+                                <div class="mb-3">
+                                    <h:outputLabel for="com" value="Cancellation Reason (required)" styleClass="form-label fw-bold" />
+                                    <p:inputTextarea
+                                        id="com"
+                                        value="#{bhtEditController.comment}"
+                                        class="w-100"
+                                        rows="4"
+                                        placeholder="Enter reason for cancellation...">
+                                    </p:inputTextarea>
+                                </div>
+
+                                <div class="d-flex justify-content-end">
+                                    <p:commandButton
+                                        class="ui-button-danger"
+                                        icon="fas fa-ban"
+                                        value="Cancel Admission"
+                                        action="#{bhtEditController.cancelBht}"
+                                        ajax="false"
+                                        disabled="#{!webUserController.hasPrivilege('InwardAdmissionCancel')}">
+                                    </p:commandButton>
+                                </div>
+                            </p:panel>
+
+                        </div>
+                    </div>
+                </h:panelGroup>
+            </p:panel>
+        </h:form>
+    </ui:define>
+
+</ui:composition>

@@ -142,6 +142,7 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
     private Speciality opdSpeciality;
     private List<EncounterCreditCompany> encounterCreditCompanys;
     EncounterCreditCompany encounterCreditCompany;
+    private EncounterCreditCompany newEncounterCreditCompany;
     private ClinicalFindingValue currentPatientAllergy;
     private List<ClinicalFindingValue> patientAllergies;
     private EncounterCreditCompany currecntEncounterCreditCompany;
@@ -223,6 +224,44 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
 
     }
 
+    public void addNewCreditCompany() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("No admission selected");
+            return;
+        }
+        if (newEncounterCreditCompany == null || newEncounterCreditCompany.getInstitution() == null) {
+            JsfUtil.addErrorMessage("Please select a credit company");
+            return;
+        }
+        newEncounterCreditCompany.setPatientEncounter(current);
+        newEncounterCreditCompany.setCreatedAt(new Date());
+        newEncounterCreditCompany.setCreater(sessionController.getLoggedUser());
+        newEncounterCreditCompany.setRetired(false);
+        encounterCreditCompanyFacade.create(newEncounterCreditCompany);
+        encounterCreditCompanys.add(newEncounterCreditCompany);
+        newEncounterCreditCompany = new EncounterCreditCompany();
+        JsfUtil.addSuccessMessage("Credit company added");
+    }
+
+    public void saveEncounterCreditCompany(EncounterCreditCompany ecc) {
+        if (ecc == null) {
+            return;
+        }
+        encounterCreditCompanyFacade.edit(ecc);
+        JsfUtil.addSuccessMessage("Saved");
+    }
+
+    public EncounterCreditCompany getNewEncounterCreditCompany() {
+        if (newEncounterCreditCompany == null) {
+            newEncounterCreditCompany = new EncounterCreditCompany();
+        }
+        return newEncounterCreditCompany;
+    }
+
+    public void setNewEncounterCreditCompany(EncounterCreditCompany newEncounterCreditCompany) {
+        this.newEncounterCreditCompany = newEncounterCreditCompany;
+    }
+
     public void resetSpecialities() {
         if (current == null) {
             return;
@@ -279,19 +318,19 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
 //
 //        return false;
 //    }
-    public void cancelBht() {
+    public String cancelBht() {
         if (current == null) {
-            return;
+            return "";
         }
 
         if (checkPaymentIsMade()) {
             JsfUtil.addErrorMessage("Some Is made for this Bht please cancel all bills added for this bht ");
-            return;
+            return "";
         }
 
         if (getComment() == null || getComment().trim().equals("")) {
             JsfUtil.addErrorMessage("Type a Comment");
-            return;
+            return "";
         }
 
         //Net to check if Any Payment Paid for this BHT
@@ -311,6 +350,7 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
 
         JsfUtil.addSuccessMessage("Bht Successfully Cancelled");
         prepereForNew();
+        return "/inward/inward_edit_bht?faces-redirect=true";
     }
 
     public Title[] getTitle() {
@@ -554,6 +594,25 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
         fillCreditCompaniesByPatient();
         fillCurrentPatientAllergies(current.getPatient());
         return "/inward/inward_edit_bht?faces-redirect=true";
+    }
+
+    public String navigateToEditPaymentDetails() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("No Admission selected");
+            return "";
+        }
+        admissionController.setCurrent(current);
+        fillCreditCompaniesByPatient();
+        return "/inward/inward_edit_admission_payment?faces-redirect=true";
+    }
+
+    public String navigateToCancelAdmission() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("No Admission selected");
+            return "";
+        }
+        comment = null;
+        return "/inward/inward_cancel_admission?faces-redirect=true";
     }
 
     public String navigateToManageAllergies() {

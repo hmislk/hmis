@@ -344,27 +344,46 @@ public class BookingControllerViewScopeMonth implements Serializable {
             return;
         }
 
-        if (getSelectedSessionInstanceForRechedule().getMaxNo() != 0) {
+        if (getSelectedSessionInstanceForRechedule().getMaxNo() != 0 && configOptionApplicationController.getBooleanValueByKey("Limited appoinments session can't get appoinement more than max amount.")) {
             if (getSelectedSessionInstanceForRechedule().getBookedPatientCount() != null) {
                 int maxNo = getSelectedSessionInstanceForRechedule().getMaxNo();
                 long bookedPatientCount = getSelectedSessionInstanceForRechedule().getBookedPatientCount();
-                if (maxNo <= bookedPatientCount) {
+                long reservedNumberCount = getSelectedSessionInstanceForRechedule().getReservedBookingCount() != null ? getSelectedSessionInstanceForRechedule().getReservedBookingCount() : 0L;
+                long totalPatientCount;
+
+                // if (maxNo <= bookedPatientCount) {
+                //     JsfUtil.addErrorMessage("Cannot reschedule the selected session: The session has reached its maximum booking capacity.");
+                //     return;
+
+                // }
+
+                List<Integer> reservedNumbers = CommonFunctions.convertStringToIntegerList(getSelectedSessionInstanceForRechedule().getReserveNumbers());
+                bookedPatientCount = bookedPatientCount + reservedNumbers.size() - reservedNumberCount;
+
+                if (getSelectedSessionInstanceForRechedule().getCancelPatientCount() != null) {
+                    long canceledPatientCount = getSelectedSessionInstanceForRechedule().getCancelPatientCount();
+                    totalPatientCount = bookedPatientCount - canceledPatientCount;
+                } else {
+                    totalPatientCount = bookedPatientCount;
+                }
+                if (maxNo <= totalPatientCount) {
                     JsfUtil.addErrorMessage("Cannot reschedule the selected session: The session has reached its maximum booking capacity.");
                     return;
-
                 }
             }
         }
 
         if (selectedBillSession.getBill().isCancelled()) {
             JsfUtil.addErrorMessage("Cannot reschedule: This bill session has been cancelled.");
+            return;
         }
 
         if (selectedBillSession.isRecheduledSession()) {
             JsfUtil.addErrorMessage("Cannot reschedule: This bill session has been Alrady Recheduled To Another Session !");
+            return;
         }
 
-        if (selectedBillSession.getReferenceBillSession() == null) {
+        if (selectedBillSession.getRescheduledFromBillSession() == null) {
             createBillSessionForReschedule(selectedBillSession, getSelectedSessionInstanceForRechedule());
             JsfUtil.addSuccessMessage("Reschedule Successfully");
             sendSmsOnChannelBookingReschedule();
@@ -432,13 +451,19 @@ public class BookingControllerViewScopeMonth implements Serializable {
         newBillSession.copy(bs);
         newBillSession.setBill(printingBill);
         newBillSession.setBillItem(savingBillItem);
-        newBillSession.setReferenceBillSession(bs);
+        // newBillSession.setReferenceBillSession(bs);
+        newBillSession.setRescheduledFromBillSession(bs);
         newBillSession.setCreatedAt(new Date());
         newBillSession.setCreater(getSessionController().getLoggedUser());
         newBillSession.setSessionInstance(getSelectedSessionInstanceForRechedule());
         newBillSession.setSessionDate(getSelectedSessionInstanceForRechedule().getSessionDate());
         newBillSession.setSessionTime(getSelectedSessionInstanceForRechedule().getSessionTime());
         newBillSession.setStaff(getSelectedSessionInstanceForRechedule().getStaff());
+        newBillSession.setSerialNo(0);
+
+        newBillSession.setPaidBillSession(bs.getPaidBillSession());
+
+        getBillSessionFacade().create(newBillSession);
 
         printingBill.setSingleBillSession(newBillSession);
         printingBill.setSingleBillItem(savingBillItem);
@@ -498,9 +523,10 @@ public class BookingControllerViewScopeMonth implements Serializable {
         } else {
             newBillSession.setSerialNo(1);
         }
-        getBillSessionFacade().create(newBillSession);
+        getBillSessionFacade().edit(newBillSession);
         bs.setRecheduledSession(true);
-        bs.setReferenceBillSession(newBillSession);
+        bs.setRescheduledToBillSession(newBillSession);
+        // bs.setReferenceBillSession(newBillSession);
         getBillSessionFacade().edit(bs);
         newBillSessionForSMS = newBillSession;
         printingBill.setSingleBillSession(newBillSession);
@@ -2967,10 +2993,11 @@ public class BookingControllerViewScopeMonth implements Serializable {
             }
         }
 
-        if (selectedSessionInstance.getMaxNo() != 0) {
+        if (selectedSessionInstance.getMaxNo() != 0 && configOptionApplicationController.getBooleanValueByKey("Limited appoinments session can't get appoinement more than max amount.")) {
             if (selectedSessionInstance.getBookedPatientCount() != null) {
                 int maxNo = selectedSessionInstance.getMaxNo();
                 long bookedPatientCount = selectedSessionInstance.getBookedPatientCount();
+                long reservedBookingCount = selectedSessionInstance.getReservedBookingCount() != null ? selectedSessionInstance.getReservedBookingCount() : 0L;
                 long totalPatientCount;
 
                 List<Integer> reservedNumbers = CommonFunctions.convertStringToIntegerList(selectedSessionInstance.getReserveNumbers());
@@ -2978,7 +3005,7 @@ public class BookingControllerViewScopeMonth implements Serializable {
                 if (reservedBooking) {
                     bookedPatientCount = bookedPatientCount;
                 } else {
-                    bookedPatientCount = bookedPatientCount + reservedNumbers.size();
+                    bookedPatientCount = bookedPatientCount + reservedNumbers.size() - reservedBookingCount;
                 }
 
                 if (selectedSessionInstance.getCancelPatientCount() != null) {
