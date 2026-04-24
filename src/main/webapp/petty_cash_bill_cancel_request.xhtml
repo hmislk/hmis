@@ -37,6 +37,8 @@
                                     value="Create Cancellation Request" 
                                     icon="fa fa-cancel"
                                     class="ui-button-danger" 
+                                    onclick="if (!confirm('Are you sure you want to Request Cancelation for this petty cash bill?'))
+                                                        return false;"
                                     ajax="false" 
                                     action="#{requestController.createRequestforPettyCashBillCancellation(pettyCashBillController.current)}" >
                                 </p:commandButton>
