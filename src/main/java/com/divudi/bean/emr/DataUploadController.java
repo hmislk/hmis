@@ -3472,24 +3472,12 @@ public class DataUploadController implements Serializable {
         if (cell == null) {
             return "";
         }
-        CellType type = cell.getCellType();
-        if (type == CellType.FORMULA) {
-            type = cell.getCachedFormulaResultType();
-        }
-        switch (type) {
-            case STRING:
-                return cell.getStringCellValue().trim();
-            case NUMERIC:
-                double d = cell.getNumericCellValue();
-                if (!Double.isInfinite(d) && !Double.isNaN(d) && d == Math.floor(d)) {
-                    return String.valueOf((long) d);
-                }
-                return String.valueOf(d);
-            case BOOLEAN:
-                return String.valueOf(cell.getBooleanCellValue());
-            default:
-                return "";
-        }
+        DataFormatter formatter = new DataFormatter(Locale.ENGLISH);
+        FormulaEvaluator evaluator = cell.getSheet()
+                .getWorkbook()
+                .getCreationHelper()
+                .createFormulaEvaluator();
+        return formatter.formatCellValue(cell, evaluator).trim();
     }
 
     private List<Consultant> readConsultantsFromExcel(InputStream inputStream) throws IOException {
