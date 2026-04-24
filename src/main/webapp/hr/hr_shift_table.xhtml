@@ -452,12 +452,10 @@
                                                             #{shiftTableController.isStaffAssignedToCell(cell)
                                                                 ? 'background-color: #d4edda; color: #155724;'
                                                                 : 'background-color: #f8d7da; color: #721c24;'}">
-                                                        <h:outputText value="&#10004;"
-                                                                    rendered="#{shiftTableController.isStaffAssignedToCell(cell)}"
-                                                                    />
-                                                        <h:outputText value="&#10008;"
-                                                                    rendered="#{!shiftTableController.isStaffAssignedToCell(cell)}"
-                                                                   />
+                                                        <h:outputText value="✔"
+                                                                    rendered="#{shiftTableController.isStaffAssignedToCell(cell)}" />
+                                                        <h:outputText value="✘"
+                                                                    rendered="#{!shiftTableController.isStaffAssignedToCell(cell)}" />
                                                     </p:commandLink>
                                                 </td>
                                             </ui:repeat>
