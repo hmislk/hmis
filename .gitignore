@@ -37,6 +37,10 @@ temp-wiki/
 wiki-tmp/
 *.wiki/
 
+# macOS metadata files
+.DS_Store
+**/.DS_Store
+
 # Windows reserved filename
 nul
 

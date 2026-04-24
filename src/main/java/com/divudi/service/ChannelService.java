@@ -2508,13 +2508,14 @@ public class ChannelService {
             if (ss.getBookedPatientCount() != null) {
                 int maxNo = ss.getMaxNo();
                 long bookedPatientCount = ss.getBookedPatientCount();
+                long reservedBookingCount = ss.getReservedBookingCount() != null ? ss.getReservedBookingCount() : 0L;
                 long totalPatientCount;
 
                 List<Integer> reservedNumbers = CommonFunctions.convertStringToIntegerList(ss.getReserveNumbers());
                 if (false) {
                     bookedPatientCount = bookedPatientCount;
                 } else {
-                    bookedPatientCount = bookedPatientCount + reservedNumbers.size();
+                    bookedPatientCount = bookedPatientCount + reservedNumbers.size() - reservedBookingCount;
                 }
 
                 if (ss.getCancelPatientCount() != null) {

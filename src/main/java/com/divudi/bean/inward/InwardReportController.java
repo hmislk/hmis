@@ -23,6 +23,10 @@ import com.divudi.core.data.dto.SurgeryCountDoctorWiseDTO;
 import com.divudi.core.data.dto.SurgeryCountSurgeryWiseDTO;
 import com.divudi.core.data.hr.ReportKeyWord;
 import com.divudi.core.data.inward.AdmissionStatus;
+import static com.divudi.core.data.inward.AdmissionStatus.ADMITTED_BUT_NOT_DISCHARGED;
+import static com.divudi.core.data.inward.AdmissionStatus.ANY_STATUS;
+import static com.divudi.core.data.inward.AdmissionStatus.DISCHARGED_AND_FINAL_BILL_COMPLETED;
+import static com.divudi.core.data.inward.AdmissionStatus.DISCHARGED_BUT_FINAL_BILL_NOT_COMPLETED;
 import com.divudi.core.data.inward.InwardChargeType;
 
 import com.divudi.core.entity.Bill;
@@ -50,6 +54,7 @@ import com.divudi.core.facade.BillFeeFacade;
 import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.PatientEncounterFacade;
 import com.divudi.core.facade.PatientInvestigationFacade;
+import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -103,6 +108,7 @@ import com.itextpdf.html2pdf.ConverterProperties;
 import com.itextpdf.kernel.geom.PageSize;
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfWriter;
+import java.util.stream.Collectors;
 
 import com.lowagie.text.Document;
 import com.lowagie.text.DocumentException;
@@ -114,9 +120,9 @@ import com.lowagie.text.pdf.PdfPCell;
 import com.lowagie.text.pdf.PdfPTable;
 import java.io.OutputStream;
 import javax.faces.context.ExternalContext;
-
 import javax.faces.context.FacesContext;
 import javax.persistence.TemporalType;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  *
@@ -151,6 +157,8 @@ public class InwardReportController implements Serializable {
     InwardReportControllerBht inwardReportControllerBht;
     @Inject
     BhtSummeryController bhtSummeryController;
+    @Inject
+    InwardBeanController inwardBeanController;
 
     PaymentMethod paymentMethod;
     AdmissionType admissionType;
@@ -1305,7 +1313,6 @@ public class InwardReportController implements Serializable {
         Map<String, Object> params = new HashMap<>();
         StringBuilder jpql = new StringBuilder();
 
-        // Use PatientEncounter instead of Admission
         jpql.append("SELECT new com.divudi.core.data.dto.IpUnsettledInvoiceDTO(")
                 .append("pe.id, ")
                 .append("pe.patient.phn, ")
@@ -1327,22 +1334,18 @@ public class InwardReportController implements Serializable {
         }
 
         jpql.append("WHERE pe.retired = :ret ")
-                .append("AND pe.dateOfAdmission BETWEEN :fd AND :td ")
-                .append("AND pe.discharged = TRUE ")
-                .append("AND pe.paymentFinalized = FALSE ");
+                .append("AND pe.dateOfAdmission BETWEEN :fd AND :td ");
 
         params.put("ret", false);
         params.put("fd", fromDate);
         params.put("td", toDate);
 
-        // Discharge date filter
         if (dischargeFromDate != null && dischargeToDate != null) {
             jpql.append("AND pe.dateOfDischarge BETWEEN :dfd AND :dtd ");
             params.put("dfd", dischargeFromDate);
             params.put("dtd", dischargeToDate);
         }
 
-        // Invoice approved date filter
         if (invoiceApprovedFromDate != null && invoiceApprovedToDate != null) {
             jpql.append("AND pe.finalBill IS NOT NULL ")
                     .append("AND pe.finalBill.createdAt BETWEEN :iafd AND :iatd ");
@@ -1350,83 +1353,438 @@ public class InwardReportController implements Serializable {
             params.put("iatd", invoiceApprovedToDate);
         }
 
-        // Institution filter
         if (institution != null) {
             jpql.append("AND pe.institution = :inst ");
             params.put("inst", institution);
         }
-
-        // Site filter
         if (site != null) {
             jpql.append("AND pe.department.site = :site ");
             params.put("site", site);
         }
-
-        // Department filter
         if (department != null) {
             jpql.append("AND pe.department = :dept ");
             params.put("dept", department);
         }
-
-        // Consultant filter
         if (consultant != null) {
             jpql.append("AND pe.referringConsultant = :cons ");
             params.put("cons", consultant);
         }
-
-        // Service Center filter (assuming this uses department)
         if (serviceCenter != null) {
             jpql.append("AND pe.department = :sc ");
             params.put("sc", serviceCenter);
         }
-
         if (sponsor != null) {
             jpql.append("AND pe.creditCompany = :sponsor ");
             params.put("sponsor", sponsor);
         }
-
-        // Admission Status filter (if PatientEncounter has admissionStatus)
-        if (admissionStatus != null) {
-            jpql.append("AND pe.admissionStatus = :as ");
-            params.put("as", admissionStatus);
-        }
-
-        // Admission Type filter
         if (admissionType != null) {
             jpql.append("AND pe.admissionType = :at ");
             params.put("at", admissionType);
         }
-
-        // Payment Method filter
         if (paymentMethod != null) {
             jpql.append("AND pe.paymentMethod = :pm ");
             params.put("pm", paymentMethod);
         }
-
-        // Room Category filter
         if (roomCategory != null) {
             jpql.append("AND rfc.roomCategory = :rc ");
             params.put("rc", roomCategory);
+        }
+        if (admissionStatus != null) {
+            switch (admissionStatus) {
+                case ADMITTED_BUT_NOT_DISCHARGED:
+                    jpql.append("AND pe.discharged = :dis AND pe.paymentFinalized = FALSE ");
+                    params.put("dis", false);
+                    break;
+                case DISCHARGED_BUT_FINAL_BILL_NOT_COMPLETED:
+                    jpql.append("AND pe.discharged = :dis AND pe.paymentFinalized = FALSE ");
+                    params.put("dis", true);
+                    break;
+                case DISCHARGED_AND_FINAL_BILL_COMPLETED:
+                    jpql.append("AND pe.discharged = :dis AND pe.paymentFinalized = TRUE ");
+                    params.put("dis", true);
+                    break;
+                case ANY_STATUS:
+                default:
+                    jpql.append("AND pe.paymentFinalized = FALSE ");
+                    break;
+            }
+        } else {
+            jpql.append("AND pe.paymentFinalized = FALSE ");
         }
 
         jpql.append("ORDER BY pe.dateOfAdmission ");
 
         try {
             unsettledInvoicesList = (List<IpUnsettledInvoiceDTO>) peFacade.findLightsByJpql(
-                    jpql.toString(),
-                    params,
-                    TemporalType.TIMESTAMP
-            );
-
+                    jpql.toString(), params, TemporalType.TIMESTAMP);
         } catch (Exception e) {
             JsfUtil.addErrorMessage("Error loading unsettled invoices: " + e.getMessage());
             unsettledInvoicesList = new ArrayList<>();
+            return;
         }
 
-        if (unsettledInvoicesList == null) {
+        if (unsettledInvoicesList == null || unsettledInvoicesList.isEmpty()) {
             unsettledInvoicesList = new ArrayList<>();
+            return;
         }
 
+        List<Long> encounterIds = unsettledInvoicesList.stream()
+                .filter(dto -> dto != null && dto.getAdmissionId() != null)
+                .map(IpUnsettledInvoiceDTO::getAdmissionId)
+                .collect(Collectors.toList());
+
+        if (encounterIds.isEmpty()) {
+            return;
+        }
+
+        List<PatientEncounter> encounters = peFacade.findByJpql(
+                "SELECT pe FROM PatientEncounter pe WHERE pe.id IN :ids",
+                Collections.singletonMap("ids", encounterIds));
+
+        Map<Long, PatientEncounter> encounterById = (encounters == null)
+                ? Collections.emptyMap()
+                : encounters.stream().collect(
+                        Collectors.toMap(PatientEncounter::getId, pe -> pe));
+
+        List<PatientEncounter> allChildren = peFacade.findByJpql(
+                "SELECT pe FROM PatientEncounter pe WHERE pe.parentEncounter.id IN :ids AND pe.retired = false",
+                Collections.singletonMap("ids", encounterIds));
+        Map<Long, List<PatientEncounter>> childrenByParentId = (allChildren == null)
+                ? Collections.emptyMap()
+                : allChildren.stream()
+                        .filter(pe -> pe.getParentEncounter() != null)
+                        .collect(Collectors.groupingBy(pe -> pe.getParentEncounter().getId()));
+
+        Map<Long, Double> paidByEncounterId = batchFetchPaidAmounts(encounterIds);
+
+        for (IpUnsettledInvoiceDTO dto : unsettledInvoicesList) {
+            if (dto == null) {
+                continue;
+            }
+
+            PatientEncounter pe = encounterById.get(dto.getAdmissionId());
+            if (pe == null) {
+                dto.setNetTotal(0.0);
+                dto.setCreditPaidAmount(0.0);
+                continue;
+            }
+
+            List<PatientEncounter> children = childrenByParentId.getOrDefault(dto.getAdmissionId(), Collections.emptyList());
+            double total = inwardBeanController.calculateInwardTotal(pe, children);
+            double collected = paidByEncounterId.getOrDefault(dto.getAdmissionId(), 0.0);
+            collected = Math.min(collected, total);
+
+            dto.setNetTotal(total);
+            dto.setCreditPaidAmount(collected);
+        }
+    }
+
+    private Map<Long, Double> batchFetchPaidAmounts(List<Long> encounterIds) {
+        if (encounterIds == null || encounterIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        String sql = "SELECT b.patientEncounter.id, SUM(b.netTotal) "
+                + "FROM Bill b "
+                + "WHERE b.retired = false "
+                + "  AND b.cancelled = false "
+                + "  AND b.billType = :btp "
+                + "  AND b.patientEncounter.id IN :ids "
+                + "GROUP BY b.patientEncounter.id";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("btp", BillType.InwardPaymentBill);
+        params.put("ids", encounterIds);
+
+        List<Object[]> rows = getBillFacade().findObjectsArrayByJpql(sql, params, TemporalType.TIMESTAMP);
+
+        Map<Long, Double> result = new HashMap<>(encounterIds.size());
+        if (rows != null) {
+            for (Object[] row : rows) {
+                Long id = ((Number) row[0]).longValue();
+                Double paid = row[1] != null ? ((Number) row[1]).doubleValue() : 0.0;
+                result.put(id, Math.max(0.0, paid));
+            }
+        }
+        return result;
+    }
+
+    public void downloadIpUnsettledInvoicesPdf() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        ExternalContext externalContext = context.getExternalContext();
+        HttpServletResponse response = (HttpServletResponse) externalContext.getResponse();
+
+        String dates = CommonFunctions.dateRangeForFileName(
+                fromDate, toDate,
+                sessionController.getApplicationPreference().getLongDateFormat());
+
+        response.setContentType("application/pdf");
+        response.setHeader("Content-Disposition",
+                "attachment; filename=IP_Unsettled_Invoices_" + dates + ".pdf");
+
+        SimpleDateFormat sdf = new SimpleDateFormat("dd MMMM yyyy");
+        SimpleDateFormat sdt = new SimpleDateFormat("dd MMM yyyy HH:mm");
+
+        try (OutputStream out = response.getOutputStream()) {
+            Document document = new Document(com.lowagie.text.PageSize.A4.rotate());
+            com.lowagie.text.pdf.PdfWriter.getInstance(document, out);
+            document.open();
+
+            String institutionName = sessionController.getInstitution() != null
+                    ? sessionController.getInstitution().getName()
+                    : "No Logged Institution";
+
+            document.add(new Paragraph(institutionName, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18)));
+            document.add(new Paragraph("IP Unsettled Invoices Report", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18)));
+            document.add(new Paragraph("Date: " + sdf.format(new Date()), FontFactory.getFont(FontFactory.HELVETICA, 12)));
+            document.add(new Paragraph(" "));
+
+            if (unsettledInvoicesList == null || unsettledInvoicesList.isEmpty()) {
+                document.add(new Paragraph("No unsettled invoices for the selected criteria.",
+                        FontFactory.getFont(FontFactory.HELVETICA, 12)));
+                document.close();
+                context.responseComplete();
+                return;
+            }
+
+            PdfPTable infoTable = buildIpUnsettledInfoTable(sdf, sdt);
+            if (infoTable != null) {
+                document.add(infoTable);
+            }
+
+            PdfPTable table = new PdfPTable(12);
+            table.setWidthPercentage(100);
+            table.setSpacingBefore(10);
+            float[] columnWidths = {1.2f, 2.2f, 3.5f, 2.2f, 1.2f, 2.8f, 2.2f, 1.8f, 2.2f, 2.2f, 2.2f, 2.8f};
+            table.setWidths(columnWidths);
+
+            addIpUnsettledHeaderRow(table);
+
+            double totalNet = 0.0;
+            double totalCollected = 0.0;
+            double totalDue = 0.0;
+
+            int idx = 1;
+            for (IpUnsettledInvoiceDTO row : unsettledInvoicesList) {
+                addIpUnsettledRow(table, row, idx++, sdt);
+
+                totalNet += row.getNetTotal() != null ? row.getNetTotal() : 0.0;
+                totalCollected += row.getCreditPaidAmount() != null ? row.getCreditPaidAmount() : 0.0;
+                totalDue += row.getAmountToBePaid() != null ? row.getAmountToBePaid() : 0.0;
+            }
+
+            addIpUnsettledGrandTotalRow(table, totalNet, totalCollected, totalDue);
+            document.add(table);
+
+            document.close();
+            context.responseComplete();
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error generating PDF: " + e.getMessage());
+        }
+    }
+
+    private PdfPTable buildIpUnsettledInfoTable(SimpleDateFormat sdf, SimpleDateFormat sdt) throws DocumentException {
+        PdfPTable info = new PdfPTable(2);
+        info.setWidthPercentage(60);
+        info.setSpacingBefore(5);
+        info.setWidths(new float[]{1f, 2f});
+
+        addInfoCell(info, "Institution:", institution != null ? institution.getName() : "All");
+        addInfoCell(info, "Site:", site != null ? site.getName() : "All");
+        addInfoCell(info, "Department:", department != null ? department.getName() : "All");
+        addInfoCell(info, "From Date:", fromDate != null ? sdt.format(fromDate) : "-");
+        addInfoCell(info, "To Date:", toDate != null ? sdt.format(toDate) : "-");
+        addInfoCell(info, "Generated:", sdt.format(new Date()));
+        return info;
+    }
+
+    private void addInfoCell(PdfPTable table, String label, String value) {
+        com.lowagie.text.Font bold = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 9);
+        com.lowagie.text.Font normal = FontFactory.getFont(FontFactory.HELVETICA, 9);
+
+        PdfPCell c1 = new PdfPCell(new Phrase(label, bold));
+        c1.setBorder(0);
+        c1.setPadding(2);
+        table.addCell(c1);
+
+        PdfPCell c2 = new PdfPCell(new Phrase(value != null ? value : "", normal));
+        c2.setBorder(0);
+        c2.setPadding(2);
+        table.addCell(c2);
+    }
+
+    private void addIpUnsettledHeaderRow(PdfPTable table) {
+        java.awt.Color headerBg = new java.awt.Color(33, 37, 41);
+        com.lowagie.text.Font headerFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 9, java.awt.Color.WHITE);
+
+        String[] headers = {
+            "#", "MRN", "Patient Name", "Mobile", "Age", "Location",
+            "Discharged On", "Status", "Total", "Collected", "Due", "Discharged By"
+        };
+
+        for (String h : headers) {
+            PdfPCell cell = new PdfPCell(new Phrase(h, headerFont));
+            cell.setBackgroundColor(headerBg);
+            cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+            cell.setPadding(4);
+            table.addCell(cell);
+        }
+    }
+
+    private void addIpUnsettledRow(PdfPTable table, IpUnsettledInvoiceDTO row, int idx, SimpleDateFormat sdt) {
+        com.lowagie.text.Font normal = FontFactory.getFont(FontFactory.HELVETICA, 8);
+
+        table.addCell(new Phrase(String.valueOf(idx), normal));
+        table.addCell(new Phrase(nullSafe(row.getPhn()), normal));
+        table.addCell(new Phrase(nullSafe(row.getPatientNameWithTitle()), normal));
+        table.addCell(new Phrase(nullSafe(row.getMobileNumber()), normal));
+        table.addCell(new Phrase(row.getAge() != null ? row.getAge().toString() : "", normal));
+
+        String location = "";
+        if (row.getRoomCategoryName() != null
+                && row.getRoomCategoryName().getRoomFacilityCharge() != null
+                && row.getRoomCategoryName().getRoomFacilityCharge().getName() != null) {
+            location = row.getRoomCategoryName().getRoomFacilityCharge().getName();
+        }
+        table.addCell(new Phrase(location, normal));
+
+        table.addCell(new Phrase(row.getDateOfDischarge() != null ? sdt.format(row.getDateOfDischarge()) : "", normal));
+        table.addCell(new Phrase(nullSafe(row.getPaymentStatusLabel()), normal));
+        table.addCell(new Phrase(formatAmount(row.getNetTotal()), normal));
+        table.addCell(new Phrase(formatAmount(row.getCreditPaidAmount()), normal));
+        table.addCell(new Phrase(formatAmount(row.getAmountToBePaid()), normal));
+
+        String dischargedBy = row.getCreaterName() != null ? nullSafe(row.getCreaterName().getName()) : "";
+        table.addCell(new Phrase(dischargedBy, normal));
+    }
+
+    private void addIpUnsettledGrandTotalRow(PdfPTable table, double totalNet, double totalCollected, double totalDue) {
+        com.lowagie.text.Font boldWhite = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 9, java.awt.Color.WHITE);
+        java.awt.Color bg = new java.awt.Color(52, 58, 64);
+
+        PdfPCell label = new PdfPCell(new Phrase("Grand Total", boldWhite));
+        label.setColspan(8);
+        label.setHorizontalAlignment(Element.ALIGN_RIGHT);
+        label.setBackgroundColor(bg);
+        label.setPadding(4);
+        table.addCell(label);
+
+        table.addCell(makeTotalCell(totalNet, boldWhite, bg));
+        table.addCell(makeTotalCell(totalCollected, boldWhite, bg));
+        table.addCell(makeTotalCell(totalDue, boldWhite, bg));
+        table.addCell(makeTotalCell("", boldWhite, bg));
+    }
+
+    private PdfPCell makeTotalCell(double value, com.lowagie.text.Font font, java.awt.Color bg) {
+        PdfPCell cell = new PdfPCell(new Phrase(formatAmount(value), font));
+        cell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+        cell.setBackgroundColor(bg);
+        cell.setPadding(4);
+        return cell;
+    }
+
+    private PdfPCell makeTotalCell(String value, com.lowagie.text.Font font, java.awt.Color bg) {
+        PdfPCell cell = new PdfPCell(new Phrase(value, font));
+        cell.setBackgroundColor(bg);
+        cell.setPadding(4);
+        return cell;
+    }
+
+    private String formatAmount(Double v) {
+        return String.format("%,.2f", v != null ? v : 0.0);
+    }
+
+    private String nullSafe(String value) {
+        return value != null ? value : "";
+    }
+
+    public StreamedContent getIpUnsettledInvoicesExcel() {
+        if (unsettledInvoicesList == null || unsettledInvoicesList.isEmpty()) {
+            JsfUtil.addErrorMessage("No data available to export.");
+            return null;
+        }
+
+        try (XSSFWorkbook wb = new XSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+            XSSFSheet sheet = wb.createSheet("IP Unsettled Invoices");
+
+            String[] headers = {
+                "SI No", "MRN", "Patient Name", "Mobile", "Age", "Location",
+                "Discharged On", "Status", "Total", "Collected", "Due", "Discharged By"
+            };
+
+            Row headerRow = sheet.createRow(0);
+            for (int i = 0; i < headers.length; i++) {
+                headerRow.createCell(i).setCellValue(headers[i]);
+            }
+
+            CreationHelper helper = wb.getCreationHelper();
+            CellStyle dateStyle = wb.createCellStyle();
+            dateStyle.setDataFormat(helper.createDataFormat().getFormat("dd-MMM-yyyy HH:mm"));
+            CellStyle moneyStyle = wb.createCellStyle();
+            moneyStyle.setDataFormat(helper.createDataFormat().getFormat("#,##0.00"));
+
+            int rowNum = 1;
+            int idx = 1;
+            for (IpUnsettledInvoiceDTO dto : unsettledInvoicesList) {
+                Row row = sheet.createRow(rowNum++);
+
+                row.createCell(0).setCellValue(idx++);
+                row.createCell(1).setCellValue(dto.getPhn() != null ? dto.getPhn() : "");
+                row.createCell(2).setCellValue(dto.getPatientNameWithTitle() != null ? dto.getPatientNameWithTitle() : "");
+                row.createCell(3).setCellValue(dto.getMobileNumber() != null ? dto.getMobileNumber() : "");
+                row.createCell(4).setCellValue(dto.getAge() != null ? dto.getAge() : 0);
+
+                String location = "";
+                if (dto.getRoomCategoryName() != null
+                        && dto.getRoomCategoryName().getRoomFacilityCharge() != null
+                        && dto.getRoomCategoryName().getRoomFacilityCharge().getName() != null) {
+                    location = dto.getRoomCategoryName().getRoomFacilityCharge().getName();
+                }
+                row.createCell(5).setCellValue(location);
+
+                Cell dischargeCell = row.createCell(6);
+                if (dto.getDateOfDischarge() != null) {
+                    dischargeCell.setCellValue(dto.getDateOfDischarge());
+                    dischargeCell.setCellStyle(dateStyle);
+                }
+
+                row.createCell(7).setCellValue(dto.getPaymentStatusLabel() != null ? dto.getPaymentStatusLabel() : "");
+
+                Cell totalCell = row.createCell(8);
+                totalCell.setCellValue(dto.getNetTotal() != null ? dto.getNetTotal() : 0.0);
+                totalCell.setCellStyle(moneyStyle);
+
+                Cell collectedCell = row.createCell(9);
+                collectedCell.setCellValue(dto.getCreditPaidAmount() != null ? dto.getCreditPaidAmount() : 0.0);
+                collectedCell.setCellStyle(moneyStyle);
+
+                Cell dueCell = row.createCell(10);
+                dueCell.setCellValue(dto.getAmountToBePaid() != null ? dto.getAmountToBePaid() : 0.0);
+                dueCell.setCellStyle(moneyStyle);
+
+                String dischargedBy = dto.getCreaterName() != null ? dto.getCreaterName().getName() : "";
+                row.createCell(11).setCellValue(dischargedBy);
+            }
+
+            for (int i = 0; i < headers.length; i++) {
+                sheet.autoSizeColumn(i);
+            }
+
+            wb.write(out);
+            byte[] bytes = out.toByteArray();
+            return DefaultStreamedContent.builder()
+                    .name("IP_Unsettled_Invoices.xlsx")
+                    .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                    .stream(() -> new ByteArrayInputStream(bytes))
+                    .build();
+
+        } catch (IOException e) {
+            java.util.logging.Logger.getLogger(InwardReportController.class.getName())
+                    .log(java.util.logging.Level.SEVERE, "Excel generation failed", e);
+            JsfUtil.addErrorMessage("Failed to generate Excel: " + e.getMessage());
+            return null;
+        }
     }
 
     public void processSpecialtyDoctorWiseIncomeReport() {
