@@ -501,12 +501,14 @@
 
                     <div style="margin-bottom: 15px;">
                         <h:outputLabel value="Select Staff: "
-                                       style="display: block; margin-bottom: 4px; font-size: 12px;" />
+                                        for="staffToAdd"
+                                        style="display: block; margin-bottom: 4px; font-size: 12px;" />
                         <!-- CHANGED: itemLabel shows name + (staffCode) -->
-                        <p:selectOneMenu value="#{shiftTableController.staffToAddId}"
-                                         style="width: 100%;"
-                                         filter="true" filterMatchMode="contains">
-                            <f:selectItem itemLabel="-- Select Staff --" itemValue="#{null}" />
+                        <p:selectOneMenu id="staffToAdd"
+                                        value="#{shiftTableController.staffToAddId}"
+                                        title="Select staff to add to this shift"
+                                        style="width: 100%;"
+                                        filter="true" filterMatchMode="contains">
                             <f:selectItems value="#{shiftTableController.availableStaffForAdd}"
                                            var="s"
                                            itemLabel="#{shiftTableController.staffLabel(s)}"
