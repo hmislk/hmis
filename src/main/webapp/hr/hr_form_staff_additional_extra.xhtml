@@ -57,7 +57,7 @@
                 <div class="ui-g">
 
                     <!-- ================= FORM ENTRY ================= -->
-                    <div class="ui-g-12 ui-lg-5">
+                    <div class="ui-g-12 ui-lg-10">
                         <p:panel header="Form Details" toggleable="true">
 
                             <p:fieldset legend="Form Info" toggleable="true" styleClass="ui-fluid">
@@ -240,42 +240,55 @@
                         </p:panel>
                     </div>
 
+                    <!-- ================= LINKS ================= -->
+                    <div class="ui-g-12 ui-lg-2">
+                        <p:panel header="Links" toggleable="true">
+                            <div class="ui-g">
+                                <div class="ui-g-12">
+                                    <p:commandLink value="Finger Print Analysis"
+                                                   action="/hr/hr_shift_table_finger_print_by_staff"
+                                                   ajax="false" />
+                                </div>
+                            </div>
+                        </p:panel>
+                    </div>
+
                     <!-- ================= SEARCH ================= -->
-                    <div class="ui-g-12 ui-lg-5">
+                    <div class="ui-g-12">
                         <p:panel header="Search Forms" toggleable="true">
 
                             <div class="ui-g">
-                                <div class="ui-g-12 ui-md-4">
+                                <div class="ui-g-12 ui-md-3">
                                     <h:outputLabel for="searchFromDate" value="From Date" />
                                 </div>
-                                <div class="ui-g-12 ui-md-8">
+                                <div class="ui-g-12 ui-md-3">
                                     <p:calendar id="searchFromDate"
                                                 value="#{staffAdditionalFormController.fromDate}"
                                                 pattern="yyyy MM dd HH:mm:ss"
                                                 showIcon="true" />
                                 </div>
 
-                                <div class="ui-g-12 ui-md-4">
+                                <div class="ui-g-12 ui-md-3">
                                     <h:outputLabel for="searchToDate" value="To Date" />
                                 </div>
-                                <div class="ui-g-12 ui-md-8">
+                                <div class="ui-g-12 ui-md-3">
                                     <p:calendar id="searchToDate"
                                                 value="#{staffAdditionalFormController.toDate}"
                                                 pattern="yyyy MM dd HH:mm:ss"
                                                 showIcon="true" />
                                 </div>
 
-                                <div class="ui-g-12 ui-md-4">
+                                <div class="ui-g-12 ui-md-3">
                                     <h:outputLabel for="searchStaff" value="Staff" />
                                 </div>
-                                <div class="ui-g-12 ui-md-8">
+                                <div class="ui-g-12 ui-md-3">
                                     <au:completeStaff id="searchStaff" value="#{staffAdditionalFormController.staff}" />
                                 </div>
 
-                                <div class="ui-g-12 ui-md-4">
+                                <div class="ui-g-12 ui-md-3">
                                     <h:outputLabel for="searchApprovedStaff" value="Approved Person" />
                                 </div>
-                                <div class="ui-g-12 ui-md-8">
+                                <div class="ui-g-12 ui-md-3">
                                     <au:completeStaff id="searchApprovedStaff" value="#{staffAdditionalFormController.approvedStaff}" />
                                 </div>
 
@@ -294,7 +307,7 @@
                                          var="add"
                                          rowStyleClass="#{add.retired eq true ? 'redText' : ''}"
                                          scrollable="true"
-                                         scrollHeight="300">
+                                         scrollHeight="400">
 
                                 <p:column headerText="View" style="width:70px;text-align:center;">
                                     <p:commandButton ajax="false"
@@ -350,19 +363,6 @@
                                 </p:column>
                             </p:dataTable>
 
-                        </p:panel>
-                    </div>
-
-                    <!-- ================= LINKS ================= -->
-                    <div class="ui-g-12 ui-lg-2">
-                        <p:panel header="Links" toggleable="true">
-                            <div class="ui-g">
-                                <div class="ui-g-12">
-                                    <p:commandLink value="Finger Print Analysis"
-                                                   action="/hr/hr_shift_table_finger_print_by_staff"
-                                                   ajax="false" />
-                                </div>
-                            </div>
                         </p:panel>
                     </div>
 
