@@ -2546,6 +2546,20 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         return billSessionFacade.findFirstByJpql(sql, params);
     }
 
+    // Get BillSession from Bill ID
+    public BillSession getBillSessionFromBillId(Long billId) {
+        String sql = " select bs from BillSession bs "
+                + " where bs.bill.id = :bill "
+                + " and bs.retired = :ret"
+                + " and bs.bill.retired = :ret ";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("ret", false);
+        params.put("bill", billId);
+
+        return billSessionFacade.findFirstByJpql(sql, params);
+    }
+
     public String navigateToViewBillSession(BillSession bs) {
 
         selectedBillSession = bs;

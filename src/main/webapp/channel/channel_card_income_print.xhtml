@@ -10,6 +10,7 @@
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
+                <h:outputStylesheet library="css" name="printing/reportprint.css"/>
 
                 <h:form>
                     <p:panel header="Channel Card Income Report Print View" styleClass="w-100">
@@ -37,87 +38,6 @@
 
                             </div>
                         </f:facet>
-
-                        <style>
-
-                            @media screen {
-                                .paper {
-                                    position: static !important;
-                                    width: 297mm !important;
-                                    zoom: 2.0;
-                                }
-
-                                table {
-                                    border-collapse: collapse;
-                                    width: 100%;
-                                    font-size: 12px !important;
-                                    margin-top: 1mm !important;
-                                }
-
-                                th, td {
-                                    border: 1px solid #000;
-                                    padding: 2px !important;
-                                    margin: 2px !important;
-                                    text-align: left;
-                                    margin-left: 10mm !important;
-                                }
-
-                                .header {
-                                    font-size: 16px !important;
-                                }
-
-                                tfoot {
-                                    font-weight: 700 !important;
-                                    font-size: 11px !important;
-                                }
-                            }
-
-                            @media print {
-                                @page {
-                                    @bottom-right {
-                                        content: "Page " counter(page) " of " counter(pages);
-                                        font-family: Arial, sans-serif;
-                                        font-size: 10pt;
-                                    }
-                                    size: A4 landscape !important;
-                                }
-
-                                body {
-                                    counter-reset: page;
-                                }
-
-                                .paper {
-                                    position: static !important;
-                                    width: 297mm !important;
-                                }
-
-                                .header {
-                                    line-height: 1.1;
-                                    margin: 0mm !important;
-                                    font-size: 13px !important;
-                                }
-
-                                table {
-                                    border-collapse: collapse;
-                                    width: 99.9%;
-                                    font-size: 10px !important;
-                                    margin-top: 1mm !important;
-                                }
-
-                                th, td {
-                                    border: 1px solid #000;
-                                    padding: 1px !important;
-                                    margin: 1px !important;
-                                    text-align: left;
-                                    margin-left: 10mm !important;
-                                }
-
-                                tfoot {
-                                    font-weight: 700 !important;
-                                    font-size: 11px !important;
-                                }
-                            }
-                        </style>
 
                         <h:panelGroup id="reportView" class="d-flex justify-content-center">
                             <div class="paper">
@@ -150,43 +70,43 @@
                                 </div>
 
                                 <div>
-                                    <table style="width: 100%; border-collapse: collapse;">
+                                    <table class="table">
                                         <thead>
                                             <tr>
-                                                <th style="text-align: center;">Serial</th>
-                                                <th style="text-align: center;">Created At</th>
-                                                <th style="text-align: center;">Bill No</th>
-                                                <th style="text-align: center;">Patient</th>
-                                                <th style="text-align: center;">Cashier</th>
-                                                <th style="text-align: center;">Hospital Fee</th>
-                                                <th style="text-align: center;">Doctor fee</th>
-                                                <th style="text-align: center;">Bill Gross Total</th>
-                                                <th style="text-align: center;">Card Total</th>
-                                                <th style="text-align: center;">Card Last 4 Numbers</th>
-                                                <th style="text-align: center;">Bank</th>
+                                                <th style="text-align: center; width: 5mm;">Serial</th>
+                                                <th style="text-align: center; width: 15mm;">Created At</th>
+                                                <th style="text-align: center; width: 30mm">Bill No</th>
+                                                <th style="text-align: center; width: 40mm;">Patient</th>
+                                                <th style="text-align: center; width: 20mm;">Cashier</th>
+                                                <th style="text-align: center; width: 25mm;">Hospital Fee</th>
+                                                <th style="text-align: center; width: 25mm;">Doctor fee</th>
+                                                <th style="text-align: center; width: 25mm;">Bill Gross Total</th>
+                                                <th style="text-align: center; width: 25mm;">Card Total</th>
+                                                <th style="text-align: center; width: 20mm;">Card Last 4 Numbers</th>
+                                                <th style="text-align: center; width: 40mm;">Bank</th>
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            <ui:repeat value="#{channelReportController.paymentsFromCardAppoinments}" var="row" varStatus="status">
+                                            <ui:repeat value="#{channelReportController.cardPaymentDetails.incomeDtos}" var="row" varStatus="status">
                                                 <tr>
                                                     <td style="text-align: center;"><h:outputText value="#{status.index + 1}"/></td>
                                                     <td>
-                                                        <h:outputText value="#{row.bill.createdAt}">
+                                                        <h:outputText value="#{row.billedDate}">
                                                             <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
                                                         </h:outputText>
                                                     </td>
                                                     <td>
-                                                        <h:outputText value="#{row.bill.deptId}"/>
-                                                        <h:panelGroup rendered="#{row.bill.cancelled}">
+                                                        <h:outputText value="#{row.billDeptId}"/>
+                                                        <h:panelGroup rendered="#{row.isCancelled}">
                                                             <span style="color: red; font-weight: bold;"> [Cancelled]</span>
                                                         </h:panelGroup>
-                                                        <h:panelGroup rendered="#{row.bill.refunded}">
+                                                        <h:panelGroup rendered="#{row.isRefunded}">
                                                             <span style="color: orange; font-weight: bold;"> [Refunded]</span>
                                                         </h:panelGroup>
-                                                        <h:panelGroup rendered="#{row.bill.billTypeAtomic eq 'CHANNEL_REFUND_WITH_PAYMENT'}">
+                                                        <h:panelGroup rendered="#{row.billTypeAtomic eq 'CHANNEL_REFUND_WITH_PAYMENT'}">
                                                             <span style="color: orange; font-weight: bold;"> [Refund Bill]</span>
                                                         </h:panelGroup>
-                                                        <h:panelGroup rendered="#{row.bill.billTypeAtomic eq 'CHANNEL_CANCELLATION_WITH_PAYMENT'}">
+                                                        <h:panelGroup rendered="#{row.billTypeAtomic eq 'CHANNEL_CANCELLATION_WITH_PAYMENT'}">
                                                             <span style="color: red; font-weight: bold;"> [Cancel Bill]</span>
                                                         </h:panelGroup>
                                                     </td>
@@ -194,51 +114,44 @@
                                                                                                             <h:outputText value="#{row.bill.billType}"/>
                                                                                                         </td>-->
                                                     <td>
-                                                        <h:outputText rendered="#{row.bill.billTypeAtomic ne 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}" value="#{row.bill.patient.person.nameWithTitle}"/>
-                                                        <h:outputText rendered="#{row.bill.billTypeAtomic eq 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}" value="#{row.bill.referenceBill.onlineBooking.patientName}"/>
-                                                        <h:outputText rendered="#{row.bill.billTypeAtomic eq 'CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING'}" value="#{row.bill.billedBill.referenceBill.onlineBooking.patientName}"/>
+                                                        <h:outputText value="#{row.patientName}"/>
                                                     </td>
                                                     <td>
-                                                        <h:outputText value="#{row.bill.creater.name}">
-                                                        </h:outputText>
-                                                        <h:outputText value="OB" style="color: #003157; font-weight: bold" rendered="#{row.bill.billTypeAtomic eq 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT' or row.bill.billTypeAtomic eq 'CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING'}">
-                                                        </h:outputText>
+                                                        <h:outputText value="#{row.billedBy}"/>
                                                     </td>
                                                     <td style="text-align: right;">
-                                                        <h:outputText styleClass="hosValue" value="#{row.bill.hospitalFee}">
+                                                        <h:outputText styleClass="hosValue" value="#{row.hosFee}">
                                                             <f:convertNumber pattern="#,##0.00"/>
                                                         </h:outputText>
                                                     </td>
                                                     <td style="text-align: right;">
-                                                        <h:outputText styleClass="staffValue" value="#{row.bill.staffFee}">
+                                                        <h:outputText styleClass="staffValue" value="#{row.doctorFee}">
                                                             <f:convertNumber pattern="#,##0.00"/>
                                                         </h:outputText>
                                                     </td>
                                                     <td style="text-align: right;">
-                                                        <h:outputText styleClass="grossValue" value="#{row.bill.total}">
+                                                        <h:outputText styleClass="grossValue" value="#{row.totalAppoinmentFee}">
                                                             <f:convertNumber pattern="#,##0.00"/>
                                                         </h:outputText>
                                                     </td>
 
                                                     <td style="text-align: right;">
-                                                        <h:outputText styleClass="cardValue" value="#{row.paidValue}">
+                                                        <h:outputText styleClass="cardValue" value="#{row.cardFee}">
                                                             <f:convertNumber pattern="#,##0.00"/>
                                                         </h:outputText>
                                                     </td>
 
                                                     <h:panelGroup >
                                                         <td style="text-align: right;">
-                                                            <h:outputText styleClass="discountValue" value="#{row.creditCardRefNo}">
+                                                            <h:outputText styleClass="discountValue" value="#{row.paymentReference}">
 
                                                             </h:outputText>
                                                         </td>
                                                     </h:panelGroup>
 
                                                     <h:panelGroup>
-                                                        <td style="text-align: right;">
-                                                            <h:outputText value="#{row.bank.name}">
-
-                                                            </h:outputText>
+                                                        <td style="text-align: left;">
+                                                            <h:outputText value="#{row.creditCompanyName}"/>
                                                         </td>
                                                     </h:panelGroup>
 

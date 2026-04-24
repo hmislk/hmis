@@ -11,6 +11,7 @@ import com.divudi.bean.common.PdfController;
 import com.divudi.bean.common.ReportTimerController;
 import com.divudi.bean.common.SearchController;
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.pharmacy.PharmacyController;
 import com.divudi.core.data.BillClassType;
 
 import com.divudi.core.data.BillType;
@@ -87,6 +88,8 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
 
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.primefaces.model.StreamedContent;
@@ -181,6 +184,8 @@ public class ChannelReportController implements Serializable {
     PdfController pdfController;
     @Inject
     ExcelController excelController;
+    @Inject
+    PharmacyController pharmacyController;
 
     @EJB
     DepartmentFacade departmentFacade;
@@ -470,6 +475,7 @@ public class ChannelReportController implements Serializable {
     }
 
     private List<Payment> paymentsFromCardAppoinments;
+    private WrapperDtoForChannelFutureIncome cardPaymentDetails;
 
     public List<Payment> getPaymentsFromCardAppoinments() {
         return paymentsFromCardAppoinments;
@@ -477,6 +483,13 @@ public class ChannelReportController implements Serializable {
 
     public void setPaymentsFromCardAppoinments(List<Payment> paymentsFromCardAppoinments) {
         this.paymentsFromCardAppoinments = paymentsFromCardAppoinments;
+    }
+    public WrapperDtoForChannelFutureIncome getCardPaymentDetails() {
+        return cardPaymentDetails;
+    }
+
+    public void setCardPaymentDetails(WrapperDtoForChannelFutureIncome cardPaymentDetails) {
+        this.cardPaymentDetails = cardPaymentDetails;
     }
 
     public List<Institution> getInstitutionForChannelReports() {
@@ -495,6 +508,11 @@ public class ChannelReportController implements Serializable {
         }
 
         paymentsFromCardAppoinments = channelService.fetchCardPaymentsFromChannelIncome(fromDate, toDate, institution, reportStatus);
+        cardPaymentDetails = channelService.fetchCardPaymentDetailsForChannelIncome(fromDate, toDate, institution, reportStatus);
+
+        for (ChannelIncomeDetailDto dto : cardPaymentDetails.getIncomeDtos()) {
+            System.out.println("billId=" + dto.getBillId() + ", billedDate=" + dto.getBilledDate() + ", billDeptId=" + dto.getBillDeptId() + ", billTypeAtomic=" + dto.getBillTypeAtomic() + ", billType=" + dto.getBillType() + ", patientName=" + dto.getPatientName() + ", billedBy=" + dto.getBilledBy() + ", isCancelled=" + dto.isIsCancelled() + ", cancelledBillDeptId=" + dto.getCancelledBillDeptId() + ", isRefunded=" + dto.isIsRefunded() + ", refundBillDeptId=" + dto.getRefundBillDeptId() + ", hosFee=" + dto.getHosFee() + ", doctorFee=" + dto.getDoctorFee() + ", totalAppoinmentFee=" + dto.getTotalAppoinmentFee() + ", cardFee=" + dto.getCardFee() + ", paymentReference=" + dto.getPaymentReference() + ", creditCompanyName=" + dto.getCreditCompanyName());
+        }
     }
 
     public double calculateTotalsFromPayment(List<Payment> payments, String type) {
@@ -557,19 +575,33 @@ public class ChannelReportController implements Serializable {
 
         private long bsId;
         private long billId;
+        private String billDeptId;
         private BillTypeAtomic billTypeAtomic;
+        private BillType billType;
         private Date appoinmentDate;
         private Date billedDate;
         private String billedBy;
         private String patientName;
         private String patientPhone;
+
         private PaymentMethod paymentMethod;
+        private String creditCompanyName;
+        private String paymentReference;
+
         private double doctorFee;
         private double hosFee;
         private double totalAppoinmentFee;
+        private double cardFee;
+
         private String remark;
+
         private boolean isCancelled;
+        private String cancelledBillDeptId;
+
         private boolean isRefunded;
+        private String refundBillDeptId;
+
+
 
         public ChannelIncomeDetailDto(long bsId, long billId, BillTypeAtomic billTypeAtomic, Date appoinmentDate, Date billedDate, String billedBy, String patientName, String patientPhone, PaymentMethod paymentMethod, double doctorFee, double hosFee, double totalAppoinmentFee, String remark, boolean isCancelled, boolean isRefunded) {
             this.bsId = bsId;
@@ -587,6 +619,28 @@ public class ChannelReportController implements Serializable {
             this.remark = remark;
             this.isCancelled = isCancelled;
             this.isRefunded = isRefunded;
+        }
+
+         // constructor for channel income card payments
+        public ChannelIncomeDetailDto(Long billId, Date createdAt, String billDeptId, BillTypeAtomic billTypeAtomic, BillType billType, String patientName, String cashierName, Boolean canceled, String cancelledBillDeptId,
+                        Boolean refunded, String refundBillDeptId, Double hospitalFee, Double staffFee, Double grossTotal, Double netTotal, String paymentReference, String bankName) {
+            this.billId = billId;
+            this.billedDate = createdAt;
+            this.billDeptId = billDeptId;
+            this.billTypeAtomic = billTypeAtomic;
+            this.billType = billType;
+            this.patientName = patientName;
+            this.billedBy = cashierName;
+            this.isCancelled = canceled;
+            this.cancelledBillDeptId = cancelledBillDeptId;
+            this.isRefunded = refunded;
+            this.refundBillDeptId = refundBillDeptId;
+            this.hosFee = hospitalFee;
+            this.doctorFee = staffFee;
+            this.totalAppoinmentFee = grossTotal;
+            this.cardFee = netTotal;
+            this.paymentReference = paymentReference;
+            this.creditCompanyName = bankName;
         }
 
         public BillTypeAtomic getBillTypeAtomic() {
@@ -708,6 +762,62 @@ public class ChannelReportController implements Serializable {
         public void setBilledDate(Date billedDate) {
             this.billedDate = billedDate;
         }
+
+        public String getBillDeptId() {
+            return billDeptId;
+        }
+
+        public void setBillDeptId(String billDeptId) {
+            this.billDeptId = billDeptId;
+        }
+
+        public BillType getBillType() {
+            return billType;
+        }
+
+        public void setBillType(BillType billType) {
+            this.billType = billType;
+        }
+
+        public String getCancelledBillDeptId() {
+            return cancelledBillDeptId;
+        }
+
+        public void setCancelledBillDeptId(String cancelledBillDeptId) {
+            this.cancelledBillDeptId = cancelledBillDeptId;
+        }
+
+        public String getRefundBillDeptId() {
+            return refundBillDeptId;
+        }
+
+        public void setRefundBillDeptId(String refundBillDeptId) {
+            this.refundBillDeptId = refundBillDeptId;
+        }
+
+        public String getPaymentReference() {
+            return paymentReference;
+        }
+
+        public void setPaymentReference(String paymentReference) {
+            this.paymentReference = paymentReference;
+        }
+
+        public String getCreditCompanyName() {
+            return creditCompanyName;
+        }
+
+        public void setCreditCompanyName(String companyName) {
+            this.creditCompanyName = companyName;
+        }
+
+        public double getCardFee() {
+            return cardFee;
+        }
+
+        public void serCardFee(double fee) {
+            this.cardFee = fee;
+        }
     }
 
     public static class WrapperDtoForChannelFutureIncome {
@@ -726,7 +836,7 @@ public class ChannelReportController implements Serializable {
         private double allCancelAppoinments;
         private double allRefundAppoinments;
 
-        // fee Totals
+         // fee Totals
         private double allHosFeeTotal;
         private double allDoctorFeeTotal;
         private double allTotalAmount;
@@ -5077,6 +5187,50 @@ public class ChannelReportController implements Serializable {
         return downloadingExcel;
     }
 
+    // PDF Export: Channel Scanning Income Report
+    public StreamedContent getChannelIncomeFromCardPaymentsReportAsPdf() {
+        if (cardPaymentDetails == null || cardPaymentDetails.getIncomeDtos() == null || cardPaymentDetails.getIncomeDtos().isEmpty()) {
+            JsfUtil.addErrorMessage("Please generate the Channel Income From Card Payment report before exporting.");
+            return null;
+        }
+
+        StreamedContent pdfSc = null;
+        try {            
+            pdfSc = pdfController.createPdfForChannelCardIncomeReport(cardPaymentDetails, PageSize.A4.rotate(), true, getFiltersForChannelIncomeReports(), getIncomeFromCardPaymentReportFileName());
+        } catch (IOException e) {
+            logger.error("getChannelIncomeFromCardPaymentsReportAsPdf: Error creating pdfSc via pdfController.createPdfForChannelCardIncomeReport", e);
+            pdfSc = null;
+            JsfUtil.addErrorMessage("Failed to generate Channel Income From Card Payment Report PDF file. Please try again.");
+        }
+        return pdfSc;
+    }
+
+    // PostProcessor for channem_card_income_report excel export
+    public void postProcessChannelCardIncomeReportExcel(Object document) {
+        if (document == null) {
+            logger.error("postProcessChannelCardIncomeReportExcel: Document is null in postProcessChannelCardIncomeReportExcel");
+            return;
+        }
+        if (!(document instanceof XSSFWorkbook)) {
+            logger.error("postProcessChannelCardIncomeReportExcel:Expected document to be an instance of XSSFWorkbook, but got: {}", document.getClass().getName());
+            return;
+        }
+        XSSFWorkbook workbook = (XSSFWorkbook) document;
+        XSSFSheet sheet = workbook.getSheetAt(0);
+        if (sheet == null) {
+            return;
+        }
+
+        workbook.setSheetName(0, "Channel Card Income Report");
+        sheet.shiftRows(0, sheet.getLastRowNum(), 6);
+
+        Map<String, Object> filters = getFiltersForChannelIncomeReports();
+
+        if (filters != null && !filters.isEmpty()) {
+            pharmacyController.addMetaDataToExcelSheet(workbook, sheet, 0, "Channel Card Income Report", filters);
+        }
+    }
+
     // PDF Export: Channel Income Daily Summary Report
     public StreamedContent getChannelIncomeDailySummaryReportAsPdf() {
         if (wrapperDto == null || wrapperDto.getIncomeDtos() == null || wrapperDto.getIncomeDtos().isEmpty()) {
@@ -5202,6 +5356,16 @@ public class ChannelReportController implements Serializable {
         params.put("Report Status: ", reportStatusString);
 
         return params;
+    }
+    // Excel Export fileName : channel income from card payment report
+    public String getIncomeFromCardPaymentReportFileName() {
+        String fileName = "Channel_Card_Income_Report";
+        String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
+        if (dates != null && !dates.isEmpty()) {
+            fileName += "_" + dates;
+        }
+        
+        return fileName;
     }
 
     // Helper method to convert selected category list to a comma-separated string
