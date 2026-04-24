@@ -221,11 +221,8 @@
                                 class="ui-button-danger mx-1"
                                 icon="fas fa-file-pdf"
                                 ajax="false"
-                                value="PDF">
-
-                                <p:dataExporter type="pdf"
-                                                target="summaryTable"
-                                                fileName="Surgery_Survey_Summary_Report"/>
+                                value="PDF"
+                                action="#{inwardReportController.downloadSurgerySurveyPdf()}">
                             </p:commandButton>
 
                             <p:commandButton
@@ -233,11 +230,9 @@
                                 class="ui-button-danger mx-1"
                                 icon="fas fa-file-pdf"
                                 ajax="false"
-                                value="PDF">
+                                value="PDF"
+                                action="#{inwardReportController.downloadSurgerySurveyPdf()}">
 
-                                <p:dataExporter type="pdf"
-                                                target="detailWise"
-                                                fileName="Surgery_Survey_Detail_Report"/>
                             </p:commandButton>
 
                         </div>

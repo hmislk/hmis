@@ -1338,6 +1338,115 @@ public class InwardReportController implements Serializable {
 
     }
 
+    public void downloadSurgerySurveyPdf() {
+        if (monthlySurgeryCountList == null || monthlySurgeryCountList.isEmpty()) {
+            JsfUtil.addErrorMessage("No data to export. Please process the report first.");
+            return;
+        }
+
+        com.lowagie.text.Document document = null;
+        try {
+            FacesContext facesContext = FacesContext.getCurrentInstance();
+            ExternalContext externalContext = facesContext.getExternalContext();
+            externalContext.responseReset();
+            externalContext.setResponseContentType("application/pdf");
+
+            String fileName = "Surgery_Survey_"
+                    + new SimpleDateFormat("yyyyMMdd_HHmm").format(new Date()) + ".pdf";
+            externalContext.setResponseHeader("Content-Disposition",
+                    "attachment; filename=\"" + fileName + "\"");
+
+            OutputStream out = externalContext.getResponseOutputStream();
+
+            document = new com.lowagie.text.Document(
+                    com.lowagie.text.PageSize.A3.rotate(), 20, 20, 30, 20);
+            com.lowagie.text.pdf.PdfWriter.getInstance(document, out);
+            document.open();
+
+            com.lowagie.text.Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 13);
+            com.lowagie.text.Font labelFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 9);
+            com.lowagie.text.Font normalFont = FontFactory.getFont(FontFactory.HELVETICA, 9);
+            com.lowagie.text.Font headerFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 9);
+
+            SimpleDateFormat sdf = new SimpleDateFormat("dd/MMM/yyyy");
+
+            String title = "Surgery Survey " + reportType + " Report";
+            Paragraph titlePara = new Paragraph(title, titleFont);
+            titlePara.setAlignment(Element.ALIGN_CENTER);
+            titlePara.setSpacingAfter(6);
+            document.add(titlePara);
+
+            PdfPTable info = new PdfPTable(2);
+            info.setWidthPercentage(50);
+            info.setWidths(new float[]{1.4f, 3f});
+            info.setSpacingAfter(10);
+
+            addInfoRow(info, "From Date:", fromDate != null ? sdf.format(fromDate) : "");
+            addInfoRow(info, "To Date:", toDate != null ? sdf.format(toDate) : "");
+            addInfoRow(info, "Surgery Type:", surgeryType != null ? surgeryType.getName() : "All");
+            addInfoRow(info, "Institution:", institution != null ? institution.getName() : "All");
+            addInfoRow(info, "Site:", site != null ? site.getName() : "All");
+            addInfoRow(info, "Department:", department != null ? department.getName() : "All");
+            document.add(info);
+
+            // Build table header: Month + dynamic surgery headers + Total
+            int colCount = 2 + (surgeryHeaders != null ? surgeryHeaders.size() : 0);
+            PdfPTable table = new PdfPTable(colCount);
+            table.setWidthPercentage(100);
+
+            PdfPCell monthHeader = new PdfPCell(new Phrase("Month", headerFont));
+            monthHeader.setHorizontalAlignment(Element.ALIGN_CENTER);
+            table.addCell(monthHeader);
+
+            if (surgeryHeaders != null) {
+                for (String h : surgeryHeaders) {
+                    PdfPCell cell = new PdfPCell(new Phrase(h, headerFont));
+                    cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+                    table.addCell(cell);
+                }
+            }
+
+            PdfPCell totalHeader = new PdfPCell(new Phrase("Total", headerFont));
+            totalHeader.setHorizontalAlignment(Element.ALIGN_CENTER);
+            table.addCell(totalHeader);
+
+            for (MonthlySurgeryCountDTO row : monthlySurgeryCountList) {
+                table.addCell(new Phrase(row.isGrandTotal() ? "Grand Total" : row.getMonthName(), normalFont));
+
+                if (surgeryHeaders != null) {
+                    for (String h : surgeryHeaders) {
+                        Long val = row.getServiceCountMap().get(h);
+                        table.addCell(new Phrase(val == null ? "0" : val.toString(), normalFont));
+                    }
+                }
+
+                table.addCell(new Phrase(String.valueOf(row.getTotal()), normalFont));
+            }
+
+            document.add(table);
+            facesContext.responseComplete();
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Failed to generate PDF: " + e.getMessage());
+        } finally {
+            if (document != null) {
+                document.close();
+            }
+        }
+    }
+
+    private void addInfoRow(PdfPTable info, String label, String value) {
+        PdfPCell l = new PdfPCell(new Phrase(label, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 9)));
+        l.setBorder(com.lowagie.text.Rectangle.NO_BORDER);
+        l.setPadding(3);
+        info.addCell(l);
+
+        PdfPCell v = new PdfPCell(new Phrase(value, FontFactory.getFont(FontFactory.HELVETICA, 9)));
+        v.setBorder(com.lowagie.text.Rectangle.NO_BORDER);
+        v.setPadding(3);
+        info.addCell(v);
+    }
+
     public void processIpUnsettledInvoicesReport() {
         Map<String, Object> params = new HashMap<>();
         StringBuilder jpql = new StringBuilder();
