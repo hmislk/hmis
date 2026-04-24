@@ -1187,8 +1187,22 @@ public class InwardReportController implements Serializable {
                     .append(" Where s.retired = false ")
                     .append(" and a.discharged = true ")
                     .append(" and a.dateOfDischarge is not null ")
-                    .append(" AND a.dateOfDischarge BETWEEN :fromDate AND :toDate ");
+                    .append(" AND a.dateOfDischarge BETWEEN :fromDate AND :toDate ")
+                    .append("   and exists ( ")
+                    .append("       select bf.id ")
+                    .append("       from Bill bf ")
+                    .append("       where bf.retired = false ")
+                    .append("         and bf.cancelled = false ")
+                    .append("         and bf.billTypeAtomic = :bt ")
+                    .append("         and (bf.patientEncounter = s OR bf.patientEncounter = a) ")
+                    .append("         and not exists ( ")
+                    .append("             select cb.id from CancelledBill cb ")
+                    .append("             where cb.retired = false ")
+                    .append("             and cb.billedBill = bf ")
+                    .append("         ) ")
+                    .append("   ) ");
 
+            params.put("bt", BillTypeAtomic.INWARD_THEATRE_PROFESSIONAL_FEE_BILL);
             params.put("fromDate", fromDate);
             params.put("toDate", toDate);
 
@@ -1226,7 +1240,22 @@ public class InwardReportController implements Serializable {
                     .append(" Where s.retired = false ")
                     .append(" and a.discharged = true ")
                     .append(" and a.dateOfDischarge is not null ")
-                    .append(" AND a.dateOfDischarge BETWEEN :fromDate AND :toDate ");
+                    .append(" AND a.dateOfDischarge BETWEEN :fromDate AND :toDate ")
+                    .append("   and exists ( ")
+                    .append("       select bf.id ")
+                    .append("       from Bill bf ")
+                    .append("       where bf.retired = false ")
+                    .append("         and bf.cancelled = false ")
+                    .append("         and bf.billTypeAtomic = :bt ")
+                    .append("         and (bf.patientEncounter = s OR bf.patientEncounter = a) ")
+                    .append("         and not exists ( ")
+                    .append("             select cb.id from CancelledBill cb ")
+                    .append("             where cb.retired = false ")
+                    .append("             and cb.billedBill = bf ")
+                    .append("         ) ")
+                    .append("   ) ");
+
+            params.put("bt", BillTypeAtomic.INWARD_THEATRE_PROFESSIONAL_FEE_BILL);
 
             params.put("fromDate", fromDate);
             params.put("toDate", toDate);
