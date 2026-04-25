@@ -13,6 +13,8 @@
     <ui:define name="content">
         <h:form id="bill" >
 
+            <p:growl id="panelErrorMsg" showDetail="true" life="4000" />
+
             <h:panelGroup rendered="#{pharmacySaleBhtController.patientEncounter eq null}" class="row">
                 <div class="col-12">
                     <p:panel styleClass="shadow-sm">
@@ -210,17 +212,33 @@
 
                     </f:facet>
 
+                    <p:dialog id="dlgSettling"
+                              modal="true"
+                              closable="false"
+                              resizable="false"
+                              draggable="false"
+                              showHeader="false"
+                              styleClass="text-center"
+                              widgetVar="wvSettling">
+                        <div class="p-4">
+                            <i class="fa-solid fa-spinner fa-spin fa-2x text-success mb-3"></i>
+                            <h5 class="mb-1">Settling Bill</h5>
+                            <p class="text-muted mb-0 small">Please wait, do not close this page...</p>
+                        </div>
+                    </p:dialog>
+
                     <div class="row mb-3">
-                        <div class="d-flex justify-content-end">
+                        <div class="d-flex justify-content-end align-items-center">
                             <p:commandButton
                                 id="btnSettleInpatientDirectIssue"
                                 value="Settle"
-                                ajax="false"
-                                onclick="return confirm('Are you sure you want to settle this pharmacy bill issue?')"
+                                ajax="true"
+                                onclick="if(!confirm('Are you sure you want to settle this pharmacy bill issue?')){return false;} wvSettling.show();"
                                 ondblclick="return false;"
                                 action="#{pharmacySaleBhtController.settlePharmacyBhtIssue()}"
+                                update="@form"
                                 class="ui-button-success mx-2"
-                                icon ="fa-solid fa-check">
+                                icon="fa-solid fa-check">
                             </p:commandButton>
                         </div>
                     </div>
@@ -308,12 +326,6 @@
                                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
                                                     </h:outputLabel>
                                                 </p:column>
-                                                <p:ajax
-                                                    event="blur"
-                                                    listener="#{pharmacySaleBhtController.handleSelect}"
-                                                    update="txtRate txtValue"
-                                                    process="acStockWithoutTotalStock"
-                                                    />
                                             </p:autoComplete>
                                         </h:panelGroup>
 
@@ -379,7 +391,7 @@
                                             icon="fa-solid fa-plus"
                                             action="#{pharmacySaleBhtController.addBillItem}"
                                             process="@this txtQty acStock"
-                                            update="pBis acStock txtQty txtRate txtValue focusItem" />
+                                            update="pBis acStock txtQty txtRate txtValue focusItem panelErrorMsg" />
                                     </div>
                                 </div>
                                 <p:focus id="focusQty" for="txtQty" ></p:focus>
@@ -398,10 +410,10 @@
                                         <h:outputText value="#{s+1}" ></h:outputText>
                                     </p:column>
                                     <p:column headerText="Item" style="min-width: 20em;" >
-                                        <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.item.name}" >
-                                            &nbsp;<p:tag rendered="#{commonFunctionsProxy.currentDateTime > bi.pharmaceuticalBillItem.itemBatch.dateOfExpire ?'true': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > bi.pharmaceuticalBillItem.itemBatch.dateOfExpire ?'true':'false'}" value="#{commonFunctionsProxy.currentDateTime > bi.pharmaceuticalBillItem.itemBatch.dateOfExpire ?'Expired ':
-                                                                     commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > bi.pharmaceuticalBillItem.itemBatch.dateOfExpire ?'Expired Soon':''}"
-                                                         severity="#{commonFunctionsProxy.currentDateTime > bi.pharmaceuticalBillItem.itemBatch.dateOfExpire ?'danger': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > bi.pharmaceuticalBillItem.itemBatch.dateOfExpire ?'warning':''}" />
+                                        <h:outputLabel value="#{bi.pharmaceuticalBillItem.transDisplayItemName}" >
+                                            &nbsp;<p:tag rendered="#{commonFunctionsProxy.currentDateTime > bi.pharmaceuticalBillItem.doe ?'true': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > bi.pharmaceuticalBillItem.doe ?'true':'false'}" value="#{commonFunctionsProxy.currentDateTime > bi.pharmaceuticalBillItem.doe ?'Expired ':
+                                                                     commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > bi.pharmaceuticalBillItem.doe ?'Expired Soon':''}"
+                                                         severity="#{commonFunctionsProxy.currentDateTime > bi.pharmaceuticalBillItem.doe ?'danger': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > bi.pharmaceuticalBillItem.doe ?'warning':''}" />
                                         </h:outputLabel>
                                     </p:column>
                                     <p:column headerText="Quantity"  width="8em"  class="text-end">
@@ -415,7 +427,7 @@
                                             <p:ajax
                                                 event="change"
                                                 listener="#{pharmacySaleBhtController.onEdit(bi)}"
-                                                update=":bill:pBis" />
+                                                update=":bill:pBis panelErrorMsg" />
                                         </p:inputText>
                                     </p:column>
                                     <p:column headerText="Rate"  width="8em"  class="text-end" rendered="#{webUserController.hasPrivilege('ShowDrugCharges')}">
@@ -434,7 +446,7 @@
                                         </f:facet>
                                     </p:column>
                                     <p:column headerText="Expiry" width="8em" class="text-end">
-                                        <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.dateOfExpire}" >
+                                        <h:outputLabel value="#{bi.pharmaceuticalBillItem.doe}" >
                                             <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}"  ></f:convertDateTime>
                                         </h:outputLabel>
                                     </p:column>
