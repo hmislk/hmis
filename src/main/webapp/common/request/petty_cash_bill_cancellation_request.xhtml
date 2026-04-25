@@ -35,6 +35,8 @@
                                             ajax="false"
                                             value="Approve" 
                                             icon="fa fa-check"
+                                            onclick="if (!confirm('Are you sure you want to approve this petty cash Cancel Bill?'))
+                                                                return false;"
                                             rendered="#{!(requestController.currentRequest.status eq 'APPROVED')}"
                                             disabled="#{(requestController.currentRequest.status eq 'REJECTED' or requestController.currentRequest.status eq 'COMPLETED' or requestController.currentRequest.status eq 'CANCELLED')}"
                                             class="ui-button-success" 

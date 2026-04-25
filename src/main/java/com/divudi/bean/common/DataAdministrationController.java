@@ -2258,7 +2258,8 @@ public class DataAdministrationController implements Serializable {
             configOptionApplicationController.saveShortTextOption(CONFIG_KEY_DDL_VERSION, version);
             wikiDdlVersion = version;
         } else {
-            JsfUtil.addErrorMessage("Could not reach wiki to save DDL version. Banner cleared for this session only — it may return after restart.");
+            configOptionApplicationController.saveShortTextOption(CONFIG_KEY_DDL_VERSION, "CONFIRMED");
+            JsfUtil.addInfoMessage("Wiki unreachable. Schema confirmation saved locally — banner will not return after restart.");
         }
         databaseMigrationService.markMigrationComplete();
         JsfUtil.addSuccessMessage("Migration marked as complete. The migration page is now restricted to administrators.");
@@ -2270,7 +2271,8 @@ public class DataAdministrationController implements Serializable {
             configOptionApplicationController.saveShortTextOption(CONFIG_KEY_DDL_VERSION, version);
             wikiDdlVersion = version;
         } else {
-            JsfUtil.addErrorMessage("Could not reach wiki to save DDL version. Banner cleared for this session only — it may return after restart.");
+            configOptionApplicationController.saveShortTextOption(CONFIG_KEY_DDL_VERSION, "CONFIRMED");
+            JsfUtil.addInfoMessage("Wiki unreachable. Schema confirmation saved locally — banner will not return after restart.");
         }
         databaseMigrationService.markMigrationNotNecessary();
         JsfUtil.addSuccessMessage("Migration marked as not necessary. The migration page is now restricted to administrators.");
