@@ -138,6 +138,26 @@ public class CapabilityStatementResource {
                         + "POST returns HTTP 409 with existing id when a duplicate combination exists.",
                         "API Key",
                         "GET", "POST", "PUT", "DELETE"))
+                .add(resource("Inward Room Categories", "/api/inward/room-categories",
+                        "Manage inward room categories (backs /inward/inward_room_category.xhtml). "
+                        + "POST returns HTTP 409 with existing id when a duplicate name already exists.",
+                        "API Key",
+                        "GET", "POST", "PUT", "DELETE"))
+                .add(resource("Inward Rooms", "/api/inward/rooms",
+                        "Manage inward rooms (backs /inward/inward_room.xhtml). "
+                        + "Supports optional filter roomCategoryId. "
+                        + "POST returns HTTP 409 with existing id when a duplicate name already exists.",
+                        "API Key",
+                        "GET", "POST", "PUT", "DELETE"))
+                .add(resource("Inward Room Facility Charges", "/api/inward/room-facility-charges",
+                        "Manage inward room facility charges / room fees (backs /inward/inward_room_facility.xhtml). "
+                        + "Supports optional filters roomId and roomCategoryId. "
+                        + "Charge fields: roomCharge, maintananceCharge, linenCharge, nursingCharge, "
+                        + "moCharge, moChargeForAfterDuration, adminstrationCharge, medicalCareCharge. "
+                        + "TimedItemFee fields: timedItemFeeDurationHours, timedItemFeeOverShootHours, "
+                        + "timedItemFeeDurationDaysForMoCharge.",
+                        "API Key",
+                        "GET", "POST", "PUT", "DELETE"))
                 .add(resource("LIMS", "/api/lims",
                         "Laboratory Information Management System integrations",
                         "API Key",
