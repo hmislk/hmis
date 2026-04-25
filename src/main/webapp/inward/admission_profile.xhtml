@@ -100,7 +100,7 @@
                                                 rendered="#{not empty al.itemValue and not empty al.stringValue}"
                                                 value="#{al.itemValue.name} - #{al.stringValue}"/>
                                             <h:outputText
-                                                rendered="#{empty al.stringValue}"
+                                                rendered="#{not empty al.itemValue and empty al.stringValue}"
                                                 value="#{al.itemValue.name}"/>
                                             <h:outputText
                                                 rendered="#{empty al.itemValue}"
