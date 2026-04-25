@@ -4,6 +4,7 @@ import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.BillSearch;
 import com.divudi.bean.common.RouteController;
 import com.divudi.bean.common.SessionController;
+import com.divudi.core.data.BillCategory;
 import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
@@ -502,6 +503,7 @@ public class LaborataryReportController implements Serializable {
         billTypeAtomics.add(BillTypeAtomic.OPD_BILL_REFUND);
         billTypeAtomics.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
         billTypeAtomics.add(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
+        billTypeAtomics.add(BillTypeAtomic.OPD_BATCH_BILL_CANCELLATION);
         billTypeAtomics.add(BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
 
         //Add All Inward BillTypes
