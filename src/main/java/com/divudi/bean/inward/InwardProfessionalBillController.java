@@ -104,6 +104,8 @@ public class InwardProfessionalBillController implements Serializable {
     List<BillEntry> lstBillEntries;
     List<BillFee> encounterProfessionalFees;
     double totalProfessionalFeesForEncounter;
+    List<BillFee> savedEstimatedProfessionalFees;
+    double totalSavedEstimatedProfessionalFeesForEncounter;
     /////////////////
     String patientTabId = "tabNewPt";
     String selectText = "";
@@ -812,6 +814,7 @@ public class InwardProfessionalBillController implements Serializable {
         }
 
         fetchEncounterProfessionalFees();
+        fetchSavedEstimatedProfessionalFees();
 
         printPreview = true;
 
@@ -984,6 +987,8 @@ public class InwardProfessionalBillController implements Serializable {
         proEncounterComponents = null;
         encounterProfessionalFees = null;
         totalProfessionalFeesForEncounter = 0.0;
+        savedEstimatedProfessionalFees = null;
+        totalSavedEstimatedProfessionalFeesForEncounter = 0.0;
     }
 
     private void fetchEncounterProfessionalFees() {
@@ -1024,6 +1029,81 @@ public class InwardProfessionalBillController implements Serializable {
 
     public void setTotalProfessionalFeesForEncounter(double totalProfessionalFeesForEncounter) {
         this.totalProfessionalFeesForEncounter = totalProfessionalFeesForEncounter;
+    }
+
+    private void fetchSavedEstimatedProfessionalFees() {
+        savedEstimatedProfessionalFees = null;
+        totalSavedEstimatedProfessionalFeesForEncounter = 0.0;
+        if (current == null || getCurrent().getPatientEncounter() == null) {
+            return;
+        }
+        String sql = "select bf from BillFee bf "
+                + " where bf.retired=false "
+                + " and bf.bill.retired=false "
+                + " and bf.bill.cancelled=false "
+                + " and bf.bill.patientEncounter=:pe "
+                + " and bf.bill.billType=:bt "
+                + " order by bf.createdAt desc";
+        HashMap hm = new HashMap();
+        hm.put("pe", getCurrent().getPatientEncounter());
+        hm.put("bt", BillType.InwardProfessionalEstimates);
+        savedEstimatedProfessionalFees = getBillFeeFacade().findByJpql(sql, hm);
+        if (savedEstimatedProfessionalFees != null) {
+            for (BillFee bf : savedEstimatedProfessionalFees) {
+                totalSavedEstimatedProfessionalFeesForEncounter += bf.getFeeValue();
+            }
+        }
+    }
+
+    public List<BillFee> getSavedEstimatedProfessionalFees() {
+        if (savedEstimatedProfessionalFees == null) {
+            fetchSavedEstimatedProfessionalFees();
+        }
+        return savedEstimatedProfessionalFees;
+    }
+
+    public void setSavedEstimatedProfessionalFees(List<BillFee> savedEstimatedProfessionalFees) {
+        this.savedEstimatedProfessionalFees = savedEstimatedProfessionalFees;
+    }
+
+    public double getTotalSavedEstimatedProfessionalFeesForEncounter() {
+        return totalSavedEstimatedProfessionalFeesForEncounter;
+    }
+
+    public void setTotalSavedEstimatedProfessionalFeesForEncounter(double totalSavedEstimatedProfessionalFeesForEncounter) {
+        this.totalSavedEstimatedProfessionalFeesForEncounter = totalSavedEstimatedProfessionalFeesForEncounter;
+    }
+
+    public void removeSavedEstimatedProfessionalFee(BillFee bf) {
+        if (bf == null) {
+            return;
+        }
+        bf.setRetired(true);
+        bf.setRetiredAt(new Date());
+        bf.setRetirer(getSessionController().getLoggedUser());
+        getBillFeeFacade().edit(bf);
+
+        Bill parent = bf.getBill();
+        if (parent != null) {
+            String activeSql = "select count(b) from BillFee b "
+                    + " where b.retired=false "
+                    + " and b.bill=:bill ";
+            HashMap hm = new HashMap();
+            hm.put("bill", parent);
+            long activeCount = getBillFeeFacade().findLongByJpql(activeSql, hm);
+            if (activeCount == 0L) {
+                parent.setRetired(true);
+                parent.setRetiredAt(new Date());
+                parent.setRetirer(getSessionController().getLoggedUser());
+                parent.setCancelled(true);
+                parent.setCancelledAt(new Date());
+                parent.setCanceller(getSessionController().getLoggedUser());
+                getEjbFacade().edit(parent);
+            }
+        }
+
+        fetchSavedEstimatedProfessionalFees();
+        JsfUtil.addSuccessMessage("Estimated professional fee removed.");
     }
 
     BillItem billItem;
