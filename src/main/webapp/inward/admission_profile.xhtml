@@ -176,7 +176,17 @@
                                             target="#{bhtEditController.current}" />
                                     </p:commandButton>
                                 </div>
-                                <div class="col-6">
+                                <h:panelGroup rendered="#{admissionController.current.parentEncounter != null}" layout="block" styleClass="col-12">
+                                    <p:commandButton
+                                        value="Mother's Inpatient Profile"
+                                        action="#{admissionController.navigateToAdmissionProfileById(admissionController.current.parentEncounter.id)}"
+                                        icon="fa fa-female"
+                                        ajax="false"
+                                        immediate="true"
+                                        class="w-100 ui-button-secondary">
+                                    </p:commandButton>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{admissionController.current.parentEncounter == null}" layout="block" styleClass="col-6">
                                     <p:commandButton
                                         value="Add Baby Admission"
                                         disabled="#{admissionController.current.discharged eq true}"
@@ -188,21 +198,27 @@
                                             value="#{admissionController.current}"
                                             target="#{roomChangeController.current}" />
                                     </p:commandButton>
-                                </div>
-                                <div class="col-6">
-                                    <p:commandButton
-                                        value="List Baby Admission"
-                                        disabled="#{admissionController.current.discharged eq true}"
-                                        action="#{admissionController.navigateToListChildAdmissions}"
-                                        icon="fa fa-baby-carriage"
-                                        ajax="false"
-                                        class="w-100">
-                                    </p:commandButton>
-                                </div>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{admissionController.current.parentEncounter == null and not empty admissionController.childAdmissions}" layout="block" styleClass="col-12">
+                                    <p:panel header="Baby Admissions" class="w-100">
+                                        <ui:repeat value="#{admissionController.childAdmissions}" var="babyAdm">
+                                            <div class="mb-1">
+                                                <p:commandButton
+                                                    value="#{babyAdm.patient.person.nameWithTitle} (#{babyAdm.bhtNo})"
+                                                    action="#{admissionController.navigateToAdmissionProfileById(babyAdm.id)}"
+                                                    icon="fa fa-baby"
+                                                    ajax="false"
+                                                    immediate="true"
+                                                    class="w-100 ui-button-info">
+                                                </p:commandButton>
+                                            </div>
+                                        </ui:repeat>
+                                    </p:panel>
+                                </h:panelGroup>
                             </div>
                         </p:panel>
 
-                        <p:panel header="Billing" class="m-1">
+                        <p:panel header="Billing" class="m-1" rendered="#{admissionController.current.parentEncounter == null}">
                             <div class="row g-2">
                                 <div class="col-6">
                                     <p:commandButton

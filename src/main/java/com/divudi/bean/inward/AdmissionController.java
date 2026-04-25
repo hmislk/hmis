@@ -184,6 +184,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     private AdmissionStatus admissionStatusForSearch;
     private AdmissionType admissionTypeForSearch;
     private Admission perantAddmission;
+    private List<Admission> childAdmissions;
     private boolean patientDetailsEditable;
     private List<ClinicalFindingValue> patientAllergies;
     private ClinicalFindingValue currentPatientAllergy;
@@ -796,6 +797,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
     public String navigateToSearchAdmissions() {
         bhtSummeryController.setPatientEncounterHasProvisionalBill(false);
+        clearSearchValues();
         return "/inward/inpatient_search?faces-redirect=true";
     }
 
@@ -1063,6 +1065,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         }
 
         patientDetailsEditable = false;
+        fetchChildAdmissions();
         if (configOptionApplicationController.getBooleanValueByKey("Patient admission and room assignment are simultaneous processes.", true)) {
             current.getPatient().setEditingMode(false);
             bhtSummeryController.setPatientEncounter(current);
@@ -2191,8 +2194,8 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     }
 
     public void saveEncounterCreditCompanies(PatientEncounter current) {
-        if (!encounterCreditCompanies.isEmpty() && current != null) {
-            for (EncounterCreditCompany ecc : encounterCreditCompanies) {
+        if (!getEncounterCreditCompanies().isEmpty() && current != null) {
+            for (EncounterCreditCompany ecc : getEncounterCreditCompanies()) {
                 ecc.setPatientEncounter(current);
                 ecc.setCreatedAt(new Date());
                 ecc.setCreater(sessionController.getLoggedUser());
@@ -2759,6 +2762,28 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
     public void setPerantAddmission(Admission perantAddmission) {
         this.perantAddmission = perantAddmission;
+    }
+
+    private void fetchChildAdmissions() {
+        if (current == null) {
+            childAdmissions = new ArrayList<>();
+            return;
+        }
+        String jpql = "select a from Admission a where a.retired = false and a.parentEncounter = :parent order by a.bhtNo";
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("parent", current);
+        childAdmissions = getFacade().findByJpql(jpql, params);
+    }
+
+    public List<Admission> getChildAdmissions() {
+        if (childAdmissions == null) {
+            childAdmissions = new ArrayList<>();
+        }
+        return childAdmissions;
+    }
+
+    public void setChildAdmissions(List<Admission> childAdmissions) {
+        this.childAdmissions = childAdmissions;
     }
 
     public Admission getCurrentNonBht() {
