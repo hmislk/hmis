@@ -181,6 +181,7 @@ public class BhtSummeryController implements Serializable {
     private boolean patientEncounterHasProvisionalBill = false;
     private List<PatientEncounter> childPatientEncouters;
     private Institution institution;
+    private boolean estimatedBillView = false;
 
     public String navigateToIntrimBillEstimate() {
         institution = sessionController.getInstitution();
@@ -2287,6 +2288,7 @@ public class BhtSummeryController implements Serializable {
         Date toDate = null;
 
         makeNull();
+        estimatedBillView = true;
 
         if (patientEncounter == null) {
             return;
@@ -2384,6 +2386,7 @@ public class BhtSummeryController implements Serializable {
         toTime = null;
         patientRooms = null;
         creditCompanyAllocations = null;
+        estimatedBillView = false;
     }
 
     public void onInstitutionChange() {
@@ -3010,7 +3013,7 @@ public class BhtSummeryController implements Serializable {
                     i.setTotal(getInwardBean().calNetCostOfIssue(getPatientEncounter(), BillType.StoreBhtPre, childPatientEncouters));
                     break;
                 case ProfessionalCharge:
-                    i.setTotal(getInwardBean().calculateProfessionalCharges(getPatientEncounter(), childPatientEncouters, false));
+                    i.setTotal(getInwardBean().calculateProfessionalCharges(getPatientEncounter(), childPatientEncouters, estimatedBillView));
                     break;
                 case DoctorAndNurses:
                     i.setTotal(getInwardBean().calculateDoctorAndNurseCharges(getPatientEncounter(), childPatientEncouters));
