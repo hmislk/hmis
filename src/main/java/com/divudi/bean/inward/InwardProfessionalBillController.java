@@ -1096,8 +1096,6 @@ public class InwardProfessionalBillController implements Serializable {
                 parent.setRetiredAt(new Date());
                 parent.setRetirer(getSessionController().getLoggedUser());
                 parent.setCancelled(true);
-                parent.setCancelledAt(new Date());
-                parent.setCanceller(getSessionController().getLoggedUser());
                 getEjbFacade().edit(parent);
             }
         }
