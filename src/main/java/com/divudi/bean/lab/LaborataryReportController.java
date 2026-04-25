@@ -4,7 +4,6 @@ import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.BillSearch;
 import com.divudi.bean.common.RouteController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.core.data.BillCategory;
 import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
