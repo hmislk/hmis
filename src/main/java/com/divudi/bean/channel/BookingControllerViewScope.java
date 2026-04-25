@@ -6159,16 +6159,31 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public String paySelectedDoctor() {
-        if (getSpeciality() == null) {
-            JsfUtil.addErrorMessage("Please Select Specility And Staff");
+        // if (getSpeciality() == null) {
+        //     JsfUtil.addErrorMessage("Please Select Specility And Staff");
+        //     return "";
+        // }
+        // if (getStaff() == null) {
+        //     JsfUtil.addErrorMessage("Please Select Staff");
+        //     return "";
+        // }
+
+        if (selectedBillSession == null || selectedBillSession.getSessionInstance() == null) {
+            JsfUtil.addErrorMessage("Bill Session or Session Instance is not selected");
             return "";
         }
-        if (getStaff() == null) {
+        if (selectedBillSession.getStaff() == null) {
             JsfUtil.addErrorMessage("Please Select Staff");
             return "";
+        } else {
+            if (selectedBillSession.getStaff().getSpeciality() == null) {
+                JsfUtil.addErrorMessage("Please Select Speciality");
+                return "";
+            }
         }
-        channelStaffPaymentBillController.setSpeciality(getSpeciality());
-        channelStaffPaymentBillController.setCurrentStaff(getStaff());
+        channelStaffPaymentBillController.makenull();
+        channelStaffPaymentBillController.setSpeciality(selectedBillSession.getStaff().getSpeciality());
+        channelStaffPaymentBillController.setCurrentStaff(selectedBillSession.getStaff());
         channelStaffPaymentBillController.setConsiderDate(true);
         channelStaffPaymentBillController.calculateDueFees();
 
