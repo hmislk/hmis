@@ -212,18 +212,31 @@
 
                     </f:facet>
 
+                    <p:dialog id="dlgSettling"
+                              modal="true"
+                              closable="false"
+                              resizable="false"
+                              draggable="false"
+                              showHeader="false"
+                              styleClass="text-center"
+                              widgetVar="wvSettling">
+                        <div class="p-4">
+                            <i class="fa-solid fa-spinner fa-spin fa-2x text-success mb-3"></i>
+                            <h5 class="mb-1">Settling Bill</h5>
+                            <p class="text-muted mb-0 small">Please wait, do not close this page...</p>
+                        </div>
+                    </p:dialog>
+
                     <div class="row mb-3">
                         <div class="d-flex justify-content-end align-items-center">
-                            <div id="settleProgressMsg" style="display:none;" class="me-3 text-muted small">
-                                <i class="fa-solid fa-spinner fa-spin me-1"></i>Processing... please wait
-                            </div>
                             <p:commandButton
                                 id="btnSettleInpatientDirectIssue"
                                 value="Settle"
-                                ajax="false"
-                                onclick="if(!confirm('Are you sure you want to settle this pharmacy bill issue?')){return false;} document.getElementById('settleProgressMsg').style.display='inline-block'; this.disabled=true; this.innerHTML='&lt;span class=\'fa fa-spinner fa-spin\'&gt;&lt;/span&gt; Settling...';"
+                                ajax="true"
+                                onclick="if(!confirm('Are you sure you want to settle this pharmacy bill issue?')){return false;} wvSettling.show();"
                                 ondblclick="return false;"
                                 action="#{pharmacySaleBhtController.settlePharmacyBhtIssue()}"
+                                update="@form"
                                 class="ui-button-success mx-2"
                                 icon="fa-solid fa-check">
                             </p:commandButton>
