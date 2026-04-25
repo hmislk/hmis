@@ -108,6 +108,7 @@
                                         value="Cancel Admission"
                                         action="#{bhtEditController.cancelBht}"
                                         ajax="false"
+                                        onclick="return confirm('Are you sure you want to cancel admission for #{bhtEditController.current.patient.person.nameWithTitle} (BHT: #{bhtEditController.current.bhtNo})? This action cannot be undone.');"
                                         disabled="#{!webUserController.hasPrivilege('InwardAdmissionCancel')}">
                                     </p:commandButton>
                                 </div>
