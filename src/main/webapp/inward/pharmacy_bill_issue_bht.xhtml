@@ -15,11 +15,10 @@
 
             <p:growl id="panelErrorMsg" showDetail="true" life="4000" />
 
-            <p:blockUI block="bill"
-                       trigger="btnSettleInpatientDirectIssue"
+            <p:blockUI trigger="btnSettleInpatientDirectIssue"
                        widgetVar="wvSettlingBlock">
-                <div class="text-center p-3">
-                    <i class="fa-solid fa-spinner fa-spin fa-2x text-success mb-2 d-block"></i>
+                <div style="background:#fff;border-radius:8px;padding:2rem 3rem;text-align:center;box-shadow:0 4px 16px rgba(0,0,0,0.3);">
+                    <i class="fa-solid fa-spinner fa-spin fa-2x text-success mb-3 d-block"></i>
                     <h5 class="mb-1">Settling Bill</h5>
                     <p class="text-muted mb-0 small">Please wait, do not close this page...</p>
                 </div>
