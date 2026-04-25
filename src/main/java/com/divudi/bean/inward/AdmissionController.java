@@ -763,6 +763,12 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         if (parentAdmission != null) {
             current = parentAdmission;
         }
+        parentAdmission = null;
+        patientRoom = null;
+        encounterCreditCompanies = new ArrayList<>();
+        encounterCreditCompany = new EncounterCreditCompany();
+        bhtText = "";
+        printPreview = false;
         return navigateToAdmissionProfilePage();
     }
 
