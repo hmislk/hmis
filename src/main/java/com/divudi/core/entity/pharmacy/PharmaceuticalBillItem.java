@@ -142,6 +142,16 @@ public class PharmaceuticalBillItem implements Serializable {
     private boolean transThisIsStockOut;
     @Transient
     private boolean transThisIsStockIn;
+    @Transient
+    private String transDisplayItemName;
+
+    public String getTransDisplayItemName() {
+        return transDisplayItemName;
+    }
+
+    public void setTransDisplayItemName(String transDisplayItemName) {
+        this.transDisplayItemName = transDisplayItemName;
+    }
 
     public String getSerialNo() {
         return serialNo;

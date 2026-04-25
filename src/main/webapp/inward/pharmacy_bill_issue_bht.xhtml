@@ -213,16 +213,19 @@
                     </f:facet>
 
                     <div class="row mb-3">
-                        <div class="d-flex justify-content-end">
+                        <div class="d-flex justify-content-end align-items-center">
+                            <div id="settleProgressMsg" style="display:none;" class="me-3 text-muted small">
+                                <i class="fa-solid fa-spinner fa-spin me-1"></i>Processing... please wait
+                            </div>
                             <p:commandButton
                                 id="btnSettleInpatientDirectIssue"
                                 value="Settle"
                                 ajax="false"
-                                onclick="return confirm('Are you sure you want to settle this pharmacy bill issue?')"
+                                onclick="if(!confirm('Are you sure you want to settle this pharmacy bill issue?')){return false;} document.getElementById('settleProgressMsg').style.display='inline-block'; this.disabled=true; this.innerHTML='&lt;span class=\'fa fa-spinner fa-spin\'&gt;&lt;/span&gt; Settling...';"
                                 ondblclick="return false;"
                                 action="#{pharmacySaleBhtController.settlePharmacyBhtIssue()}"
                                 class="ui-button-success mx-2"
-                                icon ="fa-solid fa-check">
+                                icon="fa-solid fa-check">
                             </p:commandButton>
                         </div>
                     </div>
@@ -394,10 +397,10 @@
                                         <h:outputText value="#{s+1}" ></h:outputText>
                                     </p:column>
                                     <p:column headerText="Item" style="min-width: 20em;" >
-                                        <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.item.name}" >
-                                            &nbsp;<p:tag rendered="#{commonFunctionsProxy.currentDateTime > bi.pharmaceuticalBillItem.itemBatch.dateOfExpire ?'true': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > bi.pharmaceuticalBillItem.itemBatch.dateOfExpire ?'true':'false'}" value="#{commonFunctionsProxy.currentDateTime > bi.pharmaceuticalBillItem.itemBatch.dateOfExpire ?'Expired ':
-                                                                     commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > bi.pharmaceuticalBillItem.itemBatch.dateOfExpire ?'Expired Soon':''}"
-                                                         severity="#{commonFunctionsProxy.currentDateTime > bi.pharmaceuticalBillItem.itemBatch.dateOfExpire ?'danger': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > bi.pharmaceuticalBillItem.itemBatch.dateOfExpire ?'warning':''}" />
+                                        <h:outputLabel value="#{bi.pharmaceuticalBillItem.transDisplayItemName}" >
+                                            &nbsp;<p:tag rendered="#{commonFunctionsProxy.currentDateTime > bi.pharmaceuticalBillItem.doe ?'true': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > bi.pharmaceuticalBillItem.doe ?'true':'false'}" value="#{commonFunctionsProxy.currentDateTime > bi.pharmaceuticalBillItem.doe ?'Expired ':
+                                                                     commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > bi.pharmaceuticalBillItem.doe ?'Expired Soon':''}"
+                                                         severity="#{commonFunctionsProxy.currentDateTime > bi.pharmaceuticalBillItem.doe ?'danger': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > bi.pharmaceuticalBillItem.doe ?'warning':''}" />
                                         </h:outputLabel>
                                     </p:column>
                                     <p:column headerText="Quantity"  width="8em"  class="text-end">
@@ -430,7 +433,7 @@
                                         </f:facet>
                                     </p:column>
                                     <p:column headerText="Expiry" width="8em" class="text-end">
-                                        <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.dateOfExpire}" >
+                                        <h:outputLabel value="#{bi.pharmaceuticalBillItem.doe}" >
                                             <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}"  ></f:convertDateTime>
                                         </h:outputLabel>
                                     </p:column>

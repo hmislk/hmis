@@ -610,8 +610,6 @@ public class PharmacySaleBhtController implements Serializable {
      * @param event SelectEvent containing the selected StockDTO
      */
     public void handleStockSelect(SelectEvent event) {
-        long tStart = System.currentTimeMillis();
-        System.out.println("[BHT-SELECT] >>> handleStockSelect ENTRY");
         try {
             StockDTO selectedDto = (StockDTO) event.getObject();
             this.selectedStockDto = selectedDto;
@@ -630,14 +628,11 @@ public class PharmacySaleBhtController implements Serializable {
                 // was causing 20-26s first-touch lag per batch because EclipseLink weaves
                 // the descriptor and Payara's JDBC pool validates a connection on first
                 // borrow per entity class. We only need DTO values for preliminary display.
-                long tCalc = System.currentTimeMillis();
                 calculateRatesFromDto(getBillItem(), selectedDto);
-                System.out.println("[BHT-SELECT]   calculateRatesFromDto: " + (System.currentTimeMillis() - tCalc) + "ms");
             }
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Error in handleStockSelect", e);
         }
-        System.out.println("[BHT-SELECT] <<< handleStockSelect TOTAL: " + (System.currentTimeMillis() - tStart) + "ms");
     }
 
     public void setReplaceableStocks(List<Stock> replaceableStocks) {
@@ -918,14 +913,10 @@ public class PharmacySaleBhtController implements Serializable {
     }
 
     private void savePreBillItemsFinally(List<BillItem> list) {
-        // Initialize bill items list if null
         if (getPreBill().getBillItems() == null) {
             getPreBill().setBillItems(new ArrayList<>());
         }
 
-        // PERFORMANCE OPTIMIZATION: Use batch processing for better efficiency
-
-        // Step 1: Save all bill items first
         for (BillItem tbi : list) {
             tbi.setInwardChargeType(InwardChargeType.Medicine);
             tbi.setBill(getPreBill());
@@ -938,7 +929,6 @@ public class PharmacySaleBhtController implements Serializable {
             }
         }
 
-        // Step 2: Batch validate stock availability before processing
         if (!directIssueBatchService.validateBillForSettlement(getPreBill())) {
             String errorMsg = "One or more items have insufficient stock. Please refresh and try again.";
             LOGGER.log(Level.SEVERE, "Batch stock validation failed during BHT settlement for Bill ID: {0}",
@@ -947,7 +937,6 @@ public class PharmacySaleBhtController implements Serializable {
             throw new RuntimeException(errorMsg);
         }
 
-        // Step 3: Execute batch stock deduction (replaces individual deductFromStock calls)
         try {
             directIssueBatchService.batchStockDeduction(list);
             LOGGER.log(Level.INFO, "Successfully processed batch stock deduction for {0} items in Bill ID: {1}",
@@ -966,11 +955,7 @@ public class PharmacySaleBhtController implements Serializable {
             throw new RuntimeException(errorMsg);
         }
 
-        // Update PreBill with all items to ensure relationship is persisted
         getBillFacade().edit(getPreBill());
-
-        // PERFORMANCE OPTIMIZATION: UserStock cleanup removed to match cashier workflow
-        // No longer needed since UserStock operations are eliminated
     }
 
     private void savePreBillItemsFinallyRequest(List<BillItem> list) {
@@ -1292,30 +1277,22 @@ public class PharmacySaleBhtController implements Serializable {
         Patient pt = getPatientEncounter().getPatient();
         getPreBill().setPaidAmount(0);
 
-        // Create a proper copy of the list to avoid reference issues
         List<BillItem> tmpBillItems = new ArrayList<>(itemsToIssue);
 
         try {
             savePreBillFinally(pt, matrixDepartment, btp, bta);
             savePreBillItemsFinally(tmpBillItems);
             billService.createBillFinancialDetailsForInpatientDirectIssueBill(getPreBill());
-
 //        updateMargin(getPreBill().getBillItems(), getPreBill(), getPreBill().getFromDepartment(), getPatientEncounter().getPaymentMethod());
             setPrintBill(getBillFacade().find(getPreBill().getId()));
-
-            // Only clear if settlement was successful
             clearBill();
             clearBillItem();
             billPreview = true;
         } catch (Exception e) {
-            // Log the error for debugging and audit trail
             LOGGER.log(Level.SEVERE, "Error during BHT settlement for patient encounter: {0}",
                     new Object[]{getPatientEncounter() != null ? getPatientEncounter().getId() : "unknown"});
             LOGGER.log(Level.SEVERE, "Settlement failure details", e);
-
-            // Show error message to user
             JsfUtil.addErrorMessage("Failed to settle bill. Please try again. Error: " + e.getMessage());
-
             // DO NOT clear the bill - keep items visible so user doesn't lose their work
         }
 
@@ -1670,8 +1647,6 @@ public class PharmacySaleBhtController implements Serializable {
     }
 
     public void addBillItem() {
-        long t0 = System.currentTimeMillis();
-        System.out.println("[BHT-ADD] >>> addBillItem ENTRY");
 
         if (getPreBill() == null) {
             JsfUtil.addErrorMessage("No Prebill");
@@ -1704,50 +1679,25 @@ public class PharmacySaleBhtController implements Serializable {
             return;
         }
 
-        long tStockRef = System.currentTimeMillis();
-        Stock stockRef = getStockFacade().getReference(selectedStockId);
-        System.out.println("[BHT-ADD]   Stock.getReference: " + (System.currentTimeMillis() - tStockRef) + "ms");
-
         // Use getReference() — a thin, uninitialised proxy — instead of find().
-        // find(ItemBatch) triggers a cascading eager load of Item, Category,
-        // Institution, BillItem and their transitive graphs (~46 SQL queries,
-        // ~20s first time). We don't need the full entity — only the ID, the
-        // retailRate and the purchaseRate, and we already have the last two on
-        // selectedStockDto. The DTO-aware setter below writes them without
-        // dereferencing the proxy, keeping it a pure reference. Issue #20138.
-        long tBatchRef = System.currentTimeMillis();
+        // find(ItemBatch/Stock) triggers a cascading eager load (~46 SQL queries,
+        // ~20s first time). We only need the ID here; rates come from the DTO.
+        // Issue #20138.
+        Stock stockRef = getStockFacade().getReference(selectedStockId);
         ItemBatch itemBatchRef = getItemBatchFacade().getReference(selectedStockDto.getItemBatchId());
-        System.out.println("[BHT-ADD]   ItemBatch.getReference: " + (System.currentTimeMillis() - tBatchRef) + "ms");
 
-        long tSetStock = System.currentTimeMillis();
         billItem.getPharmaceuticalBillItem().setStock(stockRef);
-        System.out.println("[BHT-ADD]   pbi.setStock: " + (System.currentTimeMillis() - tSetStock) + "ms");
 
-        long tSetBatch = System.currentTimeMillis();
         double dtoRetailRate = selectedStockDto.getRetailRate() != null ? selectedStockDto.getRetailRate() : 0.0;
         double dtoPurchaseRate = selectedStockDto.getPurchaseRate() != null ? selectedStockDto.getPurchaseRate() : 0.0;
         billItem.getPharmaceuticalBillItem().setItemBatchWithRates(itemBatchRef, dtoRetailRate, dtoPurchaseRate);
-        System.out.println("[BHT-ADD]   pbi.setItemBatchWithRates: " + (System.currentTimeMillis() - tSetBatch) + "ms");
 
-        long tGetItem = System.currentTimeMillis();
         Item currentItem = billItem.getItem();
-        System.out.println("[BHT-ADD]   billItem.getItem(): " + (System.currentTimeMillis() - tGetItem) + "ms itemNull=" + (currentItem == null));
-
-        long tItemFind = System.currentTimeMillis();
         if (currentItem == null && selectedStockDto.getItemId() != null) {
             // Use getReference — a proxy — instead of find. BillItem.setItem()
-            // has no side effects (it does not read any field off the item),
-            // so the proxy stays uninitialised and the cascading eager load of
-            // Item's graph never fires. Issue #20138.
-            long tFacadeFind = System.currentTimeMillis();
-            Item itemRef = getItemFacade().getReference(selectedStockDto.getItemId());
-            System.out.println("[BHT-ADD]     itemFacade.getReference: " + (System.currentTimeMillis() - tFacadeFind) + "ms");
-
-            long tSetItem = System.currentTimeMillis();
-            billItem.setItem(itemRef);
-            System.out.println("[BHT-ADD]     billItem.setItem: " + (System.currentTimeMillis() - tSetItem) + "ms");
+            // has no side effects, so the cascading eager load of Item never fires.
+            billItem.setItem(getItemFacade().getReference(selectedStockDto.getItemId()));
         }
-        System.out.println("[BHT-ADD]   Item.find block TOTAL: " + (System.currentTimeMillis() - tItemFind) + "ms");
 
         if (checkItemBatch()) {
             errorMessage = "Already added this item batch";
@@ -1773,25 +1723,19 @@ public class PharmacySaleBhtController implements Serializable {
         billItem.getPharmaceuticalBillItem().setQty(0 - Math.abs(qty));
         billItem.setQty(qty);
         billItem.getPharmaceuticalBillItem().setDoe(selectedStockDto.getDateOfExpire());
+        billItem.getPharmaceuticalBillItem().setTransDisplayItemName(selectedStockDto.getItemName());
         billItem.getPharmaceuticalBillItem().setFreeQty(0.0f);
         billItem.getPharmaceuticalBillItem().setQtyInUnit(0 - qty);
         billItem.getPharmaceuticalBillItem().setQty(0 - Math.abs(qty));
 
-        long tRates = System.currentTimeMillis();
         calculateRates(billItem, selectedStockDto.getRetailRate());
-        System.out.println("[BHT-ADD]   calculateRates(bi,rate): " + (System.currentTimeMillis() - tRates) + "ms");
 
         billItem.setInwardChargeType(InwardChargeType.Medicine);
         billItem.setBill(getPreBill());
         billItem.setSearialNo(getPreBill().getBillItems().size() + 1);
         getPreBill().getBillItems().add(billItem);
 
-        long tCal = System.currentTimeMillis();
         calTotal();
-        System.out.println("[BHT-ADD]   calTotal: " + (System.currentTimeMillis() - tCal) + "ms");
-
-        System.out.println("[BHT-ADD] <<< addBillItem TOTAL: " + (System.currentTimeMillis() - t0) + "ms");
-
         clearBillItem();
         errorMessage = "";
     }
@@ -2147,22 +2091,14 @@ public class PharmacySaleBhtController implements Serializable {
             return;
         }
 
-        long calcStartTime = System.currentTimeMillis();
-
-        long tDept = System.currentTimeMillis();
         Department matrixDept = resolveMatrixDepartment();
-        System.out.println("[BHT-CALC]   resolveMatrixDepartment: " + (System.currentTimeMillis() - tDept) + "ms");
-
         double quantity = bi.getQty();
         double estimatedValue = retailRate * quantity;
-
         PaymentMethod paymentMethod = getPatientEncounter() != null ? getPatientEncounter().getPaymentMethod() : null;
 
         PriceMatrix priceMatrix = null;
         if (bi.getItem() != null) {
-            long tFetch = System.currentTimeMillis();
             priceMatrix = getPriceMatrixController().fetchInwardMargin(bi, estimatedValue, matrixDept, paymentMethod);
-            System.out.println("[BHT-CALC]   fetchInwardMargin: " + (System.currentTimeMillis() - tFetch) + "ms pm=" + (priceMatrix != null ? "HIT" : "MISS"));
         }
 
         double marginPercentage = priceMatrix != null ? priceMatrix.getMargin() / 100 : 0.0;
@@ -2178,8 +2114,6 @@ public class PharmacySaleBhtController implements Serializable {
         bi.setNetRate(retailRate + marginRate);
         bi.setAdjustedValue(netValue);
         bi.setDiscount(0);
-
-        System.out.println("[BHT-CALC] calculateRates(rate) TOTAL: " + (System.currentTimeMillis() - calcStartTime) + "ms");
     }
 
     /**
@@ -2876,37 +2810,26 @@ public class PharmacySaleBhtController implements Serializable {
     }
 
     public List<StockDTO> completeAvailableStockOptimizedDto(String qry) {
-        long tStart = System.currentTimeMillis();
-        System.out.println("[BHT-AC] >>> completeAvailableStockOptimizedDto qry=[" + qry + "]");
         if (qry == null || qry.trim().isEmpty()) {
             lastAutocompleteResults = new ArrayList<>();
-            System.out.println("[BHT-AC] <<< empty qry, returning empty");
             return lastAutocompleteResults;
         }
 
         qry = qry.replaceAll("[\\n\\r]", "").trim();
 
-        // Build cache key for metadata
         String cacheKey = qry.toLowerCase().trim() + "_" +
             getSessionController().getLoggedUser().getDepartment().getId();
 
-        // Check metadata cache first
         List<Long> cachedStockIds = getCachedMetadata(cacheKey);
         List<StockDTO> results;
 
         if (cachedStockIds != null) {
-            long t1 = System.currentTimeMillis();
             results = getFreshStockDataForIds(cachedStockIds);
-            System.out.println("[BHT-AC]   cache HIT getFreshStockDataForIds: " + (System.currentTimeMillis() - t1) + "ms size=" + (results != null ? results.size() : 0));
         } else {
-            long t1 = System.currentTimeMillis();
             results = executeFullSearchAndCacheMetadata(qry, cacheKey);
-            System.out.println("[BHT-AC]   cache MISS executeFullSearch: " + (System.currentTimeMillis() - t1) + "ms size=" + (results != null ? results.size() : 0));
         }
 
-        // Store results for JSF converter (zero-query postback handling)
         lastAutocompleteResults = results != null ? results : new ArrayList<>();
-        System.out.println("[BHT-AC] <<< completeAvailableStockOptimizedDto TOTAL: " + (System.currentTimeMillis() - tStart) + "ms");
         return lastAutocompleteResults;
     }
 
