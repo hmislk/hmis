@@ -219,8 +219,8 @@
                                                     <p:commandLink
                                                         value="#{row.rowType}"
                                                         action="#{pharmacyDailyStockDrillDownLevel1Controller.drillToLevel2(row)}"
-                                                        title="Drill down to bill list (coming soon)"
-                                                        update="@form"/>
+                                                        title="Drill down to bill list"
+                                                        ajax="false"/>
                                                 </td>
                                                 <td class="text-end value-column">
                                                     <h:outputText value="#{row.grossTotal}">

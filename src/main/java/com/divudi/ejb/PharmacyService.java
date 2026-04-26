@@ -504,6 +504,67 @@ public class PharmacyService {
         return bundle;
     }
 
+    /**
+     * F15 drill-down (Level 2) — fetch the individual sales BillLights behind a single
+     * Level 1 sales row. Returns the raw, ungrouped BillLight list so the L2 page can
+     * render one row per bill. AdmissionType + PaymentScheme are required because L1
+     * groups sales by BillTypeAtomic + AdmissionType + PaymentScheme.
+     * F15 itself does NOT call this method.
+     *
+     * Issue: #20240. Parent epic: #20236.
+     */
+    public List<BillLight> fetchPharmacyIncomeBillLightsForLevel2(Date fromDate, Date toDate, Institution institution, Institution site, Department department, WebUser webUser, AdmissionType admissionType, PaymentScheme paymentScheme, BillTypeAtomic billTypeAtomic) {
+        if (billTypeAtomic == null) {
+            return new ArrayList<>();
+        }
+        return billService.fetchBillLightsWithFinanceDetailsAndPaymentScheme(fromDate, toDate, institution, site, department, webUser, Arrays.asList(billTypeAtomic), admissionType, paymentScheme);
+    }
+
+    /**
+     * F15 drill-down (Level 2) — fetch the individual purchase BillLights behind a single
+     * Level 1 purchase row. Returns the raw, ungrouped BillLight list. Mirrors
+     * fetchPharmacyStockPurchaseValueByBillTypeDtoCompletedForAtomics so the L2 figures
+     * tally with L1 (completed bills only).
+     * F15 itself does NOT call this method.
+     *
+     * Issue: #20240. Parent epic: #20236.
+     */
+    public List<BillLight> fetchPharmacyPurchaseBillLightsForLevel2(Date fromDate, Date toDate, Institution institution, Institution site, Department department, WebUser webUser, AdmissionType admissionType, PaymentScheme paymentScheme, BillTypeAtomic billTypeAtomic) {
+        if (billTypeAtomic == null) {
+            return new ArrayList<>();
+        }
+        return billService.fetchBillLightsWithFinanceDetailsCompleted(fromDate, toDate, institution, site, department, webUser, Arrays.asList(billTypeAtomic), admissionType, paymentScheme);
+    }
+
+    /**
+     * F15 drill-down (Level 2) — fetch the individual transfer BillLights behind a single
+     * Level 1 transfer row. Returns the raw, ungrouped BillLight list.
+     * F15 itself does NOT call this method.
+     *
+     * Issue: #20240. Parent epic: #20236.
+     */
+    public List<BillLight> fetchPharmacyTransferBillLightsForLevel2(Date fromDate, Date toDate, Institution institution, Institution site, Department department, WebUser webUser, AdmissionType admissionType, PaymentScheme paymentScheme, BillTypeAtomic billTypeAtomic) {
+        if (billTypeAtomic == null) {
+            return new ArrayList<>();
+        }
+        return billService.fetchBillLightsWithFinanceDetails(fromDate, toDate, institution, site, department, webUser, Arrays.asList(billTypeAtomic), admissionType, paymentScheme);
+    }
+
+    /**
+     * F15 drill-down (Level 2) — fetch the individual adjustment BillLights behind a single
+     * Level 1 adjustment row. Returns the raw, ungrouped BillLight list. Uses the
+     * adjustment-specific fetch (BFD-aware) so the L2 figures tally with L1.
+     * F15 itself does NOT call this method.
+     *
+     * Issue: #20240. Parent epic: #20236.
+     */
+    public List<BillLight> fetchPharmacyAdjustmentBillLightsForLevel2(Date fromDate, Date toDate, Institution institution, Institution site, Department department, WebUser webUser, AdmissionType admissionType, PaymentScheme paymentScheme, BillTypeAtomic billTypeAtomic) {
+        if (billTypeAtomic == null) {
+            return new ArrayList<>();
+        }
+        return billService.fetchBillLightsForAdjustmentsWithFinanceDetails(fromDate, toDate, institution, site, department, webUser, Arrays.asList(billTypeAtomic), admissionType, paymentScheme);
+    }
+
     public List<BillTypeAtomic> getPharmacyIncomeBillTypes() {
         return Arrays.asList(
                 BillTypeAtomic.PHARMACY_RETAIL_SALE,

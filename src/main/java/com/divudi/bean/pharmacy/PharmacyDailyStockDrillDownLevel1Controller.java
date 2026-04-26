@@ -189,11 +189,24 @@ public class PharmacyDailyStockDrillDownLevel1Controller implements Serializable
         return "/pharmacy/reports/summary_reports/daily_stock_values_report_optimized?faces-redirect=true";
     }
 
+    @Inject
+    private PharmacyDailyStockDrillDownLevel2Controller drillDownLevel2Controller;
+
     /**
-     * Stub for Level 2 drill-down (issue #20240). Replaced when L2 lands.
+     * Drill from a Level 1 row into Level 2 (per-bill list) — issue #20240.
+     * Carries the L1 filters (date range, institution/site/department) plus the
+     * row's selection key (BillTypeAtomic, AdmissionType, PaymentScheme — the
+     * latter two only meaningful for SALES rows) into the L2 controller.
      */
-    public void drillToLevel2(PharmacyRow row) {
-        JsfUtil.addInfoMessage("Level 2 drill-down (bill list) is coming in a future update");
+    public String drillToLevel2(PharmacyRow row) {
+        if (row == null || row.getBillTypeAtomic() == null) {
+            JsfUtil.addErrorMessage("Cannot drill — row has no bill type");
+            return null;
+        }
+        return drillDownLevel2Controller.navigateToLevel2FromLevel1(
+                fromDate, toDate, institution, site, department,
+                transactionType, row.getBillTypeAtomic(),
+                row.getAdmissionType(), row.getPaymentScheme());
     }
 
     public Date getFromDate() {
