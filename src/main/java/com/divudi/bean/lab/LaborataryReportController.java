@@ -16,6 +16,7 @@ import com.divudi.core.data.TestWiseCountReport;
 import com.divudi.core.data.dataStructure.SearchKeyword;
 import com.divudi.core.data.hr.ReportKeyWord;
 import com.divudi.core.data.pharmacy.DailyStockBalanceReport;
+import com.divudi.core.data.dto.CancelledBillDTO;
 import com.divudi.core.data.dto.TestCountDTO;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillItem;
@@ -77,6 +78,19 @@ import javax.inject.Named;
 import javax.persistence.TemporalType;
 import org.primefaces.model.StreamedContent;
 import org.primefaces.model.file.UploadedFile;
+import java.io.OutputStream;
+import java.text.SimpleDateFormat;
+import javax.faces.context.FacesContext;
+import javax.servlet.http.HttpServletResponse;
+import org.apache.poi.ss.usermodel.BorderStyle;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.DataFormat;
+import org.apache.poi.ss.usermodel.HorizontalAlignment;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 /**
  *
@@ -239,6 +253,16 @@ public class LaborataryReportController implements Serializable {
     private double totalDeductionDiscountValue;
     private double totalDeductionServiceChargeValue;
 
+    // Cancelled Lab Bill List report (Lab Analytics > Performance)
+    private boolean opdLabBills = true;
+    private boolean inpatientLabBills = true;
+    private boolean ccLabBills = true;
+    private List<CancelledBillDTO> cancelledLabBills;
+    private double cancelledLabBillsTotalAmount;
+    private long cancelledLabBillsCount;
+    private Date cancelledLabBillsProcessedAt;
+    private String cancelledLabBillsProcessedBy;
+
 // </editor-fold>
     
     // <editor-fold defaultstate="collapsed" desc="Navigators">
@@ -294,7 +318,18 @@ public class LaborataryReportController implements Serializable {
     }
     
     private List<BillLight> billLights ;
-    
+
+    public String navigateToLabCancelledBillListFromLabAnalytics() {
+        resetAllFiltersExceptDateRange();
+        opdLabBills = true;
+        inpatientLabBills = true;
+        ccLabBills = true;
+        cancelledLabBills = new ArrayList<>();
+        cancelledLabBillsTotalAmount = 0.0;
+        cancelledLabBillsCount = 0;
+        return "/reportLab/lab_cancelled_bill_list?faces-redirect=true";
+    }
+
     public String navigateToBillItemListForCreditCompany(){
         toDate = null;
         fromDate = null;
@@ -1410,6 +1445,346 @@ public class LaborataryReportController implements Serializable {
     public List<Bill> getLaboratoryBills(List<BillTypeAtomic> billTypeAtomics) {
         List<Bill> incomeBills = billService.fetchBills(fromDate, toDate, null, null, null, null, billTypeAtomics, null, null, null, null, DepartmentType.Lab, null);
         return incomeBills;
+    }
+
+    public void processLabCancelledBillList() {
+        cancelledLabBills = new ArrayList<>();
+        cancelledLabBillsTotalAmount = 0.0;
+        cancelledLabBillsCount = 0;
+        cancelledLabBillsProcessedAt = null;
+        cancelledLabBillsProcessedBy = null;
+
+        if (fromDate == null || toDate == null) {
+            JsfUtil.addErrorMessage("Please select both From Date and To Date");
+            return;
+        }
+        if (!opdLabBills && !inpatientLabBills && !ccLabBills) {
+            JsfUtil.addErrorMessage("Select at least one of Outpatient, Inpatient or Collecting Centre");
+            return;
+        }
+
+        List<BillTypeAtomic> atomics = new ArrayList<>();
+        if (opdLabBills) {
+            atomics.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
+            atomics.add(BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT);
+        }
+        if (inpatientLabBills) {
+            atomics.add(BillTypeAtomic.INWARD_SERVICE_BILL);
+        }
+        if (ccLabBills) {
+            atomics.add(BillTypeAtomic.CC_BILL);
+        }
+
+        StringBuilder jpql = new StringBuilder();
+        jpql.append("select new com.divudi.core.data.dto.CancelledBillDTO(")
+                .append(" b.deptId,")
+                .append(" b.cancelledBill.deptId,")
+                .append(" b.createdAt,")
+                .append(" b.cancelledBill.createdAt,")
+                .append(" b.cancelledBill.creater.webUserPerson.title,")
+                .append(" b.cancelledBill.creater.webUserPerson.name,")
+                .append(" b.cancelledBill.comments,")
+                .append(" b.paymentMethod,")
+                .append(" b.netTotal,")
+                .append(" b.ipOpOrCc)")
+                .append(" from Bill b")
+                .append(" where b.retired = false")
+                .append(" and COALESCE(b.cancelledBill.createdAt, b.createdAt) between :fromDate and :toDate")
+                .append(" and b.billTypeAtomic in :atomics")
+                .append(" and b.cancelled =:can");
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("fromDate", fromDate);
+        params.put("toDate", toDate);
+        params.put("atomics", atomics);
+        params.put("can", true);
+
+        if (institution != null) {
+            jpql.append(" and b.institution = :institution");
+            params.put("institution", institution);
+        }
+        if (site != null) {
+            jpql.append(" and b.department.site = :site");
+            params.put("site", site);
+        }
+        if (department != null) {
+            jpql.append(" and b.department = :department");
+            params.put("department", department);
+        }
+
+        jpql.append(" order by b.createdAt asc");
+        
+        System.out.println("jpql = " + jpql.toString());
+        System.out.println("params = " + params);
+
+        cancelledLabBills = (List<CancelledBillDTO>) billFacade.findDTOsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+        
+        System.out.println("cancelledLabBills = " + cancelledLabBills);
+
+        if (cancelledLabBills == null) {
+            cancelledLabBills = new ArrayList<>();
+        }
+        cancelledLabBillsCount = cancelledLabBills.size();
+        cancelledLabBillsTotalAmount = cancelledLabBills.stream()
+                .mapToDouble(CancelledBillDTO::getAbsoluteAmount)
+                .sum();
+
+        cancelledLabBillsProcessedAt = new Date();
+        if (sessionController != null && sessionController.getLoggedUser() != null && sessionController.getLoggedUser().getWebUserPerson() != null) {
+            cancelledLabBillsProcessedBy = sessionController.getLoggedUser().getWebUserPerson().getNameWithTitle();
+        }
+    }
+
+    public void downloadCancelledLabBillsExcel() {
+        if (cancelledLabBills == null || cancelledLabBills.isEmpty()) {
+            JsfUtil.addErrorMessage("No data to export. Click Process first.");
+            return;
+        }
+
+        FacesContext facesContext = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) facesContext.getExternalContext().getResponse();
+
+        try (XSSFWorkbook workbook = new XSSFWorkbook()) {
+            Sheet sheet = workbook.createSheet("Cancelled Lab Bills");
+
+            org.apache.poi.ss.usermodel.Font boldFont = workbook.createFont();
+            boldFont.setBold(true);
+
+            org.apache.poi.ss.usermodel.Font titleFont = workbook.createFont();
+            titleFont.setBold(true);
+            titleFont.setFontHeightInPoints((short) 15);
+
+            CellStyle titleStyle = workbook.createCellStyle();
+            titleStyle.setFont(titleFont);
+            titleStyle.setAlignment(HorizontalAlignment.CENTER);
+
+            CellStyle subtitleStyle = workbook.createCellStyle();
+            subtitleStyle.setAlignment(HorizontalAlignment.CENTER);
+            subtitleStyle.setFont(boldFont);
+
+            CellStyle filterStyle = workbook.createCellStyle();
+            filterStyle.setAlignment(HorizontalAlignment.CENTER);
+
+            CellStyle headerStyle = workbook.createCellStyle();
+            headerStyle.setFont(boldFont);
+            headerStyle.setAlignment(HorizontalAlignment.CENTER);
+            headerStyle.setBorderBottom(BorderStyle.THIN);
+            headerStyle.setBorderTop(BorderStyle.THIN);
+            headerStyle.setBorderLeft(BorderStyle.THIN);
+            headerStyle.setBorderRight(BorderStyle.THIN);
+
+            CellStyle dataStyle = workbook.createCellStyle();
+            dataStyle.setBorderBottom(BorderStyle.THIN);
+            dataStyle.setBorderTop(BorderStyle.THIN);
+            dataStyle.setBorderLeft(BorderStyle.THIN);
+            dataStyle.setBorderRight(BorderStyle.THIN);
+
+            DataFormat format = workbook.createDataFormat();
+
+            CellStyle dateStyle = workbook.createCellStyle();
+            dateStyle.cloneStyleFrom(dataStyle);
+            dateStyle.setDataFormat(format.getFormat("yyyy-MM-dd hh:mm AM/PM"));
+
+            CellStyle numberStyle = workbook.createCellStyle();
+            numberStyle.cloneStyleFrom(dataStyle);
+            numberStyle.setDataFormat(format.getFormat("#,##0.00"));
+
+            CellStyle totalLabelStyle = workbook.createCellStyle();
+            totalLabelStyle.cloneStyleFrom(headerStyle);
+            totalLabelStyle.setAlignment(HorizontalAlignment.RIGHT);
+
+            CellStyle totalNumberStyle = workbook.createCellStyle();
+            totalNumberStyle.cloneStyleFrom(numberStyle);
+            totalNumberStyle.setFont(boldFont);
+
+            int colCount = 10;
+            int rowIndex = 0;
+
+            String datePattern = sessionController.getApplicationPreference() != null
+                    && sessionController.getApplicationPreference().getLongDateTimeFormat() != null
+                    ? sessionController.getApplicationPreference().getLongDateTimeFormat()
+                    : "yyyy-MM-dd hh:mm a";
+            SimpleDateFormat sdf = new SimpleDateFormat(datePattern);
+
+            // Institution
+            Row instRow = sheet.createRow(rowIndex++);
+            Cell instCell = instRow.createCell(0);
+            instCell.setCellValue(sessionController.getInstitution() != null
+                    ? sessionController.getInstitution().getName() : "");
+            instCell.setCellStyle(titleStyle);
+            sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, colCount - 1));
+
+            // Report title
+            Row titleRow = sheet.createRow(rowIndex++);
+            Cell titleCell = titleRow.createCell(0);
+            titleCell.setCellValue("List of Cancelled Lab Bills");
+            titleCell.setCellStyle(subtitleStyle);
+            sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, colCount - 1));
+
+            // Date range
+            Row dateRow = sheet.createRow(rowIndex++);
+            Cell dateCell = dateRow.createCell(0);
+            dateCell.setCellValue(
+                    "From : " + (fromDate != null ? sdf.format(fromDate) : "-")
+                    + "    |    To : " + (toDate != null ? sdf.format(toDate) : "-"));
+            dateCell.setCellStyle(filterStyle);
+            sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, colCount - 1));
+
+            // Filter line
+            StringBuilder filterLine = new StringBuilder();
+            filterLine.append("Institution : ").append(institution != null ? institution.getName() : "All");
+            filterLine.append("    |    Site : ").append(site != null ? site.getName() : "All");
+            filterLine.append("    |    Department : ").append(department != null ? department.getName() : "All");
+            Row filterRow = sheet.createRow(rowIndex++);
+            Cell filterCell = filterRow.createCell(0);
+            filterCell.setCellValue(filterLine.toString());
+            filterCell.setCellStyle(filterStyle);
+            sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, colCount - 1));
+
+            // Bill sources line
+            StringBuilder sourcesLine = new StringBuilder("Bill Sources : ");
+            boolean firstSrc = true;
+            if (opdLabBills) {
+                sourcesLine.append("Outpatient");
+                firstSrc = false;
+            }
+            if (inpatientLabBills) {
+                if (!firstSrc) {
+                    sourcesLine.append(", ");
+                }
+                sourcesLine.append("Inpatient");
+                firstSrc = false;
+            }
+            if (ccLabBills) {
+                if (!firstSrc) {
+                    sourcesLine.append(", ");
+                }
+                sourcesLine.append("Collecting Centre");
+            }
+            Row sourcesRow = sheet.createRow(rowIndex++);
+            Cell sourcesCell = sourcesRow.createCell(0);
+            sourcesCell.setCellValue(sourcesLine.toString());
+            sourcesCell.setCellStyle(filterStyle);
+            sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, colCount - 1));
+
+            rowIndex++;
+
+            // Column headers
+            Row headerRow = sheet.createRow(rowIndex++);
+            String[] headers = {"No", "Bill Type", "Original Bill No", "Cancel Bill No",
+                "Bill At", "Cancel At", "Cancel By", "Reason for Cancel",
+                "Payment Method", "Amount"};
+            for (int i = 0; i < headers.length; i++) {
+                Cell c = headerRow.createCell(i);
+                c.setCellValue(headers[i]);
+                c.setCellStyle(headerStyle);
+            }
+
+            // Data rows
+            int rowNo = 1;
+            for (CancelledBillDTO row : cancelledLabBills) {
+                Row r = sheet.createRow(rowIndex++);
+                int c = 0;
+
+                Cell c0 = r.createCell(c++);
+                c0.setCellValue(rowNo++);
+                c0.setCellStyle(dataStyle);
+
+                Cell c1 = r.createCell(c++);
+                c1.setCellValue(row.getBillTypeLabel() != null ? row.getBillTypeLabel() : "");
+                c1.setCellStyle(dataStyle);
+
+                Cell c2 = r.createCell(c++);
+                c2.setCellValue(row.getOriginalBillNumber() != null ? row.getOriginalBillNumber() : "");
+                c2.setCellStyle(dataStyle);
+
+                Cell c3 = r.createCell(c++);
+                c3.setCellValue(row.getCancelBillNumber() != null ? row.getCancelBillNumber() : "");
+                c3.setCellStyle(dataStyle);
+
+                Cell c4 = r.createCell(c++);
+                if (row.getBilledAt() != null) {
+                    c4.setCellValue(row.getBilledAt());
+                    c4.setCellStyle(dateStyle);
+                } else {
+                    c4.setCellValue("");
+                    c4.setCellStyle(dataStyle);
+                }
+
+                Cell c5 = r.createCell(c++);
+                if (row.getCancelledAt() != null) {
+                    c5.setCellValue(row.getCancelledAt());
+                    c5.setCellStyle(dateStyle);
+                } else {
+                    c5.setCellValue("");
+                    c5.setCellStyle(dataStyle);
+                }
+
+                Cell c6 = r.createCell(c++);
+                c6.setCellValue(row.getCancelledByDisplay() != null ? row.getCancelledByDisplay() : "");
+                c6.setCellStyle(dataStyle);
+
+                Cell c7 = r.createCell(c++);
+                c7.setCellValue(row.getReasonForCancel() != null ? row.getReasonForCancel() : "");
+                c7.setCellStyle(dataStyle);
+
+                Cell c8 = r.createCell(c++);
+                c8.setCellValue(row.getPaymentMethod() != null ? row.getPaymentMethod().toString() : "");
+                c8.setCellStyle(dataStyle);
+
+                Cell c9 = r.createCell(c);
+                c9.setCellValue(row.getAbsoluteAmount() != null ? row.getAbsoluteAmount() : 0d);
+                c9.setCellStyle(numberStyle);
+            }
+
+            // Totals row
+            Row totalRow = sheet.createRow(rowIndex++);
+            Cell totalLabel = totalRow.createCell(0);
+            totalLabel.setCellValue("Total Bills : " + cancelledLabBillsCount);
+            totalLabel.setCellStyle(totalLabelStyle);
+            sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, colCount - 2));
+            for (int i = 1; i < colCount - 1; i++) {
+                Cell blank = totalRow.createCell(i);
+                blank.setCellStyle(totalLabelStyle);
+            }
+            Cell totalAmountCell = totalRow.createCell(colCount - 1);
+            totalAmountCell.setCellValue(cancelledLabBillsTotalAmount);
+            totalAmountCell.setCellStyle(totalNumberStyle);
+
+            // Last process info
+            rowIndex++;
+            Row processedRow = sheet.createRow(rowIndex++);
+            processedRow.createCell(0).setCellValue(
+                    "Processed By : "
+                    + (cancelledLabBillsProcessedBy != null ? cancelledLabBillsProcessedBy : "-")
+                    + "    |    Processed At : "
+                    + (cancelledLabBillsProcessedAt != null ? sdf.format(cancelledLabBillsProcessedAt) : "-"));
+
+            // Printed By footer
+            if (sessionController != null && sessionController.getLoggedUser() != null
+                    && sessionController.getLoggedUser().getWebUserPerson() != null) {
+                Row printedByRow = sheet.createRow(rowIndex++);
+                printedByRow.createCell(0).setCellValue(
+                        "Printed By : " + sessionController.getLoggedUser().getWebUserPerson().getNameWithTitle()
+                        + "    |    Printed On : " + sdf.format(new Date()));
+            }
+
+            for (int i = 0; i < colCount; i++) {
+                sheet.autoSizeColumn(i);
+            }
+
+            String filename = "Cancelled_Lab_Bills_"
+                    + new SimpleDateFormat("yyyyMMdd_HHmm").format(new Date()) + ".xlsx";
+            response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            response.setHeader("Content-Disposition", "attachment; filename=" + filename);
+            try (OutputStream out = response.getOutputStream()) {
+                workbook.write(out);
+            }
+            facesContext.responseComplete();
+        } catch (Exception e) {
+            e.printStackTrace();
+            JsfUtil.addErrorMessage("Failed to export Excel: " + e.getMessage());
+        }
     }
 
     // <editor-fold defaultstate="collapsed" desc="9B Report">
@@ -2575,7 +2950,71 @@ public class LaborataryReportController implements Serializable {
     public void setTotalDeductionOnlineSettlementValue(double totalDeductionOnlineSettlementValue) {
         this.totalDeductionOnlineSettlementValue = totalDeductionOnlineSettlementValue;
     }
-    
+
+    public boolean isOpdLabBills() {
+        return opdLabBills;
+    }
+
+    public void setOpdLabBills(boolean opdLabBills) {
+        this.opdLabBills = opdLabBills;
+    }
+
+    public boolean isInpatientLabBills() {
+        return inpatientLabBills;
+    }
+
+    public void setInpatientLabBills(boolean inpatientLabBills) {
+        this.inpatientLabBills = inpatientLabBills;
+    }
+
+    public boolean isCcLabBills() {
+        return ccLabBills;
+    }
+
+    public void setCcLabBills(boolean ccLabBills) {
+        this.ccLabBills = ccLabBills;
+    }
+
+    public List<CancelledBillDTO> getCancelledLabBills() {
+        return cancelledLabBills;
+    }
+
+    public void setCancelledLabBills(List<CancelledBillDTO> cancelledLabBills) {
+        this.cancelledLabBills = cancelledLabBills;
+    }
+
+    public double getCancelledLabBillsTotalAmount() {
+        return cancelledLabBillsTotalAmount;
+    }
+
+    public void setCancelledLabBillsTotalAmount(double cancelledLabBillsTotalAmount) {
+        this.cancelledLabBillsTotalAmount = cancelledLabBillsTotalAmount;
+    }
+
+    public long getCancelledLabBillsCount() {
+        return cancelledLabBillsCount;
+    }
+
+    public void setCancelledLabBillsCount(long cancelledLabBillsCount) {
+        this.cancelledLabBillsCount = cancelledLabBillsCount;
+    }
+
+    public Date getCancelledLabBillsProcessedAt() {
+        return cancelledLabBillsProcessedAt;
+    }
+
+    public void setCancelledLabBillsProcessedAt(Date cancelledLabBillsProcessedAt) {
+        this.cancelledLabBillsProcessedAt = cancelledLabBillsProcessedAt;
+    }
+
+    public String getCancelledLabBillsProcessedBy() {
+        return cancelledLabBillsProcessedBy;
+    }
+
+    public void setCancelledLabBillsProcessedBy(String cancelledLabBillsProcessedBy) {
+        this.cancelledLabBillsProcessedBy = cancelledLabBillsProcessedBy;
+    }
+
     // </editor-fold>
 
 }
