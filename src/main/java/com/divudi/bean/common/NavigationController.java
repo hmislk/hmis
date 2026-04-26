@@ -170,6 +170,10 @@ public class NavigationController implements Serializable {
         return "/admin/pricing/payment_scheme_payment_method_allowed?faces-redirect=true";
     }
 
+    public String navigateToPaymentMethodRestricted() {
+        return "/admin/pricing/payment_scheme_payment_method_restricted?faces-redirect=true";
+    }
+
     public String navigateToPaymentMethodDiscountOpdByCategory() {
         return "/admin/pricing/payment_scheme_payment_method_allowed?faces-redirect=true";
     }
