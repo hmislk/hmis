@@ -1,5 +1,6 @@
 package com.divudi.bean.pharmacy;
 
+import com.divudi.bean.common.BillSearch;
 import com.divudi.bean.pharmacy.PharmacyDailyStockDrillDownLevel1Controller.TransactionType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.entity.Department;
@@ -19,6 +20,7 @@ import java.util.Date;
 import java.util.List;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
+import javax.inject.Inject;
 import javax.inject.Named;
 
 /**
@@ -37,6 +39,8 @@ public class PharmacyDailyStockDrillDownLevel2Controller implements Serializable
 
     @EJB
     private PharmacyService pharmacyService;
+    @Inject
+    private BillSearch billSearch;
 
     private Date fromDate;
     private Date toDate;
@@ -174,6 +178,20 @@ public class PharmacyDailyStockDrillDownLevel2Controller implements Serializable
      */
     public String navigateBackToLevel1() {
         return "/pharmacy/reports/summary_reports/daily_stock_values_drill_down_level1?faces-redirect=true";
+    }
+
+    /**
+     * Open the existing per-bill view page for the given Level 2 row — issue #20241.
+     * Delegates to BillSearch which loads the full Bill by id and routes to the
+     * correct view page for the bill's BillTypeAtomic (refund / cancellation /
+     * wholesale / GRN / transfer / etc.).
+     */
+    public String viewBill(BillLight bill) {
+        if (bill == null || bill.getId() == null) {
+            JsfUtil.addErrorMessage("Cannot open bill view — bill is missing or has no id");
+            return null;
+        }
+        return billSearch.navigateToViewBillByAtomicBillTypeByBillId(bill.getId());
     }
 
     public Date getFromDate() {

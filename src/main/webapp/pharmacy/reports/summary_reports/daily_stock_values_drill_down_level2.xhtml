@@ -23,6 +23,12 @@
                     .atomic-column {
                         width: auto;
                     }
+                    .view-column {
+                        width: 70px;
+                        min-width: 70px;
+                        max-width: 70px;
+                        text-align: center;
+                    }
                 </style>
 
                 <h:form id="drillDownLevel2Form">
@@ -112,6 +118,7 @@
                                         <th class="text-end value-column">Retail Value</th>
                                         <th class="text-end value-column">Purchase Value</th>
                                         <th class="text-end value-column">Cost Value</th>
+                                        <th class="view-column">View</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -160,6 +167,14 @@
                                                     <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputText>
                                             </td>
+                                            <td class="view-column">
+                                                <p:commandLink
+                                                    action="#{pharmacyDailyStockDrillDownLevel2Controller.viewBill(bill)}"
+                                                    title="View bill"
+                                                    ajax="false">
+                                                    <h:outputText value="&#xf06e;" styleClass="fa text-primary"/>
+                                                </p:commandLink>
+                                            </td>
                                         </tr>
                                     </ui:repeat>
                                 </tbody>
@@ -202,6 +217,7 @@
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputText>
                                         </td>
+                                        <td class="view-column"></td>
                                     </tr>
                                 </tfoot>
                             </table>
