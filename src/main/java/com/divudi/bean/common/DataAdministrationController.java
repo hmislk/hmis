@@ -1029,6 +1029,37 @@ public class DataAdministrationController implements Serializable {
         }
     }
 
+    public void markStaleHandoverCreateBillsAsCompleted() {
+        executionFeedback = "";
+        try {
+            String jpql = "SELECT b FROM Bill b "
+                    + "WHERE b.retired = false "
+                    + "AND b.billTypeAtomic = :btype "
+                    + "AND (b.completed = false OR b.completed IS NULL) "
+                    + "AND (b.cancelled = false OR b.cancelled IS NULL) "
+                    + "AND b.referenceBill IS NOT NULL "
+                    + "AND b.referenceBill.completed = true";
+            Map<String, Object> params = new HashMap<>();
+            params.put("btype", BillTypeAtomic.FUND_SHIFT_HANDOVER_CREATE);
+            List<Bill> staleBills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+            if (staleBills == null || staleBills.isEmpty()) {
+                executionFeedback = "No stale handover create bills found. Nothing to update.";
+                return;
+            }
+            Date now = new Date();
+            WebUser currentUser = sessionController.getLoggedUser();
+            for (Bill bill : staleBills) {
+                bill.setCompleted(true);
+                bill.setCompletedAt(now);
+                bill.setCompletedBy(currentUser);
+                billFacade.edit(bill);
+            }
+            executionFeedback = "Marked " + staleBills.size() + " stale handover create bill(s) as completed.";
+        } catch (Exception e) {
+            executionFeedback = "Error: " + getExceptionMessage(e);
+        }
+    }
+
     /**
      * Helper method to correct BillFinanceDetails values to NEGATIVE
      * Returns true if any correction was made
