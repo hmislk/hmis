@@ -3468,6 +3468,18 @@ public class DataUploadController implements Serializable {
 //        return itemFees;
 //
 //    }
+    private String readCellAsString(Cell cell) {
+        if (cell == null) {
+            return "";
+        }
+        DataFormatter formatter = new DataFormatter(Locale.ENGLISH);
+        FormulaEvaluator evaluator = cell.getSheet()
+                .getWorkbook()
+                .getCreationHelper()
+                .createFormulaEvaluator();
+        return formatter.formatCellValue(cell, evaluator).trim();
+    }
+
     private List<Consultant> readConsultantsFromExcel(InputStream inputStream) throws IOException {
         List<Consultant> cons = new ArrayList<>();
         Workbook workbook = new XSSFWorkbook(inputStream);
@@ -3495,60 +3507,14 @@ public class DataUploadController implements Serializable {
             Sex sex;
             Title title;
 
-            String code = null;
-            String name = null;
-            String titleString = "";
-
-            String registration = "";
-            String description = "";
-            String sexString = null;
-            String mobileNumber = "";
-
-            String specialityString = null;
-
-            Cell codeCell = row.getCell(0);
-            if (codeCell != null && codeCell.getCellType() == CellType.STRING) {
-                code = codeCell.getStringCellValue();
-            }
-
-            Cell titleCell = row.getCell(1);
-            if (titleCell != null && titleCell.getCellType() == CellType.STRING) {
-                titleString = titleCell.getStringCellValue();
-            }
-
-            Cell nameCell = row.getCell(2);
-            if (nameCell != null && nameCell.getCellType() == CellType.STRING) {
-                name = nameCell.getStringCellValue();
-
-            }
-
-            Cell registrationCell = row.getCell(3);
-            if (registrationCell != null && registrationCell.getCellType() == CellType.STRING) {
-                registration = registrationCell.getStringCellValue();
-            }
-
-            Cell descriptionCell = row.getCell(4);
-            if (descriptionCell != null && descriptionCell.getCellType() == CellType.STRING) {
-                description = descriptionCell.getStringCellValue();
-            }
-
-            Cell sexCell = row.getCell(5);
-            if (sexCell != null) {
-                sexString = sexCell.getStringCellValue();
-
-            }
-
-            Cell mobileCell = row.getCell(6);
-            if (mobileCell != null && mobileCell.getCellType() == CellType.STRING) {
-                mobileNumber = mobileCell.getStringCellValue();
-            } else if (mobileCell != null && mobileCell.getCellType() == CellType.NUMERIC) {
-                mobileNumber = "" + mobileCell.getNumericCellValue();
-            }
-
-            Cell specialityCell = row.getCell(7);
-            if (specialityCell != null && specialityCell.getCellType() == CellType.STRING) {
-                specialityString = specialityCell.getStringCellValue();
-            }
+            String code = readCellAsString(row.getCell(0));
+            String titleString = readCellAsString(row.getCell(1));
+            String name = readCellAsString(row.getCell(2));
+            String registration = readCellAsString(row.getCell(3));
+            String description = readCellAsString(row.getCell(4));
+            String sexString = readCellAsString(row.getCell(5));
+            String mobileNumber = readCellAsString(row.getCell(6));
+            String specialityString = readCellAsString(row.getCell(7));
 
             if (name == null || name.trim().equals("")) {
                 continue;
@@ -3614,60 +3580,14 @@ public class DataUploadController implements Serializable {
             Sex sex;
             Title title;
 
-            String code = null;
-            String name = null;
-            String titleString = "";
-
-            String registration = "";
-            String description = "";
-            String sexString = null;
-            String mobileNumber = "";
-
-            String specialityString = null;
-
-            Cell codeCell = row.getCell(0);
-            if (codeCell != null && codeCell.getCellType() == CellType.STRING) {
-                code = codeCell.getStringCellValue();
-            }
-
-            Cell titleCell = row.getCell(1);
-            if (titleCell != null && titleCell.getCellType() == CellType.STRING) {
-                titleString = titleCell.getStringCellValue();
-            }
-
-            Cell nameCell = row.getCell(2);
-            if (nameCell != null && nameCell.getCellType() == CellType.STRING) {
-                name = nameCell.getStringCellValue();
-
-            }
-
-            Cell registrationCell = row.getCell(3);
-            if (registrationCell != null && registrationCell.getCellType() == CellType.STRING) {
-                registration = registrationCell.getStringCellValue();
-            }
-
-            Cell descriptionCell = row.getCell(4);
-            if (descriptionCell != null && descriptionCell.getCellType() == CellType.STRING) {
-                description = descriptionCell.getStringCellValue();
-            }
-
-            Cell sexCell = row.getCell(5);
-            if (sexCell != null) {
-                sexString = sexCell.getStringCellValue();
-
-            }
-
-            Cell mobileCell = row.getCell(6);
-            if (mobileCell != null && mobileCell.getCellType() == CellType.STRING) {
-                mobileNumber = mobileCell.getStringCellValue();
-            } else if (mobileCell != null && mobileCell.getCellType() == CellType.NUMERIC) {
-                mobileNumber = "" + mobileCell.getNumericCellValue();
-            }
-
-            Cell specialityCell = row.getCell(7);
-            if (specialityCell != null && specialityCell.getCellType() == CellType.STRING) {
-                specialityString = specialityCell.getStringCellValue();
-            }
+            String code = readCellAsString(row.getCell(0));
+            String titleString = readCellAsString(row.getCell(1));
+            String name = readCellAsString(row.getCell(2));
+            String registration = readCellAsString(row.getCell(3));
+            String description = readCellAsString(row.getCell(4));
+            String sexString = readCellAsString(row.getCell(5));
+            String mobileNumber = readCellAsString(row.getCell(6));
+            String specialityString = readCellAsString(row.getCell(7));
 
             System.out.println("name = " + name);
             if (name == null || name.trim().equals("")) {
@@ -7087,8 +7007,7 @@ public class DataUploadController implements Serializable {
         Sheet sheet = workbook.getSheetAt(0);
         Iterator<Row> rowIterator = sheet.rowIterator();
 
-        List<Institution> CreditCompanyList = new ArrayList<>();
-        Institution creditCompany;
+        List<Institution> creditCompanyList = new ArrayList<>();
 
         // Assuming the first row contains headers, skip it
         if (rowIterator.hasNext()) {
@@ -7097,89 +7016,45 @@ public class DataUploadController implements Serializable {
 
         while (rowIterator.hasNext()) {
             Row row = rowIterator.next();
-            creditCompany = null;
-            String creditCompanyName = null;
-            String creditCompanyPrintingName = null;
-            String creditCompanyPhone = null;
-            String creditCompanyEmail = null;
-            String creditCompanyaddress = null;
 
-            //    Item masterItem = itemController.findMasterItemByName(code);
-            Cell agentNameCell = row.getCell(1);
+            String creditCompanyName = readCellAsString(row.getCell(0));
+            String creditCompanyPrintingName = readCellAsString(row.getCell(1));
+            String creditCompanyPhone = readCellAsString(row.getCell(2));
+            String creditCompanyEmail = readCellAsString(row.getCell(3));
+            String creditCompanyAddress = readCellAsString(row.getCell(4));
 
-            if (agentNameCell != null && agentNameCell.getCellType() == CellType.STRING) {
-                creditCompanyName = agentNameCell.getStringCellValue();
-            }
-            if (creditCompanyName == null || creditCompanyName.trim().equals("")) {
+            if (creditCompanyName == null || creditCompanyName.trim().isEmpty()) {
                 continue;
             }
 
-            Cell agentPrintingNameCell = row.getCell(2);
-
-            if (agentPrintingNameCell != null && agentPrintingNameCell.getCellType() == CellType.STRING) {
-                creditCompanyPrintingName = agentPrintingNameCell.getStringCellValue();
-
+            if (creditCompanyPrintingName == null || creditCompanyPrintingName.trim().isEmpty()) {
+                creditCompanyPrintingName = creditCompanyName;
             }
-            if (creditCompanyPrintingName == null || creditCompanyPrintingName.trim().equals("")) {
-                creditCompanyPrintingName = creditCompanyPrintingName;
-            }
-
-            Cell contactNumberCell = row.getCell(3);
-
-            if (contactNumberCell != null) {
-                if (contactNumberCell.getCellType() == CellType.NUMERIC) {
-                    DecimalFormat decimalFormat = new DecimalFormat("#");
-                    creditCompanyPhone = decimalFormat.format(contactNumberCell.getNumericCellValue());
-
-                } else if (contactNumberCell.getCellType() == CellType.STRING) {
-                    creditCompanyPhone = contactNumberCell.getStringCellValue();
-                }
-            }
-            if (creditCompanyPhone == null || creditCompanyPhone.trim().equals("")) {
+            if (creditCompanyPhone != null && creditCompanyPhone.trim().isEmpty()) {
                 creditCompanyPhone = null;
             }
-
-            Cell emailAddressCell = row.getCell(4);
-
-            if (emailAddressCell != null && emailAddressCell.getCellType() == CellType.STRING) {
-                creditCompanyEmail = emailAddressCell.getStringCellValue();
-
-            }
-            if (creditCompanyEmail == null || creditCompanyEmail.trim().equals("")) {
+            if (creditCompanyEmail != null && creditCompanyEmail.trim().isEmpty()) {
                 creditCompanyEmail = null;
             }
-
-            Cell addressCell = row.getCell(5);
-
-            if (addressCell != null && addressCell.getCellType() == CellType.STRING) {
-                creditCompanyaddress = addressCell.getStringCellValue();
-            }
-            if (creditCompanyaddress == null || creditCompanyaddress.trim().equals("")) {
-                creditCompanyaddress = null;
+            if (creditCompanyAddress != null && creditCompanyAddress.trim().isEmpty()) {
+                creditCompanyAddress = null;
             }
 
-            if (creditCompanyName.trim().equals("")) {
-                continue;
-            }
-
-            creditCompany = creditCompanyController.findCreditCompanyByName(creditCompanyName);
-
+            Institution creditCompany = creditCompanyController.findCreditCompanyByName(creditCompanyName);
             if (creditCompany == null) {
                 creditCompany = new Institution();
             }
-//            collectingCentre = new Institution();
-            creditCompany.setInstitutionType(InstitutionType.CollectingCentre);
             creditCompany.setName(creditCompanyName);
             creditCompany.setChequePrintingName(creditCompanyPrintingName);
             creditCompany.setPhone(creditCompanyPhone);
             creditCompany.setEmail(creditCompanyEmail);
-            creditCompany.setAddress(creditCompanyaddress);
+            creditCompany.setAddress(creditCompanyAddress);
             creditCompany.setInstitutionType(InstitutionType.CreditCompany);
             creditCompanyController.save(creditCompany);
-            CreditCompanyList.add(creditCompany);
+            creditCompanyList.add(creditCompany);
         }
 
-        return CreditCompanyList;
+        return creditCompanyList;
     }
 
     public void uploadItemFeesToUpdateFees() {
@@ -9217,11 +9092,11 @@ public class DataUploadController implements Serializable {
         XSSFWorkbook workbook = new XSSFWorkbook();
 
         // Creating the first sheet for data entry
-        XSSFSheet dataSheet = workbook.createSheet("Collecting Centres");
+        XSSFSheet dataSheet = workbook.createSheet("Credit Companies");
 
         // Create header row in data sheet
         Row headerRow = dataSheet.createRow(0);
-        String[] columnHeaders = {"Name", "Printing Name", "Contact No", "Email Address", "Agent Address"};
+        String[] columnHeaders = {"Name", "Printing Name", "Contact No", "Email Address", "Address"};
         for (int i = 0; i < columnHeaders.length; i++) {
             Cell cell = headerRow.createCell(i);
             cell.setCellValue(columnHeaders[i]);

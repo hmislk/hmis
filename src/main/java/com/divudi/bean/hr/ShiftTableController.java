@@ -218,7 +218,7 @@ public class ShiftTableController implements Serializable {
             for (Staff s : targetCell.getAssignedStaff()) {
                 if (s != null && s.getId() != null
                         && s.getId().equals(staffMember.getId())) {
-                    JsfUtil.addErrorMessage(staffName(staffMember)
+                    JsfUtil.addErrorMessage(staffLabel(staffMember)
                             + " is already in that shift.");
                     return;
                 }
@@ -369,9 +369,10 @@ public class ShiftTableController implements Serializable {
             return;
         }
 
-        String conflictShift = findSameDayAssignment(resolved.getId(), addingToCell.getDate());
+        String conflictShift = findSameDayAssignment(resolved.getId(),
+                addingToCell.getDate(), addingToCell);
         if (conflictShift != null) {
-            JsfUtil.addErrorMessage("Warning: " + staffName(resolved)
+            JsfUtil.addErrorMessage("Warning: " + staffLabel(resolved)
                     + " is also assigned to " + conflictShift + " on this day.");
         }
 
@@ -385,16 +386,16 @@ public class ShiftTableController implements Serializable {
         rebuildDateGroups();
     }
 
-    private String findSameDayAssignment(Long staffId, Date date) {
+    private String findSameDayAssignment(Long staffId, Date date, RosterCell excludeCell) {
         if (staffId == null || date == null) return null;
         if (rosterTable == null || rosterTable.getRows() == null) return null;
-
+    
         Date target = clearTime(date);
-
+    
         for (RosterRow row : rosterTable.getRows()) {
             if (row.getCells() == null) continue;
             for (RosterCell c : row.getCells()) {
-                if (c == addingToCell) continue;
+                if (c == excludeCell) continue;
                 if (c.getDate() == null) continue;
                 if (!clearTime(c.getDate()).equals(target)) continue;
                 if (c.getAssignedStaff() == null) continue;
@@ -424,17 +425,6 @@ public class ShiftTableController implements Serializable {
         cal.set(Calendar.SECOND, 0);
         cal.set(Calendar.MILLISECOND, 0);
         return cal.getTime();
-    }
-
-    /**
-     * Safely gets a staff's display name via Person.
-     * Staff.getName() returns null in this codebase, so always go through Person.
-     */
-    private String staffName(Staff s) {
-        if (s == null) return "";
-        if (s.getPerson() == null) return "";
-        String n = s.getPerson().getName();
-        return n != null ? n : "";
     }
 
     // ── SAVE ─────────────────────────────────────────────────────────────
@@ -526,10 +516,16 @@ public class ShiftTableController implements Serializable {
      */
     public void toggleStaffInCell(RosterCell cell) {
         if (cell == null || selectedFilterStaff == null) return;
-
+    
         if (isStaffAssignedToCell(cell)) {
             removeStaffById(cell, selectedFilterStaff.getId());
         } else {
+            String conflictShift = findSameDayAssignment(
+                    selectedFilterStaff.getId(), cell.getDate(), cell);
+            if (conflictShift != null) {
+                JsfUtil.addErrorMessage("Warning: " + staffLabel(selectedFilterStaff)
+                        + " is also assigned to " + conflictShift + " on this day.");
+            }
             if (cell.getAssignedStaff() == null) {
                 cell.setAssignedStaff(new ArrayList<>());
             }
@@ -552,6 +548,47 @@ public class ShiftTableController implements Serializable {
             }
         }
         return false;
+    }
+
+    /**
+     * Safe display label: "Name (code)" with fallbacks at every level.
+     *
+     * Reads Staff.code via getCodeRaw() to avoid the render-time mutation
+     * side effect in Staff.getCode() (which writes a derived code back to
+     * the field on blank values, dirtying the JPA entity).
+     *
+     * Name fallback: "Staff #id" if person or name is null.
+     * Code fallback: raw code field; then 5-char name-derived string
+     * (same logic as getCode(), but read-only); then id.
+     */
+    public String staffLabel(Staff s) {
+        if (s == null) return "(unknown)";
+
+        // --- name part ---
+        String name = "";
+        if (s.getPerson() != null && s.getPerson().getName() != null
+                && !s.getPerson().getName().trim().isEmpty()) {
+            name = s.getPerson().getName().trim();
+        } else {
+            name = "Staff #" + (s.getId() != null ? s.getId() : "?");
+        }
+
+        // --- code part (read-only; avoids Staff.getCode() side effect) ---
+        String code = s.getCodeRaw();
+        if (code == null || code.trim().isEmpty()) {
+            // Mirror getCode()'s name-based fallback, but WITHOUT writing back.
+            if (s.getPerson() != null && s.getPerson().getName() != null
+                    && !s.getPerson().getName().trim().isEmpty()) {
+                String temName = s.getPerson().getName() + "      ";
+                code = temName.substring(0, 5);
+            } else {
+                code = s.getId() != null ? String.valueOf(s.getId()) : "?";
+            }
+        } else {
+            code = code.trim();
+        }
+
+        return name + " (" + code + ")";
     }
 
     // ── GETTERS AND SETTERS ──────────────────────────────────────────────
