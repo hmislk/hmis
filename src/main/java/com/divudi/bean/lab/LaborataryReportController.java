@@ -119,7 +119,6 @@ public class LaborataryReportController implements Serializable {
     BillFeeFacade billFeeFacade;
 
     // </editor-fold>
-    
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
     // Basic types
     private String visitType;
@@ -240,9 +239,7 @@ public class LaborataryReportController implements Serializable {
     private double totalDeductionServiceChargeValue;
 
 // </editor-fold>
-    
     // <editor-fold defaultstate="collapsed" desc="Navigators">
-
     public String navigateToLaborataryInwardOrderReportFromLabAnalytics() {
         resetAllFiltersExceptDateRange();
         return "/reportLab/lab_inward_order_report?faces-redirect=true";
@@ -252,7 +249,7 @@ public class LaborataryReportController implements Serializable {
         resetAllFiltersExceptDateRange();
         return "/reportLab/laboratary_income_report?faces-redirect=true";
     }
-    
+
     public String navigateToLaborataryIncomeReportFromLabAnalyticsDto() {
         resetAllFiltersExceptDateRange();
         return "/reportLab/laboratary_income_report_dto?faces-redirect=true";
@@ -292,10 +289,10 @@ public class LaborataryReportController implements Serializable {
         setToDepartment(sessionController.getDepartment());
         return "/reportLab/test_wise_count_dto?faces-redirect=true";
     }
-    
-    private List<BillLight> billLights ;
-    
-    public String navigateToBillItemListForCreditCompany(){
+
+    private List<BillLight> billLights;
+
+    public String navigateToBillItemListForCreditCompany() {
         toDate = null;
         fromDate = null;
         creditCompany = null;
@@ -304,10 +301,7 @@ public class LaborataryReportController implements Serializable {
     }
 
     // </editor-fold>
-    
     // <editor-fold defaultstate="collapsed" desc="Functions">
-    
-
     public void resetAllFiltersExceptDateRange() {
         setViewTemplate(null);
         setInstitution(null);
@@ -358,23 +352,23 @@ public class LaborataryReportController implements Serializable {
         investigation = null;
         billLights = new ArrayList<>();
     }
-    
-    public void processBillItemListForCreditCompany(){
-        
+
+    public void processBillItemListForCreditCompany() {
+
         if (creditCompany == null) {
             JsfUtil.addErrorMessage("Select the Credit Company");
             return;
         }
-        
+
         List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
 
         //Add All OPD BillTypes
         billTypeAtomics.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
         billTypeAtomics.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
-        
+
         //Add All Package BillTypes
         billTypeAtomics.add(BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT);
-        
+
         String jpql;
         Map params = new HashMap();
         jpql = "select new com.divudi.core.light.common.BillLight("
@@ -382,7 +376,6 @@ public class LaborataryReportController implements Serializable {
                 + " bill.deptId, "
                 + " bill.createdAt,"
                 + " bill.patient.id ) "
-                
                 + " from Bill bill"
                 + " where bill.retired=:ret "
                 + " and bill.creditCompany=:creditc "
@@ -400,12 +393,12 @@ public class LaborataryReportController implements Serializable {
             jpql += " and bill.department=:dep ";
             params.put("dep", department);
         }
-        
+
         if (webUser != null) {
             jpql += " and bill.creater=:user ";
             params.put("user", webUser);
         }
-        
+
         if (toInstitution != null) {
             jpql += " and bill.toInstitution=:toIns ";
             params.put("toIns", toInstitution);
@@ -415,62 +408,62 @@ public class LaborataryReportController implements Serializable {
             jpql += " and bill.toDepartment=:toDep ";
             params.put("toDep", toDepartment);
         }
-        
+
         jpql += " order by bill.createdAt asc  ";
-        
+
         params.put("creditc", creditCompany);
         params.put("ret", false);
         params.put("can", false);
         params.put("bType", billTypeAtomics);
         params.put("toDate", toDate);
         params.put("fromDate", fromDate);
-        
+
         List<BillLight> bls = billFacade.findDTOsByJpql(jpql, params, TemporalType.TIMESTAMP);
 
         billLights = new ArrayList<>();
-        
-        if(bls != null || !bls.isEmpty()) {
-            for(BillLight billLight : bls){
-                
+
+        if (bls != null || !bls.isEmpty()) {
+            for (BillLight billLight : bls) {
+
                 List<BillItemDTO> lst = getBillItemNames(billLight.getId());
-                
+
                 String testStr = "";
                 String nameWithTitle = "";
                 String ageAndSex = "";
-                
-                if(lst != null || !lst.isEmpty()){
+
+                if (lst != null || !lst.isEmpty()) {
                     testStr = lst.stream()
-                        .map(BillItemDTO::getItemName)
-                        .collect(Collectors.joining(" / "));
-                }else{
+                            .map(BillItemDTO::getItemName)
+                            .collect(Collectors.joining(" / "));
+                } else {
                     testStr = "N/A";
                 }
-                
+
                 Patient pt = patientFacade.find(billLight.getPatientId());
 
                 if (pt == null || pt.getPerson() == null) {
                     nameWithTitle = "N/A";
                     ageAndSex = "N/A";
-                }else{
+                } else {
                     nameWithTitle = pt.getPerson().getNameWithTitle();
                     ageAndSex = pt.getShortageOnBilledDate(billLight.getBillDate()) + " / " + pt.getPerson().getSex().getLabel();
                 }
-                
+
                 BillLight newLight = new BillLight();
                 newLight.setBillNo(billLight.getBillNo());
                 newLight.setBillDate(billLight.getBillDate());
                 newLight.setPatientName(nameWithTitle);
                 newLight.setPatientAge(ageAndSex);
                 newLight.setBillItemNames(testStr);
-                
+
                 billLights.add(newLight);
             }
         }
     }
-    
-    public List<BillItemDTO> getBillItemNames(Long billId){
-        List<BillItemDTO> list  = new ArrayList<>();
-        
+
+    public List<BillItemDTO> getBillItemNames(Long billId) {
+        List<BillItemDTO> list = new ArrayList<>();
+
         String j = "Select new com.divudi.core.data.dto.BillItemDTO( bi.id, bi.item.name ) "
                 + " from BillItem bi "
                 + " where bi.bill.id=:billId "
@@ -480,16 +473,14 @@ public class LaborataryReportController implements Serializable {
         m.put("ret", false);
         m.put("ref", false);
         m.put("billId", billId);
-        
+
         list = billItemFacade.findDTOsByJpql(j, m);
-        
+
         return list;
     }
-    
-  
+
     @EJB
     BillFacade billFacade;
-    
 
     public void processLaboratoryCardIncomeReport() {
         List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
@@ -1195,32 +1186,32 @@ public class LaborataryReportController implements Serializable {
         addSummaryRow();
 
     }
-    
+
     // Helper methods:
     private Map<String, IncomeRow> initializeIncomeCategories() {
         Map<String, IncomeRow> incomeRows = new LinkedHashMap<>();
 
         String[] categories = {"OPD", "Inpatient", "Home Visit", "Collection", "Total"};
-        
+
         List<Route> routes = routeController.fillRoutes();
-        
+
         List<String> categoriesList = new ArrayList<>();
         for (int i = 0; i < 4; i++) { // Up to "Collection"
             categoriesList.add(categories[i]);
         }
-        
+
         for (int i = 0; i < routes.size(); i++) { // Up to "Collection"
             categoriesList.add(routes.get(i).getName());
         }
 
         categoriesList.add("Other Routes");
-        
+
         for (int i = 4; i < categories.length; i++) {
             categoriesList.add(categories[i]);
         }
-        
+
         categories = categoriesList.toArray(new String[0]);
-        
+
         for (String cat : categories) {
             IncomeRow row = new IncomeRow();
             row.setCategoryName(cat);
@@ -1251,9 +1242,9 @@ public class LaborataryReportController implements Serializable {
                 // CC Section    
                 case CC_BILL:
                     String billKey = "";
-                    if(bill.getCollectingCentre() == null || bill.getCollectingCentre().getRoute() == null){
+                    if (bill.getCollectingCentre() == null || bill.getCollectingCentre().getRoute() == null) {
                         billKey = "Other Routes";
-                    }else{
+                    } else {
                         billKey = bill.getCollectingCentre().getRoute().getName();
                     }
                     addToAgentValue(incomeRows.get(billKey), bill.getNetTotal());
@@ -1261,9 +1252,9 @@ public class LaborataryReportController implements Serializable {
 
                 case CC_BILL_REFUND:
                     String refundKey = "";
-                    if(bill.getCollectingCentre() == null || bill.getCollectingCentre().getRoute() == null){
+                    if (bill.getCollectingCentre() == null || bill.getCollectingCentre().getRoute() == null) {
                         refundKey = "Other Routes";
-                    }else{
+                    } else {
                         refundKey = bill.getCollectingCentre().getRoute().getName();
                     }
                     addToRefund(incomeRows.get(refundKey), bill.getNetTotal());
@@ -1271,9 +1262,9 @@ public class LaborataryReportController implements Serializable {
 
                 case CC_BILL_CANCELLATION:
                     String cancelKey = "";
-                    if(bill.getCollectingCentre() == null || bill.getCollectingCentre().getRoute() == null){
+                    if (bill.getCollectingCentre() == null || bill.getCollectingCentre().getRoute() == null) {
                         cancelKey = "Other Routes";
-                    }else{
+                    } else {
                         cancelKey = bill.getCollectingCentre().getRoute().getName();
                     }
                     addToCancellation(incomeRows.get(cancelKey), bill.getNetTotal());
@@ -1418,7 +1409,7 @@ public class LaborataryReportController implements Serializable {
     PaymentSchemeController paymentSchemeController;
     @Inject
     AdmissionTypeController admissionTypeController;
-    
+
     //9B Process Method
     public void generateDailyLabSummaryByDepartment() {
 
@@ -1426,7 +1417,7 @@ public class LaborataryReportController implements Serializable {
             JsfUtil.addErrorMessage("Please Select the Department");
             return;
         }
-        
+
         if (getDepartment().getDepartmentType() != DepartmentType.Lab) {
             JsfUtil.addErrorMessage("This feature is available for only Laboratory type departments.");
             return;
@@ -1460,7 +1451,7 @@ public class LaborataryReportController implements Serializable {
             ReportTemplateRow inwardIncomeRow = new ReportTemplateRow();
             inwardIncomeRow.setItemName(at + " Income");
             initializeRows(inwardIncomeRow);
-            List<BillLight> inpatientIncome = billService.fetchBillDtos(fromDate, toDate, institution, site, department, null, getInwardBillTypeAtomics(), at,null);
+            List<BillLight> inpatientIncome = billService.fetchBillDtos(fromDate, toDate, institution, site, department, null, getInwardBillTypeAtomics(), at, null);
             inwardIncomeRow = genarateRowBundleInward(inpatientIncome, inwardIncomeRow);
             bundleReport.getReportTemplateRows().add(inwardIncomeRow);
         }
@@ -1469,24 +1460,27 @@ public class LaborataryReportController implements Serializable {
         ReportTemplateRow outPatientIncomeRow = new ReportTemplateRow();
         outPatientIncomeRow.setItemName("Outpatient Income");
         initializeRows(outPatientIncomeRow);
-        List<BillLight> outPatientIncome = billService.fetchBillDtos(fromDate, toDate, institution, site, department, null, getOutPatientBillTypeAtomics(), null,null);
+        List<BillLight> outPatientIncome = billService.fetchBillDtos(fromDate, toDate, institution, site, department, null, getOutPatientBillTypeAtomics(), null, null);
         outPatientIncomeRow = genarateRowBundle(outPatientIncome, outPatientIncomeRow);
         bundleReport.getReportTemplateRows().add(outPatientIncomeRow);
-        
+
         //Float Income
         ReportTemplateRow floatIncomeRow = new ReportTemplateRow();
         floatIncomeRow.setItemName("Float Income");
         initializeRows(floatIncomeRow);
-        List<BillLight> floatIncome = billService.fetchBillDtos(fromDate, toDate, institution, site, department, null, getFloatInconeBillTypeAtomics(), null,null);
-        floatIncomeRow = genarateRowBundleOther(floatIncome, floatIncomeRow);
+        if (configController.getBooleanValueByKey("Daily Lab Summary Report - Include Float Income", true)) {
+            List<BillLight> floatIncome = billService.fetchBillDtos(fromDate, toDate, institution, site, department, null, getFloatInconeBillTypeAtomics(), null, null);
+            floatIncomeRow = genarateRowBundleOther(floatIncome, floatIncomeRow);
+        }
+
         bundleReport.getReportTemplateRows().add(floatIncomeRow);
-        
+
         //Outher Income
         ReportTemplateRow otherIncomeRow = new ReportTemplateRow();
         otherIncomeRow.setItemName("Other Income");
         initializeRows(otherIncomeRow);
         bundleReport.getReportTemplateRows().add(otherIncomeRow);
-        
+
         //calculate Addition Totals
         calculateTotalsFromRows(bundleReport.getReportTemplateRows(), true);
 
@@ -1497,8 +1491,10 @@ public class LaborataryReportController implements Serializable {
         IncomeRow floatTransferDeductionRow = new IncomeRow();
         floatTransferDeductionRow.setItemName("Float Transfer");
         initializeDeductionRows(floatTransferDeductionRow);
-        List<BillLight> floatTransfer = billService.fetchBillDtos(fromDate, toDate, institution, site, department, null, getFloatTransferBillTypeAtomics(), null,null);
-        floatTransferDeductionRow = genarateDeductionRowBundleOther(floatTransfer, floatTransferDeductionRow);
+        if (configController.getBooleanValueByKey("Daily Lab Summary Report - Include Float Income", true)) {
+            List<BillLight> floatTransfer = billService.fetchBillDtos(fromDate, toDate, institution, site, department, null, getFloatTransferBillTypeAtomics(), null, null);
+            floatTransferDeductionRow = genarateDeductionRowBundleOther(floatTransfer, floatTransferDeductionRow);
+        }
         bundle.getRows().add(floatTransferDeductionRow);
 
         //Deducations Voucher
@@ -1648,7 +1644,7 @@ public class LaborataryReportController implements Serializable {
     }
 
     public ReportTemplateRow genarateRowBundleOther(List<BillLight> bills, ReportTemplateRow row) {
-        
+
         for (BillLight bl : bills) {
             List<Payment> payments = billService.fetchBillPaymentsFromBillId(bl.getId());
             for (Payment p : payments) {
@@ -1719,7 +1715,7 @@ public class LaborataryReportController implements Serializable {
 
         return inwardBillTypeAtomics;
     }
-    
+
     public List<BillTypeAtomic> getFloatInconeBillTypeAtomics() {
         List<BillTypeAtomic> otherbillTypeAtomics = new ArrayList<>();
         otherbillTypeAtomics.add(BillTypeAtomic.FUND_TRANSFER_RECEIVED_BILL);
@@ -1727,7 +1723,7 @@ public class LaborataryReportController implements Serializable {
 
         return otherbillTypeAtomics;
     }
-    
+
     public List<BillTypeAtomic> getFloatTransferBillTypeAtomics() {
         List<BillTypeAtomic> otherbillTypeAtomics = new ArrayList<>();
         otherbillTypeAtomics.add(BillTypeAtomic.FUND_TRANSFER_BILL);
@@ -1808,7 +1804,7 @@ public class LaborataryReportController implements Serializable {
         row.setDiscount(0.0);
         row.setServiceCharge(0.0);
     }
-    
+
     public IncomeRow genarateDeductionRowBundleOther(List<BillLight> bills, IncomeRow row) {
         for (BillLight bl : bills) {
             List<Payment> payments = billService.fetchBillPaymentsFromBillId(bl.getId());
@@ -1864,14 +1860,13 @@ public class LaborataryReportController implements Serializable {
         totalDeductionTotalValue = 0.0;
         totalDeductionDiscountValue = 0.0;
         totalDeductionServiceChargeValue = 0.0;
-        
+
         bundleReport = new ReportTemplateRowBundle();
         bundle = new IncomeBundle();
     }
 
     // </editor-fold>
     // </editor-fold>
-    
     // <editor-fold defaultstate="collapsed" desc="Getters and Setters">
     public List<BillLight> getBillLights() {
         return billLights;
@@ -1880,7 +1875,7 @@ public class LaborataryReportController implements Serializable {
     public void setBillLights(List<BillLight> billLights) {
         this.billLights = billLights;
     }
-    
+
     public Long getRowsPerPageForScreen() {
         return rowsPerPageForScreen;
     }
@@ -2574,7 +2569,6 @@ public class LaborataryReportController implements Serializable {
     public void setTotalDeductionOnlineSettlementValue(double totalDeductionOnlineSettlementValue) {
         this.totalDeductionOnlineSettlementValue = totalDeductionOnlineSettlementValue;
     }
-    
-    // </editor-fold>
 
+    // </editor-fold>
 }
