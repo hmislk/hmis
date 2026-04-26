@@ -16,7 +16,7 @@ public class RestrictedPaymentMethodFacade extends AbstractFacade<RestrictedPaym
 
     @Override
     protected EntityManager getEntityManager() {
-        if(em == null){}return em;
+        return em;
     }
 
     public RestrictedPaymentMethodFacade() {

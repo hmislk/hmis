@@ -230,6 +230,13 @@ public class PaymentSchemeController implements Serializable {
         paymentSchemeRestrictedPaymentMethod = new RestrictedPaymentMethod();
     }
 
+    public void resetRestrictedPaymentMethodForm() {
+        paymentScheme = null;
+        paymentSchemeRestrictedPaymentMethod = null;
+        restrictedPaymentMethods = null;
+        items = null;
+    }
+
     public String navigateToManageRestrictedPaymentMethod() {
         paymentScheme = null;
         membershipScheme = null;
@@ -308,21 +315,17 @@ public class PaymentSchemeController implements Serializable {
 
     public void saveSelectedRestrictedPaymentMethod() {
 
+        if (getCurrent() == null || getCurrent().getId() == null) {
+            JsfUtil.addErrorMessage("Please select a Discount Scheme first");
+            return;
+        }
+
         if (getCurrentRestrictedPaymentMethod().getPaymentMethod() == null) {
             JsfUtil.addErrorMessage("Please Select Payment Methord");
             return;
         }
 
-        if (getCurrent() != null) {
-            if (getCurrent().getId() != null) {
-                getCurrentRestrictedPaymentMethod().setPaymentScheme(getCurrent());
-            }
-        }
-        if (getMembershipScheme() != null) {
-            if (getMembershipScheme().getId() != null) {
-                getCurrentRestrictedPaymentMethod().setMembershipScheme(getMembershipScheme());
-            }
-        }
+        getCurrentRestrictedPaymentMethod().setPaymentScheme(getCurrent());
 
         if (getCurrentRestrictedPaymentMethod().getId() != null && getCurrentRestrictedPaymentMethod().getId() > 0) {
             getRestrictedPaymentMethodFacade().edit(getCurrentRestrictedPaymentMethod());
@@ -615,8 +618,12 @@ public class PaymentSchemeController implements Serializable {
     }
 
     public void createRestrictedPaymentMethods() {
-        String temSql;
-        temSql = "SELECT i FROM RestrictedPaymentMethod i "
+        if ((paymentScheme == null || paymentScheme.getId() == null)
+                && (membershipScheme == null || membershipScheme.getId() == null)) {
+            restrictedPaymentMethods = new ArrayList<>();
+            return;
+        }
+        String temSql = "SELECT i FROM RestrictedPaymentMethod i "
                 + " where  i.retired=false "
                 + " and (i.membershipScheme=:mem "
                 + " or i.paymentScheme=:pay )"
