@@ -35,6 +35,8 @@
                                 <p:commandButton 
                                     value="Cancel Bill" 
                                     icon="fa fa-cancel"
+                                    onclick="if (!confirm('Are you sure you want to Cancel this petty cash bill?'))
+                                                        return false;"
                                     class="ui-button-danger" 
                                     ajax="false" 
                                     action="#{pettyCashBillController.cancelPettyCashBill()}" >
