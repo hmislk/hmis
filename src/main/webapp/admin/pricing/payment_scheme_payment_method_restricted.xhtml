@@ -55,11 +55,11 @@
                                     value="#{paymentSchemeController.currentRestrictedPaymentMethod}"
                                     scrollHeight="260"
                                     styleClass="w-100">
-                                    <f:selectItems 
+                                    <f:selectItems
                                         value="#{paymentSchemeController.restrictedPaymentMethods}"
                                         var="myItem"
                                         itemValue="#{myItem}"
-                                        itemLabel="#{myItem.paymentMethod}"/>
+                                        itemLabel="#{myItem.paymentMethod.label}"/>
                                     <p:ajax update=":frmRestricted:gpDetail"/>
                                 </p:selectOneListbox>
 
@@ -97,14 +97,14 @@
                                     title="Retire the selected restricted payment method">
                                 </p:commandButton>
 
-                                <p:commandButton 
+                                <p:commandButton
                                     id="btnClear"
                                     value="Reset"
                                     icon="fas fa-eraser"
                                     ajax="false"
-                                    action="#{paymentSchemeController.recreateModel}"
+                                    action="#{paymentSchemeController.resetRestrictedPaymentMethodForm}"
                                     styleClass="ui-button-secondary ui-button-outlined"
-                                    title="Reset the scheme list">
+                                    title="Clear the scheme, selection and form">
                                 </p:commandButton>
 
                             </div>
