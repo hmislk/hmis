@@ -194,6 +194,13 @@
                                         styleClass="ui-button-help"
                                         action="#{pharmacyDailyStockDrillDownLevel1Controller.downloadExcel()}"
                                         rendered="#{pharmacyDailyStockDrillDownLevel1Controller.bundle != null}"/>
+                                    <p:commandButton
+                                        value="Print"
+                                        icon="fa fa-print"
+                                        ajax="false"
+                                        styleClass="ui-button-info"
+                                        action="#{pharmacyDailyStockDrillDownLevel1Controller.navigateToPrintPage()}"
+                                        rendered="#{pharmacyDailyStockDrillDownLevel1Controller.bundle != null}"/>
                                 </div>
                             </div>
                         </div>
