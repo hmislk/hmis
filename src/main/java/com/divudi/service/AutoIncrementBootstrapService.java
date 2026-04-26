@@ -49,24 +49,41 @@ public class AutoIncrementBootstrapService {
     @EJB
     private AuditDatabaseFacade auditDatabaseFacade;
 
+    /**
+     * Migration version key recorded in DatabaseMigration once all tables have
+     * AUTO_INCREMENT. Subsequent startups check this record first and skip the
+     * expensive information_schema scan when it already exists.
+     */
+    private static final String MIGRATION_VERSION = "v2.2.0";
+
     @PostConstruct
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     public void applyAutoIncrementIfNeeded() {
         // Main database (hmisPU)
         try {
-            List<String> altered = migrationFacade.applyAutoIncrementToAllEntityTables();
-            if (altered.isEmpty()) {
-                LOGGER.info("AutoIncrementBootstrap: all entity tables already have AUTO_INCREMENT — nothing to do.");
+            if (migrationFacade.isMigrationExecuted(MIGRATION_VERSION)) {
+                LOGGER.info("AutoIncrementBootstrap: migration " + MIGRATION_VERSION
+                        + " already recorded as complete — skipping information_schema scan.");
             } else {
-                LOGGER.info("AutoIncrementBootstrap: applied AUTO_INCREMENT to " + altered.size()
-                        + " table(s): " + altered);
+                long start = System.currentTimeMillis();
+                List<String> altered = migrationFacade.applyAutoIncrementToAllEntityTables();
+                long elapsed = System.currentTimeMillis() - start;
+                if (altered.isEmpty()) {
+                    LOGGER.info("AutoIncrementBootstrap: all entity tables already have AUTO_INCREMENT — nothing to do.");
+                } else {
+                    LOGGER.info("AutoIncrementBootstrap: applied AUTO_INCREMENT to " + altered.size()
+                            + " table(s) in " + elapsed + "ms: " + altered);
+                }
+                // Record completion so future startups skip this scan entirely.
+                recordMigrationComplete(elapsed);
             }
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "AutoIncrementBootstrap: failed to apply AUTO_INCREMENT — "
                     + "entity INSERTs may fail until migration v2.2.0 is run manually", e);
         }
 
-        // Audit database (hmisAuditPU)
+        // Audit database (hmisAuditPU) — no persistent tracking table available;
+        // the information_schema query returns immediately when all tables are done.
         try {
             List<String> altered = auditDatabaseFacade.applyAutoIncrementToAllEntityTables();
             if (altered.isEmpty()) {
@@ -77,6 +94,30 @@ public class AutoIncrementBootstrapService {
             }
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "AutoIncrementBootstrap [AuditDB]: failed to apply AUTO_INCREMENT", e);
+        }
+    }
+
+    private void recordMigrationComplete(long elapsedMs) {
+        try {
+            com.divudi.core.entity.DatabaseMigration record =
+                    migrationFacade.findByVersion(MIGRATION_VERSION);
+            if (record == null) {
+                record = new com.divudi.core.entity.DatabaseMigration(
+                        MIGRATION_VERSION,
+                        "Apply AUTO_INCREMENT to all entity ID columns (AUTO→IDENTITY switch)",
+                        "auto-increment-bootstrap");
+            }
+            record.setStatus(com.divudi.core.data.MigrationStatus.SUCCESS);
+            record.setExecutionTimeMs(elapsedMs);
+            if (record.getId() == null) {
+                migrationFacade.create(record);
+            } else {
+                migrationFacade.edit(record);
+            }
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING,
+                    "AutoIncrementBootstrap: could not record migration " + MIGRATION_VERSION
+                    + " in DatabaseMigration table — scan will repeat on next startup", e);
         }
     }
 }

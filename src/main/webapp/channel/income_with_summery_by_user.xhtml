@@ -125,20 +125,20 @@
                             </div>
                         </div>
 
-                        <h:panelGrid columns="6" class="my-2">
-                            <p:commandButton class="ui-button-warning mt-2 mb-2" icon="fas fa-cogs" value="Process" action="#{channelReportController.fetchChannelIncomeSummeryByUserWise}" ajax="false" />
+                        <div class="d-flex align-items-center my-2">
+                            <p:commandButton class="ui-button-warning mx-1" icon="fas fa-cogs" value="Process" action="#{channelReportController.fetchChannelIncomeSummeryByUserWise}" ajax="false" />
 
                             <p:commandButton 
                                 value="Export as PDF" 
                                 ajax="false" 
                                 icon="fas fa-file-pdf"
-                                class="m-1 ui-button-info">
+                                class="mx-1 ui-button-info">
                                 <p:fileDownload value="#{channelReportController.channelIncomeDailySummaryReportAsPdf}" />
                             </p:commandButton>
 
                             <p:commandButton
                                 id="btnPrint"
-                                class="m-1 ui-button-danger mx-2"
+                                class="ui-button-danger mx-1"
                                 icon="fas fa-print"
                                 ajax="false"
                                 value="Print Table"
@@ -149,12 +149,10 @@
                                 value="Export to Excel" 
                                 ajax="false" 
                                 icon="fas fa-file-excel"
-                                class="m-1 ui-button-success">
+                                class="mx-1 ui-button-success">
                                 <p:fileDownload value="#{channelReportController.channelIncomeDailySummaryReportAsExcel}" />
                             </p:commandButton>
-
-                        </h:panelGrid>
-
+                        </div>
 
                         <p:panel >
 

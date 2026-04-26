@@ -1401,6 +1401,87 @@ public class ChannelService {
 
     }
 
+    // Channel Income Card Payments Report: Using ChannelIncomeDetailDto
+    public ChannelReportController.WrapperDtoForChannelFutureIncome fetchCardPaymentDetailsForChannelIncome(Date fromDate, Date toDate, Institution institution, String reportStatus) {
+        String jpql = "Select new com.divudi.bean.channel.ChannelReportController.ChannelIncomeDetailDto( "
+                + " p.bill.id, "
+                + " p.bill.createdAt, "
+                + " p.bill.deptId, "
+                + " p.bill.billTypeAtomic, "
+                + " p.bill.billType, "
+                + " COALESCE(pe.name, ''), "
+                + " COALESCE(cr.name, ''), "
+                + " p.bill.cancelled, "
+                + " COALESCE(cb.deptId, ''), "
+                + " p.bill.refunded,  "
+                + " COALESCE(rb.deptId, ''), "
+                + " COALESCE(p.bill.hospitalFee, 0), "
+                + " COALESCE(p.bill.staffFee, 0), "
+                + " COALESCE(p.bill.total, 0),"
+                + " p.paidValue, "
+                + " p.creditCardRefNo, "
+                + " COALESCE(ba.name, '')) "
+                + " from Payment p "
+                + " left join p.bill.patient pa "
+                + " left join pa.person pe "
+                + " left join p.bill.creater cr "
+                + " left join p.bill.cancelledBill cb "
+                + " left join p.bill.refundedBill rb "
+                + " left join p.bank ba "
+                + " where p.bill.billType in :bt and p.bill.billTypeAtomic in :bta "
+                + " and p.paymentMethod = :type"
+                + " and p.retired = false "
+                + " and p.bill.retired = false "
+                + " and p.bill.createdAt between :fromDate and :toDate ";
+
+        Map params = new HashMap();
+        List<BillType> bts = new ArrayList<>();
+        bts.add(BillType.ChannelCash);
+        bts.add(BillType.ChannelPaid);
+        params.put("bt", bts);
+
+        List<BillTypeAtomic> bta = new ArrayList<>();
+        bta.add(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
+        bta.add(BillTypeAtomic.CHANNEL_PAYMENT_FOR_BOOKING_BILL);
+
+        if (reportStatus != null && reportStatus.equalsIgnoreCase("Details")) {
+            bta.add(BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT);
+            bta.add(BillTypeAtomic.CHANNEL_REFUND_WITH_PAYMENT);
+        }
+
+        params.put("bta", bta);
+        params.put("type", PaymentMethod.Card);
+        params.put("fromDate", fromDate);
+        params.put("toDate", toDate);
+
+        if (institution != null) {
+            jpql += "and p.bill.institution = :ins";
+            params.put("ins", institution);
+        }
+
+        jpql += " order by p.bill.createdAt desc";
+
+        List<ChannelReportController.ChannelIncomeDetailDto> dtoList = (List<ChannelReportController.ChannelIncomeDetailDto>) billSessionFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+
+        if (dtoList == null || dtoList.isEmpty()) {
+            return null;
+        }
+
+        ChannelReportController.WrapperDtoForChannelFutureIncome wrapperDto = new ChannelReportController.WrapperDtoForChannelFutureIncome();
+        wrapperDto.setIncomeDtos(dtoList);
+        wrapperDto.setProcessDate(new Date());
+
+        for (ChannelReportController.ChannelIncomeDetailDto dto : dtoList) {
+            wrapperDto.setAllHosFeeTotal(wrapperDto.getAllHosFeeTotal() + dto.getHosFee());
+            wrapperDto.setAllDoctorFeeTotal(wrapperDto.getAllDoctorFeeTotal() + dto.getDoctorFee());
+            wrapperDto.setAllTotalAmount(wrapperDto.getAllTotalAmount() + dto.getTotalAppoinmentFee());
+            wrapperDto.setAllCardTotal(wrapperDto.getAllCardTotal() + dto.getCardFee());
+        }
+
+        return wrapperDto;
+
+    }
+
     public ChannelReportController.WrapperDtoForChannelFutureIncome fetchChannelIncomeByUser(Date fromDate, Date toDate, Institution institution, WebUser user, List<Category> categoryList, String reportStatus, String paidStatus) {
 
         String sql = "select new com.divudi.bean.channel.ChannelReportController.ChannelIncomeDetailDto(bs.id, "

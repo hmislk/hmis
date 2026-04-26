@@ -1,0 +1,216 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+
+    <h:body>
+        <ui:composition template="/pharmacy/pharmacy_analytics.xhtml">
+            <ui:define name="subcontent">
+
+                <style>
+                    .value-column {
+                        width: 110px;
+                        min-width: 110px;
+                        max-width: 110px;
+                    }
+                    .date-column {
+                        width: 160px;
+                        min-width: 160px;
+                    }
+                    .atomic-column {
+                        width: auto;
+                    }
+                </style>
+
+                <h:form id="drillDownLevel2Form">
+
+                    <!-- Header / Back button -->
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h4 class="mb-0">F15 Drill-Down — Level 2 (Bill List)</h4>
+                        <p:commandButton
+                            value="Back to Level 1"
+                            icon="fa fa-arrow-left"
+                            ajax="false"
+                            styleClass="ui-button-secondary"
+                            action="#{pharmacyDailyStockDrillDownLevel2Controller.navigateBackToLevel1()}"/>
+                    </div>
+
+                    <!-- Selection Context -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-info text-white">
+                            <h:outputText value="&#xf05a;" styleClass="fa me-2"/>
+                            <h:outputText value="Selection Context" styleClass="fw-bold"/>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-md-3">
+                                    <div class="fw-bold">Transaction Type</div>
+                                    <div><h:outputText value="#{pharmacyDailyStockDrillDownLevel2Controller.transactionType}"/></div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="fw-bold">Bill Type</div>
+                                    <div><h:outputText value="#{pharmacyDailyStockDrillDownLevel2Controller.billTypeAtomic.label}"/></div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="fw-bold">From — To</div>
+                                    <div>
+                                        <h:outputText value="#{pharmacyDailyStockDrillDownLevel2Controller.fromDate}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                                        </h:outputText>
+                                        <h:outputText value=" — "/>
+                                        <h:outputText value="#{pharmacyDailyStockDrillDownLevel2Controller.toDate}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                                        </h:outputText>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="fw-bold">Institution / Site / Department</div>
+                                    <div>
+                                        <h:outputText value="#{pharmacyDailyStockDrillDownLevel2Controller.institution.name}"/>
+                                        <h:outputText value=" / " rendered="#{pharmacyDailyStockDrillDownLevel2Controller.site != null}"/>
+                                        <h:outputText value="#{pharmacyDailyStockDrillDownLevel2Controller.site.name}"/>
+                                        <h:outputText value=" / " rendered="#{pharmacyDailyStockDrillDownLevel2Controller.department != null}"/>
+                                        <h:outputText value="#{pharmacyDailyStockDrillDownLevel2Controller.department.name}"/>
+                                    </div>
+                                </div>
+                                <h:panelGroup
+                                    layout="block"
+                                    styleClass="col-md-3"
+                                    rendered="#{pharmacyDailyStockDrillDownLevel2Controller.transactionType eq 'SALES'}">
+                                    <div class="fw-bold">Admission Type</div>
+                                    <div><h:outputText value="#{pharmacyDailyStockDrillDownLevel2Controller.admissionType.name}"/></div>
+                                </h:panelGroup>
+                                <h:panelGroup
+                                    layout="block"
+                                    styleClass="col-md-3"
+                                    rendered="#{pharmacyDailyStockDrillDownLevel2Controller.transactionType eq 'SALES'}">
+                                    <div class="fw-bold">Payment Scheme</div>
+                                    <div><h:outputText value="#{pharmacyDailyStockDrillDownLevel2Controller.paymentScheme.name}"/></div>
+                                </h:panelGroup>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Result Section -->
+                    <div class="card">
+                        <div class="card-header bg-success text-white fw-bold">
+                            <h:outputText value="Bills (#{pharmacyDailyStockDrillDownLevel2Controller.bills.size()})"/>
+                        </div>
+                        <div class="card-body p-0">
+                            <table class="table table-bordered table-hover mb-0">
+                                <thead class="bg-light">
+                                    <tr>
+                                        <th class="date-column">Date / Time</th>
+                                        <th class="atomic-column">Bill Type Atomic</th>
+                                        <th class="text-end value-column">Gross Total</th>
+                                        <th class="text-end value-column">Discount</th>
+                                        <th class="text-end value-column">Service Charge</th>
+                                        <th class="text-end value-column">Net Total</th>
+                                        <th class="text-end value-column">Retail Value</th>
+                                        <th class="text-end value-column">Purchase Value</th>
+                                        <th class="text-end value-column">Cost Value</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <ui:repeat value="#{pharmacyDailyStockDrillDownLevel2Controller.bills}" var="bill">
+                                        <tr>
+                                            <td class="date-column">
+                                                <h:outputText value="#{bill.billDate}">
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                                </h:outputText>
+                                            </td>
+                                            <td class="atomic-column">
+                                                <h:outputText value="#{bill.billTypeAtomic.label}"/>
+                                            </td>
+                                            <td class="text-end value-column">
+                                                <h:outputText value="#{bill.total}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </td>
+                                            <td class="text-end value-column">
+                                                <h:outputText value="#{bill.discount}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </td>
+                                            <td class="text-end value-column">
+                                                <h:outputText value="#{bill.serviceCharge}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </td>
+                                            <td class="text-end value-column">
+                                                <h:outputText value="#{bill.netTotal}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </td>
+                                            <td class="text-end value-column">
+                                                <h:outputText value="#{bill.totalRetailSaleValue}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </td>
+                                            <td class="text-end value-column">
+                                                <h:outputText value="#{bill.totalPurchaseValue}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </td>
+                                            <td class="text-end value-column">
+                                                <h:outputText value="#{bill.totalCostValue}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </td>
+                                        </tr>
+                                    </ui:repeat>
+                                </tbody>
+                                <tfoot class="bg-success text-white fw-bold">
+                                    <tr>
+                                        <td class="date-column">Total</td>
+                                        <td class="atomic-column"></td>
+                                        <td class="text-end value-column">
+                                            <h:outputText value="#{pharmacyDailyStockDrillDownLevel2Controller.totalGross}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </td>
+                                        <td class="text-end value-column">
+                                            <h:outputText value="#{pharmacyDailyStockDrillDownLevel2Controller.totalDiscount}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </td>
+                                        <td class="text-end value-column">
+                                            <h:outputText value="#{pharmacyDailyStockDrillDownLevel2Controller.totalServiceCharge}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </td>
+                                        <td class="text-end value-column">
+                                            <h:outputText value="#{pharmacyDailyStockDrillDownLevel2Controller.totalNet}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </td>
+                                        <td class="text-end value-column">
+                                            <h:outputText value="#{pharmacyDailyStockDrillDownLevel2Controller.totalRetail}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </td>
+                                        <td class="text-end value-column">
+                                            <h:outputText value="#{pharmacyDailyStockDrillDownLevel2Controller.totalPurchase}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </td>
+                                        <td class="text-end value-column">
+                                            <h:outputText value="#{pharmacyDailyStockDrillDownLevel2Controller.totalCost}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+
+                </h:form>
+
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

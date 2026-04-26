@@ -2565,6 +2565,20 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         return billSessionFacade.findFirstByJpql(sql, params);
     }
 
+    // Get BillSession from Bill ID
+    public BillSession getBillSessionFromBillId(Long billId) {
+        String sql = " select bs from BillSession bs "
+                + " where bs.bill.id = :bill "
+                + " and bs.retired = :ret"
+                + " and bs.bill.retired = :ret ";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("ret", false);
+        params.put("bill", billId);
+
+        return billSessionFacade.findFirstByJpql(sql, params);
+    }
+
     public String navigateToViewBillSession(BillSession bs) {
 
         selectedBillSession = bs;
@@ -6145,16 +6159,31 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public String paySelectedDoctor() {
-        if (getSpeciality() == null) {
-            JsfUtil.addErrorMessage("Please Select Specility And Staff");
+        // if (getSpeciality() == null) {
+        //     JsfUtil.addErrorMessage("Please Select Specility And Staff");
+        //     return "";
+        // }
+        // if (getStaff() == null) {
+        //     JsfUtil.addErrorMessage("Please Select Staff");
+        //     return "";
+        // }
+
+        if (selectedBillSession == null || selectedBillSession.getSessionInstance() == null) {
+            JsfUtil.addErrorMessage("Bill Session or Session Instance is not selected");
             return "";
         }
-        if (getStaff() == null) {
+        if (selectedBillSession.getStaff() == null) {
             JsfUtil.addErrorMessage("Please Select Staff");
             return "";
+        } else {
+            if (selectedBillSession.getStaff().getSpeciality() == null) {
+                JsfUtil.addErrorMessage("Please Select Speciality");
+                return "";
+            }
         }
-        channelStaffPaymentBillController.setSpeciality(getSpeciality());
-        channelStaffPaymentBillController.setCurrentStaff(getStaff());
+        channelStaffPaymentBillController.makenull();
+        channelStaffPaymentBillController.setSpeciality(selectedBillSession.getStaff().getSpeciality());
+        channelStaffPaymentBillController.setCurrentStaff(selectedBillSession.getStaff());
         channelStaffPaymentBillController.setConsiderDate(true);
         channelStaffPaymentBillController.calculateDueFees();
 
