@@ -322,17 +322,25 @@
                                                 rendered="#{webUserController.hasPrivilege('MembershipSchemes')}">
                                             </p:commandButton>
 
-                                            <p:commandButton 
-                                                class="w-100" 
-                                                action="#{navigationController.navigateToPaymentMethodAllowed()}"   
-                                                value="Allowed Payment Methods" 
-                                                ajax="false" 
-                                                rendered="#{webUserController.hasPrivilege('MembershipSchemes')}">
-                                            </p:commandButton>                                      
-
-                                            <p:commandButton 
+                                            <p:commandButton
                                                 class="w-100"
-                                                ajax="false" 
+                                                action="#{navigationController.navigateToPaymentMethodAllowed()}"
+                                                value="Allowed Payment Methods"
+                                                ajax="false"
+                                                rendered="#{webUserController.hasPrivilege('MembershipSchemes')}">
+                                            </p:commandButton>
+
+                                            <p:commandButton
+                                                class="w-100"
+                                                action="#{paymentSchemeController.navigateToManageRestrictedPaymentMethod()}"
+                                                value="Restricted Payment Methods"
+                                                ajax="false"
+                                                rendered="#{webUserController.hasPrivilege('MembershipSchemes')}">
+                                            </p:commandButton>
+
+                                            <p:commandButton
+                                                class="w-100"
+                                                ajax="false"
                                                 value="Pharmacy Discounts"
                                                 action="/admin/pricing/membership/payment_scheme_discount_pharmacy_by_category?faces-redirect=true">
                                             </p:commandButton>
