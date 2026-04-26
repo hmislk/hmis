@@ -62,6 +62,14 @@ public class CapabilityStatementResource {
                         + "specialityId, institutionId, registration, qualification, description.",
                         "API Key (Token header)",
                         "POST", "PUT"))
+                .add(resource("Doctor Speciality", "/api/channel/speciality",
+                        "CRUD for DoctorSpeciality records. "
+                        + "GET lists active specialities (supports ?query=&page=&size=). "
+                        + "POST creates a speciality (required: name; optional: code, description); returns 200 with status=already_exists if a duplicate name exists. "
+                        + "PUT /{id} updates name, code, or description (only supplied fields changed). "
+                        + "DELETE /{id} soft-retires the speciality.",
+                        "API Key (Token header)",
+                        "GET", "POST", "PUT", "DELETE"))
                 .add(resource("Clinical Metadata", "/api/clinical/metadata",
                         "CRUD for EMR clinical metadata types: symptom, sign, diagnosis, procedure, plan, vocabulary, "
                         + "race, religion, blood_group, civil_status, employment, relationship. "
@@ -128,6 +136,26 @@ public class CapabilityStatementResource {
                         + "/admission-types/search, /payment-schemes/search, "
                         + "/pharmaceutical-item-categories/search, /payment-methods. "
                         + "POST returns HTTP 409 with existing id when a duplicate combination exists.",
+                        "API Key",
+                        "GET", "POST", "PUT", "DELETE"))
+                .add(resource("Inward Room Categories", "/api/inward/room-categories",
+                        "Manage inward room categories (backs /inward/inward_room_category.xhtml). "
+                        + "POST returns HTTP 409 with existing id when a duplicate name already exists.",
+                        "API Key",
+                        "GET", "POST", "PUT", "DELETE"))
+                .add(resource("Inward Rooms", "/api/inward/rooms",
+                        "Manage inward rooms (backs /inward/inward_room.xhtml). "
+                        + "Supports optional filter roomCategoryId. "
+                        + "POST returns HTTP 409 with existing id when a duplicate name already exists.",
+                        "API Key",
+                        "GET", "POST", "PUT", "DELETE"))
+                .add(resource("Inward Room Facility Charges", "/api/inward/room-facility-charges",
+                        "Manage inward room facility charges / room fees (backs /inward/inward_room_facility.xhtml). "
+                        + "Supports optional filters roomId and roomCategoryId. "
+                        + "Charge fields: roomCharge, maintananceCharge, linenCharge, nursingCharge, "
+                        + "moCharge, moChargeForAfterDuration, adminstrationCharge, medicalCareCharge. "
+                        + "TimedItemFee fields: timedItemFeeDurationHours, timedItemFeeOverShootHours, "
+                        + "timedItemFeeDurationDaysForMoCharge.",
                         "API Key",
                         "GET", "POST", "PUT", "DELETE"))
                 .add(resource("LIMS", "/api/lims",

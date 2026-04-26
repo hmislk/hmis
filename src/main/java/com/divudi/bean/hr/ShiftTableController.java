@@ -11,7 +11,6 @@ import com.divudi.core.data.dataStructure.DateGroup;
 import com.divudi.core.data.dataStructure.RosterTable;
 import com.divudi.core.data.dataStructure.RosterRow;
 import com.divudi.core.data.dataStructure.RosterCell;
-import com.divudi.core.data.hr.DayType;
 
 import com.divudi.ejb.HumanResourceBean;
 import com.divudi.core.entity.Staff;
@@ -24,7 +23,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import javax.ejb.EJB;
@@ -47,6 +45,9 @@ public class ShiftTableController implements Serializable {
     StaffShift staffShift;
     RosterTable rosterTable;
     private List<DateGroup> dateGroups = new ArrayList<>();
+    private String viewMode = "ALL";
+    private Long selectedFilterStaffId;
+    private Staff selectedFilterStaff;
 
     @EJB
     RosterGeneratorService rosterGeneratorService;
@@ -75,6 +76,9 @@ public class ShiftTableController implements Serializable {
         rosterTable = null;
         clearAddDialogState();
         dateGroups = new ArrayList<>();
+        viewMode = "ALL";
+        selectedFilterStaffId = null;
+        selectedFilterStaff = null;
     }
 
     public void makeTableNull() {
@@ -124,6 +128,8 @@ public class ShiftTableController implements Serializable {
 
     public void selectRosterLstener() {
         makeTableNull();
+        selectedFilterStaffId = null;
+        selectedFilterStaff = null;
         getShiftController().setCurrentRoster(roster);
     }
 
@@ -212,7 +218,7 @@ public class ShiftTableController implements Serializable {
             for (Staff s : targetCell.getAssignedStaff()) {
                 if (s != null && s.getId() != null
                         && s.getId().equals(staffMember.getId())) {
-                    JsfUtil.addErrorMessage(staffName(staffMember)
+                    JsfUtil.addErrorMessage(staffLabel(staffMember)
                             + " is already in that shift.");
                     return;
                 }
@@ -363,9 +369,10 @@ public class ShiftTableController implements Serializable {
             return;
         }
 
-        String conflictShift = findSameDayAssignment(resolved.getId(), addingToCell.getDate());
+        String conflictShift = findSameDayAssignment(resolved.getId(),
+                addingToCell.getDate(), addingToCell);
         if (conflictShift != null) {
-            JsfUtil.addErrorMessage("Warning: " + staffName(resolved)
+            JsfUtil.addErrorMessage("Warning: " + staffLabel(resolved)
                     + " is also assigned to " + conflictShift + " on this day.");
         }
 
@@ -379,16 +386,16 @@ public class ShiftTableController implements Serializable {
         rebuildDateGroups();
     }
 
-    private String findSameDayAssignment(Long staffId, Date date) {
+    private String findSameDayAssignment(Long staffId, Date date, RosterCell excludeCell) {
         if (staffId == null || date == null) return null;
         if (rosterTable == null || rosterTable.getRows() == null) return null;
-
+    
         Date target = clearTime(date);
-
+    
         for (RosterRow row : rosterTable.getRows()) {
             if (row.getCells() == null) continue;
             for (RosterCell c : row.getCells()) {
-                if (c == addingToCell) continue;
+                if (c == excludeCell) continue;
                 if (c.getDate() == null) continue;
                 if (!clearTime(c.getDate()).equals(target)) continue;
                 if (c.getAssignedStaff() == null) continue;
@@ -420,17 +427,6 @@ public class ShiftTableController implements Serializable {
         return cal.getTime();
     }
 
-    /**
-     * Safely gets a staff's display name via Person.
-     * Staff.getName() returns null in this codebase, so always go through Person.
-     */
-    private String staffName(Staff s) {
-        if (s == null) return "";
-        if (s.getPerson() == null) return "";
-        String n = s.getPerson().getName();
-        return n != null ? n : "";
-    }
-
     // ── SAVE ─────────────────────────────────────────────────────────────
 
     @Inject
@@ -454,112 +450,6 @@ public class ShiftTableController implements Serializable {
             JsfUtil.addSuccessMessage("Roster saved successfully.");
         } catch (Exception e) {
             JsfUtil.addErrorMessage("Save failed — no changes were made. " + e.getMessage());
-        }
-    }
-
-    /**
-     * Soft-deletes all StaffShift records for this roster within the
-     * date range so re-saving an edited roster doesn't create duplicates.
-     */
-    private void deleteExistingShiftsInRange() {
-        Date from = startOfDay(fromDate);
-        Date to = endOfDay(toDate);
-
-        String jpql = "SELECT ss FROM StaffShift ss "
-                + " WHERE ss.retired = false "
-                + " AND ss.roster = :r "
-                + " AND ss.shiftDate BETWEEN :fd AND :td ";
-        HashMap<String, Object> params = new HashMap<>();
-        params.put("r", roster);
-        params.put("fd", from);
-        params.put("td", to);
-
-        List<StaffShift> existing = staffShiftFacade.findByJpql(jpql, params);
-        if (existing == null) return;
-
-        for (StaffShift ss : existing) {
-            ss.setRetired(true);
-            ss.setRetiredAt(new Date());
-            ss.setRetirer(sessionController.getLoggedUser());
-            staffShiftFacade.edit(ss);
-        }
-    }
-
-    private Date startOfDay(Date d) {
-        Calendar c = Calendar.getInstance();
-        c.setTime(d);
-        c.set(Calendar.HOUR_OF_DAY, 0);
-        c.set(Calendar.MINUTE, 0);
-        c.set(Calendar.SECOND, 0);
-        c.set(Calendar.MILLISECOND, 0);
-        return c.getTime();
-    }
-
-    private Date endOfDay(Date d) {
-        Calendar c = Calendar.getInstance();
-        c.setTime(d);
-        c.set(Calendar.HOUR_OF_DAY, 23);
-        c.set(Calendar.MINUTE, 59);
-        c.set(Calendar.SECOND, 59);
-        c.set(Calendar.MILLISECOND, 999);
-        return c.getTime();
-    }
-
-    private void saveRosterTable() {
-        if (rosterTable == null || rosterTable.getRows() == null) {
-            return;
-        }
-        for (RosterRow row : rosterTable.getRows()) {
-            if (row.getCells() == null || row.getShift() == null) {
-                continue;
-            }
-            for (RosterCell cell : row.getCells()) {
-                if (cell.getAssignedStaff() == null || cell.getAssignedStaff().isEmpty()) {
-                    continue;
-                }
-                for (Staff st : cell.getAssignedStaff()) {
-                    StaffShift ss = new StaffShift();
-                    ss.setStaff(st);
-                    ss.setShift(row.getShift());
-                    ss.setShiftDate(cell.getDate());
-                    ss.setRoster(roster);
-                    ss.setCreatedAt(new Date());
-                    ss.setCreater(sessionController.getLoggedUser());
-
-                    fetchAndSetDayType(ss);
-                    ss.calShiftStartEndTime();
-                    ss.calLieu();
-
-                    staffShiftFacade.create(ss);
-
-                    ss.setPreviousStaffShift(humanResourceBean.calPrevStaffShift(ss));
-                    ss.setNextStaffShift(humanResourceBean.calFrwStaffShift(ss));
-                    staffShiftFacade.edit(ss);
-                }
-            }
-        }
-    }
-
-    public void fetchAndSetDayType(StaffShift ss) {
-        DayType dayType = null;
-        if (ss.getShift() != null) {
-            dayType = ss.getShift().getDayType();
-        }
-
-        ss.setDayType(null);
-
-        DayType dtp;
-        if (dayType == DayType.DayOff) {
-            dtp = dayType;
-        } else {
-            dtp = phDateController.getHolidayType(ss.getShiftDate());
-        }
-
-        ss.setDayType(dtp);
-        if (ss.getDayType() == null) {
-            if (ss.getShift() != null) {
-                ss.setDayType(ss.getShift().getDayType());
-            }
         }
     }
 
@@ -591,14 +481,114 @@ public class ShiftTableController implements Serializable {
         this.selectedShiftId = null;
     }
 
-    // ── HIDE / VISIBLE ───────────────────────────────────────────────────
+    /**
+     * Called when user picks a staff from the Single Staff dropdown.
+     */
+    public void onFilterStaffChange() {
+        selectedFilterStaff = null;
+        if (selectedFilterStaffId == null || roster == null) return;
 
-    public void visible() {
-        all = true;
+        List<Staff> rosterStaff = humanResourceBean.fetchStaff(roster);
+        if (rosterStaff == null) return;
+
+        for (Staff s : rosterStaff) {
+            if (s != null && s.getId() != null
+                    && s.getId().equals(selectedFilterStaffId)) {
+                selectedFilterStaff = s;
+                break;
+            }
+        }
     }
 
-    public void hide() {
-        all = false;
+    /**
+     * Returns all staff in this roster for the filter dropdown.
+     */
+    public List<Staff> getRosterStaffList() {
+        if (roster == null) return new ArrayList<>();
+        List<Staff> list = humanResourceBean.fetchStaff(roster);
+        return list != null ? list : new ArrayList<>();
+    }
+
+    /**
+     * Toggles the selected filter staff in/out of the given cell.
+     * Called from Single Staff view when user clicks a cell.
+     * Changes are in-memory only until Save is clicked.
+     */
+    public void toggleStaffInCell(RosterCell cell) {
+        if (cell == null || selectedFilterStaff == null) return;
+    
+        if (isStaffAssignedToCell(cell)) {
+            removeStaffById(cell, selectedFilterStaff.getId());
+        } else {
+            String conflictShift = findSameDayAssignment(
+                    selectedFilterStaff.getId(), cell.getDate(), cell);
+            if (conflictShift != null) {
+                JsfUtil.addErrorMessage("Warning: " + staffLabel(selectedFilterStaff)
+                        + " is also assigned to " + conflictShift + " on this day.");
+            }
+            if (cell.getAssignedStaff() == null) {
+                cell.setAssignedStaff(new ArrayList<>());
+            }
+            cell.getAssignedStaff().add(selectedFilterStaff);
+        }
+        rebuildDateGroups();
+    }
+
+    /**
+     * Checks whether the selected filter staff is assigned to the given cell.
+     * Used by Single Staff view for tick/cross rendering.
+     */
+    public boolean isStaffAssignedToCell(RosterCell cell) {
+        if (cell == null || selectedFilterStaff == null) return false;
+        if (cell.getAssignedStaff() == null) return false;
+        for (Staff s : cell.getAssignedStaff()) {
+            if (s != null && s.getId() != null
+                    && s.getId().equals(selectedFilterStaff.getId())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Safe display label: "Name (code)" with fallbacks at every level.
+     *
+     * Reads Staff.code via getCodeRaw() to avoid the render-time mutation
+     * side effect in Staff.getCode() (which writes a derived code back to
+     * the field on blank values, dirtying the JPA entity).
+     *
+     * Name fallback: "Staff #id" if person or name is null.
+     * Code fallback: raw code field; then 5-char name-derived string
+     * (same logic as getCode(), but read-only); then id.
+     */
+    public String staffLabel(Staff s) {
+        if (s == null) return "(unknown)";
+
+        // --- name part ---
+        String name = "";
+        if (s.getPerson() != null && s.getPerson().getName() != null
+                && !s.getPerson().getName().trim().isEmpty()) {
+            name = s.getPerson().getName().trim();
+        } else {
+            name = "Staff #" + (s.getId() != null ? s.getId() : "?");
+        }
+
+        // --- code part (read-only; avoids Staff.getCode() side effect) ---
+        String code = s.getCodeRaw();
+        if (code == null || code.trim().isEmpty()) {
+            // Mirror getCode()'s name-based fallback, but WITHOUT writing back.
+            if (s.getPerson() != null && s.getPerson().getName() != null
+                    && !s.getPerson().getName().trim().isEmpty()) {
+                String temName = s.getPerson().getName() + "      ";
+                code = temName.substring(0, 5);
+            } else {
+                code = s.getId() != null ? String.valueOf(s.getId()) : "?";
+            }
+        } else {
+            code = code.trim();
+        }
+
+        return name + " (" + code + ")";
     }
 
     // ── GETTERS AND SETTERS ──────────────────────────────────────────────
@@ -745,4 +735,28 @@ public class ShiftTableController implements Serializable {
     public Integer getActiveDateIndex() { return activeDateIndex; }
 
     public void setActiveDateIndex(Integer activeDateIndex) { this.activeDateIndex = activeDateIndex; }
+
+    public String getViewMode() {
+        return viewMode;
+    }
+
+    public void setViewMode(String viewMode) {
+        this.viewMode = viewMode;
+    }
+
+    public Long getSelectedFilterStaffId() {
+        return selectedFilterStaffId;
+    }
+
+    public void setSelectedFilterStaffId(Long selectedFilterStaffId) {
+        this.selectedFilterStaffId = selectedFilterStaffId;
+    }
+
+    public Staff getSelectedFilterStaff() {
+        return selectedFilterStaff;
+    }
+
+    public void setSelectedFilterStaff(Staff selectedFilterStaff) {
+        this.selectedFilterStaff = selectedFilterStaff;
+    }
 }

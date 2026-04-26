@@ -763,6 +763,21 @@ public class StaffAdditionalFormController implements Serializable {
         additionalForms = null;
     }
 
+    public String navigateToExtraTime() {
+        clear();
+        return "/hr/hr_form_staff_additional_extra?faces-redirect=true";
+    }
+
+    public String navigateToExtraShift() {
+        clear();
+        return "/hr/hr_form_staff_additional_shift?faces-redirect=true";
+    }
+
+    public String navigateToExtraShiftDayOff() {
+        clear();
+        return "/hr/hr_form_staff_additional_shift_day_off?faces-redirect=true";
+    }
+
     public boolean errorCheckExtra() {
         if (currentAdditionalForm.getStaff() == null) {
             JsfUtil.addErrorMessage("Please Enter Staff");
