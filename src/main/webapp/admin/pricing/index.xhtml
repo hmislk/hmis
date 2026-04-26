@@ -332,7 +332,7 @@
 
                                             <p:commandButton
                                                 class="w-100"
-                                                action="#{navigationController.navigateToPaymentMethodRestricted()}"
+                                                action="#{paymentSchemeController.navigateToManageRestrictedPaymentMethod()}"
                                                 value="Restricted Payment Methods"
                                                 ajax="false"
                                                 rendered="#{webUserController.hasPrivilege('MembershipSchemes')}">

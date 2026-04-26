@@ -230,6 +230,15 @@ public class PaymentSchemeController implements Serializable {
         paymentSchemeRestrictedPaymentMethod = new RestrictedPaymentMethod();
     }
 
+    public String navigateToManageRestrictedPaymentMethod() {
+        paymentScheme = null;
+        membershipScheme = null;
+        paymentSchemeRestrictedPaymentMethod = null;
+        restrictedPaymentMethods = null;
+        items = null;
+        return "/admin/pricing/payment_scheme_payment_method_restricted?faces-redirect=true";
+    }
+
     public void setSelectedItems(List<PaymentScheme> selectedItems) {
         this.selectedItems = selectedItems;
     }
