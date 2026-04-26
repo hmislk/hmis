@@ -1054,10 +1054,10 @@ public class DataAdministrationController implements Serializable {
                 if (bill == null) {
                     continue;
                 }
-                if (Boolean.TRUE.equals(bill.getCompleted()) || Boolean.TRUE.equals(bill.getCancelled())) {
+                if (bill.isCompleted() || bill.isCancelled()) {
                     continue;
                 }
-                if (bill.getReferenceBill() == null || !Boolean.TRUE.equals(bill.getReferenceBill().getCompleted())) {
+                if (bill.getReferenceBill() == null || !bill.getReferenceBill().isCompleted()) {
                     continue;
                 }
                 bill.setCompleted(true);
