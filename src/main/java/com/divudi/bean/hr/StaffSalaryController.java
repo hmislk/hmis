@@ -252,6 +252,26 @@ public class StaffSalaryController implements Serializable {
         getStaffController().makeNull();
     }
 
+    public String navigateToSalaryAdvance() {
+        clear();
+        return "/hr/hr_staff_salary_advance?faces-redirect=true";
+    }
+
+    public String navigateToSalary() {
+        clear();
+        return "/hr/hr_staff_salary?faces-redirect=true";
+    }
+
+    public String navigateToSalarySpecial() {
+        clear();
+        return "/hr/hr_staff_salary_special?faces-redirect=true";
+    }
+
+    public String navigateToSalaryPrint() {
+        clear();
+        return "/hr/hr_staff_salary_print?faces-redirect=true";
+    }
+
     public StaffSalary getCurrent() {
         if (current == null) {
             current = new StaffSalary();
