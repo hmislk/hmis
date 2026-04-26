@@ -16,7 +16,9 @@ import com.divudi.core.data.dataStructure.PaymentMethodData;
 import com.divudi.core.entity.PaymentScheme;
 import com.divudi.core.entity.membership.AllowedPaymentMethod;
 import com.divudi.core.entity.membership.MembershipScheme;
+import com.divudi.core.entity.membership.RestrictedPaymentMethod;
 import com.divudi.core.facade.AllowedPaymentMethodFacade;
+import com.divudi.core.facade.RestrictedPaymentMethodFacade;
 import com.divudi.core.facade.PaymentSchemeFacade;
 import com.divudi.core.facade.PriceMatrixFacade;
 import com.divudi.core.entity.PriceMatrix;
@@ -58,16 +60,20 @@ public class PaymentSchemeController implements Serializable {
     @EJB
     AllowedPaymentMethodFacade allowedPaymentMethodFacade;
     @EJB
+    RestrictedPaymentMethodFacade restrictedPaymentMethodFacade;
+    @EJB
     PriceMatrixFacade priceMatrixFacade;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
     MembershipScheme membershipScheme;
     AllowedPaymentMethod paymentSchemeAllowedPaymentMethod;
+    RestrictedPaymentMethod paymentSchemeRestrictedPaymentMethod;
     List<PaymentScheme> selectedItems;
     private PaymentScheme paymentScheme;
     PaymentScheme paymentSchemeForAllowPayment;
     private List<PaymentScheme> items = null;
     List<AllowedPaymentMethod> allowedPaymentMethods;
+    List<RestrictedPaymentMethod> restrictedPaymentMethods;
     String selectText = "";
     private List<PaymentScheme> allPaymentSchemes;
 
@@ -96,6 +102,25 @@ public class PaymentSchemeController implements Serializable {
 
     public void setAllowedPaymentMethodFacade(AllowedPaymentMethodFacade allowedPaymentMethodFacade) {
         this.allowedPaymentMethodFacade = allowedPaymentMethodFacade;
+    }
+
+    public RestrictedPaymentMethod getCurrentRestrictedPaymentMethod() {
+        if (paymentSchemeRestrictedPaymentMethod == null) {
+            paymentSchemeRestrictedPaymentMethod = new RestrictedPaymentMethod();
+        }
+        return paymentSchemeRestrictedPaymentMethod;
+    }
+
+    public void setCurrentRestrictedPaymentMethod(RestrictedPaymentMethod paymentSchemeRestrictedPaymentMethod) {
+        this.paymentSchemeRestrictedPaymentMethod = paymentSchemeRestrictedPaymentMethod;
+    }
+
+    public RestrictedPaymentMethodFacade getRestrictedPaymentMethodFacade() {
+        return restrictedPaymentMethodFacade;
+    }
+
+    public void setRestrictedPaymentMethodFacade(RestrictedPaymentMethodFacade restrictedPaymentMethodFacade) {
+        this.restrictedPaymentMethodFacade = restrictedPaymentMethodFacade;
     }
 
     public MembershipScheme getMembershipScheme() {
@@ -201,6 +226,19 @@ public class PaymentSchemeController implements Serializable {
         //membershipScheme = null;
     }
 
+    public void prepareAddRestrictedPaymentMethod() {
+        paymentSchemeRestrictedPaymentMethod = new RestrictedPaymentMethod();
+    }
+
+    public String navigateToManageRestrictedPaymentMethod() {
+        paymentScheme = null;
+        membershipScheme = null;
+        paymentSchemeRestrictedPaymentMethod = null;
+        restrictedPaymentMethods = null;
+        items = null;
+        return "/admin/pricing/payment_scheme_payment_method_restricted?faces-redirect=true";
+    }
+
     public void setSelectedItems(List<PaymentScheme> selectedItems) {
         this.selectedItems = selectedItems;
     }
@@ -266,6 +304,52 @@ public class PaymentSchemeController implements Serializable {
         //  createPaymentSchemesMembership();
         //    recreateModel();
 
+    }
+
+    public void saveSelectedRestrictedPaymentMethod() {
+
+        if (getCurrentRestrictedPaymentMethod().getPaymentMethod() == null) {
+            JsfUtil.addErrorMessage("Please Select Payment Methord");
+            return;
+        }
+
+        if (getCurrent() != null) {
+            if (getCurrent().getId() != null) {
+                getCurrentRestrictedPaymentMethod().setPaymentScheme(getCurrent());
+            }
+        }
+        if (getMembershipScheme() != null) {
+            if (getMembershipScheme().getId() != null) {
+                getCurrentRestrictedPaymentMethod().setMembershipScheme(getMembershipScheme());
+            }
+        }
+
+        if (getCurrentRestrictedPaymentMethod().getId() != null && getCurrentRestrictedPaymentMethod().getId() > 0) {
+            getRestrictedPaymentMethodFacade().edit(getCurrentRestrictedPaymentMethod());
+            JsfUtil.addSuccessMessage("Updated Successfully.");
+        } else {
+            getCurrentRestrictedPaymentMethod().setCreatedAt(new Date());
+            getCurrentRestrictedPaymentMethod().setCreater(getSessionController().getLoggedUser());
+            getRestrictedPaymentMethodFacade().create(getCurrentRestrictedPaymentMethod());
+            JsfUtil.addSuccessMessage("Saved Successfully");
+        }
+
+        paymentSchemeRestrictedPaymentMethod = null;
+        createRestrictedPaymentMethods();
+    }
+
+    public void deleteRestrictedPaymentMethod() {
+        if (paymentSchemeRestrictedPaymentMethod != null && paymentSchemeRestrictedPaymentMethod.getId() != null) {
+            paymentSchemeRestrictedPaymentMethod.setRetired(true);
+            paymentSchemeRestrictedPaymentMethod.setRetiredAt(new Date());
+            paymentSchemeRestrictedPaymentMethod.setRetirer(getSessionController().getLoggedUser());
+            getRestrictedPaymentMethodFacade().edit(paymentSchemeRestrictedPaymentMethod);
+            JsfUtil.addSuccessMessage("Deleted Successfully");
+        } else {
+            JsfUtil.addErrorMessage("Nothing to Delete");
+        }
+        paymentSchemeRestrictedPaymentMethod = null;
+        createRestrictedPaymentMethods();
     }
 
     public void setSelectText(String selectText) {
@@ -514,6 +598,28 @@ public class PaymentSchemeController implements Serializable {
         this.allowedPaymentMethods = allowedPaymentMethods;
     }
 
+    public void createRestrictedPaymentMethods() {
+        String temSql;
+        temSql = "SELECT i FROM RestrictedPaymentMethod i "
+                + " where  i.retired=false "
+                + " and (i.membershipScheme=:mem "
+                + " or i.paymentScheme=:pay )"
+                + " order by i.paymentMethod";
+        HashMap hm = new HashMap();
+        hm.put("mem", membershipScheme);
+        hm.put("pay", paymentScheme);
+
+        restrictedPaymentMethods = getRestrictedPaymentMethodFacade().findByJpql(temSql, hm);
+    }
+
+    public List<RestrictedPaymentMethod> getRestrictedPaymentMethods() {
+        return restrictedPaymentMethods;
+    }
+
+    public void setRestrictedPaymentMethods(List<RestrictedPaymentMethod> restrictedPaymentMethods) {
+        this.restrictedPaymentMethods = restrictedPaymentMethods;
+    }
+
     public boolean isExpired(PaymentScheme ps) {
         if (ps == null) {
             return false;
@@ -574,6 +680,42 @@ public class PaymentSchemeController implements Serializable {
             } else {
                 throw new IllegalArgumentException("object " + object + " is of type "
                         + object.getClass().getName() + "; expected type: " + PaymentSchemeController.class.getName());
+            }
+        }
+    }
+
+    @FacesConverter(forClass = RestrictedPaymentMethod.class)
+    public static class RestrictedPaymentMethodConverter implements Converter {
+
+        @Override
+        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
+            if (value == null || value.length() == 0) {
+                return null;
+            }
+            PaymentSchemeController controller = (PaymentSchemeController) facesContext.getApplication().getELResolver().
+                    getValue(facesContext.getELContext(), null, "paymentSchemeController");
+            return controller.getRestrictedPaymentMethodFacade().find(getKey(value));
+        }
+
+        java.lang.Long getKey(String value) {
+            return Long.valueOf(value);
+        }
+
+        String getStringKey(java.lang.Long value) {
+            return String.valueOf(value);
+        }
+
+        @Override
+        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
+            if (object == null) {
+                return null;
+            }
+            if (object instanceof RestrictedPaymentMethod) {
+                RestrictedPaymentMethod o = (RestrictedPaymentMethod) object;
+                return getStringKey(o.getId());
+            } else {
+                throw new IllegalArgumentException("object " + object + " is of type "
+                        + object.getClass().getName() + "; expected type: " + RestrictedPaymentMethod.class.getName());
             }
         }
     }
