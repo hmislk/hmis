@@ -1048,13 +1048,25 @@ public class DataAdministrationController implements Serializable {
             }
             Date now = new Date();
             WebUser currentUser = sessionController.getLoggedUser();
-            for (Bill bill : staleBills) {
+            int updatedCount = 0;
+            for (Bill stale : staleBills) {
+                Bill bill = billFacade.find(stale.getId());
+                if (bill == null) {
+                    continue;
+                }
+                if (Boolean.TRUE.equals(bill.getCompleted()) || Boolean.TRUE.equals(bill.getCancelled())) {
+                    continue;
+                }
+                if (bill.getReferenceBill() == null || !Boolean.TRUE.equals(bill.getReferenceBill().getCompleted())) {
+                    continue;
+                }
                 bill.setCompleted(true);
                 bill.setCompletedAt(now);
                 bill.setCompletedBy(currentUser);
                 billFacade.edit(bill);
+                updatedCount++;
             }
-            executionFeedback = "Marked " + staleBills.size() + " stale handover create bill(s) as completed.";
+            executionFeedback = "Marked " + updatedCount + " stale handover create bill(s) as completed.";
         } catch (Exception e) {
             executionFeedback = "Error: " + getExceptionMessage(e);
         }
