@@ -207,6 +207,19 @@ public class PharmacyDailyStockDrillDownLevel1Controller implements Serializable
         return "/pharmacy/reports/summary_reports/daily_stock_values_report_optimized?faces-redirect=true";
     }
 
+    /**
+     * Navigate to the Level 1 print page — issue #20243. The print page reads
+     * the current bundle and filters straight from this @SessionScoped
+     * controller, so no data hand-off is needed.
+     */
+    public String navigateToPrintPage() {
+        if (bundle == null) {
+            JsfUtil.addErrorMessage("Please generate the report first before printing");
+            return null;
+        }
+        return "/pharmacy/reports/summary_reports/daily_stock_values_drill_down_level1_print?faces-redirect=true";
+    }
+
     @Inject
     private PharmacyDailyStockDrillDownLevel2Controller drillDownLevel2Controller;
 
