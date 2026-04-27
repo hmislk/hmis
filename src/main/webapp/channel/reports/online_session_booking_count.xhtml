@@ -125,16 +125,16 @@
 
                         </h:panelGrid>
 
-                        <h:panelGrid columns="6" class="my-2">
+                        <div class="d-flex align-items-center my-2">
                             <p:commandButton 
-                                class="ui-button-warning mt-2 mb-2" 
+                                class="ui-button-warning mx-1" 
                                 icon="fas fa-cogs" 
                                 value="Process" 
                                 action="#{channelReportTemplateController.generateOnlineSessionBookingsReport()}" ajax="false" />
 
                             <p:commandButton
                                 id="btnPrint"
-                                class="m-1 ui-button-danger mx-2"
+                                class="ui-button-danger mx-1"
                                 icon="fas fa-print"
                                 ajax="false"
                                 value="Print Table"
@@ -142,14 +142,13 @@
                             </p:commandButton>
 
                             <p:commandButton 
-                                class="ui-button-success mx-2"
+                                class="ui-button-success mx-1"
                                 icon ="fas fa-file-excel"
                                 ajax="false"
                                 value="Excel">
                                 <p:dataExporter target="tbl1" fileName="Online_Seesion_Bookings_#{channelReportTemplateController.toDate}" type="xlsx" />
                             </p:commandButton>
-
-                        </h:panelGrid>
+                        </div>
 
                         <p:dataTable 
                             value="#{channelReportTemplateController.onlineBookingDetialRows}" 
@@ -160,7 +159,10 @@
                             paginator="true"
                             rows="10"
                             scrollable="true"
-                            scrollWidth="100%">
+                            scrollWidth="100%"
+                            paginatorPosition="bottom"
+                            paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                            rowsPerPageTemplate="5,10,20,{ShowAll|'Show All'}">
                             <f:facet name="header">
                                 <p:outputLabel value="Online Session Bookings" />
                                 <p:outputLabel value="#{channelReportTemplateController.institution.name}" />
