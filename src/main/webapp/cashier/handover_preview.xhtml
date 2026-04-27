@@ -13,13 +13,22 @@
                     <p:panel  class="w-100 m-1">
                         <f:facet name="header">
                             <p:outputLabel value="Reprint Handovers" />
-                            <p:commandButton 
-                                value="To Print" 
-                                styleClass="ui-button-success mx-1" 
-                                icon="pi pi-check-circle" 
-                                ajax="false" 
+                            <p:commandButton
+                                value="To Print"
+                                styleClass="ui-button-success mx-1"
+                                icon="pi pi-check-circle"
+                                ajax="false"
                                 style="float: right;"
                                 action="#{financialTransactionController.navigateToHandoverReprint()}">
+                            </p:commandButton>
+                            <p:commandButton
+                                value="Print Accept Bill"
+                                styleClass="ui-button-warning mx-1"
+                                icon="pi pi-print"
+                                ajax="false"
+                                style="float: right;"
+                                rendered="#{financialTransactionController.selectedBill ne null and financialTransactionController.selectedBill.completed and not financialTransactionController.selectedBill.cancelled}"
+                                action="#{financialTransactionController.navigateToHandoverAcceptBillReprintFromReport()}">
                             </p:commandButton>
                         </f:facet>
 
