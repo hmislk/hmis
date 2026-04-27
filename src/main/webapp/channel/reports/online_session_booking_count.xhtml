@@ -11,13 +11,18 @@
         <ui:composition template="/channel/channel_reports.xhtml" >
 
             <ui:define name="subContent">
+                <h:outputStylesheet library="css" name="eight_col_filter_panel.css" />
                 <h:form>
                     <p:panel header="Online Session Bookings" >
-                        <h:panelGrid columns="4"  class="w-100 my-3">
+                        <h:panelGrid columns="5" class="my-2 ui-fluid" style="table-layout: fixed; width: 100%;" 
+                                            columnClasses="fp-col-label1,fp-col-input1,fp-col-space1,
+                                        fp-col-label2,fp-col-input2">
 
-                            <h:panelGroup>
-                                <h:outputText value="&#xf2b9;" styleClass="fa mr-2" /> 
-                                <h:outputLabel value="Speciality" class="mx-3" />
+                            <h:panelGroup layout="block" styleClass="form-group fp-label">
+                                <h:outputText value="&#xf2b9;" styleClass="fa" /> 
+                                <div class="fp-label-text">
+                                    <h:outputLabel value="Speciality"/>
+                                </div>
                             </h:panelGroup>
                             <p:autoComplete id="acSpeciality" 
                                             value="#{channelReportTemplateController.speciality}" 
@@ -29,10 +34,13 @@
                                             class="w-100">
                                 <p:ajax event="itemSelect" update="scStaff" />
                             </p:autoComplete>
+                            <p:spacer width="50"/>
 
-                            <h:panelGroup class="mx-2"> 
-                                <h:outputText value="&#xf0f0;" styleClass="fa mr-2" /> 
-                                <h:outputLabel value="Doctor" class="mx-3" />
+                            <h:panelGroup layout="block" styleClass="form-group fp-label"> 
+                                <h:outputText value="&#xf0f0;" styleClass="fa" /> 
+                                <div class="fp-label-text">
+                                    <h:outputLabel value="Doctor"/>
+                                </div>
                             </h:panelGroup>
 
                             <p:selectOneMenu id="scStaff" 
@@ -48,9 +56,11 @@
                                     itemValue="#{staff}" />
                             </p:selectOneMenu>
 
-                            <h:panelGroup>
-                                <h:outputText value="&#xf073;" styleClass="fa mr-2" />
-                                <h:outputLabel class="mx-3" value="From Date"/>
+                            <h:panelGroup layout="block" styleClass="form-group fp-label">
+                                <h:outputText value="&#xf073;" styleClass="fa" />
+                                <div class="fp-label-text">
+                                    <h:outputLabel value="From Date"/>
+                                </div>
                             </h:panelGroup>
 
                             <p:datePicker 
@@ -61,10 +71,13 @@
                                 timeInput="true"
                                 value="#{channelReportTemplateController.fromDate}" 
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></p:datePicker> 
+                            <p:spacer width="50"/>
 
-                            <h:panelGroup class="mx-2">
-                                <h:outputText value="&#xf073;" styleClass="fa mr-2" />
-                                <h:outputLabel class="mx-3" value="To Date"/>
+                            <h:panelGroup layout="block" styleClass="form-group fp-label">
+                                <h:outputText value="&#xf073;" styleClass="fa" />
+                                <div class="fp-label-text">
+                                    <h:outputLabel value="To Date"/>
+                                </div>
                             </h:panelGroup>
 
                             <p:datePicker
@@ -76,19 +89,24 @@
                                 value="#{channelReportTemplateController.toDate}" 
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></p:datePicker>
 
-                            <h:panelGroup>
-                                <h:outputText value="&#xf19c;" styleClass="fa mr-2" />
-                                <h:outputLabel class="mx-3" value="Institution"/>
+                            <h:panelGroup layout="block" styleClass="form-group fp-label">
+                                <h:outputText value="&#xf19c;" styleClass="fa" />
+                                <div class="fp-label-text">
+                                    <h:outputLabel value="Institution"/>
+                                </div>
                             </h:panelGroup>
 
                             <p:autoComplete  class="w-100" inputStyleClass="w-100" value="#{channelReportTemplateController.institution}"
                                              completeMethod="#{institutionController.completeIns}" 
                                              var="dept" itemValue="#{dept}" itemLabel="#{dept.name}" forceSelection="true" rendered="true" requiredMessage="You must select a department" >
                             </p:autoComplete>
+                            <p:spacer width="50"/>
                             
-                             <h:panelGroup>
-                                <h:outputText value="&#xf19c;" styleClass="fa mr-2" />
-                                <h:outputLabel class="mx-3" value="Bill Type"/>
+                             <h:panelGroup layout="block" styleClass="form-group fp-label">
+                                <h:outputText value="&#xf19c;" styleClass="fa" />
+                                <div class="fp-label-text">
+                                    <h:outputLabel value="Bill Type"/>
+                                </div>
                             </h:panelGroup>
                             
                             <p:selectOneMenu id="billType" 
@@ -112,7 +130,17 @@
                                 class="ui-button-warning mt-2 mb-2" 
                                 icon="fas fa-cogs" 
                                 value="Process" 
-                                action="#{channelReportTemplateController.fillOnlineBookings()}" ajax="false" ></p:commandButton>
+                                action="#{channelReportTemplateController.generateOnlineSessionBookingsReport()}" ajax="false" />
+
+                            <p:commandButton
+                                id="btnPrint"
+                                class="m-1 ui-button-danger mx-2"
+                                icon="fas fa-print"
+                                ajax="false"
+                                value="Print Table"
+                                action="online_session_booking_count_print?faces-redirect=true">
+                            </p:commandButton>
+
                             <p:commandButton 
                                 class="ui-button-success mx-2"
                                 icon ="fas fa-file-excel"
@@ -121,17 +149,18 @@
                                 <p:dataExporter target="tbl1" fileName="Online_Seesion_Bookings_#{channelReportTemplateController.toDate}" type="xlsx" />
                             </p:commandButton>
 
-
                         </h:panelGrid>
 
                         <p:dataTable 
-                            value="#{channelReportTemplateController.bundle.reportTemplateRows}" 
+                            value="#{channelReportTemplateController.onlineBookingDetialRows}" 
                             var="a" 
                             id="tbl1" 
                             rowIndexVar="i"
                             rowKey="#{a.id}"
                             paginator="true"
-                            rows="10">
+                            rows="10"
+                            scrollable="true"
+                            scrollWidth="100%">
                             <f:facet name="header">
                                 <p:outputLabel value="Online Session Bookings" />
                                 <p:outputLabel value="#{channelReportTemplateController.institution.name}" />
@@ -156,101 +185,93 @@
                                 <f:facet name="header">
                                     <p:outputLabel value="Bill No" />
                                 </f:facet>
-                                <p:outputLabel value="#{a.billSession.bill.deptId}" />
+                                <p:outputLabel value="#{a.billDeptId}" />
                             </p:column>
 
                             <p:column width="6em">
                                 <f:facet name="header">
                                     <p:outputLabel value="Session Date" />
                                 </f:facet>
-                                <p:outputLabel value="#{a.billSession.sessionDate}" >
+                                <p:outputLabel value="#{a.sessionDate}" >
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"  />
                                 </p:outputLabel>
                             </p:column>
-                            <p:column>
+                            <p:column width="10em">
                                 <f:facet name="header">
                                     <p:outputLabel value="Consultant" />
                                 </f:facet>
-                                <p:outputLabel value="#{a.billSession.bill.staff.person.nameWithTitle}" />
+                                <p:outputLabel value="#{a.consultantName}" />
                             </p:column>
                             <p:column width="8em">
                                 <f:facet name="header">
                                     <p:outputLabel value="Speciality" />
                                 </f:facet>
-                                <p:outputLabel value="#{a.billSession.bill.staff.speciality.name}" />
+                                <p:outputLabel value="#{a.consultantSpeciality}" />
                             </p:column>
-                            <p:column width="6em">
+                            <p:column width="10em">
                                 <f:facet name="header">
                                     <p:outputLabel value="Session" />
                                 </f:facet>
-                                <p:outputLabel value="#{a.billSession.sessionInstance.name}" />
+                                <p:outputLabel value="#{a.sessionName}" />
                             </p:column>
-                            <p:column>
+                            <p:column width="10em">
                                 <f:facet name="header">
                                     <p:outputLabel value="Patient Name" />
                                 </f:facet>
                                  <f:facet name="footer">
                                     <p:outputLabel value="Net Amount" />
                                 </f:facet>
-                                <p:outputLabel value="#{a.billSession.bill.referenceBill.onlineBooking.title}. #{a.billSession.bill.referenceBill.onlineBooking.patientName}" />
-                                <!--                                <f:facet name="footer" >
-                                                                    <h:outputText value="#{channelReportTemplateController.bundle.long1}"></h:outputText>
-                                                                </f:facet>-->
+                                <p:outputLabel value="#{a.patientName}" />
                             </p:column>
                             <p:column width="4em">
                                 <f:facet name="header">
                                     <p:outputLabel value="Amount" />
                                 </f:facet>
                                 <f:facet name="footer">
-                                    <p:outputLabel value="#{channelReportTemplateController.bundle.long7}" />
+                                    <p:outputLabel value="#{channelReportTemplateController.totalNetTotalInOBReport}" />
                                 </f:facet>
-                                <p:outputLabel value="#{a.billSession.bill.paidAmount}" />
-                                <!--                                <f:facet name="footer" >
-                                                                    <h:outputText value="#{channelReportTemplateController.bundle.long3}" ></h:outputText>
-                                                                </f:facet>-->
+                                <p:outputLabel value="#{a.paidAmount}" />
                             </p:column>
                             <p:column width="4em">
                                 <f:facet name="header">
                                     <p:outputLabel value="Agent" />
                                 </f:facet>
-                                <p:outputLabel value="#{a.billSession.bill.creditCompany.name}" />
+                                <p:outputLabel value="#{a.agentName}" />
 
                             </p:column>
 
-                            <p:column>
+                            <p:column width="6em">
                                 <f:facet name="header">
                                     <p:outputLabel value="Phone Number" />
                                 </f:facet>
-                                <p:outputLabel value="#{a.billSession.bill.referenceBill.onlineBooking.phoneNo}" />
+                                <p:outputLabel value="#{a.patientPhone}" />
 
                             </p:column>
 
-                            <p:column>
+                            <p:column width="6em">
                                 <f:facet name="header">
                                     <p:outputLabel value="State" />
                                 </f:facet>
-                                <p:badge rendered="#{a.billSession.bill.cancelled eq true}" value="Cancelled Bill" severity="danger"></p:badge>
-                                <p:badge rendered="#{a.billSession.bill.refunded eq true}" value="Refunded bill" severity="warning"></p:badge>
-                                <p:badge rendered="#{a.billSession.bill.referenceBill.onlineBooking.onlineBookingStatus eq 'COMPLETED'}" value="Completed bill" severity="success">
+                                <p:badge rendered="#{a.billCancelled eq true}" value="Cancelled Bill" severity="danger"></p:badge>
+                                <p:badge rendered="#{a.billRefunded eq true}" value="Refunded bill" severity="warning"></p:badge>
+                                <p:badge rendered="#{a.onlineBookingStatus eq 'COMPLETED'}" value="Completed bill" severity="success">
                                 </p:badge>
-                                <p:badge value="Absent" rendered="#{(a.billSession.bill.cancelled eq false and a.billSession.bill.refunded eq false) and a.billSession.absent == true}"></p:badge>
+                                <p:badge value="Absent" rendered="#{(a.billCancelled eq false and a.billRefunded eq false) and a.absent == true}"></p:badge>
 
                             </p:column>
 
-                            <p:column>
+                            <p:column width="6em">
                                 <f:facet name="header">
                                     <p:outputLabel value="Action" />
                                 </f:facet>
                                 <p:commandLink 
                                     ajax="false" 
                                     value="View BillSession" 
-                                    action="#{bookingControllerViewScope.navigateToViewBillSession(a.billSession)}">
+                                    action="#{bookingControllerViewScope.navigateToViewBillSession(bookingControllerViewScope.getBillSessionFromBillId(a.billId))}">
                                 </p:commandLink>
-
-
                             </p:column>
+                            
                         </p:dataTable>
-
 
                     </p:panel>
                 </h:form>
