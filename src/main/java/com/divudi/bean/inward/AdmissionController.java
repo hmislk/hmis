@@ -723,6 +723,11 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         return "/inward/inward_room_change_guardian?faces-redirect=true";
     }
 
+    public String navigateToPatientRoomDetails() {
+        bhtSummeryController.setPatientEncounter(current);
+        return bhtSummeryController.navigateToPatientRoomDetails();
+    }
+
     public String navigateToAddBabyAdmission() {
         parentAdmission = current;
         Admission ad = new Admission();
