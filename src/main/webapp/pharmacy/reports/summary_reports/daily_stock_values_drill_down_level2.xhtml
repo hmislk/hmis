@@ -33,15 +33,31 @@
 
                 <h:form id="drillDownLevel2Form">
 
-                    <!-- Header / Back button -->
+                    <!-- Header / Back button + Export buttons -->
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h4 class="mb-0">F15 Drill-Down — Level 2 (Bill List)</h4>
-                        <p:commandButton
-                            value="Back to Level 1"
-                            icon="fa fa-arrow-left"
-                            ajax="false"
-                            styleClass="ui-button-secondary"
-                            action="#{pharmacyDailyStockDrillDownLevel2Controller.navigateBackToLevel1()}"/>
+                        <div class="d-flex gap-2">
+                            <p:commandButton
+                                value="Download Excel"
+                                icon="fa fa-file-excel-o"
+                                ajax="false"
+                                styleClass="ui-button-help"
+                                action="#{pharmacyDailyStockDrillDownLevel2Controller.downloadExcel()}"
+                                rendered="#{not empty pharmacyDailyStockDrillDownLevel2Controller.bills}"/>
+                            <p:commandButton
+                                value="Print"
+                                icon="fa fa-print"
+                                ajax="false"
+                                styleClass="ui-button-info"
+                                action="#{pharmacyDailyStockDrillDownLevel2Controller.navigateToPrintPage()}"
+                                rendered="#{not empty pharmacyDailyStockDrillDownLevel2Controller.bills}"/>
+                            <p:commandButton
+                                value="Back to Level 1"
+                                icon="fa fa-arrow-left"
+                                ajax="false"
+                                styleClass="ui-button-secondary"
+                                action="#{pharmacyDailyStockDrillDownLevel2Controller.navigateBackToLevel1()}"/>
+                        </div>
                     </div>
 
                     <!-- Selection Context -->
