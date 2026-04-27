@@ -81,16 +81,16 @@
                                 </f:facet>
                                 <div class="row mb-2">
                                     <div class="col-12">
-                                        <p:outputLabel value="Select Template" class="form-label fw-bold"/>
+                                        <p:outputLabel value="Select Template (optional)" class="form-label fw-bold"/>
                                     </div>
                                 </div>
-                                <div class="row">
-                                    <div class="col-9">
+                                <div class="row mb-2">
+                                    <div class="col-10">
                                         <p:selectOneMenu
                                             id="somDxTemplates"
                                             value="#{inpatientClinicalDataController.selectedDocumentTemplate}"
                                             styleClass="w-100">
-                                            <f:selectItem itemLabel="-- Select --" itemValue=""/>
+                                            <f:selectItem itemLabel="-- Default --" itemValue=""/>
                                             <f:selectItems
                                                 value="#{inpatientClinicalDataController.diagnosisCardTemplates}"
                                                 var="dt"
@@ -98,7 +98,7 @@
                                                 itemValue="#{dt}"/>
                                         </p:selectOneMenu>
                                     </div>
-                                    <div class="col-3 d-flex gap-1">
+                                    <div class="col-2">
                                         <p:commandButton
                                             id="btnRefreshTemplates"
                                             icon="fas fa-sync-alt"
@@ -108,27 +108,17 @@
                                             update="somDxTemplates"
                                             action="#{inpatientClinicalDataController.refreshDiagnosisCardTemplates}">
                                         </p:commandButton>
-                                        <p:commandButton
-                                            id="btnGenerateCard"
-                                            value="Generate"
-                                            icon="pi pi-plus"
-                                            title="Generate card from selected template"
-                                            class="ui-button-warning"
-                                            process="btnGenerateCard somDxTemplates"
-                                            update="lstSavedCards gpCardDoc msgDx"
-                                            action="#{inpatientClinicalDataController.generateAndAddDocumentFromTemplate}">
-                                        </p:commandButton>
                                     </div>
                                 </div>
-                                <div class="row mt-2">
+                                <div class="row">
                                     <div class="col-12">
                                         <p:commandButton
                                             id="btnGenerateAi"
-                                            value="Generate with AI"
+                                            value="Generate"
                                             icon="fa fa-magic"
-                                            title="Generate diagnosis card using AI (Claude)"
+                                            title="Generate diagnosis card using AI"
                                             class="ui-button-info w-100"
-                                            process="@this"
+                                            process="btnGenerateAi somDxTemplates"
                                             update="lstSavedCards gpCardDoc msgDx"
                                             action="#{inpatientClinicalDataController.generateDiagnosisCardWithAi}"
                                             onstart="PF('aiBlockUI').show();"

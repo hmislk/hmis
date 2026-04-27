@@ -1581,6 +1581,9 @@
                                                         <f:selectItem itemLabel="Select" itemValue=""/>
                                                         <f:selectItems value="#{billController.title}" var="t"
                                                                        itemLabel="#{t.label}" itemValue="#{t}"/>
+                                                        <p:ajax event="change"
+                                                                listener="#{patientPortalController.updateSexByTitle}"
+                                                                update="newPatientSex"/>
                                                     </p:selectOneMenu>
                                                 </div>
                                             </div>
@@ -1597,7 +1600,7 @@
 
                                         <div class="field-group">
                                             <label class="field-label">Gender <span style="color:#e74c3c">*</span></label>
-                                            <div class="field-wrap">
+                                            <h:panelGroup id="newPatientSex" layout="block" styleClass="field-wrap">
                                                 <i class="fas fa-venus-mars f-icon"/>
                                                 <p:selectOneMenu
                                                     value="#{patientPortalController.patient.person.sex}"
@@ -1605,7 +1608,7 @@
                                                     <f:selectItem itemLabel="Select" itemValue=""/>
                                                     <f:selectItems value="#{billController.sex}"/>
                                                 </p:selectOneMenu>
-                                            </div>
+                                            </h:panelGroup>
                                         </div>
 
                                         <div class="field-group">

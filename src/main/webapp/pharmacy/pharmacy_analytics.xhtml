@@ -73,6 +73,14 @@
                                                 action="#{pharmacyDailyStockReportOptimizedController.navigateToDailyStockReport()}"
                                                 title="High-performance optimized report - Faster execution"/>
                                             <p:commandButton
+                                                class="w-100 ui-button-info"
+                                                ajax="false"
+                                                style="text-align: left"
+                                                icon="fa fa-search-plus"
+                                                value="F-15 Drill-Down (Level 1)"
+                                                action="#{pharmacyDailyStockDrillDownLevel1Controller.navigateToLevel1()}"
+                                                title="Date-range summary by transaction type and bill type atomics"/>
+                                            <p:commandButton
                                                 rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show F 9B Report')}"
                                                 class="w-100 ui-button-success"
                                                 ajax="false"

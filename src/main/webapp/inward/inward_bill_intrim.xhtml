@@ -205,6 +205,7 @@
                                     value="Settle Bill"
                                     icon="fa fa-check"
                                     class="ui-button-success mx-1"
+                                    onclick="PF('settleBillLoadingDlg').show();"
                                     action="#{bhtSummeryController.toSettle()}"  />
 
                                 <p:commandButton
@@ -1128,6 +1129,20 @@
 
                     </p:panel>
                     <p:messages id="pageMessages" ></p:messages>
+
+                    <p:dialog widgetVar="settleBillLoadingDlg"
+                              modal="true"
+                              closable="false"
+                              showHeader="true"
+                              header="Processing - Please Wait"
+                              style="min-width: 320px; text-align: center;">
+                        <div style="padding: 20px;">
+                            <i class="pi pi-spin pi-spinner" style="font-size: 3rem; color: #4CAF50;"></i>
+                            <p style="margin-top: 15px; font-size: 1rem;">Settling the bill, please wait...</p>
+                            <p style="color: #888; font-size: 0.85rem;">Do not refresh or close this page.</p>
+                        </div>
+                    </p:dialog>
+
                 </h:form>
             </ui:define>
         </ui:composition>

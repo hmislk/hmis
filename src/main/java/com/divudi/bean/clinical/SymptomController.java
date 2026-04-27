@@ -140,14 +140,22 @@ public class SymptomController implements Serializable {
 
     public void saveSelected() {
         current.setSymanticType(SymanticType.Symptom);
+        if (getCurrent().getName() == null || getCurrent().getName().trim().isEmpty()){
+            JsfUtil.addErrorMessage("Please enter a Symptom Name before saving.");
+            return;
+        }
+        if (getCurrent().getCode() == null || getCurrent().getCode().trim().isEmpty()){
+            JsfUtil.addErrorMessage("Please enter a Symptom Code before saving.");
+            return;
+        }
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
-            JsfUtil.addSuccessMessage("Saved");
+            JsfUtil.addSuccessMessage("Updated");
         } else {
             current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
-            JsfUtil.addSuccessMessage("Updated");
+            JsfUtil.addSuccessMessage("Saved");
         }
         recreateModel();
         getItems();

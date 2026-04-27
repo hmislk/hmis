@@ -12,7 +12,7 @@
 
 
         <h:form  >
-            <p:growl />
+            <p:growl id="growlMsg"/>
             <p:focus id="selectFocus" context="gpSelect" />
             <p:focus id="detailFocus" context="gpDetail" />
 
@@ -22,13 +22,14 @@
                         <h:panelGrid id="gpSelect" columns="1"  class="w-100" >
                             <h:panelGrid id="gpSelectButtons" 
                                          columns="3" 
-                                         class="w-100"  >
+                                         class="w-80"  >
                                 <p:commandButton id="btnAdd" 
                                                  value="Add"
                                                  action="#{symptomController.prepareAdd()}" 
                                                  update="btnAdd  btnDelete btnSave lstSelect gpDetail detailFocus" 
                                                  process="btnAdd" 
-                                                 class="w-100" >
+                                                 class="m-1 ui-button-success w-23"
+                                                 icon="fa fa-plus">
                                 </p:commandButton>
                                 <p:commandButton 
                                     ajax="false"
@@ -37,11 +38,13 @@
                                                 return false;" 
                                     action="#{symptomController.delete()}"  
                                     value="Delete"  
-                                    class="w-100">
+                                    class="m-1 ui-button-danger w-23"
+                                    icon="fa fa-trash">
                                 </p:commandButton>
                                 <p:commandButton 
-                                    value="Download as Excel" 
-                                    class="w-100"
+                                    value="Excel" 
+                                    class="m-1 ui-button-success w-23"
+                                    icon="fas fa-file-excel"
                                     ajax="false"
                                     action="#{symptomController.downloadAsExcel}" />
 
@@ -90,7 +93,10 @@
                                 <p:commandButton id="btnSave" 
                                                  value="Save" 
                                                  action="#{symptomController.saveSelected()}" 
-                                                 update="btnAdd  btnDelete btnSave   lstSelect gpDetail selectFocus"  process="gpDetail"  >
+                                                 class="m-1"
+                                                 icon="fas fa-save"
+                                                 update="growlMsg btnAdd  btnDelete btnSave   lstSelect gpDetail selectFocus gpDetail"  
+                                                 process="gpDetail">
                                 </p:commandButton>
                             </h:panelGrid>
                         </h:panelGrid>

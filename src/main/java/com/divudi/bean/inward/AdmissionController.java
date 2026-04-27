@@ -61,6 +61,7 @@ import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Staff;
 import com.divudi.core.entity.clinical.ClinicalFindingValue;
 import com.divudi.core.entity.inward.AdmissionType;
+import com.divudi.core.entity.PaymentScheme;
 import com.divudi.core.entity.inward.Reservation;
 import com.divudi.core.facade.ClinicalFindingValueFacade;
 import com.divudi.core.facade.ReservationFacade;
@@ -183,6 +184,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     private AdmissionStatus admissionStatusForSearch;
     private AdmissionType admissionTypeForSearch;
     private Admission perantAddmission;
+    private List<Admission> childAdmissions;
     private boolean patientDetailsEditable;
     private List<ClinicalFindingValue> patientAllergies;
     private ClinicalFindingValue currentPatientAllergy;
@@ -191,6 +193,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     private Institution site;
 
     private PaymentMethod paymentMethod;
+    private PaymentScheme paymentScheme;
     private boolean admittingProcessStarted;
     private Reservation latestfoundReservation;
 
@@ -728,8 +731,45 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         }
         setCurrent(ad);
         current.setParentEncounter(parentAdmission);
+        patient = null;
+        yearMonthDay = null;
+        getPatient();
+        copyGuardianFromParentAdmission();
         setPrintPreview(false);
         return "/inward/inward_admission_child?faces-redirect=true";
+    }
+
+    private void copyGuardianFromParentAdmission() {
+        if (parentAdmission == null) {
+            return;
+        }
+        Person parentGuardian = parentAdmission.getGuardian();
+        if (parentGuardian == null) {
+            return;
+        }
+        Person babyGuardian = current.getGuardian();
+        babyGuardian.setTitle(parentGuardian.getTitle());
+        babyGuardian.setName(parentGuardian.getName());
+        babyGuardian.setNic(parentGuardian.getNic());
+        babyGuardian.setAddress(parentGuardian.getAddress());
+        babyGuardian.setMobile(parentGuardian.getMobile());
+        babyGuardian.setPhone(parentGuardian.getPhone());
+        if (parentAdmission.getGuardianRelationshipToPatient() != null) {
+            current.setGuardianRelationshipToPatient(parentAdmission.getGuardianRelationshipToPatient());
+        }
+    }
+
+    public String navigateCancelBabyAdmission() {
+        if (parentAdmission != null) {
+            current = parentAdmission;
+        }
+        parentAdmission = null;
+        patientRoom = null;
+        encounterCreditCompanies = new ArrayList<>();
+        encounterCreditCompany = new EncounterCreditCompany();
+        bhtText = "";
+        printPreview = false;
+        return navigateToAdmissionProfilePage();
     }
 
 //    // Services & Items Submenu Methods
@@ -763,6 +803,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
     public String navigateToSearchAdmissions() {
         bhtSummeryController.setPatientEncounterHasProvisionalBill(false);
+        clearSearchValues();
         return "/inward/inpatient_search?faces-redirect=true";
     }
 
@@ -1030,6 +1071,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         }
 
         patientDetailsEditable = false;
+        fetchChildAdmissions();
         if (configOptionApplicationController.getBooleanValueByKey("Patient admission and room assignment are simultaneous processes.", true)) {
             current.getPatient().setEditingMode(false);
             bhtSummeryController.setPatientEncounter(current);
@@ -1512,7 +1554,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             JsfUtil.addErrorMessage("Please select Admission Type");
             return true;
         }
-        if (getCurrent().getPaymentMethod() == null) {
+        if (getCurrent().getParentEncounter() == null && getCurrent().getPaymentMethod() == null) {
             JsfUtil.addErrorMessage("Select Paymentmethod");
             return true;
         }
@@ -1956,6 +1998,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         if (getInwardBean().getLastGeneratedBhtLong() != null) {
             getCurrent().setBhtLong(getInwardBean().getLastGeneratedBhtLong());
         }
+        getCurrent().setPaymentScheme(paymentScheme);
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(getCurrent());
@@ -2089,6 +2132,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         if (getInwardBean().getLastGeneratedBhtLong() != null) {
             getCurrent().setBhtLong(getInwardBean().getLastGeneratedBhtLong());
         }
+        getCurrent().setPaymentScheme(paymentScheme);
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(getCurrent());
@@ -2156,8 +2200,8 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     }
 
     public void saveEncounterCreditCompanies(PatientEncounter current) {
-        if (!encounterCreditCompanies.isEmpty() && current != null) {
-            for (EncounterCreditCompany ecc : encounterCreditCompanies) {
+        if (!getEncounterCreditCompanies().isEmpty() && current != null) {
+            for (EncounterCreditCompany ecc : getEncounterCreditCompanies()) {
                 ecc.setPatientEncounter(current);
                 ecc.setCreatedAt(new Date());
                 ecc.setCreater(sessionController.getLoggedUser());
@@ -2232,6 +2276,15 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
     public void setCurrent(Admission current) {
         this.current = current;
+        if (current != null && current.getPaymentScheme() != null) {
+            this.paymentScheme = current.getPaymentScheme();
+        } else if (current != null && current.getPatient() != null
+                && current.getPatient().getPerson() != null
+                && current.getPatient().getPerson().getMembershipScheme() != null) {
+            this.paymentScheme = current.getPatient().getPerson().getMembershipScheme().getPaymentScheme();
+        } else {
+            this.paymentScheme = null;
+        }
     }
 
     /**
@@ -2393,6 +2446,19 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         if (current != null) {
             current.setPatient(patient);
             patientAllergies = clinicalFindingValueController.findClinicalFindingValues(patient, ClinicalFindingValueType.PatientAllergy);
+        }
+        selectPaymentSchemeAsPerPatientMembership();
+    }
+
+    private void selectPaymentSchemeAsPerPatientMembership() {
+        if (patient == null) {
+            paymentScheme = null;
+            return;
+        }
+        if (patient.getPerson() == null || patient.getPerson().getMembershipScheme() == null) {
+            paymentScheme = null;
+        } else {
+            paymentScheme = patient.getPerson().getMembershipScheme().getPaymentScheme();
         }
     }
 
@@ -2672,6 +2738,14 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         // ToDo: Add Logic
     }
 
+    public PaymentScheme getPaymentScheme() {
+        return paymentScheme;
+    }
+
+    public void setPaymentScheme(PaymentScheme paymentScheme) {
+        this.paymentScheme = paymentScheme;
+    }
+
     public Department getLoggedDepartment() {
         return loggedDepartment;
     }
@@ -2694,6 +2768,28 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
     public void setPerantAddmission(Admission perantAddmission) {
         this.perantAddmission = perantAddmission;
+    }
+
+    private void fetchChildAdmissions() {
+        if (current == null) {
+            childAdmissions = new ArrayList<>();
+            return;
+        }
+        String jpql = "select a from Admission a where a.retired = false and a.parentEncounter = :parent order by a.bhtNo";
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("parent", current);
+        childAdmissions = getFacade().findByJpql(jpql, params);
+    }
+
+    public List<Admission> getChildAdmissions() {
+        if (childAdmissions == null) {
+            childAdmissions = new ArrayList<>();
+        }
+        return childAdmissions;
+    }
+
+    public void setChildAdmissions(List<Admission> childAdmissions) {
+        this.childAdmissions = childAdmissions;
     }
 
     public Admission getCurrentNonBht() {
