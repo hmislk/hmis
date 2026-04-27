@@ -212,6 +212,7 @@
                                             <p:autoComplete
                                                 accesskey="i"
                                                 id="acStockNative"
+                                                widgetVar="acStockNativeWgt"
                                                 inputStyleClass="w-100"
                                                 minQueryLength="3"
                                                 maxResults="50"
@@ -307,13 +308,92 @@
                                             icon="fa-solid fa-plus"
                                             action="#{inpatientDirectIssueNativeSqlController.addBillItem}"
                                             process="@this txtQty acStockNative"
-                                            update=":bill:pBillItems acStock txtQty txtRate txtValue panelErrorMsg" />
+                                            update=":bill:pBillItems acStock txtQty txtRate txtValue panelErrorMsg"
+                                            oncomplete="pharmacyNativeRefocusItem();" />
                                     </div>
                                 </div>
 
                                 <p:focus id="focusQty" for="txtQty"></p:focus>
                                 <p:focus id="focusItem" for="acStock"></p:focus>
                             </p:panel>
+
+                            <script>
+                            (function() {
+                                // Wire listeners using capture phase on the form so we intercept before PrimeFaces.
+                                // The form itself is never re-created by AJAX, so one-time registration is enough.
+                                // Individual input nodes (acStock wrapper is updated) may be replaced; we re-check
+                                // by ID on every keydown — no per-node flags needed.
+
+                                var FORM_ID    = 'bill';
+                                var AC_SEL     = '#bill\\:acStockNative_input';
+                                var AC_PANEL   = 'bill:acStockNative_panel';
+                                var QTY_ID     = 'bill:txtQty';
+                                var ADD_ID     = 'bill:btnAdd';
+                                var SETTLE_ID  = 'bill:btnSettleNative';
+
+                                function onFormKeydown(e) {
+                                    if (e.key !== 'Enter') return;
+
+                                    var acInput  = document.querySelector(AC_SEL);
+                                    var qtyInput = document.getElementById(QTY_ID);
+
+                                    if (e.target === acInput) {
+                                        // Panel open → let PrimeFaces commit the selection, then we'll get another keydown
+                                        var panel = document.getElementById(AC_PANEL);
+                                        if (panel &amp;&amp; panel.style.display !== 'none') return;
+                                        // Panel closed → move to qty
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        if (qtyInput) { qtyInput.focus(); qtyInput.select(); }
+                                        return;
+                                    }
+
+                                    if (e.target === qtyInput) {
+                                        var addBtn = document.getElementById(ADD_ID);
+                                        if (addBtn) {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            addBtn.click();
+                                        }
+                                        return;
+                                    }
+
+                                    // Any other input/textarea → Settle
+                                    var tag = e.target.tagName;
+                                    if (tag === 'BUTTON' || tag === 'A') return;
+                                    var settleBtn = document.getElementById(SETTLE_ID);
+                                    if (settleBtn) {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        settleBtn.click();
+                                    }
+                                }
+
+                                // After Add AJAX completes, clear &amp; refocus the autocomplete
+                                window.pharmacyNativeRefocusItem = function() {
+                                    // Use PrimeFaces widget API to clear the autocomplete properly
+                                    setTimeout(function() {
+                                        try {
+                                            PF('acStockNativeWgt').clear();
+                                        } catch(ex) { /* widget var not set, fall back */ }
+                                        var acInput = document.querySelector(AC_SEL);
+                                        if (acInput) { acInput.value = ''; acInput.focus(); }
+                                    }, 50);
+                                };
+
+                                // Register once on the form in capture phase — survives all AJAX updates
+                                function init() {
+                                    var form = document.getElementById(FORM_ID);
+                                    if (form &amp;&amp; !form._phNavWired) {
+                                        form._phNavWired = true;
+                                        form.addEventListener('keydown', onFormKeydown, true);
+                                    }
+                                }
+
+                                document.addEventListener('DOMContentLoaded', init);
+                                document.addEventListener('pfAjaxComplete', init);
+                            })();
+                            </script>
 
                             <!-- Bill items table -->
                             <p:panel header="Bill Items" id="pBillItems" class="my-1">
