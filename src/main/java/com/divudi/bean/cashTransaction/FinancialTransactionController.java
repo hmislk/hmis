@@ -1958,6 +1958,9 @@ public class FinancialTransactionController implements Serializable {
             JsfUtil.addErrorMessage("This handover has not been accepted yet.");
             return null;
         }
+        if (bundle == null) {
+            bundle = new ReportTemplateRowBundle();
+        }
         bundle.setHandoverBill(acceptBill);
         return "/cashier/handover_accept_bill_print?faces-redirect=true";
     }
@@ -2193,10 +2196,6 @@ public class FinancialTransactionController implements Serializable {
     public String navigateToMyHandovers() {
         fillMyHandovers();
         return "/cashier/handover_bills_from_me?faces-redirect=true";
-    }
-
-    public String navigateToUserHandovers() {
-        return "/reports/cashier_reports/handovers?faces-redirect=true";
     }
 
     public String navigateToHandoverStatusReport() {
