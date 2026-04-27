@@ -212,6 +212,7 @@
                                             <p:autoComplete
                                                 accesskey="i"
                                                 id="acStockNative"
+                                                widgetVar="acStockNativeWgt"
                                                 inputStyleClass="w-100"
                                                 minQueryLength="3"
                                                 maxResults="50"
@@ -318,74 +319,79 @@
 
                             <script>
                             (function() {
-                                var _acInput = null;
+                                // Wire listeners using capture phase on the form so we intercept before PrimeFaces.
+                                // The form itself is never re-created by AJAX, so one-time registration is enough.
+                                // Individual input nodes (acStock wrapper is updated) may be replaced; we re-check
+                                // by ID on every keydown — no per-node flags needed.
 
-                                function wireEnterKeys() {
-                                    var acInput   = document.querySelector('#bill\\:acStockNative_input');
-                                    var qtyInput  = document.getElementById('bill:txtQty');
-                                    var addBtn    = document.getElementById('bill:btnAdd');
-                                    var settleBtn = document.getElementById('bill:btnSettleNative');
+                                var FORM_ID    = 'bill';
+                                var AC_SEL     = '#bill\\:acStockNative_input';
+                                var AC_PANEL   = 'bill:acStockNative_panel';
+                                var QTY_ID     = 'bill:txtQty';
+                                var ADD_ID     = 'bill:btnAdd';
+                                var SETTLE_ID  = 'bill:btnSettleNative';
 
-                                    if (!acInput || !qtyInput || !addBtn) return;
-                                    _acInput = acInput;
+                                function onFormKeydown(e) {
+                                    if (e.key !== 'Enter') return;
 
-                                    // Use data flag to avoid stacking duplicate listeners after AJAX re-renders
-                                    if (!acInput._phEnterWired) {
-                                        acInput._phEnterWired = true;
-                                        acInput.addEventListener('keydown', function(e) {
-                                            if (e.key !== 'Enter') return;
-                                            // If the dropdown panel is open, let PF handle it (item selection)
-                                            var panel = document.getElementById('bill:acStockNative_panel');
-                                            if (panel &amp;&amp; panel.style.display !== 'none') return;
+                                    var acInput  = document.querySelector(AC_SEL);
+                                    var qtyInput = document.getElementById(QTY_ID);
+
+                                    if (e.target === acInput) {
+                                        // Panel open → let PrimeFaces commit the selection, then we'll get another keydown
+                                        var panel = document.getElementById(AC_PANEL);
+                                        if (panel &amp;&amp; panel.style.display !== 'none') return;
+                                        // Panel closed → move to qty
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        if (qtyInput) { qtyInput.focus(); qtyInput.select(); }
+                                        return;
+                                    }
+
+                                    if (e.target === qtyInput) {
+                                        var addBtn = document.getElementById(ADD_ID);
+                                        if (addBtn) {
                                             e.preventDefault();
-                                            qtyInput.focus();
-                                            qtyInput.select();
-                                        });
+                                            e.stopPropagation();
+                                            addBtn.click();
+                                        }
+                                        return;
                                     }
 
-                                    if (!qtyInput._phEnterWired) {
-                                        qtyInput._phEnterWired = true;
-                                        qtyInput.addEventListener('keydown', function(e) {
-                                            if (e.key === 'Enter') {
-                                                e.preventDefault();
-                                                addBtn.click();
-                                            }
-                                        });
-                                    }
-
-                                    if (!settleBtn || settleBtn._phEnterWired) return;
-                                    settleBtn._phEnterWired = true;
-                                    var form = document.getElementById('bill');
-                                    if (form &amp;&amp; !form._phSettleEnterWired) {
-                                        form._phSettleEnterWired = true;
-                                        form.addEventListener('keydown', function(e) {
-                                            if (e.key !== 'Enter') return;
-                                            var tag = e.target.tagName;
-                                            if (tag === 'BUTTON' || tag === 'A') return;
-                                            var ac = document.querySelector('#bill\\:acStockNative_input');
-                                            var qty = document.getElementById('bill:txtQty');
-                                            if (e.target === ac || e.target === qty) return;
-                                            var settle = document.getElementById('bill:btnSettleNative');
-                                            if (settle) {
-                                                e.preventDefault();
-                                                settle.click();
-                                            }
-                                        });
+                                    // Any other input/textarea → Settle
+                                    var tag = e.target.tagName;
+                                    if (tag === 'BUTTON' || tag === 'A') return;
+                                    var settleBtn = document.getElementById(SETTLE_ID);
+                                    if (settleBtn) {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        settleBtn.click();
                                     }
                                 }
 
                                 // After Add AJAX completes, clear &amp; refocus the autocomplete
                                 window.pharmacyNativeRefocusItem = function() {
-                                    var acInput = document.querySelector('#bill\\:acStockNative_input');
-                                    if (acInput) {
-                                        acInput.value = '';
-                                        acInput.focus();
-                                    }
+                                    // Use PrimeFaces widget API to clear the autocomplete properly
+                                    setTimeout(function() {
+                                        try {
+                                            PF('acStockNativeWgt').clear();
+                                        } catch(ex) { /* widget var not set, fall back */ }
+                                        var acInput = document.querySelector(AC_SEL);
+                                        if (acInput) { acInput.value = ''; acInput.focus(); }
+                                    }, 50);
                                 };
 
-                                // Re-wire after AJAX updates (input nodes may be recreated)
-                                document.addEventListener('pfAjaxComplete', function() { wireEnterKeys(); });
-                                document.addEventListener('DOMContentLoaded', wireEnterKeys);
+                                // Register once on the form in capture phase — survives all AJAX updates
+                                function init() {
+                                    var form = document.getElementById(FORM_ID);
+                                    if (form &amp;&amp; !form._phNavWired) {
+                                        form._phNavWired = true;
+                                        form.addEventListener('keydown', onFormKeydown, true);
+                                    }
+                                }
+
+                                document.addEventListener('DOMContentLoaded', init);
+                                document.addEventListener('pfAjaxComplete', init);
                             })();
                             </script>
 
