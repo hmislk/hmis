@@ -40,6 +40,12 @@ public class BhtPaymentSummaryDTO implements Serializable {
     private String creditCompanyNames;
     private final Set<String> creditCompanyNamesSet = new HashSet<>();
 
+    /** Final bill department ID (deptId) for this BHT — null if no final bill yet. */
+    private String finalBillNumber;
+
+    /** Net total of the final bill. */
+    private double finalBillTotal;
+
     public BhtPaymentSummaryDTO() {
     }
 
@@ -143,5 +149,33 @@ public class BhtPaymentSummaryDTO implements Serializable {
 
     public void setCreditCompanyNames(String creditCompanyNames) {
         this.creditCompanyNames = creditCompanyNames;
+    }
+
+    public String getFinalBillNumber() {
+        return finalBillNumber != null ? finalBillNumber : "";
+    }
+
+    public void setFinalBillNumber(String finalBillNumber) {
+        this.finalBillNumber = finalBillNumber;
+    }
+
+    public double getFinalBillTotal() {
+        return finalBillTotal;
+    }
+
+    public void setFinalBillTotal(double finalBillTotal) {
+        this.finalBillTotal = finalBillTotal;
+    }
+
+    /**
+     * Balance = final bill net total − (deposits + credit settlements collected).
+     * Positive means amount still due; negative means overpayment / refund due.
+     * Returns 0 when no final bill exists.
+     */
+    public double getBalance() {
+        if (finalBillTotal == 0.0) {
+            return 0.0;
+        }
+        return finalBillTotal - getTotalDeposits() - creditSettlementTotal;
     }
 }

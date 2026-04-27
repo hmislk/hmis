@@ -130,12 +130,14 @@ public enum Privileges {
     //<editor-fold defaultstate="collapsed" desc="Finance">
     PettyCashBillCancellationApprove("Petty Cash Bill Cancellation Approval"),
     PettyCashBillApprove("Petty Cash Bill Approval"),
+    PettyCashEditFinancialYear("Petty Cash Edit Financial Year"),
     AllCashierSummery("All Cashier Summary"),
     CashTransactionCashIn("Cash Transaction Cash In"),
     CashTransactionCashOut("Cash Transaction Cash Out"),
     CashTransactionListToCashRecieve("Cash Transaction List to Cash Receive"),
     ShiftHandoverAcceptAsCashier("Shift Handover Accept As Cashier"),
     ShiftHandoverAcceptAsMainCashier("Shift Handover Accept As Main Cashier"),
+    CashierHandoverStatusReport("Cashier Handover Status Report"),
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Lab">
@@ -1015,6 +1017,9 @@ public enum Privileges {
             case DrawerAdjustmentDirect:
             case PettyCashCancellationApproval:
                 return "Approval";
+
+            case CashierHandoverStatusReport:
+                return "Finance";
 
             case IssueFundTransfer:
             case ReceiveFundTransfer:

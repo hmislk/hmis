@@ -1,5 +1,4 @@
 package com.divudi.bean.common;
-
 import com.divudi.bean.channel.ChannelReportController;
 import com.divudi.bean.channel.ChannelReportTemplateController.ChannelReportColumnModelBundle;
 import com.divudi.bean.channel.ChannelReportController.PaymentMethodFlags;
@@ -3702,4 +3701,138 @@ public class PdfController {
                 .build();
     }
 
+    // Export: Channel Card Income report
+    public StreamedContent createPdfForChannelCardIncomeReport(ChannelReportController.WrapperDtoForChannelFutureIncome wrapperDto, PageSize pageSize, boolean withHeaderFooter, Map<String, Object> filters, String fileName) throws IOException {
+        if (wrapperDto == null) {
+            return null;
+        }
+
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        PdfWriter writer = new PdfWriter(outputStream);
+        PdfDocument pdf = new PdfDocument(writer);
+        Document document;
+        if (pageSize != null) {
+            document = new Document(pdf, pageSize);
+        } else {
+            document = new Document(pdf);
+        }
+
+        if (withHeaderFooter) {
+            String institutionName = "";
+            if (sessionController != null && sessionController.getLoggedUser() != null
+                    && sessionController.getLoggedUser().getInstitution() != null) {
+                institutionName = sessionController.getLoggedUser().getInstitution().getName();
+            }
+
+            if (!institutionName.isEmpty()) {
+                Paragraph instPara = new Paragraph(institutionName)
+                        .setBold()
+                        .setFontSize(16)
+                        .setTextAlignment(TextAlignment.CENTER)
+                        .setMarginBottom(2);
+                document.add(instPara);
+            }
+
+            Paragraph titlePara = new Paragraph("Channel Card Income Report")
+                    .setBold()
+                    .setFontSize(14)
+                    .setTextAlignment(TextAlignment.CENTER)
+                    .setMarginBottom(2);
+            document.add(titlePara);
+
+            if (filters != null && !filters.isEmpty()) {
+                Table infoTable = createInfoTablePdfExport(filters);
+                document.add(infoTable);
+            }
+
+            SolidLine headerLine = new SolidLine(1.5f);
+            LineSeparator headerSeparator = new LineSeparator(headerLine);
+            headerSeparator.setStrokeColor(ColorConstants.BLACK);
+            document.add(headerSeparator);
+            document.add(new Paragraph("").setMarginBottom(5));
+        }        
+
+        // DateTime Formats
+        SimpleDateFormat shortDateTime = new SimpleDateFormat(sessionController.getApplicationPreference().getShortDateTimeFormat());
+
+        // Detailed Table
+        if (wrapperDto.getIncomeDtos() != null && !wrapperDto.getIncomeDtos().isEmpty()) {
+            Paragraph tableTitle = new Paragraph("Detailed Report by Bill")
+                    .setBold()
+                    .setFontSize(12)
+                    .setTextAlignment(TextAlignment.LEFT)
+                    .setMarginBottom(2);
+            document.add(tableTitle);
+
+            Table detailTable = new Table(new float[]{2f, 3f, 3f, 4f, 3.5f, 4f, 3f, 4f, 4f, 4f, 4f, 2.5f, 4f}).useAllAvailableWidth().setFixedLayout();
+            String[] headers = {"Serial No", "Bill Id", "Created At", "Bill No", "Bill Type", "Patient", "Cashier", "Hospital Fee", "Doctor Fee", "Bill Gross Total", "Card Total", "Card Last 4 Numbers", "Bank"};
+
+            for (String header : headers) {
+                Cell headerCell = new Cell()
+                        .add(new Paragraph(header).setFont(PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD)))
+                        .setTextAlignment(TextAlignment.CENTER)
+                        .setFontSize(8)
+                        .setBackgroundColor(new DeviceRgb(192, 192, 192));
+                detailTable.addCell(headerCell);
+            }
+
+            int serial = 1;
+
+            for (ChannelReportController.ChannelIncomeDetailDto dto : wrapperDto.getIncomeDtos()) {
+                detailTable.addCell(new Cell().add(new Paragraph(String.valueOf(serial++)).setTextAlignment(TextAlignment.LEFT).setFontSize(8)));
+                detailTable.addCell(new Cell().add(new Paragraph(String.valueOf(dto.getBillId())).setTextAlignment(TextAlignment.LEFT).setFontSize(8)));
+                detailTable.addCell(new Cell().add(new Paragraph(dto.getBilledDate() != null ? shortDateTime.format(dto.getBilledDate()) : "").setTextAlignment(TextAlignment.LEFT).setFontSize(8)));
+
+                String billDept = dto.getBillDeptId() != null ? dto.getBillDeptId() : "";
+                if (dto.isIsCancelled()) {
+                    billDept += "\nCancelled" + (dto.getCancelledBillDeptId() != null ? (" - " + dto.getCancelledBillDeptId()) : "");
+                }
+                if (dto.isIsRefunded()) {
+                    billDept += "\nRefunded" + (dto.getRefundBillDeptId() != null ? (" - " + dto.getRefundBillDeptId()) : "" );
+                }
+                if (dto.getBillTypeAtomic() != null && dto.getBillTypeAtomic() == BillTypeAtomic.CHANNEL_REFUND_WITH_PAYMENT) {
+                    billDept += "\nRefund Bill";
+                }
+                if (dto.getBillTypeAtomic() != null && dto.getBillTypeAtomic() == BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT) {
+                    billDept += "\nCancel Bill";
+                }
+                detailTable.addCell(new Cell().add(new Paragraph(billDept).setTextAlignment(TextAlignment.LEFT).setFontSize(8)));
+
+                
+                detailTable.addCell(new Cell().add(new Paragraph(dto.getBillType() != null ? dto.getBillType().toString() : "").setTextAlignment(TextAlignment.LEFT).setFontSize(8)));
+                detailTable.addCell(new Cell().add(new Paragraph(dto.getPatientName() != null ? dto.getPatientName() : "").setTextAlignment(TextAlignment.LEFT).setFontSize(8)));
+                detailTable.addCell(new Cell().add(new Paragraph(dto.getBilledBy() != null ? dto.getBilledBy() : "").setTextAlignment(TextAlignment.LEFT).setFontSize(8)));
+                detailTable.addCell(new Cell().add(new Paragraph(String.format("%,.2f", dto.getHosFee())).setTextAlignment(TextAlignment.RIGHT).setFontSize(8)));
+                detailTable.addCell(new Cell().add(new Paragraph(String.format("%,.2f", dto.getDoctorFee())).setTextAlignment(TextAlignment.RIGHT).setFontSize(8)));
+                detailTable.addCell(new Cell().add(new Paragraph(String.format("%,.2f", dto.getTotalAppoinmentFee())).setTextAlignment(TextAlignment.RIGHT).setFontSize(8)));
+                detailTable.addCell(new Cell().add(new Paragraph(String.format("%,.2f", dto.getCardFee())).setTextAlignment(TextAlignment.RIGHT).setFontSize(8)));
+                detailTable.addCell(new Cell().add(new Paragraph(dto.getPaymentReference() != null ? dto.getPaymentReference() : "").setTextAlignment(TextAlignment.RIGHT).setFontSize(8)));
+                detailTable.addCell(new Cell().add(new Paragraph(dto.getCreditCompanyName() != null ? dto.getCreditCompanyName() : "").setTextAlignment(TextAlignment.RIGHT).setFontSize(8)));
+            }
+
+            detailTable.addCell(new Cell(1, 7).add(new Paragraph("")).setBackgroundColor(new DeviceRgb(192, 192, 192)));
+            detailTable.addCell(new Cell().add(new Paragraph(String.format("%,.2f", wrapperDto.getAllHosFeeTotal())).setBold()).setTextAlignment(TextAlignment.RIGHT).setFontSize(8).setBackgroundColor(new DeviceRgb(192, 192, 192)));
+            detailTable.addCell(new Cell().add(new Paragraph(String.format("%,.2f", wrapperDto.getAllDoctorFeeTotal())).setBold()).setTextAlignment(TextAlignment.RIGHT).setFontSize(8).setBackgroundColor(new DeviceRgb(192, 192, 192)));
+            detailTable.addCell(new Cell().add(new Paragraph(String.format("%,.2f", wrapperDto.getAllTotalAmount())).setBold()).setTextAlignment(TextAlignment.RIGHT).setFontSize(8).setBackgroundColor(new DeviceRgb(192, 192, 192)));
+            detailTable.addCell(new Cell().add(new Paragraph(String.format("%,.2f", wrapperDto.getAllCardTotal())).setBold()).setTextAlignment(TextAlignment.RIGHT).setFontSize(8).setBackgroundColor(new DeviceRgb(192, 192, 192)));
+
+            document.add(detailTable);
+        } else {
+            document.add(new Paragraph("No Data for Detailed Table"));
+        }
+
+        if (withHeaderFooter) {
+            addReportFooter(document);
+        }
+
+        document.close();
+
+        InputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+
+        return DefaultStreamedContent.builder()
+                .name(((fileName != null && !fileName.isEmpty()) ? fileName : "Report") + ".pdf")
+                .contentType("application/pdf")
+                .stream(() -> inputStream)
+                .build();
+    }
 }

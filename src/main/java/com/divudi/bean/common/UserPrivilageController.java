@@ -671,7 +671,9 @@ public class UserPrivilageController implements Serializable {
 
         TreeNode PettyCashBillApprove = new DefaultTreeNode(new PrivilegeHolder(Privileges.PettyCashBillApprove, "Petty Cash Bill Approval"), cashTransactionNode);
         TreeNode PettyCashBillCancellationApprove = new DefaultTreeNode(new PrivilegeHolder(Privileges.PettyCashBillCancellationApprove, "Petty Cash Bill Cancellation Approval"), cashTransactionNode);
+        TreeNode PettyCashEditFinancialYear = new DefaultTreeNode(new PrivilegeHolder(Privileges.PettyCashEditFinancialYear, "Petty Cash Edit Financial Year"), cashTransactionNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.AllCashierSummery, "All Cashier Summary"), cashTransactionNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.CashierHandoverStatusReport, "Cashier Handover Status Report"), cashTransactionNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.IncomeReport, "Income Report"), cashTransactionNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.DuesAndAccess, "Dues and Access"), cashTransactionNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.CheckEnteredData, "Check Entered Data"), cashTransactionNode);

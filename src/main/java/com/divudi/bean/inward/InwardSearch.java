@@ -118,6 +118,8 @@ public class InwardSearch implements Serializable {
     ConfigOptionApplicationController configOptionApplicationController;
     @Inject
     LabTestHistoryController labTestHistoryController;
+    @Inject
+    InwardPaymentController inwardPaymentController;
 
     /**
      * Properties
@@ -439,6 +441,9 @@ public class InwardSearch implements Serializable {
     }
 
     public String navigateDoctorPayment() {
+        PatientEncounter pe = inwardPaymentController.getCurrent().getPatientEncounter();
+        inwardPaymentController.makeNull();
+        inwardPaymentController.getCurrent().setPatientEncounter(pe);
         if (sessionController.getPaymentManagementAfterShiftStart()) {
             financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
             if (financialTransactionController.getNonClosedShiftStartFundBill() != null) {

@@ -54,6 +54,7 @@
 
 ### When Working with Database
 - [MySQL Developer Guide](developer_docs/database/mysql-developer-guide.md) - Credentials and debugging
+- [Migration Development Guide § Cross-deployment case sensitivity](developer_docs/database/migration-development-guide.md#cross-deployment-case-sensitivity-must) - Migration scripts must detect actual table-name case via `INFORMATION_SCHEMA` + prepared statements; hardcoding either `UPPER` or `lower` breaks half the customer DBs. Reference: `v2.1.12/migration-universal.sql`, `v2.1.17/migration.sql`.
 
 ### When Adding Excel Export to a Report
 - [Excel Export for HTML Tables](developer_docs/feature/excel-export-html-table.md) - Pattern for exporting HTML-based (non-DataTable) report tables to Excel using Apache POI via `HttpServletResponse`
@@ -77,6 +78,7 @@
 ### When Reviewing a PR
 - [PR Review Workflow](developer_docs/git/pr-review-workflow.md) - Full checklist for handling CodeRabbit/Codex comments: fetch → investigate → discuss → batch-fix → persistence check → push → reply → re-request review → cleanup
 - Use `/review-pr <pr-url>` skill to automate investigation and fix steps
+- **🚨 AFTER APPLYING ANY CODERABBIT/CODEX FIX**: Always verify method names exist on the actual entity before pushing. Automated tools frequently generate wrong getter names (e.g., `getCompleted()` instead of `isCompleted()` for primitive `boolean` fields). See [PR Review Workflow §4a](developer_docs/git/pr-review-workflow.md).
 
 ### When Committing Code
 - [Commit Conventions](developer_docs/git/commit-conventions.md) - Message format

@@ -1943,8 +1943,26 @@ public class FinancialTransactionController implements Serializable {
 
         bundle.aggregateTotalsFromAllChildBundles();
         bundle.collectDepartments();
+        bundle.setHandoverBill(selectedBill);
 
         return "/cashier/handover_preview?faces-redirect=true";
+    }
+
+    public String navigateToHandoverAcceptBillReprintFromReport() {
+        if (selectedBill == null) {
+            JsfUtil.addErrorMessage("No handover selected.");
+            return null;
+        }
+        Bill acceptBill = selectedBill.getBackwardReferenceBill();
+        if (acceptBill == null) {
+            JsfUtil.addErrorMessage("This handover has not been accepted yet.");
+            return null;
+        }
+        if (bundle == null) {
+            bundle = new ReportTemplateRowBundle();
+        }
+        bundle.setHandoverBill(acceptBill);
+        return "/cashier/handover_accept_bill_print?faces-redirect=true";
     }
 
     public String rejectToReceiveHandoverBill() {
@@ -2178,10 +2196,6 @@ public class FinancialTransactionController implements Serializable {
     public String navigateToMyHandovers() {
         fillMyHandovers();
         return "/cashier/handover_bills_from_me?faces-redirect=true";
-    }
-
-    public String navigateToUserHandovers() {
-        return "/reports/cashier_reports/handovers?faces-redirect=true";
     }
 
     public String navigateToHandoverStatusReport() {
@@ -4578,13 +4592,11 @@ public class FinancialTransactionController implements Serializable {
                 if (p.getBill() == null) {
                     continue;
                 }
-                if (p.getBill().getBillTypeAtomic() != null && p.getBill().getBillTypeAtomic() == BillTypeAtomic.FUND_TRANSFER_RECEIVED_BILL) {
-                    if (p.getId() > shiftStartBill.getId()) {
-                        finalOtherPayments.add(p);
-                    }
-                } else {
-                    finalOtherPayments.add(p);
-                }
+                // FUND_TRANSFER_RECEIVED_BILL payments are included regardless of when they
+                // arrived — they stay outstanding until deposited or handed over.
+                // The DB query already ensures handingOverStarted=false and cancelled=false,
+                // so no extra date/id boundary is needed here.
+                finalOtherPayments.add(p);
             }
         }
         return finalOtherPayments;
@@ -4615,13 +4627,9 @@ public class FinancialTransactionController implements Serializable {
                 if (p.getBill() == null) {
                     continue;
                 }
-                if (p.getBill().getBillTypeAtomic() != null && p.getBill().getBillTypeAtomic() == BillTypeAtomic.FUND_TRANSFER_RECEIVED_BILL) {
-                    if (p.getCreatedAt().getTime() > paramFromDate.getTime() && p.getCreatedAt().getTime() < paramToDate.getTime()) {
-                        finalOtherPayments.add(p);
-                    }
-                } else {
-                    finalOtherPayments.add(p);
-                }
+                // FUND_TRANSFER_RECEIVED_BILL payments are included regardless of date —
+                // they remain outstanding until deposited or handed over.
+                finalOtherPayments.add(p);
             }
         }
         return finalOtherPayments;
@@ -6577,6 +6585,7 @@ public class FinancialTransactionController implements Serializable {
             case FUND_SHIFT_HANDOVER_CREATE:
                 jpql.append("and (s.completed = false or s.completed is null) ");
                 jpql.append("and (s.cancelled = false or s.cancelled is null) ");
+                jpql.append("and (s.referenceBill is null or s.referenceBill.completed = false or s.referenceBill.completed is null) ");
                 break;
             case FUND_TRANSFER_BILL:
                 jpql.append("and s.referenceBill is null ");
@@ -7749,6 +7758,7 @@ public class FinancialTransactionController implements Serializable {
             p.setDepartment(sessionController.getDepartment());
             p.setInstitution(sessionController.getInstitution());
             p.setPaidValue(0 - Math.abs(p.getPaidValue()));
+            p.setCurrentHolder(null);
             paymentController.save(p);
             drawerController.updateDrawerForOuts(p);
             Payment original = p.getReferancePayment();
