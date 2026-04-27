@@ -202,23 +202,32 @@ public class BhtSummeryController implements Serializable {
         private final String roomName;
         private final boolean guardian;
         private final boolean active;
-        private final double offsetPct;
-        private final double widthPct;
+        private final String offsetPct;
+        private final String widthPct;
+        private final boolean wide;
 
         public RoomGanttBar(String roomName, boolean guardian, boolean active,
-                            double offsetPct, double widthPct) {
+                            String offsetPct, String widthPct, boolean wide) {
             this.roomName = roomName;
             this.guardian = guardian;
             this.active = active;
             this.offsetPct = offsetPct;
             this.widthPct = widthPct;
+            this.wide = wide;
         }
 
         public String getRoomName()  { return roomName; }
         public boolean isGuardian()  { return guardian; }
         public boolean isActive()    { return active; }
-        public double getOffsetPct() { return offsetPct; }
-        public double getWidthPct()  { return widthPct; }
+        public String getOffsetPct() { return offsetPct; }
+        public String getWidthPct()  { return widthPct; }
+        public boolean isWide()      { return wide; }
+
+        public String getBarColor() {
+            if (guardian) return "linear-gradient(90deg,#6f42c1,#a56dff)";
+            if (active)   return "linear-gradient(90deg,#198754,#20c997)";
+            return "linear-gradient(90deg,#0d6efd,#6ea8fe)";
+        }
     }
 
     public List<RoomGanttBar> getRoomGanttBars() {
@@ -251,16 +260,17 @@ public class BhtSummeryController implements Serializable {
             Date barEnd = r.getDischargedAt() != null ? r.getDischargedAt() : new Date();
             long offsetMs = r.getAdmittedAt().getTime() - spanStart.getTime();
             long durationMs = barEnd.getTime() - r.getAdmittedAt().getTime();
-            double offsetPct = (offsetMs * 100.0) / totalMs;
-            double widthPct = Math.max((durationMs * 100.0) / totalMs, 1.0);
+            double rawOffset = (offsetMs * 100.0) / totalMs;
+            double rawWidth  = Math.max((durationMs * 100.0) / totalMs, 1.0);
             boolean guardian = "class com.divudi.core.entity.inward.GuardianRoom"
                                     .equals(r.getPatientRoomClass());
             bars.add(new RoomGanttBar(
                 r.getRoomFacilityCharge() != null ? r.getRoomFacilityCharge().getName() : "—",
                 guardian,
                 !r.isDischarged(),
-                offsetPct,
-                widthPct
+                String.format(java.util.Locale.US, "%.3f", rawOffset),
+                String.format(java.util.Locale.US, "%.3f", rawWidth),
+                rawWidth > 8.0
             ));
         }
         return bars;
