@@ -710,10 +710,34 @@ public class BillNumberGenerator {
     }
 
     // Special method for Single Number strategy only
+    // Returns the next serial number, with the increment and flush performed inside the lock.
+    public Long fetchNextSerialForYearSingleNumber(Institution institution, Department toDepartment, List<BillTypeAtomic> billTypes) {
+        String lockKey = getLockKey(institution, toDepartment, billTypes);
+        ReentrantLock lock = lockMap.computeIfAbsent(lockKey, k -> new ReentrantLock());
+        lock.lock();
+        try {
+            return incrementAndFlushSingleNumber(toDepartment, billTypes);
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    // Returns the next serial number, with the increment and flush performed inside the lock.
+    public Long fetchNextSerialForYearOpdAndInpatientServiceBatchBills(Department department, List<BillTypeAtomic> billTypes) {
+        String lockKey = getLockKey(department, billTypes);
+        ReentrantLock lock = lockMap.computeIfAbsent(lockKey, k -> new ReentrantLock());
+        lock.lock();
+        try {
+            return incrementAndFlushBatchBills(department, billTypes);
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    // Kept for callers outside the single-number strategy path.
     public BillNumber fetchLastBillNumberForYearSingleNumber(Institution institution, Department toDepartment, List<BillTypeAtomic> billTypes) {
         String lockKey = getLockKey(institution, toDepartment, billTypes);
         ReentrantLock lock = lockMap.computeIfAbsent(lockKey, k -> new ReentrantLock());
-
         lock.lock();
         try {
             return fetchLastBillNumberSynchronizedSingleNumber(toDepartment, billTypes);
@@ -733,6 +757,24 @@ public class BillNumberGenerator {
         }
     }
 
+    // Fetches, increments, and flushes the individual-bill counter inside the caller's lock.
+    private Long incrementAndFlushSingleNumber(Department department, List<BillTypeAtomic> billTypes) {
+        BillNumber billNumber = fetchLastBillNumberSynchronizedSingleNumber(department, billTypes);
+        Long next = billNumber.getLastBillNumber() + 1;
+        billNumber.setLastBillNumber(next);
+        billNumberFacade.editAndFlush(billNumber);
+        return next;
+    }
+
+    // Fetches, increments, and flushes the batch-bill counter inside the caller's lock.
+    private Long incrementAndFlushBatchBills(Department department, List<BillTypeAtomic> billTypes) {
+        BillNumber billNumber = fetchLastBillNumberSynchronizedForOpdAndInpatientBatchBills(department, billTypes);
+        Long next = billNumber.getLastBillNumber() + 1;
+        billNumber.setLastBillNumber(next);
+        billNumberFacade.editAndFlush(billNumber);
+        return next;
+    }
+
     // Special synchronized method for Single Number strategy only
     private BillNumber fetchLastBillNumberSynchronizedSingleNumber(Department department, List<BillTypeAtomic> billTypes) {
         int currentYear = Calendar.getInstance().get(Calendar.YEAR);
@@ -749,7 +791,7 @@ public class BillNumberGenerator {
         }
         jpql += " order by b.id desc";
         hm.put("yr", currentYear);
-        BillNumber billNumber = billNumberFacade.findFirstByJpql(jpql, hm);
+        BillNumber billNumber = billNumberFacade.findFreshByJpql(jpql, hm);
 
         if (billNumber == null) {
             billNumber = new BillNumber();
@@ -801,7 +843,7 @@ public class BillNumberGenerator {
         }
         jpql += " order by b.id desc";
         hm.put("yr", currentYear);
-        BillNumber billNumber = billNumberFacade.findFirstByJpql(jpql, hm);
+        BillNumber billNumber = billNumberFacade.findFreshByJpql(jpql, hm);
         if (billNumber == null) {
             billNumber = new BillNumber();
             billNumber.setBillTypeAtomic(null);
@@ -2591,30 +2633,46 @@ public class BillNumberGenerator {
         boolean opdBillNumberGenerateStrategySingleNumberForOpdAndInpatientInvestigationsAndServices
                 = configOptionApplicationController.getBooleanValueByKey("OPD Bill Number Generation Strategy - Single Number for OPD and Inpatient Investigations and Services", false);
 
+        Long dd;
         if (commonBillNumberForAllDepartmentsInstitutionsBillTypeAtomic) {
             billNumber = fetchLastBillNumberForYear(null, null, billTypes);
+            dd = billNumber.getLastBillNumber() + 1;
+            billNumber.setLastBillNumber(dd);
+            billNumberFacade.edit(billNumber);
         } else if (separateBillNumberForAllDepartmentsInstitutionsBillTypeAtomic) {
             billNumber = fetchLastBillNumberForYear(dep.getInstitution(), dep, billTypes);
+            dd = billNumber.getLastBillNumber() + 1;
+            billNumber.setLastBillNumber(dd);
+            billNumberFacade.edit(billNumber);
         } else if (separateBillNumberForInstitutionsOnly) {
             billNumber = fetchLastBillNumberForYear(dep.getInstitution(), null, billTypes);
+            dd = billNumber.getLastBillNumber() + 1;
+            billNumber.setLastBillNumber(dd);
+            billNumberFacade.edit(billNumber);
         } else if (separateBillNumberForDepartmentsOnly) {
             billNumber = fetchLastBillNumberForYear(null, dep, billTypes);
+            dd = billNumber.getLastBillNumber() + 1;
+            billNumber.setLastBillNumber(dd);
+            billNumberFacade.edit(billNumber);
         } else if (separateBillNumberForBillTypesOnly) {
             billNumber = fetchLastBillNumberForYear(null, null, billTypes);
+            dd = billNumber.getLastBillNumber() + 1;
+            billNumber.setLastBillNumber(dd);
+            billNumberFacade.edit(billNumber);
         } else if (opdBillNumberGenerateStrategyForFromDepartmentAndToDepartmentCombination) {
             billNumber = fetchLastBillNumberForYear(null, dep, billTypes); //TODO: Correct this in a seperate issue
+            dd = billNumber.getLastBillNumber() + 1;
+            billNumber.setLastBillNumber(dd);
+            billNumberFacade.edit(billNumber);
         } else if (opdBillNumberGenerateStrategySingleNumberForOpdAndInpatientInvestigationsAndServices) {
-            billNumber = fetchLastBillNumberForYearSingleNumber(null, dep, billTypes);
+            // increment + flush happens inside the lock — no separate edit() needed
+            dd = fetchNextSerialForYearSingleNumber(null, dep, billTypes);
         } else {
             billNumber = fetchLastBillNumberForYear(dep.getInstitution());
+            dd = billNumber.getLastBillNumber() + 1;
+            billNumber.setLastBillNumber(dd);
+            billNumberFacade.edit(billNumber);
         }
-
-        Long dd = billNumber.getLastBillNumber();
-        dd = dd + 1;
-
-        billNumber.setLastBillNumber(dd);
-
-        billNumberFacade.edit(billNumber);
 
         StringBuilder result = new StringBuilder();
 
@@ -2656,13 +2714,8 @@ public class BillNumberGenerator {
     }
 
     public String departmentBatchBillNumberGeneratorYearlyForInpatientAndOpdServices(Department dep, List<BillTypeAtomic> billTypes) {
-        BillNumber billNumber = fetchLastBillNumberSynchronizedForOpdAndInpatientBatchBillForYear(dep, billTypes);
-
-        Long dd = billNumber.getLastBillNumber();
-        dd = dd + 1;
-        billNumber.setLastBillNumber(dd);
-
-        billNumberFacade.edit(billNumber);
+        // increment + flush happen inside the lock via fetchNextSerialForYearOpdAndInpatientServiceBatchBills
+        Long dd = fetchNextSerialForYearOpdAndInpatientServiceBatchBills(dep, billTypes);
 
         StringBuilder result = new StringBuilder();
 

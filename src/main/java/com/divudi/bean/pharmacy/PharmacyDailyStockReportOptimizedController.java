@@ -3,6 +3,8 @@ package com.divudi.bean.pharmacy;
 import com.divudi.bean.common.*;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.ejb.PharmacyBean;
+import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.PharmacyRow;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.facade.StockHistoryFacade;
@@ -15,8 +17,11 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.context.FacesContext;
@@ -58,6 +63,8 @@ public class PharmacyDailyStockReportOptimizedController implements Serializable
     private InstitutionController institutionController;
     @Inject
     private DepartmentController departmentController;
+    @Inject
+    private PharmacyDailyStockDrillDownLevel1Controller drillDownLevel1Controller;
 
     // Filter properties
     private Date fromDate;
@@ -84,6 +91,56 @@ public class PharmacyDailyStockReportOptimizedController implements Serializable
             department = sessionController.getDepartment();
         }
         return "/pharmacy/reports/summary_reports/daily_stock_values_report_optimized?faces-redirect=true";
+    }
+
+    /**
+     * F15 → Level 1 drill-down: section-level entry. Opens Level 1 with the
+     * given transaction type pre-selected and ALL of its atomics ticked.
+     * Single-day range = F15's selected date.
+     *
+     * Issue #20239.
+     */
+    public String drillDownAllForSection(String typeName) {
+        PharmacyDailyStockDrillDownLevel1Controller.TransactionType type =
+                PharmacyDailyStockDrillDownLevel1Controller.TransactionType.valueOf(typeName);
+        return drillDownLevel1Controller.navigateToLevel1FromF15(
+                fromDate, fromDate, institution, site, department, type, atomicsForType(type));
+    }
+
+    /**
+     * F15 → Level 1 drill-down: per-atomic entry. Opens Level 1 with the
+     * given transaction type pre-selected and only the row's BillTypeAtomic
+     * ticked. Falls back to all atomics for the section if the row's atomic
+     * is null. Single-day range = F15's selected date.
+     *
+     * Issue #20239.
+     */
+    public String drillDownSingleAtomic(String typeName, PharmacyRow row) {
+        PharmacyDailyStockDrillDownLevel1Controller.TransactionType type =
+                PharmacyDailyStockDrillDownLevel1Controller.TransactionType.valueOf(typeName);
+        List<BillTypeAtomic> atomics = (row != null && row.getBillTypeAtomic() != null)
+                ? Arrays.asList(row.getBillTypeAtomic())
+                : atomicsForType(type);
+        return drillDownLevel1Controller.navigateToLevel1FromF15(
+                fromDate, fromDate, institution, site, department, type, atomics);
+    }
+
+    private List<BillTypeAtomic> atomicsForType(PharmacyDailyStockDrillDownLevel1Controller.TransactionType type) {
+        if (type == null) {
+            return Collections.emptyList();
+        }
+        switch (type) {
+            case SALES:
+                return pharmacyService.getPharmacyIncomeBillTypes();
+            case PURCHASES:
+                return pharmacyService.getPharmacyPurchaseBillTypes();
+            case TRANSFERS:
+                return pharmacyService.getPharmacyInternalTransferBillTypes();
+            case ADJUSTMENTS:
+                return pharmacyService.getPharmacyAdjustmentBillTypes();
+            default:
+                return Collections.emptyList();
+        }
     }
 
     /**

@@ -289,40 +289,6 @@
                             </p:panel>
                         </h:panelGroup>
 
-                        <p:panel id="panelBillItems" class="mt-2">
-                            <p:dataTable rowIndexVar="rowIndex" id="bFee" value="#{inwardProfessionalBillController.lstBillFees}" var="bif" >
-                                <f:facet name="header">
-                                    <h:outputText styleClass="fas fa-money-bill-wave"></h:outputText>
-                                    <h:outputLabel value="Bill Professional Fees" class="mx-4"/>
-                                </f:facet>
-                                <p:column>
-                                    <f:facet name="header">No</f:facet>
-                                    <h:outputLabel value="#{rowIndex}"/>
-                                </p:column>
-                                <p:column>
-                                    <f:facet name="header">Fee</f:facet>
-                                    <h:inputText autocomplete="off" id="txtFeeVal" value="#{bif.feeValue}">
-                                        <p:ajax event="blur" process="txtFeeVal"
-                                                update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}"
-                                                listener="#{inwardProfessionalBillController.feeChanged(bif)}" />
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:inputText>
-                                </p:column>
-                                <p:column>
-                                    <f:facet name="header">Payee</f:facet> 
-                                    <h:outputLabel value="#{bif.staff.person.name}" rendered="#{bif.staff!=null}" ></h:outputLabel>
-                                </p:column>
-                                <p:column >
-                                    <f:facet name="header">Fee At</f:facet>
-                                    <h:outputLabel value="#{bif.feeAt}" >
-                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
-                                    </h:outputLabel>
-                                </p:column>
-                                <p:column>
-                                    <p:commandButton ajax="false" value="Remove" action="#{inwardProfessionalBillController.remove(bif)}" />
-                                </p:column>
-                            </p:dataTable>
-                        </p:panel>
                     </div>
 
 
@@ -331,6 +297,75 @@
 
                 </div>
 
+
+                <div class="row mt-2">
+                    <div class="col-12">
+                        <p:panel id="panelSavedEstimates">
+                            <f:facet name="header">
+                                <h:outputText styleClass="fas fa-list-alt"/>
+                                <h:outputLabel value="Saved Estimated Professional Fees" class="mx-4"/>
+                            </f:facet>
+                            <p:dataTable rowIndexVar="savedRowIndex"
+                                         id="tblSavedEstimates"
+                                         value="#{inwardProfessionalBillController.savedEstimatedProfessionalFees}"
+                                         var="sef"
+                                         emptyMessage="No saved estimated professional fees for this BHT.">
+                                <p:column headerText="No">
+                                    <h:outputLabel value="#{savedRowIndex + 1}"/>
+                                </p:column>
+                                <p:column headerText="Bill No">
+                                    <h:outputLabel value="#{sef.bill.deptId}"/>
+                                </p:column>
+                                <p:column headerText="Speciality">
+                                    <h:outputLabel value="#{sef.speciality.name}"/>
+                                </p:column>
+                                <p:column headerText="Staff">
+                                    <h:outputLabel value="#{sef.staff.person.nameWithTitle}" rendered="#{sef.staff ne null}"/>
+                                </p:column>
+                                <p:column headerText="Fee" style="text-align: right;">
+                                    <h:outputLabel value="#{sef.feeValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                </p:column>
+                                <p:column headerText="Fee At">
+                                    <h:outputLabel value="#{sef.feeAt}">
+                                        <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
+                                    </h:outputLabel>
+                                </p:column>
+                                <p:column headerText="Added By">
+                                    <h:outputLabel value="#{sef.creater.webUserPerson.name}"/>
+                                </p:column>
+                                <p:column headerText="Added At">
+                                    <h:outputLabel value="#{sef.createdAt}">
+                                        <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                    </h:outputLabel>
+                                </p:column>
+                                <p:column headerText="Action">
+                                    <p:commandButton value="Remove"
+                                                     icon="fa fa-trash"
+                                                     class="ui-button-danger"
+                                                     ajax="false"
+                                                     action="#{inwardProfessionalBillController.removeSavedEstimatedProfessionalFee(sef)}">
+                                        <p:confirm header="Confirm" message="Remove this estimated professional fee?" icon="pi pi-exclamation-triangle"/>
+                                    </p:commandButton>
+                                </p:column>
+                                <f:facet name="footer">
+                                    <div class="d-flex justify-content-end">
+                                        <h:outputLabel value="Total: " class="mx-2"/>
+                                        <h:outputLabel value="#{inwardProfessionalBillController.totalSavedEstimatedProfessionalFeesForEncounter}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </div>
+                                </f:facet>
+                            </p:dataTable>
+                        </p:panel>
+                    </div>
+                </div>
+
+                <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
+                    <p:commandButton value="Yes" type="button" styleClass="ui-confirmdialog-yes" icon="pi pi-check"/>
+                    <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no" icon="pi pi-times"/>
+                </p:confirmDialog>
 
             </p:panel>
 

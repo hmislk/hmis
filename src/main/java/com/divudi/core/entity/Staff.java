@@ -46,7 +46,7 @@ import javax.persistence.Transient;
 public class Staff implements Serializable, IdentifiableWithNameOrCode {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
 
     static final long serialVersionUID = 1L;
@@ -388,6 +388,15 @@ public class Staff implements Serializable, IdentifiableWithNameOrCode {
                 }
             }
         }
+        return code;
+    }
+
+    /**
+     * Returns the raw code field without any derivation or mutation.
+     * Use this from read-only contexts (e.g. view rendering) to avoid
+     * dirtying the entity. Prefer this over getCode() for display logic.
+     */
+    public String getCodeRaw() {
         return code;
     }
 

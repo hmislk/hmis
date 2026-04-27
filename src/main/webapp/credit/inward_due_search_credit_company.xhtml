@@ -80,6 +80,7 @@
                             <p:columnGroup type="header">
                                 <p:row>
                                     <p:column headerText="BHT No"/>
+                                    <p:column headerText="Date Of Admission"/>
                                     <p:column headerText="Date Of Discharge"/>
                                     <p:column headerText="Patient Name"/>
                                     <p:column headerText="Credit Company"/>
@@ -94,6 +95,11 @@
                                 </f:facet>
                                 <p:column>
                                     <h:outputLabel value="#{bill.patientEncounter.bhtNo}"/>
+                                </p:column>
+                                <p:column>
+                                    <h:outputLabel value="#{bill.patientEncounter.dateOfAdmission}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                    </h:outputLabel>
                                 </p:column>
                                 <p:column>
                                     <h:outputLabel value="#{bill.patientEncounter.dateOfDischarge}">
@@ -123,7 +129,7 @@
                                 </p:column>
                                 <p:columnGroup type="footer">
                                     <p:row>
-                                        <p:column footerText="Sub Total" colspan="4"/>
+                                        <p:column footerText="Sub Total" colspan="5"/>
                                         <p:column style="text-align: right;">
                                             <f:facet name="footer">
                                                 <h:outputLabel value="#{i.total}">
@@ -150,7 +156,7 @@
                             </p:subTable>
                             <p:columnGroup type="footer">
                                 <p:row>
-                                    <p:column footerText="Grand Total" colspan="4"/>
+                                    <p:column footerText="Grand Total" colspan="5"/>
                                     <p:column style="text-align: right;">
                                         <f:facet name="footer">
                                             <h:outputLabel value="#{creditCompanyDueController.finalTotal}">

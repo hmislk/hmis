@@ -78,6 +78,7 @@ import com.divudi.core.data.dto.BillListReportDTO;
 import com.divudi.core.data.dto.OpdBillItemDTO;
 import com.divudi.core.data.dto.OpdSaleSummaryDTO;
 import com.divudi.core.data.dto.PharmacyCashierPreBillSearchDTO;
+import com.divudi.core.data.dto.PharmacyAdjustmentBillItemDTO;
 import com.divudi.core.data.dto.PharmacyItemPurchaseDTO;
 import com.divudi.core.data.dto.PharmacyPreBillSearchDTO;
 import com.divudi.core.data.dto.PharmacyTransferRequestIssueDTO;
@@ -123,6 +124,7 @@ import java.util.Set;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.context.FacesContext;
+import javax.faces.model.SelectItem;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
@@ -280,6 +282,7 @@ public class SearchController implements Serializable {
     private int maxResult = 50;
     private BillType billType;
     private BillTypeAtomic billTypeAtomic;
+    private List<BillTypeAtomic> selectedPharmacyAdjustmentTypes = new ArrayList<>();
     private PaymentMethod paymentMethod;
     private List<PaymentMethod> paymentMethods;
     private double allCashierSummaryGrandTotal;
@@ -304,6 +307,8 @@ public class SearchController implements Serializable {
     // DTO lists for disposal issue search results
     private List<PharmacyItemPurchaseDTO> disposalIssueBillDtos;
     private List<PharmacyItemPurchaseDTO> disposalIssueBillItemDtos;
+    // DTO list for pharmacy adjustment bill item search
+    private List<PharmacyAdjustmentBillItemDTO> pharmacyAdjustmentBillItemDtos;
     // DTO list for pharmacy purchase orders
     private List<PharmacyPurchaseOrderDTO> pharmacyPurchaseOrderDtos;
     private List<Payment> payments;
@@ -1432,6 +1437,11 @@ public class SearchController implements Serializable {
 
     }
 
+    public String navigateToInpatientDirectIssuesByBill() {
+        makeListNull();
+        return "/inward/pharmacy_search_sale_bill_bht?faces-redirect=true";
+    }
+
     public void makeListNull() {
         maxResult = configOptionApplicationController.getIntegerValueByKey("Maximum Number of records for default search", 50);
         bills = null;
@@ -2447,6 +2457,54 @@ public class SearchController implements Serializable {
 
     public void setBillTypeAtomic(BillTypeAtomic billTypeAtomic) {
         this.billTypeAtomic = billTypeAtomic;
+    }
+
+    public List<BillTypeAtomic> getSelectedPharmacyAdjustmentTypes() {
+        return selectedPharmacyAdjustmentTypes;
+    }
+
+    public void setSelectedPharmacyAdjustmentTypes(List<BillTypeAtomic> selectedPharmacyAdjustmentTypes) {
+        this.selectedPharmacyAdjustmentTypes = selectedPharmacyAdjustmentTypes;
+    }
+
+    public List<SelectItem> getPharmacyAdjustmentTypeSelectItems() {
+        List<SelectItem> items = new ArrayList<>();
+        for (BillTypeAtomic type : pharmacyAdjustmentAllTypes()) {
+            items.add(new SelectItem(type, type.getLabel()));
+        }
+        return items;
+    }
+
+    private List<BillTypeAtomic> pharmacyAdjustmentAllTypes() {
+        return Arrays.asList(
+                BillTypeAtomic.PHARMACY_ADJUSTMENT,
+                BillTypeAtomic.PHARMACY_ADJUSTMENT_CANCELLED,
+                BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT,
+                BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT_BILL,
+                BillTypeAtomic.PHARMACY_STAFF_STOCK_ADJUSTMENT,
+                BillTypeAtomic.PHARMACY_PURCHASE_RATE_ADJUSTMENT,
+                BillTypeAtomic.PHARMACY_RETAIL_RATE_ADJUSTMENT,
+                BillTypeAtomic.PHARMACY_WHOLESALE_RATE_ADJUSTMENT,
+                BillTypeAtomic.PHARMACY_COST_RATE_ADJUSTMENT,
+                BillTypeAtomic.PHARMACY_STOCK_EXPIRY_DATE_AJUSTMENT
+        );
+    }
+
+    public void selectAllPharmacyAdjustmentTypes() {
+        selectedPharmacyAdjustmentTypes = new ArrayList<>(pharmacyAdjustmentAllTypes());
+    }
+
+    public void clearPharmacyAdjustmentTypes() {
+        selectedPharmacyAdjustmentTypes = new ArrayList<>();
+    }
+
+    public String navigateToPharmacyAdjustmentBillItemSearch() {
+        institution = getSessionController().getInstitution();
+        site = getSessionController().getLoggedSite();
+        department = getSessionController().getDepartment();
+        pharmacyAdjustmentBillItemDtos = null;
+        selectedPharmacyAdjustmentTypes = new ArrayList<>();
+        return "/pharmacy/adjustments/pharmacy_search_adjustment_bill_item?faces-redirect=true";
     }
 
     public Date getMaxDate() {
@@ -5373,53 +5431,79 @@ public class SearchController implements Serializable {
     }
 
     public void createPharmacyAdjustmentBillItemTable() {
-        String jpql;
         Map<String, Object> m = new HashMap<>();
 
         m.put("toDate", toDate);
         m.put("fromDate", fromDate);
-        m.put("ins", getSessionController().getInstitution());
 
-        // Set bill type atomics for pharmacy adjustments
-        List<BillTypeAtomic> billTypeAtomics = Arrays.asList(
-                BillTypeAtomic.PHARMACY_ADJUSTMENT,
-                BillTypeAtomic.PHARMACY_ADJUSTMENT_CANCELLED,
-                BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT,
-                BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT_BILL,
-                BillTypeAtomic.PHARMACY_STAFF_STOCK_ADJUSTMENT,
-                BillTypeAtomic.PHARMACY_PURCHASE_RATE_ADJUSTMENT,
-                BillTypeAtomic.PHARMACY_RETAIL_RATE_ADJUSTMENT,
-                BillTypeAtomic.PHARMACY_WHOLESALE_RATE_ADJUSTMENT,
-                BillTypeAtomic.PHARMACY_COST_RATE_ADJUSTMENT,
-                BillTypeAtomic.PHARMACY_STOCK_EXPIRY_DATE_AJUSTMENT
-        );
+        // Fall back to logged institution if none selected
+        Institution effectiveInstitution = (institution != null) ? institution : getSessionController().getInstitution();
+        m.put("ins", effectiveInstitution);
+
+        // Use selected adjustment types when provided, otherwise include all adjustment types
+        List<BillTypeAtomic> billTypeAtomics;
+        if (selectedPharmacyAdjustmentTypes != null && !selectedPharmacyAdjustmentTypes.isEmpty()) {
+            billTypeAtomics = selectedPharmacyAdjustmentTypes;
+        } else {
+            billTypeAtomics = Arrays.asList(
+                    BillTypeAtomic.PHARMACY_ADJUSTMENT,
+                    BillTypeAtomic.PHARMACY_ADJUSTMENT_CANCELLED,
+                    BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT,
+                    BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT_BILL,
+                    BillTypeAtomic.PHARMACY_STAFF_STOCK_ADJUSTMENT,
+                    BillTypeAtomic.PHARMACY_PURCHASE_RATE_ADJUSTMENT,
+                    BillTypeAtomic.PHARMACY_RETAIL_RATE_ADJUSTMENT,
+                    BillTypeAtomic.PHARMACY_WHOLESALE_RATE_ADJUSTMENT,
+                    BillTypeAtomic.PHARMACY_COST_RATE_ADJUSTMENT,
+                    BillTypeAtomic.PHARMACY_STOCK_EXPIRY_DATE_AJUSTMENT
+            );
+        }
         m.put("billTypeAtomics", billTypeAtomics);
 
-        jpql = "select bi from BillItem bi"
-                + " where (bi.bill.retired is null or bi.bill.retired=false) "
-                + " and bi.bill.institution = :ins"
-                + " and bi.bill.billTypeAtomic in :billTypeAtomics"
-                + " and bi.bill.createdAt between :fromDate and :toDate ";
+        String jpql = "select new com.divudi.core.data.dto.PharmacyAdjustmentBillItemDTO("
+                + "b.id, b.deptId, b.createdAt, b.billTypeAtomic,"
+                + "bi.item.code, bi.item.name,"
+                + "rb.cancelled, cb.createdAt,"
+                + "rb.refunded, rbib.createdAt"
+                + ") from BillItem bi"
+                + " join bi.bill b"
+                + " left join b.referenceBill rb"
+                + " left join rb.cancelledBill cb"
+                + " left join bi.referanceBillItem rbi"
+                + " left join rbi.bill rbib"
+                + " where (b.retired is null or b.retired=false)"
+                + " and b.institution = :ins"
+                + " and b.billTypeAtomic in :billTypeAtomics"
+                + " and b.createdAt between :fromDate and :toDate";
+
+        if (site != null) {
+            jpql += " and b.department.site = :site";
+            m.put("site", site);
+        }
+
+        if (department != null) {
+            jpql += " and b.department = :dept";
+            m.put("dept", department);
+        }
 
         if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().isEmpty()) {
-            jpql += " and (bi.bill.deptId) like :billNo ";
+            jpql += " and b.deptId like :billNo";
             m.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
         }
 
         if (getSearchKeyword().getItemName() != null && !getSearchKeyword().getItemName().trim().isEmpty()) {
-            jpql += " and (bi.item.name) like :itm ";
+            jpql += " and bi.item.name like :itm";
             m.put("itm", "%" + getSearchKeyword().getItemName().trim().toUpperCase() + "%");
         }
 
         if (getSearchKeyword().getCode() != null && !getSearchKeyword().getCode().trim().isEmpty()) {
-            jpql += " and (bi.item.code) like :cde ";
+            jpql += " and bi.item.code like :cde";
             m.put("cde", "%" + getSearchKeyword().getCode().trim().toUpperCase() + "%");
         }
 
-        jpql += " order by bi.id desc";
+        jpql += " order by b.id desc";
 
-        billItems = getBillItemFacade().findByJpql(jpql, m, TemporalType.TIMESTAMP);
-
+        pharmacyAdjustmentBillItemDtos = (List<PharmacyAdjustmentBillItemDTO>) getBillItemFacade().findLightsByJpql(jpql, m, TemporalType.TIMESTAMP);
     }
 
     public void createPharmacyAdjustmentBillItemTableForStockTaking() {
@@ -7155,9 +7239,65 @@ public class SearchController implements Serializable {
         }
 
         if (bills != null && !bills.isEmpty()) {
-            for (Bill b : bills) {
-                b.setListOfBill(getGrns(b, referenceBillTypes)); // N+1; refactor if needed
+            fillGrnsByBulkQuery(bills, referenceBillTypes);
+        }
+    }
+
+    /**
+     * Bulk-loads GRNs for every PO in the list using 2 queries instead of
+     * 2×N per-PO queries, then assigns the results to each Bill.listOfBill.
+     * Two query paths match the original getGrns() logic:
+     *   1. g.referenceBill = po
+     *   2. g.billedBill.referenceBill = po
+     */
+    private void fillGrnsByBulkQuery(List<Bill> poList, List<BillTypeAtomic> grnBillTypesAtomicsToList) {
+        Map<Long, List<Bill>> grnsByPoId = new HashMap<>();
+        for (Bill po : poList) {
+            grnsByPoId.put(po.getId(), new ArrayList<>());
+        }
+
+        // Path 1: GRN.referenceBill is the PO
+        String jpql1 = "SELECT g.referenceBill.id, g FROM Bill g "
+                + "WHERE g.retired = false "
+                + "AND g.billTypeAtomic IN :btas "
+                + "AND g.referenceBill IN :pos";
+        Map<String, Object> params1 = new HashMap<>();
+        params1.put("btas", grnBillTypesAtomicsToList);
+        params1.put("pos", poList);
+        List<Object> rows1 = getBillFacade().findObjects(jpql1, params1);
+        if (rows1 != null) {
+            for (Object row : rows1) {
+                Object[] cols = (Object[]) row;
+                Long poId = ((Number) cols[0]).longValue();
+                Bill grn = (Bill) cols[1];
+                grnsByPoId.computeIfAbsent(poId, k -> new ArrayList<>()).add(grn);
             }
+        }
+
+        // Path 2: GRN.billedBill.referenceBill is the PO
+        String jpql2 = "SELECT g.billedBill.referenceBill.id, g FROM Bill g "
+                + "WHERE g.retired = false "
+                + "AND g.billTypeAtomic IN :btas "
+                + "AND g.billedBill IS NOT NULL "
+                + "AND g.billedBill.referenceBill IN :pos";
+        Map<String, Object> params2 = new HashMap<>();
+        params2.put("btas", grnBillTypesAtomicsToList);
+        params2.put("pos", poList);
+        List<Object> rows2 = getBillFacade().findObjects(jpql2, params2);
+        if (rows2 != null) {
+            for (Object row : rows2) {
+                Object[] cols = (Object[]) row;
+                Long poId = ((Number) cols[0]).longValue();
+                Bill grn = (Bill) cols[1];
+                List<Bill> grnList = grnsByPoId.computeIfAbsent(poId, k -> new ArrayList<>());
+                if (!grnList.contains(grn)) {
+                    grnList.add(grn);
+                }
+            }
+        }
+
+        for (Bill po : poList) {
+            po.setListOfBill(grnsByPoId.getOrDefault(po.getId(), new ArrayList<>()));
         }
     }
 
@@ -15912,17 +16052,12 @@ public class SearchController implements Serializable {
     }
 
     public void createPettyTable() {
-        List<BillType> billTypes = new ArrayList<>();
-        billTypes.add(BillType.PettyCash);
-        billTypes.add(BillType.IouIssue);
-
-        Date startTime = new Date();
 
         bills = null;
         String sql;
         Map temMap = new HashMap();
 
-        sql = "select b from BilledBill b where b.billType IN :billTypes and b.institution=:ins "
+        sql = "select b from Bill b where b.billTypeAtomic =:bta and b.institution=:ins "
                 + " and b.createdAt between :fromDate and :toDate and b.retired=false ";
 
         if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
@@ -15953,12 +16088,12 @@ public class SearchController implements Serializable {
         sql += " order by b.createdAt desc  ";
 //
 
-        temMap.put("billTypes", billTypes);
+        temMap.put("bta", BillTypeAtomic.PETTY_CASH_PRE);
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
         temMap.put("ins", getSessionController().getInstitution());
 
-        bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP, 50);
+        bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
 
@@ -22472,6 +22607,14 @@ public class SearchController implements Serializable {
 
     public void setDisposalIssueBillItemDtos(List<PharmacyItemPurchaseDTO> disposalIssueBillItemDtos) {
         this.disposalIssueBillItemDtos = disposalIssueBillItemDtos;
+    }
+
+    public List<PharmacyAdjustmentBillItemDTO> getPharmacyAdjustmentBillItemDtos() {
+        return pharmacyAdjustmentBillItemDtos;
+    }
+
+    public void setPharmacyAdjustmentBillItemDtos(List<PharmacyAdjustmentBillItemDTO> pharmacyAdjustmentBillItemDtos) {
+        this.pharmacyAdjustmentBillItemDtos = pharmacyAdjustmentBillItemDtos;
     }
 
     public List<PharmacyPurchaseOrderDTO> getPharmacyPurchaseOrderDtos() {

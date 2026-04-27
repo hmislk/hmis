@@ -244,7 +244,7 @@
                                                         <p:inputText class="w-100" disabled="true"  value="Saturday" rendered="#{bookingControllerViewScopeMonth.selectedSessionInstance.sessionWeekday eq 7 and bookingControllerViewScopeMonth.selectedSessionInstance.sessionWeekday ne null}"/>
                                                     </h:panelGroup>
                                                     <h:panelGroup rendered="#{bookingControllerViewScopeMonth.selectedSessionInstance.sessionDate ne null}" >
-                                                        <p:datePicker value="#{bookingControllerViewScopeMonth.selectedSessionInstance.sessionDate}"/>
+                                                        <p:datePicker value="#{bookingControllerViewScopeMonth.selectedSessionInstance.sessionDate}" disabled="true"/>
 
                                                     </h:panelGroup>
 

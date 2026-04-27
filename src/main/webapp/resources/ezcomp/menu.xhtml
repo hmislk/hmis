@@ -546,8 +546,8 @@
                             actionListener="#{pharmacySaleBhtController.resetAll}">
                         </p:menuitem>
 
-                        <p:menuitem 
-                            ajax="false" 
+                        <p:menuitem
+                            ajax="false"
                             action="/inward/pharmacy_bill_issue_bht?faces-redirect=true"
                             value="Direct Issue to BHTs"
                             icon="fa fa-capsules"
@@ -555,8 +555,17 @@
                             actionListener="#{pharmacySaleBhtController.resetAll()}">
                         </p:menuitem>
 
-                        <p:menuitem  
-                            ajax="false"  
+                        <p:menuitem
+                            ajax="false"
+                            action="/inward/pharmacy_bill_issue_bht_native?faces-redirect=true"
+                            value="Direct Issue to BHTs (Native SQL)"
+                            icon="fa fa-bolt"
+                            rendered="#{webUserController.hasPrivilege('PharmacyDirectIssueToBht')}"
+                            actionListener="#{inpatientDirectIssueNativeSqlController.resetAll()}">
+                        </p:menuitem>
+
+                        <p:menuitem
+                            ajax="false"
                             action="/theater/inward_bill_surgery_issue?faces-redirect=true"
                             value="Direct Issue to Theatre Cases"
                             icon="fa fa-user-injured"
@@ -1064,6 +1073,10 @@
                                     value="Direct Issue to BHTs" icon="fas fa-prescription-bottle-alt"
                                     rendered="#{webUserController.hasPrivilege('PharmacyDirectIssueToBht')}"
                                     actionListener="#{pharmacySaleBhtController.resetAll()}"/>
+                        <p:menuitem ajax="false" action="/inward/pharmacy_bill_issue_bht_native?faces-redirect=true"
+                                    value="Direct Issue to BHTs (Native SQL)" icon="fa fa-bolt"
+                                    rendered="#{webUserController.hasPrivilege('PharmacyDirectIssueToBht')}"
+                                    actionListener="#{inpatientDirectIssueNativeSqlController.resetAll()}"/>
                         <p:menuitem  ajax="false"  action="/theater/inward_bill_surgery_issue?faces-redirect=true"
                                      value="Direct Issue to Theatre Cases" icon="fas fa-cut"
                                      actionListener="#{pharmacySaleBhtController.resetAll()}"
@@ -1074,7 +1087,7 @@
                                      rendered="#{webUserController.hasPrivilege('PharmacyBhtIssueRequest')}" />
                         <p:menuitem  ajax="false" action="#{inwardReportControllerBht.navigateToInpatientPharmacyRequestedAndIssuedOverviewInPharmacy()}"  value="Pharmacy Requested &amp; Issued Drug Overview" icon="fas fa-list" rendered="#{webUserController.hasPrivilege('PharmacySummaryViews')}" ></p:menuitem>
 
-                        <p:menuitem  ajax="false" action="/inward/pharmacy_search_sale_bill_bht" actionListener="#{searchController.makeListNull}"
+                        <p:menuitem  ajax="false" action="#{searchController.navigateToInpatientDirectIssuesByBill()}"
                                      value="Search Inpatient Direct Issues by Bill" icon="fas fa-file-medical" rendered="#{webUserController.hasPrivilege('PharmacySearchInpatientDirectIssuesbyBill')}" ></p:menuitem>
                         <p:menuitem  ajax="false" action="/inward/pharmacy_search_sale_bill_item_bht?faces-redirect=true" actionListener="#{searchController.makeListNull}"
                                      value="Search Inpatient Direct Issues by Item" icon="fas fa-pills" rendered="#{webUserController.hasPrivilege('PharmacySearchInpatientDirectIssuesbyItem')}" ></p:menuitem>
@@ -1859,29 +1872,26 @@
                     icon="fa fa-fw fa-users"
                     rendered="#{webUserController.hasPrivilege('Hr')}" >
                     <p:submenu label="Working Time" rendered="#{webUserController.hasPrivilege('HrWorkingTime')}" >
-                        <p:menuitem  ajax="false"  action="/hr/hr_shift_table" value="Roster Table" icon="fa fa-calendar-alt" actionListener="#{staffShiftController.updateStaffShiftWithoutRoster()}" rendered="#{webUserController.hasPrivilege('HrRosterTable')}" ></p:menuitem>
-                        <p:menuitem  ajax="false"  action="/hr/hr_upload_attendance" value="Upload Attendance" icon="fa fa-upload" rendered="#{webUserController.hasPrivilege('HrUploadAttendance')}" ></p:menuitem>
-                        <p:menuitem  ajax="false"  action="/hr/hr_shift_table_finger_print" value="Analyse Attendance" icon="fa fa-chart-line" rendered="#{webUserController.hasPrivilege('HrAnalyseAttendenceByRoster')}" actionListener="#{staffShiftController.updateStaffShiftWithoutRoster()}"></p:menuitem>
-                        <p:menuitem  ajax="false"  action="/hr/hr_shift_table_finger_print_by_staff" value="Analyse Attendance By Staff" icon="fa fa-user-check" rendered="#{webUserController.hasPrivilege('HrAnalyseAttendenceByStaff')}" ></p:menuitem>
+                        <p:menuitem  ajax="false"  action="#{staffShiftController.navigateToShiftTable()}" value="Roster Table" icon="fa fa-calendar-alt" rendered="#{webUserController.hasPrivilege('HrRosterTable')}" ></p:menuitem>
+                        <p:menuitem  ajax="false"  action="/hr/hr_upload_attendance?faces-redirect=true" value="Upload Attendance" icon="fa fa-upload" rendered="#{webUserController.hasPrivilege('HrUploadAttendance')}" ></p:menuitem>
+                        <p:menuitem  ajax="false"  action="#{staffShiftController.navigateToShiftTableFingerPrint()}" value="Analyse Attendance" icon="fa fa-chart-line" rendered="#{webUserController.hasPrivilege('HrAnalyseAttendenceByRoster')}"></p:menuitem>
+                        <p:menuitem  ajax="false"  action="/hr/hr_shift_table_finger_print_by_staff?faces-redirect=true" value="Analyse Attendance By Staff" icon="fa fa-user-check" rendered="#{webUserController.hasPrivilege('HrAnalyseAttendenceByStaff')}" ></p:menuitem>
                     </p:submenu>                                   
                     <p:submenu label="Forms" rendered="#{webUserController.hasPrivilege('HrForms')}">                                       
-                        <p:menuitem  ajax="false"  action="/hr/hr_form_staff_leave" value="Leave form" icon="fa fa-file-alt" rendered="#{webUserController.hasPrivilege('HrLeaveForms')}"  />
+                        <p:menuitem  ajax="false"  action="/hr/hr_form_staff_leave?faces-redirect=true" value="Leave form" icon="fa fa-file-alt" rendered="#{webUserController.hasPrivilege('HrLeaveForms')}"  />
                         <p:submenu label="Additional" rendered="#{webUserController.hasPrivilege('HrAdditionalForms')}">
-                            <p:menuitem  ajax="false"  action="/hr/hr_form_staff_additional_extra" value="Extra Time" actionListener="#{staffAdditionalFormController.clear()}" rendered="#{webUserController.hasPrivilege('Hr')}"  icon="fa fa-clock"/>    
-                            <p:menuitem  ajax="false"  action="/hr/hr_form_staff_additional_shift" value="Extra Shift Normal " actionListener="#{staffAdditionalFormController.clear()}" rendered="#{webUserController.hasPrivilege('Hr')}"  icon="fa fa-user-clock"/>    
-                            <p:menuitem  ajax="false"  action="/hr/hr_form_staff_additional_shift_day_off" value="Extra Shift Day Off /PH " actionListener="#{staffAdditionalFormController.clear()}" rendered="#{webUserController.hasPrivilege('Hr')}"  icon="fa fa-calendar-check"/>    
+                            <p:menuitem  ajax="false"  action="#{staffAdditionalFormController.navigateToExtraTime()}" value="Extra Time" rendered="#{webUserController.hasPrivilege('Hr')}"  icon="fa fa-clock"/>
+                            <p:menuitem  ajax="false"  action="#{staffAdditionalFormController.navigateToExtraShift()}" value="Extra Shift Normal " rendered="#{webUserController.hasPrivilege('Hr')}"  icon="fa fa-user-clock"/>
+                            <p:menuitem  ajax="false"  action="#{staffAdditionalFormController.navigateToExtraShiftDayOff()}" value="Extra Shift Day Off /PH " rendered="#{webUserController.hasPrivilege('Hr')}"  icon="fa fa-calendar-check"/>
                         </p:submenu>                                       
                     </p:submenu>
-                    <p:menuitem  ajax="false"  action="/hr/hr_staff_salary_advance"  icon="fa fa-hand-holding-usd" rendered="#{webUserController.hasPrivilege('HrAdvanceSalary')}"
-                                 value="Staff Salary Advace"   
-                                 actionListener="#{staffSalaryController.clear}"/>
-                    <p:menuitem  ajax="false"  action="/hr/hr_staff_salary"  icon="fa fa-money-check-alt" value="Staff Salary"  rendered="#{webUserController.hasPrivilege('HrGenerateSalary')}" 
-                                 actionListener="#{staffSalaryController.clear}"/>
-                    <p:menuitem  ajax="false"  action="/hr/hr_staff_salary_special"  icon="fa fa-coins" value="Staff Salary Special"  rendered="#{webUserController.hasPrivilege('HrGenerateSalarySpecial')}" 
-                                 actionListener="#{staffSalaryController.clear}"/>
+                    <p:menuitem  ajax="false"  action="#{staffSalaryController.navigateToSalaryAdvance()}"  icon="fa fa-hand-holding-usd" rendered="#{webUserController.hasPrivilege('HrAdvanceSalary')}"
+                                 value="Staff Salary Advance"/>
+                    <p:menuitem  ajax="false"  action="#{staffSalaryController.navigateToSalary()}"  icon="fa fa-money-check-alt" value="Staff Salary"  rendered="#{webUserController.hasPrivilege('HrGenerateSalary')}" />
+                    <p:menuitem  ajax="false"  action="#{staffSalaryController.navigateToSalarySpecial()}"  icon="fa fa-coins" value="Staff Salary Special"  rendered="#{webUserController.hasPrivilege('HrGenerateSalarySpecial')}" />
 
-                    <p:menuitem  ajax="false"  action="/hr/hr_staff_salary_print"  icon="fa fa-print" value="Staff Salary Print"   
-                                 actionListener="#{staffSalaryController.clear}" rendered="#{webUserController.hasPrivilege('HrPrintSalary')}" />
+                    <p:menuitem  ajax="false"  action="#{staffSalaryController.navigateToSalaryPrint()}"  icon="fa fa-print" value="Staff Salary Print"
+                                 rendered="#{webUserController.hasPrivilege('HrPrintSalary')}" />
 
                     <p:menuitem  
                         ajax="false"  

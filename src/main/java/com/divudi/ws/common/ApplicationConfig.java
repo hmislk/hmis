@@ -37,6 +37,7 @@ public class ApplicationConfig extends Application {
      */
     private void addRestResourceClasses(Set<Class<?>> resources) {
         resources.add(com.divudi.ws.channel.ChannelApi.class);
+        resources.add(com.divudi.ws.channel.ChannelSpecialityApi.class);
         resources.add(com.divudi.ws.channel.CorsResponseFilter.class);
         resources.add(com.divudi.ws.clinical.ClinicalMetadataApi.class);
         resources.add(com.divudi.ws.clinical.FavouriteMedicineApi.class);
@@ -57,6 +58,10 @@ public class ApplicationConfig extends Application {
         resources.add(com.divudi.ws.institution.InstitutionApi.class);
         resources.add(com.divudi.ws.institution.SiteApi.class);
         resources.add(com.divudi.ws.inward.ApiInward.class);
+        resources.add(com.divudi.ws.inward.InwardDiscountMatrixApi.class);
+        resources.add(com.divudi.ws.inward.InwardRoomApi.class);
+        resources.add(com.divudi.ws.inward.InwardRoomCategoryApi.class);
+        resources.add(com.divudi.ws.inward.InwardRoomFacilityChargeApi.class);
         resources.add(com.divudi.ws.lims.Lims.class);
         resources.add(com.divudi.ws.lims.LimsMiddlewareController.class);
         resources.add(com.divudi.ws.lims.MiddlewareController.class);
@@ -69,6 +74,7 @@ public class ApplicationConfig extends Application {
         resources.add(com.divudi.ws.pharmacy.PharmacyGrnBifdBackfillApi.class);
         resources.add(com.divudi.ws.pharmacy.PharmacySearchApi.class);
         resources.add(com.divudi.ws.pharmacy.StockHistoryApi.class);
+        resources.add(com.divudi.ws.pricing.CollectingCentreFeesApi.class);
         resources.add(com.divudi.ws.service.ServiceApi.class);
     }
     

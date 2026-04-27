@@ -198,6 +198,7 @@ public class StaffController implements Serializable {
     }
 
     public String navigateToListStaff() {
+        staff = null;
         fillItems();
         return "/admin/staff/staff_list?faces-redirect=true";
     }
