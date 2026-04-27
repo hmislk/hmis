@@ -112,6 +112,8 @@ public class WebUserController implements Serializable {
     StaffImageController staffImageController;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    WebUserRoleController webUserRoleController;
 
     /**
      * Class Variables
@@ -529,6 +531,7 @@ public class WebUserController implements Serializable {
         department = null;
         institution = null;
         loginPage = null;
+        webUserRoleController.setActivatediItems(null);
         return "/admin/users/user_add_new?faces-redirect=true";
     }
 
@@ -574,6 +577,13 @@ public class WebUserController implements Serializable {
             JsfUtil.addErrorMessage("User name already exists. Plese enter another user name");
             return "";
         }
+        if(webUserRole != null){
+            if(!webUserRole.isActivated()){
+                JsfUtil.addErrorMessage("Selected UserRole is Deactivated.");
+            return "";
+            }
+        }
+        
         getCurrent().setActivated(true);
         getCurrent().setActivatedAt(new Date());
         getCurrent().setActivator(getSessionController().getLoggedUser());
@@ -1192,6 +1202,7 @@ public class WebUserController implements Serializable {
             JsfUtil.addErrorMessage("Please select a user");
             return "";
         }
+        webUserRoleController.setActivatediItems(null);
         webUserRoleUserController.setWebUser(selected);
         webUserRoleUserController.setDepartments(fillWebUserDepartments(selected));
         webUserRoleUserController.loadWebUserRoles();

@@ -309,9 +309,18 @@
 
                                     <!-- Sales Section Card -->
                                     <div class="card mb-3">
-                                        <div class="card-header bg-success text-white">
-                                            <h:outputText value="&#xf788;" styleClass="fas me-2" /> <!-- fa-cash-register icon -->
-                                            <h:outputText value="Sales Transactions" styleClass="fw-bold"/>
+                                        <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                                            <span>
+                                                <h:outputText value="&#xf788;" styleClass="fas me-2" /> <!-- fa-cash-register icon -->
+                                                <h:outputText value="Sales Transactions" styleClass="fw-bold"/>
+                                            </span>
+                                            <p:commandButton
+                                                value="Drill Down"
+                                                icon="fa fa-search-plus"
+                                                ajax="false"
+                                                styleClass="ui-button-info ui-button-sm"
+                                                action="#{pharmacyDailyStockReportOptimizedController.drillDownAllForSection('SALES')}"
+                                                title="Drill down to Level 1 with all sales atomics ticked"/>
                                         </div>
                                         <div class="card-body p-0">
                                             <table class="table table-sm table-hover mb-0">
@@ -325,6 +334,7 @@
                                                         <th class="text-end value-column">Stock Value (Cost)</th>
                                                         <th class="text-end value-column">Stock Value (Purchase)</th>
                                                         <th class="text-end value-column">Stock Value (Retail)</th>
+                                                        <th class="text-center" style="width: 60px;">Drill</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -368,6 +378,14 @@
                                                                     <f:convertNumber pattern="#,##0.00"/>
                                                                 </h:outputText>
                                                             </td>
+                                                            <td class="text-center" style="width: 60px;">
+                                                                <p:commandLink
+                                                                    action="#{pharmacyDailyStockReportOptimizedController.drillDownSingleAtomic('SALES', sale)}"
+                                                                    title="Drill down to Level 1 for this atomic only"
+                                                                    ajax="false">
+                                                                    <h:outputText styleClass="fa fa-search-plus"/>
+                                                                </p:commandLink>
+                                                            </td>
                                                         </tr>
                                                     </ui:repeat>
                                                 </tbody>
@@ -409,6 +427,7 @@
                                                                 <f:convertNumber pattern="#,##0.00"/>
                                                             </h:outputText>
                                                         </td>
+                                                        <td class="text-center" style="width: 60px;"></td>
                                                     </tr>
                                                 </tfoot>
                                             </table>
@@ -417,9 +436,18 @@
 
                                     <!-- Purchases Section Card -->
                                     <div class="card mb-3">
-                                        <div class="card-header bg-warning text-dark">
-                                            <h:outputText value="&#xf07a;" styleClass="fas me-2" /> <!-- fa-shopping-cart icon -->
-                                            <h:outputText value="Purchase Transactions" styleClass="fw-bold"/>
+                                        <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
+                                            <span>
+                                                <h:outputText value="&#xf07a;" styleClass="fas me-2" /> <!-- fa-shopping-cart icon -->
+                                                <h:outputText value="Purchase Transactions" styleClass="fw-bold"/>
+                                            </span>
+                                            <p:commandButton
+                                                value="Drill Down"
+                                                icon="fa fa-search-plus"
+                                                ajax="false"
+                                                styleClass="ui-button-info ui-button-sm"
+                                                action="#{pharmacyDailyStockReportOptimizedController.drillDownAllForSection('PURCHASES')}"
+                                                title="Drill down to Level 1 with all purchase atomics ticked"/>
                                         </div>
                                         <div class="card-body p-0">
                                             <table class="table table-sm table-hover mb-0">
@@ -433,6 +461,7 @@
                                                         <th class="text-end value-column">Stock Value (Cost)</th>
                                                         <th class="text-end value-column">Stock Value (Purchase)</th>
                                                         <th class="text-end value-column">Stock Value (Retail)</th>
+                                                        <th class="text-center" style="width: 60px;">Drill</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -476,6 +505,14 @@
                                                                     <f:convertNumber pattern="#,##0.00"/>
                                                                 </h:outputText>
                                                             </td>
+                                                            <td class="text-center" style="width: 60px;">
+                                                                <p:commandLink
+                                                                    action="#{pharmacyDailyStockReportOptimizedController.drillDownSingleAtomic('PURCHASES', purchase)}"
+                                                                    title="Drill down to Level 1 for this atomic only"
+                                                                    ajax="false">
+                                                                    <h:outputText styleClass="fa fa-search-plus"/>
+                                                                </p:commandLink>
+                                                            </td>
                                                         </tr>
                                                     </ui:repeat>
                                                 </tbody>
@@ -517,6 +554,7 @@
                                                                 <f:convertNumber pattern="#,##0.00"/>
                                                             </h:outputText>
                                                         </td>
+                                                        <td class="text-center" style="width: 60px;"></td>
                                                     </tr>
                                                 </tfoot>
                                             </table>
@@ -525,9 +563,18 @@
 
                                     <!-- Transfers Section Card -->
                                     <div class="card mb-3">
-                                        <div class="card-header bg-info text-white">
-                                            <h:outputText value="&#xf362;" styleClass="fas me-2" /> <!-- fa-exchange-alt icon -->
-                                            <h:outputText value="Transfer Transactions" styleClass="fw-bold"/>
+                                        <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                                            <span>
+                                                <h:outputText value="&#xf362;" styleClass="fas me-2" /> <!-- fa-exchange-alt icon -->
+                                                <h:outputText value="Transfer Transactions" styleClass="fw-bold"/>
+                                            </span>
+                                            <p:commandButton
+                                                value="Drill Down"
+                                                icon="fa fa-search-plus"
+                                                ajax="false"
+                                                styleClass="ui-button-info ui-button-sm"
+                                                action="#{pharmacyDailyStockReportOptimizedController.drillDownAllForSection('TRANSFERS')}"
+                                                title="Drill down to Level 1 with all transfer atomics ticked"/>
                                         </div>
                                         <div class="card-body p-0">
                                             <table class="table table-sm table-hover mb-0">
@@ -541,6 +588,7 @@
                                                         <th class="text-end value-column">Stock Value (Cost)</th>
                                                         <th class="text-end value-column">Stock Value (Purchase)</th>
                                                         <th class="text-end value-column">Stock Value (Retail)</th>
+                                                        <th class="text-center" style="width: 60px;">Drill</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -584,6 +632,14 @@
                                                                     <f:convertNumber pattern="#,##0.00"/>
                                                                 </h:outputText>
                                                             </td>
+                                                            <td class="text-center" style="width: 60px;">
+                                                                <p:commandLink
+                                                                    action="#{pharmacyDailyStockReportOptimizedController.drillDownSingleAtomic('TRANSFERS', transfer)}"
+                                                                    title="Drill down to Level 1 for this atomic only"
+                                                                    ajax="false">
+                                                                    <h:outputText styleClass="fa fa-search-plus"/>
+                                                                </p:commandLink>
+                                                            </td>
                                                         </tr>
                                                     </ui:repeat>
                                                 </tbody>
@@ -625,6 +681,7 @@
                                                                 <f:convertNumber pattern="#,##0.00"/>
                                                             </h:outputText>
                                                         </td>
+                                                        <td class="text-center" style="width: 60px;"></td>
                                                     </tr>
                                                 </tfoot>
                                             </table>
@@ -633,9 +690,18 @@
 
                                     <!-- Adjustments Section Card -->
                                     <div class="card mb-3">
-                                        <div class="card-header bg-danger text-white">
-                                            <h:outputText value="&#xf044;" styleClass="fas me-2" /> <!-- fa-edit icon -->
-                                            <h:outputText value="Adjustment Transactions" styleClass="fw-bold"/>
+                                        <div class="card-header bg-danger text-white d-flex justify-content-between align-items-center">
+                                            <span>
+                                                <h:outputText value="&#xf044;" styleClass="fas me-2" /> <!-- fa-edit icon -->
+                                                <h:outputText value="Adjustment Transactions" styleClass="fw-bold"/>
+                                            </span>
+                                            <p:commandButton
+                                                value="Drill Down"
+                                                icon="fa fa-search-plus"
+                                                ajax="false"
+                                                styleClass="ui-button-info ui-button-sm"
+                                                action="#{pharmacyDailyStockReportOptimizedController.drillDownAllForSection('ADJUSTMENTS')}"
+                                                title="Drill down to Level 1 with all adjustment atomics ticked"/>
                                         </div>
                                         <div class="card-body p-0">
                                             <table class="table table-sm table-hover mb-0">
@@ -649,6 +715,7 @@
                                                         <th class="text-end value-column">Stock Value (Cost)</th>
                                                         <th class="text-end value-column">Stock Value (Purchase)</th>
                                                         <th class="text-end value-column">Stock Value (Retail)</th>
+                                                        <th class="text-center" style="width: 60px;">Drill</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -692,6 +759,14 @@
                                                                     <f:convertNumber pattern="#,##0.00"/>
                                                                 </h:outputText>
                                                             </td>
+                                                            <td class="text-center" style="width: 60px;">
+                                                                <p:commandLink
+                                                                    action="#{pharmacyDailyStockReportOptimizedController.drillDownSingleAtomic('ADJUSTMENTS', adjustment)}"
+                                                                    title="Drill down to Level 1 for this atomic only"
+                                                                    ajax="false">
+                                                                    <h:outputText styleClass="fa fa-search-plus"/>
+                                                                </p:commandLink>
+                                                            </td>
                                                         </tr>
                                                     </ui:repeat>
                                                 </tbody>
@@ -733,6 +808,7 @@
                                                                 <f:convertNumber pattern="#,##0.00"/>
                                                             </h:outputText>
                                                         </td>
+                                                        <td class="text-center" style="width: 60px;"></td>
                                                     </tr>
                                                 </tfoot>
                                             </table>

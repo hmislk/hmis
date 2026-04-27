@@ -1484,7 +1484,7 @@
                         <p:commandLink 
                             id="adjustments_search_adjustment_bill"
                             ajax="false" 
-                            action="/pharmacy/pharmacy_search_adjustment_bill_item?faces-redirect=true"
+                            action="#{searchController.navigateToPharmacyAdjustmentBillItemSearch()}"
                             styleClass="svg-link" >
                             <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/search.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Search Adjustment Bills" />

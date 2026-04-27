@@ -206,12 +206,22 @@
                             </h:outputText>
 
                             <h:outputText value="Total Due Handover Value:" styleClass="handover-label" style="font-weight: normal"/>
-                            <h:outputText value="#{cc.attrs.bundle.total}">
+                            <h:outputText value="#{cc.attrs.bundle.total + cc.attrs.bundle.cashFloatNetTotal}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputText>
 
                             <h:outputText value="Handingover Value:" styleClass="handover-label" style="font-weight: normal"/>
                             <h:outputText value="#{cc.attrs.bundle.totalOut}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
+
+                            <h:outputText rendered="#{cc.attrs.bundle.cashFloatInTotal gt 0}" value="Float Received (Cash):" styleClass="handover-label" style="font-weight: normal"/>
+                            <h:outputText rendered="#{cc.attrs.bundle.cashFloatInTotal gt 0}" value="#{cc.attrs.bundle.cashFloatInTotal}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
+
+                            <h:outputText rendered="#{cc.attrs.bundle.cashFloatOutTotal gt 0}" value="Float Sent (Cash):" styleClass="handover-label" style="font-weight: normal"/>
+                            <h:outputText rendered="#{cc.attrs.bundle.cashFloatOutTotal gt 0}" value="#{cc.attrs.bundle.cashFloatOutTotal}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputText>
 
@@ -237,9 +247,9 @@
                                         <h:panelGroup rendered="#{cc.attrs.bundle.hasCashTransaction}">
                                             <tr>
                                                 <td>Cash</td>
-                                                <td class="text-end"><h:outputText value="#{cc.attrs.bundle.cashValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                                <td class="text-end"><h:outputText value="#{cc.attrs.bundle.cashValue + cc.attrs.bundle.cashFloatNetTotal}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
                                                 <td class="text-end"><h:outputText value="#{cc.attrs.bundle.denominatorValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
-                                                <td class="text-end"><h:outputText value="#{cc.attrs.bundle.cashValue - cc.attrs.bundle.denominatorValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                                <td class="text-end"><h:outputText value="#{cc.attrs.bundle.cashValue + cc.attrs.bundle.cashFloatNetTotal - cc.attrs.bundle.denominatorValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
                                             </tr>
                                         </h:panelGroup>
                                         <h:panelGroup rendered="#{cc.attrs.bundle.hasCardTransaction}">

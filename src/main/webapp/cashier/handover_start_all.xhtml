@@ -136,7 +136,7 @@
                                                 <tr class="ui-widget-content" >
                                                     <td>Cash</td>
                                                     <td class="text-end">
-                                                        <h:outputText value="#{financialTransactionController.bundle.cashValue}">
+                                                        <h:outputText value="#{financialTransactionController.bundle.cashValue + financialTransactionController.bundle.cashFloatNetTotal}">
                                                             <f:convertNumber pattern="#,##0.00" />
                                                         </h:outputText>
                                                     </td>
@@ -146,7 +146,7 @@
                                                         </h:outputText>
                                                     </td>
                                                     <td class="text-end">
-                                                        <h:outputText id="txtCashHandover" value="#{financialTransactionController.bundle.cashValue - financialTransactionController.bundle.denominatorValue}">
+                                                        <h:outputText id="txtCashHandover" value="#{financialTransactionController.bundle.cashValue + financialTransactionController.bundle.cashFloatNetTotal - financialTransactionController.bundle.denominatorValue}">
                                                             <f:convertNumber pattern="#,##0.00" />
                                                         </h:outputText>
                                                     </td>
@@ -464,54 +464,18 @@
                                                         </td>
                                                     </tr>
                                                 </h:panelGroup>
-                                                <!-- Float Sent (Accepted) Row -->
-                                                <h:panelGroup rendered="#{financialTransactionController.bundle.floatOutTotal gt 0}">
-                                                    <tr class="ui-widget-content" style="color: #dc3545;">
-                                                        <td>Float Sent (Accepted)</td>
-                                                        <td class="text-end">
-                                                            <h:outputText value="#{0 - financialTransactionController.bundle.floatOutTotal}">
-                                                                <f:convertNumber pattern="#,##0.00" />
-                                                            </h:outputText>
-                                                        </td>
-                                                        <td></td>
-                                                        <td class="text-end">
-                                                            <h:outputText value="#{0 - financialTransactionController.bundle.floatOutTotal}">
-                                                                <f:convertNumber pattern="#,##0.00" />
-                                                            </h:outputText>
-                                                        </td>
-                                                    </tr>
-                                                </h:panelGroup>
-
-                                                <!-- Float Received Row -->
-                                                <h:panelGroup rendered="#{financialTransactionController.bundle.floatInTotal gt 0}">
-                                                    <tr class="ui-widget-content" style="color: #198754;">
-                                                        <td>Float Received</td>
-                                                        <td class="text-end">
-                                                            <h:outputText value="#{financialTransactionController.bundle.floatInTotal}">
-                                                                <f:convertNumber pattern="#,##0.00" />
-                                                            </h:outputText>
-                                                        </td>
-                                                        <td></td>
-                                                        <td class="text-end">
-                                                            <h:outputText value="#{financialTransactionController.bundle.floatInTotal}">
-                                                                <f:convertNumber pattern="#,##0.00" />
-                                                            </h:outputText>
-                                                        </td>
-                                                    </tr>
-                                                </h:panelGroup>
-
                                                 <!-- Net To Handover Row (shown only when floats exist) -->
                                                 <h:panelGroup rendered="#{financialTransactionController.bundle.floatOutTotal gt 0 or financialTransactionController.bundle.floatInTotal gt 0}">
                                                     <tr class="ui-widget-content fw-bold" style="border-top: 2px solid #6c757d;">
                                                         <td>Net To Handover</td>
                                                         <td class="text-end">
-                                                            <h:outputText value="#{financialTransactionController.bundle.cashValue + financialTransactionController.bundle.floatNetTotal}">
+                                                            <h:outputText value="#{financialTransactionController.bundle.cashValue + financialTransactionController.bundle.cashFloatNetTotal}">
                                                                 <f:convertNumber pattern="#,##0.00" />
                                                             </h:outputText>
                                                         </td>
                                                         <td></td>
                                                         <td class="text-end">
-                                                            <h:outputText value="#{financialTransactionController.bundle.cashValue + financialTransactionController.bundle.floatNetTotal - financialTransactionController.bundle.denominatorValue}">
+                                                            <h:outputText value="#{financialTransactionController.bundle.cashValue + financialTransactionController.bundle.cashFloatNetTotal - financialTransactionController.bundle.denominatorValue}">
                                                                 <f:convertNumber pattern="#,##0.00" />
                                                             </h:outputText>
                                                         </td>
@@ -625,9 +589,44 @@
 
                             </div>
 
+                            <!-- Float Info Section -->
+                            <h:panelGroup rendered="#{financialTransactionController.bundle.cashFloatOutTotal gt 0 or financialTransactionController.bundle.cashFloatInTotal gt 0}" layout="block" class="row mx-2 my-2">
+                                <div class="col-12">
+                                    <table class="table table-sm table-bordered" style="max-width: 600px;">
+                                        <thead>
+                                            <tr class="ui-state-default">
+                                                <th colspan="2" class="text-center">Cash Float Details</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <h:panelGroup rendered="#{financialTransactionController.bundle.cashFloatOutTotal gt 0}">
+                                                <tr class="ui-widget-content" style="color: #dc3545;">
+                                                    <td>Float Sent (Cash)</td>
+                                                    <td class="text-end">
+                                                        <h:outputText value="#{financialTransactionController.bundle.cashFloatOutTotal}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
+                                                </tr>
+                                            </h:panelGroup>
+                                            <h:panelGroup rendered="#{financialTransactionController.bundle.cashFloatInTotal gt 0}">
+                                                <tr class="ui-widget-content" style="color: #198754;">
+                                                    <td>Float Received (Cash)</td>
+                                                    <td class="text-end">
+                                                        <h:outputText value="#{financialTransactionController.bundle.cashFloatInTotal}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
+                                                </tr>
+                                            </h:panelGroup>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </h:panelGroup>
+
                             <div class="row mx-2" >
 
-                                <p:dataTable 
+                                <p:dataTable
                                     id="tblAll"
 
                                     emptyMessage="No Financial Transactions to Handover"

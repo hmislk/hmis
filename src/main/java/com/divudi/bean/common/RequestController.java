@@ -88,6 +88,8 @@ public class RequestController implements Serializable {
 
     private PatientEncounter patientEncounter;
     private PettyCashType pettyCashPayeeType;
+    private String pettyCashFinancialYear;
+    private String pettyCashReceiptNo;
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Navigation Method">
@@ -97,11 +99,21 @@ public class RequestController implements Serializable {
     }
 
     public String navigateToPendingPettyCashRequests() {
-        requestType = RequestType.PETTYCASH_APROVEL;
+        requestType = null;
+        List<RequestType> types = new ArrayList<>();
+        types.add(RequestType.PETTYCASH_APROVEL);
+        types.add(RequestType.PETTYCASH_CANCELLATION);
+        
         status = null;
-        fromDate = com.divudi.core.util.CommonFunctions.getStartOfDay(new java.util.Date());
-        toDate = com.divudi.core.util.CommonFunctions.getEndOfDay(new java.util.Date());
-        searchRequest();
+        List<RequestStatus> sts = new ArrayList<>();
+        sts.add(RequestStatus.PENDING);
+        sts.add(RequestStatus.UNDER_REVIEW);
+        
+        fromDate = null;
+        toDate = null;
+        
+        requests = new ArrayList<>();
+        requests = requestService.fillAllRequest(fromDate, toDate, billNo, bhtNo, requestNo, types, sts, null);
         return "/common/request/view_request?faces-redirect=true";
     }
 
@@ -296,17 +308,19 @@ public class RequestController implements Serializable {
             case PETTY_CASH_PRE:
                 bills.add(currentRequest.getBill());
                 pettyCashPayeeType = resolvePettyCashPayeeType(currentRequest.getBill());
+                splitPettyCashInvoiceNumber(currentRequest.getBill().getInvoiceNumber());
+                comment = null;
                 navigation = "/common/request/petty_cash_bill_cancel_request_approvel?faces-redirect=true";
                 break;
             case PETTY_CASH_ISSUE:
                 bills.add(currentRequest.getBill());
                 pettyCashPayeeType = resolvePettyCashPayeeType(currentRequest.getBill());
+                comment = null;
                 navigation = "/common/request/petty_cash_bill_cancellation_request?faces-redirect=true";
                 break;
             default:
                 navigation = "";
         }
-
         return navigation;
     }
 
@@ -599,6 +613,13 @@ public class RequestController implements Serializable {
             return "";
         }
 
+        if (currentRequest.getBill().getBillTypeAtomic() == BillTypeAtomic.PETTY_CASH_PRE) {
+            if (!isPettyCashFinancialYearValid()) {
+                return "";
+            }
+            currentRequest.getBill().setInvoiceNumber(joinPettyCashInvoiceNumber());
+        }
+
         if (currentRequest.getBill().getPaymentMethod() == null) {
             JsfUtil.addErrorMessage("Select the PaymentMethod");
             return "";
@@ -807,6 +828,11 @@ public class RequestController implements Serializable {
             JsfUtil.addErrorMessage("Bill not found for request Cancel");
             return;
         }
+        
+        if(comment == null || comment.trim().isEmpty()){
+            JsfUtil.addErrorMessage("Comment is Missing");
+            return;
+        }
 
         boolean canReject;
         if (currentRequest.getRequestType() == RequestType.DRAWER_ADJUSTMENT) {
@@ -945,6 +971,69 @@ public class RequestController implements Serializable {
 
     public void setPettyCashPayeeType(PettyCashType pettyCashPayeeType) {
         this.pettyCashPayeeType = pettyCashPayeeType;
+    }
+
+    public String getPettyCashFinancialYear() {
+        return pettyCashFinancialYear;
+    }
+
+    public void setPettyCashFinancialYear(String pettyCashFinancialYear) {
+        this.pettyCashFinancialYear = pettyCashFinancialYear;
+    }
+
+    public String getPettyCashReceiptNo() {
+        return pettyCashReceiptNo;
+    }
+
+    public void setPettyCashReceiptNo(String pettyCashReceiptNo) {
+        this.pettyCashReceiptNo = pettyCashReceiptNo;
+    }
+
+    private void splitPettyCashInvoiceNumber(String invoiceNumber) {
+        pettyCashFinancialYear = null;
+        pettyCashReceiptNo = null;
+        if (invoiceNumber == null) {
+            return;
+        }
+        int dashIndex = invoiceNumber.indexOf('-');
+        if (dashIndex < 0) {
+            pettyCashReceiptNo = invoiceNumber;
+            return;
+        }
+        pettyCashFinancialYear = invoiceNumber.substring(0, dashIndex);
+        pettyCashReceiptNo = invoiceNumber.substring(dashIndex + 1);
+    }
+
+    private String joinPettyCashInvoiceNumber() {
+        String year = pettyCashFinancialYear == null ? "" : pettyCashFinancialYear.trim();
+        String receipt = pettyCashReceiptNo == null ? "" : pettyCashReceiptNo.trim();
+        if (year.isEmpty() && receipt.isEmpty()) {
+            return null;
+        }
+        if (year.isEmpty()) {
+            return receipt;
+        }
+        return year + "-" + receipt;
+    }
+
+    private boolean isPettyCashFinancialYearValid() {
+        if (pettyCashFinancialYear == null || pettyCashFinancialYear.trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Financial Year is Missing");
+            return false;
+        }
+        String year = pettyCashFinancialYear.trim();
+        if (!year.matches("\\d{4}")) {
+            JsfUtil.addErrorMessage("Financial Year must be 4 digits.");
+            return false;
+        }
+        int firstYear = Integer.parseInt(year.substring(0, 2));
+        int secondYear = Integer.parseInt(year.substring(2, 4));
+        if (secondYear != (firstYear + 1) % 100) {
+            JsfUtil.addErrorMessage("Invalid Financial Year. The two halves must be consecutive years.");
+            return false;
+        }
+        pettyCashFinancialYear = year;
+        return true;
     }
 
     private PettyCashType resolvePettyCashPayeeType(Bill bill) {

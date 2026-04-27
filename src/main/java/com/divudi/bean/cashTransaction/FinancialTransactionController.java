@@ -274,6 +274,7 @@ public class FinancialTransactionController implements Serializable {
     boolean floatTransferStarted = false;
 
     private List<Payment> fundTransferAvailablePayments;
+    private List<Payment> depositableNonCashPayments;
 
     // Float Out Cancellation Properties
     private List<Bill> myFundTransferBillsOut;
@@ -1336,6 +1337,7 @@ public class FinancialTransactionController implements Serializable {
     public String navigateToFundDepositBill() {
         resetClassVariables();
         prepareToAddNewFundDepositBill();
+        loadDepositableNonCashPayments();
         return "/cashier/deposit_funds?faces-redirect=true";
     }
 
@@ -1862,29 +1864,24 @@ public class FinancialTransactionController implements Serializable {
         bundle.aggregateTotalsFromAllChildBundles();
         bundle.collectDepartments();
 
-        // Create and configure the current bill
-//        currentBill = new Bill();
-//        currentBill.setBillType(BillType.CashHandoverAcceptBill);
-//        currentBill.setBillTypeAtomic(BillTypeAtomic.FUND_SHIFT_HANDOVER_ACCEPT);
-//        currentBill.setBillClassType(BillClassType.Bill);
-//        currentBill.setReferenceBill(selectedBill);
-//        currentBill.setFromDepartment(selectedBill.getFromDepartment());
-//        currentBill.setFromDate(selectedBill.getFromDate());
-//        currentBill.setDepartment(sessionController.getDepartment());
-//        currentBill.setInstitution(sessionController.getInstitution());
-//        currentBill.setStaff(sessionController.getLoggedUser().getStaff());
-//        currentBill.setWebUser(sessionController.getLoggedUser());
-//        currentBill.setToWebUser(sessionController.getLoggedUser());
-//        currentBill.setFromWebUser(selectedBill.getCreater());
-//        currentBill.setCreatedAt(new Date());
-//        currentBill.setCreater(sessionController.getLoggedUser());
-//        currentBill.setBillDate(new Date());
-//        currentBill.setBillTime(new Date());
-//        currentBill.setTotal(bundle.getTotal());
-//        currentBill.setNetTotal(bundle.getTotal());
-//
-//        // Save the current bill
-//        billController.save(currentBill);
+        // Restore cash float net for display. The denomination bill holds the
+        // physical cash the sender counted at handover; bundle.cashValue is the
+        // cash portion collected during the shift (float-exclusive). Their
+        // difference is the net cash float carried into the handover. Using
+        // the denomination bill (instead of selectedBill.total) is independent
+        // of how total was persisted, so legacy handovers created before the
+        // total-persistence fix also restore correctly.
+        if (denoBill != null) {
+            double physicalCash = denoBill.getNetTotal();
+            double rebuiltCash = bundle.getCashValue();
+            double floatNet = physicalCash - rebuiltCash;
+            if (floatNet > 0.001) {
+                bundle.setCashFloatInTotal(floatNet);
+            } else if (floatNet < -0.001) {
+                bundle.setCashFloatOutTotal(-floatNet);
+            }
+        }
+
         return "/cashier/handover_accept?faces-redirect=true";
     }
 
@@ -2808,6 +2805,14 @@ public class FinancialTransactionController implements Serializable {
 
     public void setFundTransferAvailablePayments(List<Payment> fundTransferAvailablePayments) {
         this.fundTransferAvailablePayments = fundTransferAvailablePayments;
+    }
+
+    public List<Payment> getDepositableNonCashPayments() {
+        return depositableNonCashPayments;
+    }
+
+    public void setDepositableNonCashPayments(List<Payment> depositableNonCashPayments) {
+        this.depositableNonCashPayments = depositableNonCashPayments;
     }
 
     public void addPaymentToShiftEndFundBill() {
@@ -4573,13 +4578,11 @@ public class FinancialTransactionController implements Serializable {
                 if (p.getBill() == null) {
                     continue;
                 }
-                if (p.getBill().getBillTypeAtomic() != null && p.getBill().getBillTypeAtomic() == BillTypeAtomic.FUND_TRANSFER_RECEIVED_BILL) {
-                    if (p.getId() > shiftStartBill.getId()) {
-                        finalOtherPayments.add(p);
-                    }
-                } else {
-                    finalOtherPayments.add(p);
-                }
+                // FUND_TRANSFER_RECEIVED_BILL payments are included regardless of when they
+                // arrived — they stay outstanding until deposited or handed over.
+                // The DB query already ensures handingOverStarted=false and cancelled=false,
+                // so no extra date/id boundary is needed here.
+                finalOtherPayments.add(p);
             }
         }
         return finalOtherPayments;
@@ -4610,13 +4613,9 @@ public class FinancialTransactionController implements Serializable {
                 if (p.getBill() == null) {
                     continue;
                 }
-                if (p.getBill().getBillTypeAtomic() != null && p.getBill().getBillTypeAtomic() == BillTypeAtomic.FUND_TRANSFER_RECEIVED_BILL) {
-                    if (p.getCreatedAt().getTime() > paramFromDate.getTime() && p.getCreatedAt().getTime() < paramToDate.getTime()) {
-                        finalOtherPayments.add(p);
-                    }
-                } else {
-                    finalOtherPayments.add(p);
-                }
+                // FUND_TRANSFER_RECEIVED_BILL payments are included regardless of date —
+                // they remain outstanding until deposited or handed over.
+                finalOtherPayments.add(p);
             }
         }
         return finalOtherPayments;
@@ -4632,12 +4631,17 @@ public class FinancialTransactionController implements Serializable {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         double floatOutAcc = 0.0;
         double floatInAcc = 0.0;
+        double cashFloatOutAcc = 0.0;
+        double cashFloatInAcc = 0.0;
 
         if (shiftPayments != null) {
             for (Payment p : shiftPayments) {
                 // Fund transfer payments are kept separate from collection rows to avoid
                 // mixing float adjustments with department-based collections. Their net
                 // effect is tracked in floatOutAcc/floatInAcc and stored on the parent bundle.
+                // Cash-only portions are tracked in cashFloatOutAcc/cashFloatInAcc for the
+                // Net To Handover formula, which must reflect physical cash only (non-cash
+                // floats are already tracked via the currentHolder mechanism on original payments).
                 if (isFundTransferPayment(p)) {
                     if (p.getBill() != null) {
                         BillTypeAtomic bta = p.getBill().getBillTypeAtomic();
@@ -4646,9 +4650,15 @@ public class FinancialTransactionController implements Serializable {
                                 && !p.getBill().isCancelled()) {
                             // Accepted float out — deducted from this user's drawer when recipient accepted
                             floatOutAcc += Math.abs(p.getPaidValue());
+                            if (p.getPaymentMethod() == PaymentMethod.Cash) {
+                                cashFloatOutAcc += Math.abs(p.getPaidValue());
+                            }
                         } else if (bta == BillTypeAtomic.FUND_TRANSFER_RECEIVED_BILL) {
                             // Float in received by this user
                             floatInAcc += Math.abs(p.getPaidValue());
+                            if (p.getPaymentMethod() == PaymentMethod.Cash) {
+                                cashFloatInAcc += Math.abs(p.getPaidValue());
+                            }
                         }
                         // Cancelled, declined, or pending — no drawer effect, skip
                     }
@@ -4726,6 +4736,8 @@ public class FinancialTransactionController implements Serializable {
         bundleToHoldDeptUserDayBundle.setEndBill(endBill);
         bundleToHoldDeptUserDayBundle.setFloatOutTotal(floatOutAcc);
         bundleToHoldDeptUserDayBundle.setFloatInTotal(floatInAcc);
+        bundleToHoldDeptUserDayBundle.setCashFloatOutTotal(cashFloatOutAcc);
+        bundleToHoldDeptUserDayBundle.setCashFloatInTotal(cashFloatInAcc);
         if (startBill != null) {
             bundleToHoldDeptUserDayBundle.setUser(startBill.getCreater());
         } else {
@@ -5584,7 +5596,7 @@ public class FinancialTransactionController implements Serializable {
         boolean skipCashDiffValidation = configOptionApplicationController.getBooleanValueByKey("Skip Cash Difference Validation for Handover", false);
         if (!skipCashDiffValidation) {
             Double maximumAllowedCashDifferenceForHandover = configOptionApplicationController.getDoubleValueByKey("Maximum Allowed Cash Difference for Handover", 1.0);
-            double expectedCashHandover = bundle.getCashValue() + bundle.getFloatNetTotal();
+            double expectedCashHandover = bundle.getCashValue() + bundle.getCashFloatNetTotal();
             if (Math.abs(bundle.getDenominatorValue() - expectedCashHandover) > maximumAllowedCashDifferenceForHandover) {
                 JsfUtil.addErrorMessage("Cash Value Collected and the cash value Handing over are different. Cannot handover.");
                 return null;
@@ -5644,8 +5656,15 @@ public class FinancialTransactionController implements Serializable {
 
         currentBill.setBillDate(new Date());
         currentBill.setBillTime(new Date());
-        currentBill.setTotal(bundle.getTotal());
-        currentBill.setNetTotal(bundle.getTotalOut());
+        // Persist the amount actually handed over (totalOut tracks selected
+        // payment rows) plus the net cash float. Using bundle.getTotal() here
+        // would inflate the bill when the cashier partially selected non-cash
+        // rows, and the accept page would then credit phantom float to the
+        // receiver.
+        double totalOut = bundle.getTotalOut() != null ? bundle.getTotalOut() : 0.0;
+        double handoverBillTotal = totalOut + bundle.getCashFloatNetTotal();
+        currentBill.setTotal(handoverBillTotal);
+        currentBill.setNetTotal(handoverBillTotal);
 
         currentBill.setCreatedAt(new Date());
         currentBill.setCreater(sessionController.getLoggedUser());
@@ -7111,6 +7130,58 @@ public class FinancialTransactionController implements Serializable {
             }
         }
 
+        // Propagate net cash float to the receiver so it appears on their shift handover.
+        // Floats are marked by department=null; accepting a handover that carries a net
+        // float must create a receiver-side float payment (new FUND_TRANSFER_RECEIVED_BILL),
+        // because the sender's float payments stay attributed to the sender (creater=sender,
+        // floatRecipient was never set for shift-handover floats). Without this, the receiver's
+        // Shift Handover Create page shows no float row and a missing "Net To Handover" line.
+        // The payment's paidValue preserves the signed net (positive = receiver gains cash,
+        // negative = receiver transfers cash out); we use updateDrawer (sign-preserving)
+        // instead of updateDrawerForIns (which takes Math.abs).
+        double cashFloatNet = bundle.getCashFloatNetTotal();
+        if (Math.abs(cashFloatNet) > 0.001) {
+            Bill floatReceivedBill = new Bill();
+            floatReceivedBill.setBillType(BillType.FundTransferReceivedBill);
+            floatReceivedBill.setBillTypeAtomic(BillTypeAtomic.FUND_TRANSFER_RECEIVED_BILL);
+            floatReceivedBill.setBillClassType(BillClassType.Bill);
+            floatReceivedBill.setReferenceBill(currentBill);
+            floatReceivedBill.setDepartment(sessionController.getDepartment());
+            floatReceivedBill.setInstitution(sessionController.getInstitution());
+            floatReceivedBill.setFromDepartment(sender != null ? sender.getDepartment() : null);
+            floatReceivedBill.setToDepartment(sessionController.getDepartment());
+            floatReceivedBill.setFromInstitution(sender != null ? sender.getInstitution() : sessionController.getInstitution());
+            floatReceivedBill.setToInstitution(sessionController.getInstitution());
+            floatReceivedBill.setStaff(reciver.getStaff());
+            floatReceivedBill.setToStaff(reciver.getStaff());
+            floatReceivedBill.setFromStaff(sender != null ? sender.getStaff() : null);
+            floatReceivedBill.setFromWebUser(sender);
+            floatReceivedBill.setToWebUser(reciver);
+            floatReceivedBill.setCreater(reciver);
+            floatReceivedBill.setCreatedAt(new Date());
+            floatReceivedBill.setBillDate(new Date());
+            floatReceivedBill.setBillTime(new Date());
+            floatReceivedBill.setTotal(cashFloatNet);
+            floatReceivedBill.setNetTotal(cashFloatNet);
+            String floatDeptId = billNumberGenerator.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.FUND_TRANSFER_RECEIVED_BILL);
+            floatReceivedBill.setDeptId(floatDeptId);
+            floatReceivedBill.setInsId(floatDeptId);
+            billController.save(floatReceivedBill);
+
+            Payment floatPayment = new Payment();
+            floatPayment.setBill(floatReceivedBill);
+            floatPayment.setPaymentMethod(PaymentMethod.Cash);
+            floatPayment.setPaidValue(cashFloatNet);
+            floatPayment.setCreater(sender);
+            floatPayment.setFloatRecipient(reciver);
+            floatPayment.setCurrentHolder(reciver);
+            floatPayment.setDepartment(null);
+            floatPayment.setInstitution(null);
+            floatPayment.setCreatedAt(new Date());
+            paymentController.save(floatPayment);
+            drawerController.updateDrawer(floatPayment, cashFloatNet, reciver);
+        }
+
         billController.save(currentBill);
 
         bundle.setHandoverBill(currentBill);
@@ -7331,6 +7402,62 @@ public class FinancialTransactionController implements Serializable {
 //    }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="DepositFundBill">
+
+    public void loadDepositableNonCashPayments() {
+        WebUser loggedUser = sessionController.getLoggedUser();
+        if (loggedUser == null) {
+            depositableNonCashPayments = new ArrayList<>();
+            return;
+        }
+        String jpql = "SELECT p FROM Payment p JOIN p.bill b "
+                + "WHERE p.retired = false "
+                + "AND p.cancelled = false "
+                + "AND p.deposited = false "
+                + "AND p.handingOverStarted = false "
+                + "AND p.currentHolder = :holder "
+                + "AND p.paymentMethod <> :cash "
+                + "AND p.paidValue > 0 "
+                + "ORDER BY p.createdAt DESC";
+        Map<String, Object> params = new HashMap<>();
+        params.put("holder", loggedUser);
+        params.put("cash", com.divudi.core.data.PaymentMethod.Cash);
+        depositableNonCashPayments = paymentFacade.findByJpql(jpql, params);
+    }
+
+    public void addNonCashPaymentToDepositBill(Payment original) {
+        if (original == null) {
+            return;
+        }
+        if (currentBillPayments == null) {
+            currentBillPayments = new ArrayList<>();
+        }
+        for (Payment p : currentBillPayments) {
+            if (original.equals(p.getReferancePayment())) {
+                JsfUtil.addErrorMessage("This payment is already added to the deposit.");
+                return;
+            }
+        }
+        Payment depositPayment = original.clonePaymentForNewBill();
+        depositPayment.setReferancePayment(original);
+        currentBillPayments.add(depositPayment);
+        if (depositableNonCashPayments != null) {
+            depositableNonCashPayments.remove(original);
+        }
+        calculateFundDepositBillTotal();
+    }
+
+    public void removeNonCashPaymentFromDepositBill(Payment depositPayment) {
+        if (currentBillPayments == null) {
+            return;
+        }
+        currentBillPayments.remove(depositPayment);
+        Payment original = depositPayment.getReferancePayment();
+        if (original != null && depositableNonCashPayments != null) {
+            depositableNonCashPayments.add(0, original);
+        }
+        calculateFundDepositBillTotal();
+    }
+
     //Lawan
     public void addPaymentToFundDepositBill() {
         if (currentBill == null) {
@@ -7616,8 +7743,14 @@ public class FinancialTransactionController implements Serializable {
             p.setDepartment(sessionController.getDepartment());
             p.setInstitution(sessionController.getInstitution());
             p.setPaidValue(0 - Math.abs(p.getPaidValue()));
+            p.setCurrentHolder(null);
             paymentController.save(p);
             drawerController.updateDrawerForOuts(p);
+            Payment original = p.getReferancePayment();
+            if (original != null) {
+                original.setDeposited(true);
+                paymentFacade.edit(original);
+            }
         }
         return "/cashier/deposit_funds_print?faces-redirect=true";
     }
