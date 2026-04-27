@@ -6,17 +6,20 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.ConfigOptionApplicationController;
+import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.dto.BillItemData;
+import com.divudi.core.data.dto.PrintBillData;
 import com.divudi.core.data.dto.StockDTO;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Item;
 import com.divudi.core.entity.PatientEncounter;
+import com.divudi.core.entity.PriceMatrix;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
-import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.ItemBatchFacade;
 import com.divudi.core.facade.ItemFacade;
 import com.divudi.core.facade.StockFacade;
@@ -38,10 +41,12 @@ import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
+import javax.faces.component.UIComponent;
+import javax.faces.context.FacesContext;
+import javax.faces.convert.Converter;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
-import org.primefaces.event.RowEditEvent;
 import org.primefaces.event.SelectEvent;
 
 /**
@@ -65,9 +70,9 @@ public class InpatientDirectIssueNativeSqlController implements Serializable {
     private SessionController sessionController;
     @Inject
     private ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    private PriceMatrixController priceMatrixController;
 
-    @EJB
-    private BillFacade billFacade;
     @EJB
     private StockFacade stockFacade;
     @EJB
@@ -84,7 +89,8 @@ public class InpatientDirectIssueNativeSqlController implements Serializable {
     // ---- Working state ----
     private PatientEncounter patientEncounter;
     private Bill preBill;
-    private Bill printBill;
+    private PrintBillData printBill;
+    private List<BillItemData> printBillItems;
     private BillItem billItem;
     private Double qty;
     private StockDTO selectedStockDto;
@@ -143,7 +149,49 @@ public class InpatientDirectIssueNativeSqlController implements Serializable {
 
         try {
             nativeSqlService.settle(bill, billItemDataList);
-            printBill = billFacade.find(bill.getId());
+
+            PrintBillData pbd = new PrintBillData();
+            Department issuingDept = sessionController.getLoggedUser().getDepartment();
+            pbd.setDepartmentName(issuingDept.getName());
+            pbd.setDepartmentPrintingName(issuingDept.getPrintingName() != null ? issuingDept.getPrintingName() : issuingDept.getName());
+            pbd.setDepartmentTelephone1(issuingDept.getTelephone1());
+            if (issuingDept.getInstitution() != null) {
+                pbd.setInstitutionName(issuingDept.getInstitution().getName());
+                pbd.setInstitutionAddress(issuingDept.getInstitution().getAddress());
+            }
+            if (patientEncounter.getPatient() != null && patientEncounter.getPatient().getPerson() != null) {
+                pbd.setPatientName(patientEncounter.getPatient().getPerson().getNameWithTitle());
+                pbd.setPatientAgeSex(patientEncounter.getPatient().getPerson().getAgeAsShortString()
+                        + " / " + patientEncounter.getPatient().getPerson().getSex().getLabel());
+            }
+            pbd.setBhtNo(patientEncounter.getBhtNo());
+            if (patientEncounter.getCurrentPatientRoom() != null
+                    && patientEncounter.getCurrentPatientRoom().getRoomFacilityCharge() != null) {
+                pbd.setRoomName(patientEncounter.getCurrentPatientRoom().getRoomFacilityCharge().getName());
+            }
+            pbd.setBillNo(bill.getDeptId());
+            pbd.setCreatedAt(bill.getCreatedAt());
+            double tot = 0.0;
+            for (BillItemData bid : billItemDataList) {
+                tot += Math.abs(bid.getNetValue());
+            }
+            pbd.setNetTotal(tot);
+
+            printBill = pbd;
+            List<BillItemData> printCopy = new ArrayList<>();
+            for (BillItemData src : billItemDataList) {
+                BillItemData p = new BillItemData();
+                p.setItemId(src.getItemId());
+                p.setItemName(src.getItemName());
+                p.setQty(Math.abs(src.getQty()));
+                p.setRate(src.getRate());
+                p.setNetRate(src.getNetRate());
+                p.setNetValue(Math.abs(src.getNetValue()));
+                p.setGrossValue(Math.abs(src.getGrossValue()));
+                p.setDoe(src.getDoe());
+                printCopy.add(p);
+            }
+            printBillItems = printCopy;
             clearBill();
             clearBillItem();
             billPreview = true;
@@ -252,15 +300,25 @@ public class InpatientDirectIssueNativeSqlController implements Serializable {
             return;
         }
 
+        LOGGER.log(Level.INFO, "[addBillItem] selectedStockDto: id={0} itemBatchId={1} itemId={2} itemName={3} retailRate={4} stockQty={5}",
+                new Object[]{selectedStockDto.getId(), selectedStockDto.getItemBatchId(),
+                        selectedStockDto.getItemId(), selectedStockDto.getItemName(),
+                        selectedStockDto.getRetailRate(), selectedStockDto.getStockQty()});
+
         // Fetch the four batch rates in a single lightweight JPQL query (no cascade)
         double[] batchRates = fetchBatchRates(selectedStockDto.getItemBatchId());
-        double batchRetailRate   = batchRates[0];
-        double batchPurchaseRate = batchRates[1];
+        double batchRetailRate    = batchRates[0];
+        double batchPurchaseRate  = batchRates[1];
         double batchWholesaleRate = batchRates[2];
-        double batchCostRate      = batchRates[3];
+        Double batchCostRate      = batchRates[3] > 0 ? batchRates[3] : null;
+
+        LOGGER.log(Level.INFO, "[addBillItem] batchRates: retail={0} purchase={1} wholesale={2} cost={3}",
+                new Object[]{batchRetailRate, batchPurchaseRate, batchWholesaleRate, batchCostRate});
 
         // Resolve AMP item ID for stock history (AMPP → AMP, native service requires AMP ID)
         long ampItemId = resolveAmpItemId(selectedStockDto.getItemId());
+        LOGGER.log(Level.INFO, "[addBillItem] itemId={0} ampItemId={1} selectedStockId={2}",
+                new Object[]{selectedStockDto.getItemId(), ampItemId, selectedStockId});
 
         BillItemData bid = new BillItemData();
         bid.setItemId(selectedStockDto.getItemId());
@@ -274,23 +332,41 @@ public class InpatientDirectIssueNativeSqlController implements Serializable {
         bid.setRetailRate(selectedStockDto.getRetailRate() != null ? selectedStockDto.getRetailRate() : 0.0);
         bid.setPurchaseRate(batchPurchaseRate);
         bid.setWholesaleRate(batchWholesaleRate);
-        bid.setCostRate(batchCostRate > 0 ? batchCostRate : batchPurchaseRate);
+        bid.setCostRate(batchCostRate != null ? batchCostRate : batchPurchaseRate);
         bid.setBatchRetailRate(batchRetailRate);
         bid.setBatchPurchaseRate(batchPurchaseRate);
         bid.setBatchWholesaleRate(batchWholesaleRate);
-        bid.setBatchCostRate(batchCostRate > 0 ? batchCostRate : null);
+        bid.setBatchCostRate(batchCostRate);
         bid.setDoe(selectedStockDto.getDateOfExpire());
         bid.setDescription(selectedStockDto.getItemName());
         bid.setCreatedAt(new Date());
         bid.setCreaterId(sessionController.getLoggedUser().getId());
-        bid.setCatId(selectedStockDto.getCategoryId());
+        bid.setCatId(null);
 
-        // Rate / value for bill line display
+        // Rate / value for bill line — apply inward price matrix margin
         double lineRetailRate = selectedStockDto.getRetailRate() != null ? selectedStockDto.getRetailRate() : 0.0;
+        double absQty = Math.abs(qty);
+        double grossValue = lineRetailRate * absQty;
+        double marginRate = 0.0;
+        double marginValue = 0.0;
+        try {
+            Item itemRef = itemFacade.find(selectedStockDto.getItemId());
+            Department matrixDept = determineMatrixDepartment();
+            if (matrixDept == null) matrixDept = sessionController.getDepartment();
+            PriceMatrix pm = priceMatrixController.fetchInwardMargin(itemRef, grossValue, matrixDept);
+            if (pm != null) {
+                marginRate = (pm.getMargin() / 100.0) * lineRetailRate;
+                marginValue = marginRate * absQty;
+            }
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING, "[addBillItem] margin lookup failed, using retail rate only", e);
+        }
+        double netRate = lineRetailRate + marginRate;
+        double netValue = grossValue + marginValue;
         bid.setRate(lineRetailRate);
-        bid.setNetRate(lineRetailRate);
-        bid.setNetValue(-Math.abs(qty) * lineRetailRate);
-        bid.setGrossValue(-Math.abs(qty) * lineRetailRate);
+        bid.setNetRate(netRate);
+        bid.setNetValue(-netValue);
+        bid.setGrossValue(-grossValue);
 
         if (billItemDataList == null) {
             billItemDataList = new ArrayList<>();
@@ -364,8 +440,8 @@ public class InpatientDirectIssueNativeSqlController implements Serializable {
         double grossTot = 0.0;
         if (billItemDataList != null) {
             for (BillItemData bid : billItemDataList) {
-                netTot += bid.getNetValue();
-                grossTot += bid.getGrossValue();
+                netTot += Math.abs(bid.getNetValue());
+                grossTot += Math.abs(bid.getGrossValue());
             }
         }
         getPreBill().setNetTotal(netTot);
@@ -391,7 +467,7 @@ public class InpatientDirectIssueNativeSqlController implements Serializable {
 
         String sql = "SELECT NEW com.divudi.core.data.dto.StockDTO("
                 + "i.id, i.itemBatch.id, i.itemBatch.item.id, i.itemBatch.item.name, i.itemBatch.item.code, "
-                + "i.itemBatch.item.vmp.name, i.itemBatch.retailsaleRate, i.stock, i.itemBatch.dateOfExpire) "
+                + "i.itemBatch.item.name, i.itemBatch.retailsaleRate, i.stock, i.itemBatch.dateOfExpire) "
                 + "FROM Stock i "
                 + "WHERE i.stock > :stockMin "
                 + "AND i.department = :department "
@@ -407,6 +483,11 @@ public class InpatientDirectIssueNativeSqlController implements Serializable {
             StockDTO selectedDto = (StockDTO) event.getObject();
             this.selectedStockDto = selectedDto;
             this.selectedStockId = selectedDto != null ? selectedDto.getId() : null;
+            LOGGER.log(Level.INFO, "[handleStockSelect] fired: id={0} itemId={1} itemName={2} retailRate={3}",
+                    new Object[]{selectedDto != null ? selectedDto.getId() : null,
+                            selectedDto != null ? selectedDto.getItemId() : null,
+                            selectedDto != null ? selectedDto.getItemName() : null,
+                            selectedDto != null ? selectedDto.getRetailRate() : null});
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Error in handleStockSelect", e);
         }
@@ -419,6 +500,7 @@ public class InpatientDirectIssueNativeSqlController implements Serializable {
     public void resetAll() {
         preBill = null;
         printBill = null;
+        printBillItems = null;
         billItem = null;
         qty = null;
         selectedStockDto = null;
@@ -446,18 +528,16 @@ public class InpatientDirectIssueNativeSqlController implements Serializable {
     // Row editing
     // -----------------------------------------------------------------------
 
-    public void onEdit(RowEditEvent event) {
-        // Re-validate quantity on inline edit
-        BillItemData bid = (BillItemData) event.getObject();
+    public void onEdit(BillItemData bid) {
         if (bid.getQty() <= 0) {
             bid.setQty(0);
             JsfUtil.addErrorMessage("Quantity must be greater than zero.");
             return;
         }
-        double lineRate = bid.getRate();
-        bid.setNetValue(-Math.abs(bid.getQty()) * lineRate);
-        bid.setGrossValue(-Math.abs(bid.getQty()) * lineRate);
-        bid.setPbiQty(-Math.abs(bid.getQty()));
+        double absQty = Math.abs(bid.getQty());
+        bid.setGrossValue(-absQty * bid.getRate());
+        bid.setNetValue(-absQty * bid.getNetRate());
+        bid.setPbiQty(-absQty);
         calTotal();
     }
 
@@ -476,12 +556,20 @@ public class InpatientDirectIssueNativeSqlController implements Serializable {
         this.preBill = preBill;
     }
 
-    public Bill getPrintBill() {
+    public PrintBillData getPrintBill() {
         return printBill;
     }
 
-    public void setPrintBill(Bill printBill) {
+    public void setPrintBill(PrintBillData printBill) {
         this.printBill = printBill;
+    }
+
+    public List<BillItemData> getPrintBillItems() {
+        return printBillItems;
+    }
+
+    public void setPrintBillItems(List<BillItemData> printBillItems) {
+        this.printBillItems = printBillItems;
     }
 
     public BillItem getBillItem() {
@@ -504,6 +592,17 @@ public class InpatientDirectIssueNativeSqlController implements Serializable {
 
     public void setQty(Double qty) {
         this.qty = qty;
+    }
+
+    public Double getPreviewRate() {
+        if (selectedStockDto == null) return null;
+        return selectedStockDto.getRetailRate();
+    }
+
+    public Double getPreviewNetValue() {
+        if (selectedStockDto == null || qty == null) return null;
+        double rate = selectedStockDto.getRetailRate() != null ? selectedStockDto.getRetailRate() : 0.0;
+        return rate * Math.abs(qty);
     }
 
     public StockDTO getSelectedStockDto() {
@@ -559,5 +658,47 @@ public class InpatientDirectIssueNativeSqlController implements Serializable {
 
     public void setErrorMessage(String errorMessage) {
         this.errorMessage = errorMessage;
+    }
+
+    public StockDtoConverter getStockDtoConverter() {
+        return new StockDtoConverter();
+    }
+
+    public class StockDtoConverter implements Converter {
+
+        @Override
+        public Object getAsObject(FacesContext context, UIComponent component, String value) {
+            if (value == null || value.trim().isEmpty()) {
+                return null;
+            }
+            try {
+                Long id = Long.valueOf(value);
+                if (selectedStockDto != null && id.equals(selectedStockDto.getId())) {
+                    return selectedStockDto;
+                }
+                if (lastAutocompleteResults != null) {
+                    for (StockDTO dto : lastAutocompleteResults) {
+                        if (dto != null && id.equals(dto.getId())) {
+                            return dto;
+                        }
+                    }
+                }
+                StockDTO dto = new StockDTO();
+                dto.setId(id);
+                return dto;
+            } catch (NumberFormatException e) {
+                return null;
+            }
+        }
+
+        @Override
+        public String getAsString(FacesContext context, UIComponent component, Object value) {
+            if (value == null) return "";
+            if (value instanceof StockDTO) {
+                StockDTO dto = (StockDTO) value;
+                return dto.getId() != null ? dto.getId().toString() : "";
+            }
+            return value.toString();
+        }
     }
 }

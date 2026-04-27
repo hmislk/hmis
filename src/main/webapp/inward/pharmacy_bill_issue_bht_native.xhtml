@@ -219,7 +219,7 @@
                                                 forceSelection="true"
                                                 value="#{inpatientDirectIssueNativeSqlController.selectedStockDto}"
                                                 completeMethod="#{inpatientDirectIssueNativeSqlController.completeAvailableStockOptimizedDto}"
-                                                converter="#{pharmacySaleBhtController.stockDtoConverter}"
+                                                converter="#{inpatientDirectIssueNativeSqlController.stockDtoConverter}"
                                                 var="i"
                                                 itemLabel="#{i.itemName}"
                                                 itemValue="#{i}">
@@ -227,16 +227,13 @@
                                                     event="itemSelect"
                                                     listener="#{inpatientDirectIssueNativeSqlController.handleStockSelect}"
                                                     process="acStockNative"
-                                                    update="focusQty panelErrorMsg" />
+                                                    update="focusQty txtRate txtValue panelErrorMsg" />
                                                 <p:column headerText="Item" style="padding: 8px;" styleClass="#{commonFunctionsProxy.currentDateTime gt i.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime gt i.dateOfExpire ?'ui-messages-warn':''}">
                                                     <h:outputText value="#{i.itemName}" style="width: 300px!important;">
                                                         <f:verbatim>&#160;</f:verbatim>
                                                         <p:tag rendered="#{commonFunctionsProxy.currentDateTime gt i.dateOfExpire}" value="Expired" severity="danger" />
-                                                        <p:tag rendered="#{!commonFunctionsProxy.currentDateTime gt i.dateOfExpire and commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime gt i.dateOfExpire}" value="Expiring Soon" severity="warn" />
+                                                        <p:tag rendered="#{!(commonFunctionsProxy.currentDateTime gt i.dateOfExpire) and commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime gt i.dateOfExpire}" value="Expiring Soon" severity="warn" />
                                                     </h:outputText>
-                                                </p:column>
-                                                <p:column headerText="Generic" style="padding: 8px;">
-                                                    <h:outputText value="#{i.genericName}" style="width: 150px!important;"></h:outputText>
                                                 </p:column>
                                                 <p:column headerText="Rate" style="padding: 8px;" class="text-end"
                                                           rendered="#{webUserController.hasPrivilege('ShowDrugCharges')}">
@@ -267,10 +264,40 @@
                                             id="txtQty"
                                             onfocus="this.select()"
                                             value="#{inpatientDirectIssueNativeSqlController.qty}">
+                                            <p:ajax event="keyup" process="acStockNative txtQty" update="txtRate txtValue" />
+                                            <p:ajax event="blur"  process="acStockNative txtQty" update="txtRate txtValue" />
                                         </p:inputText>
                                     </div>
 
-                                    <div class="col-12 col-md-2">
+                                    <div class="col-12 col-md-2 text-end">
+                                        <p:outputLabel value="Rate" styleClass="form-label text-end"
+                                                       rendered="#{webUserController.hasPrivilege('ShowDrugCharges')}"></p:outputLabel>
+                                        <p:inputText
+                                            class="w-100 form-control text-end"
+                                            autocomplete="off"
+                                            disabled="true"
+                                            id="txtRate"
+                                            value="#{inpatientDirectIssueNativeSqlController.previewRate}"
+                                            rendered="#{webUserController.hasPrivilege('ShowDrugCharges')}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </p:inputText>
+                                    </div>
+
+                                    <div class="col-12 col-md-2 text-end">
+                                        <p:outputLabel value="Value" styleClass="form-label text-end"
+                                                       rendered="#{webUserController.hasPrivilege('ShowDrugCharges')}"></p:outputLabel>
+                                        <p:inputText
+                                            class="w-100 form-control text-end"
+                                            autocomplete="off"
+                                            disabled="true"
+                                            id="txtValue"
+                                            value="#{inpatientDirectIssueNativeSqlController.previewNetValue}"
+                                            rendered="#{webUserController.hasPrivilege('ShowDrugCharges')}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </p:inputText>
+                                    </div>
+
+                                    <div class="col-12 col-md-1">
                                         <p:outputLabel value="&#160;&#160;" styleClass="form-label"></p:outputLabel>
                                         <p:commandButton
                                             accesskey="a"
@@ -279,8 +306,8 @@
                                             class="ui-button-success w-100"
                                             icon="fa-solid fa-plus"
                                             action="#{inpatientDirectIssueNativeSqlController.addBillItem}"
-                                            process="@this txtQty acStock"
-                                            update="pBillItems acStock txtQty panelErrorMsg" />
+                                            process="@this txtQty acStockNative"
+                                            update=":bill:pBillItems acStock txtQty txtRate txtValue panelErrorMsg" />
                                     </div>
                                 </div>
 
@@ -343,7 +370,7 @@
                                             icon="fas fa-trash"
                                             value="Remove"
                                             action="#{inpatientDirectIssueNativeSqlController.removeBillItemData(bid)}"
-                                            update="pBillItems panelErrorMsg">
+                                            update=":bill:pBillItems panelErrorMsg">
                                         </p:commandButton>
                                     </p:column>
                                 </p:dataTable>
@@ -378,6 +405,41 @@
                                         action="pharmacy_bill_issue_bht_native?faces-redirect=true"
                                         actionListener="#{inpatientDirectIssueNativeSqlController.resetAll}">
                                     </p:commandButton>
+                                    <h:panelGroup rendered="#{webUserController.hasPrivilege('InwardSearch')}">
+                                        <p:commandButton
+                                            ajax="false"
+                                            value="Patient Lookup"
+                                            icon="fa fa-search"
+                                            class="ui-button-warning"
+                                            action="#{patientController.navigateToSearchPatients()}">
+                                        </p:commandButton>
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{webUserController.hasPrivilege('InwardSearch')}">
+                                        <p:commandButton
+                                            ajax="false"
+                                            icon="fa fa-user"
+                                            value="Patient Profile"
+                                            class="ui-button-success"
+                                            action="#{patientController.navigateToOpdPatientProfile()}">
+                                            <f:setPropertyActionListener
+                                                value="#{inpatientDirectIssueNativeSqlController.patientEncounter.patient}"
+                                                target="#{patientController.current}">
+                                            </f:setPropertyActionListener>
+                                        </p:commandButton>
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{webUserController.hasPrivilege('InwardSearch')}">
+                                        <p:commandButton
+                                            ajax="false"
+                                            icon="fa fa-id-card"
+                                            value="Inpatient Dashboard"
+                                            class="ui-button-secondary"
+                                            action="#{admissionController.navigateToAdmissionProfilePage}">
+                                            <f:setPropertyActionListener
+                                                value="#{inpatientDirectIssueNativeSqlController.patientEncounter}"
+                                                target="#{admissionController.current}">
+                                            </f:setPropertyActionListener>
+                                        </p:commandButton>
+                                    </h:panelGroup>
                                     <h:panelGroup rendered="#{webUserController.hasPrivilege('NursingWorkBench')}">
                                         <p:commandButton
                                             value="Nursing WorkBench"
@@ -394,11 +456,15 @@
                         <h:panelGroup id="gpBillPreview">
                             <h:panelGroup id="gpBillPreviewFiveFiveCustom3"
                                           rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is FiveFiveCustom3',true)}">
-                                <phi:inward_direct_issue_bill_five_five_custom_3 bill="#{inpatientDirectIssueNativeSqlController.printBill}"/>
+                                <phi:inward_direct_issue_bill_native_five_five_custom_3
+                                    bill="#{inpatientDirectIssueNativeSqlController.printBill}"
+                                    items="#{inpatientDirectIssueNativeSqlController.printBillItems}"/>
                             </h:panelGroup>
                             <h:panelGroup id="gpBillPreviewPosHeader"
                                           rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is PosHeaderPaper',false)}">
-                                <phi:saleBill_Header_Inward bill="#{inpatientDirectIssueNativeSqlController.printBill}" />
+                                <phi:saleBill_Header_Inward_native
+                                    bill="#{inpatientDirectIssueNativeSqlController.printBill}"
+                                    items="#{inpatientDirectIssueNativeSqlController.printBillItems}"/>
                             </h:panelGroup>
                         </h:panelGroup>
                     </p:panel>
