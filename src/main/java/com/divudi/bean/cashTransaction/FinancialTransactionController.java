@@ -1943,8 +1943,23 @@ public class FinancialTransactionController implements Serializable {
 
         bundle.aggregateTotalsFromAllChildBundles();
         bundle.collectDepartments();
+        bundle.setHandoverBill(selectedBill);
 
         return "/cashier/handover_preview?faces-redirect=true";
+    }
+
+    public String navigateToHandoverAcceptBillReprintFromReport() {
+        if (selectedBill == null) {
+            JsfUtil.addErrorMessage("No handover selected.");
+            return null;
+        }
+        Bill acceptBill = selectedBill.getBackwardReferenceBill();
+        if (acceptBill == null) {
+            JsfUtil.addErrorMessage("This handover has not been accepted yet.");
+            return null;
+        }
+        bundle.setHandoverBill(acceptBill);
+        return "/cashier/handover_accept_bill_print?faces-redirect=true";
     }
 
     public String rejectToReceiveHandoverBill() {
