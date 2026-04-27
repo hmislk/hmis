@@ -203,6 +203,7 @@ public class BhtSummeryController implements Serializable {
         if (rooms == null || rooms.isEmpty()) {
             return new ArrayList<>();
         }
+        Date now = new Date();
         Date spanStart = null;
         Date spanEnd = null;
         for (PatientRoom r : rooms) {
@@ -211,7 +212,7 @@ public class BhtSummeryController implements Serializable {
                     spanStart = r.getAdmittedAt();
                 }
             }
-            Date end = r.getDischargedAt() != null ? r.getDischargedAt() : new Date();
+            Date end = r.getDischargedAt() != null ? r.getDischargedAt() : now;
             if (spanEnd == null || end.after(spanEnd)) {
                 spanEnd = end;
             }
@@ -225,7 +226,7 @@ public class BhtSummeryController implements Serializable {
             if (r.getAdmittedAt() == null) {
                 continue;
             }
-            Date barEnd = r.getDischargedAt() != null ? r.getDischargedAt() : new Date();
+            Date barEnd = r.getDischargedAt() != null ? r.getDischargedAt() : now;
             long offsetMs = r.getAdmittedAt().getTime() - spanStart.getTime();
             long durationMs = barEnd.getTime() - r.getAdmittedAt().getTime();
             double rawOffset = (offsetMs * 100.0) / totalMs;
