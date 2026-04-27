@@ -198,6 +198,74 @@ public class BhtSummeryController implements Serializable {
         return "/inward/inward_patient_room_details?faces-redirect=true";
     }
 
+    public static class RoomGanttBar {
+        private final String roomName;
+        private final boolean guardian;
+        private final boolean active;
+        private final double offsetPct;
+        private final double widthPct;
+
+        public RoomGanttBar(String roomName, boolean guardian, boolean active,
+                            double offsetPct, double widthPct) {
+            this.roomName = roomName;
+            this.guardian = guardian;
+            this.active = active;
+            this.offsetPct = offsetPct;
+            this.widthPct = widthPct;
+        }
+
+        public String getRoomName()  { return roomName; }
+        public boolean isGuardian()  { return guardian; }
+        public boolean isActive()    { return active; }
+        public double getOffsetPct() { return offsetPct; }
+        public double getWidthPct()  { return widthPct; }
+    }
+
+    public List<RoomGanttBar> getRoomGanttBars() {
+        List<PatientRoom> rooms = getPatientRooms();
+        if (rooms == null || rooms.isEmpty()) {
+            return new ArrayList<>();
+        }
+        Date spanStart = null;
+        Date spanEnd = null;
+        for (PatientRoom r : rooms) {
+            if (r.getAdmittedAt() != null) {
+                if (spanStart == null || r.getAdmittedAt().before(spanStart)) {
+                    spanStart = r.getAdmittedAt();
+                }
+            }
+            Date end = r.getDischargedAt() != null ? r.getDischargedAt() : new Date();
+            if (spanEnd == null || end.after(spanEnd)) {
+                spanEnd = end;
+            }
+        }
+        if (spanStart == null || spanEnd == null || !spanEnd.after(spanStart)) {
+            return new ArrayList<>();
+        }
+        long totalMs = spanEnd.getTime() - spanStart.getTime();
+        List<RoomGanttBar> bars = new ArrayList<>();
+        for (PatientRoom r : rooms) {
+            if (r.getAdmittedAt() == null) {
+                continue;
+            }
+            Date barEnd = r.getDischargedAt() != null ? r.getDischargedAt() : new Date();
+            long offsetMs = r.getAdmittedAt().getTime() - spanStart.getTime();
+            long durationMs = barEnd.getTime() - r.getAdmittedAt().getTime();
+            double offsetPct = (offsetMs * 100.0) / totalMs;
+            double widthPct = Math.max((durationMs * 100.0) / totalMs, 1.0);
+            boolean guardian = "class com.divudi.core.entity.inward.GuardianRoom"
+                                    .equals(r.getPatientRoomClass());
+            bars.add(new RoomGanttBar(
+                r.getRoomFacilityCharge() != null ? r.getRoomFacilityCharge().getName() : "—",
+                guardian,
+                !r.isDischarged(),
+                offsetPct,
+                widthPct
+            ));
+        }
+        return bars;
+    }
+
     public String navigateToInpatientProfile() {
         if (patientEncounter == null) {
             JsfUtil.addErrorMessage("No Admission Selected");

@@ -10,78 +10,64 @@
     <h:head>
         <title>Patient Room Details</title>
         <style>
-            .timeline-wrapper {
-                position: relative;
-                padding: 10px 0;
-            }
-            .timeline-line {
-                position: absolute;
-                left: 50%;
-                top: 0;
-                bottom: 0;
-                width: 3px;
-                background: #dee2e6;
-                transform: translateX(-50%);
-            }
-            .timeline-entry {
-                position: relative;
-                margin-bottom: 24px;
-                display: flex;
-                align-items: flex-start;
-            }
-            .timeline-entry:nth-child(odd) {
-                flex-direction: row;
-                padding-right: calc(50% + 24px);
-            }
-            .timeline-entry:nth-child(even) {
-                flex-direction: row-reverse;
-                padding-left: calc(50% + 24px);
-            }
-            .timeline-dot {
-                position: absolute;
-                left: 50%;
-                transform: translateX(-50%);
-                width: 16px;
-                height: 16px;
-                border-radius: 50%;
-                border: 3px solid #fff;
-                box-shadow: 0 0 0 3px #6c757d;
-                background: #6c757d;
-                z-index: 1;
-                top: 8px;
-            }
-            .timeline-dot.active {
-                background: #198754;
-                box-shadow: 0 0 0 3px #198754;
-            }
-            .timeline-dot.discharged {
-                background: #0d6efd;
-                box-shadow: 0 0 0 3px #0d6efd;
-            }
-            .timeline-card {
-                background: #fff;
-                border: 1px solid #dee2e6;
-                border-radius: 8px;
-                padding: 10px 14px;
-                font-size: 0.875rem;
+            /* ── Gantt chart ─────────────────────────────────────────── */
+            .gantt-container {
                 width: 100%;
-                box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+                overflow-x: auto;
             }
-            .timeline-card .room-name {
-                font-weight: 600;
-                font-size: 1rem;
-                color: #212529;
-            }
-            .timeline-card .room-meta {
-                color: #6c757d;
-                font-size: 0.8rem;
-            }
-            .timeline-card .charge-row {
+            .gantt-row {
                 display: flex;
+                align-items: center;
+                margin-bottom: 10px;
+                min-height: 42px;
+            }
+            .gantt-label {
+                width: 160px;
+                min-width: 160px;
+                font-size: 0.82rem;
+                font-weight: 600;
+                color: #495057;
+                padding-right: 10px;
+                text-align: right;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            .gantt-track {
+                flex: 1;
+                position: relative;
+                height: 34px;
+                background: #f1f3f5;
+                border-radius: 6px;
+            }
+            .gantt-bar {
+                position: absolute;
+                top: 4px;
+                height: 26px;
+                border-radius: 5px;
+                display: flex;
+                align-items: center;
+                padding: 0 8px;
+                font-size: 0.75rem;
+                font-weight: 600;
+                color: #fff;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+                transition: opacity 0.15s;
+            }
+            .gantt-bar:hover { opacity: 0.88; }
+            .gantt-bar.bar-active    { background: linear-gradient(90deg, #198754, #20c997); }
+            .gantt-bar.bar-discharged{ background: linear-gradient(90deg, #0d6efd, #6ea8fe); }
+            .gantt-bar.bar-guardian  { background: linear-gradient(90deg, #6f42c1, #a56dff); }
+            .gantt-axis {
+                display: flex;
+                margin-left: 160px;
+                font-size: 0.7rem;
+                color: #adb5bd;
+                margin-top: 2px;
                 justify-content: space-between;
-                border-top: 1px solid #f0f0f0;
-                margin-top: 6px;
-                padding-top: 5px;
             }
         </style>
     </h:head>
@@ -259,72 +245,56 @@
                                 </h:panelGroup>
                             </p:panel>
 
-                            <!-- Timeline View -->
+                            <!-- Gantt / Visual Timeline -->
                             <p:panel rendered="#{bhtSummeryController.patientEncounter.roomAdmitted}">
                                 <f:facet name="header">
-                                    <i class="fa-solid fa-timeline me-2 text-primary"/>
+                                    <i class="fa-solid fa-bars-progress me-2 text-primary"/>
                                     <h:outputText value="Room Stay Timeline"/>
                                 </f:facet>
 
-                                <div class="timeline-wrapper">
-                                    <div class="timeline-line"></div>
-                                    <ui:repeat value="#{bhtSummeryController.patientRooms}" var="rm">
-                                        <div class="timeline-entry">
-                                            <div class="timeline-dot #{rm.discharged ? 'discharged' : 'active'}"></div>
-                                            <div class="timeline-card">
-                                                <div class="room-name">
-                                                    <i class="fa-solid fa-bed me-2 text-secondary"/>
-                                                    <h:outputText value="#{rm.roomFacilityCharge.name}"/>
-                                                    <h:panelGroup rendered="#{rm.patientRoomClass eq 'class com.divudi.core.entity.inward.GuardianRoom'}">
-                                                        <span class="badge bg-success ms-2" style="font-size:0.7rem;">Guardian</span>
-                                                    </h:panelGroup>
+                                <h:panelGroup rendered="#{empty bhtSummeryController.roomGanttBars}" layout="block">
+                                    <div class="text-center py-3 text-muted">
+                                        <i class="fa-solid fa-info-circle me-2"/>
+                                        Timeline data unavailable (no valid timestamps).
+                                    </div>
+                                </h:panelGroup>
+
+                                <h:panelGroup rendered="#{not empty bhtSummeryController.roomGanttBars}" layout="block">
+                                    <div class="gantt-container px-2 py-2">
+                                        <!-- legend -->
+                                        <div class="d-flex gap-3 mb-3" style="font-size:0.78rem;">
+                                            <span><span class="gantt-bar bar-active" style="position:static;display:inline-block;width:14px;height:14px;border-radius:3px;vertical-align:middle;padding:0;margin-right:4px;"></span>Active</span>
+                                            <span><span class="gantt-bar bar-discharged" style="position:static;display:inline-block;width:14px;height:14px;border-radius:3px;vertical-align:middle;padding:0;margin-right:4px;"></span>Left room</span>
+                                            <span><span class="gantt-bar bar-guardian" style="position:static;display:inline-block;width:14px;height:14px;border-radius:3px;vertical-align:middle;padding:0;margin-right:4px;"></span>Guardian</span>
+                                        </div>
+
+                                        <ui:repeat value="#{bhtSummeryController.roomGanttBars}" var="bar">
+                                            <div class="gantt-row">
+                                                <div class="gantt-label" title="#{bar.roomName}">
+                                                    #{bar.roomName}
                                                 </div>
-                                                <div class="room-meta mt-1">
-                                                    <i class="fa-solid fa-arrow-right-to-bracket me-1 text-success"/>
-                                                    In:&nbsp;
-                                                    <h:outputText value="#{rm.admittedAt}">
-                                                        <f:convertDateTime timeZone="Asia/Colombo"
-                                                            pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
-                                                    </h:outputText>
-                                                </div>
-                                                <div class="room-meta">
-                                                    <h:panelGroup rendered="#{rm.dischargedAt ne null}">
-                                                        <i class="fa-solid fa-arrow-right-from-bracket me-1 text-primary"/>
-                                                        Out:&nbsp;
-                                                        <h:outputText value="#{rm.dischargedAt}">
-                                                            <f:convertDateTime timeZone="Asia/Colombo"
-                                                                pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
-                                                        </h:outputText>
-                                                    </h:panelGroup>
-                                                    <h:panelGroup rendered="#{rm.dischargedAt eq null}">
-                                                        <i class="fa-solid fa-clock me-1 text-warning"/>
-                                                        <span class="text-warning fw-semibold">Still in room</span>
-                                                    </h:panelGroup>
-                                                </div>
-                                                <div class="charge-row">
-                                                    <span class="text-muted">Room</span>
-                                                    <span>
-                                                        <h:outputText value="#{rm.calculatedRoomCharge}">
-                                                            <f:convertNumber pattern="#,##0.00"/>
-                                                        </h:outputText>
-                                                    </span>
-                                                    <span class="text-muted ms-3">Nursing</span>
-                                                    <span>
-                                                        <h:outputText value="#{rm.calculatedNursingCharge}">
-                                                            <f:convertNumber pattern="#,##0.00"/>
-                                                        </h:outputText>
-                                                    </span>
-                                                    <span class="text-muted ms-3">MO</span>
-                                                    <span>
-                                                        <h:outputText value="#{rm.calculatedMoCharge}">
-                                                            <f:convertNumber pattern="#,##0.00"/>
-                                                        </h:outputText>
-                                                    </span>
+                                                <div class="gantt-track">
+                                                    <div class="gantt-bar #{bar.guardian ? 'bar-guardian' : (bar.active ? 'bar-active' : 'bar-discharged')}"
+                                                         style="left:#{bar.offsetPct}%; width:#{bar.widthPct}%;"
+                                                         title="#{bar.roomName}">
+                                                        <h:panelGroup rendered="#{bar.widthPct gt 8}">
+                                                            #{bar.roomName}
+                                                        </h:panelGroup>
+                                                    </div>
                                                 </div>
                                             </div>
+                                        </ui:repeat>
+
+                                        <!-- axis labels: start / 25% / 50% / 75% / end -->
+                                        <div class="gantt-axis">
+                                            <span>Admission</span>
+                                            <span>25%</span>
+                                            <span>50%</span>
+                                            <span>75%</span>
+                                            <span>Now / Discharge</span>
                                         </div>
-                                    </ui:repeat>
-                                </div>
+                                    </div>
+                                </h:panelGroup>
                             </p:panel>
 
                         </h:panelGroup>
