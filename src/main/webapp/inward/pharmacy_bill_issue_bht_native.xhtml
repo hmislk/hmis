@@ -307,13 +307,87 @@
                                             icon="fa-solid fa-plus"
                                             action="#{inpatientDirectIssueNativeSqlController.addBillItem}"
                                             process="@this txtQty acStockNative"
-                                            update=":bill:pBillItems acStock txtQty txtRate txtValue panelErrorMsg" />
+                                            update=":bill:pBillItems acStock txtQty txtRate txtValue panelErrorMsg"
+                                            oncomplete="pharmacyNativeRefocusItem();" />
                                     </div>
                                 </div>
 
                                 <p:focus id="focusQty" for="txtQty"></p:focus>
                                 <p:focus id="focusItem" for="acStock"></p:focus>
                             </p:panel>
+
+                            <script>
+                            (function() {
+                                var _acInput = null;
+
+                                function wireEnterKeys() {
+                                    var acInput   = document.querySelector('#bill\\:acStockNative_input');
+                                    var qtyInput  = document.getElementById('bill:txtQty');
+                                    var addBtn    = document.getElementById('bill:btnAdd');
+                                    var settleBtn = document.getElementById('bill:btnSettleNative');
+
+                                    if (!acInput || !qtyInput || !addBtn) return;
+                                    _acInput = acInput;
+
+                                    // Use data flag to avoid stacking duplicate listeners after AJAX re-renders
+                                    if (!acInput._phEnterWired) {
+                                        acInput._phEnterWired = true;
+                                        acInput.addEventListener('keydown', function(e) {
+                                            if (e.key !== 'Enter') return;
+                                            // If the dropdown panel is open, let PF handle it (item selection)
+                                            var panel = document.getElementById('bill:acStockNative_panel');
+                                            if (panel &amp;&amp; panel.style.display !== 'none') return;
+                                            e.preventDefault();
+                                            qtyInput.focus();
+                                            qtyInput.select();
+                                        });
+                                    }
+
+                                    if (!qtyInput._phEnterWired) {
+                                        qtyInput._phEnterWired = true;
+                                        qtyInput.addEventListener('keydown', function(e) {
+                                            if (e.key === 'Enter') {
+                                                e.preventDefault();
+                                                addBtn.click();
+                                            }
+                                        });
+                                    }
+
+                                    if (!settleBtn || settleBtn._phEnterWired) return;
+                                    settleBtn._phEnterWired = true;
+                                    var form = document.getElementById('bill');
+                                    if (form &amp;&amp; !form._phSettleEnterWired) {
+                                        form._phSettleEnterWired = true;
+                                        form.addEventListener('keydown', function(e) {
+                                            if (e.key !== 'Enter') return;
+                                            var tag = e.target.tagName;
+                                            if (tag === 'BUTTON' || tag === 'A') return;
+                                            var ac = document.querySelector('#bill\\:acStockNative_input');
+                                            var qty = document.getElementById('bill:txtQty');
+                                            if (e.target === ac || e.target === qty) return;
+                                            var settle = document.getElementById('bill:btnSettleNative');
+                                            if (settle) {
+                                                e.preventDefault();
+                                                settle.click();
+                                            }
+                                        });
+                                    }
+                                }
+
+                                // After Add AJAX completes, clear &amp; refocus the autocomplete
+                                window.pharmacyNativeRefocusItem = function() {
+                                    var acInput = document.querySelector('#bill\\:acStockNative_input');
+                                    if (acInput) {
+                                        acInput.value = '';
+                                        acInput.focus();
+                                    }
+                                };
+
+                                // Re-wire after AJAX updates (input nodes may be recreated)
+                                document.addEventListener('pfAjaxComplete', function() { wireEnterKeys(); });
+                                document.addEventListener('DOMContentLoaded', wireEnterKeys);
+                            })();
+                            </script>
 
                             <!-- Bill items table -->
                             <p:panel header="Bill Items" id="pBillItems" class="my-1">
