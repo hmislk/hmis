@@ -152,6 +152,7 @@ public class CapabilityStatementResource {
                 .add(resource("Inward Room Facility Charges", "/api/inward/room-facility-charges",
                         "Manage inward room facility charges / room fees (backs /inward/inward_room_facility.xhtml). "
                         + "Supports optional filters roomId and roomCategoryId. "
+                        + "departmentId is required on POST and may not be set to null on PUT. "
                         + "Charge fields: roomCharge, maintananceCharge, linenCharge, nursingCharge, "
                         + "moCharge, moChargeForAfterDuration, adminstrationCharge, medicalCareCharge. "
                         + "TimedItemFee fields: timedItemFeeDurationHours, timedItemFeeOverShootHours, "
