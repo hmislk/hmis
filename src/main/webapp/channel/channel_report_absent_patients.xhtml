@@ -59,7 +59,18 @@
                         </h:outputLabel>
                     </f:facet>
 
-                    <p:dataTable value="#{channelReportController.channelBills}" var="b" id="tbl1" >
+                    <p:dataTable 
+                        value="#{channelReportController.channelBills}" 
+                        var="b" 
+                        id="tbl1" 
+                        paginator="true"
+                        scrollable="true"
+                        rows="10"
+                        rowIndexVar="n"
+                        expandedRow="true"
+                        paginatorPosition="bottom"
+                        paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                        rowsPerPageTemplate="5,10,20,{ShowAll|'Show All'}">
 
                         <p:column style="text-align: left;" width="10em">
                             <f:facet name="header" >
@@ -86,14 +97,14 @@
                             <p:tag rendered="#{b.billTypeAtomic eq 'CHANNEL_CANCELLATION_WITH_PAYMENT'}" value="Cancel Bill" severity="danger" />
                         </p:column>
 
-                        <p:column style="text-align: center;" >
+                        <p:column style="text-align: center;" width="10em">
                             <f:facet name="header" >
                                 <p:outputLabel value="Session Name" />
                             </f:facet>
                             <p:outputLabel value="#{b.singleBillSession.serviceSession.name}" />                                    
                         </p:column>
 
-                        <p:column style="text-align: center;" filterMatchMode="contains" 
+                        <p:column width="10em" style="text-align: center;" filterMatchMode="contains" 
                                   filterBy="#{b.billTypeAtomic eq 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT' 
                                               or b.billTypeAtomic eq 'CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING' ? 
                                               'Online Booking' : 'System Booking'}"
@@ -105,14 +116,14 @@
                             <p:outputLabel value="System Booking" style="font-weight: bold" rendered="#{b.billTypeAtomic ne 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT' and b.billTypeAtomic ne 'CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING'}"/>
                         </p:column>
 
-                        <p:column style="text-align: center;" >
+                        <p:column style="text-align: center;" width="5em">
                             <f:facet name="header" >
                                 <p:outputLabel value="Appinment No" />
                             </f:facet>
                             <p:outputLabel value="#{b.singleBillSession.serialNo}" style="font-weight: bold"/>                                    
                         </p:column>
 
-                        <p:column style="text-align: center;" >
+                        <p:column style="text-align: center;" width="12em">
                             <f:facet name="header" >
                                 <p:outputLabel value="Patient Name" />
                             </f:facet>
@@ -121,7 +132,7 @@
                             <p:outputLabel value="#{b.billedBill.referenceBill.onlineBooking.patientName}" rendered="#{b.billTypeAtomic eq 'CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING'}" />
                         </p:column>
 
-                        <p:column style="text-align: center;" filterMatchMode="contains" filterBy="#{b.creater.name}">
+                        <p:column style="text-align: center;" filterMatchMode="contains" filterBy="#{b.creater.name}" width="8em">
                             <f:facet name="header" >
                                 <p:outputLabel value="Cashier Name" />
                             </f:facet>
@@ -129,7 +140,7 @@
                             <p:outputLabel value="-" rendered="#{empty b.creater}"/> 
                         </p:column>
                         
-                        <p:column style="text-align: center;">
+                        <p:column style="text-align: center;" width="4em">
                             <f:facet name="header" >
                                 <p:outputLabel value="Payment Method" />
                             </f:facet>
@@ -137,7 +148,7 @@
                            
                         </p:column>
 
-                        <p:column style="text-align: center;" >
+                        <p:column style="text-align: center;" width="10em">
                             <f:facet name="header" >
                                 <p:outputLabel value="Doctor Name" />
                             </f:facet>
@@ -150,7 +161,7 @@
                             </f:facet>
                         </p:column>
 
-                        <p:column style="text-align: right;" >
+                        <p:column style="text-align: right;" width="8em">
                             <f:facet name="header" >
                                 <p:outputLabel value="Doctor Fee" />
                             </f:facet>
@@ -165,7 +176,7 @@
                             </f:facet>
                         </p:column>
 
-                        <p:column style="text-align: right;" >
+                        <p:column style="text-align: right;" width="8em">
                             <f:facet name="header" >
                                 <p:outputLabel value="Hospital Fee" />
                             </f:facet>
@@ -180,7 +191,7 @@
                             </f:facet>
                         </p:column>
 
-                        <p:column style="text-align: right;" >
+                        <p:column style="text-align: right;" width="8em">
                             <f:facet name="header" >
                                 <p:outputLabel value="Net Total" />
                             </f:facet>
