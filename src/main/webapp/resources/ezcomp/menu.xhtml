@@ -560,7 +560,7 @@
                             action="/inward/pharmacy_bill_issue_bht_native?faces-redirect=true"
                             value="Direct Issue to BHTs (Native SQL)"
                             icon="fa fa-bolt"
-                            rendered="#{webUserController.hasPrivilege('PharmacySale')}"
+                            rendered="#{webUserController.hasPrivilege('PharmacyDirectIssueToBht')}"
                             actionListener="#{inpatientDirectIssueNativeSqlController.resetAll()}">
                         </p:menuitem>
 

@@ -281,7 +281,8 @@ public class InpatientDirectIssueNativeSqlController implements Serializable {
             JsfUtil.addErrorMessage("Please select a BHT first.");
             return;
         }
-        if (selectedStockDto == null || selectedStockId == null) {
+        // itemId null means converter returned a bare fallback DTO (session miss) — treat as no selection
+        if (selectedStockDto == null || selectedStockId == null || selectedStockDto.getItemId() == null) {
             JsfUtil.addErrorMessage("No stock selected.");
             return;
         }
