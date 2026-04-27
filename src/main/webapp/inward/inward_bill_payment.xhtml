@@ -250,15 +250,6 @@
                                             </h:panelGroup>
 
                                             <h:panelGroup
-                                                id="multiplePaymentMethods"  
-                                                rendered="#{inwardPaymentController.paymentMethod eq 'MultiplePaymentMethods'}">
-                                                <pa:multiple_payment_methods_inwardDeposit
-                                                    controller="#{inwardPaymentController}" 
-                                                    paymentMethods="#{enumController.getPaymentMethodsForMultiplePaymentMethod()}" >
-                                                </pa:multiple_payment_methods_inwardDeposit>
-                                            </h:panelGroup>
-
-                                            <h:panelGroup
                                                 id="onlinePayment"  
                                                 rendered="#{inwardPaymentController.paymentMethod eq 'OnlineSettlement'}" >
                                                 <pa:online_settlement paymentMethodData="#{inwardPaymentController.paymentMethodData}"/>
