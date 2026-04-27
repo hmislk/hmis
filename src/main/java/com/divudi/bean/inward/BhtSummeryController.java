@@ -189,6 +189,15 @@ public class BhtSummeryController implements Serializable {
         return "/inward/inward_bill_intrim_estimate?faces-redirect=true";
     }
 
+    public String navigateToPatientRoomDetails() {
+        if (patientEncounter == null) {
+            JsfUtil.addErrorMessage("No Admission Selected");
+            return "";
+        }
+        createTables();
+        return "/inward/inward_patient_room_details?faces-redirect=true";
+    }
+
     public String navigateToInpatientProfile() {
         if (patientEncounter == null) {
             JsfUtil.addErrorMessage("No Admission Selected");

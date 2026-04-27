@@ -1,0 +1,337 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:in="http://xmlns.jcp.org/jsf/composite/inward">
+
+    <h:head>
+        <title>Patient Room Details</title>
+        <style>
+            .timeline-wrapper {
+                position: relative;
+                padding: 10px 0;
+            }
+            .timeline-line {
+                position: absolute;
+                left: 50%;
+                top: 0;
+                bottom: 0;
+                width: 3px;
+                background: #dee2e6;
+                transform: translateX(-50%);
+            }
+            .timeline-entry {
+                position: relative;
+                margin-bottom: 24px;
+                display: flex;
+                align-items: flex-start;
+            }
+            .timeline-entry:nth-child(odd) {
+                flex-direction: row;
+                padding-right: calc(50% + 24px);
+            }
+            .timeline-entry:nth-child(even) {
+                flex-direction: row-reverse;
+                padding-left: calc(50% + 24px);
+            }
+            .timeline-dot {
+                position: absolute;
+                left: 50%;
+                transform: translateX(-50%);
+                width: 16px;
+                height: 16px;
+                border-radius: 50%;
+                border: 3px solid #fff;
+                box-shadow: 0 0 0 3px #6c757d;
+                background: #6c757d;
+                z-index: 1;
+                top: 8px;
+            }
+            .timeline-dot.active {
+                background: #198754;
+                box-shadow: 0 0 0 3px #198754;
+            }
+            .timeline-dot.discharged {
+                background: #0d6efd;
+                box-shadow: 0 0 0 3px #0d6efd;
+            }
+            .timeline-card {
+                background: #fff;
+                border: 1px solid #dee2e6;
+                border-radius: 8px;
+                padding: 10px 14px;
+                font-size: 0.875rem;
+                width: 100%;
+                box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+            }
+            .timeline-card .room-name {
+                font-weight: 600;
+                font-size: 1rem;
+                color: #212529;
+            }
+            .timeline-card .room-meta {
+                color: #6c757d;
+                font-size: 0.8rem;
+            }
+            .timeline-card .charge-row {
+                display: flex;
+                justify-content: space-between;
+                border-top: 1px solid #f0f0f0;
+                margin-top: 6px;
+                padding-top: 5px;
+            }
+        </style>
+    </h:head>
+
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:form id="roomDetailsForm">
+                    <p:messages id="pageMessages"/>
+
+                    <p:panel>
+                        <f:facet name="header">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="d-flex align-items-center">
+                                    <i class="fa-solid fa-bed fa-lg text-primary me-3"></i>
+                                    <div>
+                                        <h:outputText value="Patient Room Details" styleClass="text-primary fw-bold"/>
+                                        <h:panelGroup rendered="#{bhtSummeryController.patientEncounter ne null}" layout="block">
+                                            <small class="text-muted">
+                                                <h:outputText value="#{bhtSummeryController.patientEncounter.patient.person.nameWithTitle}"/>
+                                                &nbsp;|&nbsp;BHT:&nbsp;
+                                                <h:outputText value="#{bhtSummeryController.patientEncounter.bhtNo}"/>
+                                            </small>
+                                        </h:panelGroup>
+                                    </div>
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <p:commandButton
+                                        value="Inpatient Dashboard"
+                                        ajax="false"
+                                        action="#{admissionController.navigateToAdmissionProfilePage()}"
+                                        icon="fa fa-id-card"
+                                        class="ui-button-secondary">
+                                        <f:setPropertyActionListener
+                                            value="#{bhtSummeryController.patientEncounter}"
+                                            target="#{admissionController.current}"/>
+                                    </p:commandButton>
+                                    <p:commandButton
+                                        value="Interim Bill"
+                                        ajax="false"
+                                        action="#{bhtSummeryController.navigateToIntrimBillFromPatientProfile()}"
+                                        icon="fa fa-file-invoice-dollar"
+                                        class="ui-button-info">
+                                    </p:commandButton>
+                                </div>
+                            </div>
+                        </f:facet>
+
+                        <h:panelGroup rendered="#{bhtSummeryController.patientEncounter eq null}" layout="block">
+                            <div class="text-center py-5">
+                                <i class="fa-solid fa-exclamation-circle fa-3x text-warning mb-3"></i>
+                                <p class="text-muted">No admission selected. Please navigate here from the Inpatient Dashboard or Interim Bill.</p>
+                            </div>
+                        </h:panelGroup>
+
+                        <h:panelGroup rendered="#{bhtSummeryController.patientEncounter ne null}" layout="block">
+
+                            <!-- Room History Table -->
+                            <p:panel class="mb-3">
+                                <f:facet name="header">
+                                    <i class="fa-solid fa-table me-2 text-info"/>
+                                    <h:outputText value="Room Stay History"/>
+                                </f:facet>
+
+                                <h:panelGroup rendered="#{not bhtSummeryController.patientEncounter.roomAdmitted}" layout="block">
+                                    <div class="text-center py-3 text-muted">
+                                        <i class="fa-solid fa-info-circle me-2"/>
+                                        Patient has not been admitted to any room.
+                                    </div>
+                                </h:panelGroup>
+
+                                <h:panelGroup rendered="#{bhtSummeryController.patientEncounter.roomAdmitted}" layout="block">
+                                    <p:dataTable
+                                        id="roomTable"
+                                        value="#{bhtSummeryController.patientRooms}"
+                                        var="rm"
+                                        styleClass="w-100"
+                                        rowStyleClass="#{rm.discharged ? '' : 'font-weight-bold'}">
+
+                                        <p:column headerText="Room" style="min-width:140px;">
+                                            <div class="d-flex align-items-center gap-2">
+                                                <h:outputText value="#{rm.roomFacilityCharge.name}" styleClass="fw-semibold"/>
+                                                <h:panelGroup rendered="#{rm.patientRoomClass eq 'class com.divudi.core.entity.inward.GuardianRoom'}">
+                                                    <p:badge value="Guardian" severity="success"/>
+                                                </h:panelGroup>
+                                                <h:panelGroup rendered="#{rm.discharged}">
+                                                    <p:badge value="Left" severity="info"/>
+                                                </h:panelGroup>
+                                                <h:panelGroup rendered="#{not rm.discharged}">
+                                                    <p:badge value="Active" severity="warning"/>
+                                                </h:panelGroup>
+                                            </div>
+                                        </p:column>
+
+                                        <p:column headerText="Admitted At" style="min-width:140px;">
+                                            <p:datePicker
+                                                id="rmAdmittedAt"
+                                                value="#{rm.admittedAt}"
+                                                showTime="true"
+                                                showButtonBar="true"
+                                                timeInput="true"
+                                                pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
+                                        </p:column>
+
+                                        <p:column headerText="Discharged At" style="min-width:140px;">
+                                            <p:datePicker
+                                                id="rmDischargedAt"
+                                                value="#{rm.dischargedAt}"
+                                                showTime="true"
+                                                showButtonBar="true"
+                                                timeInput="true"
+                                                pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
+                                        </p:column>
+
+                                        <p:column headerText="Room" style="width:80px; text-align:right;">
+                                            <h:outputText value="#{rm.calculatedRoomCharge}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </p:column>
+                                        <p:column headerText="Maintain" style="width:80px; text-align:right;">
+                                            <h:outputText value="#{rm.calculatedMaintainCharge}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </p:column>
+                                        <p:column headerText="MO" style="width:70px; text-align:right;">
+                                            <h:outputText value="#{rm.calculatedMoCharge}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </p:column>
+                                        <p:column headerText="Nursing" style="width:80px; text-align:right;">
+                                            <h:outputText value="#{rm.calculatedNursingCharge}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </p:column>
+                                        <p:column headerText="Linen" style="width:70px; text-align:right;">
+                                            <h:outputText value="#{rm.calculatedLinenCharge}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </p:column>
+                                        <p:column headerText="Admin" style="width:70px; text-align:right;">
+                                            <h:outputText value="#{rm.calculatedAdministrationCharge}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </p:column>
+                                        <p:column headerText="Medical Care" style="width:90px; text-align:right;">
+                                            <h:outputText value="#{rm.calculatedMedicalCareCharge}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </p:column>
+
+                                        <p:column headerText="Actions" style="width:160px;">
+                                            <div class="d-flex gap-1 flex-wrap">
+                                                <p:commandButton
+                                                    ajax="false"
+                                                    icon="fa fa-save"
+                                                    title="Save Changes"
+                                                    class="ui-button-info"
+                                                    action="#{bhtSummeryController.updatePatientRoom(rm)}"/>
+                                                <p:commandButton
+                                                    ajax="false"
+                                                    icon="fa fa-check-square"
+                                                    title="Discharge from Room"
+                                                    class="ui-button-warning"
+                                                    action="#{roomChangeController.dischargeWithCurrentTime(rm)}"/>
+                                                <p:commandButton
+                                                    ajax="false"
+                                                    icon="fa fa-times-circle"
+                                                    title="Cancel Room Discharge"
+                                                    class="ui-button-danger"
+                                                    action="#{roomChangeController.dischargeCancel(rm)}"/>
+                                            </div>
+                                        </p:column>
+
+                                    </p:dataTable>
+                                </h:panelGroup>
+                            </p:panel>
+
+                            <!-- Timeline View -->
+                            <p:panel rendered="#{bhtSummeryController.patientEncounter.roomAdmitted}">
+                                <f:facet name="header">
+                                    <i class="fa-solid fa-timeline me-2 text-primary"/>
+                                    <h:outputText value="Room Stay Timeline"/>
+                                </f:facet>
+
+                                <div class="timeline-wrapper">
+                                    <div class="timeline-line"></div>
+                                    <ui:repeat value="#{bhtSummeryController.patientRooms}" var="rm">
+                                        <div class="timeline-entry">
+                                            <div class="timeline-dot #{rm.discharged ? 'discharged' : 'active'}"></div>
+                                            <div class="timeline-card">
+                                                <div class="room-name">
+                                                    <i class="fa-solid fa-bed me-2 text-secondary"/>
+                                                    <h:outputText value="#{rm.roomFacilityCharge.name}"/>
+                                                    <h:panelGroup rendered="#{rm.patientRoomClass eq 'class com.divudi.core.entity.inward.GuardianRoom'}">
+                                                        <span class="badge bg-success ms-2" style="font-size:0.7rem;">Guardian</span>
+                                                    </h:panelGroup>
+                                                </div>
+                                                <div class="room-meta mt-1">
+                                                    <i class="fa-solid fa-arrow-right-to-bracket me-1 text-success"/>
+                                                    In:&nbsp;
+                                                    <h:outputText value="#{rm.admittedAt}">
+                                                        <f:convertDateTime timeZone="Asia/Colombo"
+                                                            pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
+                                                    </h:outputText>
+                                                </div>
+                                                <div class="room-meta">
+                                                    <h:panelGroup rendered="#{rm.dischargedAt ne null}">
+                                                        <i class="fa-solid fa-arrow-right-from-bracket me-1 text-primary"/>
+                                                        Out:&nbsp;
+                                                        <h:outputText value="#{rm.dischargedAt}">
+                                                            <f:convertDateTime timeZone="Asia/Colombo"
+                                                                pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
+                                                        </h:outputText>
+                                                    </h:panelGroup>
+                                                    <h:panelGroup rendered="#{rm.dischargedAt eq null}">
+                                                        <i class="fa-solid fa-clock me-1 text-warning"/>
+                                                        <span class="text-warning fw-semibold">Still in room</span>
+                                                    </h:panelGroup>
+                                                </div>
+                                                <div class="charge-row">
+                                                    <span class="text-muted">Room</span>
+                                                    <span>
+                                                        <h:outputText value="#{rm.calculatedRoomCharge}">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
+                                                    </span>
+                                                    <span class="text-muted ms-3">Nursing</span>
+                                                    <span>
+                                                        <h:outputText value="#{rm.calculatedNursingCharge}">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
+                                                    </span>
+                                                    <span class="text-muted ms-3">MO</span>
+                                                    <span>
+                                                        <h:outputText value="#{rm.calculatedMoCharge}">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </ui:repeat>
+                                </div>
+                            </p:panel>
+
+                        </h:panelGroup>
+                    </p:panel>
+
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>
