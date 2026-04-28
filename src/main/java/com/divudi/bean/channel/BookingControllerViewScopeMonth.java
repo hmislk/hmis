@@ -5264,6 +5264,7 @@ public class BookingControllerViewScopeMonth implements Serializable {
             billFeeList.add(bf);
         }
 
+        billItem.setGrossValue(tmpGrossTotal);
         billItem.setDiscount(tmpDiscount);
         billItem.setNetValue(tmpTotal);
         getBillItemFacade().edit(billItem);
@@ -6416,8 +6417,8 @@ public class BookingControllerViewScopeMonth implements Serializable {
 
         BillItem bi = selectedBillSession.getBillItem();
         Bill creditBill = getBillSession().getBill();
-        bi.setHospitalFee(billBeanController.calFeeValue(FeeType.OwnInstitution, bi));
-        bi.setStaffFee(billBeanController.calFeeValue(FeeType.Staff, bi));
+        bi.setHospitalFee(billBeanController.calFeeValue(FeeType.OwnInstitution, bi, creditBill));
+        bi.setStaffFee(billBeanController.calFeeValue(FeeType.Staff, bi, creditBill));
         getBillItemFacade().edit(bi);
 
         creditBill.setHospitalFee(billBeanController.calFeeValue(FeeType.OwnInstitution, creditBill));
