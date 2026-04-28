@@ -337,7 +337,7 @@ public class PaymentSchemeController implements Serializable {
         if (existing != null) {
             Long currentId = getCurrentRestrictedPaymentMethod().getId();
             if (currentId == null || !existing.getId().equals(currentId)) {
-                JsfUtil.addErrorMessage("This Payment Method is already added to theselected Discount Scheme");
+                JsfUtil.addErrorMessage("This Payment Method is already added to the selected Discount Scheme");
                 return;
             }
         }
