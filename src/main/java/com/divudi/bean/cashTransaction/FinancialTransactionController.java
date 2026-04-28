@@ -1945,6 +1945,22 @@ public class FinancialTransactionController implements Serializable {
         bundle.collectDepartments();
         bundle.setHandoverBill(selectedBill);
 
+        // Restore denominatorValue and cash float net so the print shows correct
+        // "Handing Over" and "Net Float (Cash)" values from the saved denomination bill.
+        if (denoBill != null) {
+            double physicalCash = denoBill.getNetTotal();
+            bundle.setDenominatorValue(physicalCash);
+            double rebuiltCash = bundle.getCashValue();
+            double floatNet = physicalCash - rebuiltCash;
+            if (floatNet > 0.001) {
+                bundle.setCashFloatInTotal(floatNet);
+            } else if (floatNet < -0.001) {
+                bundle.setCashFloatOutTotal(-floatNet);
+            }
+        }
+        // Restore totalOut so "Handingover Value" is correct on the print.
+        bundle.setTotalOut(selectedBill.getNetTotal());
+
         return "/cashier/handover_preview?faces-redirect=true";
     }
 
