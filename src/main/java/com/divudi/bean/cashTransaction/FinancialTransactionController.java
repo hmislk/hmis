@@ -1945,10 +1945,13 @@ public class FinancialTransactionController implements Serializable {
         bundle.collectDepartments();
         bundle.setHandoverBill(selectedBill);
 
-        // Restore denominatorValue and cash float net so the print shows correct
-        // "Handing Over" and "Net Float (Cash)" values from the saved denomination bill.
+        // Restore cash handover, denominatorValue, and cash float net from the saved
+        // denomination bill. aggregateTotalsFromAllChildBundles() overwrites cashHandoverValue
+        // with the sum of child values (= collected cash), so we must set the correct
+        // physical-cash value after the aggregate call, not before.
         if (denoBill != null) {
             double physicalCash = denoBill.getNetTotal();
+            bundle.setCashHandoverValue(physicalCash);
             bundle.setDenominatorValue(physicalCash);
             double rebuiltCash = bundle.getCashValue();
             double floatNet = physicalCash - rebuiltCash;
