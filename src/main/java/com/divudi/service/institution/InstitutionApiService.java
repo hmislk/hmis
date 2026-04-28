@@ -134,8 +134,9 @@ public class InstitutionApiService implements Serializable {
         institution.setCreatedAt(Calendar.getInstance().getTime());
         institution.setRetired(false);
 
-        // Save institution
-        institutionFacade.create(institution);
+        // Save institution and flush so the IDENTITY-generated id is populated
+        // before we build the response DTO (issue #20276)
+        institutionFacade.createAndFlush(institution);
 
         return buildInstitutionResponseDTO(institution, "Institution created successfully");
     }
@@ -208,8 +209,8 @@ public class InstitutionApiService implements Serializable {
             institution.setOwnerEmail(request.getOwnerEmail());
         }
 
-        // Save updated institution
-        institutionFacade.edit(institution);
+        // Save updated institution and flush so response reflects persisted state
+        institutionFacade.editAndFlush(institution);
 
         return buildInstitutionResponseDTO(institution, "Institution updated successfully");
     }
@@ -239,8 +240,8 @@ public class InstitutionApiService implements Serializable {
         institution.setRetiredAt(Calendar.getInstance().getTime());
         institution.setRetireComments(retireComments);
 
-        // Save retired institution
-        institutionFacade.edit(institution);
+        // Save retired institution and flush so response reflects persisted state
+        institutionFacade.editAndFlush(institution);
 
         return buildInstitutionResponseDTO(institution, "Institution retired successfully");
     }
@@ -274,8 +275,8 @@ public class InstitutionApiService implements Serializable {
             institution.setInstitution(null);
         }
 
-        // Save updated institution
-        institutionFacade.edit(institution);
+        // Save updated institution and flush so response reflects persisted state
+        institutionFacade.editAndFlush(institution);
 
         return buildInstitutionResponseDTO(institution, "Institution parent relationship updated successfully");
     }
