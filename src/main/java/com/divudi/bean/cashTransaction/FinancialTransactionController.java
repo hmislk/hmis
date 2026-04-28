@@ -1864,21 +1864,51 @@ public class FinancialTransactionController implements Serializable {
         bundle.aggregateTotalsFromAllChildBundles();
         bundle.collectDepartments();
 
-        // Restore cash float net for display. The denomination bill holds the
-        // physical cash the sender counted at handover; bundle.cashValue is the
-        // cash portion collected during the shift (float-exclusive). Their
-        // difference is the net cash float carried into the handover. Using
-        // the denomination bill (instead of selectedBill.total) is independent
-        // of how total was persisted, so legacy handovers created before the
-        // total-persistence fix also restore correctly.
+        // Restore cash handover value and float net after aggregate (aggregate
+        // overwrites cashHandoverValue with sum of child values = collected cash).
+        // The denomination bill holds the physical cash the sender counted.
         if (denoBill != null) {
             double physicalCash = denoBill.getNetTotal();
+            bundle.setCashHandoverValue(physicalCash);
+            bundle.setDenominatorValue(physicalCash);
             double rebuiltCash = bundle.getCashValue();
             double floatNet = physicalCash - rebuiltCash;
             if (floatNet > 0.001) {
                 bundle.setCashFloatInTotal(floatNet);
             } else if (floatNet < -0.001) {
                 bundle.setCashFloatOutTotal(-floatNet);
+            }
+        }
+        bundle.setTotalOut(selectedBill.getNetTotal());
+
+        // Fetch float transfer payments for this shift so the accept page can
+        // display them. Same query as navigateToViewHandoverBill.
+        Bill shiftStartBill = selectedBill.getReferenceBill();
+        if (shiftStartBill != null && shiftStartBill.getId() != null) {
+            List<BillTypeAtomic> floatBtas = new ArrayList<>();
+            floatBtas.add(BillTypeAtomic.FUND_TRANSFER_BILL);
+            floatBtas.add(BillTypeAtomic.FUND_TRANSFER_RECEIVED_BILL);
+            Map<String, Object> floatParams = new HashMap<>();
+            String floatJpql = "SELECT p FROM Payment p JOIN p.bill b "
+                    + "WHERE (p.creater = :cu OR p.floatRecipient = :cu) "
+                    + "AND p.retired = false "
+                    + "AND p.cancelled = false "
+                    + "AND p.handingOverStarted = true "
+                    + "AND b.billTypeAtomic IN :btas "
+                    + "AND b.id > :sid "
+                    + "AND b.id <= :hid "
+                    + "ORDER BY b.id";
+            floatParams.put("cu", selectedBill.getFromWebUser());
+            floatParams.put("btas", floatBtas);
+            floatParams.put("sid", shiftStartBill.getId());
+            floatParams.put("hid", selectedBill.getId());
+            List<Payment> floatPayments = paymentFacade.findByJpql(floatJpql, floatParams);
+            if (floatPayments != null) {
+                for (Payment fp : floatPayments) {
+                    ReportTemplateRow floatRow = new ReportTemplateRow();
+                    floatRow.setPayment(fp);
+                    bundle.getReportTemplateRows().add(floatRow);
+                }
             }
         }
 
