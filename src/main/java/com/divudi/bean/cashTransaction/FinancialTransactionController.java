@@ -1964,6 +1964,39 @@ public class FinancialTransactionController implements Serializable {
         // Restore totalOut so "Handingover Value" is correct on the print.
         bundle.setTotalOut(selectedBill.getNetTotal());
 
+        // Fetch individual float transfer payments for this shift so the preview can
+        // display them as detail rows. Float payments were marked handingOverStarted=true
+        // during settleHandoverStartBill(). Scope: bill ID range between shift start and
+        // handover bill, for this user as creator or recipient.
+        Bill shiftStartBill = selectedBill.getReferenceBill();
+        if (shiftStartBill != null && shiftStartBill.getId() != null) {
+            List<BillTypeAtomic> floatBtas = new ArrayList<>();
+            floatBtas.add(BillTypeAtomic.FUND_TRANSFER_BILL);
+            floatBtas.add(BillTypeAtomic.FUND_TRANSFER_RECEIVED_BILL);
+            Map<String, Object> floatParams = new HashMap<>();
+            String floatJpql = "SELECT p FROM Payment p JOIN p.bill b "
+                    + "WHERE (p.creater = :cu OR p.floatRecipient = :cu) "
+                    + "AND p.retired = false "
+                    + "AND p.cancelled = false "
+                    + "AND p.handingOverStarted = true "
+                    + "AND b.billTypeAtomic IN :btas "
+                    + "AND b.id > :sid "
+                    + "AND b.id <= :hid "
+                    + "ORDER BY b.id";
+            floatParams.put("cu", selectedBill.getFromWebUser());
+            floatParams.put("btas", floatBtas);
+            floatParams.put("sid", shiftStartBill.getId());
+            floatParams.put("hid", selectedBill.getId());
+            List<Payment> floatPayments = paymentFacade.findByJpql(floatJpql, floatParams);
+            if (floatPayments != null) {
+                for (Payment fp : floatPayments) {
+                    ReportTemplateRow row = new ReportTemplateRow();
+                    row.setPayment(fp);
+                    bundle.getReportTemplateRows().add(row);
+                }
+            }
+        }
+
         return "/cashier/handover_preview?faces-redirect=true";
     }
 
