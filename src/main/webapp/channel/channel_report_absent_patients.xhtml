@@ -209,6 +209,150 @@
 
 
                     </p:dataTable>
+                    <p:dataTable 
+                        value="#{channelReportController.absentPatients}" 
+                        var="b" 
+                        id="tbln1" 
+                        paginator="true"
+                        scrollable="true"
+                        rows="10"
+                        rowIndexVar="n"
+                        expandedRow="true"
+                        paginatorPosition="bottom"
+                        paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                        rowsPerPageTemplate="5,10,20,{ShowAll|'Show All'}">
+
+                        <p:column style="text-align: left;" width="10em">
+                            <f:facet name="header" >
+                                <p:outputLabel value="Channel Receipt No" />
+                            </f:facet>
+
+                            <p:commandLink
+                                id="billNo"
+                                disabled ="#{b.billTypeAtomic eq 'PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_SESSION' 
+                                             or b.billTypeAtomic eq 'PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_RETURN'
+                                             or b.billTypeAtomic eq 'CHANNEL_AGENT_PAID_TO_HOSPITAL_FOR_ONLINE_BOOKINGS_BILL'
+                                             or b.billTypeAtomic eq 'CHANNEL_AGENT_PAID_TO_HOSPITAL_FOR_ONLINE_BOOKINGS_BILL_CANCELLATION'
+                                                                       }"
+                                ajax="false"
+                                style="font-weight: bold"
+                                value="#{b.deptId}"
+                                action="#{bookingControllerViewScope.navigateToViewBillSession(bookingControllerViewScope.getBillSessionFromBill(b))}">
+                            </p:commandLink>
+
+
+                            <p:tag rendered="#{b.cancelled}" value="Cancelled - #{b.cancelledDeptId}" severity="danger" />
+                            <p:tag rendered="#{b.refunded}" value="Refunded - #{b.refundedDeptId}"  severity="warning" />
+                            <p:tag rendered="#{b.billTypeAtomic eq 'CHANNEL_REFUND_WITH_PAYMENT'}" value="Refund Bill"  severity="warning" />
+                            <p:tag rendered="#{b.billTypeAtomic eq 'CHANNEL_CANCELLATION_WITH_PAYMENT'}" value="Cancel Bill" severity="danger" />
+                        </p:column>
+
+                        <p:column style="text-align: center;" width="10em">
+                            <f:facet name="header" >
+                                <p:outputLabel value="Session Name" />
+                            </f:facet>
+                            <p:outputLabel value="#{b.serviceSessionName}" />                                    
+                        </p:column>
+
+                        <p:column width="10em" style="text-align: center;" filterMatchMode="contains" 
+                                  filterBy="#{b.billTypeAtomic eq 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT' 
+                                              or b.billTypeAtomic eq 'CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING' ? 
+                                              'Online Booking' : 'System Booking'}"
+                                  >
+                            <f:facet name="header">
+                                <p:outputLabel value="Booking Type" />
+                            </f:facet>
+                            <p:outputLabel value="Online Booking" style="font-weight: bold" rendered="#{b.billTypeAtomic eq 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT' or b.billTypeAtomic eq 'CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING'}"/>   
+                            <p:outputLabel value="System Booking" style="font-weight: bold" rendered="#{b.billTypeAtomic ne 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT' and b.billTypeAtomic ne 'CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING'}"/>
+                        </p:column>
+
+                        <p:column style="text-align: center;" width="5em">
+                            <f:facet name="header" >
+                                <p:outputLabel value="Appinment No" />
+                            </f:facet>
+                            <p:outputLabel value="#{b.billSessionSerialNo}" style="font-weight: bold"/>                                    
+                        </p:column>
+
+                        <p:column style="text-align: center;" width="12em">
+                            <f:facet name="header" >
+                                <p:outputLabel value="Patient Name" />
+                            </f:facet>
+                            <p:outputLabel value="#{b.patientName}"/> 
+                        </p:column>
+
+                        <p:column style="text-align: center;" filterMatchMode="contains" filterBy="#{b.creater.name}" width="8em">
+                            <f:facet name="header" >
+                                <p:outputLabel value="Cashier Name" />
+                            </f:facet>
+                            <p:outputLabel value="#{b.cashierName}" /> 
+                        </p:column>
+                        
+                        <p:column style="text-align: center;" width="4em">
+                            <f:facet name="header" >
+                                <p:outputLabel value="Payment Method" />
+                            </f:facet>
+                            <p:outputLabel value="#{b.paymentMethod}" /> 
+                           
+                        </p:column>
+
+                        <p:column style="text-align: center;" width="10em">
+                            <f:facet name="header" >
+                                <p:outputLabel value="Doctor Name" />
+                            </f:facet>
+                            <p:outputLabel value="#{b.doctorName}" />    
+
+                            <f:facet name="footer">
+                                <h:outputText  value="Totals">
+
+                                </h:outputText>
+                            </f:facet>
+                        </p:column>
+
+                        <p:column style="text-align: right;" width="8em">
+                            <f:facet name="header" >
+                                <p:outputLabel value="Doctor Fee"/>
+                            </f:facet>
+                            <p:outputLabel value="#{b.staffFee}" >
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </p:outputLabel>   
+
+                            <f:facet name="footer">
+                                <h:outputText value="#{channelReportController.summaryAbsentPatients.staffFee}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                            </f:facet>
+                        </p:column>
+
+                        <p:column style="text-align: right;" width="8em">
+                            <f:facet name="header" >
+                                <p:outputLabel value="Hospital Fee" />
+                            </f:facet>
+                            <p:outputLabel value="#{b.hospitalFee}">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </p:outputLabel>   
+
+                            <f:facet name="footer">
+                                <h:outputText value="#{channelReportController.summaryAbsentPatients.hospitalFee}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                            </f:facet>
+                        </p:column>
+
+                        <p:column style="text-align: right;" width="8em">
+                            <f:facet name="header" >
+                                <p:outputLabel value="Net Total" />
+                            </f:facet>
+                            <p:outputLabel value="#{b.netTotal}" >
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </p:outputLabel> 
+
+                            <f:facet name="footer">
+                                <h:outputText value="#{channelReportController.summaryAbsentPatients.netTotal}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                            </f:facet>
+                        </p:column>
+                    </p:dataTable>
 
                     <script>
                         function calculateTotals(selector, targeter) {

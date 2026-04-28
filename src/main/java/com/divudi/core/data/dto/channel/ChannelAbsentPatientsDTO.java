@@ -28,6 +28,12 @@ public class ChannelAbsentPatientsDTO {
     private Long paidId;
 
 
+    public ChannelAbsentPatientsDTO(){
+        this.staffFee = 0.0;
+        this.hospitalFee = 0.0;
+        this.netTotal = 0.0;
+    }
+
     public ChannelAbsentPatientsDTO(
             Long id, String deptId, BillTypeAtomic billTypeAtomic, String serviceSessionName, int billSessionSerialNo, String patientName, String cashierName,
             PaymentMethod paymentMethod, String doctorName, double staffFee, double hospitalFee, double netTotal, boolean cancelled, boolean refunded, String cancelledDeptId, String refundedDeptId, Long referenceId, Long paidId) {

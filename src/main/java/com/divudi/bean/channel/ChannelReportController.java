@@ -3415,10 +3415,12 @@ public class ChannelReportController implements Serializable {
         return b;
     }
 
+    private List<ChannelAbsentPatientsDTO> absentPatients;
+    private ChannelAbsentPatientsDTO summaryAbsentPatients;
+
     // Patient Absent Report 
     // Consider temporary bookings can not be makred absent
     public void processPatientAbsentReport() {
-        System.out.println("process started....");
         HashMap params = new HashMap();
 
         String sql = " Select new com.divudi.core.data.dto.channel.ChannelAbsentPatientsDTO( "
@@ -3482,59 +3484,45 @@ public class ChannelReportController implements Serializable {
 
         List<ChannelAbsentPatientsDTO> fetchedBills = (List<ChannelAbsentPatientsDTO>) billFacade.findLightsByJpqlWithoutCache(sql, params, TemporalType.TIMESTAMP);
         System.out.println("data fetched " + fetchedBills.size());
-        Map<Long, ChannelAbsentPatientsDTO> absentPatients = new LinkedHashMap<>();
+
+        // Map<Long, ChannelAbsentPatientsDTO> absentPatients = new LinkedHashMap<>();
+        absentPatients = new ArrayList<>();
+        summaryAbsentPatients = new ChannelAbsentPatientsDTO();
+
+        if (fetchedBills == null || fetchedBills.isEmpty()) {
+            return;
+        }
+        double totalStaffFee = 0.0;
+        double totalHosFee = 0.0;
+        double totalNetTotal = 0.0;
+
         for (ChannelAbsentPatientsDTO dto : fetchedBills) { 
-            System.out.println(
-                dto.getId() + " | " +
-                dto.getDeptId() + " | " +
-                dto.getBillTypeAtomic() + " | " +
-                dto.getServiceSessionName() + " | " +
-                dto.getBillSessionSerialNo() + " | " +
-                dto.getPatientName() + " | " +
-                dto.getPaymentMethod() + " | " +
-                dto.getDoctorName() + " | " +
-                dto.getStaffFee() + " | " +
-                dto.getHospitalFee() + " | " +
-                dto.getNetTotal() + " | " +
-                dto.getCancelledDeptId() + " | " +
-                dto.getRefundedDeptId()
-            );
             if (dto.getPaymentMethod() == PaymentMethod.OnCall) {
                 if (dto.getPaidId() != null) {
                     continue;
                 } else {
-                    absentPatients.put(dto.getId(), dto);
+                    // absentPatients.put(dto.getId(), dto);
+                    absentPatients.add(dto);
+                    totalNetTotal += dto.getNetTotal();
+                    totalStaffFee += dto.getStaffFee();
+                    totalHosFee += dto.getHospitalFee();
                 }
             } else {
-                System.out.println("reference bill: " + dto.getReferenceId());
                 if (dto.getReferenceId() != null && dto.getBillTypeAtomic() != BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT && dto.getBillTypeAtomic() != BillTypeAtomic.CHANNEL_PAYMENT_FOR_BOOKING_BILL) {
                     continue;
                 } else {
-                    System.out.println("ID : " + dto.getId());
-                    absentPatients.put(dto.getId(), dto);
+                    // absentPatients.put(dto.getId(), dto);
+                    absentPatients.add(dto);
+                    totalNetTotal += dto.getNetTotal();
+                    totalStaffFee += dto.getStaffFee();
+                    totalHosFee += dto.getHospitalFee();
                 }
             }
         }
-        System.out.println("data mapped");
 
-        System.out.println("size mapped: " + absentPatients.size());
-
-        for (ChannelAbsentPatientsDTO dto : absentPatients.values()) {
-            System.out.println(
-                dto.getDeptId() + " | " +
-                dto.getBillTypeAtomic() + " | " +
-                dto.getServiceSessionName() + " | " +
-                dto.getBillSessionSerialNo() + " | " +
-                dto.getPatientName() + " | " +
-                dto.getPaymentMethod() + " | " +
-                dto.getDoctorName() + " | " +
-                dto.getStaffFee() + " | " +
-                dto.getHospitalFee() + " | " +
-                dto.getNetTotal() + " | " +
-                dto.getCancelledDeptId() + " | " +
-                dto.getRefundedDeptId()
-            );
-        }
+        summaryAbsentPatients.setStaffFee(totalStaffFee);
+        summaryAbsentPatients.setHospitalFee(totalHosFee);
+        summaryAbsentPatients.setNetTotal(totalNetTotal);
     }
 
     public List<Bill> getChannelBillsAbsentPatient(Staff stf, List<PaymentMethod> pms) {
@@ -5252,6 +5240,22 @@ public class ChannelReportController implements Serializable {
 
     public void setCategory(Category category) {
         this.category = category;
+    }
+
+    public List<ChannelAbsentPatientsDTO> getAbsentPatients() {
+        return absentPatients;
+    }
+
+    public void setAbsentPatients(List<ChannelAbsentPatientsDTO> absentPatients) {
+        this.absentPatients = absentPatients;
+    }
+
+    public ChannelAbsentPatientsDTO getSummaryAbsentPatients() {
+        return summaryAbsentPatients;
+    }
+
+    public void setSummaryAbsentPatients(ChannelAbsentPatientsDTO summaryAbsentPatients) {
+        this.summaryAbsentPatients = summaryAbsentPatients;
     }
 
     // PDF Export: Channel Scanning Income Report
