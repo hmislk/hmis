@@ -8157,27 +8157,39 @@ public class BookingControllerViewScopeMonth implements Serializable {
             return;
         }
 
-        for (BillItem billItem : selectedBillSession.getBill().getBillItems()) {
-            double netValue = 0.0;
-            for (BillFee billFee : billItem.getBillFees()) {
-                if (isForiegn()) {
-                    if (billFee.getFee().getFeeType().equals(FeeType.Staff)) {
-                        billItem.setStaffFee(billFee.getFee().getProfessionalFfee());
-                    } else if (billFee.getFee().getFeeType().equals(FeeType.OwnInstitution)) {
-                        billItem.setHospitalFee(billFee.getFee().getHospitalFfee());
-                    }
-                    netValue += billFee.getFee().getFfee();
-                } else {
-                    if (billFee.getFee().getFeeType().equals(FeeType.Staff)) {
-                        billItem.setStaffFee(billFee.getFee().getProfessionalFee());
-                    } else if (billFee.getFee().getFeeType().equals(FeeType.OwnInstitution)) {
-                        billItem.setHospitalFee(billFee.getFee().getHospitalFee());
-                    }
+        List<BillFee> billFees = getBillSession().getBill().getBillFees();
+        if (billFees == null) {
+            billFees = billBeanController.getBillFee(getBillSession().getBill());
+        }
 
-                    netValue += billFee.getFee().getFee();
-                }
+        for (BillItem billItem : selectedBillSession.getBill().getBillItems()) {
+            double totalGross = 0.0;
+            double totalDiscount = 0.0;
+            double totalNet = 0.0;
+            double hosFee = 0.0;
+            double staffFee = 0.0;
+
+            for (BillFee billFee : billFees) {
+                ItemFee f = (ItemFee) billFee.getFee();
+
+                if (f.getItem().equals(billItem.getItem())) {
+                    totalGross += billFee.getFeeGrossValue();
+                    totalDiscount += billFee.getFeeDiscount();
+                    totalNet += billFee.getFeeValue();
+
+                    if (f.getFeeType().equals(FeeType.Staff)) {
+                        staffFee += billFee.getFeeValue();
+                    }
+                    if (f.getFeeType().equals(FeeType.OwnInstitution)) {
+                        hosFee += billFee.getFeeValue();
+                    }
+                }                
             }
-            billItem.setNetValue(netValue);
+            billItem.setGrossValue(totalGross);
+            billItem.setDiscount(totalDiscount);
+            billItem.setNetValue(totalNet);
+            billItem.setStaffFee(staffFee);
+            billItem.setHospitalFee(hosFee);
         }
     }
 }
