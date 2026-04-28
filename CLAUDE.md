@@ -78,6 +78,7 @@
 ### When Reviewing a PR
 - [PR Review Workflow](developer_docs/git/pr-review-workflow.md) - Full checklist for handling CodeRabbit/Codex comments: fetch → investigate → discuss → batch-fix → persistence check → push → reply → re-request review → cleanup
 - Use `/review-pr <pr-url>` skill to automate investigation and fix steps
+- **🚨 AFTER APPLYING ANY CODERABBIT/CODEX FIX**: Always verify method names exist on the actual entity before pushing. Automated tools frequently generate wrong getter names (e.g., `getCompleted()` instead of `isCompleted()` for primitive `boolean` fields). See [PR Review Workflow §4a](developer_docs/git/pr-review-workflow.md).
 
 ### When Committing Code
 - [Commit Conventions](developer_docs/git/commit-conventions.md) - Message format

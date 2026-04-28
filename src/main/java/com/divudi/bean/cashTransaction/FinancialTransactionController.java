@@ -1943,8 +1943,26 @@ public class FinancialTransactionController implements Serializable {
 
         bundle.aggregateTotalsFromAllChildBundles();
         bundle.collectDepartments();
+        bundle.setHandoverBill(selectedBill);
 
         return "/cashier/handover_preview?faces-redirect=true";
+    }
+
+    public String navigateToHandoverAcceptBillReprintFromReport() {
+        if (selectedBill == null) {
+            JsfUtil.addErrorMessage("No handover selected.");
+            return null;
+        }
+        Bill acceptBill = selectedBill.getBackwardReferenceBill();
+        if (acceptBill == null) {
+            JsfUtil.addErrorMessage("This handover has not been accepted yet.");
+            return null;
+        }
+        if (bundle == null) {
+            bundle = new ReportTemplateRowBundle();
+        }
+        bundle.setHandoverBill(acceptBill);
+        return "/cashier/handover_accept_bill_print?faces-redirect=true";
     }
 
     public String rejectToReceiveHandoverBill() {
@@ -2178,10 +2196,6 @@ public class FinancialTransactionController implements Serializable {
     public String navigateToMyHandovers() {
         fillMyHandovers();
         return "/cashier/handover_bills_from_me?faces-redirect=true";
-    }
-
-    public String navigateToUserHandovers() {
-        return "/reports/cashier_reports/handovers?faces-redirect=true";
     }
 
     public String navigateToHandoverStatusReport() {
@@ -6571,6 +6585,7 @@ public class FinancialTransactionController implements Serializable {
             case FUND_SHIFT_HANDOVER_CREATE:
                 jpql.append("and (s.completed = false or s.completed is null) ");
                 jpql.append("and (s.cancelled = false or s.cancelled is null) ");
+                jpql.append("and (s.referenceBill is null or s.referenceBill.completed = false or s.referenceBill.completed is null) ");
                 break;
             case FUND_TRANSFER_BILL:
                 jpql.append("and s.referenceBill is null ");
