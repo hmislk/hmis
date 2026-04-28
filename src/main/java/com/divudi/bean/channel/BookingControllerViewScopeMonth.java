@@ -6405,29 +6405,31 @@ public class BookingControllerViewScopeMonth implements Serializable {
         }
 
          Bill b = savePaidBill();
+         BillItem billItemForPaidSession = savePaidBillItem(b);
         
         // savePaidBillFee(b, bi);
         PriceMatrix priceMatrix = priceMatrixController.fetchChannellingMemberShipDiscount(settlePaymentMethod, paymentScheme, selectedSessionInstance.getOriginatingSession().getCategory());
 
         if (selectedBillSession.getBill().getBillItems() != null && !selectedBillSession.getBill().getBillItems().isEmpty()) {
             for (BillItem abi : selectedBillSession.getBill().getBillItems()) {
-                createBillFeesForPaidBill(b, abi, priceMatrix);
+                createBillFeesForPaidBill(b, abi, priceMatrix, billItemForPaidSession);
             }
         }
 
         BillItem bi = selectedBillSession.getBillItem();
         Bill creditBill = getBillSession().getBill();
-        bi.setHospitalFee(billBeanController.calFeeValue(FeeType.OwnInstitution, bi, creditBill));
-        bi.setStaffFee(billBeanController.calFeeValue(FeeType.Staff, bi, creditBill));
+        bi.setHospitalFee(billBeanController.calFeeValue(FeeType.OwnInstitution, bi));
+        bi.setStaffFee(billBeanController.calFeeValue(FeeType.Staff, bi));
         getBillItemFacade().edit(bi);
+        billItemForPaidSession.setHospitalFee(bi.getHospitalFee());
+        billItemForPaidSession.setStaffFee(bi.getStaffFee());
+        getBillItemFacade().edit(billItemForPaidSession);
 
         creditBill.setHospitalFee(billBeanController.calFeeValue(FeeType.OwnInstitution, creditBill));
         creditBill.setStaffFee(billBeanController.calFeeValue(FeeType.Staff, creditBill));
         getBillFacade().edit(creditBill);
         b.setHospitalFee(creditBill.getHospitalFee());
         b.setStaffFee(creditBill.getStaffFee());
-
-        BillItem billItemForPaidSession = savePaidBillItem(b);
 
         BillSession bs = savePaidBillSession(b, billItemForPaidSession);
 
@@ -6474,14 +6476,14 @@ public class BookingControllerViewScopeMonth implements Serializable {
         JsfUtil.addSuccessMessage("On Call Channel Booking Settled");
     }
 
-    private void createBillFeesForPaidBill(Bill b, BillItem billItem, PriceMatrix priceMatrix) {
+    private void createBillFeesForPaidBill(Bill b, BillItem billItem, PriceMatrix priceMatrix, BillItem paidBillItem) {
         if (selectedBillSession.getBill() == null || selectedBillSession.getBill().getBillFees() == null || selectedBillSession.getBill().getBillFees().isEmpty()) {
             return;
         }
         double tmpTotal = 0;
         double tmpDiscount = 0;
         double tmpGrossTotal = 0.0;
-        
+    
         for (BillFee bf : selectedBillSession.getBill().getBillFees()) {
             ItemFee f = (ItemFee) bf.getFee();
 
@@ -6491,7 +6493,7 @@ public class BookingControllerViewScopeMonth implements Serializable {
                 newBillFee.setCreatedAt(Calendar.getInstance().getTime());
                 newBillFee.setCreater(getSessionController().getLoggedUser());
                 newBillFee.setBill(b);
-                newBillFee.setBillItem(billItem);
+                newBillFee.setBillItem(paidBillItem);
                 getBillFeeFacade().create(newBillFee);
 
                 double d = 0;
@@ -6520,6 +6522,13 @@ public class BookingControllerViewScopeMonth implements Serializable {
         billItem.setNetValue(tmpTotal);
         billItem.setDiscount(tmpDiscount);
         getBillItemFacade().edit(billItem);
+
+        if (paidBillItem.getItem().equals(billItem.getItem())) {
+            paidBillItem.setGrossValue(tmpGrossTotal);
+            paidBillItem.setNetValue(tmpTotal);
+            paidBillItem.setDiscount(tmpDiscount);
+            getBillItemFacade().edit(paidBillItem);
+        }
     }
 
     private BillSession savePaidBillSession(Bill bill, BillItem billItem) {
