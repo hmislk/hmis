@@ -83,8 +83,9 @@
                             
                             <p:column 
                                 headerText="SMS Type"
-                                style="padding: 6px;" >
-                                <h:outputLabel value="#{sms.smsType}"/>
+                                class="text-center"
+                                style="padding: 6px; width :8em" >
+                                <h:outputLabel value="#{sms.smsType}" class="text-center"/>
                             </p:column>
 
                             <p:column 
@@ -108,10 +109,11 @@
                             </p:column>
 
                             <p:column 
-                                style="padding: 6px; width :10em"
+                                class="text-center"
+                                style="padding: 6px; width :8em"
                                 headerText="Action">
                                 <p:commandButton 
-                                    value="Send Now"
+                                    value="Resend"
                                     icon="fa fa-paper-plane"
                                     action="#{smsController.sendFailedSmsById(sms.smsId)}"
                                     ajax="false">
