@@ -5865,6 +5865,9 @@ public class FinancialTransactionController implements Serializable {
             for (Payment ftp : floatPaymentsToMark) {
                 ftp.setHandingOverStarted(true);
                 paymentController.save(ftp);
+                ReportTemplateRow floatRow = new ReportTemplateRow();
+                floatRow.setPayment(ftp);
+                bundle.getReportTemplateRows().add(floatRow);
             }
         }
 
