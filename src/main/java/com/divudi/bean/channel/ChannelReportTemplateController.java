@@ -7980,7 +7980,6 @@ public class ChannelReportTemplateController implements Serializable {
                 name = cnosultantTitle.getLabel() + " ";
             }
             name += consultantName;
-            System.out.println("name");
             return name;
         }
 
