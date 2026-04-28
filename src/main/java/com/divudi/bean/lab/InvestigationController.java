@@ -235,7 +235,7 @@ public class InvestigationController implements Serializable {
         try {
             // Create a new Excel workbook
             Workbook workbook = new XSSFWorkbook();
-            Sheet sheet = workbook.createSheet("Diagnoses");
+            Sheet sheet = workbook.createSheet("Manage Investigations");
 
             // Create a header row
             Row headerRow = sheet.createRow(0);
@@ -247,7 +247,7 @@ public class InvestigationController implements Serializable {
             int rowNum = 1;
             for (Investigation diag : items) {
                 Row row = sheet.createRow(rowNum++);
-                row.createCell(0).setCellValue(rowNum);
+                row.createCell(0).setCellValue(rowNum-1);
                 row.createCell(1).setCellValue(diag.getName());
             }
 
@@ -255,7 +255,7 @@ public class InvestigationController implements Serializable {
             FacesContext context = FacesContext.getCurrentInstance();
             HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
             response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-            response.setHeader("Content-Disposition", "attachment; filename=\"diagnoses.xlsx\"");
+            response.setHeader("Content-Disposition", "attachment; filename=\"manage_investigations.xlsx\"");
 
             // Write the workbook to the response output stream
             workbook.write(response.getOutputStream());
