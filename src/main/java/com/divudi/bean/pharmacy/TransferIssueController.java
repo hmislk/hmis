@@ -1526,6 +1526,11 @@ public class TransferIssueController implements Serializable {
         billItem.getBillItemFinanceDetails().setValueAtPurchaseRate(purchaseRate.multiply(billItem.getBillItemFinanceDetails().getQuantity()));
 
         billItem.setSearialNo(getBillItems().size() + 1);
+
+        if (getIssuedBill().getDepartmentType() == null && billItem.getItem() != null) {
+            getIssuedBill().setDepartmentType(billItem.getItem().getDepartmentType());
+        }
+
         getBillItems().add(billItem);
 
         qty = null;
