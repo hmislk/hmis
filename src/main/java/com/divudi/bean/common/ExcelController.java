@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.TimeZone;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -4957,6 +4958,9 @@ public class ExcelController {
         smallFont.setFontHeightInPoints((short) 10);
         centerSmallStyle.setFont(smallFont);
 
+        CellStyle wrapTextStyle = workbook.createCellStyle();
+        wrapTextStyle.setWrapText(true);
+
         int currentRow = 0;
 
         // Row 0: Institution Name
@@ -5009,9 +5013,17 @@ public class ExcelController {
                 Object value = columnDef.get(i).valueExtractMethod.apply(b);
                 Cell cell = dataRow.createCell(i);
 
-                if (value instanceof String)  cell.setCellValue((String) value);
-                if (value instanceof Double)  cell.setCellValue((Double) value);
-                else cell.setCellValue(value != null ? value.toString() : "");
+                if (value instanceof String)  {
+                    String text = (String) value;
+                    cell.setCellValue(text);
+                    if (text.contains("\n")) {
+                        cell.setCellStyle(wrapTextStyle);
+                    }
+                } else if (value instanceof Double) {
+                    cell.setCellValue((Double) value);
+                } else {
+                    cell.setCellValue(value != null ? value.toString() : "");
+                }
             }
         } 
 
@@ -5062,26 +5074,42 @@ public class ExcelController {
     }
 
     // Helper Method: Bill Search: Billed At
-    public static String buildBillBilledAt(Bill b, boolean sameDay, String st, String sdt) {
+    public static String buildBillBilledAt(Bill b, Date fromDate, Date toDate, String st, String sdt) {
+        if (b == null) return "";
+
         String billedAt = "";
+
+        TimeZone tz = TimeZone.getTimeZone("Asia/Colombo");
+
         SimpleDateFormat shortTime = new SimpleDateFormat(st);
+        shortTime.setTimeZone(tz);
+
         SimpleDateFormat shortDateTime = new SimpleDateFormat(sdt);
+        shortDateTime.setTimeZone(tz);
+
+        boolean sameDay = false;
+        if (fromDate != null && toDate != null) {
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+            sdf.setTimeZone(tz);
+
+            sameDay = sdf.format(fromDate).equals(sdf.format(toDate));
+        }
 
         if (sameDay) {
-            billedAt = b.getCreatedAt() != null ? shortTime.format(b.getCreatedAt()) : "";
-            if (b.isCancelled() && b.getCancelledBill() != null && b.getCancelledBill().getCreatedAt() != null) {
-                billedAt += "\n(Cancelled: " + shortTime.format(b.getCancelledBill().getCreatedAt()) + (b.getCancelledBill().getPaymentMethod() != null ? (" " + b.getCancelledBill().getPaymentMethod().toString()) : "") + ") ";
-            } else if (b.isRefunded() && b.getRefundedBill() != null && b.getRefundedBill().getCreatedAt() != null) {
-                billedAt += "\n(Refunded: " + shortTime.format(b.getRefundedBill().getCreatedAt()) + (b.getCancelledBill().getPaymentMethod() != null ? (" " + b.getCancelledBill().getPaymentMethod().toString()) : "") + ") ";
+                billedAt = b.getCreatedAt() != null ? shortTime.format(b.getCreatedAt()) : "";
+                if (b.isCancelled() && b.getCancelledBill() != null && b.getCancelledBill().getCreatedAt() != null) {
+                    billedAt += "\n(Cancelled: " + shortTime.format(b.getCancelledBill().getCreatedAt()) + (b.getCancelledBill().getPaymentMethod() != null ? (" " + b.getCancelledBill().getPaymentMethod().toString()) : "") + ") ";
+                } else if (b.isRefunded() && b.getRefundedBill() != null && b.getRefundedBill().getCreatedAt() != null) {
+                    billedAt += "\n(Refunded: " + shortTime.format(b.getRefundedBill().getCreatedAt()) + (b.getRefundedBill().getPaymentMethod() != null ? (" " + b.getRefundedBill().getPaymentMethod().toString()) : "") + ") ";
+                }
+            } else {
+                billedAt = b.getCreatedAt() != null ? shortDateTime.format(b.getCreatedAt()) : "";
+                if (b.isCancelled() && b.getCancelledBill() != null && b.getCancelledBill().getCreatedAt() != null) {
+                    billedAt += "\n(Cancelled: " + shortDateTime.format(b.getCancelledBill().getCreatedAt()) + ") ";
+                } else if (b.isRefunded() && b.getRefundedBill() != null && b.getRefundedBill().getCreatedAt() != null) {
+                    billedAt += "\n(Refunded: " + shortDateTime.format(b.getRefundedBill().getCreatedAt()) + ") ";
+                }
             }
-        } else {
-            billedAt = b.getCreatedAt() != null ? shortDateTime.format(b.getCreatedAt()) : "";
-            if (b.isCancelled() && b.getCancelledBill() != null && b.getCancelledBill().getCreatedAt() != null) {
-                billedAt += "\n(Cancelled: " + shortDateTime.format(b.getCancelledBill().getCreatedAt()) + ") ";
-            } else if (b.isRefunded() && b.getRefundedBill() != null && b.getRefundedBill().getCreatedAt() != null) {
-                billedAt += "\n(Refunded: " + shortDateTime.format(b.getRefundedBill().getCreatedAt()) + ") ";
-            }
-        }
 
         return billedAt;
     }

@@ -135,7 +135,6 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.checkerframework.checker.units.qual.s;
 import org.primefaces.model.file.UploadedFile;
 
 import org.primefaces.model.DefaultStreamedContent;
@@ -23662,7 +23661,7 @@ public class SearchController implements Serializable {
             List<ExcelController.ColumnDefExcel<Bill>> detailCols = Arrays.asList(
                 new ExcelController.ColumnDefExcel<>("Bill No*",        bill -> ExcelController.buildBillDeptId(bill)),
                 new ExcelController.ColumnDefExcel<>("Batch Bill",      bill -> (bill.getBackwardReferenceBill() != null) ?  bill.getBackwardReferenceBill().getDeptId() : ""),
-                new ExcelController.ColumnDefExcel<>("Billed At",       bill -> ExcelController.buildBillBilledAt(bill, (fromDate == toDate), sessionController.getApplicationPreference().getShortDateTimeFormat(), sessionController.getApplicationPreference().getShortDateTimeFormat())),
+                new ExcelController.ColumnDefExcel<>("Billed At",       bill -> ExcelController.buildBillBilledAt(bill, fromDate, toDate, sessionController.getApplicationPreference().getShortDateTimeFormat(), sessionController.getApplicationPreference().getShortDateTimeFormat())),
                 new ExcelController.ColumnDefExcel<>("Billed By",       bill -> ExcelController.buildBillBilledByDepartment(bill)),
                 new ExcelController.ColumnDefExcel<>("Billed For",      bill -> bill.getToDepartment() != null ? bill.getToDepartment().getName() : ""),
                 new ExcelController.ColumnDefExcel<>("Billed By",       bill -> ExcelController.buildBillBilledBy(bill, false)),
@@ -23700,7 +23699,7 @@ public class SearchController implements Serializable {
                 new ExcelController.ColumnDefExcel<>("Bill No*",         bill -> ExcelController.buildBillDeptChannel(bill)),
                 new ExcelController.ColumnDefExcel<>("Consultant",       bill -> (bill.getSingleBillSession() != null && bill.getSingleBillSession().getSessionInstance() != null && bill.getSingleBillSession().getSessionInstance().getOriginatingSession() != null 
                                                                                                 && bill.getSingleBillSession().getSessionInstance().getOriginatingSession().getStaff() != null && bill.getSingleBillSession().getSessionInstance().getOriginatingSession().getStaff().getPerson() != null) ?  bill.getSingleBillSession().getSessionInstance().getOriginatingSession().getStaff().getPerson().getNameWithTitle() : ""),
-                new ExcelController.ColumnDefExcel<>("Billed At",       bill -> ExcelController.buildBillBilledAt(bill, (fromDate == toDate), sessionController.getApplicationPreference().getShortTimeFormat(), sessionController.getApplicationPreference().getShortDateTimeFormat())),
+                new ExcelController.ColumnDefExcel<>("Billed At",       bill -> ExcelController.buildBillBilledAt(bill, fromDate, toDate, sessionController.getApplicationPreference().getShortTimeFormat(), sessionController.getApplicationPreference().getShortDateTimeFormat())),
                 new ExcelController.ColumnDefExcel<>("Session",         bill -> (bill.getSingleBillSession() != null && bill.getSingleBillSession().getSessionInstance() != null && bill.getSingleBillSession().getSessionInstance().getOriginatingSession() != null) ? bill.getSingleBillSession().getSessionInstance().getOriginatingSession().getName() : ""),
                 new ExcelController.ColumnDefExcel<>("Billed For",      bill -> bill.getToInstitution() != null ? bill.getToInstitution().getName() : ""),
                 new ExcelController.ColumnDefExcel<>("Billed By",       bill -> ExcelController.buildBillBilledBy(bill, true)),
