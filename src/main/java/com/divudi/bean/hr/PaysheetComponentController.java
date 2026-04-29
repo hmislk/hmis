@@ -184,7 +184,7 @@ public class PaysheetComponentController implements Serializable {
 
     public void delete() {
 
-        if (current != null) {
+        if (current != null && current.getId() != null) {
             current.setRetired(true);
             current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
@@ -192,6 +192,7 @@ public class PaysheetComponentController implements Serializable {
             JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
             JsfUtil.addErrorMessage("Nothing to Delete");
+            return;
         }
         recreateModel();
         getItems();
