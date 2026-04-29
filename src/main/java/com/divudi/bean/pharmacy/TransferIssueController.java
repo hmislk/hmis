@@ -12,6 +12,7 @@ import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillNumberSuffix;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.dto.StockDTO;
 import com.divudi.ejb.BillNumberGenerator;
 
@@ -1527,8 +1528,16 @@ public class TransferIssueController implements Serializable {
 
         billItem.setSearialNo(getBillItems().size() + 1);
 
-        if (getIssuedBill().getDepartmentType() == null && billItem.getItem() != null) {
-            getIssuedBill().setDepartmentType(billItem.getItem().getDepartmentType());
+        if (billItem.getItem() != null) {
+            DepartmentType itemDeptType = billItem.getItem().getDepartmentType();
+            if (getIssuedBill().getDepartmentType() == null) {
+                getIssuedBill().setDepartmentType(itemDeptType);
+            } else if (itemDeptType != null && !itemDeptType.equals(getIssuedBill().getDepartmentType())) {
+                JsfUtil.addErrorMessage("Cannot add items from different department types. "
+                        + "Bill is set for " + getIssuedBill().getDepartmentType().getLabel()
+                        + " items, but you are trying to add a " + itemDeptType.getLabel() + " item.");
+                return;
+            }
         }
 
         getBillItems().add(billItem);
