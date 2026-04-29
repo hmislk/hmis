@@ -1311,8 +1311,6 @@ public class FinancialTransactionController implements Serializable {
     }
 
     public String navigateBackToPaymentHandoverAccept() {
-        selectedBundle.calculateTotalsByPaymentsAndDenominations();
-        bundle.calculateTotalsBySelectedChildBundles();
         return "/cashier/handover_accept?faces-redirect=true";
     }
 
