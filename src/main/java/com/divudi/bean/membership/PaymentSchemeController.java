@@ -260,8 +260,8 @@ public class PaymentSchemeController implements Serializable {
     }
 
     public void saveSelected() {
-        
-        if(getCurrent().getName() == null || getCurrent().getName().trim().isEmpty()){
+
+        if (getCurrent().getName() == null || getCurrent().getName().trim().isEmpty()) {
             JsfUtil.addErrorMessage("Please Add the Scheme Name");
             return;
         }
@@ -321,8 +321,25 @@ public class PaymentSchemeController implements Serializable {
         }
 
         if (getCurrentRestrictedPaymentMethod().getPaymentMethod() == null) {
-            JsfUtil.addErrorMessage("Please Select Payment Methord");
+            JsfUtil.addErrorMessage("Please Select Payment Method");
             return;
+        }
+
+        String dupJpql = "SELECT r FROM RestrictedPaymentMethod r "
+                + " WHERE r.retired = false "
+                + " AND r.paymentScheme = :ps "
+                + " AND r.paymentMethod = :pm";
+        HashMap dupParams = new HashMap();
+        dupParams.put("ps", getCurrent());
+        dupParams.put("pm", getCurrentRestrictedPaymentMethod().getPaymentMethod());
+        RestrictedPaymentMethod existing = getRestrictedPaymentMethodFacade().findFirstByJpql(dupJpql, dupParams);
+
+        if (existing != null) {
+            Long currentId = getCurrentRestrictedPaymentMethod().getId();
+            if (currentId == null || !existing.getId().equals(currentId)) {
+                JsfUtil.addErrorMessage("This Payment Method is already added to the selected Discount Scheme");
+                return;
+            }
         }
 
         getCurrentRestrictedPaymentMethod().setPaymentScheme(getCurrent());
