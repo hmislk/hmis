@@ -296,7 +296,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
     private Speciality speciality;
     private String reportTemplateFileIndexName;
 
-    private List<String> siteIds;   
+    private List<String> siteIds;
 
     private ReportViewType reportViewType;
     private List<ReportViewType> reportViewTypes;
