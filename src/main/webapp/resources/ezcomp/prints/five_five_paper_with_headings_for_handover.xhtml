@@ -247,9 +247,17 @@
                                         <h:panelGroup rendered="#{cc.attrs.bundle.hasCashTransaction}">
                                             <tr>
                                                 <td>Cash</td>
-                                                <td class="text-end"><h:outputText value="#{cc.attrs.bundle.cashValue + cc.attrs.bundle.cashFloatNetTotal}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
-                                                <td class="text-end"><h:outputText value="#{cc.attrs.bundle.denominatorValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
-                                                <td class="text-end"><h:outputText value="#{cc.attrs.bundle.cashValue + cc.attrs.bundle.cashFloatNetTotal - cc.attrs.bundle.denominatorValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                                <td class="text-end"><h:outputText value="#{cc.attrs.bundle.cashValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                                <td class="text-end"><h:outputText value="#{cc.attrs.bundle.cashValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                                <td class="text-end"><h:outputText value="#{0}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                            </tr>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{cc.attrs.bundle.cashFloatNetTotal != 0}">
+                                            <tr>
+                                                <td>Net Float (Cash)</td>
+                                                <td class="text-end"><h:outputText value="#{cc.attrs.bundle.cashFloatNetTotal}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                                <td class="text-end"><h:outputText value="#{cc.attrs.bundle.cashFloatNetTotal}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                                <td class="text-end"><h:outputText value="#{0}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
                                             </tr>
                                         </h:panelGroup>
                                         <h:panelGroup rendered="#{cc.attrs.bundle.hasCardTransaction}">
@@ -524,6 +532,41 @@
                         <h:outputText value="#{summary.staffHandoverValue}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputText>
+                        <f:facet name="footer">
+                            <h:outputText value="#{cc.attrs.bundle.staffHandoverValue}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
+                        </f:facet>
+                    </p:column>
+
+                    <!-- Staff Welfare Value Column -->
+                    <p:column
+                        headerText="Staff Welfare Value"
+                        class="text-end"
+                        rendered="#{cc.attrs.bundle.hasStaffWelfareTransaction}">
+                        <h:outputText value="#{summary.staffWelfareValue}">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputText>
+                        <f:facet name="footer">
+                            <h:outputText value="#{cc.attrs.bundle.staffWelfareValue}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
+                        </f:facet>
+                    </p:column>
+
+                    <!-- Staff Welfare Handover Column -->
+                    <p:column
+                        headerText="Staff Welfare Handover"
+                        class="text-end"
+                        rendered="#{cc.attrs.bundle.hasStaffWelfareTransaction}">
+                        <h:outputText value="#{summary.staffWelfareHandoverValue}">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputText>
+                        <f:facet name="footer">
+                            <h:outputText value="#{cc.attrs.bundle.staffWelfareHandoverValue}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
+                        </f:facet>
                     </p:column>
 
                     <!-- Voucher Value Column -->
@@ -549,6 +592,11 @@
                         <h:outputText value="#{summary.voucherHandoverValue}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputText>
+                        <f:facet name="footer">
+                            <h:outputText value="#{cc.attrs.bundle.voucherHandoverValue}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
+                        </f:facet>
                     </p:column>
 
                     <!-- IOU Value Column -->
@@ -574,6 +622,11 @@
                         <h:outputText value="#{summary.iouHandoverValue}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputText>
+                        <f:facet name="footer">
+                            <h:outputText value="#{cc.attrs.bundle.iouHandoverValue}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
+                        </f:facet>
                     </p:column>
 
                     <!-- Agent Value Column -->
@@ -599,6 +652,11 @@
                         <h:outputText value="#{summary.agentHandoverValue}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputText>
+                        <f:facet name="footer">
+                            <h:outputText value="#{cc.attrs.bundle.agentHandoverValue}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
+                        </f:facet>
                     </p:column>
 
                     <!-- Cheque Value Column -->
@@ -624,6 +682,11 @@
                         <h:outputText value="#{summary.chequeHandoverValue}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputText>
+                        <f:facet name="footer">
+                            <h:outputText value="#{cc.attrs.bundle.chequeHandoverValue}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
+                        </f:facet>
                     </p:column>
 
                     <!-- Slip Value Column -->
@@ -649,6 +712,11 @@
                         <h:outputText value="#{summary.slipHandoverValue}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputText>
+                        <f:facet name="footer">
+                            <h:outputText value="#{cc.attrs.bundle.slipHandoverValue}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
+                        </f:facet>
                     </p:column>
 
                     <!-- eWallet Value Column -->
@@ -674,6 +742,11 @@
                         <h:outputText value="#{summary.ewalletHandoverValue}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputText>
+                        <f:facet name="footer">
+                            <h:outputText value="#{cc.attrs.bundle.ewalletHandoverValue}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
+                        </f:facet>
                     </p:column>
 
                     <!-- Patient Points Value Column -->
@@ -699,6 +772,11 @@
                         <h:outputText value="#{summary.patientPointsHandoverValue}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputText>
+                        <f:facet name="footer">
+                            <h:outputText value="#{cc.attrs.bundle.patientPointsHandoverValue}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
+                        </f:facet>
                     </p:column>
 
                     <!-- Online Settlement Value Column -->
@@ -724,6 +802,11 @@
                         <h:outputText value="#{summary.onlineSettlementHandoverValue}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputText>
+                        <f:facet name="footer">
+                            <h:outputText value="#{cc.attrs.bundle.onlineSettlementHandoverValue}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
+                        </f:facet>
                     </p:column>
 
                     <!-- On Call Value Column -->
@@ -749,12 +832,106 @@
                         <h:outputText value="#{summary.onCallHandoverValue}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputText>
+                        <f:facet name="footer">
+                            <h:outputText value="#{cc.attrs.bundle.onCallHandoverValue}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
+                        </f:facet>
                     </p:column>
 
-
+                    <p:column headerText="Total" class="text-end">
+                        <h:outputText value="#{summary.total}">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputText>
+                        <f:facet name="footer">
+                            <h:outputText value="#{cc.attrs.bundle.cashValue + cc.attrs.bundle.cardValue + cc.attrs.bundle.creditValue + cc.attrs.bundle.staffWelfareValue + cc.attrs.bundle.staffValue + cc.attrs.bundle.voucherValue + cc.attrs.bundle.iouValue + cc.attrs.bundle.agentValue + cc.attrs.bundle.chequeValue + cc.attrs.bundle.slipValue + cc.attrs.bundle.ewalletValue + cc.attrs.bundle.patientDepositValue + cc.attrs.bundle.patientPointsValue + cc.attrs.bundle.onlineSettlementValue + cc.attrs.bundle.onCallValue}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
+                        </f:facet>
+                    </p:column>
 
                 </p:dataTable>
 
+                <h:panelGroup rendered="#{not empty cc.attrs.bundle.reportTemplateRows
+                                         or cc.attrs.bundle.cashFloatNetTotal != 0}">
+                    <hr/>
+                    <div class="my-2" style="font-weight: bold;">Float Transfers</div>
+
+                    <p:dataTable
+                        style="padding: 0px!important; margin: 0px!important; font-size: #{pharmacySummaryReportController.fontSizeForPrinting}!important;"
+                        styleClass="ui-datatable-borderless ui-datatable-sm compact-datatable"
+                        rendered="#{not empty cc.attrs.bundle.reportTemplateRows}"
+                        value="#{cc.attrs.bundle.reportTemplateRows}"
+                        var="floatRow">
+
+                        <p:column headerText="Date" style="font-weight: normal">
+                            <h:outputText value="#{floatRow.payment.createdAt}">
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                            </h:outputText>
+                        </p:column>
+
+                        <p:column headerText="Type" style="font-weight: normal">
+                            <h:outputText value="Float Out"
+                                rendered="#{floatRow.payment.bill.billTypeAtomic.name() eq 'FUND_TRANSFER_BILL'}" />
+                            <h:outputText value="Float In"
+                                rendered="#{floatRow.payment.bill.billTypeAtomic.name() eq 'FUND_TRANSFER_RECEIVED_BILL'}" />
+                        </p:column>
+
+                        <p:column headerText="From" style="font-weight: normal">
+                            <h:outputText value="#{floatRow.payment.creater.webUserPerson.nameWithTitle}" />
+                        </p:column>
+
+                        <p:column headerText="To" style="font-weight: normal">
+                            <h:outputText value="#{floatRow.payment.floatRecipient.webUserPerson.nameWithTitle}" />
+                        </p:column>
+
+                        <p:column headerText="Method" style="font-weight: normal">
+                            <h:outputText value="#{floatRow.payment.paymentMethod}" />
+                        </p:column>
+
+                        <p:column headerText="Amount" class="text-end" style="font-weight: normal">
+                            <h:outputText value="#{floatRow.payment.paidValue}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
+                        </p:column>
+
+                    </p:dataTable>
+
+                    <table class="table table-bordered mt-1" style="width: 40%;">
+                        <tbody>
+                            <h:panelGroup rendered="#{cc.attrs.bundle.cashFloatInTotal gt 0}">
+                                <tr>
+                                    <td>Float Received (Cash)</td>
+                                    <td class="text-end">
+                                        <h:outputText value="#{cc.attrs.bundle.cashFloatInTotal}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </td>
+                                </tr>
+                            </h:panelGroup>
+                            <h:panelGroup rendered="#{cc.attrs.bundle.cashFloatOutTotal gt 0}">
+                                <tr>
+                                    <td>Float Sent (Cash)</td>
+                                    <td class="text-end">
+                                        <h:outputText value="#{cc.attrs.bundle.cashFloatOutTotal}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </td>
+                                </tr>
+                            </h:panelGroup>
+                            <h:panelGroup rendered="#{cc.attrs.bundle.cashFloatNetTotal != 0}">
+                                <tr style="font-weight: bold;">
+                                    <td>Net Float (Cash)</td>
+                                    <td class="text-end">
+                                        <h:outputText value="#{cc.attrs.bundle.cashFloatNetTotal}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </td>
+                                </tr>
+                            </h:panelGroup>
+                        </tbody>
+                    </table>
+                </h:panelGroup>
 
             </div>
 

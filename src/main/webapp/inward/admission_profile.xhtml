@@ -351,6 +351,15 @@
 
                         <p:panel header="Room Management" class="m-1">
                             <div class="row g-2">
+                                <div class="col-12">
+                                    <p:commandButton
+                                        value="Room Details"
+                                        ajax="false"
+                                        action="#{admissionController.navigateToPatientRoomDetails()}"
+                                        icon="fa-solid fa-bed"
+                                        class="w-100 ui-button-info">
+                                    </p:commandButton>
+                                </div>
                                 <div class="col-6">
                                     <p:commandButton
                                         disabled="#{admissionController.current.discharged eq true}"

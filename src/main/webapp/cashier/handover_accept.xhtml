@@ -151,7 +151,7 @@
                                                     <tr>
                                                         <td>Cash</td>
                                                         <td class="text-end">
-                                                            <h:outputText value="#{financialTransactionController.bundle.cashValue + financialTransactionController.bundle.cashFloatNetTotal}">
+                                                            <h:outputText value="#{financialTransactionController.bundle.cashValue}">
                                                                 <f:convertNumber pattern="#,##0.00" />
                                                             </h:outputText>
                                                         </td>
@@ -161,10 +161,24 @@
                                                             </h:outputText>
                                                         </td>
                                                         <td class="text-end">
-                                                            <h:outputText value="#{financialTransactionController.bundle.cashValue + financialTransactionController.bundle.cashFloatNetTotal - financialTransactionController.bundle.cashHandoverValue}">
+                                                            <h:outputText value="#{financialTransactionController.bundle.cashValue - financialTransactionController.bundle.cashHandoverValue}">
                                                                 <f:convertNumber pattern="#,##0.00" />
                                                             </h:outputText>
                                                         </td>
+                                                    </tr>
+                                                </ui:fragment>
+
+                                                <!-- Net Float (Cash) row — only when there is a net float -->
+                                                <ui:fragment rendered="#{financialTransactionController.bundle.cashFloatNetTotal != 0}">
+                                                    <tr>
+                                                        <td><em>Net Float (Cash)</em></td>
+                                                        <td class="text-end">
+                                                            <h:outputText value="#{financialTransactionController.bundle.cashFloatNetTotal}">
+                                                                <f:convertNumber pattern="#,##0.00" />
+                                                            </h:outputText>
+                                                        </td>
+                                                        <td></td>
+                                                        <td></td>
                                                     </tr>
                                                 </ui:fragment>
 
@@ -243,7 +257,7 @@
                                                             </h:outputText>
                                                         </td>
                                                         <td class="text-end">
-                                                            <h:outputText value="#{financialTransactionController.bundle.ewalletValue}">
+                                                            <h:outputText value="#{financialTransactionController.bundle.ewalletHandoverValue}">
                                                                 <f:convertNumber pattern="#,##0.00" />
                                                             </h:outputText>
                                                         </td>
@@ -594,11 +608,11 @@
                                             <h:outputText value="#{summary.cardValue}" >
                                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                             </h:outputText>
-                                            <p:commandButton 
-                                                icon="pi pi-refresh" 
-                                                title="Change Handover Value" 
-                                                ajax="false" 
-                                                styleClass="ui-button-warning m-1 mx-2" 
+                                            <p:commandButton
+                                                icon="pi pi-search"
+                                                title="View Payments"
+                                                ajax="false"
+                                                styleClass="ui-button-info m-1 mx-2"
                                                 action="#{financialTransactionController.navigateToSelectPaymentsForHandoverAccept(summary, 'Card')}" >
                                             </p:commandButton>
                                             <f:facet name="footer">
@@ -620,12 +634,19 @@
                                             </f:facet>
                                         </p:column>
 
-                                        <p:column headerText="Credit" 
+                                        <p:column headerText="Credit"
                                                   class="text-end"
                                                   rendered="#{financialTransactionController.bundle.hasCreditTransaction}" >
                                             <h:outputText value="#{summary.creditValue}" >
                                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                             </h:outputText>
+                                            <p:commandButton
+                                                icon="pi pi-search"
+                                                title="View Payments"
+                                                ajax="false"
+                                                styleClass="ui-button-info m-1 mx-2"
+                                                action="#{financialTransactionController.navigateToSelectPaymentsForHandoverAccept(summary, 'Credit')}" >
+                                            </p:commandButton>
                                             <f:facet name="footer">
                                                 <h:outputText value="#{financialTransactionController.bundle.creditValue}">
                                                     <f:convertNumber pattern="#,##0.00" />
@@ -634,13 +655,20 @@
                                         </p:column>
 
                                         <!-- Continuing from Credit -->
-                                        <p:column 
-                                            headerText="Staff Welfare" 
+                                        <p:column
+                                            headerText="Staff Welfare"
                                             class="text-end"
                                             rendered="#{financialTransactionController.bundle.hasStaffWelfareTransaction}" >
                                             <h:outputText value="#{summary.staffWelfareValue}" >
                                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                             </h:outputText>
+                                            <p:commandButton
+                                                icon="pi pi-search"
+                                                title="View Payments"
+                                                ajax="false"
+                                                styleClass="ui-button-info m-1 mx-2"
+                                                action="#{financialTransactionController.navigateToSelectPaymentsForHandoverAccept(summary, 'StaffWelfare')}" >
+                                            </p:commandButton>
                                             <f:facet name="footer">
                                                 <h:outputText value="#{financialTransactionController.bundle.staffWelfareValue}">
                                                     <f:convertNumber pattern="#,##0.00" />
@@ -648,13 +676,20 @@
                                             </f:facet>
                                         </p:column>
 
-                                        <p:column 
-                                            headerText="Staff" 
+                                        <p:column
+                                            headerText="Staff"
                                             class="text-end"
                                             rendered="#{financialTransactionController.bundle.hasStaffTransaction}" >
                                             <h:outputText value="#{summary.staffValue}" >
                                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                             </h:outputText>
+                                            <p:commandButton
+                                                icon="pi pi-search"
+                                                title="View Payments"
+                                                ajax="false"
+                                                styleClass="ui-button-info m-1 mx-2"
+                                                action="#{financialTransactionController.navigateToSelectPaymentsForHandoverAccept(summary, 'Staff')}" >
+                                            </p:commandButton>
                                             <f:facet name="footer">
                                                 <h:outputText value="#{financialTransactionController.bundle.staffValue}">
                                                     <f:convertNumber pattern="#,##0.00" />
@@ -662,13 +697,20 @@
                                             </f:facet>
                                         </p:column>
 
-                                        <p:column 
-                                            headerText="Voucher" 
+                                        <p:column
+                                            headerText="Voucher"
                                             class="text-end"
                                             rendered="#{financialTransactionController.bundle.hasVoucherTransaction}" >
                                             <h:outputText value="#{summary.voucherValue}" >
                                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                             </h:outputText>
+                                            <p:commandButton
+                                                icon="pi pi-search"
+                                                title="View Payments"
+                                                ajax="false"
+                                                styleClass="ui-button-info m-1 mx-2"
+                                                action="#{financialTransactionController.navigateToSelectPaymentsForHandoverAccept(summary, 'Voucher')}" >
+                                            </p:commandButton>
                                             <f:facet name="footer">
                                                 <h:outputText value="#{financialTransactionController.bundle.voucherValue}">
                                                     <f:convertNumber pattern="#,##0.00" />
@@ -676,13 +718,20 @@
                                             </f:facet>
                                         </p:column>
 
-                                        <p:column 
-                                            headerText="IOU" 
+                                        <p:column
+                                            headerText="IOU"
                                             class="text-end"
                                             rendered="#{financialTransactionController.bundle.hasIouTransaction}" >
                                             <h:outputText value="#{summary.iouValue}" >
                                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                             </h:outputText>
+                                            <p:commandButton
+                                                icon="pi pi-search"
+                                                title="View Payments"
+                                                ajax="false"
+                                                styleClass="ui-button-info m-1 mx-2"
+                                                action="#{financialTransactionController.navigateToSelectPaymentsForHandoverAccept(summary, 'IOU')}" >
+                                            </p:commandButton>
                                             <f:facet name="footer">
                                                 <h:outputText value="#{financialTransactionController.bundle.iouValue}">
                                                     <f:convertNumber pattern="#,##0.00" />
@@ -690,13 +739,20 @@
                                             </f:facet>
                                         </p:column>
 
-                                        <p:column 
+                                        <p:column
                                             headerText="Agent"
                                             class="text-end"
                                             rendered="#{financialTransactionController.bundle.hasAgentTransaction}" >
                                             <h:outputText value="#{summary.agentValue}" >
                                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                             </h:outputText>
+                                            <p:commandButton
+                                                icon="pi pi-search"
+                                                title="View Payments"
+                                                ajax="false"
+                                                styleClass="ui-button-info m-1 mx-2"
+                                                action="#{financialTransactionController.navigateToSelectPaymentsForHandoverAccept(summary, 'Agent')}" >
+                                            </p:commandButton>
                                             <f:facet name="footer">
                                                 <h:outputText value="#{financialTransactionController.bundle.agentValue}">
                                                     <f:convertNumber pattern="#,##0.00" />
@@ -704,13 +760,20 @@
                                             </f:facet>
                                         </p:column>
 
-                                        <p:column 
-                                            headerText="Cheque" 
+                                        <p:column
+                                            headerText="Cheque"
                                             class="text-end"
                                             rendered="#{financialTransactionController.bundle.hasChequeTransaction}" >
                                             <h:outputText value="#{summary.chequeValue}" >
                                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                             </h:outputText>
+                                            <p:commandButton
+                                                icon="pi pi-search"
+                                                title="View Payments"
+                                                ajax="false"
+                                                styleClass="ui-button-info m-1 mx-2"
+                                                action="#{financialTransactionController.navigateToSelectPaymentsForHandoverAccept(summary, 'Cheque')}" >
+                                            </p:commandButton>
                                             <f:facet name="footer">
                                                 <h:outputText value="#{financialTransactionController.bundle.chequeValue}">
                                                     <f:convertNumber pattern="#,##0.00" />
@@ -718,13 +781,20 @@
                                             </f:facet>
                                         </p:column>
 
-                                        <p:column 
+                                        <p:column
                                             headerText="Slip"
                                             class="text-end"
                                             rendered="#{financialTransactionController.bundle.hasSlipTransaction}" >
                                             <h:outputText value="#{summary.slipValue}" >
                                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                             </h:outputText>
+                                            <p:commandButton
+                                                icon="pi pi-search"
+                                                title="View Payments"
+                                                ajax="false"
+                                                styleClass="ui-button-info m-1 mx-2"
+                                                action="#{financialTransactionController.navigateToSelectPaymentsForHandoverAccept(summary, 'Slip')}" >
+                                            </p:commandButton>
                                             <f:facet name="footer">
                                                 <h:outputText value="#{financialTransactionController.bundle.slipValue}">
                                                     <f:convertNumber pattern="#,##0.00" />
@@ -732,13 +802,20 @@
                                             </f:facet>
                                         </p:column>
 
-                                        <p:column 
-                                            headerText="eWallet" 
+                                        <p:column
+                                            headerText="eWallet"
                                             class="text-end"
                                             rendered="#{financialTransactionController.bundle.hasEWalletTransaction}" >
                                             <h:outputText value="#{summary.ewalletValue}" >
                                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                             </h:outputText>
+                                            <p:commandButton
+                                                icon="pi pi-search"
+                                                title="View Payments"
+                                                ajax="false"
+                                                styleClass="ui-button-info m-1 mx-2"
+                                                action="#{financialTransactionController.navigateToSelectPaymentsForHandoverAccept(summary, 'ewallet')}" >
+                                            </p:commandButton>
                                             <f:facet name="footer">
                                                 <h:outputText value="#{financialTransactionController.bundle.ewalletValue}">
                                                     <f:convertNumber pattern="#,##0.00" />
@@ -746,13 +823,20 @@
                                             </f:facet>
                                         </p:column>
 
-                                        <p:column 
-                                            headerText="Patient Deposit" 
+                                        <p:column
+                                            headerText="Patient Deposit"
                                             class="text-end"
                                             rendered="#{financialTransactionController.bundle.hasPatientDepositTransaction}" >
                                             <h:outputText value="#{summary.patientDepositValue}" >
                                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                             </h:outputText>
+                                            <p:commandButton
+                                                icon="pi pi-search"
+                                                title="View Payments"
+                                                ajax="false"
+                                                styleClass="ui-button-info m-1 mx-2"
+                                                action="#{financialTransactionController.navigateToSelectPaymentsForHandoverAccept(summary, 'PatientDeposit')}" >
+                                            </p:commandButton>
                                             <f:facet name="footer">
                                                 <h:outputText value="#{financialTransactionController.bundle.patientDepositValue}">
                                                     <f:convertNumber pattern="#,##0.00" />
@@ -760,13 +844,20 @@
                                             </f:facet>
                                         </p:column>
 
-                                        <p:column 
-                                            headerText="Patient Points" 
+                                        <p:column
+                                            headerText="Patient Points"
                                             class="text-end"
                                             rendered="#{financialTransactionController.bundle.hasPatientPointsTransaction}" >
                                             <h:outputText value="#{summary.patientPointsValue}" >
                                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                             </h:outputText>
+                                            <p:commandButton
+                                                icon="pi pi-search"
+                                                title="View Payments"
+                                                ajax="false"
+                                                styleClass="ui-button-info m-1 mx-2"
+                                                action="#{financialTransactionController.navigateToSelectPaymentsForHandoverAccept(summary, 'PatientPoints')}" >
+                                            </p:commandButton>
                                             <f:facet name="footer">
                                                 <h:outputText value="#{financialTransactionController.bundle.patientPointsValue}">
                                                     <f:convertNumber pattern="#,##0.00" />
@@ -774,13 +865,20 @@
                                             </f:facet>
                                         </p:column>
 
-                                        <p:column 
-                                            headerText="Online Settlement" 
+                                        <p:column
+                                            headerText="Online Settlement"
                                             class="text-end"
-                                            rendered="#{financialTransactionController.bundle.hasOnCallTransaction}" >
+                                            rendered="#{financialTransactionController.bundle.hasOnlineSettlementTransaction}" >
                                             <h:outputText value="#{summary.onlineSettlementValue}" >
                                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                             </h:outputText>
+                                            <p:commandButton
+                                                icon="pi pi-search"
+                                                title="View Payments"
+                                                ajax="false"
+                                                styleClass="ui-button-info m-1 mx-2"
+                                                action="#{financialTransactionController.navigateToSelectPaymentsForHandoverAccept(summary, 'OnlineSettlement')}" >
+                                            </p:commandButton>
                                             <f:facet name="footer">
                                                 <h:outputText value="#{financialTransactionController.bundle.onlineSettlementValue}">
                                                     <f:convertNumber pattern="#,##0.00" />
@@ -805,16 +903,89 @@
                                         </p:column>
 
                                         <p:column headerText="Actions" class="text-center">
-                                            <p:commandButton 
-                                                class="m-1 ui-button-success" 
-                                                value="View Details" 
-                                                icon="pi pi-eye"  
+                                            <p:commandButton
+                                                class="m-1 ui-button-success"
+                                                value="View Details"
+                                                icon="pi pi-eye"
                                                 action="#{financialTransactionController.navigateToViewIndividualShiftForHandover}">
                                             </p:commandButton>
-
+                                            <f:facet name="footer"><h:outputText value="" /></f:facet>
                                         </p:column>
 
                                     </p:dataTable>
+
+                                    <!-- Float Transfers section -->
+                                    <h:panelGroup layout="block" styleClass="row mt-2"
+                                         rendered="#{financialTransactionController.bundle.cashFloatNetTotal != 0
+                                                     or not empty financialTransactionController.bundle.reportTemplateRows}">
+                                        <p:panel>
+                                            <f:facet name="header">
+                                                <p:outputLabel value="Float Transfers" />
+                                            </f:facet>
+                                            <p:dataTable
+                                                value="#{financialTransactionController.bundle.reportTemplateRows}"
+                                                var="floatRow"
+                                                rendered="#{not empty financialTransactionController.bundle.reportTemplateRows}"
+                                                emptyMessage="No float transfers">
+                                                <p:column headerText="Date">
+                                                    <h:outputText value="#{floatRow.payment.createdAt}">
+                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                                    </h:outputText>
+                                                </p:column>
+                                                <p:column headerText="Type">
+                                                    <h:outputText value="Float Out"
+                                                        rendered="#{floatRow.payment.bill.billTypeAtomic.name() eq 'FUND_TRANSFER_BILL'}" />
+                                                    <h:outputText value="Float In"
+                                                        rendered="#{floatRow.payment.bill.billTypeAtomic.name() eq 'FUND_TRANSFER_RECEIVED_BILL'}" />
+                                                </p:column>
+                                                <p:column headerText="From">
+                                                    <h:outputText value="#{floatRow.payment.creater.webUserPerson.nameWithTitle}" />
+                                                </p:column>
+                                                <p:column headerText="To">
+                                                    <h:outputText value="#{floatRow.payment.floatRecipient.webUserPerson.nameWithTitle}" />
+                                                </p:column>
+                                                <p:column headerText="Method">
+                                                    <h:outputText value="#{floatRow.payment.paymentMethod}" />
+                                                </p:column>
+                                                <p:column headerText="Amount" styleClass="text-end">
+                                                    <h:outputText value="#{floatRow.payment.paidValue}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </p:column>
+                                            </p:dataTable>
+                                            <table class="table table-bordered mt-2 w-50">
+                                                <ui:fragment rendered="#{financialTransactionController.bundle.cashFloatInTotal gt 0}">
+                                                    <tr>
+                                                        <td>Float Received (Cash)</td>
+                                                        <td class="text-end">
+                                                            <h:outputText value="#{financialTransactionController.bundle.cashFloatInTotal}">
+                                                                <f:convertNumber pattern="#,##0.00" />
+                                                            </h:outputText>
+                                                        </td>
+                                                    </tr>
+                                                </ui:fragment>
+                                                <ui:fragment rendered="#{financialTransactionController.bundle.cashFloatOutTotal gt 0}">
+                                                    <tr>
+                                                        <td>Float Sent (Cash)</td>
+                                                        <td class="text-end">
+                                                            <h:outputText value="#{financialTransactionController.bundle.cashFloatOutTotal}">
+                                                                <f:convertNumber pattern="#,##0.00" />
+                                                            </h:outputText>
+                                                        </td>
+                                                    </tr>
+                                                </ui:fragment>
+                                                <tr>
+                                                    <td><strong>Net Float (Cash)</strong></td>
+                                                    <td class="text-end">
+                                                        <h:outputText value="#{financialTransactionController.bundle.cashFloatNetTotal}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </p:panel>
+                                    </h:panelGroup>
+
                                 </div>
                             </div>
                         </h:panelGroup>

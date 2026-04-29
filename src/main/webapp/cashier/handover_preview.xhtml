@@ -13,13 +13,22 @@
                     <p:panel  class="w-100 m-1">
                         <f:facet name="header">
                             <p:outputLabel value="Reprint Handovers" />
-                            <p:commandButton 
-                                value="To Print" 
-                                styleClass="ui-button-success mx-1" 
-                                icon="pi pi-check-circle" 
-                                ajax="false" 
+                            <p:commandButton
+                                value="To Print"
+                                styleClass="ui-button-success mx-1"
+                                icon="pi pi-check-circle"
+                                ajax="false"
                                 style="float: right;"
                                 action="#{financialTransactionController.navigateToHandoverReprint()}">
+                            </p:commandButton>
+                            <p:commandButton
+                                value="Print Accept Bill"
+                                styleClass="ui-button-warning mx-1"
+                                icon="pi pi-print"
+                                ajax="false"
+                                style="float: right;"
+                                rendered="#{financialTransactionController.selectedBill ne null and financialTransactionController.selectedBill.completed and not financialTransactionController.selectedBill.cancelled}"
+                                action="#{financialTransactionController.navigateToHandoverAcceptBillReprintFromReport()}">
                             </p:commandButton>
                         </f:facet>
 
@@ -779,6 +788,96 @@
                             </p:dataTable>
                         </div>
 
+                        <div class="row mt-2"
+                             rendered="#{financialTransactionController.bundle.cashFloatNetTotal != 0
+                                        or not empty financialTransactionController.bundle.reportTemplateRows}">
+                            <p:panel>
+                                <f:facet name="header">
+                                    <p:outputLabel value="Float Transfers" class="font-weight-bold" />
+                                </f:facet>
+
+                                <p:dataTable
+                                    value="#{financialTransactionController.bundle.reportTemplateRows}"
+                                    var="floatRow"
+                                    rendered="#{not empty financialTransactionController.bundle.reportTemplateRows}"
+                                    emptyMessage="No float transfer records">
+
+                                    <p:column headerText="Date">
+                                        <h:outputText value="#{floatRow.payment.createdAt}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                        </h:outputText>
+                                    </p:column>
+
+                                    <p:column headerText="Type">
+                                        <h:outputText value="Float Out"
+                                            rendered="#{floatRow.payment.bill.billTypeAtomic.name() eq 'FUND_TRANSFER_BILL'}" />
+                                        <h:outputText value="Float In"
+                                            rendered="#{floatRow.payment.bill.billTypeAtomic.name() eq 'FUND_TRANSFER_RECEIVED_BILL'}" />
+                                    </p:column>
+
+                                    <p:column headerText="From">
+                                        <h:outputText value="#{floatRow.payment.creater.webUserPerson.nameWithTitle}" />
+                                    </p:column>
+
+                                    <p:column headerText="To">
+                                        <h:outputText value="#{floatRow.payment.floatRecipient.webUserPerson.nameWithTitle}" />
+                                    </p:column>
+
+                                    <p:column headerText="Method">
+                                        <h:outputText value="#{floatRow.payment.paymentMethod}" />
+                                    </p:column>
+
+                                    <p:column headerText="Amount" class="text-end">
+                                        <h:outputText value="#{floatRow.payment.paidValue}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </p:column>
+
+                                </p:dataTable>
+
+                                <table class="table table-bordered mt-2 w-50">
+                                    <thead>
+                                        <tr>
+                                            <th>Float Summary</th>
+                                            <th class="text-end">Amount</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <ui:fragment rendered="#{financialTransactionController.bundle.cashFloatInTotal gt 0}">
+                                            <tr>
+                                                <td>Float Received (Cash)</td>
+                                                <td class="text-end">
+                                                    <h:outputText value="#{financialTransactionController.bundle.cashFloatInTotal}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </td>
+                                            </tr>
+                                        </ui:fragment>
+                                        <ui:fragment rendered="#{financialTransactionController.bundle.cashFloatOutTotal gt 0}">
+                                            <tr>
+                                                <td>Float Sent (Cash)</td>
+                                                <td class="text-end">
+                                                    <h:outputText value="#{financialTransactionController.bundle.cashFloatOutTotal}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </td>
+                                            </tr>
+                                        </ui:fragment>
+                                        <ui:fragment rendered="#{financialTransactionController.bundle.cashFloatNetTotal != 0}">
+                                            <tr class="table-active fw-bold">
+                                                <td>Net Float (Cash)</td>
+                                                <td class="text-end">
+                                                    <h:outputText value="#{financialTransactionController.bundle.cashFloatNetTotal}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </td>
+                                            </tr>
+                                        </ui:fragment>
+                                    </tbody>
+                                </table>
+
+                            </p:panel>
+                        </div>
 
                     </p:panel>
 
