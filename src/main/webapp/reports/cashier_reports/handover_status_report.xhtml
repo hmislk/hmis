@@ -152,6 +152,26 @@
                                 </h:panelGroup>
                             </p:column>
 
+                            <p:column headerText="Actions" width="16em" styleClass="text-center">
+                                <p:commandButton
+                                    value="View / Create Bill"
+                                    action="#{financialTransactionController.navigateToViewHandoverBill()}"
+                                    ajax="false"
+                                    styleClass="ui-button-info m-1"
+                                    icon="pi pi-eye">
+                                    <f:setPropertyActionListener value="#{bp}" target="#{financialTransactionController.selectedBill}" />
+                                </p:commandButton>
+                                <p:commandButton
+                                    value="Accept Bill"
+                                    rendered="#{bp.completed and not bp.cancelled}"
+                                    action="#{financialTransactionController.navigateToHandoverAcceptBillReprintFromReport()}"
+                                    ajax="false"
+                                    styleClass="ui-button-success m-1"
+                                    icon="pi pi-print">
+                                    <f:setPropertyActionListener value="#{bp}" target="#{financialTransactionController.selectedBill}" />
+                                </p:commandButton>
+                            </p:column>
+
                         </p:dataTable>
 
                     </p:panel>

@@ -510,7 +510,7 @@ public class AnthropicApiService implements Serializable {
                                         .add("description", "Room id. Used for POST_CHARGE/PUT_CHARGE and as filter for LIST_CHARGES."))
                                 .add("departmentId", Json.createObjectBuilder()
                                         .add("type", "string")
-                                        .add("description", "Department id. Optional for POST_CHARGE/PUT_CHARGE."))
+                                        .add("description", "Department id. Required for POST_CHARGE; required (non-null) when supplied on PUT_CHARGE."))
                                 .add("filled", Json.createObjectBuilder()
                                         .add("type", "string")
                                         .add("description", "Whether room is under construction (true/false). Optional for POST_ROOM/PUT_ROOM."))

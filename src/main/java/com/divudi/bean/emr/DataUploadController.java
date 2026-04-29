@@ -3468,6 +3468,24 @@ public class DataUploadController implements Serializable {
 //        return itemFees;
 //
 //    }
+    private boolean isFemaleTitle(Title title) {
+        if (title == null) {
+            return false;
+        }
+        switch (title) {
+            case Mrs:
+            case Miss:
+            case Ms:
+            case DrMrs:
+            case DrMs:
+            case DrMiss:
+            case ProfMrs:
+                return true;
+            default:
+                return false;
+        }
+    }
+
     private String readCellAsString(Cell cell) {
         if (cell == null) {
             return "";
@@ -3526,13 +3544,14 @@ public class DataUploadController implements Serializable {
 
             speciality = doctorSpecialityController.findDoctorSpeciality(specialityString, true);
 
+            title = Title.getTitleEnum(titleString);
             if (sexString != null && sexString.toLowerCase().contains("f")) {
                 sex = Sex.Female;
+            } else if (sexString == null || sexString.isEmpty()) {
+                sex = isFemaleTitle(title) ? Sex.Female : Sex.Male;
             } else {
                 sex = Sex.Male;
             }
-
-            title = Title.getTitleEnum(titleString);
 
             consultant = consultantController.getConsultantByName(name);
             if (consultant == null) {
@@ -3600,15 +3619,14 @@ public class DataUploadController implements Serializable {
 
             speciality = doctorSpecialityController.findDoctorSpeciality(specialityString, true);
 
-            System.out.println("sexString = " + sexString);
+            title = Title.getTitleEnum(titleString);
             if (sexString != null && sexString.toLowerCase().contains("f")) {
                 sex = Sex.Female;
+            } else if (sexString == null || sexString.isEmpty()) {
+                sex = isFemaleTitle(title) ? Sex.Female : Sex.Male;
             } else {
                 sex = Sex.Male;
             }
-
-            title = Title.getTitleEnum(titleString);
-            System.out.println("title = " + title);
 
             doctor = doctorController.getDoctorsByName(name);
             System.out.println("doctor = " + doctor);

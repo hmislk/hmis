@@ -546,8 +546,8 @@
                             actionListener="#{pharmacySaleBhtController.resetAll}">
                         </p:menuitem>
 
-                        <p:menuitem 
-                            ajax="false" 
+                        <p:menuitem
+                            ajax="false"
                             action="/inward/pharmacy_bill_issue_bht?faces-redirect=true"
                             value="Direct Issue to BHTs"
                             icon="fa fa-capsules"
@@ -555,8 +555,17 @@
                             actionListener="#{pharmacySaleBhtController.resetAll()}">
                         </p:menuitem>
 
-                        <p:menuitem  
-                            ajax="false"  
+                        <p:menuitem
+                            ajax="false"
+                            action="/inward/pharmacy_bill_issue_bht_native?faces-redirect=true"
+                            value="Direct Issue to BHTs (Native SQL)"
+                            icon="fa fa-bolt"
+                            rendered="#{webUserController.hasPrivilege('PharmacyDirectIssueToBht')}"
+                            actionListener="#{inpatientDirectIssueNativeSqlController.resetAll()}">
+                        </p:menuitem>
+
+                        <p:menuitem
+                            ajax="false"
                             action="/theater/inward_bill_surgery_issue?faces-redirect=true"
                             value="Direct Issue to Theatre Cases"
                             icon="fa fa-user-injured"
@@ -1064,6 +1073,10 @@
                                     value="Direct Issue to BHTs" icon="fas fa-prescription-bottle-alt"
                                     rendered="#{webUserController.hasPrivilege('PharmacyDirectIssueToBht')}"
                                     actionListener="#{pharmacySaleBhtController.resetAll()}"/>
+                        <p:menuitem ajax="false" action="/inward/pharmacy_bill_issue_bht_native?faces-redirect=true"
+                                    value="Direct Issue to BHTs (Native SQL)" icon="fa fa-bolt"
+                                    rendered="#{webUserController.hasPrivilege('PharmacyDirectIssueToBht')}"
+                                    actionListener="#{inpatientDirectIssueNativeSqlController.resetAll()}"/>
                         <p:menuitem  ajax="false"  action="/theater/inward_bill_surgery_issue?faces-redirect=true"
                                      value="Direct Issue to Theatre Cases" icon="fas fa-cut"
                                      actionListener="#{pharmacySaleBhtController.resetAll()}"
