@@ -110,7 +110,8 @@ public class PaysheetComponentController implements Serializable {
             return;
         }
 
-        if (getCurrent().getComponentType() == null) {
+        if (getCurrent().getComponentType() == null 
+                || getCurrent().getComponentType().toString().trim().isEmpty()) {
             JsfUtil.addErrorMessage("Pls Select Compnent Type");
             return;
         }

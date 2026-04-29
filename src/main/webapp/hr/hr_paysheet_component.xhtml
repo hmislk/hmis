@@ -264,7 +264,7 @@
                                 <label for="fldType">Component type</label>
                                 <p:selectOneMenu id="fldType"
                                     value="#{paysheetComponentController.current.componentType}">
-                                    <f:selectItem itemLabel="Please select component type" itemValue="" />
+                                    <f:selectItem itemLabel="Please select component type" itemValue="" noSelectionOption="true" />
                                     <f:selectItems value="#{enumController.paysheetComponentTypesUserDefinded}" />
                                 </p:selectOneMenu>
                             </div>
@@ -319,7 +319,7 @@
                                     styleClass="ui-button-warning"
                                     icon="fas fa-save"
                                     process="btnSave gpDetail"
-                                    update="lstSelect"
+                                    update="lstSelect gpDetail @form"
                                     action="#{paysheetComponentController.saveSelected()}" />
                             </div>
 
