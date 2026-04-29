@@ -3388,8 +3388,7 @@ public class ChannelReportController implements Serializable {
 
     public void createAbsentPatientTable() {
         channelBills = new ArrayList<>();
-        channelBills.addAll(getChannelBillsAbsentPatient(staff, paymentMethods));
-        processPatientAbsentReport();
+        channelBills.addAll(getChannelBillsAbsentPatient(staff, paymentMethods));  
     }
 
     public List<Bill> getChannelBillsAbsentPatient(Staff stf) {
@@ -3487,15 +3486,11 @@ public class ChannelReportController implements Serializable {
                 params.put("pm", paymentMethods);
                 params.put("paymentBTA", BillTypeAtomic.CHANNEL_PAYMENT_FOR_BOOKING_BILL);
             }
-            for (PaymentMethod p : paymentMethods) {
-                System.out.println("kkkkk" + p.getLabel());
-            }
         }
 
         sql += " order by b.createdAt desc ";
 
         List<ChannelAbsentPatientsDTO> fetchedBills = (List<ChannelAbsentPatientsDTO>) billFacade.findLightsByJpqlWithoutCache(sql, params, TemporalType.TIMESTAMP);
-        System.out.println("data fetched " + fetchedBills.size());
 
         if (fetchedBills == null || fetchedBills.isEmpty()) {
             return;
