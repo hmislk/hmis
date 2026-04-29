@@ -100,12 +100,14 @@
                                     <ui:repeat value="#{channelReportController.absentPatients}" var="b">
                                         <tr>
                                             <td style="font-weight: 500; text-align: left; padding: 4px;">
-                                                <h:outputText value="#{b.deptId}" >
-                                                    <p:tag rendered="#{b.cancelled}" value="Cancelled - #{b.cancelledDeptId}" severity="danger" />
-                                                    <p:tag rendered="#{b.refunded}" value="Refunded - #{b.refundedDeptId}"  severity="warning" />
-                                                    <p:tag rendered="#{b.billTypeAtomic eq 'CHANNEL_REFUND_WITH_PAYMENT'}" value="Refund Bill"  severity="warning" />
-                                                    <p:tag rendered="#{b.billTypeAtomic eq 'CHANNEL_CANCELLATION_WITH_PAYMENT'}" value="Cancel Bill" severity="danger" />
-                                                </h:outputText>
+                                                <h:panelGroup layout="block">
+                                                    <h:outputText value="#{b.deptId}" />
+                                                    <br/>
+                                                    <h:outputText rendered="#{b.cancelled}" value="Cancelled - #{b.cancelledDeptId}" style="color: red;" />
+                                                    <h:outputText rendered="#{b.refunded}" value="Refunded - #{b.refundedDeptId}"  style="color: rgb(243, 243, 6);" />
+                                                    <h:outputText rendered="#{b.billTypeAtomic eq 'CHANNEL_REFUND_WITH_PAYMENT'}" value="Refund Bill"  style="color: rgb(234, 234, 6)" />
+                                                    <h:outputText rendered="#{b.billTypeAtomic eq 'CHANNEL_CANCELLATION_WITH_PAYMENT'}" value="Cancel Bill" style="color: red;" />
+                                                </h:panelGroup>
                                             </td>
                                             <td style="font-weight: 500; text-align: left; padding: 4px;">
                                                 <h:outputText value="#{b.serviceSessionName}"/>

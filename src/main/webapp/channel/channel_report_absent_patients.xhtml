@@ -132,7 +132,7 @@
                             <p:outputLabel value="#{b.patientName}"/> 
                         </p:column>
 
-                        <p:column style="text-align: center;" filterMatchMode="contains" filterBy="#{b.creater.name}" width="8em">
+                        <p:column style="text-align: center;" filterMatchMode="contains" filterBy="#{b.cashierName}" width="8em">
                             <f:facet name="header" >
                                 <p:outputLabel value="Cashier Name" />
                             </f:facet>
@@ -206,7 +206,7 @@
                         </p:column>
                     </p:dataTable>
 
-                    <script>
+                    <!-- <script>
                         function calculateTotals(selector, targeter) {
                             const values = Array.from(document.querySelectorAll(selector));
                             const totalValue = values
@@ -230,7 +230,7 @@
                         }
 
                         setTimeout(updateTotals, 500);
-                    </script>
+                    </script> -->
 
                 </p:panel>
 

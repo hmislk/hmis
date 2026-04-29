@@ -3448,7 +3448,7 @@ public class ChannelReportController implements Serializable {
                 + " pb.id "
                 + " ) "
                 + " from Bill b"
-                + " left join b.singleBillSession bs "
+                + " join b.singleBillSession bs "
                 + " left join b.patient p "
                 + " left join p.person pe "
                 + " left join b.creater c "
