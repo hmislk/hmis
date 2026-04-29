@@ -34,7 +34,8 @@
                                                 value="#{inwardTimedItemController.current.item}"
                                                 completeMethod="#{timedItemController.completeInvest}" var="ix"
                                                 itemLabel="#{ix.name}" itemValue="#{ix}" 
-                                                intputStyleClass="w-100 form-control">
+                                                intputStyleClass="form-control"
+                                                styleClass="w-100">
                                     <p:column>#{ix.name}</p:column>
                                     <p:column>#{ix.total}</p:column>
                                 </p:autoComplete>
