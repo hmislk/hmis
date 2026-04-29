@@ -10,33 +10,41 @@
 
 
     <ui:define name="subcontent">
-
+        <h:outputStylesheet library="css" name="eight_col_filter_panel.css" />
         <h:panelGroup >
             <h:form  >
                 <p:panel >
-
                     <p:panel class="mt-2" header="Timed Service" id="gpBillPreview">
+                            <h:panelGrid
+                                 columns="5" 
+                                 class="ui-fluid" 
+                                 style="table-layout: fixed; width: 100%;"
+                                 columnClasses="fp-col-label1,fp-col-input1,fp-col-space1,
+                                            fp-col-label2,fp-col-input2">
 
-                            <h:panelGrid columns="4" styleClass="w-100 form-grid">
                                 <h:outputLabel value="From" />
-                                <p:calendar class="mx-4" id="fd" value="#{inwardTimedItemController.frmDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                <p:calendar id="fd" value="#{inwardTimedItemController.frmDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" inputStyleClass="w-100 form-control"/>
+                                <p:spacer width="50" ></p:spacer>
+
                                 <h:outputLabel value="To" />
-                                <p:calendar class="mx-4" id="td" value="#{inwardTimedItemController.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                <p:calendar id="td" value="#{inwardTimedItemController.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" inputStyleClass="w-100 form-control"/>
 
                                 <h:outputLabel value="Timed Item" />
-                                <p:autoComplete class="mx-4" id="it" forceSelection="false"
+                                <p:autoComplete id="it" forceSelection="false"
                                                 value="#{inwardTimedItemController.current.item}"
                                                 completeMethod="#{timedItemController.completeInvest}" var="ix"
-                                                itemLabel="#{ix.name}" itemValue="#{ix}" >
+                                                itemLabel="#{ix.name}" itemValue="#{ix}" 
+                                                intputStyleClass="w-100 form-control">
                                     <p:column>#{ix.name}</p:column>
                                     <p:column>#{ix.total}</p:column>
                                 </p:autoComplete>
-                                <h:panelGroup />
-                                <h:panelGroup />
+                                <p:spacer width="50" ></p:spacer>
+                                <p:spacer width="50" ></p:spacer>
+                                <p:spacer width="50" ></p:spacer>
 
                                 <!-- Institution -->
                                 <h:outputLabel value="Institution" for="cmbIns" />
-                                <p:selectOneMenu id="cmbIns" styleClass="mx-4 w-100 form-control"
+                                <p:selectOneMenu id="cmbIns" styleClass="w-100 form-control"
                                                 value="#{inwardTimedItemController.institution}" filter="true">
                                     <f:selectItem itemLabel="All Institutions" itemValue="#{null}" />
                                     <f:selectItems value="#{institutionController.companies}" var="ins"
@@ -44,10 +52,11 @@
                                     <p:ajax process="cmbIns" update="cmbDept"
                                            listener="#{inwardTimedItemController.clearDepartment()}" />
                                 </p:selectOneMenu>
+                                <p:spacer width="50" ></p:spacer>
 
                                 <!-- Site -->
                                 <h:outputLabel value="Site" for="siteMenu" />
-                                <p:selectOneMenu id="siteMenu" styleClass="mx-4 w-100 form-control"
+                                <p:selectOneMenu id="siteMenu" styleClass="w-100 form-control"
                                                 value="#{inwardTimedItemController.site}" filter="true">
                                     <f:selectItem itemLabel="All Sites" itemValue="#{null}" />
                                     <f:selectItems value="#{institutionController.sites}" var="site"
@@ -61,7 +70,7 @@
                                 <h:panelGroup id="cmbDept">
                                     <p:selectOneMenu
                                         rendered="#{inwardTimedItemController.institution eq null and inwardTimedItemController.site eq null}"
-                                        styleClass="mx-4 w-100 form-control"
+                                        styleClass="w-100 form-control"
                                         value="#{inwardTimedItemController.department}"
                                         filterMatchMode="contains" filter="true">
                                         <f:selectItem itemLabel="All Departments" itemValue="#{null}" />
@@ -70,7 +79,7 @@
                                     </p:selectOneMenu>
                                     <p:selectOneMenu
                                         rendered="#{inwardTimedItemController.institution eq null and inwardTimedItemController.site ne null}"
-                                        styleClass="mx-4 w-100 form-control"
+                                        styleClass="w-100 form-control"
                                         value="#{inwardTimedItemController.department}"
                                         filterMatchMode="contains" filter="true">
                                         <f:selectItem itemLabel="All Departments" itemValue="#{null}" />
@@ -79,7 +88,7 @@
                                     </p:selectOneMenu>
                                     <p:selectOneMenu
                                         rendered="#{inwardTimedItemController.institution ne null and inwardTimedItemController.site eq null}"
-                                        styleClass="mx-4 w-100 form-control"
+                                        styleClass="w-100 form-control"
                                         value="#{inwardTimedItemController.department}"
                                         filterMatchMode="contains" filter="true">
                                         <f:selectItem itemLabel="All Departments" itemValue="#{null}" />
@@ -88,7 +97,7 @@
                                     </p:selectOneMenu>
                                     <p:selectOneMenu
                                         rendered="#{inwardTimedItemController.institution ne null and inwardTimedItemController.site ne null}"
-                                        styleClass="mx-4 w-100 form-control"
+                                        styleClass="w-100 form-control"
                                         value="#{inwardTimedItemController.department}"
                                         filterMatchMode="contains" filter="true">
                                         <f:selectItem itemLabel="All Departments" itemValue="#{null}" />
