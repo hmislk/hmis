@@ -177,6 +177,10 @@ public class TransferIssueDirectController implements Serializable {
 
         billItem.setSearialNo(getBillItems().size());
 
+        if (issuedBill.getDepartmentType() == null && billItem.getItem() != null) {
+            issuedBill.setDepartmentType(billItem.getItem().getDepartmentType());
+        }
+
         // Set the transfer rate based on configuration
         BigDecimal itemTransferRate = determineTransferRate(getTmpStock().getItemBatch());
         BigDecimal lineGrossRate = itemTransferRate.multiply(billItem.getBillItemFinanceDetails().getUnitsPerPack());
