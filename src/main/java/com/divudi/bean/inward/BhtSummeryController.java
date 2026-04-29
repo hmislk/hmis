@@ -189,6 +189,62 @@ public class BhtSummeryController implements Serializable {
         return "/inward/inward_bill_intrim_estimate?faces-redirect=true";
     }
 
+    public String navigateToPatientRoomDetails() {
+        if (patientEncounter == null) {
+            JsfUtil.addErrorMessage("No Admission Selected");
+            return "";
+        }
+        createTables();
+        return "/inward/inward_patient_room_details?faces-redirect=true";
+    }
+
+    public List<RoomGanttBar> getRoomGanttBars() {
+        List<PatientRoom> rooms = getPatientRooms();
+        if (rooms == null || rooms.isEmpty()) {
+            return new ArrayList<>();
+        }
+        Date now = new Date();
+        Date spanStart = null;
+        Date spanEnd = null;
+        for (PatientRoom r : rooms) {
+            if (r.getAdmittedAt() != null) {
+                if (spanStart == null || r.getAdmittedAt().before(spanStart)) {
+                    spanStart = r.getAdmittedAt();
+                }
+            }
+            Date end = r.getDischargedAt() != null ? r.getDischargedAt() : now;
+            if (spanEnd == null || end.after(spanEnd)) {
+                spanEnd = end;
+            }
+        }
+        if (spanStart == null || spanEnd == null || !spanEnd.after(spanStart)) {
+            return new ArrayList<>();
+        }
+        long totalMs = spanEnd.getTime() - spanStart.getTime();
+        List<RoomGanttBar> bars = new ArrayList<>();
+        for (PatientRoom r : rooms) {
+            if (r.getAdmittedAt() == null) {
+                continue;
+            }
+            Date barEnd = r.getDischargedAt() != null ? r.getDischargedAt() : now;
+            long offsetMs = r.getAdmittedAt().getTime() - spanStart.getTime();
+            long durationMs = barEnd.getTime() - r.getAdmittedAt().getTime();
+            double rawOffset = (offsetMs * 100.0) / totalMs;
+            double rawWidth  = Math.max((durationMs * 100.0) / totalMs, 1.0);
+            boolean guardian = "class com.divudi.core.entity.inward.GuardianRoom"
+                                    .equals(r.getPatientRoomClass());
+            bars.add(new RoomGanttBar(
+                r.getRoomFacilityCharge() != null ? r.getRoomFacilityCharge().getName() : "—",
+                guardian,
+                !r.isDischarged(),
+                String.format(java.util.Locale.US, "%.3f", rawOffset),
+                String.format(java.util.Locale.US, "%.3f", rawWidth),
+                rawWidth > 8.0
+            ));
+        }
+        return bars;
+    }
+
     public String navigateToInpatientProfile() {
         if (patientEncounter == null) {
             JsfUtil.addErrorMessage("No Admission Selected");

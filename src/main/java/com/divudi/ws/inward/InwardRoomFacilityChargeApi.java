@@ -164,7 +164,7 @@ public class InwardRoomFacilityChargeApi {
     /**
      * Create a new room facility charge.
      * POST /api/inward/room-facility-charges
-     * Body: { "name", "roomId", "roomCategoryId", "departmentId",
+     * Body: { "name" (required), "departmentId" (required), "roomId", "roomCategoryId",
      *         "roomCharge", "maintananceCharge", "linenCharge", "nursingCharge",
      *         "moCharge", "moChargeForAfterDuration", "adminstrationCharge", "medicalCareCharge",
      *         "timedItemFeeDurationHours", "timedItemFeeOverShootHours", "timedItemFeeDurationDaysForMoCharge" }
@@ -213,13 +213,13 @@ public class InwardRoomFacilityChargeApi {
                 }
             }
 
-            Department department = null;
             Long departmentId = asLong(body.get("departmentId"));
-            if (departmentId != null) {
-                department = departmentFacade.find(departmentId);
-                if (department == null || department.isRetired()) {
-                    return errorResponse("Department not found: " + departmentId, 400);
-                }
+            if (departmentId == null) {
+                return errorResponse("departmentId is required", 400);
+            }
+            Department department = departmentFacade.find(departmentId);
+            if (department == null || department.isRetired()) {
+                return errorResponse("Department not found: " + departmentId, 400);
             }
 
             // Parse all charge fields before any DB writes to avoid orphaned TimedItemFee rows
@@ -318,14 +318,13 @@ public class InwardRoomFacilityChargeApi {
             if (body.containsKey("departmentId")) {
                 Long departmentId = asLong(body.get("departmentId"));
                 if (departmentId == null) {
-                    charge.setDepartment(null);
-                } else {
-                    Department department = departmentFacade.find(departmentId);
-                    if (department == null || department.isRetired()) {
-                        return errorResponse("Department not found: " + departmentId, 400);
-                    }
-                    charge.setDepartment(department);
+                    return errorResponse("departmentId cannot be null", 400);
                 }
+                Department department = departmentFacade.find(departmentId);
+                if (department == null || department.isRetired()) {
+                    return errorResponse("Department not found: " + departmentId, 400);
+                }
+                charge.setDepartment(department);
             }
 
             applyChargeFields(body, charge);
