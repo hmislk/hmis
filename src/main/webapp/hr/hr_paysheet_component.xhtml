@@ -245,14 +245,14 @@
 
                             <div class="psc-field-group">
                                 <div class="psc-field">
-                                    <label for="fldName">Name</label>
+                                    <p:outputLabel for="fldName" value="Name" />
                                     <p:inputText id="fldName"
                                         autocomplete="off"
                                         placeholder="Component name"
                                         value="#{paysheetComponentController.current.name}" />
                                 </div>
                                 <div class="psc-field">
-                                    <label for="fldOrder">Order no.</label>
+                                    <p:outputLabel for="fldOrder" value="Order no." />
                                     <p:inputText id="fldOrder"
                                         autocomplete="off"
                                         placeholder="e.g. 1"
@@ -261,7 +261,7 @@
                             </div>
 
                             <div class="psc-field psc-field-full">
-                                <label for="fldType">Component type</label>
+                                <p:outputLabel for="fldType" value="Component type" />
                                 <p:selectOneMenu id="fldType"
                                     value="#{paysheetComponentController.current.componentType}">
                                     <f:selectItem itemLabel="Please select component type" itemValue="" noSelectionOption="true" />
@@ -276,38 +276,38 @@
                             <div class="psc-toggles">
 
                                 <div class="psc-toggle-row">
-                                    <span class="toggle-label">Include for EPF</span>
-                                    <p:selectBooleanCheckbox value="#{paysheetComponentController.current.includedForEpf}" />
+                                    <p:outputLabel for="chkEpf" value="Include for EPF" styleClass="toggle-label" />
+                                    <p:selectBooleanCheckbox id="chkEpf" value="#{paysheetComponentController.current.includedForEpf}" />
                                 </div>
 
                                 <div class="psc-toggle-row">
-                                    <span class="toggle-label">Include for ETF</span>
-                                    <p:selectBooleanCheckbox value="#{paysheetComponentController.current.includedForEtf}" />
+                                    <p:outputLabel for="chkEtf" value="Include for ETF" styleClass="toggle-label" />
+                                    <p:selectBooleanCheckbox id="chkEtf" value="#{paysheetComponentController.current.includedForEtf}" />
                                 </div>
 
                                 <div class="psc-toggle-row">
-                                    <span class="toggle-label">Include for pay tax</span>
-                                    <p:selectBooleanCheckbox value="#{paysheetComponentController.current.includedForPayTax}" />
+                                    <p:outputLabel for="chkPayTax" value="Include for pay tax" styleClass="toggle-label" />
+                                    <p:selectBooleanCheckbox id="chkPayTax" value="#{paysheetComponentController.current.includedForPayTax}" />
                                 </div>
 
                                 <div class="psc-toggle-row">
-                                    <span class="toggle-label">Include for OT</span>
-                                    <p:selectBooleanCheckbox value="#{paysheetComponentController.current.includedForOt}" />
+                                    <p:outputLabel for="chkOt" value="Include for OT" styleClass="toggle-label" />
+                                    <p:selectBooleanCheckbox id="chkOt" value="#{paysheetComponentController.current.includedForOt}" />
                                 </div>
 
                                 <div class="psc-toggle-row">
-                                    <span class="toggle-label">Include for no pay</span>
-                                    <p:selectBooleanCheckbox value="#{paysheetComponentController.current.includedForNoPay}" />
+                                    <p:outputLabel for="chkNoPay" value="Include for no pay" styleClass="toggle-label" />
+                                    <p:selectBooleanCheckbox id="chkNoPay" value="#{paysheetComponentController.current.includedForNoPay}" />
                                 </div>
 
                                 <div class="psc-toggle-row">
-                                    <span class="toggle-label">Include for PH</span>
-                                    <p:selectBooleanCheckbox value="#{paysheetComponentController.current.includedForPh}" />
+                                    <p:outputLabel for="chkPh" value="Include for PH" styleClass="toggle-label" />
+                                    <p:selectBooleanCheckbox id="chkPh" value="#{paysheetComponentController.current.includedForPh}" />
                                 </div>
 
                                 <div class="psc-toggle-row full-width">
-                                    <span class="toggle-label">Include for allowances (payment on PH and day-off)</span>
-                                    <p:selectBooleanCheckbox value="#{paysheetComponentController.current.includeForAllowance}" />
+                                    <p:outputLabel for="chkAllowance" value="Include for allowances (payment on PH and day-off)" styleClass="toggle-label" />
+                                    <p:selectBooleanCheckbox id="chkAllowance" value="#{paysheetComponentController.current.includeForAllowance}" />
                                 </div>
 
                             </div>
