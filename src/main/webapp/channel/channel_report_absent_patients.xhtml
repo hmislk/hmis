@@ -29,20 +29,22 @@
                         <p:selectCheckboxMenu id="cmbParentMethod"
                                               multiple="true"
                                               value="#{channelReportController.paymentMethods}" class="w-100"
-                                              filter="true" filterMatchMode="contains">
+                                              filter="true" filterMatchMode="contains"
+                                              styleClass="form-control">
                             <f:selectItems value="#{enumController.paymentMethodsForChannelAbsentReport}" var="method"
                                            itemLabel="#{method.label}" itemValue="#{method}" />
                         </p:selectCheckboxMenu>
                     </p:panelGrid>
-                    <h:panelGrid columns="4" class="my-2"> 
-                        <p:commandButton ajax="false" id="btnRefresh" value="View List" action="#{channelReportController.createAbsentPatientTable}" class="m-1 ui-button-danger" icon="fas fa-list">
+
+                    <div class="d-flex align-items-center my-2">
+                        <p:commandButton ajax="false" id="btnRefresh" value="Process" action="#{channelReportController.createAbsentPatientTable()}" class="m-1 ui-button-warning" icon="fas fa-list">
                         </p:commandButton>
-                        <p:commandButton ajax="false" value="Print Table" style="float: right; margin-left: 10px; margin-right: 10px " class="m-1 ui-button-primary" icon="fas fa-print" action="channel_report_absent_patients_print?faces-redirect=true" >
+                        <p:commandButton ajax="false" value="Print Table" style="float: right; margin-left: 10px; margin-right: 10px " class="m-1 ui-button-danger" icon="fas fa-print" action="channel_report_absent_patients_print?faces-redirect=true" >
                         </p:commandButton>
                         <p:commandButton ajax="false" value="Export to Excel" class="m-1 ui-button-success" icon="fas fa-file-excel" style="float: right;" >
                             <p:dataExporter type="xlsx" target="tbl1" fileName="Patient Absent Report"  />
                         </p:commandButton>
-                    </h:panelGrid>
+                    </div>
 
                 </p:panel>
                 <p:panel id="billFeeReport"  header="Channel Bill List">
@@ -209,6 +211,7 @@
 
 
                     </p:dataTable>
+
                     <p:dataTable 
                         value="#{channelReportController.absentPatients}" 
                         var="b" 

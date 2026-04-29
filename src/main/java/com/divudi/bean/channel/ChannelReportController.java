@@ -27,6 +27,7 @@ import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.FeeType;
+import com.divudi.core.data.FinancialReport;
 import com.divudi.core.data.HistoryType;
 import com.divudi.core.data.InstitutionType;
 import com.divudi.core.data.MessageType;
@@ -3421,6 +3422,8 @@ public class ChannelReportController implements Serializable {
     // Patient Absent Report 
     // Consider temporary bookings can not be makred absent
     public void processPatientAbsentReport() {
+        absentPatients = new ArrayList<>();
+        summaryAbsentPatients = new ChannelAbsentPatientsDTO();
         HashMap params = new HashMap();
 
         String sql = " Select new com.divudi.core.data.dto.channel.ChannelAbsentPatientsDTO( "
@@ -3461,7 +3464,6 @@ public class ChannelReportController implements Serializable {
                 + " left join rb.singleBillSession rbs "
                 + " where b.retired=false "
                 + " and bs.retired=false "
-                // + " and bs.absent=true "
                 + " and (bs.absent=true or (rbs.absent=true and rb.paymentMethod= :pmo)) "
                 + " and b.createdAt between :fd and :td";
 
@@ -3476,8 +3478,18 @@ public class ChannelReportController implements Serializable {
             params.put("st", staff);
         }
         if (paymentMethods != null && !paymentMethods.isEmpty()) {
-            sql += " and b.paymentMethod in :pm";
-            params.put("pm", paymentMethods);
+            if (paymentMethods.contains(PaymentMethod.OnCall)) {
+                sql += " and ((b.paymentMethod in :pm) or (rb is not null and rb.billTypeAtomic= :onCallBTA)) ";
+                params.put("pm", paymentMethods);
+                params.put("onCallBTA", BillTypeAtomic.CHANNEL_BOOKING_WITHOUT_PAYMENT);
+            } else {
+                sql += " and b.paymentMethod in :pm and b.billTypeAtomic != :paymentBTA  ";
+                params.put("pm", paymentMethods);
+                params.put("paymentBTA", BillTypeAtomic.CHANNEL_PAYMENT_FOR_BOOKING_BILL);
+            }
+            for (PaymentMethod p : paymentMethods) {
+                System.out.println("kkkkk" + p.getLabel());
+            }
         }
 
         sql += " order by b.createdAt desc ";
@@ -3485,13 +3497,10 @@ public class ChannelReportController implements Serializable {
         List<ChannelAbsentPatientsDTO> fetchedBills = (List<ChannelAbsentPatientsDTO>) billFacade.findLightsByJpqlWithoutCache(sql, params, TemporalType.TIMESTAMP);
         System.out.println("data fetched " + fetchedBills.size());
 
-        // Map<Long, ChannelAbsentPatientsDTO> absentPatients = new LinkedHashMap<>();
-        absentPatients = new ArrayList<>();
-        summaryAbsentPatients = new ChannelAbsentPatientsDTO();
-
         if (fetchedBills == null || fetchedBills.isEmpty()) {
             return;
         }
+
         double totalStaffFee = 0.0;
         double totalHosFee = 0.0;
         double totalNetTotal = 0.0;
@@ -3501,8 +3510,8 @@ public class ChannelReportController implements Serializable {
                 if (dto.getPaidId() != null) {
                     continue;
                 } else {
-                    // absentPatients.put(dto.getId(), dto);
                     absentPatients.add(dto);
+
                     totalNetTotal += dto.getNetTotal();
                     totalStaffFee += dto.getStaffFee();
                     totalHosFee += dto.getHospitalFee();
@@ -3511,8 +3520,8 @@ public class ChannelReportController implements Serializable {
                 if (dto.getReferenceId() != null && dto.getBillTypeAtomic() != BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT && dto.getBillTypeAtomic() != BillTypeAtomic.CHANNEL_PAYMENT_FOR_BOOKING_BILL) {
                     continue;
                 } else {
-                    // absentPatients.put(dto.getId(), dto);
                     absentPatients.add(dto);
+
                     totalNetTotal += dto.getNetTotal();
                     totalStaffFee += dto.getStaffFee();
                     totalHosFee += dto.getHospitalFee();
