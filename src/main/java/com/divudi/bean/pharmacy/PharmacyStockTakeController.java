@@ -235,7 +235,7 @@ public class PharmacyStockTakeController implements Serializable {
         Department dept = department;
 
         // Fetch stocks using DTO projection for performance (avoids N+1 queries)
-        String jpql = "select new com.divudi.core.data.dto.StockDTO("
+        String jpqlBase = "select new com.divudi.core.data.dto.StockDTO("
                 + "s.id, ib.id, i.id, "
                 + "c.name, i.name, ib.batchNo, "
                 + "ib.dateOfExpire, s.stock, ib.costRate, "
@@ -245,12 +245,21 @@ public class PharmacyStockTakeController implements Serializable {
                 + "join ib.item i "
                 + "left join i.category c "
                 + "left join i.dosageForm df "
-                + "where s.department=:d and s.stock>0 "
-                + "order by coalesce(c.name, '') asc, "
-                + "coalesce(i.name, '') asc, "
-                + "coalesce(ib.dateOfExpire, current_date) asc";
+                + "where s.department=:d and s.stock>0";
         HashMap<String, Object> params = new HashMap<>();
         params.put("d", dept);
+        if (selectedDepartmentType != null) {
+            if (selectedDepartmentType == com.divudi.core.data.DepartmentType.Pharmacy) {
+                jpqlBase += " and (i.departmentType = :dt or i.departmentType is null)";
+            } else {
+                jpqlBase += " and i.departmentType = :dt";
+            }
+            params.put("dt", selectedDepartmentType);
+        }
+        String jpql = jpqlBase
+                + " order by coalesce(c.name, '') asc, "
+                + "coalesce(i.name, '') asc, "
+                + "coalesce(ib.dateOfExpire, current_date) asc";
         @SuppressWarnings("unchecked")
         List<StockDTO> stockDTOs = (List<StockDTO>) (List<?>) stockFacade.findByJpql(jpql, params);
 
@@ -327,7 +336,7 @@ public class PharmacyStockTakeController implements Serializable {
         // Handle zero-stock batches if configured
         if (includeZeroStockBatches && zeroStockBatchLimit > 0) {
             // Fetch zero-stock batches using DTO projection, ordered by expiry date descending
-            String zeroStockJpql = "select new com.divudi.core.data.dto.StockDTO("
+            String zeroStockJpqlBase = "select new com.divudi.core.data.dto.StockDTO("
                     + "s.id, ib.id, i.id, "
                     + "c.name, i.name, ib.batchNo, "
                     + "ib.dateOfExpire, s.stock, ib.costRate, "
@@ -337,8 +346,16 @@ public class PharmacyStockTakeController implements Serializable {
                     + "join ib.item i "
                     + "left join i.category c "
                     + "left join i.dosageForm df "
-                    + "where s.department=:d and (s.stock is null or s.stock = 0) "
-                    + "order by coalesce(c.name, '') asc, "
+                    + "where s.department=:d and (s.stock is null or s.stock = 0)";
+            if (selectedDepartmentType != null) {
+                if (selectedDepartmentType == com.divudi.core.data.DepartmentType.Pharmacy) {
+                    zeroStockJpqlBase += " and (i.departmentType = :dt or i.departmentType is null)";
+                } else {
+                    zeroStockJpqlBase += " and i.departmentType = :dt";
+                }
+            }
+            String zeroStockJpql = zeroStockJpqlBase
+                    + " order by coalesce(c.name, '') asc, "
                     + "coalesce(i.name, '') asc, "
                     + "coalesce(ib.dateOfExpire, current_date) desc";
             @SuppressWarnings("unchecked")
