@@ -156,6 +156,16 @@
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputText>
                                         </p:column>
+                                        <p:column headerText="Discount" style="width:80px; text-align:right; color:#c0392b;">
+                                            <h:outputText value="#{rm.discountRoomCharge + rm.discountMaintainCharge + rm.discountLinenCharge + rm.discountNursingCharge + rm.discountMoCharge + rm.discountAdministrationCharge + rm.discountMedicalCareCharge}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </p:column>
+                                        <p:column headerText="Net" style="width:90px; text-align:right; font-weight:bold;">
+                                            <h:outputText value="#{rm.adjustedRoomCharge + rm.adjustedMaintainCharge + rm.ajdustedLinenCharge + rm.ajdustedNursingCharge + rm.adjustedMoCharge + rm.ajdustedAdministrationCharge + rm.ajdustedMedicalCareCharge}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </p:column>
 
                                         <p:column headerText="Actions" style="width:160px;">
                                             <div class="d-flex gap-1 flex-wrap">
