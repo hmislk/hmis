@@ -1192,17 +1192,12 @@ public class PriceMatrixController implements Serializable {
         if (bhtType == null || admissionType == null || chargeType == null) {
             return 0.0;
         }
-        // Try charge-type-specific row first
+        // Try charge-type-specific row first; no fallback to service/pharmacy
+        // wildcard rows (inwardChargeType IS NULL) — absence of a room-charge
+        // row means 0% discount, not inheritance of a service discount.
         Double pct = fetchInwardDiscountMatrixPercentForChargeType(bhtType, scheme, admissionType, chargeType);
         if (pct == null && scheme != null) {
             pct = fetchInwardDiscountMatrixPercentForChargeType(bhtType, null, admissionType, chargeType);
-        }
-        // Fall back to global wildcard (null inwardChargeType, null dept/cat/item)
-        if (pct == null) {
-            pct = fetchInwardDiscountMatrixPercent(bhtType, scheme, admissionType, null, null, null);
-            if (pct == null && scheme != null) {
-                pct = fetchInwardDiscountMatrixPercent(bhtType, null, admissionType, null, null, null);
-            }
         }
         return pct != null ? pct : 0.0;
     }

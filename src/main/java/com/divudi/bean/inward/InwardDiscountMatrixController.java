@@ -177,6 +177,7 @@ public class InwardDiscountMatrixController implements Serializable {
         HashMap<String, Object> hm = new HashMap<>();
         String sql = "select a from InwardDiscountMatrix a"
                 + " where a.retired = false"
+                + " and a.inwardChargeType is null"
                 + " and (type(a.category) = :svc"
                 + "   or type(a.category) = :sub"
                 + "   or type(a.category) = :inv"
@@ -193,6 +194,7 @@ public class InwardDiscountMatrixController implements Serializable {
         HashMap<String, Object> hm = new HashMap<>();
         String sql = "select a from InwardDiscountMatrix a"
                 + " where a.retired = false"
+                + " and a.inwardChargeType is null"
                 + " and (type(a.category) = :pharm"
                 + "   or a.category is null)"
                 + " order by a.paymentScheme.name, a.department.name, a.category.name";

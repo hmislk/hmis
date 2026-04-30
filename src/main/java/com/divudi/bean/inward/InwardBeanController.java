@@ -1195,13 +1195,13 @@ public class InwardBeanController implements Serializable {
      * in a single JPQL query instead of seven separate queries.
      */
     public Map<InwardChargeType, Double> getPatientRoomChargeSumsBulk(PatientEncounter patientEncounter, List<PatientEncounter> cpts) {
-        String sql = "SELECT SUM(p.adjustedRoomCharge),"
-                + " SUM(p.adjustedMoCharge),"
-                + " SUM(p.ajdustedNursingCharge),"
-                + " SUM(p.adjustedMaintainCharge),"
-                + " SUM(p.ajdustedMedicalCareCharge),"
-                + " SUM(p.ajdustedAdministrationCharge),"
-                + " SUM(p.ajdustedLinenCharge)"
+        String sql = "SELECT SUM(p.calculatedRoomCharge - p.discountRoomCharge),"
+                + " SUM(p.calculatedMoCharge - p.discountMoCharge),"
+                + " SUM(p.calculatedNursingCharge - p.discountNursingCharge),"
+                + " SUM(p.calculatedMaintainCharge - p.discountMaintainCharge),"
+                + " SUM(p.calculatedMedicalCareCharge - p.discountMedicalCareCharge),"
+                + " SUM(p.calculatedAdministrationCharge - p.discountAdministrationCharge),"
+                + " SUM(p.calculatedLinenCharge - p.discountLinenCharge)"
                 + " FROM PatientRoom p"
                 + " WHERE p.retired=false"
                 + " AND p.patientEncounter IN :pe";

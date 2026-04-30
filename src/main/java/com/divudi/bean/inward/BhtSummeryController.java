@@ -2605,6 +2605,15 @@ public class BhtSummeryController implements Serializable {
         PaymentScheme scheme = getPatientEncounter().getPaymentScheme();
         AdmissionType admType = getPatientEncounter().getAdmissionType();
 
+        // Fetch all discount percentages once per recalculation (not per room)
+        double roomPct = getPriceMatrixController().getInwardDiscountPercentForChargeType(pm, scheme, admType, InwardChargeType.RoomCharges);
+        double maintainPct = getPriceMatrixController().getInwardDiscountPercentForChargeType(pm, scheme, admType, InwardChargeType.MaintainCharges);
+        double linenPct = getPriceMatrixController().getInwardDiscountPercentForChargeType(pm, scheme, admType, InwardChargeType.LinenCharges);
+        double nursingPct = getPriceMatrixController().getInwardDiscountPercentForChargeType(pm, scheme, admType, InwardChargeType.NursingCharges);
+        double moPct = getPriceMatrixController().getInwardDiscountPercentForChargeType(pm, scheme, admType, InwardChargeType.MOCharges);
+        double adminPct = getPriceMatrixController().getInwardDiscountPercentForChargeType(pm, scheme, admType, InwardChargeType.AdministrationCharge);
+        double medicalCarePct = getPriceMatrixController().getInwardDiscountPercentForChargeType(pm, scheme, admType, InwardChargeType.MedicalCareICU);
+
         for (PatientRoom p : patientRooms) {
             if (p.getAdmittedAt() == null) {
                 p.setAdmittedAt(new Date());
@@ -2619,21 +2628,15 @@ public class BhtSummeryController implements Serializable {
                 calculateMedicalCareCharge(p);
             }
 
-            applyRoomChargeDiscounts(p, pm, scheme, admType);
+            applyRoomChargeDiscounts(p, roomPct, maintainPct, linenPct, nursingPct, moPct, adminPct, medicalCarePct);
 
             getPatientRoomFacade().edit(p);
         }
     }
 
-    private void applyRoomChargeDiscounts(PatientRoom p, PaymentMethod pm, PaymentScheme scheme, AdmissionType admType) {
-        double roomPct = getPriceMatrixController().getInwardDiscountPercentForChargeType(pm, scheme, admType, InwardChargeType.RoomCharges);
-        double maintainPct = getPriceMatrixController().getInwardDiscountPercentForChargeType(pm, scheme, admType, InwardChargeType.MaintainCharges);
-        double linenPct = getPriceMatrixController().getInwardDiscountPercentForChargeType(pm, scheme, admType, InwardChargeType.LinenCharges);
-        double nursingPct = getPriceMatrixController().getInwardDiscountPercentForChargeType(pm, scheme, admType, InwardChargeType.NursingCharges);
-        double moPct = getPriceMatrixController().getInwardDiscountPercentForChargeType(pm, scheme, admType, InwardChargeType.MOCharges);
-        double adminPct = getPriceMatrixController().getInwardDiscountPercentForChargeType(pm, scheme, admType, InwardChargeType.AdministrationCharge);
-        double medicalCarePct = getPriceMatrixController().getInwardDiscountPercentForChargeType(pm, scheme, admType, InwardChargeType.MedicalCareICU);
-
+    private void applyRoomChargeDiscounts(PatientRoom p,
+            double roomPct, double maintainPct, double linenPct, double nursingPct,
+            double moPct, double adminPct, double medicalCarePct) {
         double roomDisc = (roomPct / 100.0) * p.getCalculatedRoomCharge();
         double maintainDisc = (maintainPct / 100.0) * p.getCalculatedMaintainCharge();
         double linenDisc = (linenPct / 100.0) * p.getCalculatedLinenCharge();
