@@ -2411,7 +2411,7 @@ public class PharmacyStockTakeController implements Serializable {
 
         String jpql = "select new com.divudi.core.light.common.PharmacySnapshotBillLight("
                 + "b.id, b.deptId, b.createdAt, ins.name, dept.name, "
-                + "(select count(bi) from BillItem bi where bi.bill = b), b.netTotal, b.completed) "
+                + "(select count(bi) from BillItem bi where bi.bill = b), b.netTotal, b.completed, b.departmentType) "
                 + "from Bill b "
                 + "left join b.institution ins "
                 + "left join b.department dept "
@@ -2426,6 +2426,7 @@ public class PharmacyStockTakeController implements Serializable {
 
         if (results != null && !results.isEmpty()) {
             snapshotBillDisplay = results.get(0);
+            selectedDepartmentType = snapshotBillDisplay.getDepartmentType();
             System.out.println("[ViewSnapshot] Done. Navigating to print page. ms=" + (System.currentTimeMillis() - t0));
             return "/pharmacy/pharmacy_stock_take_print?faces-redirect=true&billId=" + billId;
         } else {
@@ -2450,7 +2451,7 @@ public class PharmacyStockTakeController implements Serializable {
         snapshotItems = null;
         String jpql = "select new com.divudi.core.light.common.PharmacySnapshotBillLight("
                 + "b.id, b.deptId, b.createdAt, ins.name, dept.name, "
-                + "(select count(bi) from BillItem bi where bi.bill = b), b.netTotal, b.completed) "
+                + "(select count(bi) from BillItem bi where bi.bill = b), b.netTotal, b.completed, b.departmentType) "
                 + "from Bill b "
                 + "left join b.institution ins "
                 + "left join b.department dept "
@@ -2461,6 +2462,7 @@ public class PharmacyStockTakeController implements Serializable {
             (List<PharmacySnapshotBillLight>) billFacade.findLightsByJpql(jpql, params);
         if (results != null && !results.isEmpty()) {
             snapshotBillDisplay = results.get(0);
+            selectedDepartmentType = snapshotBillDisplay.getDepartmentType();
         }
     }
 
