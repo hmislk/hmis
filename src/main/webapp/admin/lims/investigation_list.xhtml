@@ -75,12 +75,16 @@
                                 <p:commandButton
                                     icon="pi pi-cog"
                                     ajax="false"
+                                    title="Manage investigation"
+                                    ariaLabel="Manage investigation"
                                     action="#{investigationController.navigateToManageInvestigation(item.id)}"
                                     styleClass="ui-button-icon-only ui-p-primeng">
                                 </p:commandButton>
                                 <p:commandButton
                                     icon="pi pi-trash"
                                     ajax="false"
+                                    title="Delete investigation"
+                                    ariaLabel="Delete investigation"
                                     action="#{investigationController.deleteInvestigationById(item.id)}"
                                     onclick="return confirm('Are you sure you want to delete this item?');"
                                     styleClass="ui-button-icon-only ui-p-primeng ui-button-danger">
