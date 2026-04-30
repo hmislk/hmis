@@ -9,6 +9,7 @@ package com.divudi.bean.inward;
 import com.divudi.bean.common.SessionController;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.inward.InwardChargeType;
 import com.divudi.core.entity.Category;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.PaymentScheme;
@@ -59,6 +60,7 @@ public class InwardDiscountMatrixController implements Serializable {
     private PaymentMethod paymentMethod;
     private PaymentScheme paymentScheme;
     private double discountPercent;
+    private InwardChargeType inwardChargeType;
 
     // -------------------------------------------------------------------------
     // Navigation
@@ -74,6 +76,11 @@ public class InwardDiscountMatrixController implements Serializable {
         return "/inward/inward_discount_matrix_pharmacy?faces-redirect=true";
     }
 
+    public String navigateToDiscountMatrixRoomCharges() {
+        prepareAdd();
+        return "/inward/inward_discount_matrix_room_charges?faces-redirect=true";
+    }
+
     // -------------------------------------------------------------------------
     // Lifecycle
     // -------------------------------------------------------------------------
@@ -85,6 +92,7 @@ public class InwardDiscountMatrixController implements Serializable {
         paymentMethod = null;
         paymentScheme = null;
         discountPercent = 0.0;
+        inwardChargeType = null;
         items = null;
         filterItems = null;
     }
@@ -117,6 +125,23 @@ public class InwardDiscountMatrixController implements Serializable {
         clearInputFields();
     }
 
+    public void saveForRoomCharges() {
+        if (paymentScheme == null) {
+            JsfUtil.addErrorMessage("Please select a Discount Scheme");
+            return;
+        }
+        if (inwardChargeType == null) {
+            JsfUtil.addErrorMessage("Please select a Room Charge Type");
+            return;
+        }
+        InwardDiscountMatrix entry = buildEntry();
+        entry.setInwardChargeType(inwardChargeType);
+        ejbFacade.create(entry);
+        JsfUtil.addSuccessMessage("Saved Successfully");
+        loadRoomCharges();
+        clearInputFields();
+    }
+
     private InwardDiscountMatrix buildEntry() {
         InwardDiscountMatrix entry = new InwardDiscountMatrix();
         entry.setDepartment(department);
@@ -140,6 +165,7 @@ public class InwardDiscountMatrixController implements Serializable {
         paymentMethod = null;
         paymentScheme = null;
         discountPercent = 0.0;
+        inwardChargeType = null;
     }
 
     // -------------------------------------------------------------------------
@@ -172,6 +198,15 @@ public class InwardDiscountMatrixController implements Serializable {
                 + " order by a.paymentScheme.name, a.department.name, a.category.name";
         hm.put("pharm", PharmaceuticalItemCategory.class);
         items = ejbFacade.findByJpql(sql, hm);
+    }
+
+    public void loadRoomCharges() {
+        filterItems = null;
+        String sql = "select a from InwardDiscountMatrix a"
+                + " where a.retired = false"
+                + " and a.inwardChargeType is not null"
+                + " order by a.inwardChargeType";
+        items = ejbFacade.findByJpql(sql);
     }
 
     // -------------------------------------------------------------------------
@@ -271,5 +306,13 @@ public class InwardDiscountMatrixController implements Serializable {
 
     public void setDiscountPercent(double discountPercent) {
         this.discountPercent = discountPercent;
+    }
+
+    public InwardChargeType getInwardChargeType() {
+        return inwardChargeType;
+    }
+
+    public void setInwardChargeType(InwardChargeType inwardChargeType) {
+        this.inwardChargeType = inwardChargeType;
     }
 }
