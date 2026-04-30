@@ -553,14 +553,21 @@
                                                         </p:column>
 
                                                         <p:column width="8em" class="text-end">
-                                                            <f:facet name="header">Gross Value</f:facet>
+                                                            <f:facet name="header">Rate</f:facet>
                                                             <h:outputLabel value="#{bi.billItem.grossValue}">
                                                                 <f:convertNumber pattern="#,##0.00" />
                                                             </h:outputLabel>
                                                         </p:column>
 
                                                         <p:column width="8em" class="text-end">
-                                                            <f:facet name="header">Margin Value</f:facet>
+                                                            <f:facet name="header">Discount</f:facet>
+                                                            <h:outputLabel value="#{bi.billItem.discount}">
+                                                                <f:convertNumber pattern="#,##0.00" />
+                                                            </h:outputLabel>
+                                                        </p:column>
+
+                                                        <p:column width="8em" class="text-end">
+                                                            <f:facet name="header">Service Charge</f:facet>
                                                             <h:outputLabel value="#{bi.billItem.marginValue}">
                                                                 <f:convertNumber pattern="#,##0.00" />
                                                             </h:outputLabel>
@@ -681,14 +688,23 @@
                                         <p:panel header="Bill Details" id="details"  >
                                             <div class="card">
                                                 <div class="d-flex justify-content-between p-3 m-2" style="font-size: 18px; font-weight: 700;" >
-                                                    <h:outputLabel value="Bill Total" ></h:outputLabel>
+                                                    <h:outputLabel value="Gross Total" ></h:outputLabel>
                                                     <h:outputLabel value="#{billBhtController.total}" >
                                                         <f:convertNumber pattern="#,##0.00" />
                                                     </h:outputLabel>
                                                 </div>
                                             </div>
                                             <div class="card my-2">
-                                                <div class="d-flex justify-content-between p-3 m-2" style="font-size: 18px; font-weight: 700;" >                                                    <h:outputLabel value="Margin Value" ></h:outputLabel>
+                                                <div class="d-flex justify-content-between p-3 m-2" style="font-size: 18px; font-weight: 700;" >
+                                                    <h:outputLabel value="Discount" ></h:outputLabel>
+                                                    <h:outputLabel value="#{billBhtController.discount}" >
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputLabel>
+                                                </div>
+                                            </div>
+                                            <div class="card my-2">
+                                                <div class="d-flex justify-content-between p-3 m-2" style="font-size: 18px; font-weight: 700;" >
+                                                    <h:outputLabel value="Service Charge" ></h:outputLabel>
                                                     <h:outputLabel value="#{billBhtController.marginTotal}" >
                                                         <f:convertNumber pattern="#,##0.00" />
                                                     </h:outputLabel>
@@ -696,7 +712,7 @@
                                             </div>
                                             <div class="card">
                                                 <div class="d-flex justify-content-between p-3 m-2" style="font-size: 18px; font-weight: 700;" >
-                                                    <h:outputLabel value="Net Value" ></h:outputLabel>
+                                                    <h:outputLabel value="Net Total" ></h:outputLabel>
                                                     <h:outputLabel value="#{billBhtController.netTotal}" >
                                                         <f:convertNumber pattern="#,##0.00" />
                                                     </h:outputLabel>
