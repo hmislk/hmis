@@ -15,6 +15,7 @@ import com.divudi.core.data.dto.PrintBillData;
 import com.divudi.core.data.dto.StockDTO;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.PreBill;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Item;
 import com.divudi.core.entity.PatientEncounter;
@@ -242,7 +243,7 @@ public class InpatientDirectIssueNativeSqlController implements Serializable {
     }
 
     private Bill buildBillHeader(Department matrixDept) {
-        Bill b = preBill != null ? preBill : new Bill();
+        Bill b = preBill != null ? preBill : new PreBill();
 
         b.setBillType(BillType.PharmacyBhtPre);
         b.setBillTypeAtomic(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE);
@@ -548,7 +549,7 @@ public class InpatientDirectIssueNativeSqlController implements Serializable {
 
     public Bill getPreBill() {
         if (preBill == null) {
-            preBill = new Bill();
+            preBill = new PreBill();
         }
         return preBill;
     }
