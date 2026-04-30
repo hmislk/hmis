@@ -1025,6 +1025,13 @@ public class PriceMatrixController implements Serializable {
         if (pct == null) {
             pct = fetchInwardDiscountPercentForDepartment(bhtType, scheme, admissionType, department);
         }
+        // Global wildcard: rows with null dept/category/item apply to everything
+        if (pct == null) {
+            pct = fetchInwardDiscountMatrixPercent(bhtType, scheme, admissionType, null, null, null);
+            if (pct == null && scheme != null) {
+                pct = fetchInwardDiscountMatrixPercent(bhtType, null, admissionType, null, null, null);
+            }
+        }
         return pct != null ? pct : 0.0;
     }
 
@@ -1073,12 +1080,23 @@ public class PriceMatrixController implements Serializable {
             AdmissionType admissionType, Department department, Category category, Item item) {
         StringBuilder jpql = new StringBuilder(
                 "select a.discountPercent from InwardDiscountMatrix a"
-                + " where a.retired = false"
-                + " and a.paymentMethod = :pm"
-                + " and a.admissionType = :admTp");
+                + " where a.retired = false");
         HashMap<String, Object> params = new HashMap<>();
-        params.put("pm", bhtType);
-        params.put("admTp", admissionType);
+
+        // NULL in the matrix means "all BHT types" — match exact value or wildcard row
+        if (bhtType != null) {
+            jpql.append(" and (a.paymentMethod = :pm or a.paymentMethod is null)");
+            params.put("pm", bhtType);
+        } else {
+            jpql.append(" and a.paymentMethod is null");
+        }
+        // NULL in the matrix means "all admission types" — match exact value or wildcard row
+        if (admissionType != null) {
+            jpql.append(" and (a.admissionType = :admTp or a.admissionType is null)");
+            params.put("admTp", admissionType);
+        } else {
+            jpql.append(" and a.admissionType is null");
+        }
 
         if (scheme != null) {
             jpql.append(" and a.paymentScheme = :sch");
@@ -1104,6 +1122,13 @@ public class PriceMatrixController implements Serializable {
         } else {
             jpql.append(" and a.item is null");
         }
+        // Prefer specific rows over wildcards: non-null fields rank higher
+        jpql.append(" order by"
+                + " case when a.paymentMethod is null then 1 else 0 end asc,"
+                + " case when a.admissionType is null then 1 else 0 end asc,"
+                + " case when a.department is null then 1 else 0 end asc,"
+                + " case when a.category is null then 1 else 0 end asc,"
+                + " case when a.item is null then 1 else 0 end asc");
         try {
             List<Object> rs = getPriceMatrixFacade().findObjects(jpql.toString(), params);
             if (rs == null || rs.isEmpty()) {
