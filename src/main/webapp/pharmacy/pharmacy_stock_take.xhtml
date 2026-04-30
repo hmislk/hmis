@@ -127,8 +127,9 @@
                                     <p:outputLabel for="deptType" value="Department Type" styleClass="d-block mb-2"/>
                                     <p:selectOneMenu id="deptType"
                                                      styleClass="w-100"
-                                                     value="#{pharmacyStockTakeController.selectedDepartmentType}">
-                                        <f:selectItem itemLabel="All Types" itemValue="#{null}"/>
+                                                     value="#{pharmacyStockTakeController.selectedDepartmentType}"
+                                                     title="Select the department type to include in this stock count (required)">
+                                        <f:selectItem itemLabel="-- Select Department Type --" itemValue="#{null}"/>
                                         <f:selectItems value="#{pharmacyStockTakeController.availableDepartmentTypes}"
                                                       var="dt"
                                                       itemLabel="#{dt.name()}"
