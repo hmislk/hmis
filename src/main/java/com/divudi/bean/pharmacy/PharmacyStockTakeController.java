@@ -232,6 +232,11 @@ public class PharmacyStockTakeController implements Serializable {
             return null;
         }
 
+        if (selectedDepartmentType == null) {
+            JsfUtil.addErrorMessage("Please select a department type");
+            return null;
+        }
+
         Department dept = department;
 
         // Fetch stocks using DTO projection for performance (avoids N+1 queries)
@@ -274,6 +279,7 @@ public class PharmacyStockTakeController implements Serializable {
         snapshotBill.setBillType(BillType.PharmacySnapshotBill);
         snapshotBill.setBillClassType(BillClassType.BilledBill);
         snapshotBill.setDepartment(dept);
+        snapshotBill.setDepartmentType(selectedDepartmentType);
 
         // Null check for institution
         if (dept.getInstitution() != null) {
