@@ -470,6 +470,16 @@
                                                     <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputLabel>
                                             </p:column>
+                                            <p:column headerText="Discount" style="width: 5em; text-align: right;">
+                                                <h:outputLabel value="#{rm.discountRoomCharge + rm.discountMaintainCharge + rm.discountLinenCharge + rm.discountNursingCharge + rm.discountMoCharge + rm.discountAdministrationCharge + rm.discountMedicalCareCharge}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputLabel>
+                                            </p:column>
+                                            <p:column headerText="Net" style="width: 5em; text-align: right;">
+                                                <h:outputLabel value="#{rm.adjustedRoomCharge + rm.adjustedMaintainCharge + rm.ajdustedLinenCharge + rm.ajdustedNursingCharge + rm.adjustedMoCharge + rm.ajdustedAdministrationCharge + rm.ajdustedMedicalCareCharge}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputLabel>
+                                            </p:column>
                                         </p:dataTable>
                                     </h:panelGroup>
                                 </p:tab>
