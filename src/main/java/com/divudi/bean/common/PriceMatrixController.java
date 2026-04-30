@@ -1122,6 +1122,13 @@ public class PriceMatrixController implements Serializable {
         } else {
             jpql.append(" and a.item is null");
         }
+        // Prefer specific rows over wildcards: non-null fields rank higher
+        jpql.append(" order by"
+                + " case when a.paymentMethod is null then 1 else 0 end asc,"
+                + " case when a.admissionType is null then 1 else 0 end asc,"
+                + " case when a.department is null then 1 else 0 end asc,"
+                + " case when a.category is null then 1 else 0 end asc,"
+                + " case when a.item is null then 1 else 0 end asc");
         try {
             List<Object> rs = getPriceMatrixFacade().findObjects(jpql.toString(), params);
             if (rs == null || rs.isEmpty()) {
