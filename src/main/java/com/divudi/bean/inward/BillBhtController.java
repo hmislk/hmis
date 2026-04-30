@@ -995,15 +995,16 @@ public class BillBhtController implements Serializable {
                 tot += bf.getFeeGrossValue();
                 net += bf.getFeeValue();
                 bf.getBillItem().setNetValue(bf.getBillItem().getNetValue() + bf.getFeeValue());
-                //    bf.getBillItem().setNetValue(bf.getBillItem().getNetValue());
                 bf.getBillItem().setGrossValue(bf.getBillItem().getGrossValue() + bf.getFeeGrossValue());
                 margin += bf.getFeeMargin();
-                
             }
+
+            bi.setDiscount(bi.getGrossValue() + bi.getMarginValue() - bi.getNetValue());
         }
 
         setTotal(tot);
         setMarginTotal(margin);
+        setDiscount(tot + margin - net);
         setNetTotal(net);
     }
 

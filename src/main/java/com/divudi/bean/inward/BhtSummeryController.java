@@ -34,6 +34,7 @@ import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.BilledBill;
 import com.divudi.core.entity.Item;
 import com.divudi.core.entity.PatientEncounter;
+import com.divudi.core.entity.PaymentScheme;
 import com.divudi.core.entity.PatientItem;
 import com.divudi.core.entity.PreBill;
 import com.divudi.core.entity.PriceMatrix;
@@ -2600,6 +2601,19 @@ public class BhtSummeryController implements Serializable {
     }
 
     private void setPatientRoomData() {
+        PaymentMethod pm = getPatientEncounter().getPaymentMethod();
+        PaymentScheme scheme = getPatientEncounter().getPaymentScheme();
+        AdmissionType admType = getPatientEncounter().getAdmissionType();
+
+        // Fetch all discount percentages once per recalculation (not per room)
+        double roomPct = getPriceMatrixController().getInwardDiscountPercentForChargeType(pm, scheme, admType, InwardChargeType.RoomCharges);
+        double maintainPct = getPriceMatrixController().getInwardDiscountPercentForChargeType(pm, scheme, admType, InwardChargeType.MaintainCharges);
+        double linenPct = getPriceMatrixController().getInwardDiscountPercentForChargeType(pm, scheme, admType, InwardChargeType.LinenCharges);
+        double nursingPct = getPriceMatrixController().getInwardDiscountPercentForChargeType(pm, scheme, admType, InwardChargeType.NursingCharges);
+        double moPct = getPriceMatrixController().getInwardDiscountPercentForChargeType(pm, scheme, admType, InwardChargeType.MOCharges);
+        double adminPct = getPriceMatrixController().getInwardDiscountPercentForChargeType(pm, scheme, admType, InwardChargeType.AdministrationCharge);
+        double medicalCarePct = getPriceMatrixController().getInwardDiscountPercentForChargeType(pm, scheme, admType, InwardChargeType.MedicalCareICU);
+
         for (PatientRoom p : patientRooms) {
             if (p.getAdmittedAt() == null) {
                 p.setAdmittedAt(new Date());
@@ -2614,18 +2628,38 @@ public class BhtSummeryController implements Serializable {
                 calculateMedicalCareCharge(p);
             }
 
-            p.setAdjustedMaintainCharge(p.getCalculatedMaintainCharge());
-            p.setAdjustedMoCharge(p.getCalculatedMoCharge());
-            p.setAdjustedRoomCharge(p.getCalculatedRoomCharge());
-
-            p.setAjdustedAdministrationCharge(p.getCalculatedAdministrationCharge());
-            p.setAjdustedLinenCharge(p.getCalculatedLinenCharge());
-            p.setAjdustedMedicalCareCharge(p.getCalculatedMedicalCareCharge());
-            p.setAjdustedNursingCharge(p.getCalculatedNursingCharge());
+            applyRoomChargeDiscounts(p, roomPct, maintainPct, linenPct, nursingPct, moPct, adminPct, medicalCarePct);
 
             getPatientRoomFacade().edit(p);
-
         }
+    }
+
+    private void applyRoomChargeDiscounts(PatientRoom p,
+            double roomPct, double maintainPct, double linenPct, double nursingPct,
+            double moPct, double adminPct, double medicalCarePct) {
+        double roomDisc = (roomPct / 100.0) * p.getCalculatedRoomCharge();
+        double maintainDisc = (maintainPct / 100.0) * p.getCalculatedMaintainCharge();
+        double linenDisc = (linenPct / 100.0) * p.getCalculatedLinenCharge();
+        double nursingDisc = (nursingPct / 100.0) * p.getCalculatedNursingCharge();
+        double moDisc = (moPct / 100.0) * p.getCalculatedMoCharge();
+        double adminDisc = (adminPct / 100.0) * p.getCalculatedAdministrationCharge();
+        double medicalCareDisc = (medicalCarePct / 100.0) * p.getCalculatedMedicalCareCharge();
+
+        p.setDiscountRoomCharge(roomDisc);
+        p.setDiscountMaintainCharge(maintainDisc);
+        p.setDiscountLinenCharge(linenDisc);
+        p.setDiscountNursingCharge(nursingDisc);
+        p.setDiscountMoCharge(moDisc);
+        p.setDiscountAdministrationCharge(adminDisc);
+        p.setDiscountMedicalCareCharge(medicalCareDisc);
+
+        p.setAdjustedRoomCharge(p.getCalculatedRoomCharge() - roomDisc);
+        p.setAdjustedMaintainCharge(p.getCalculatedMaintainCharge() - maintainDisc);
+        p.setAjdustedLinenCharge(p.getCalculatedLinenCharge() - linenDisc);
+        p.setAjdustedNursingCharge(p.getCalculatedNursingCharge() - nursingDisc);
+        p.setAdjustedMoCharge(p.getCalculatedMoCharge() - moDisc);
+        p.setAjdustedAdministrationCharge(p.getCalculatedAdministrationCharge() - adminDisc);
+        p.setAjdustedMedicalCareCharge(p.getCalculatedMedicalCareCharge() - medicalCareDisc);
     }
 
     private void calculateLinenCharge(PatientRoom p) {
