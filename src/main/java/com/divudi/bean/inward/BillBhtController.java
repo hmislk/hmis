@@ -924,6 +924,22 @@ public class BillBhtController implements Serializable {
 
             getInwardBean().setBillFeeMargin(billFee, billItem.getItem(), priceMatrix, patientEncounter);
 
+            if (billFee.getFee() != null && billFee.getFee().getFeeType() != FeeType.Staff
+                    && billFee.getFeeGrossValue() != null && billFee.getFeeGrossValue() > 0
+                    && patientEncounter != null) {
+                double discountPct = priceMatrixController.getInwardDiscountPercent(
+                        paymentMethod,
+                        patientEncounter.getPaymentScheme(),
+                        patientEncounter.getAdmissionType(),
+                        matrixDepartment,
+                        billItem.getItem());
+                if (discountPct > 0) {
+                    double feeDiscountAmt = billFee.getFeeGrossValue() * discountPct / 100.0;
+                    billFee.setFeeDiscount(feeDiscountAmt);
+                    billFee.setFeeValue(billFee.getFeeValue() - feeDiscountAmt);
+                }
+            }
+
             billFeeList.add(billFee);
         }
 
@@ -995,14 +1011,15 @@ public class BillBhtController implements Serializable {
                 tot += bf.getFeeGrossValue();
                 net += bf.getFeeValue();
                 bf.getBillItem().setNetValue(bf.getBillItem().getNetValue() + bf.getFeeValue());
-                //    bf.getBillItem().setNetValue(bf.getBillItem().getNetValue());
                 bf.getBillItem().setGrossValue(bf.getBillItem().getGrossValue() + bf.getFeeGrossValue());
                 margin += bf.getFeeMargin();
-                
             }
+
+            bi.setDiscount(bi.getGrossValue() - bi.getNetValue());
         }
 
         setTotal(tot);
+        setDiscount(tot - net);
         setMarginTotal(margin);
         setNetTotal(net);
     }
