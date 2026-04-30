@@ -4,6 +4,8 @@
  */
 package com.divudi.bean.channel;
 
+import com.divudi.bean.channel.ChannelReportController.ChannelIncomeDetailDto;
+import com.divudi.bean.channel.ChannelReportTemplateController.OnlineBookingDetialRow;
 import com.divudi.bean.channel.analytics.ReportTemplateController;
 import com.divudi.bean.common.ExcelController;
 import com.divudi.bean.common.InstitutionController;
@@ -21,7 +23,9 @@ import com.divudi.core.data.FeeType;
 import com.divudi.core.data.HistoryType;
 import com.divudi.core.data.InstitutionType;
 import com.divudi.core.data.MessageType;
+import com.divudi.core.data.OnlineBookingStatus;
 import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.ReportTemplateRow;
 import com.divudi.core.data.ReportTemplateRowBundle;
 import com.divudi.core.data.channel.DateEnum;
 import com.divudi.core.data.channel.PaymentEnum;
@@ -31,6 +35,9 @@ import com.divudi.core.data.dataStructure.WebUserBillsTotal;
 import com.divudi.core.data.dto.ChannelServiceCategorywiseDetailsWrapperDTO;
 import com.divudi.core.data.hr.ReportKeyWord;
 import com.divudi.core.data.reports.PharmacyReports;
+import com.divudi.core.data.reports.Report;
+import com.divudi.core.data.reports.Report.OnlineBookingCountReport;
+import com.divudi.core.data.reports.ReportColumn;
 import com.divudi.core.data.table.String1Value1;
 import com.divudi.core.data.table.String1Value3;
 import com.divudi.ejb.ChannelBean;
@@ -97,6 +104,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import com.itextpdf.kernel.geom.PageSize;
+import com.itextpdf.layout.properties.TextAlignment;
 
 @Named
 @SessionScoped
@@ -5175,21 +5183,104 @@ public class ChannelReportController implements Serializable {
     }
 
     // PDF Export: Channel Scanning Income Report
+    // public StreamedContent getChannelIncomeFromCardPaymentsReportAsPdf() {
+    //     if (cardPaymentDetails == null || cardPaymentDetails.getIncomeDtos() == null || cardPaymentDetails.getIncomeDtos().isEmpty()) {
+    //         JsfUtil.addErrorMessage("Please generate the Channel Income From Card Payment report before exporting.");
+    //         return null;
+    //     }
+
+    //     StreamedContent pdfSc = null;
+    //     try {            
+    //         pdfSc = pdfController.createPdfForChannelCardIncomeReport(cardPaymentDetails, PageSize.A4.rotate(), true, getFiltersForChannelIncomeReports(), getIncomeFromCardPaymentReportFileName());
+    //     } catch (IOException e) {
+    //         logger.error("getChannelIncomeFromCardPaymentsReportAsPdf: Error creating pdfSc via pdfController.createPdfForChannelCardIncomeReport", e);
+    //         pdfSc = null;
+    //         JsfUtil.addErrorMessage("Failed to generate Channel Income From Card Payment Report PDF file. Please try again.");
+    //     }
+    //     return pdfSc;
+    // }
+
+    private Report<ChannelIncomeDetailDto> channelCardIncomeReport;
+
+    public Report getChannelCardIncomeReport() {
+        if (channelCardIncomeReport == null) {
+            channelCardIncomeReport = new Report();
+            channelCardIncomeReport.setSerialNoColumnAtStart(true);
+            LinkedHashMap columns = new LinkedHashMap<>();
+
+            columns.put("Bill Id", new ReportColumn<>("Bill Id", ChannelIncomeDetailDto::getBillId, TextAlignment.LEFT, "%s", 3f));
+
+            columns.put("Created At", new ReportColumn<>("Created At",
+                    row -> {
+                            ChannelIncomeDetailDto r = (ChannelIncomeDetailDto) row;
+                            return new SimpleDateFormat("dd MMM yyyy").format(r.getBilledDate());
+                    },
+                    TextAlignment.LEFT,
+                    "%s",
+                    3f));
+            columns.put("Bill No", new ReportColumn<>("Bill No",
+                    row -> {
+                            ChannelIncomeDetailDto r = (ChannelIncomeDetailDto) row;
+                            String billDept = r.getBillDeptId() != null ? r.getBillDeptId() : "";
+                            if (r.isIsCancelled()) {
+                                billDept += "\nCancelled" + (r.getCancelledBillDeptId() != null ? (" - " + r.getCancelledBillDeptId()) : "");
+                            }
+                            if (r.isIsRefunded()) {
+                                billDept += "\nRefunded" + (r.getRefundBillDeptId() != null ? (" - " + r.getRefundBillDeptId()) : "" );
+                            }
+                            if (r.getBillTypeAtomic() != null && r.getBillTypeAtomic() == BillTypeAtomic.CHANNEL_REFUND_WITH_PAYMENT) {
+                                billDept += "\nRefund Bill";
+                            }
+                            if (r.getBillTypeAtomic() != null && r.getBillTypeAtomic() == BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT) {
+                                billDept += "\nCancel Bill";
+                            }
+                            return billDept;
+                    },
+                    TextAlignment.LEFT,
+                    "%s",
+                    4f));
+
+            columns.put("Bill Type", new ReportColumn<>("Bill Type", ChannelIncomeDetailDto::getBillType, TextAlignment.LEFT, "%s", 3.5f));
+            columns.put("Patient", new ReportColumn<>("Patient", ChannelIncomeDetailDto::getPatientName, TextAlignment.LEFT, "%s", 4f));
+            columns.put("Cashier", new ReportColumn<>("Cashier", ChannelIncomeDetailDto::getBilledBy, TextAlignment.LEFT, "%s", 3f));
+            columns.put("Hospital Fee", new ReportColumn<>("Hospital Fee", ChannelIncomeDetailDto::getHosFee, TextAlignment.RIGHT, "%,.2f", 4f));
+            columns.put("Doctor Fee", new ReportColumn<>("Doctor Fee", ChannelIncomeDetailDto::getDoctorFee, TextAlignment.RIGHT, "%,.2f", 4f));
+            columns.put("Bill Gross Total", new ReportColumn<>("Bill Gross Total", ChannelIncomeDetailDto::getTotalAppoinmentFee, TextAlignment.RIGHT, "%,.2f", 4f));
+            columns.put("Card Total", new ReportColumn<>("Card Total", ChannelIncomeDetailDto::getCardFee, TextAlignment.RIGHT, "%,.2f", 4f));
+            columns.put("Card Last 4 Numbers", new ReportColumn<>("Card Last 4 Numbers", ChannelIncomeDetailDto::getPaymentReference, TextAlignment.LEFT, "%s", 2.5f));
+            columns.put("Bank", new ReportColumn<>("Bank", ChannelIncomeDetailDto::getCreditCompanyName, TextAlignment.LEFT, "%s", 4f));
+
+            channelCardIncomeReport.setColumns(columns);
+        }
+        String fileName = "Channel_Card_Income_Report";
+        String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
+        if (dates != null && !dates.isEmpty()) {
+            fileName += "_" + dates;
+        }
+        channelCardIncomeReport.setFileName(fileName);
+        channelCardIncomeReport.setReportName("Channel Card Income Report");
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            if (sessionController.getLoggedUser().getInstitution() != null) {
+                channelCardIncomeReport.setInstitutionName(sessionController.getLoggedUser().getInstitution().getName());
+            }
+            channelCardIncomeReport.setReportGeneratedBy(sessionController.getLoggedUser().getName());
+        }
+        channelCardIncomeReport.setSearchCriteria(getFiltersForChannelIncomeReports());   
+        channelCardIncomeReport.setData(cardPaymentDetails.getIncomeDtos());
+        channelCardIncomeReport.setColumnFooter(cardPaymentDetails.getAllHosFeeTotal(), "Hospital Fee");
+        channelCardIncomeReport.setColumnFooter(cardPaymentDetails.getAllDoctorFeeTotal(), "Doctor Fee");
+        channelCardIncomeReport.setColumnFooter(cardPaymentDetails.getAllTotalAmount(), "Bill Gross Total");
+        channelCardIncomeReport.setColumnFooter(cardPaymentDetails.getAllCardTotal(), "Card Total");
+
+        return channelCardIncomeReport;
+    }
+
     public StreamedContent getChannelIncomeFromCardPaymentsReportAsPdf() {
-        if (cardPaymentDetails == null || cardPaymentDetails.getIncomeDtos() == null || cardPaymentDetails.getIncomeDtos().isEmpty()) {
-            JsfUtil.addErrorMessage("Please generate the Channel Income From Card Payment report before exporting.");
+        if (cardPaymentDetails.getIncomeDtos() == null || cardPaymentDetails.getIncomeDtos().isEmpty()) {
+            JsfUtil.addErrorMessage("Please generate the Channel Card Income report before exporting.");
             return null;
         }
-
-        StreamedContent pdfSc = null;
-        try {            
-            pdfSc = pdfController.createPdfForChannelCardIncomeReport(cardPaymentDetails, PageSize.A4.rotate(), true, getFiltersForChannelIncomeReports(), getIncomeFromCardPaymentReportFileName());
-        } catch (IOException e) {
-            logger.error("getChannelIncomeFromCardPaymentsReportAsPdf: Error creating pdfSc via pdfController.createPdfForChannelCardIncomeReport", e);
-            pdfSc = null;
-            JsfUtil.addErrorMessage("Failed to generate Channel Income From Card Payment Report PDF file. Please try again.");
-        }
-        return pdfSc;
+        return getChannelCardIncomeReport().createPdfAsStream();
     }
 
     // PostProcessor for channem_card_income_report excel export
