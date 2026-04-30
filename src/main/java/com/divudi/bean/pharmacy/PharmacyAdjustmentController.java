@@ -9,6 +9,7 @@ import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SessionController;
 
 import com.divudi.core.data.BillClassType;
+import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.BillNumberSuffix;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.dataStructure.YearMonthDay;
@@ -571,6 +572,13 @@ public class PharmacyAdjustmentController implements Serializable {
         this.expiryDateAdjustmentBillItems = expiryDateAdjustmentBillItems;
     }
 
+    private DepartmentType resolveDepartmentType(Item selectedItem) {
+        if (selectedItem != null && selectedItem.getDepartmentType() != null) {
+            return selectedItem.getDepartmentType();
+        }
+        return DepartmentType.Pharmacy;
+    }
+
     private void saveDeptAdjustmentBill() {
         getDeptAdjustmentPreBill().setBillDate(Calendar.getInstance().getTime());
         getDeptAdjustmentPreBill().setBillTime(Calendar.getInstance().getTime());
@@ -586,6 +594,9 @@ public class PharmacyAdjustmentController implements Serializable {
         getDeptAdjustmentPreBill().setFromDepartment(getSessionController().getLoggedUser().getDepartment());
         getDeptAdjustmentPreBill().setFromInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
         getDeptAdjustmentPreBill().setComments(comment);
+        if (stock != null && stock.getItemBatch() != null) {
+            getDeptAdjustmentPreBill().setDepartmentType(resolveDepartmentType(stock.getItemBatch().getItem()));
+        }
         if (getDeptAdjustmentPreBill().getId() == null) {
             getBillFacade().create(getDeptAdjustmentPreBill());
         } else {
@@ -607,6 +618,9 @@ public class PharmacyAdjustmentController implements Serializable {
         getDeptAdjustmentPreBill().setFromDepartment(getSessionController().getLoggedUser().getDepartment());
         getDeptAdjustmentPreBill().setFromInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
         getDeptAdjustmentPreBill().setComments(comment);
+        if (stock != null && stock.getItemBatch() != null) {
+            getDeptAdjustmentPreBill().setDepartmentType(resolveDepartmentType(stock.getItemBatch().getItem()));
+        }
 
         // Generate deptId and insId using configurable bill number generation strategy
         Department dept = getSessionController().getDepartment();
@@ -683,6 +697,9 @@ public class PharmacyAdjustmentController implements Serializable {
         getDeptAdjustmentPreBill().setFromDepartment(getSessionController().getLoggedUser().getDepartment());
         getDeptAdjustmentPreBill().setFromInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
         getDeptAdjustmentPreBill().setComments(comment);
+        if (stock != null && stock.getItemBatch() != null) {
+            getDeptAdjustmentPreBill().setDepartmentType(resolveDepartmentType(stock.getItemBatch().getItem()));
+        }
         if (getDeptAdjustmentPreBill().getId() == null) {
             getBillFacade().create(getDeptAdjustmentPreBill());
         } else {
@@ -707,6 +724,9 @@ public class PharmacyAdjustmentController implements Serializable {
         getDeptAdjustmentPreBill().setFromDepartment(getSessionController().getLoggedUser().getDepartment());
         getDeptAdjustmentPreBill().setFromInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
         getDeptAdjustmentPreBill().setComments(comment);
+        if (stock != null && stock.getItemBatch() != null) {
+            getDeptAdjustmentPreBill().setDepartmentType(resolveDepartmentType(stock.getItemBatch().getItem()));
+        }
         if (getDeptAdjustmentPreBill().getId() == null) {
             getBillFacade().create(getDeptAdjustmentPreBill());
         } else {
@@ -731,6 +751,14 @@ public class PharmacyAdjustmentController implements Serializable {
         getDeptAdjustmentPreBill().setFromDepartment(getSessionController().getLoggedUser().getDepartment());
         getDeptAdjustmentPreBill().setFromInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
         getDeptAdjustmentPreBill().setComments(comment);
+        if (stock != null && stock.getItemBatch() != null) {
+            getDeptAdjustmentPreBill().setDepartmentType(resolveDepartmentType(stock.getItemBatch().getItem()));
+        } else if (selectedStockDto != null && selectedStockDto.getItemBatchId() != null) {
+            ItemBatch ib = itemBatchFacade.find(selectedStockDto.getItemBatchId());
+            if (ib != null) {
+                getDeptAdjustmentPreBill().setDepartmentType(resolveDepartmentType(ib.getItem()));
+            }
+        }
 
         // Create BillFinanceDetails for the adjustment
         if (getDeptAdjustmentPreBill().getBillFinanceDetails() == null) {
@@ -762,6 +790,11 @@ public class PharmacyAdjustmentController implements Serializable {
         getDeptAdjustmentPreBill().setFromDepartment(sessionController.getLoggedUser().getDepartment());
         getDeptAdjustmentPreBill().setFromInstitution(sessionController.getLoggedUser().getDepartment().getInstitution());
         getDeptAdjustmentPreBill().setComments(comment);
+        if (amp != null) {
+            getDeptAdjustmentPreBill().setDepartmentType(resolveDepartmentType(amp));
+        } else if (stock != null && stock.getItemBatch() != null) {
+            getDeptAdjustmentPreBill().setDepartmentType(resolveDepartmentType(stock.getItemBatch().getItem()));
+        }
 
         if (getDeptAdjustmentPreBill().getBillFinanceDetails() == null) {
             BillFinanceDetails bfd = new BillFinanceDetails(getDeptAdjustmentPreBill());
@@ -792,6 +825,11 @@ public class PharmacyAdjustmentController implements Serializable {
         getDeptAdjustmentPreBill().setFromDepartment(getSessionController().getLoggedUser().getDepartment());
         getDeptAdjustmentPreBill().setFromInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
         getDeptAdjustmentPreBill().setComments(comment);
+        if (amp != null) {
+            getDeptAdjustmentPreBill().setDepartmentType(resolveDepartmentType(amp));
+        } else if (stock != null && stock.getItemBatch() != null) {
+            getDeptAdjustmentPreBill().setDepartmentType(resolveDepartmentType(stock.getItemBatch().getItem()));
+        }
 
         if (getDeptAdjustmentPreBill().getBillFinanceDetails() == null) {
             BillFinanceDetails bfd = new BillFinanceDetails(getDeptAdjustmentPreBill());
@@ -822,6 +860,9 @@ public class PharmacyAdjustmentController implements Serializable {
         getDeptAdjustmentPreBill().setFromDepartment(getSessionController().getLoggedUser().getDepartment());
         getDeptAdjustmentPreBill().setFromInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
         getDeptAdjustmentPreBill().setComments(comment);
+        if (stock != null && stock.getItemBatch() != null) {
+            getDeptAdjustmentPreBill().setDepartmentType(resolveDepartmentType(stock.getItemBatch().getItem()));
+        }
         if (getDeptAdjustmentPreBill().getId() == null) {
             getBillFacade().create(getDeptAdjustmentPreBill());
         } else {
@@ -847,6 +888,9 @@ public class PharmacyAdjustmentController implements Serializable {
         getDeptAdjustmentPreBill().setFromDepartment(getSessionController().getLoggedUser().getDepartment());
         getDeptAdjustmentPreBill().setFromInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
         getDeptAdjustmentPreBill().setComments(comment);
+        if (stock != null && stock.getItemBatch() != null) {
+            getDeptAdjustmentPreBill().setDepartmentType(resolveDepartmentType(stock.getItemBatch().getItem()));
+        }
         if (getDeptAdjustmentPreBill().getId() == null) {
             getBillFacade().create(getDeptAdjustmentPreBill());
         } else {
@@ -1873,6 +1917,9 @@ public class PharmacyAdjustmentController implements Serializable {
             return;
         }
         deptAdjustmentPreBill = new PreBill();
+        if (!stocks.isEmpty() && stocks.get(0).getItemBatch() != null) {
+            deptAdjustmentPreBill.setDepartmentType(resolveDepartmentType(stocks.get(0).getItemBatch().getItem()));
+        }
         for (Stock s : stocks) {
             if (s.getStock() != s.getCalculated()) {
                 saveDeptSingleStockAdjustmentBill();
@@ -1900,6 +1947,7 @@ public class PharmacyAdjustmentController implements Serializable {
         for (Stock s : stocks) {
             if (s.getStock() != s.getCalculated()) {
                 deptAdjustmentPreBill = null;
+                stock = s;
                 saveDeptAdjustmentBill();
                 PharmaceuticalBillItem ph = saveDeptAdjustmentBillItems(s);
                 bills.add(getBillFacade().find(getDeptAdjustmentPreBill().getId()));
