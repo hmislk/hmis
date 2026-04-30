@@ -156,12 +156,12 @@
                                                             </h:outputText>
                                                         </td>
                                                         <td class="text-end">
-                                                            <h:outputText value="#{financialTransactionController.bundle.cashHandoverValue}">
+                                                            <h:outputText value="#{financialTransactionController.bundle.cashValue}">
                                                                 <f:convertNumber pattern="#,##0.00" />
                                                             </h:outputText>
                                                         </td>
                                                         <td class="text-end">
-                                                            <h:outputText value="#{financialTransactionController.bundle.cashValue - financialTransactionController.bundle.cashHandoverValue}">
+                                                            <h:outputText value="#{0}">
                                                                 <f:convertNumber pattern="#,##0.00" />
                                                             </h:outputText>
                                                         </td>
@@ -517,28 +517,43 @@
                                     </p:panel>
                                 </div>
                                 <div class="col-5" >
-                                    <h:panelGroup id="gpDenominations" >
-                                        <p:dataTable   value="#{financialTransactionController.bundle.denominationTransactions}" var="deno"  >
-                                            <p:column title="Denomination">
-                                                <p:outputLabel value="#{deno.denomination.displayName}" ></p:outputLabel>
-                                            </p:column>
-                                            <p:column  title="Denomination">
-                                                <p:outputLabel 
-                                                    class="text-end w-100" 
-                                                    id="txtDenoQtyHandover"
-                                                    value="#{deno.denominationQty}" 
-                                                    style="width: 100%;">
-                                                    <f:convertNumber integerOnly="true" />
-                                                </p:outputLabel>  
-                                            </p:column>
-                                            <p:column >
-                                                <p:outputLabel
-                                                    class="text-end w-100"
-                                                    id="txtDenoVal" value="#{deno.denominationValue}" >
-                                                    <f:convertNumber pattern="#,##0.00" />
-                                                </p:outputLabel>
-                                            </p:column>
-                                        </p:dataTable>
+                                    <h:panelGroup id="gpDenominations">
+                                        <table class="table table-bordered table-sm w-100">
+                                            <thead class="thead-dark">
+                                                <tr>
+                                                    <th>Denomination</th>
+                                                    <th class="text-end">Qty</th>
+                                                    <th class="text-end">Value</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <ui:repeat value="#{financialTransactionController.bundle.denominationTransactions}" var="deno">
+                                                    <tr>
+                                                        <td><h:outputText value="#{deno.denomination.displayName}" /></td>
+                                                        <td class="text-end">
+                                                            <h:outputText value="#{deno.denominationQty}">
+                                                                <f:convertNumber integerOnly="true" />
+                                                            </h:outputText>
+                                                        </td>
+                                                        <td class="text-end">
+                                                            <h:outputText value="#{deno.denominationValue}">
+                                                                <f:convertNumber pattern="#,##0.00" />
+                                                            </h:outputText>
+                                                        </td>
+                                                    </tr>
+                                                </ui:repeat>
+                                            </tbody>
+                                            <tfoot>
+                                                <tr class="fw-bold">
+                                                    <td colspan="2">Total</td>
+                                                    <td class="text-end">
+                                                        <h:outputText value="#{financialTransactionController.bundle.denominatorValue}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
+                                                </tr>
+                                            </tfoot>
+                                        </table>
                                     </h:panelGroup>
                                 </div>
                             </div>
@@ -566,7 +581,8 @@
                                         currentPageReportTemplate="(Page {currentPage} of {totalPages})"
                                         paginatorPosition="top"
                                         rowsPerPageTemplate="10,20,50,100,{ShowAll|'All'}"
-                                        rows="100000" 
+                                        rows="100000"
+                                        showFooter="true"
                                         >
 
                                         <p:column headerText="Institution" >
@@ -594,7 +610,7 @@
                                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                             </h:outputText>
                                             <f:facet name="footer" >
-                                                <p:outputLabel value="#{financialTransactionController.bundle.cashValue + financialTransactionController.bundle.cashFloatNetTotal}" >
+                                                <p:outputLabel value="#{financialTransactionController.bundle.cashValue}" >
                                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                 </p:outputLabel>
                                             </f:facet>
@@ -895,7 +911,7 @@
                                                 <h:outputText value="#{financialTransactionController.bundle.cashValue + financialTransactionController.bundle.cardValue + financialTransactionController.bundle.multiplePaymentMethodsValue +
                                                                        financialTransactionController.bundle.creditValue + financialTransactionController.bundle.staffWelfareValue + financialTransactionController.bundle.staffValue + financialTransactionController.bundle.voucherValue +
                                                                        financialTransactionController.bundle.iouValue + financialTransactionController.bundle.agentValue + financialTransactionController.bundle.chequeValue + financialTransactionController.bundle.slipValue +
-                                                                       financialTransactionController.bundle.ewalletValue + financialTransactionController.bundle.patientDepositValue + financialTransactionController.bundle.patientPointsValue + financialTransactionController.bundle.onlineSettlementValue + financialTransactionController.bundle.cashFloatNetTotal}"
+                                                                       financialTransactionController.bundle.ewalletValue + financialTransactionController.bundle.patientDepositValue + financialTransactionController.bundle.patientPointsValue + financialTransactionController.bundle.onlineSettlementValue}"
                                                               style="text-align: right;">
                                                     <f:convertNumber pattern="#,##0.00" />
                                                 </h:outputText>
