@@ -155,6 +155,7 @@ public class InvestigationController implements Serializable {
 
     List<InvestigationDTO> investigationDtos;
     List<InvestigationDTO> selectedInvestigationDtos;
+    List<InvestigationDTO> investigationListDtos;
 
     private List<Investigation> investigationWithSelectedFormat;
     private Category categoryForFormat;
@@ -1399,7 +1400,7 @@ public class InvestigationController implements Serializable {
     }
 
     public String navigateToListInvestigation() {
-        listAllIxs();
+        fillInvestigationListDtos();
         return "/admin/lims/investigation_list?faces-redirect=true";
     }
 
@@ -1892,6 +1893,24 @@ public class InvestigationController implements Serializable {
         getCurrent();
     }
 
+    public void deleteInvestigationById(Long id) {
+        if (id == null) {
+            JsfUtil.addErrorMessage("Nothing to Delete");
+            return;
+        }
+        Investigation ix = getFacade().find(id);
+        if (ix == null) {
+            JsfUtil.addErrorMessage("Investigation not found");
+            return;
+        }
+        ix.setRetired(true);
+        ix.setRetiredAt(new Date());
+        ix.setRetirer(getSessionController().getLoggedUser());
+        getFacade().edit(ix);
+        JsfUtil.addSuccessMessage("Deleted Successfully");
+        fillInvestigationListDtos();
+    }
+
     private InvestigationFacade getFacade() {
         return ejbFacade;
     }
@@ -1944,6 +1963,25 @@ public class InvestigationController implements Serializable {
                 + "ORDER BY i.name";
 
         investigationDtos = (List<InvestigationDTO>) getFacade().findLightsByJpql(jpql);
+    }
+
+    public void fillInvestigationListDtos() {
+        String jpql = "SELECT new com.divudi.core.data.dto.InvestigationDTO("
+                + "i.id, "
+                + "i.code, "
+                + "i.name, "
+                + "cat.name, "
+                + "ins.name, "
+                + "dep.name, "
+                + "i.retired) "
+                + "FROM Investigation i "
+                + "LEFT JOIN i.category cat "
+                + "LEFT JOIN i.institution ins "
+                + "LEFT JOIN i.department dep "
+                + "WHERE i.retired = false "
+                + "ORDER BY i.name";
+
+        investigationListDtos = (List<InvestigationDTO>) getFacade().findLightsByJpql(jpql);
     }
     
     public List<InvestigationDTO> fillInvestigationNamesDtos() {
@@ -2166,6 +2204,15 @@ public class InvestigationController implements Serializable {
 
     public void setSelectedInvestigationDtos(List<InvestigationDTO> selectedInvestigationDtos) {
         this.selectedInvestigationDtos = selectedInvestigationDtos;
+    }
+
+    public List<InvestigationDTO> getInvestigationListDtos() {
+        fillInvestigationListDtos();
+        return investigationListDtos;
+    }
+
+    public void setInvestigationListDtos(List<InvestigationDTO> investigationListDtos) {
+        this.investigationListDtos = investigationListDtos;
     }
 
 }
