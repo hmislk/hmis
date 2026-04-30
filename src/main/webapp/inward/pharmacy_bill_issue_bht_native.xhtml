@@ -308,7 +308,7 @@
                                             icon="fa-solid fa-plus"
                                             action="#{inpatientDirectIssueNativeSqlController.addBillItem}"
                                             process="@this txtQty acStockNative"
-                                            update=":bill:pBillItems acStock txtQty txtRate txtValue panelErrorMsg"
+                                            update=":bill:pBillItems :bill:pBillDetails acStock txtQty txtRate txtValue panelErrorMsg"
                                             oncomplete="pharmacyNativeRefocusItem();" />
                                     </div>
                                 </div>
@@ -419,7 +419,7 @@
                                             <p:ajax
                                                 event="change"
                                                 listener="#{inpatientDirectIssueNativeSqlController.onEdit(bid)}"
-                                                update=":bill:pBillItems panelErrorMsg" />
+                                                update=":bill:pBillItems :bill:pBillDetails panelErrorMsg" />
                                         </p:inputText>
                                     </p:column>
                                     <p:column headerText="Rate" width="8em" class="text-end"
@@ -428,9 +428,42 @@
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputText>
                                     </p:column>
-                                    <p:column headerText="Value" width="8em" class="text-end"
+                                    <p:column headerText="Gross Value" width="8em" class="text-end"
                                               rendered="#{webUserController.hasPrivilege('ShowDrugCharges')}">
-                                        <h:outputText value="#{bid.netValue}">
+                                        <h:outputText value="#{bid.grossValue &lt; 0 ? -bid.grossValue : bid.grossValue}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                        <f:facet name="footer">
+                                            <h:outputText value="#{inpatientDirectIssueNativeSqlController.preBill.total}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </f:facet>
+                                    </p:column>
+                                    <p:column headerText="Service Charge" width="8em" class="text-end"
+                                              rendered="#{webUserController.hasPrivilege('ShowDrugCharges')}">
+                                        <h:outputText value="#{bid.marginValue}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                        <f:facet name="footer">
+                                            <h:outputText value="#{inpatientDirectIssueNativeSqlController.marginTotal}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </f:facet>
+                                    </p:column>
+                                    <p:column headerText="Discount" width="8em" class="text-end"
+                                              rendered="#{webUserController.hasPrivilege('ShowDrugCharges')}">
+                                        <h:outputText value="#{bid.discountValue}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                        <f:facet name="footer">
+                                            <h:outputText value="#{inpatientDirectIssueNativeSqlController.preBill.discount}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </f:facet>
+                                    </p:column>
+                                    <p:column headerText="Net Value" width="8em" class="text-end"
+                                              rendered="#{webUserController.hasPrivilege('ShowDrugCharges')}">
+                                        <h:outputText value="#{bid.netValue &lt; 0 ? -bid.netValue : bid.netValue}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputText>
                                         <f:facet name="footer">
@@ -450,10 +483,39 @@
                                             icon="fas fa-trash"
                                             value="Remove"
                                             action="#{inpatientDirectIssueNativeSqlController.removeBillItemData(bid)}"
-                                            update=":bill:pBillItems panelErrorMsg">
+                                            update=":bill:pBillItems :bill:pBillDetails panelErrorMsg">
                                         </p:commandButton>
                                     </p:column>
                                 </p:dataTable>
+                            </p:panel>
+
+                            <p:panel header="Bill Details" id="pBillDetails" class="my-1" rendered="#{webUserController.hasPrivilege('ShowDrugCharges')}">
+                                <div class="row">
+                                    <div class="col-6 fw-bold">Gross Total</div>
+                                    <div class="col-6 text-end">
+                                        <h:outputText value="#{inpatientDirectIssueNativeSqlController.preBill.total}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </div>
+                                    <div class="col-6 fw-bold">Service Charge</div>
+                                    <div class="col-6 text-end">
+                                        <h:outputText value="#{inpatientDirectIssueNativeSqlController.marginTotal}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </div>
+                                    <div class="col-6 fw-bold">Discount</div>
+                                    <div class="col-6 text-end">
+                                        <h:outputText value="#{inpatientDirectIssueNativeSqlController.preBill.discount}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </div>
+                                    <div class="col-6 fw-bold">Net Total</div>
+                                    <div class="col-6 text-end">
+                                        <h:outputText value="#{inpatientDirectIssueNativeSqlController.preBill.netTotal}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </div>
+                                </div>
                             </p:panel>
                         </div>
                     </div>
