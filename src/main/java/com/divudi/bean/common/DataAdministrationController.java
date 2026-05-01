@@ -5122,7 +5122,8 @@ public class DataAdministrationController implements Serializable {
                     + "AND pe.id != latest.keep_id "
                     + "AND pe.currentPatientRoom_id IS NOT NULL";
             patientEncounterFacade.executeNativeSql(sql);
-            JsfUtil.addSuccessMessage("Done. Old duplicate undischarged encounters have been discharged, keeping the latest per room.");
+            releaseCurrentRoomsOfDischargedEncounters();
+            JsfUtil.addSuccessMessage("Done. Old duplicate undischarged encounters have been discharged, and their current rooms have been released.");
         } catch (Exception e) {
             JsfUtil.addErrorMessage("Error: " + getExceptionMessage(e));
         }
@@ -5142,10 +5143,27 @@ public class DataAdministrationController implements Serializable {
                     + "WHERE discharged = 0 AND paymentFinalized = 0 "
                     + "AND createdAt < DATE_SUB(NOW(), INTERVAL " + staleEncounterDays + " DAY)";
             patientEncounterFacade.executeNativeSql(sql);
-            JsfUtil.addSuccessMessage("Done. Undischarged encounters older than " + staleEncounterDays + " days have been marked as discharged.");
+            releaseCurrentRoomsOfDischargedEncounters();
+            JsfUtil.addSuccessMessage("Done. Undischarged encounters older than " + staleEncounterDays + " days have been marked as discharged and their current rooms have been released.");
         } catch (Exception e) {
             JsfUtil.addErrorMessage("Error: " + getExceptionMessage(e));
         }
+    }
+
+    private void releaseCurrentRoomsOfDischargedEncounters() {
+        String pe = patientEncounterFacade.getTableName();
+        String pr = patientRoomFacade.getTableName();
+
+        String dischargeRoomsSql = "UPDATE " + pr + " prm "
+                + "JOIN " + pe + " pe ON pe.currentPatientRoom_id = prm.id "
+                + "SET prm.discharged = 1, prm.dischargedAt = NOW() "
+                + "WHERE pe.discharged = 1 AND prm.discharged = 0";
+        patientRoomFacade.executeNativeSql(dischargeRoomsSql);
+
+        String clearCurrentRoomSql = "UPDATE " + pe + " "
+                + "SET currentPatientRoom_id = NULL "
+                + "WHERE discharged = 1 AND currentPatientRoom_id IS NOT NULL";
+        patientEncounterFacade.executeNativeSql(clearCurrentRoomSql);
     }
 
     public int getStaleEncounterDays() {
