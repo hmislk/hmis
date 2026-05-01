@@ -276,7 +276,7 @@
                                         </h:panelGroup>
 
 
-                                        <h:panelGrid columns="3" >
+                                        <h:panelGrid columns="3" class="text-end">
                                             <h:outputLabel  value="Total Charges"/>
                                             <h:outputLabel value=":" class="mx-2"/>
                                             <h:outputLabel value="#{bhtSummeryController.grantTotal}" style="font-weight: bold">
@@ -358,7 +358,7 @@
                                         <p:outputLabel value="Charges" class="mx-2"/>
                                     </f:facet>
 
-                                    <p:dataTable 
+                                        <p:dataTable 
                                         id="sum"
                                         value="#{bhtSummeryController.chargeItemTotals}"
                                         var="c"
@@ -371,7 +371,7 @@
                                         <p:column headerText="Charge Type" rendered="#{c.total > 0}">
                                             <h:outputLabel value="#{bhtSummeryController.getChargeTypeLabel(c.inwardChargeType)}"/>
                                         </p:column>
-                                        <p:column  sortBy="#{c.total}"  headerText="Total" rendered="#{c.total > 0}">
+                                        <p:column  sortBy="#{c.total}"  headerText="Total" rendered="#{c.total > 0}" styleClass="text-end">
                                             <h:outputLabel value="#{c.total}" style="font-weight: bold">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
@@ -404,7 +404,7 @@
                                     </h:panelGroup>
                                     <h:panelGroup rendered="#{bhtSummeryController.patientEncounter.roomAdmitted}">
                                         <p:dataTable value="#{bhtSummeryController.patientRooms}" var="rm" style="min-width:10em;">
-                                            <p:column headerText="Room">
+                                            <p:column headerText="Room" styleClass="text-start">
                                                 <div class="d-flex align-items-center gap-2">
                                                     <h:outputLabel value="#{rm.roomFacilityCharge.name}" style="display: inline;"/>
                                                     <h:panelGroup rendered="#{rm.discharged}">
@@ -418,13 +418,13 @@
                                                     </h:panelGroup>
                                                 </div>
                                             </p:column>
-                                            <p:column headerText="Admission" style="min-width:10em;">
+                                            <p:column headerText="Admission" style="min-width:10em;" styleClass="text-start">
                                                 <h:outputText value="#{rm.admittedAt}">
                                                     <f:convertDateTime timeZone="Asia/Colombo"
                                                         pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
                                                 </h:outputText>
                                             </p:column>
-                                            <p:column headerText="Discharge" style="min-width:10em;">
+                                            <p:column headerText="Discharge" style="min-width:10em;" styleClass="text-start">
                                                 <h:panelGroup rendered="#{rm.dischargedAt ne null}">
                                                     <h:outputText value="#{rm.dischargedAt}">
                                                         <f:convertDateTime timeZone="Asia/Colombo"
@@ -435,47 +435,47 @@
                                                     <span class="text-muted fst-italic">—</span>
                                                 </h:panelGroup>
                                             </p:column>
-                                            <p:column headerText="Room" style="width: 5em; text-align: right;">
-                                                <h:outputLabel value="#{rm.calculatedRoomCharge}" style="text-align: center">
+                                            <p:column headerText="Room" style="width: 5em;" styleClass="text-end">
+                                                <h:outputLabel value="#{rm.calculatedRoomCharge}">
                                                     <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputLabel>
                                             </p:column>
-                                            <p:column headerText="Maintain" style="width: 5em; text-align: right;">
+                                            <p:column headerText="Maintain" style="width: 5em;" styleClass="text-end">
                                                 <h:outputLabel value="#{rm.calculatedMaintainCharge}">
                                                     <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputLabel>
                                             </p:column>
-                                            <p:column headerText="MO" style="width: 5em; text-align: right;">
+                                            <p:column headerText="MO" style="width: 5em;" styleClass="text-end">
                                                 <h:outputLabel value="#{rm.calculatedMoCharge}">
                                                     <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputLabel>
                                             </p:column>
-                                            <p:column headerText="Nursing" style="width: 5em; text-align: right;">
+                                            <p:column headerText="Nursing" style="width: 5em;" styleClass="text-end">
                                                 <h:outputLabel value="#{rm.calculatedNursingCharge}">
                                                     <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputLabel>
                                             </p:column>
-                                            <p:column headerText="Linen" style="width: 5em; text-align: right;">
+                                            <p:column headerText="Linen" style="width: 5em;" styleClass="text-end">
                                                 <h:outputLabel value="#{rm.calculatedLinenCharge}">
                                                     <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputLabel>
                                             </p:column>
-                                            <p:column headerText="Admin" style="width: 5em; text-align: right;">
+                                            <p:column headerText="Admin" style="width: 5em;" styleClass="text-end">
                                                 <h:outputLabel value="#{rm.calculatedAdministrationCharge}">
                                                     <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputLabel>
                                             </p:column>
-                                            <p:column headerText="Medical" style="width: 5em; text-align: right;">
+                                            <p:column headerText="Medical" style="width: 5em;" styleClass="text-end">
                                                 <h:outputLabel value="#{rm.calculatedMedicalCareCharge}">
                                                     <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputLabel>
                                             </p:column>
-                                            <p:column headerText="Discount" style="width: 5em; text-align: right;">
+                                            <p:column headerText="Discount" style="width: 5em;" styleClass="text-end">
                                                 <h:outputLabel value="#{rm.discountRoomCharge + rm.discountMaintainCharge + rm.discountLinenCharge + rm.discountNursingCharge + rm.discountMoCharge + rm.discountAdministrationCharge + rm.discountMedicalCareCharge}">
                                                     <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputLabel>
                                             </p:column>
-                                            <p:column headerText="Net" style="width: 5em; text-align: right;">
+                                            <p:column headerText="Net" style="width: 5em;" styleClass="text-end">
                                                 <h:outputLabel value="#{rm.adjustedRoomCharge + rm.adjustedMaintainCharge + rm.ajdustedLinenCharge + rm.ajdustedNursingCharge + rm.adjustedMoCharge + rm.ajdustedAdministrationCharge + rm.ajdustedMedicalCareCharge}">
                                                     <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputLabel>
@@ -485,11 +485,11 @@
                                 </p:tab>
 
                                 <p:tab id="tabTimed" title="Timed Service Details"  >
-                                    <p:dataTable  value="#{bhtSummeryController.patientItems}" var="pt">
-                                        <p:column headerText="Service Name">
+                                        <p:dataTable  value="#{bhtSummeryController.patientItems}" var="pt">
+                                        <p:column headerText="Service Name" styleClass="text-start">
                                             <h:outputLabel value="#{pt.item.name}"/>
                                         </p:column>
-                                        <p:column headerText="Start Time">
+                                        <p:column headerText="Start Time" styleClass="text-start">
                                             <p:datePicker 
                                                 showTime="true"
                                                 timeInput="true"
@@ -498,7 +498,7 @@
                                                 pattern="dd/MM/yyyy  hh:mm:ss a" >
                                             </p:datePicker>
                                         </p:column>
-                                        <p:column headerText="Stopped Time">
+                                        <p:column headerText="Stopped Time" styleClass="text-start">
                                             <p:datePicker 
                                                 showTime="true"
                                                 timeInput="true"
@@ -507,12 +507,12 @@
                                                 pattern="dd/MM/yyyy  hh:mm:ss a" >
                                             </p:datePicker>
                                         </p:column>
-                                        <p:column headerText="Total" >
+                                        <p:column headerText="Total" styleClass="text-end">
                                             <h:outputLabel value="#{pt.serviceValue}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
                                         </p:column>
-                                        <p:column headerText="Creator" >
+                                        <p:column headerText="Creator" styleClass="text-start" >
                                             <h:outputLabel value="#{pt.creater.webUserPerson.name}"/>
                                             <br/>
                                             <h:panelGroup rendered="#{ti.retired}" >
@@ -521,7 +521,7 @@
                                                 </h:outputLabel>
                                             </h:panelGroup>
                                         </p:column>
-                                        <p:column headerText="Inward Charge Type">
+                                        <p:column headerText="Inward Charge Type" styleClass="text-start">
                                             <h:outputLabel value="#{pt.item.inwardChargeType}"/>
                                         </p:column>
                                         <p:column >
@@ -583,19 +583,19 @@
                                             <f:facet name="header">
                                                 <h:outputLabel value="#{dep.department.name}"/>
                                             </f:facet>
-                                            <p:column>
+                                            <p:column styleClass="text-start">
                                                 <h:outputLabel value="#{ser.name}" rendered="#{ser.transBillItemCount ne 0}"/>
                                             </p:column>
-                                            <p:column>
+                                            <p:column styleClass="text-end">
                                                 <h:outputLabel value="#{ser.transBillItemCount}" rendered="#{ser.transBillItemCount ne 0}"/>
                                             </p:column>
-                                            <p:column>
+                                            <p:column styleClass="text-end">
                                                 <h:outputLabel value="#{ser.transCheckedCount}" rendered="#{ser.transBillItemCount ne 0}"/>
                                             </p:column>
-                                            <p:column>
+                                            <p:column styleClass="text-start">
                                                 <h:outputLabel value="#{ser.inwardChargeType}" rendered="#{ser.transBillItemCount ne 0}"/>
                                             </p:column>
-                                            <p:column>
+                                            <p:column styleClass="text-start">
                                                 <p:commandButton 
                                                     ajax="false" 
                                                     rendered="#{ser.transBillItemCount ne 0}"
@@ -1131,4 +1131,3 @@
         </ui:composition>
     </h:body>
 </html>
-
