@@ -57,11 +57,13 @@ public class CapabilityStatementResource {
                         "API Key",
                         "GET", "POST"))
                 .add(resource("Consultant", "/api/channel/consultant",
-                        "Create a new consultant via POST. Update an existing consultant by ID via PUT /api/channel/consultant/{id}. "
-                        + "Required field for POST: name. Optional: title, mobile, phone, fax, address, code, serialNo, "
+                        "List consultants via GET (supports query, page, size, specialityId). "
+                        + "Create a new consultant via POST with duplicate detection (returns already_exists/409 when matched by name+title). "
+                        + "Update an existing consultant by ID via PUT /api/channel/consultant/{id}. "
+                        + "Required field for POST: name. Optional: title, sex, mobile, phone, fax, address, code, serialNo, "
                         + "specialityId, institutionId, registration, qualification, description.",
                         "API Key (Token header)",
-                        "POST", "PUT"))
+                        "GET", "POST", "PUT"))
                 .add(resource("Doctor Speciality", "/api/channel/speciality",
                         "CRUD for DoctorSpeciality records. "
                         + "GET lists active specialities (supports ?query=&page=&size=). "
