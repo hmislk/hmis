@@ -187,6 +187,20 @@ public class AuditEventController implements Serializable {
         auditEventApplicationController.saveAuditEvent(auditEvent);
     }
 
+    public String navigateToAllAuditEventsForBill(Long billId) {
+        if (billId == null) {
+            return "/audit/all_audit_events?faces-redirect=true";
+        }
+        String jpql = "select a from AuditEvent a where a.objectId = :id order by a.id asc";
+        Map<String, Object> params = new HashMap<>();
+        params.put("id", billId);
+        items = getFacade().findByJpql(jpql, params);
+        if (items != null) {
+            items.forEach(AuditEvent::calculateDifference);
+        }
+        return "/audit/all_audit_events?faces-redirect=true";
+    }
+
     public void fillAllAuditEvents() {
         List<AuditEvent> list;
         String jpql;

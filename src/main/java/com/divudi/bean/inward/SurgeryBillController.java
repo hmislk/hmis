@@ -5,6 +5,7 @@
  */
 package com.divudi.bean.inward;
 
+import com.divudi.bean.common.AuditEventController;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.core.util.JsfUtil;
@@ -104,6 +105,8 @@ public class SurgeryBillController implements Serializable {
     private InwardBeanController inwardBean;
     @Inject
     BhtSummeryController bhtSummeryController;
+    @Inject
+    AuditEventController auditEventController;
 
     public InwardTimedItemController getInwardTimedItemController() {
         return inwardTimedItemController;
@@ -130,12 +133,12 @@ public class SurgeryBillController implements Serializable {
         resetSurgeryBillValues();
         getSurgeryBill().setPatientEncounter(pe1);
 
-        return "/theater/surgery_workbench?faces-redirect=true";
+        return "/theater/surgery_add?faces-redirect=true";
     }
 
     public String navigateToAddSurgeriesFromMenu() {
         resetSurgeryBillValues();
-        return "/theater/surgery_workbench?faces-redirect=true";
+        return "/theater/surgery_add?faces-redirect=true";
     }
 
     public String navigateToSurgeryListFromAdmissionProfile() {
@@ -150,6 +153,10 @@ public class SurgeryBillController implements Serializable {
         resetSurgeryBillValues();
         surgeryList = null;
         return "/theater/inward_bill_surgery_list?faces-redirect=true";
+    }
+
+    public String navigateToEditSurgery() {
+        return "/theater/surgery_edit?faces-redirect=true";
     }
 
     // -------------------------------------------------------------------------
@@ -558,19 +565,30 @@ public class SurgeryBillController implements Serializable {
         return performSave();
     }
 
-    public void edit(){
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
-
+    public String edit() {
         if (generalChecking()) {
-            return;
+            return null;
         }
+
+        String beforeName = (surgeryBill != null && surgeryBill.getProcedure() != null
+                && surgeryBill.getProcedure().getItem() != null)
+                ? surgeryBill.getProcedure().getItem().getName() : "";
+        String beforeJson = "{\"surgeryName\": \"" + beforeName.replace("\"", "\\\"") + "\"}";
+        Long billId = surgeryBill != null ? surgeryBill.getId() : null;
+        com.divudi.core.entity.AuditEvent auditEvent = auditEventController.createNewAuditEvent(
+                "Edit Surgery", beforeJson, billId);
 
         saveProcedure();
         saveSurgeryBill();
         getBillBean().updateBatchBill(getSurgeryBill());
-        JsfUtil.addSuccessMessage("Surgery Detail Added");
+
+        String afterName = (surgeryBill != null && surgeryBill.getProcedure() != null
+                && surgeryBill.getProcedure().getItem() != null)
+                ? surgeryBill.getProcedure().getItem().getName() : "";
+        String afterJson = "{\"surgeryName\": \"" + afterName.replace("\"", "\\\"") + "\"}";
+        auditEventController.completeAuditEvent(auditEvent, afterJson);
+
+        return auditEventController.navigateToAllAuditEventsForBill(billId);
     }
 
     /**
