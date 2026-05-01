@@ -57,11 +57,13 @@ public class CapabilityStatementResource {
                         "API Key",
                         "GET", "POST"))
                 .add(resource("Consultant", "/api/channel/consultant",
-                        "Create a new consultant via POST. Update an existing consultant by ID via PUT /api/channel/consultant/{id}. "
-                        + "Required field for POST: name. Optional: title, mobile, phone, fax, address, code, serialNo, "
+                        "List consultants via GET (supports query, page, size, specialityId). "
+                        + "Create a new consultant via POST with duplicate detection (returns already_exists/409 when matched by name+title). "
+                        + "Update an existing consultant by ID via PUT /api/channel/consultant/{id}. "
+                        + "Required field for POST: name. Optional: title, sex, mobile, phone, fax, address, code, serialNo, "
                         + "specialityId, institutionId, registration, qualification, description.",
                         "API Key (Token header)",
-                        "POST", "PUT"))
+                        "GET", "POST", "PUT"))
                 .add(resource("Doctor Speciality", "/api/channel/speciality",
                         "CRUD for DoctorSpeciality records. "
                         + "GET lists active specialities (supports ?query=&page=&size=). "
@@ -152,6 +154,7 @@ public class CapabilityStatementResource {
                 .add(resource("Inward Room Facility Charges", "/api/inward/room-facility-charges",
                         "Manage inward room facility charges / room fees (backs /inward/inward_room_facility.xhtml). "
                         + "Supports optional filters roomId and roomCategoryId. "
+                        + "departmentId is required on POST and may not be set to null on PUT. "
                         + "Charge fields: roomCharge, maintananceCharge, linenCharge, nursingCharge, "
                         + "moCharge, moChargeForAfterDuration, adminstrationCharge, medicalCareCharge. "
                         + "TimedItemFee fields: timedItemFeeDurationHours, timedItemFeeOverShootHours, "
@@ -224,6 +227,10 @@ public class CapabilityStatementResource {
                         "User role CRUD and role-level privilege assignment with optional department scope.",
                         "API Key",
                         "GET", "POST", "PUT", "DELETE"))
+                                .add(resource("Investigations", "/api/investigations",
+                        "Investigation master management including search, create, update, and activate/deactivate for item import workflows",
+                        "API Key",
+                        "GET", "POST", "PUT", "PATCH"))
                 .add(resource("Services", "/api/services",
                         "OPD and Inward service management including fees and categories",
                         "API Key",

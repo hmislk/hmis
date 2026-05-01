@@ -23,19 +23,41 @@
                     .atomic-column {
                         width: auto;
                     }
+                    .view-column {
+                        width: 70px;
+                        min-width: 70px;
+                        max-width: 70px;
+                        text-align: center;
+                    }
                 </style>
 
                 <h:form id="drillDownLevel2Form">
 
-                    <!-- Header / Back button -->
+                    <!-- Header / Back button + Export buttons -->
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h4 class="mb-0">F15 Drill-Down — Level 2 (Bill List)</h4>
-                        <p:commandButton
-                            value="Back to Level 1"
-                            icon="fa fa-arrow-left"
-                            ajax="false"
-                            styleClass="ui-button-secondary"
-                            action="#{pharmacyDailyStockDrillDownLevel2Controller.navigateBackToLevel1()}"/>
+                        <div class="d-flex gap-2">
+                            <p:commandButton
+                                value="Download Excel"
+                                icon="fa fa-file-excel-o"
+                                ajax="false"
+                                styleClass="ui-button-help"
+                                action="#{pharmacyDailyStockDrillDownLevel2Controller.downloadExcel()}"
+                                rendered="#{not empty pharmacyDailyStockDrillDownLevel2Controller.bills}"/>
+                            <p:commandButton
+                                value="Print"
+                                icon="fa fa-print"
+                                ajax="false"
+                                styleClass="ui-button-info"
+                                action="#{pharmacyDailyStockDrillDownLevel2Controller.navigateToPrintPage()}"
+                                rendered="#{not empty pharmacyDailyStockDrillDownLevel2Controller.bills}"/>
+                            <p:commandButton
+                                value="Back to Level 1"
+                                icon="fa fa-arrow-left"
+                                ajax="false"
+                                styleClass="ui-button-secondary"
+                                action="#{pharmacyDailyStockDrillDownLevel2Controller.navigateBackToLevel1()}"/>
+                        </div>
                     </div>
 
                     <!-- Selection Context -->
@@ -112,6 +134,7 @@
                                         <th class="text-end value-column">Retail Value</th>
                                         <th class="text-end value-column">Purchase Value</th>
                                         <th class="text-end value-column">Cost Value</th>
+                                        <th class="view-column">View</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -160,6 +183,14 @@
                                                     <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputText>
                                             </td>
+                                            <td class="view-column">
+                                                <p:commandLink
+                                                    action="#{pharmacyDailyStockDrillDownLevel2Controller.viewBill(bill)}"
+                                                    title="View bill"
+                                                    ajax="false">
+                                                    <h:outputText value="&#xf06e;" styleClass="fa text-primary"/>
+                                                </p:commandLink>
+                                            </td>
                                         </tr>
                                     </ui:repeat>
                                 </tbody>
@@ -202,6 +233,7 @@
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputText>
                                         </td>
+                                        <td class="view-column"></td>
                                     </tr>
                                 </tfoot>
                             </table>

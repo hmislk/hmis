@@ -874,15 +874,30 @@
                 <h:panelGroup layout="block" class="col-1 p-1"  rendered="#{ui.icon eq 'direct_issue_to_BHTs' and webUserController.hasPrivilege('PharmacySale')}">
                     <h:form>
                         <p:tooltip for="direct_issue_to_BHTs" value="Direct Issue to BHTs"  showDelay="0" hideDelay="0"></p:tooltip>
-                        <p:commandLink 
+                        <p:commandLink
                             id="direct_issue_to_BHTs"
-                            ajax="false" 
-                            action="/inward/pharmacy_bill_issue_bht?faces-redirect=true" 
-
+                            ajax="false"
+                            action="/inward/pharmacy_bill_issue_bht?faces-redirect=true"
                             actionListener="#{pharmacySaleBhtController.resetAll()}"
                             styleClass="svg-link" >
                             <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/pharmacy-default.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Direct Issue to BHTs" />
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup>
+
+                <!-- Direct Issue to BHTs (Native SQL) -->
+                <h:panelGroup layout="block" class="col-1 p-1"  rendered="#{ui.icon eq 'direct_issue_to_BHTs_native' and webUserController.hasPrivilege('PharmacySale')}">
+                    <h:form>
+                        <p:tooltip for="direct_issue_to_BHTs_native" value="Direct Issue to BHTs (Native SQL)"  showDelay="0" hideDelay="0"></p:tooltip>
+                        <p:commandLink
+                            id="direct_issue_to_BHTs_native"
+                            ajax="false"
+                            action="/inward/pharmacy_bill_issue_bht_native?faces-redirect=true"
+                            actionListener="#{inpatientDirectIssueNativeSqlController.resetAll()}"
+                            styleClass="svg-link" >
+                            <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/pharmacy-default.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Direct Issue to BHTs (Native SQL)" />
                         </p:commandLink>
                     </h:form>
                 </h:panelGroup>

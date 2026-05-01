@@ -5,227 +5,337 @@
                 xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns:p="http://primefaces.org/ui"
-                
                 xmlns:hr="http://xmlns.jcp.org/jsf/composite/autocomplete">
 
     <ui:define name="subContent">
-        <h:form>
-            <p:panel header="Staff Leave Entitle">
-                <h:panelGrid columns="2">
+        <h:panelGroup style="display: block; overflow-x: hidden; width: 100%;">
+            <h:form>
 
-                    <p:panel>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; align-items: start; min-width: 0;">
 
-                        <p:panelGrid columns="2" id="stfDetail" rendered="#{staffLeaveEntitleController.current.staff ne null}">
+                    <!-- LEFT: Staff Leave Entitle -->
+                    <div style="display: flex; flex-direction: column; gap: 1.25rem; min-width: 0;">
+
+                        <!-- Staff Detail summary (conditional) -->
+                        <p:panelGrid columns="2" id="stfDetail"
+                                     rendered="#{staffLeaveEntitleController.current.staff ne null}"
+                                     style="width: 100%;">
                             <f:facet name="header">
-                                <h:outputLabel value="Staff Detail"/>
+                                <h:outputLabel value="Staff Detail" />
                             </f:facet>
-                            <h:outputLabel value="Staff Joined Date"/>
+                            <h:outputLabel value="Staff Joined Date" />
                             <h:outputLabel value="#{staffLeaveEntitleController.current.staff.dateJoined}">
-                                <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                             </h:outputLabel>
-
-                            <h:outputLabel/>
-                            <h:panelGrid columns="3">
-                                <h:outputLabel value="Leave Entitle || "/>
-                                <h:outputLabel value="Leave Utilized || "/>
-                                <h:outputLabel value="Balance"/>
-                                <h:outputLabel value="#{staffLeaveEntitleController.leaveEntitle}"/>
-                                <h:outputLabel value="#{staffLeaveEntitleController.leaved}"/>
-                                <h:outputLabel value="#{staffLeaveEntitleController.leaveEntitle - staffLeaveEntitleController.leaved}"/>
-                            </h:panelGrid>
+                            <h:outputLabel value="Summary" />
+                            <div style="display: flex; gap: 1rem;">
+                                <div>
+                                    <h:outputLabel value="Leave Entitle" style="display: block; font-size: 0.8rem; color: #666;" />
+                                    <h:outputLabel value="#{staffLeaveEntitleController.leaveEntitle}" style="font-weight: bold;" />
+                                </div>
+                                <div>
+                                    <h:outputLabel value="Leave Utilized" style="display: block; font-size: 0.8rem; color: #666;" />
+                                    <h:outputLabel value="#{staffLeaveEntitleController.leaved}" style="font-weight: bold;" />
+                                </div>
+                                <div>
+                                    <h:outputLabel value="Balance" style="display: block; font-size: 0.8rem; color: #666;" />
+                                    <h:outputLabel value="#{staffLeaveEntitleController.leaveEntitle - staffLeaveEntitleController.leaved}" style="font-weight: bold;" />
+                                </div>
+                            </div>
                         </p:panelGrid>
 
+                        <!-- Entry form -->
                         <p:panel header="Staff Leave Entitle">
-                            <h:panelGrid columns="2">                            
-                                <h:outputLabel value="Staff : "/>
-                                <p:autoComplete   forceSelection="true" id="staff"
-                                                  value="#{staffLeaveEntitleController.current.staff}" 
-                                                  completeMethod="#{staffController.completeStaffCode}" 
-                                                  var="mys" 
-                                                  itemLabel="#{mys.person.nameWithTitle}" 
-                                                  itemValue="#{mys}"
-                                                  >   
-                                    <p:column headerText="Name">
-                                        #{mys.person.name}
-                                    </p:column>
-                                    <p:column headerText="Code">
-                                        #{mys.code}
-                                    </p:column>
-                                    <p:ajax event="itemSelect" process="@this staff" update="stfDetail"/>
-                                </p:autoComplete> 
-                                                               
+                            <div style="display: flex; flex-direction: column; gap: 1rem;">
 
+                                <div style="min-width: 0;">
+                                    <h:outputLabel value="Staff" style="display: block; margin-bottom: 4px;" />
+                                    <p:autoComplete
+                                        style="width: 100%;"
+                                        inputStyleClass="w-100"
+                                        forceSelection="true"
+                                        id="staff"
+                                        value="#{staffLeaveEntitleController.current.staff}"
+                                        completeMethod="#{staffController.completeStaffCode}"
+                                        var="mys"
+                                        itemLabel="#{mys.person.nameWithTitle}"
+                                        itemValue="#{mys}">
+                                        <p:column headerText="Name">
+                                            <h:outputLabel value="#{mys.person.name}" />
+                                        </p:column>
+                                        <p:column headerText="Code">
+                                            <h:outputLabel value="#{mys.code}" />
+                                        </p:column>
+                                        <p:ajax event="itemSelect" process="@this staff" update="stfDetail" />
+                                    </p:autoComplete>
+                                </div>
 
-                                <h:outputLabel value="From Date : "/>
-                                <p:calendar navigator="true" id="frmDate" value="#{staffLeaveEntitleController.current.fromDate}" pattern="#{sessionController.applicationPreference.shortDateFormat}">
-                                    <f:ajax execute="@this frmDate" event="dateSelect" render="stfDetail" listener="#{staffLeaveEntitleController.completeStaffDetail}"/>
-                                </p:calendar>
-                                
-                                <h:outputLabel value="To Date : "/>
-                                <p:calendar navigator="true" value="#{staffLeaveEntitleController.current.toDate}" pattern="#{sessionController.applicationPreference.shortDateFormat}">
-                                    <!--<f:ajax execute="@this" event="dateSelect" render="to" />-->
-                                </p:calendar>
-                                
-                                <h:outputLabel value="Leave Type : "/>
-                                <p:selectOneMenu value="#{staffLeaveEntitleController.current.leaveType}">
-                                    <f:selectItem itemLabel="Select Leave Type"/>
-                                    <f:selectItems value="#{enumController.leaveType}"/>
-                                </p:selectOneMenu>
-                                <h:outputLabel value="Entitle Days Per Year"/>
-                                <p:inputText value="#{staffLeaveEntitleController.current.count}"/>
-                                <p:commandButton id="btnAdd" ajax="false" value="Save" 
-                                                 action="#{staffLeaveEntitleController.saveSelected()}"/>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; min-width: 0;">
+                                    <div style="min-width: 0;">
+                                        <h:outputLabel value="From Date" style="display: block; margin-bottom: 4px;" />
+                                        <p:calendar inputStyleClass="w-100" style="width: 100%;"
+                                                    navigator="true" id="frmDate"
+                                                    value="#{staffLeaveEntitleController.current.fromDate}"
+                                                    pattern="#{sessionController.applicationPreference.shortDateFormat}">
+                                            <f:ajax execute="@this frmDate" event="dateSelect"
+                                                    render="stfDetail"
+                                                    listener="#{staffLeaveEntitleController.completeStaffDetail}" />
+                                        </p:calendar>
+                                    </div>
+                                    <div style="min-width: 0;">
+                                        <h:outputLabel value="To Date" style="display: block; margin-bottom: 4px;" />
+                                        <p:calendar inputStyleClass="w-100" style="width: 100%;"
+                                                    navigator="true"
+                                                    value="#{staffLeaveEntitleController.current.toDate}"
+                                                    pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                                    </div>
+                                </div>
 
-                                <p:commandButton ajax="false" value="Delete" 
-                                                 action="#{staffLeaveEntitleController.delete()}"/>
-                                
-                              
+                                <div style="min-width: 0;">
+                                    <h:outputLabel value="Leave Type" style="display: block; margin-bottom: 4px;" />
+                                    <p:selectOneMenu style="width: 100%;"
+                                                     value="#{staffLeaveEntitleController.current.leaveType}">
+                                        <f:selectItem itemLabel="Select Leave Type" />
+                                        <f:selectItems value="#{enumController.leaveType}" />
+                                    </p:selectOneMenu>
+                                </div>
 
-                            </h:panelGrid>
+                                <div style="min-width: 0;">
+                                    <h:outputLabel value="Entitle Days Per Year" style="display: block; margin-bottom: 4px;" />
+                                    <p:inputText style="width: 100%;"
+                                                 value="#{staffLeaveEntitleController.current.count}" />
+                                </div>
+
+                                <div style="display: flex; gap: 0.5rem; padding-top: 0.25rem;">
+                                    <p:commandButton
+                                        id="btnAdd"
+                                        value="Save"
+                                        styleClass="ui-button-warning"
+                                        style="flex: 1;"
+                                        ajax="false"
+                                        action="#{staffLeaveEntitleController.saveSelected()}" />
+                                    <p:commandButton
+                                        value="Delete"
+                                        styleClass="ui-button-danger"
+                                        style="flex: 1;"
+                                        ajax="false"
+                                        action="#{staffLeaveEntitleController.delete()}" />
+                                </div>
+
+                            </div>
                         </p:panel>
 
+                    </div>
+
+                    <!-- RIGHT: Search Forms -->
+                    <p:panel header="Search Forms" style="min-width: 0;">
+                        <div style="display: flex; flex-direction: column; gap: 1rem;">
+
+                            <div>
+                                <h:outputLabel value="Staff" style="display: block; margin-bottom: 4px;" />
+                                <hr:completeStaff value="#{staffLeaveEntitleController.staff}" />
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; min-width: 0;">
+                                <div style="min-width: 0;">
+                                    <h:outputLabel value="From Date" style="display: block; margin-bottom: 4px;" />
+                                    <p:calendar inputStyleClass="w-100" style="width: 100%;"
+                                                id="frm" value="#{staffLeaveEntitleController.fromDate}" />
+                                </div>
+                                <div style="min-width: 0;">
+                                    <h:outputLabel value="To Date" style="display: block; margin-bottom: 4px;" />
+                                    <p:calendar inputStyleClass="w-100" style="width: 100%;"
+                                                id="to" value="#{staffLeaveEntitleController.toDate}" />
+                                </div>
+                            </div>
+
+                            <div style="min-width: 0;">
+                                <h:outputLabel value="Leave Type" style="display: block; margin-bottom: 4px;" />
+                                <p:selectOneMenu style="width: 100%;"
+                                                 value="#{staffLeaveEntitleController.leaveType}">
+                                    <f:selectItem itemLabel="Select Leave Type" />
+                                    <f:selectItems value="#{enumController.leaveType}" />
+                                </p:selectOneMenu>
+                            </div>
+
+                            <div style="display: flex; gap: 0.5rem; padding-top: 0.25rem;">
+                                <p:commandButton
+                                    ajax="false"
+                                    value="Search"
+                                    styleClass="ui-button-warning"
+                                    style="flex: 1;"
+                                    action="#{staffLeaveEntitleController.createItems()}" />
+                                <p:commandButton
+                                    ajax="false"
+                                    value="Reset"
+                                    styleClass="ui-button-secondary"
+                                    style="flex: 1;"
+                                    action="#{staffLeaveEntitleController.resetDate()}" />
+                                <p:commandButton
+                                    ajax="false"
+                                    value="Back to Leave Form"
+                                    styleClass="ui-button-info"
+                                    style="flex: 1;"
+                                    action="hr_form_staff_leave" />
+                            </div>
+
+                            <p:dataTable
+                                value="#{staffLeaveEntitleController.selectedItems}"
+                                var="add"
+                                scrollable="true"
+                                scrollHeight="300"
+                                scrollWidth="100%"
+                                style="table-layout: fixed; width: 100%;">
+
+                                <p:column headerText="View" style="width: 5rem;" exportable="false">
+                                    <p:commandButton ajax="false" value="View"
+                                                     styleClass="ui-button-info"
+                                                     style="padding: 0.25rem 0.4rem; font-size: 0.82rem;">
+                                        <f:ajax execute="@this" render="@all" />
+                                        <f:setPropertyActionListener target="#{staffLeaveEntitleController.current}" value="#{add}" />
+                                    </p:commandButton>
+                                </p:column>
+                                <p:column headerText="From" style="width: 7rem;">
+                                    <h:outputLabel value="#{add.fromDate}" />
+                                </p:column>
+                                <p:column headerText="To" style="width: 7rem;">
+                                    <h:outputLabel value="#{add.toDate}" />
+                                </p:column>
+                                <p:column headerText="Staff">
+                                    <p:outputLabel value="#{add.staff.person.nameWithTitle}" />
+                                </p:column>
+                                <p:column headerText="Leave Type" style="width: 8rem;">
+                                    <p:outputLabel value="#{add.leaveType}" />
+                                </p:column>
+                                <p:column headerText="Count" style="width: 5rem;">
+                                    <p:outputLabel value="#{add.count}" />
+                                </p:column>
+
+                            </p:dataTable>
+
+                        </div>
                     </p:panel>
 
-                    <p:panel header="Search Forms">
-                        <h:panelGrid columns="2">                           
-                            <h:outputLabel value="Staff : "/>
-                            <hr:completeStaff value="#{staffLeaveEntitleController.staff}"/>   
-                            <h:outputLabel value="From Date : "/>
-                            <p:calendar id="frm" value="#{staffLeaveEntitleController.fromDate}"/>
-                            <h:outputLabel value="To Date : "/>
-                            <p:calendar id="to" value="#{staffLeaveEntitleController.toDate}"/>
-                            <h:outputLabel value="Leave Type : "/>
-                            <p:selectOneMenu value="#{staffLeaveEntitleController.leaveType}">
-                                <f:selectItem itemLabel="Select Leave Type"/>
-                                <f:selectItems value="#{enumController.leaveType}"/>
-                            </p:selectOneMenu>                                                       
-                        </h:panelGrid>
-                        <p:commandButton ajax="false" value="Search " action="#{staffLeaveEntitleController.createItems()}" />                            
-                        <p:commandButton ajax="false" value="Reset " action="#{staffLeaveEntitleController.resetDate()}" />
-                        <p:commandButton ajax="false" value="Back to Leave Form" action="hr_form_staff_leave" />
+                </div>
 
-                        <p:dataTable value="#{staffLeaveEntitleController.selectedItems}" var="add" 
-                                     scrollable="true"
-                                     scrollHeight="300" >
-                            <p:column headerText="View" >
-                                <p:commandButton ajax="false" value="View">
-                                    <f:ajax execute="@this" render="@all"/> 
-                                    <f:setPropertyActionListener target="#{staffLeaveEntitleController.current}" value="#{add}"/>
-                                </p:commandButton>
-                            </p:column>
-                            <p:column headerText="From">
-                                #{add.fromDate}
-                            </p:column>
-                            <p:column headerText="To">
-                                #{add.toDate}
-                            </p:column>
-                            <p:column headerText="Staff">
-                                <p:outputLabel value="#{add.staff.person.nameWithTitle}" ></p:outputLabel>
-                            </p:column>                          
-                            <p:column headerText="Leave Type">
-                                <p:outputLabel value="#{add.leaveType}" ></p:outputLabel>
-                            </p:column>                          
-                            <p:column headerText="Count">
-                                <p:outputLabel value="#{add.count}" ></p:outputLabel>
-                            </p:column> 
+                <p:spacer height="20" />
 
-                        </p:dataTable>
-                    </p:panel>
-                </h:panelGrid>
-
+                <!-- Bottom: All Items -->
                 <p:panel header="Forms">
-                    <h:panelGrid columns="3">                           
-                        <p:commandButton ajax="false" value="Search " action="#{staffLeaveEntitleController.createAllItems()}" /> 
-                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton"  >
-                            <p:dataExporter type="xlsx" target="tb4" fileName="hr_staff_leave_entitle"  />
+                    <div style="display: flex; gap: 0.5rem; padding-bottom: 1rem;">
+                        <p:commandButton
+                            ajax="false"
+                            value="Search"
+                            styleClass="ui-button-warning"
+                            action="#{staffLeaveEntitleController.createAllItems()}" />
+                        <p:commandButton
+                            ajax="false"
+                            value="Excel"
+                            styleClass="ui-button-success noPrintButton">
+                            <p:dataExporter type="xlsx" target="tb4" fileName="hr_staff_leave_entitle" />
                         </p:commandButton>
-                        <p:commandButton value="Print" ajax="false" action="#" >
-                            <p:printer target="staffleaveentitie" ></p:printer>
+                        <p:commandButton
+                            value="Print"
+                            styleClass="ui-button-info"
+                            ajax="false"
+                            action="#">
+                            <p:printer target="staffleaveentitie" />
                         </p:commandButton>
-                    </h:panelGrid>
-                    <p:panel  id="staffleaveentitie">
-                        <p:dataTable value="#{staffLeaveEntitleController.selectedAllItems}" var="add" id="tb4">
+                    </div>
 
-                            <p:column headerText="From Date">
+                    <p:panel id="staffleaveentitie">
+                        <p:dataTable
+                            id="tb4"
+                            value="#{staffLeaveEntitleController.selectedAllItems}"
+                            var="add"
+                            scrollable="true"
+                            scrollWidth="100%"
+                            style="table-layout: fixed; width: 100%;">
+
+                            <p:column headerText="From Date" style="width: 10rem;">
                                 <f:facet name="header">
-                                    <h:outputLabel value="From Date"  />
+                                    <h:outputLabel value="From Date" />
                                 </f:facet>
                                 <h:outputLabel value="#{add.fromDate}">
-                                    <f:convertDateTime pattern="dd/MM/yyyy HH:mm:ss"/>
+                                    <f:convertDateTime pattern="dd/MM/yyyy HH:mm:ss" />
                                 </h:outputLabel>
                             </p:column>
 
-                            <p:column headerText="To Date">
+                            <p:column headerText="To Date" style="width: 10rem;">
                                 <f:facet name="header">
-                                    <h:outputLabel value="To Date"  />
+                                    <h:outputLabel value="To Date" />
                                 </f:facet>
                                 <h:outputLabel value="#{add.toDate}">
-                                    <f:convertDateTime pattern="dd/MM/yyyy HH:mm:ss"/>
+                                    <f:convertDateTime pattern="dd/MM/yyyy HH:mm:ss" />
                                 </h:outputLabel>
                             </p:column>
-                            
-                            <p:column headerText="Create Date">
+
+                            <p:column headerText="Create Date" style="width: 10rem;">
                                 <f:facet name="header">
-                                    <h:outputLabel value="Create Date"  />
+                                    <h:outputLabel value="Create Date" />
                                 </f:facet>
                                 <h:outputLabel value="#{add.createdAt}">
-                                    <f:convertDateTime pattern="dd/MM/yyyy HH:mm:ss"/>
+                                    <f:convertDateTime pattern="dd/MM/yyyy HH:mm:ss" />
                                 </h:outputLabel>
                             </p:column>
 
-                            <p:column headerText="Staff">
+                            <p:column headerText="Staff" style="width: 6rem;">
                                 <f:facet name="header">
-                                    <h:outputLabel value="Staff"  />
+                                    <h:outputLabel value="Staff" />
                                 </f:facet>
-                                <p:outputLabel value="#{add.staff.code}" style="color: red;" rendered="#{add.leaveType eq 'Annual' and add.count ne 14}" ></p:outputLabel>
-                                <p:outputLabel value="#{add.staff.code}" style="color: green;" rendered="#{add.leaveType eq 'Casual' and add.count ne 7}" ></p:outputLabel>
-                                <p:outputLabel value="#{add.staff.code}" style="color: purple;" rendered="#{add.leaveType eq 'Medical' and add.count ne 14}" ></p:outputLabel>
-                                <p:outputLabel value="#{add.staff.code}" style="color: blue;" rendered="#{add.leaveType eq 'Maternity1st' and add.count ne 84}" ></p:outputLabel>
-                                <p:outputLabel value="#{add.staff.code}" style="color: orangered;" rendered="#{add.leaveType eq 'Maternity2nd' and add.count ne 42}" ></p:outputLabel>
-                                <p:outputLabel value="#{add.staff.code}" style="color: black;" rendered="#{add.leaveType eq 'AnnualHalf' and add.count ne 2}" ></p:outputLabel>
+                                <p:outputLabel value="#{add.staff.code}" style="color: red;"       rendered="#{add.leaveType eq 'Annual'     and add.count ne 14}" />
+                                <p:outputLabel value="#{add.staff.code}" style="color: green;"     rendered="#{add.leaveType eq 'Casual'      and add.count ne 7}" />
+                                <p:outputLabel value="#{add.staff.code}" style="color: purple;"    rendered="#{add.leaveType eq 'Medical'     and add.count ne 14}" />
+                                <p:outputLabel value="#{add.staff.code}" style="color: blue;"      rendered="#{add.leaveType eq 'Maternity1st' and add.count ne 84}" />
+                                <p:outputLabel value="#{add.staff.code}" style="color: orangered;" rendered="#{add.leaveType eq 'Maternity2nd' and add.count ne 42}" />
+                                <p:outputLabel value="#{add.staff.code}" style="color: black;"     rendered="#{add.leaveType eq 'AnnualHalf'  and add.count ne 2}" />
+                                <p:outputLabel value="#{add.staff.code}" rendered="#{add.leaveType eq 'Annual'      and add.count eq 14}" />
+                                <p:outputLabel value="#{add.staff.code}" rendered="#{add.leaveType eq 'Casual'      and add.count eq 7}" />
+                                <p:outputLabel value="#{add.staff.code}" rendered="#{add.leaveType eq 'Medical'     and add.count eq 14}" />
+                                <p:outputLabel value="#{add.staff.code}" rendered="#{add.leaveType eq 'Maternity1st' and add.count eq 84}" />
+                                <p:outputLabel value="#{add.staff.code}" rendered="#{add.leaveType eq 'Maternity2nd' and add.count eq 42}" />
+                                <p:outputLabel value="#{add.staff.code}" rendered="#{add.leaveType eq 'AnnualHalf'  and add.count eq 2}" />
+                            </p:column>
 
-                                <p:outputLabel value="#{add.staff.code}" rendered="#{add.leaveType eq 'Annual' and add.count eq 14}" ></p:outputLabel>
-                                <p:outputLabel value="#{add.staff.code}" rendered="#{add.leaveType eq 'Casual' and add.count eq 7}" ></p:outputLabel>
-                                <p:outputLabel value="#{add.staff.code}" rendered="#{add.leaveType eq 'Medical' and add.count eq 14}" ></p:outputLabel>
-                                <p:outputLabel value="#{add.staff.code}" rendered="#{add.leaveType eq 'Maternity1st' and add.count eq 84}" ></p:outputLabel>
-                                <p:outputLabel value="#{add.staff.code}" rendered="#{add.leaveType eq 'Maternity2nd' and add.count eq 42}" ></p:outputLabel>
-                                <p:outputLabel value="#{add.staff.code}" rendered="#{add.leaveType eq 'AnnualHalf' and add.count eq 2}" ></p:outputLabel>
+                            <p:column headerText="Leave Type" style="width: 8rem;">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Leave Type" />
+                                </f:facet>
+                                <p:outputLabel value="#{add.leaveType}" style="color: red;"       rendered="#{add.leaveType eq 'Annual'}" />
+                                <p:outputLabel value="#{add.leaveType}" style="color: green;"     rendered="#{add.leaveType eq 'Casual'}" />
+                                <p:outputLabel value="#{add.leaveType}" style="color: purple;"    rendered="#{add.leaveType eq 'Medical'}" />
+                                <p:outputLabel value="#{add.leaveType}" style="color: blue;"      rendered="#{add.leaveType eq 'Maternity1st'}" />
+                                <p:outputLabel value="#{add.leaveType}" style="color: orangered;" rendered="#{add.leaveType eq 'Maternity2nd'}" />
+                                <p:outputLabel value="#{add.leaveType}" style="color: black;"     rendered="#{add.leaveType eq 'AnnualHalf'}" />
                             </p:column>
-                            <p:column headerText="Leave Type">
+
+                            <p:column headerText="Count" style="width: 5rem;">
                                 <f:facet name="header">
-                                    <h:outputLabel value="Leave Type"  />
+                                    <h:outputLabel value="Count" />
                                 </f:facet>
-                                <p:outputLabel value="#{add.leaveType}" style="color: red;" rendered="#{add.leaveType eq 'Annual'}" ></p:outputLabel>
-                                <p:outputLabel value="#{add.leaveType}" style="color: green;" rendered="#{add.leaveType eq 'Casual'}" ></p:outputLabel>
-                                <p:outputLabel value="#{add.leaveType}" style="color: purple;" rendered="#{add.leaveType eq 'Medical'}" ></p:outputLabel>
-                                <p:outputLabel value="#{add.leaveType}" style="color: blue;" rendered="#{add.leaveType eq 'Maternity1st'}" ></p:outputLabel>
-                                <p:outputLabel value="#{add.leaveType}" style="color: orangered;" rendered="#{add.leaveType eq 'Maternity2nd'}" ></p:outputLabel>
-                                <p:outputLabel value="#{add.leaveType}" style="color: black;" rendered="#{add.leaveType eq 'AnnualHalf'}" ></p:outputLabel>
-                            </p:column>                          
-                            <p:column headerText="Count">
-                                <f:facet name="header">
-                                    <h:outputLabel value="Count"  />
-                                </f:facet>
-                                <p:outputLabel value="#{add.count}"></p:outputLabel>
-                            </p:column> 
+                                <p:outputLabel value="#{add.count}" />
+                            </p:column>
+
                             <p:column headerText="Staff">
                                 <f:facet name="header">
-                                    <h:outputLabel value="Staff"  />
+                                    <h:outputLabel value="Staff" />
                                 </f:facet>
-                                <p:outputLabel value="#{add.staff.person.nameWithTitle}" ></p:outputLabel>
+                                <p:outputLabel value="#{add.staff.person.nameWithTitle}" />
                             </p:column>
-                            <p:column headerText="Creator">
+
+                            <p:column headerText="Creator" style="width: 9rem;">
                                 <f:facet name="header">
-                                    <h:outputLabel value="Creator"  />
+                                    <h:outputLabel value="Creator" />
                                 </f:facet>
-                                <p:outputLabel value="#{add.creater.webUserPerson.name}"></p:outputLabel>
-                            </p:column> 
+                                <p:outputLabel value="#{add.creater.webUserPerson.name}" />
+                            </p:column>
+
                         </p:dataTable>
-                    </p:panel>   
+                    </p:panel>
                 </p:panel>
 
-            </p:panel>
-        </h:form>
-    </ui:define> 
+            </h:form>
+        </h:panelGroup>
+    </ui:define>
 
 </ui:composition>

@@ -144,7 +144,7 @@ public class ChannelSpecialityApi {
                     .entity(errorResponse(400, "name is required").toString()).build();
         }
 
-        String dupJpql = "select d from DoctorSpeciality d where d.retired = false and d.name = :n";
+        String dupJpql = "select d from DoctorSpeciality d where d.retired = false and upper(d.name) = upper(:n)";
         Map<String, Object> dupParams = new HashMap<>();
         dupParams.put("n", name);
         List<DoctorSpeciality> existing = doctorSpecialityFacade.findByJpql(dupJpql, dupParams);
@@ -214,7 +214,7 @@ public class ChannelSpecialityApi {
                 String newName = v.toString().trim();
                 if (!newName.equalsIgnoreCase(ds.getName())) {
                     String dupJpql = "select d from DoctorSpeciality d"
-                            + " where d.retired = false and d.id <> :id and d.name = :n";
+                            + " where d.retired = false and d.id <> :id and upper(d.name) = upper(:n)";
                     Map<String, Object> dupParams = new HashMap<>();
                     dupParams.put("id", id);
                     dupParams.put("n", newName);

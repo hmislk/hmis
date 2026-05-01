@@ -1,0 +1,106 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common">
+
+    <ui:define name="content">
+        <h:panelGroup styleClass="opdPanel">
+            <h:form id="form">
+                <p:growl id="msgs"/>
+
+                <p:panel>
+                    <f:facet name="header">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h:outputText styleClass="fa-solid fa-pen-to-square fa-lg"/>
+                                <p:outputLabel value="Edit Surgery" class="m-2"/>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <p:commandButton
+                                    value="Surgery Dashboard"
+                                    icon="fa fa-scissors"
+                                    class="ui-button-secondary"
+                                    ajax="false"
+                                    action="/theater/surgery_workbench?faces-redirect=true"/>
+
+                                <h:panelGroup rendered="#{webUserController.hasPrivilege('InwardSearch')}">
+                                    <p:commandButton
+                                        value="Inpatient Dashboard"
+                                        icon="fa fa-id-card"
+                                        class="ui-button-secondary"
+                                        ajax="false"
+                                        action="#{admissionController.navigateToAdmissionProfilePage}">
+                                        <f:setPropertyActionListener
+                                            value="#{surgeryBillController.surgeryBill.patientEncounter}"
+                                            target="#{admissionController.current}"/>
+                                    </p:commandButton>
+                                </h:panelGroup>
+
+                                <p:commandButton
+                                    value="Patient Profile"
+                                    icon="fa fa-user"
+                                    class="ui-button-secondary"
+                                    ajax="false"
+                                    action="#{patientController.navigateToOpdPatientProfile()}">
+                                    <f:setPropertyActionListener
+                                        value="#{surgeryBillController.surgeryBill.patientEncounter.patient}"
+                                        target="#{patientController.current}"/>
+                                </p:commandButton>
+                            </div>
+                        </div>
+                    </f:facet>
+
+                    <div class="row">
+                        <!-- Column 1: Patient and Admission details -->
+                        <div class="col-4">
+                            <common:patient_details_view patient="#{surgeryBillController.surgeryBill.patientEncounter.patient}"/>
+                            <common:admission_details admission="#{surgeryBillController.surgeryBill.patientEncounter}"/>
+                        </div>
+
+                        <!-- Column 2: Edit form -->
+                        <div class="col-8">
+                            <p:panel class="m-1">
+                                <f:facet name="header">
+                                    <h:outputText styleClass="fa-solid fa-pen-to-square"/>
+                                    <h:outputLabel value="Edit Surgery" class="mx-4"/>
+                                </f:facet>
+
+                                <div class="row m-1">
+                                    <div class="col-4">
+                                        <h:outputLabel value="Surgery Name"/>
+                                    </div>
+                                    <div class="col-8">
+                                        <p:autoComplete
+                                            forceSelection="true"
+                                            value="#{surgeryBillController.surgeryBill.procedure.item}"
+                                            completeMethod="#{procedureController.completeProcedures}"
+                                            var="apt2"
+                                            itemLabel="#{apt2.name}"
+                                            itemValue="#{apt2}"
+                                            size="40"/>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex gap-2 m-2">
+                                    <p:commandButton
+                                        value="Save Edit"
+                                        icon="fa fa-save"
+                                        class="ui-button-success"
+                                        action="#{surgeryBillController.edit()}"
+                                        ajax="false"
+                                        disabled="#{surgeryBillController.surgeryBill.patientEncounter.paymentFinalized}"/>
+                                </div>
+                            </p:panel>
+                        </div>
+                    </div>
+                </p:panel>
+
+            </h:form>
+        </h:panelGroup>
+    </ui:define>
+</ui:composition>
