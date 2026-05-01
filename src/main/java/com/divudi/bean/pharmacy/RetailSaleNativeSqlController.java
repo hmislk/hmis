@@ -476,8 +476,8 @@ public class RetailSaleNativeSqlController implements Serializable, ControllerWi
         // Bill identity
         pbd.setBillNo(bill.getDeptId());
         pbd.setCreatedAt(bill.getCreatedAt());
-        if (bill.getCreater() != null && bill.getCreater().getPerson() != null) {
-            pbd.setCreatorName(bill.getCreater().getPerson().getName());
+        if (bill.getCreater() != null) {
+            pbd.setCreatorName(bill.getCreater().getName());
         }
 
         // Patient
@@ -499,7 +499,7 @@ public class RetailSaleNativeSqlController implements Serializable, ControllerWi
         if (toStaff != null && toStaff.getPerson() != null) {
             pbd.setToStaffName(toStaff.getPerson().getNameWithTitle());
         }
-        if (paymentMethod == com.divudi.core.data.PaymentMethod.Credit
+        if (paymentMethod == PaymentMethod.Credit
                 && getPaymentMethodData().getCredit().getInstitution() != null) {
             pbd.setToInstitutionName(getPaymentMethodData().getCredit().getInstitution().getName());
         }
