@@ -7760,6 +7760,15 @@ public class FinancialTransactionController implements Serializable {
             JsfUtil.addSuccessMessage("Shift shortage recorded successfully.");
             return "/cashier/record_shift_shortage_print?faces-redirect=true";
         } catch (Exception e) {
+            // If the bill was persisted but the payment failed, cancel the bill so it
+            // does not appear as an unmatched record in shortage searches.
+            if (currentBill != null && currentBill.getId() != null) {
+                try {
+                    currentBill.setCancelled(true);
+                    billController.save(currentBill);
+                } catch (Exception ignore) {
+                }
+            }
             JsfUtil.addErrorMessage("Failed to record shift shortage: " + e.getMessage());
             return "";
         } finally {
