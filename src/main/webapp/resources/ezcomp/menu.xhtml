@@ -962,6 +962,13 @@
                             rendered="#{webUserController.hasPrivilege('PharmacySale') and configOptionApplicationController.getBooleanValueByKey('Pharmacy Retail Sale - By Batch Search', true)}" ></p:menuitem>
                         <p:menuitem
                             ajax="false"
+                            action="/pharmacy/pharmacy_bill_retail_sale_native?faces-redirect=true"
+                            actionListener="#{retailSaleNativeSqlController.resetAll()}"
+                            value="Sale by Batch (Fast)"
+                            icon="fas fa-bolt"
+                            rendered="#{webUserController.hasPrivilege('PharmacySale')}" ></p:menuitem>
+                        <p:menuitem
+                            ajax="false"
                             action="/pharmacy/pharmacy_fast_retail_sale?faces-redirect=true"
                             actionListener="#{pharmacyFastRetailSaleController.resetAll()}"
                             value="Sale by Item"

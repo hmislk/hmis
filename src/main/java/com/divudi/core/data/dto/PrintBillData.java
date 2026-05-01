@@ -19,6 +19,10 @@ public class PrintBillData implements Serializable {
     private String billNo;
     private Date createdAt;
     private double netTotal;
+    private String paymentMethodLabel;
+    private String comment;
+    private double cashPaid;
+    private double balance;
 
     public String getDepartmentName() { return departmentName; }
     public void setDepartmentName(String departmentName) { this.departmentName = departmentName; }
@@ -55,4 +59,16 @@ public class PrintBillData implements Serializable {
 
     public double getNetTotal() { return netTotal; }
     public void setNetTotal(double netTotal) { this.netTotal = netTotal; }
+
+    public String getPaymentMethodLabel() { return paymentMethodLabel; }
+    public void setPaymentMethodLabel(String paymentMethodLabel) { this.paymentMethodLabel = paymentMethodLabel; }
+
+    public String getComment() { return comment; }
+    public void setComment(String comment) { this.comment = comment; }
+
+    public double getCashPaid() { return cashPaid; }
+    public void setCashPaid(double cashPaid) { this.cashPaid = cashPaid; }
+
+    public double getBalance() { return balance; }
+    public void setBalance(double balance) { this.balance = balance; }
 }
