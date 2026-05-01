@@ -559,6 +559,50 @@ public class AnthropicApiService implements Serializable {
                         .add("required", Json.createArrayBuilder().add("method")))
                 .build();
 
+        JsonObject manageInvestigationsTool = Json.createObjectBuilder()
+                .add("name", "manage_investigations")
+                .add("description",
+                        "Search, retrieve, create, update, activate, or deactivate investigation master records "
+                        + "(lab/diagnostic tests such as CBC, blood gas, PCR, X-ray when managed as investigations). "
+                        + "Use GET to search by name/code/printName. Use POST to create a new investigation (returns "
+                        + "already_exists with the existing id if a duplicate name is found). Use PUT to update metadata. "
+                        + "Use ACTIVATE/DEACTIVATE to toggle the inactive flag.")
+                .add("input_schema", Json.createObjectBuilder()
+                        .add("type", "object")
+                        .add("properties", Json.createObjectBuilder()
+                                .add("method", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Operation: GET=search, GET_BY_ID=fetch one, POST=create, PUT=update, ACTIVATE=set inactive=false, DEACTIVATE=set inactive=true. Required."))
+                                .add("id", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Investigation ID. Required for GET_BY_ID, PUT, ACTIVATE, DEACTIVATE."))
+                                .add("query", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Search text matched against name, code, and printName (case-insensitive). Used with GET."))
+                                .add("inactive", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Filter by active/inactive status: 'true' or 'false'. Omit to return both. Used with GET."))
+                                .add("limit", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Max results to return (1–100). Defaults to 20. Used with GET."))
+                                .add("name", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Investigation name. Required for POST; optional for PUT."))
+                                .add("code", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Short code. Auto-generated from name if omitted on POST. Optional for PUT."))
+                                .add("printName", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Print/display name shown on reports and bills. Optional."))
+                                .add("reportType", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "InvestigationReportType enum value (e.g. General). Optional."))
+                                .add("bypassSampleWorkflow", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "'true' to skip sample collection and allow direct result entry after billing. Optional.")))
+                        .add("required", Json.createArrayBuilder().add("method")))
+                .build();
+
         return Json.createArrayBuilder()
                 .add(searchCodeTool)
                 .add(fetchFileTool)
@@ -567,21 +611,7 @@ public class AnthropicApiService implements Serializable {
                 .add(collectingCentreFeesTool)
                 .add(inwardDiscountMatrixTool)
                 .add(inwardRoomsTool)
-                .add(Json.createObjectBuilder()
-                .add("name", "manage_investigations")
-                .add("description", "Manage investigation master records: search, get, create, update, activate, deactivate.")
-                .add("input_schema", Json.createObjectBuilder().add("type", "object").add("properties", Json.createObjectBuilder()
-                    .add("method", Json.createObjectBuilder().add("type", "string").add("description", "GET|GET_BY_ID|POST|PUT|ACTIVATE|DEACTIVATE"))
-                    .add("id", Json.createObjectBuilder().add("type", "string"))
-                    .add("query", Json.createObjectBuilder().add("type", "string"))
-                    .add("inactive", Json.createObjectBuilder().add("type", "string"))
-                    .add("limit", Json.createObjectBuilder().add("type", "string"))
-                    .add("name", Json.createObjectBuilder().add("type", "string"))
-                    .add("code", Json.createObjectBuilder().add("type", "string"))
-                    .add("printName", Json.createObjectBuilder().add("type", "string"))
-                    .add("reportType", Json.createObjectBuilder().add("type", "string"))
-                    .add("bypassSampleWorkflow", Json.createObjectBuilder().add("type", "string"))
-                ).add("required", Json.createArrayBuilder().add("method"))).build())
+                .add(manageInvestigationsTool)
                 .build();
     }
 
@@ -662,7 +692,7 @@ public class AnthropicApiService implements Serializable {
                             admissionTypeId, paymentSchemeId, paymentMethodStr, discountPercent,
                             query, limit, retireComments, hmisBaseUrl, hmisApiKey);
                 }
-                                case "manage_investigations": {
+                case "manage_investigations": {
                     String method = toolInput.getString("method", "GET");
                     String id = toolInput.containsKey("id") ? toolInput.getString("id", "") : "";
                     String query = toolInput.containsKey("query") ? toolInput.getString("query", "") : "";
@@ -673,9 +703,9 @@ public class AnthropicApiService implements Serializable {
                     String printName = toolInput.containsKey("printName") ? toolInput.getString("printName", "") : "";
                     String reportType = toolInput.containsKey("reportType") ? toolInput.getString("reportType", "") : "";
                     String bypass = toolInput.containsKey("bypassSampleWorkflow") ? toolInput.getString("bypassSampleWorkflow", "") : "";
-                    return callInvestigationApi(method,id,query,inactive,limit,name,code,printName,reportType,bypass,hmisBaseUrl,hmisApiKey);
+                    return callInvestigationApi(method, id, query, inactive, limit, name, code, printName, reportType, bypass, hmisBaseUrl, hmisApiKey);
                 }
-case "manage_inward_rooms": {
+                case "manage_inward_rooms": {
                     String method         = toolInput.getString("method", "LIST_CATEGORIES");
                     String id             = toolInput.containsKey("id")                             ? toolInput.getString("id", "")                             : "";
                     String name           = toolInput.containsKey("name")                           ? toolInput.getString("name", "")                           : "";
@@ -1635,7 +1665,7 @@ case "manage_inward_rooms": {
         }
 
         sb.append("## Tools Available to You\n");
-        sb.append("You have seven tools to ground your answers in the actual codebase, live configuration, clinical master data, collecting-centre fees, and inward discount matrix entries:\n\n");
+        sb.append("You have eight tools to ground your answers in the actual codebase, live configuration, clinical master data, collecting-centre fees, inward discount matrix entries, and investigation master records:\n\n");
         sb.append("### search_github_code\n");
         sb.append("Searches the hmislk/hmis repository source code for files matching keywords. ");
         sb.append("Use this first when a user asks about system behaviour, page logic, or wants to understand how something works.\n\n");
@@ -1661,6 +1691,14 @@ case "manage_inward_rooms": {
           .append("then POST to create, PUT to update, or DELETE to retire. ")
           .append("Always confirm with the user before POST, PUT, or DELETE — these changes affect live inward billing discounts. ")
           .append("POST returns 'already_exists' with the existing id when a duplicate combination already exists.\n\n");
+        sb.append("### manage_investigations\n");
+        sb.append("Search, retrieve, create, update, activate, or deactivate investigation master records ")
+          .append("(lab/diagnostic tests such as CBC, PCR, blood gas, X-ray managed as investigations). ")
+          .append("Use GET to search by name, code, or printName. ")
+          .append("Use POST to create — returns 'already_exists' with the existing id when a duplicate name is found, ")
+          .append("so always check before creating to avoid duplicates. ")
+          .append("Use PUT to update name, code, printName, reportType, or bypassSampleWorkflow. ")
+          .append("Always confirm with the user before POST or PUT — these changes affect live investigation billing.\n\n");
         sb.append("### manage_inward_rooms\n");
         sb.append("Manage inward room master data: room categories (/inward/room-categories), ")
           .append("rooms (/inward/rooms), and room facility charges — i.e. room fee configurations — (/inward/room-facility-charges). ")
