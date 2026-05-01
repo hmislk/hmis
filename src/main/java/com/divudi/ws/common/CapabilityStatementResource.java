@@ -227,6 +227,10 @@ public class CapabilityStatementResource {
                         "User role CRUD and role-level privilege assignment with optional department scope.",
                         "API Key",
                         "GET", "POST", "PUT", "DELETE"))
+                                .add(resource("Investigations", "/api/investigations",
+                        "Investigation master management including search, create, update, and activate/deactivate for item import workflows",
+                        "API Key",
+                        "GET", "POST", "PUT", "PATCH"))
                 .add(resource("Services", "/api/services",
                         "OPD and Inward service management including fees and categories",
                         "API Key",

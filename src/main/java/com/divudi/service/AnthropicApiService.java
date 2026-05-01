@@ -567,6 +567,21 @@ public class AnthropicApiService implements Serializable {
                 .add(collectingCentreFeesTool)
                 .add(inwardDiscountMatrixTool)
                 .add(inwardRoomsTool)
+                .add(Json.createObjectBuilder()
+                .add("name", "manage_investigations")
+                .add("description", "Manage investigation master records: search, get, create, update, activate, deactivate.")
+                .add("input_schema", Json.createObjectBuilder().add("type", "object").add("properties", Json.createObjectBuilder()
+                    .add("method", Json.createObjectBuilder().add("type", "string").add("description", "GET|GET_BY_ID|POST|PUT|ACTIVATE|DEACTIVATE"))
+                    .add("id", Json.createObjectBuilder().add("type", "string"))
+                    .add("query", Json.createObjectBuilder().add("type", "string"))
+                    .add("inactive", Json.createObjectBuilder().add("type", "string"))
+                    .add("limit", Json.createObjectBuilder().add("type", "string"))
+                    .add("name", Json.createObjectBuilder().add("type", "string"))
+                    .add("code", Json.createObjectBuilder().add("type", "string"))
+                    .add("printName", Json.createObjectBuilder().add("type", "string"))
+                    .add("reportType", Json.createObjectBuilder().add("type", "string"))
+                    .add("bypassSampleWorkflow", Json.createObjectBuilder().add("type", "string"))
+                ).add("required", Json.createArrayBuilder().add("method"))).build())
                 .build();
     }
 
@@ -647,7 +662,20 @@ public class AnthropicApiService implements Serializable {
                             admissionTypeId, paymentSchemeId, paymentMethodStr, discountPercent,
                             query, limit, retireComments, hmisBaseUrl, hmisApiKey);
                 }
-                case "manage_inward_rooms": {
+                                case "manage_investigations": {
+                    String method = toolInput.getString("method", "GET");
+                    String id = toolInput.containsKey("id") ? toolInput.getString("id", "") : "";
+                    String query = toolInput.containsKey("query") ? toolInput.getString("query", "") : "";
+                    String inactive = toolInput.containsKey("inactive") ? toolInput.getString("inactive", "") : "";
+                    String limit = toolInput.containsKey("limit") ? toolInput.getString("limit", "20") : "20";
+                    String name = toolInput.containsKey("name") ? toolInput.getString("name", "") : "";
+                    String code = toolInput.containsKey("code") ? toolInput.getString("code", "") : "";
+                    String printName = toolInput.containsKey("printName") ? toolInput.getString("printName", "") : "";
+                    String reportType = toolInput.containsKey("reportType") ? toolInput.getString("reportType", "") : "";
+                    String bypass = toolInput.containsKey("bypassSampleWorkflow") ? toolInput.getString("bypassSampleWorkflow", "") : "";
+                    return callInvestigationApi(method,id,query,inactive,limit,name,code,printName,reportType,bypass,hmisBaseUrl,hmisApiKey);
+                }
+case "manage_inward_rooms": {
                     String method         = toolInput.getString("method", "LIST_CATEGORIES");
                     String id             = toolInput.containsKey("id")                             ? toolInput.getString("id", "")                             : "";
                     String name           = toolInput.containsKey("name")                           ? toolInput.getString("name", "")                           : "";
@@ -1549,6 +1577,28 @@ public class AnthropicApiService implements Serializable {
      * @param userHmisApiKey  The logged-in user's active HMIS API key value
      * @param githubBranch    The GitHub branch for documentation links (e.g. "development")
      */
+    private String callInvestigationApi(String method, String id, String query, String inactive, String limit, String name, String code, String printName, String reportType, String bypassSampleWorkflow, String hmisBaseUrl, String hmisApiKey) {
+        try {
+            String root = normalizeBaseUrl(hmisBaseUrl);
+            if (root.isEmpty()) return "Error: HMIS base URL is not configured.";
+            String key = (hmisApiKey != null) ? hmisApiKey.trim() : "";
+            HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).build();
+            HttpRequest.Builder rb;
+            if ("GET".equalsIgnoreCase(method)) {
+                String url = root+"/api/investigations/search?query="+URLEncoder.encode(query, StandardCharsets.UTF_8)+"&limit="+URLEncoder.encode(limit, StandardCharsets.UTF_8);
+                if(inactive!=null&&!inactive.isEmpty()) url += "&inactive="+URLEncoder.encode(inactive, StandardCharsets.UTF_8);
+                rb = HttpRequest.newBuilder().uri(URI.create(url)).GET();
+            } else if ("GET_BY_ID".equalsIgnoreCase(method)) { rb = HttpRequest.newBuilder().uri(URI.create(root+"/api/investigations/"+id)).GET(); }
+            else if ("POST".equalsIgnoreCase(method) || "PUT".equalsIgnoreCase(method)) {
+                javax.json.JsonObjectBuilder b = Json.createObjectBuilder().add("name", name==null?"":name);
+                if(code!=null&&!code.isEmpty()) b.add("code", code); if(printName!=null&&!printName.isEmpty()) b.add("printName", printName); if(reportType!=null&&!reportType.isEmpty()) b.add("reportType", reportType); if(bypassSampleWorkflow!=null&&!bypassSampleWorkflow.isEmpty()) b.add("bypassSampleWorkflow", Boolean.parseBoolean(bypassSampleWorkflow));
+                String u = "POST".equalsIgnoreCase(method) ? root+"/api/investigations" : root+"/api/investigations/"+id;
+                rb = HttpRequest.newBuilder().uri(URI.create(u)).method("POST".equalsIgnoreCase(method)?"POST":"PUT", HttpRequest.BodyPublishers.ofString(b.build().toString())).header("Content-Type", "application/json");
+            } else { String u=root+"/api/investigations/"+id+("ACTIVATE".equalsIgnoreCase(method)?"/activate":"/deactivate"); rb=HttpRequest.newBuilder().uri(URI.create(u)).method("PATCH", HttpRequest.BodyPublishers.noBody()); }
+            if(!key.isEmpty()) rb.header("Finance", key); HttpResponse<String> resp=client.send(rb.build(), HttpResponse.BodyHandlers.ofString()); return "HTTP "+resp.statusCode()+"\n"+resp.body();
+        } catch (Exception e) { return "Investigation API error: "+e.getMessage(); }
+    }
+
     public String buildSystemPrompt(String hmisApiBaseUrl, String userHmisApiKey, String githubBranch) {
         String branch = (githubBranch != null && !githubBranch.trim().isEmpty())
                 ? githubBranch.trim() : "development";
@@ -1577,7 +1627,7 @@ public class AnthropicApiService implements Serializable {
         }
 
         sb.append("## Tools Available to You\n");
-        sb.append("You have six tools to ground your answers in the actual codebase, live configuration, clinical master data, collecting-centre fees, and inward discount matrix entries:\n\n");
+        sb.append("You have seven tools to ground your answers in the actual codebase, live configuration, clinical master data, collecting-centre fees, and inward discount matrix entries:\n\n");
         sb.append("### search_github_code\n");
         sb.append("Searches the hmislk/hmis repository source code for files matching keywords. ");
         sb.append("Use this first when a user asks about system behaviour, page logic, or wants to understand how something works.\n\n");
