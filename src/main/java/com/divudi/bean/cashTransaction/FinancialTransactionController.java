@@ -7790,8 +7790,14 @@ public class FinancialTransactionController implements Serializable {
     }
 
     public void prepareToViewShortageBill(Bill bill) {
-        selectedBill = bill;
-        computeShortageSettlementSummary(bill);
+        if (bill.getBillTypeAtomic() == BillTypeAtomic.FUND_SHIFT_SHORTAGE_SETTLEMENT_BILL
+                || bill.getBillTypeAtomic() == BillTypeAtomic.FUND_SHIFT_SHORTAGE_SETTLEMENT_BILL_CANCELLED) {
+            Bill ref = bill.getReferenceBill();
+            selectedBill = (ref != null) ? billFacade.find(ref.getId()) : bill;
+        } else {
+            selectedBill = bill;
+        }
+        computeShortageSettlementSummary(selectedBill);
     }
 
     public String navigateToSettleShiftShortageBill() {
@@ -7831,6 +7837,31 @@ public class FinancialTransactionController implements Serializable {
             JsfUtil.addErrorMessage("Please enter a valid settlement amount greater than zero.");
             return "";
         }
+        if (selectedBill == null || selectedBill.getId() == null) {
+            JsfUtil.addErrorMessage("No shortage bill selected.");
+            return "";
+        }
+        // Reload from DB to catch cancellations or concurrent settlements in another tab/session
+        Bill freshBill = billFacade.find(selectedBill.getId());
+        if (freshBill == null) {
+            JsfUtil.addErrorMessage("Shortage bill no longer exists.");
+            return "";
+        }
+        if (freshBill.isCancelled()) {
+            JsfUtil.addErrorMessage("Cannot settle a cancelled bill.");
+            return "";
+        }
+        if (freshBill.isPaid()) {
+            JsfUtil.addErrorMessage("This shortage has already been fully settled.");
+            return "";
+        }
+        if (freshBill.getFromWebUser() == null
+                || !freshBill.getFromWebUser().getId().equals(sessionController.getLoggedUser().getId())) {
+            JsfUtil.addErrorMessage("You can only settle your own shortage bills.");
+            return "";
+        }
+        selectedBill = freshBill;
+        computeShortageSettlementSummary(freshBill);
         if (currentPayment.getPaidValue() > shortageOutstanding + 0.001) {
             JsfUtil.addErrorMessage("Settlement amount cannot exceed the outstanding amount of "
                     + String.format("%.2f", shortageOutstanding) + ".");
