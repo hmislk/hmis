@@ -1579,7 +1579,7 @@ case "manage_inward_rooms": {
      */
     private String callInvestigationApi(String method, String id, String query, String inactive, String limit, String name, String code, String printName, String reportType, String bypassSampleWorkflow, String hmisBaseUrl, String hmisApiKey) {
         try {
-            String root = normalizeBaseUrl(hmisBaseUrl);
+            String root = (hmisBaseUrl != null) ? hmisBaseUrl.trim().replaceAll("/+$", "") : "";
             if (root.isEmpty()) return "Error: HMIS base URL is not configured.";
             String key = (hmisApiKey != null) ? hmisApiKey.trim() : "";
             HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).build();
