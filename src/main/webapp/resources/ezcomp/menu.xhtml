@@ -1324,11 +1324,6 @@
                         icon="fas fa-clock"
                         rendered="#{webUserController.hasPrivilege('TheatreBilling')}"  ></p:menuitem>
                     <p:submenu label="Professional" icon="fas fa-user-md">
-                        <p:menuitem  ajax="false"  action="/theater/inward_bill_surgery_professional?faces-redirect=true"
-                                     value="Add Professional Fee"
-                                     icon="fas fa-user-md"
-                                     actionListener="#{inwardProfessionalBillController.makeNull()}"
-                                     rendered="#{webUserController.hasPrivilege('TheatreBilling')}" />
                         <p:menuitem  ajax="false"  action="/inward/inward_search_professional?faces-redirect=true"
                                      value="Search Bill"
                                      icon="fas fa-search"
