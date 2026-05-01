@@ -2561,6 +2561,13 @@ public class BhtSummeryController implements Serializable {
         return patientEncounter;
     }
 
+    public List<EncounterCreditCompany> getEncounterCreditCompanys() {
+        if (patientEncounter == null) {
+            return new ArrayList<>();
+        }
+        return fillCreditCompaniesByPatient(patientEncounter);
+    }
+
     public void setPatientEncounter(PatientEncounter patientEncounter) {
 //        makeNull();
         this.patientEncounter = patientEncounter;
