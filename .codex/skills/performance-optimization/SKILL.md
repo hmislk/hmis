@@ -50,4 +50,3 @@ Key pattern from Pharmacy Retail Sale (639ms -> 50ms):
 For detailed guides, read:
 - [Autocomplete Optimization](../../../developer_docs/performance/autocomplete-optimization-guide.md)
 - [MySQL Performance](../../../developer_docs/database/mysql-performance-configuration.md)
-- [Performance Plan](../../../developer_docs/performance/PERFORMANCE_IMPROVEMENT_PLAN.md)
