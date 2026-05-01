@@ -1738,12 +1738,13 @@ public class AnthropicApiService implements Serializable {
 
         // ── Staff / Consultants ───────────────────────────────────────────────
         appendModule(sb, "Consultant Management", "/channel/consultant",
-                "Create new consultant (doctor) records and update existing ones. "
+                "List, create, and update consultant (doctor) records. "
                 + "IMPORTANT: Uses the 'Token' header, not 'Finance'.",
                 githubUrl(branch, "developer_docs/API_CONSULTANT_MANAGEMENT.md"),
                 new String[][]{
-                    {"POST", "/channel/consultant",      "Create a new consultant. Required: name. Optional: title, mobile, phone, fax, address, code, serialNo, specialityId, institutionId, registration, qualification, description"},
-                    {"PUT",  "/channel/consultant/{id}", "Update an existing consultant by ID. Returns 400 for invalid field values, 404 if not found."}
+                    {"GET",  "/channel/consultant",      "List consultants. Supports query, page, size, specialityId."},
+                    {"POST", "/channel/consultant",      "Create a new consultant. Required: name. Optional: title, sex, mobile, phone, fax, address, code, serialNo, specialityId, institutionId, registration, qualification, description. Returns already_exists/409 for duplicates by name+title."},
+                    {"PUT",  "/channel/consultant/{id}", "Update an existing consultant by ID. Supports sex and returns 400 for invalid field values, 404 if not found."}
                 });
 
         // ── Channel / Booking ─────────────────────────────────────────────────
