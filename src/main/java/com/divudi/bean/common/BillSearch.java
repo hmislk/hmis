@@ -4685,9 +4685,33 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
     }
 
     public String navigateToViewCashierShiftShortageBill(Bill bill) {
-        loadBillDetails(bill);
-        financialTransactionController.prepareToViewShortageBill(bill);
+        Bill shortageBill = findOriginalShiftShortageBill(bill);
+        if (shortageBill == null) {
+            JsfUtil.addErrorMessage("No shortage bill selected.");
+            return "";
+        }
+        loadBillDetails(shortageBill);
+        financialTransactionController.prepareToViewShortageBill(shortageBill);
         return "/cashier/shift_shortage_bill_reprint?faces-redirect=true";
+    }
+
+    private Bill findOriginalShiftShortageBill(Bill bill) {
+        if (bill == null) {
+            return null;
+        }
+        Bill original = bill;
+        if (bill.getBillTypeAtomic() == BillTypeAtomic.FUND_SHIFT_SHORTAGE_SETTLEMENT_BILL
+                || bill.getBillTypeAtomic() == BillTypeAtomic.FUND_SHIFT_SHORTAGE_SETTLEMENT_BILL_CANCELLED) {
+            Bill referenceBill = bill.getReferenceBill();
+            if (referenceBill == null || referenceBill.getId() == null) {
+                return null;
+            }
+            original = billFacade.find(referenceBill.getId());
+        }
+        if (original == null || original.getBillTypeAtomic() != BillTypeAtomic.FUND_SHIFT_SHORTAGE_BILL) {
+            return null;
+        }
+        return original;
     }
 //    //to do
 //    public String navigateToViewOpdProfessionalPaymentBill() {

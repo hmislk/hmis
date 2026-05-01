@@ -7790,19 +7790,23 @@ public class FinancialTransactionController implements Serializable {
     }
 
     public void prepareToViewShortageBill(Bill bill) {
-        if (bill.getBillTypeAtomic() == BillTypeAtomic.FUND_SHIFT_SHORTAGE_SETTLEMENT_BILL
-                || bill.getBillTypeAtomic() == BillTypeAtomic.FUND_SHIFT_SHORTAGE_SETTLEMENT_BILL_CANCELLED) {
-            Bill ref = bill.getReferenceBill();
-            selectedBill = (ref != null) ? billFacade.find(ref.getId()) : bill;
-        } else {
-            selectedBill = bill;
+        selectedBill = findOriginalShortageBill(bill);
+        if (selectedBill == null) {
+            shortageSettledSoFar = 0.0;
+            shortageOutstanding = 0.0;
+            return;
         }
         computeShortageSettlementSummary(selectedBill);
     }
 
     public String navigateToSettleShiftShortageBill() {
+        selectedBill = findOriginalShortageBill(selectedBill);
         if (selectedBill == null) {
             JsfUtil.addErrorMessage("No shortage bill selected.");
+            return "";
+        }
+        if (selectedBill.getBillTypeAtomic() != BillTypeAtomic.FUND_SHIFT_SHORTAGE_BILL) {
+            JsfUtil.addErrorMessage("Only shortage bills can be settled.");
             return "";
         }
         if (selectedBill.isCancelled()) {
@@ -7837,14 +7841,23 @@ public class FinancialTransactionController implements Serializable {
             JsfUtil.addErrorMessage("Please enter a valid settlement amount greater than zero.");
             return "";
         }
+        if (currentBill == null) {
+            JsfUtil.addErrorMessage("No settlement context found.");
+            return "";
+        }
         if (selectedBill == null || selectedBill.getId() == null) {
             JsfUtil.addErrorMessage("No shortage bill selected.");
             return "";
         }
         // Reload from DB to catch cancellations or concurrent settlements in another tab/session
-        Bill freshBill = billFacade.find(selectedBill.getId());
+        Bill freshBill = findOriginalShortageBill(billFacade.find(selectedBill.getId()));
         if (freshBill == null) {
             JsfUtil.addErrorMessage("Shortage bill no longer exists.");
+            return "";
+        }
+        if (freshBill.getBillType() != BillType.ShiftShortage
+                || freshBill.getBillTypeAtomic() != BillTypeAtomic.FUND_SHIFT_SHORTAGE_BILL) {
+            JsfUtil.addErrorMessage("Only shortage bills can be settled.");
             return "";
         }
         if (freshBill.isCancelled()) {
@@ -7858,6 +7871,18 @@ public class FinancialTransactionController implements Serializable {
         if (freshBill.getFromWebUser() == null
                 || !freshBill.getFromWebUser().getId().equals(sessionController.getLoggedUser().getId())) {
             JsfUtil.addErrorMessage("You can only settle your own shortage bills.");
+            return "";
+        }
+        if (freshBill.getFromInstitution() != null
+                && sessionController.getInstitution() != null
+                && !freshBill.getFromInstitution().getId().equals(sessionController.getInstitution().getId())) {
+            JsfUtil.addErrorMessage("You can only settle shortages from your institution.");
+            return "";
+        }
+        if (freshBill.getFromDepartment() != null
+                && sessionController.getDepartment() != null
+                && !freshBill.getFromDepartment().getId().equals(sessionController.getDepartment().getId())) {
+            JsfUtil.addErrorMessage("You can only settle shortages from your department.");
             return "";
         }
         selectedBill = freshBill;
@@ -7913,6 +7938,25 @@ public class FinancialTransactionController implements Serializable {
         } finally {
             settlementSubmitting = false;
         }
+    }
+
+    private Bill findOriginalShortageBill(Bill bill) {
+        if (bill == null) {
+            return null;
+        }
+        Bill original = bill;
+        if (bill.getBillTypeAtomic() == BillTypeAtomic.FUND_SHIFT_SHORTAGE_SETTLEMENT_BILL
+                || bill.getBillTypeAtomic() == BillTypeAtomic.FUND_SHIFT_SHORTAGE_SETTLEMENT_BILL_CANCELLED) {
+            Bill referenceBill = bill.getReferenceBill();
+            if (referenceBill == null || referenceBill.getId() == null) {
+                return null;
+            }
+            original = billFacade.find(referenceBill.getId());
+        }
+        if (original == null || original.getBillTypeAtomic() != BillTypeAtomic.FUND_SHIFT_SHORTAGE_BILL) {
+            return null;
+        }
+        return original;
     }
 
     private void computeShortageSettlementSummary(Bill shortage) {

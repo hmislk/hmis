@@ -46,25 +46,25 @@
 
                         <div class="row g-3 mb-3">
                             <div class="col-md-3">
-                                <p:outputLabel value="Shortage Amount" styleClass="fw-medium d-block"/>
+                                <h:outputText value="Shortage Amount" styleClass="fw-medium d-block"/>
                                 <h:outputText value="#{billSearch.bill.total}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                             </div>
                             <div class="col-md-3">
-                                <p:outputLabel value="Settled So Far" styleClass="fw-medium d-block"/>
+                                <h:outputText value="Settled So Far" styleClass="fw-medium d-block"/>
                                 <h:outputText value="#{financialTransactionController.shortageSettledSoFar}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                             </div>
                             <div class="col-md-3">
-                                <p:outputLabel value="Outstanding" styleClass="fw-medium d-block"/>
+                                <h:outputText value="Outstanding" styleClass="fw-medium d-block"/>
                                 <h:outputText value="#{financialTransactionController.shortageOutstanding}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                             </div>
                             <div class="col-md-3">
-                                <p:outputLabel value="Recorded By" styleClass="fw-medium d-block"/>
+                                <h:outputText value="Recorded By" styleClass="fw-medium d-block"/>
                                 <h:outputText value="#{billSearch.bill.fromWebUser.webUserPerson.name}"/>
                             </div>
                         </div>

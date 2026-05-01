@@ -162,14 +162,20 @@
                             </p:column>
 
                             <p:column headerText="Status">
-                                <h:panelGroup rendered="#{bill.paid}">
-                                    <span class="badge bg-success">Settled</span>
-                                </h:panelGroup>
                                 <h:panelGroup rendered="#{bill.cancelled}">
-                                    <span class="badge bg-danger">Cancelled</span>
+                                    <span class="badge bg-danger">
+                                        <h:outputText value="Cancelled"/>
+                                    </span>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{!bill.cancelled and bill.paid}">
+                                    <span class="badge bg-success">
+                                        <h:outputText value="Settled"/>
+                                    </span>
                                 </h:panelGroup>
                                 <h:panelGroup rendered="#{!bill.paid and !bill.cancelled}">
-                                    <span class="badge bg-warning text-dark">Outstanding</span>
+                                    <span class="badge bg-warning text-dark">
+                                        <h:outputText value="Outstanding"/>
+                                    </span>
                                 </h:panelGroup>
                             </p:column>
 
