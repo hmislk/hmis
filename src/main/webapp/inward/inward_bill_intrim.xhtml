@@ -271,8 +271,9 @@
                                             <p:outputLabel value="Summary" class="mx-2"/>
                                         </f:facet>
 
-                                        <h:panelGroup id="crd" class="w-100" style="display: #{bhtSummeryController.patientEncounter.paymentMethod eq 'Credit' ? 'block' : 'none'} ; ">
-                                            <credit:outputCredit  class="w-100" patientEncounter="#{bhtSummeryController.patientEncounter}"/>
+                                        <h:panelGroup id="crd" layout="block" class="w-100"
+                                                      rendered="#{bhtSummeryController.patientEncounter.paymentMethod eq 'Credit'}">
+                                            <credit:creditCompanyListView controller="#{bhtSummeryController}"/>
                                         </h:panelGroup>
 
 
