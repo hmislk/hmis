@@ -570,13 +570,23 @@ public class SurgeryBillController implements Serializable {
             return null;
         }
 
-        String beforeName = (surgeryBill != null && surgeryBill.getProcedure() != null
-                && surgeryBill.getProcedure().getItem() != null)
-                ? surgeryBill.getProcedure().getItem().getName() : "";
-        String beforeJson = "{\"surgeryName\": \"" + beforeName.replace("\"", "\\\"") + "\"}";
         Long billId = surgeryBill != null ? surgeryBill.getId() : null;
+
+        // Load the persisted surgery name BEFORE JSF-applied changes are saved,
+        // so the audit before-state reflects the real pre-edit value.
+        String beforeName = "";
+        if (billId != null) {
+            HashMap<String, Object> nameParams = new HashMap<>();
+            nameParams.put("id", billId);
+            List<String> nameResult = getBillFacade().findString(
+                    "select pe.item.name from Bill b join b.procedure pe where b.id = :id", nameParams);
+            if (nameResult != null && !nameResult.isEmpty() && nameResult.get(0) != null) {
+                beforeName = nameResult.get(0);
+            }
+        }
+        String beforeJson = "{\"surgeryName\": \"" + beforeName.replace("\"", "\\\"") + "\"}";
         com.divudi.core.entity.AuditEvent auditEvent = auditEventController.createNewAuditEvent(
-                "Edit Surgery", beforeJson, billId);
+                "Edit Surgery", beforeJson, billId, "Bill");
 
         saveProcedure();
         saveSurgeryBill();
