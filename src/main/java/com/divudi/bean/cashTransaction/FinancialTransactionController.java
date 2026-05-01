@@ -7773,17 +7773,21 @@ public class FinancialTransactionController implements Serializable {
             currentPayment.setCurrentHolder(sessionController.getLoggedUser());
             paymentController.save(currentPayment);
             JsfUtil.addSuccessMessage("Shift shortage recorded successfully.");
-            Date fromDate = Date.from(LocalDate.now().atStartOfDay().atZone(ZoneId.systemDefault()).toInstant());
-            Date toDate = Date.from(LocalDate.now().atTime(23, 59, 59).atZone(ZoneId.systemDefault()).toInstant());
-            searchController.setFromDate(fromDate);
-            searchController.setToDate(toDate);
-            resetClassVariables();
-            searchController.createShiftShortageBillsTable();
-            return "/cashier/cashier_shift_bill_search?faces-redirect=true";
+            return "/cashier/record_shift_shortage_print?faces-redirect=true";
         } catch (Exception e) {
             JsfUtil.addErrorMessage("Failed to record shift shortage: " + e.getMessage());
             return "";
         }
+    }
+
+    public String navigateToCashierShiftBillSearchWithTodayResults() {
+        Date fromDate = Date.from(LocalDate.now().atStartOfDay().atZone(ZoneId.systemDefault()).toInstant());
+        Date toDate = Date.from(LocalDate.now().atTime(23, 59, 59).atZone(ZoneId.systemDefault()).toInstant());
+        searchController.setFromDate(fromDate);
+        searchController.setToDate(toDate);
+        resetClassVariables();
+        searchController.createShiftShortageBillsTable();
+        return "/cashier/cashier_shift_bill_search?faces-redirect=true";
     }
 
     private void calculateShortageBillTotal() {
