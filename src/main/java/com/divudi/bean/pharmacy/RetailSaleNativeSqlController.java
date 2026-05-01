@@ -459,28 +459,66 @@ public class RetailSaleNativeSqlController implements Serializable, ControllerWi
 
     private void buildPrintBill(Bill bill) {
         PrintBillData pbd = new PrintBillData();
+
+        // Department / institution header
         Department dept = sessionController.getLoggedUser().getDepartment();
         pbd.setDepartmentName(dept.getName());
         pbd.setDepartmentPrintingName(dept.getPrintingName() != null ? dept.getPrintingName() : dept.getName());
         pbd.setDepartmentTelephone1(dept.getTelephone1());
+        pbd.setDepartmentAddress(dept.getAddress());
         if (dept.getInstitution() != null) {
             pbd.setInstitutionName(dept.getInstitution().getName());
             pbd.setInstitutionAddress(dept.getInstitution().getAddress());
+            pbd.setInstitutionEmail(dept.getInstitution().getEmail());
+            pbd.setInstitutionWeb(dept.getInstitution().getWeb());
         }
-        if (patient != null && patient.getPerson() != null) {
-            pbd.setPatientName(patient.getPerson().getNameWithTitle());
-        }
+
+        // Bill identity
         pbd.setBillNo(bill.getDeptId());
         pbd.setCreatedAt(bill.getCreatedAt());
-        pbd.setPaymentMethodLabel(paymentMethod != null ? paymentMethod.name() : "");
-        pbd.setComment(comment);
-        double tot = 0.0;
-        for (BillItemData bid : billItemDataList) {
-            tot += Math.abs(bid.getNetValue());
+        if (bill.getCreater() != null) {
+            pbd.setCreatorName(bill.getCreater().getName());
         }
-        pbd.setNetTotal(tot);
+
+        // Patient
+        if (patient != null && patient.getPerson() != null) {
+            pbd.setPatientName(patient.getPerson().getNameWithTitle());
+            pbd.setPatientPhone(patient.getPerson().getPhone());
+            pbd.setPatientPhn(patient.getPhn());
+        }
+
+        // Payment
+        pbd.setPaymentMethodLabel(paymentMethod != null ? paymentMethod.getLabel() : "");
+        if (paymentScheme != null) {
+            pbd.setPaymentSchemePrintingName(
+                    paymentScheme.getPrintingName() != null ? paymentScheme.getPrintingName() : paymentScheme.getName());
+        }
+        pbd.setComment(comment);
+
+        // Targets for credit/staff/dept bills
+        if (toStaff != null && toStaff.getPerson() != null) {
+            pbd.setToStaffName(toStaff.getPerson().getNameWithTitle());
+        }
+        if (paymentMethod == PaymentMethod.Credit
+                && getPaymentMethodData().getCredit().getInstitution() != null) {
+            pbd.setToInstitutionName(getPaymentMethodData().getCredit().getInstitution().getName());
+        }
+
+        // Totals
+        double grossTot = 0.0;
+        double discTot  = 0.0;
+        double netTot   = 0.0;
+        for (BillItemData bid : billItemDataList) {
+            grossTot += Math.abs(bid.getGrossValue());
+            discTot  += bid.getDiscountValue();
+            netTot   += Math.abs(bid.getNetValue());
+        }
+        pbd.setTotal(grossTot);
+        pbd.setDiscount(discTot);
+        pbd.setNetTotal(netTot);
+        pbd.setDiscountPercentPharmacy(grossTot > 0 ? (discTot / grossTot) * 100.0 : 0.0);
         pbd.setCashPaid(cashPaid);
-        pbd.setBalance(cashPaid - tot);
+        pbd.setBalance(cashPaid - netTot);
 
         printBill = pbd;
 
