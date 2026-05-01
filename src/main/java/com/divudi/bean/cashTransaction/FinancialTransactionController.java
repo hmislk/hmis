@@ -54,6 +54,7 @@ import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -148,6 +149,7 @@ public class FinancialTransactionController implements Serializable {
     private ReportTemplateRowBundle opdDocPayment;
     private ReportTemplateRowBundle channellingDocPayment;
     private boolean handoverValuesCreated = false;
+    private boolean shortageSubmitting = false;
 
     private ReportTemplateRowBundle opdBilled;
     private ReportTemplateRowBundle opdReturns;
@@ -1365,15 +1367,6 @@ public class FinancialTransactionController implements Serializable {
         return "/cashier/cashier_shift_bill_search?faces-redirect=true";
     }
 
-    public String navigateToShiftShortagePrint() {
-        if (currentBill == null
-                || currentBill.getBillTypeAtomic() != BillTypeAtomic.FUND_SHIFT_SHORTAGE_BILL
-                || currentBillPayments == null
-                || currentBillPayments.isEmpty()) {
-            return navigateToRecordShiftShortage();
-        }
-        return "/cashier/record_shift_shortage_print?faces-redirect=true";
-    }
 
     // Method to navigate to the Transfer Payment Method page
     public String navigateToTransferPaymentMethod() {
@@ -2793,14 +2786,11 @@ public class FinancialTransactionController implements Serializable {
             JsfUtil.addErrorMessage("Error");
             return;
         }
-        if (currentPayment.getPaymentMethod() == null) {
-            JsfUtil.addErrorMessage("Select a Payment Method");
-            return;
-        }
         if (currentPayment.getPaidValue() <= 0) {
             JsfUtil.addErrorMessage("Payment value must be greater than zero");
             return;
         }
+        currentPayment.setPaymentMethod(PaymentMethod.Cash);
         getCurrentBillPayments().add(currentPayment);
         calculateFundTransferBillTotal();
         currentPayment = null;
@@ -4339,7 +4329,7 @@ public class FinancialTransactionController implements Serializable {
         }
 
         calculateShortageBillTotal();
-        return "/cashier/record_shift_shortage?faces-redirect=true"; // Navigation case
+        return settleShiftShortages();
     }
 
     public List<Payment> fetchPaymentsFromShiftStartToEndByDateAndDepartment(
@@ -7635,18 +7625,6 @@ public class FinancialTransactionController implements Serializable {
         currentPayment = null;
     }
 
-    public void addShortageRecord() {
-        if (currentPayment == null) {
-            JsfUtil.addErrorMessage("Please provide valid amount for the shortage.");
-            return;
-        }
-        currentPayment.setPaidValue(0 - Math.abs(currentPayment.getPaidValue()));
-        currentPayment.setCreatedAt(new Date()); // Set payment date to now
-        currentBillPayments.add(currentPayment); // Add to the current bill's payments list
-        calculateShortageBillTotal();
-        JsfUtil.addSuccessMessage("Shortage recorded successfully.");
-        currentPayment = new Payment(); // Reset currentPayment for the next entry
-    }
 
     public void removeShortageRecord(Payment payment) {
         if (payment == null || !currentBillPayments.remove(payment)) {
@@ -7746,6 +7724,66 @@ public class FinancialTransactionController implements Serializable {
             JsfUtil.addErrorMessage("Error settling shift shortages: " + e.getMessage());
             return "";  // Optionally, redirect to an error page
         }
+    }
+
+    public String recordAndSettleShiftShortage() {
+        if (shortageSubmitting) {
+            return "";
+        }
+        if (currentPayment == null || currentPayment.getPaidValue() <= 0) {
+            JsfUtil.addErrorMessage("Please enter a valid shortage amount greater than zero.");
+            return "";
+        }
+        shortageSubmitting = true;
+        currentPayment.setPaymentMethod(PaymentMethod.Cash);
+        currentPayment.setPaidValue(0 - Math.abs(currentPayment.getPaidValue()));
+        currentPayment.setCreatedAt(new Date());
+        getCurrentBillPayments().add(currentPayment);
+        calculateShortageBillTotal();
+
+        currentBill.setBillType(BillType.ShiftShortage);
+        currentBill.setBillTypeAtomic(BillTypeAtomic.FUND_SHIFT_SHORTAGE_BILL);
+        currentBill.setBillDate(new Date());
+        currentBill.setBillTime(new Date());
+        currentBill.setDepartment(sessionController.getDepartment());
+        currentBill.setInstitution(sessionController.getInstitution());
+        currentBill.setFromDepartment(sessionController.getDepartment());
+        currentBill.setFromInstitution(sessionController.getInstitution());
+        currentBill.setFromStaff(sessionController.getLoggedUser().getStaff());
+        currentBill.setFromWebUser(sessionController.getLoggedUser());
+
+        try {
+            billController.save(currentBill);
+            currentPayment.setBill(currentBill);
+            currentPayment.setCurrentHolder(sessionController.getLoggedUser());
+            paymentController.save(currentPayment);
+            JsfUtil.addSuccessMessage("Shift shortage recorded successfully.");
+            return "/cashier/record_shift_shortage_print?faces-redirect=true";
+        } catch (Exception e) {
+            // If the bill was persisted but the payment failed, cancel the bill so it
+            // does not appear as an unmatched record in shortage searches.
+            if (currentBill != null && currentBill.getId() != null) {
+                try {
+                    currentBill.setCancelled(true);
+                    billController.save(currentBill);
+                } catch (Exception ignore) {
+                }
+            }
+            JsfUtil.addErrorMessage("Failed to record shift shortage: " + e.getMessage());
+            return "";
+        } finally {
+            shortageSubmitting = false;
+        }
+    }
+
+    public String navigateToCashierShiftBillSearchWithTodayResults() {
+        Date fromDate = Date.from(LocalDate.now().atStartOfDay().atZone(ZoneId.systemDefault()).toInstant());
+        Date toDate = Date.from(LocalDate.now().atTime(LocalTime.MAX).atZone(ZoneId.systemDefault()).toInstant());
+        searchController.setFromDate(fromDate);
+        searchController.setToDate(toDate);
+        resetClassVariables();
+        searchController.createShiftShortageBillsTable();
+        return "/cashier/cashier_shift_bill_search?faces-redirect=true";
     }
 
     private void calculateShortageBillTotal() {

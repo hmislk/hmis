@@ -2548,7 +2548,9 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = CommonFunctions.getStartOfMonth();
+            Calendar cal = Calendar.getInstance();
+            cal.add(Calendar.DAY_OF_MONTH, -6);
+            fromDate = CommonFunctions.getStartOfDay(cal.getTime());
         }
         return fromDate;
     }

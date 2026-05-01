@@ -53,6 +53,7 @@ Different header schemes by module:
 {"status":"success","code":200,"data":{...}}
 {"status":"error","code":400,"message":"..."}
 ```
+For create endpoints, use HTTP `201 Created`, and set `"code": "201"` in the response body.
 
 For POST duplicate detection (not wrapped in the success envelope):
 ```json
@@ -185,7 +186,7 @@ facade.edit(entity);
 ## Post-Implementation Testing Checklist
 
 ```bash
-BASE="http://localhost:9090/rh/api/<path>"
+BASE="http://localhost:8080/rh/api/<path>"
 KEY="<finance-api-key>"
 
 # 1. GET list
@@ -209,7 +210,7 @@ curl -s -H "Finance: $KEY" -H "Content-Type: application/json" \
 curl -s -H "Finance: $KEY" -X DELETE "$BASE/<id>" | python -m json.tool
 
 # 7. Capabilities endpoint shows new entry
-curl -s http://localhost:9090/rh/api/capabilities | python -m json.tool
+curl -s http://localhost:8080/rh/api/capabilities | python -m json.tool
 
 # 8. AI Chat can list and create via manage_* tool
 # Open /ai_chat.xhtml and prompt: "List all procedures in the clinical metadata API"
