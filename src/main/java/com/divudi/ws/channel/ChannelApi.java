@@ -3918,12 +3918,15 @@ public class ChannelApi {
             person.setAddress(requestBody.get("address").toString());
         }
         if (requestBody.get("sex") != null) {
-            Sex sex = parseSex(requestBody.get("sex"));
-            if (sex == null) {
-                return Response.status(Response.Status.BAD_REQUEST)
-                        .entity(errorResponse(400, "Invalid sex value: " + requestBody.get("sex")).toString()).build();
+            Object sexRaw = requestBody.get("sex");
+            if (sexRaw != null && !sexRaw.toString().trim().isEmpty()) {
+                Sex sex = parseSex(sexRaw);
+                if (sex == null) {
+                    return Response.status(Response.Status.BAD_REQUEST)
+                            .entity(errorResponse(400, "Invalid sex value: " + sexRaw).toString()).build();
+                }
+                person.setSex(sex);
             }
-            person.setSex(sex);
         }
 
         Consultant existingConsultant = findActiveConsultantByNameAndTitle(name, person.getTitle());
@@ -4214,8 +4217,8 @@ public class ChannelApi {
         }
 
         long offsetLong = (long) page * size;
-        long endLong = offsetLong + size - 1L;
-        if (offsetLong > Integer.MAX_VALUE || endLong > Integer.MAX_VALUE) {
+        long toRecordLong = offsetLong + size;
+        if (offsetLong > Integer.MAX_VALUE || toRecordLong > Integer.MAX_VALUE) {
             return Response.status(Response.Status.BAD_REQUEST)
                     .entity(errorResponse(400, "page is too large").toString()).build();
         }
@@ -4233,7 +4236,7 @@ public class ChannelApi {
         }
         jpql += " order by c.person.name";
 
-        List<Consultant> consultants = consultantFacade.findByJpql(jpql, params, (int) offsetLong, (int) endLong);
+        List<Consultant> consultants = consultantFacade.findByJpql(jpql, params, (int) offsetLong, (int) toRecordLong);
         List<Map<String, Object>> data = new ArrayList<>();
         for (Consultant consultant : consultants) {
             Map<String, Object> item = new HashMap<>();
@@ -4256,6 +4259,17 @@ public class ChannelApi {
         return Response.ok(response).build();
     }
 
+
+    private int parseIntParam(String raw, int defaultValue) {
+        if (raw == null || raw.trim().isEmpty()) {
+            return defaultValue;
+        }
+        try {
+            return Integer.parseInt(raw.trim());
+        } catch (NumberFormatException e) {
+            return defaultValue;
+        }
+    }
     private Sex parseSex(Object raw) {
         if (raw == null) {
             return null;
