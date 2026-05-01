@@ -771,6 +771,16 @@
                                     bill="#{retailSaleNativeSqlController.printBill}"
                                     items="#{retailSaleNativeSqlController.printBillItems}" />
                             </h:panelGroup>
+                            <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Retail Sale Bill Paper is Custom 1', false)}">
+                                <phi:saleBill_native
+                                    bill="#{retailSaleNativeSqlController.printBill}"
+                                    items="#{retailSaleNativeSqlController.printBillItems}" />
+                            </h:panelGroup>
+                            <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Retail Sale Bill Paper is Custom 2', false)}">
+                                <phi:saleBill_native
+                                    bill="#{retailSaleNativeSqlController.printBill}"
+                                    items="#{retailSaleNativeSqlController.printBillItems}" />
+                            </h:panelGroup>
                             <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Retail Sale Bill Paper is Custom 3', false)}">
                                 <phi:sale_bill_five_five_custom_3_native
                                     bill="#{retailSaleNativeSqlController.printBill}"

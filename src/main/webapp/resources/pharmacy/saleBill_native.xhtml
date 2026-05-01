@@ -150,10 +150,7 @@
             <div>
                 <table width="100%" style="width: 100%;">
                     <tr>
-                        <td style="width: 12%; text-align: left;">
-                            <h:outputLabel value="CODE" styleClass="itemHeadings"/>
-                        </td>
-                        <td style="width: 35%;">
+                        <td style="width: 47%; text-align: left;">
                             <h:outputLabel value="ITEM" styleClass="itemHeadings"/>
                         </td>
                         <td style="width: 18%; text-align: right;">
@@ -167,7 +164,7 @@
                         </td>
                     </tr>
                     <tr>
-                        <td colspan="5" style="width: 100%;">
+                        <td colspan="4" style="width: 100%;">
                             <div class="billline">
                                 <h:outputLabel value="-------------------------------------------------"/>
                             </div>
@@ -175,12 +172,12 @@
                     </tr>
                     <ui:repeat value="#{cc.attrs.items}" var="bip">
                         <tr>
-                            <td colspan="5">
+                            <td colspan="4">
                                 <h:outputLabel value="#{bip.itemName}" styleClass="itemsBlock" style="text-transform: capitalize!important; text-align: left;"/>
                             </td>
                         </tr>
                         <tr>
-                            <td colspan="2"/>
+                            <td colspan="1"/>
                             <td styleClass="itemsBlockRight" style="width: 20%; text-align: right;">
                                 <h:outputLabel value="#{bip.qty}" styleClass="itemsBlock" style="text-align: right;">
                                     <f:convertNumber integerOnly="true"/>
