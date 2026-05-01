@@ -94,8 +94,9 @@
                                         </p:autoComplete>
                                     </div>
                                     <div class="mb-3">
-                                        <p:outputLabel value="Comments" styleClass="fw-medium mb-1 d-block"/>
+                                        <p:outputLabel for="txtTransferComments" value="Comments" styleClass="fw-medium mb-1 d-block"/>
                                         <p:inputTextarea
+                                            id="txtTransferComments"
                                             styleClass="w-100"
                                             rows="3"
                                             value="#{financialTransactionController.currentBill.comments}"/>
@@ -179,7 +180,7 @@
                                         icon="fa fa-trash"
                                         value="Remove"
                                         action="#{financialTransactionController.removePayment}"
-                                        process="btnRemove tblPayments"
+                                        process="@this tblPayments"
                                         update=":#{p:resolveFirstComponentWithId('tblPayments',view).clientId} :#{p:resolveFirstComponentWithId('totals',view).clientId}">
                                         <f:setPropertyActionListener value="#{bp}" target="#{financialTransactionController.removingPayment}"/>
                                     </p:commandButton>
