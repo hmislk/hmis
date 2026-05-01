@@ -748,9 +748,39 @@
                         </div>
 
                         <h:panelGroup id="gpBillPreview">
-                            <phi:saleBill_Header_Inward_native
-                                bill="#{retailSaleNativeSqlController.printBill}"
-                                items="#{retailSaleNativeSqlController.printBillItems}" />
+                            <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Retail Sale Bill Paper is POS Paper', true)}">
+                                <phi:saleBill_without_item_native
+                                    bill="#{retailSaleNativeSqlController.printBill}"
+                                    items="#{retailSaleNativeSqlController.printBillItems}" />
+                                <phi:saleBill_native
+                                    bill="#{retailSaleNativeSqlController.printBill}"
+                                    items="#{retailSaleNativeSqlController.printBillItems}" />
+                            </h:panelGroup>
+                            <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Retail Sale Bill Paper is POS Paper Custom 1', false)}">
+                                <phi:saleBill_Retail_Pos_paper_Custom_1_native
+                                    bill="#{retailSaleNativeSqlController.printBill}"
+                                    items="#{retailSaleNativeSqlController.printBillItems}" />
+                            </h:panelGroup>
+                            <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Retail Sale Bill Paper is FiveFive Paper without Blank Space for Header', true)}">
+                                <phi:saleBill_five_five_native
+                                    bill="#{retailSaleNativeSqlController.printBill}"
+                                    items="#{retailSaleNativeSqlController.printBillItems}" />
+                            </h:panelGroup>
+                            <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Retail Sale Bill Paper is POS paper with header', true)}">
+                                <phi:saleBill_Header_Inward_native
+                                    bill="#{retailSaleNativeSqlController.printBill}"
+                                    items="#{retailSaleNativeSqlController.printBillItems}" />
+                            </h:panelGroup>
+                            <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Retail Sale Bill Paper is Custom 3', false)}">
+                                <phi:sale_bill_five_five_custom_3_native
+                                    bill="#{retailSaleNativeSqlController.printBill}"
+                                    items="#{retailSaleNativeSqlController.printBillItems}" />
+                            </h:panelGroup>
+                            <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Retail Sale Bill is PosHeaderPaper', false)}">
+                                <phi:saleBill_Header_Inward_native
+                                    bill="#{retailSaleNativeSqlController.printBill}"
+                                    items="#{retailSaleNativeSqlController.printBillItems}" />
+                            </h:panelGroup>
                         </h:panelGroup>
                     </p:panel>
                 </h:form>
