@@ -1,0 +1,148 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="./index.xhtml">
+            <ui:define name="subcontent">
+                <h:form>
+                    <p:panel>
+                        <f:facet name="header">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div>
+                                    <i class="fa fa-check-circle me-2"/>
+                                    <h:outputText value="Shortage Settlement Recorded"/>
+                                    <span class="ms-3 fw-bold">
+                                        <h:outputText value="Settled: "/>
+                                        <h:outputText value="#{financialTransactionController.currentPayment.paidValue}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </span>
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <p:commandButton
+                                        value="Back to Search"
+                                        icon="fa fa-search"
+                                        styleClass="ui-button-info"
+                                        ajax="false"
+                                        action="#{financialTransactionController.navigateToCashierShiftBillSearchWithTodayResults()}"/>
+                                    <p:commandButton
+                                        value="Print"
+                                        icon="fa fa-print"
+                                        styleClass="ui-button-secondary">
+                                        <p:printer target="settlementreceipt"/>
+                                    </p:commandButton>
+                                </div>
+                            </div>
+                        </f:facet>
+
+                        <h:panelGroup id="settlementreceipt">
+                            <div class="d-flex justify-content-center">
+                                <div style="width: 400px; border: 1px solid #ccc; padding: 20px; font-family: monospace;">
+                                    <div class="text-center mb-3">
+                                        <h:outputText value="#{sessionController.institution.name}" styleClass="fw-bold d-block"/>
+                                        <h:outputText value="SHORTAGE SETTLEMENT RECEIPT" styleClass="fw-bold d-block mt-1"/>
+                                        <hr/>
+                                    </div>
+
+                                    <table style="width: 100%;">
+                                        <tr>
+                                            <td style="width: 50%;">Settlement Bill No.</td>
+                                            <td class="text-end fw-bold">
+                                                <h:outputText value="#{financialTransactionController.currentBill.idStr}"/>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Settlement Date</td>
+                                            <td class="text-end">
+                                                <h:outputText value="#{financialTransactionController.currentBill.billTime}">
+                                                    <f:convertDateTime timeZone="Asia/Colombo"
+                                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                                </h:outputText>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Settled By</td>
+                                            <td class="text-end">
+                                                <h:outputText value="#{financialTransactionController.currentBill.fromWebUser.webUserPerson.name}"/>
+                                            </td>
+                                        </tr>
+                                        <tr><td colspan="2"><hr/></td></tr>
+                                        <tr>
+                                            <td>Original Shortage Bill</td>
+                                            <td class="text-end">
+                                                <h:outputText value="#{financialTransactionController.selectedBill.idStr}"/>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Shortage Date</td>
+                                            <td class="text-end">
+                                                <h:outputText value="#{financialTransactionController.selectedBill.billTime}">
+                                                    <f:convertDateTime timeZone="Asia/Colombo"
+                                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                                </h:outputText>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Total Shortage</td>
+                                            <td class="text-end">
+                                                <h:outputText value="#{financialTransactionController.selectedBill.total}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </td>
+                                        </tr>
+                                        <tr><td colspan="2"><hr/></td></tr>
+                                        <tr>
+                                            <td class="fw-bold">Amount Settled Now</td>
+                                            <td class="text-end fw-bold">
+                                                <h:outputText value="#{financialTransactionController.currentPayment.paidValue}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Total Settled to Date</td>
+                                            <td class="text-end">
+                                                <h:outputText value="#{financialTransactionController.shortageSettledSoFar}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Outstanding Remaining</td>
+                                            <td class="text-end">
+                                                <h:outputText value="#{financialTransactionController.shortageOutstanding}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </td>
+                                        </tr>
+                                        <h:panelGroup rendered="#{financialTransactionController.selectedBill.paid}" layout="block">
+                                            <tr><td colspan="2"><hr/></td></tr>
+                                            <tr>
+                                                <td colspan="2" class="text-center fw-bold text-success">
+                                                    *** FULLY SETTLED ***
+                                                </td>
+                                            </tr>
+                                        </h:panelGroup>
+                                    </table>
+
+                                    <div class="text-center mt-3">
+                                        <h:outputText value="Payment Method: Cash" styleClass="d-block"/>
+                                        <h:outputText value="#{financialTransactionController.currentBill.comments}"
+                                                      rendered="#{not empty financialTransactionController.currentBill.comments}"
+                                                      styleClass="d-block mt-1 fst-italic"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </h:panelGroup>
+
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

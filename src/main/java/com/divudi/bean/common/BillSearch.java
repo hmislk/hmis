@@ -4686,6 +4686,7 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
 
     public String navigateToViewCashierShiftShortageBill(Bill bill) {
         loadBillDetails(bill);
+        financialTransactionController.prepareToViewShortageBill(bill);
         return "/cashier/shift_shortage_bill_reprint?faces-redirect=true";
     }
 //    //to do
@@ -5886,6 +5887,7 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
             case OPERATIONAL_EXPENSES_CANCELLED:
                 return navigateToManageCancelExpenseBill();
             case FUND_SHIFT_SHORTAGE_BILL:
+            case FUND_SHIFT_SHORTAGE_SETTLEMENT_BILL:
                 return navigateToViewCashierShiftShortageBill(bill);
             //                opdBillController.setBill(bill);
 //                return opdBillController.navigateToViewPackageBatchBill();

@@ -150,6 +150,9 @@ public class FinancialTransactionController implements Serializable {
     private ReportTemplateRowBundle channellingDocPayment;
     private boolean handoverValuesCreated = false;
     private boolean shortageSubmitting = false;
+    private boolean settlementSubmitting = false;
+    private double shortageSettledSoFar;
+    private double shortageOutstanding;
 
     private ReportTemplateRowBundle opdBilled;
     private ReportTemplateRowBundle opdReturns;
@@ -7784,6 +7787,125 @@ public class FinancialTransactionController implements Serializable {
         resetClassVariables();
         searchController.createShiftShortageBillsTable();
         return "/cashier/cashier_shift_bill_search?faces-redirect=true";
+    }
+
+    public void prepareToViewShortageBill(Bill bill) {
+        selectedBill = bill;
+        computeShortageSettlementSummary(bill);
+    }
+
+    public String navigateToSettleShiftShortageBill() {
+        if (selectedBill == null) {
+            JsfUtil.addErrorMessage("No shortage bill selected.");
+            return "";
+        }
+        if (selectedBill.isCancelled()) {
+            JsfUtil.addErrorMessage("Cannot settle a cancelled bill.");
+            return "";
+        }
+        if (selectedBill.isPaid()) {
+            JsfUtil.addErrorMessage("This shortage has already been fully settled.");
+            return "";
+        }
+        if (selectedBill.getFromWebUser() == null
+                || !selectedBill.getFromWebUser().getId().equals(sessionController.getLoggedUser().getId())) {
+            JsfUtil.addErrorMessage("You can only settle your own shortage bills.");
+            return "";
+        }
+        computeShortageSettlementSummary(selectedBill);
+        if (shortageOutstanding <= 0.001) {
+            JsfUtil.addErrorMessage("This shortage has already been fully settled.");
+            return "";
+        }
+        currentBill = new Bill();
+        currentPayment = new Payment();
+        currentPayment.setPaidValue(shortageOutstanding);
+        return "/cashier/settle_shift_shortage_bill?faces-redirect=true";
+    }
+
+    public String settleShiftShortageBill() {
+        if (settlementSubmitting) {
+            return "";
+        }
+        if (currentPayment == null || currentPayment.getPaidValue() <= 0) {
+            JsfUtil.addErrorMessage("Please enter a valid settlement amount greater than zero.");
+            return "";
+        }
+        if (currentPayment.getPaidValue() > shortageOutstanding + 0.001) {
+            JsfUtil.addErrorMessage("Settlement amount cannot exceed the outstanding amount of "
+                    + String.format("%.2f", shortageOutstanding) + ".");
+            return "";
+        }
+        settlementSubmitting = true;
+        try {
+            currentBill.setBillType(BillType.ShiftShortageSettlement);
+            currentBill.setBillTypeAtomic(BillTypeAtomic.FUND_SHIFT_SHORTAGE_SETTLEMENT_BILL);
+            currentBill.setBillDate(new Date());
+            currentBill.setBillTime(new Date());
+            currentBill.setTotal(currentPayment.getPaidValue());
+            currentBill.setNetTotal(currentPayment.getPaidValue());
+            currentBill.setReferenceBill(selectedBill);
+            currentBill.setFromDepartment(sessionController.getDepartment());
+            currentBill.setFromInstitution(sessionController.getInstitution());
+            currentBill.setFromStaff(sessionController.getLoggedUser().getStaff());
+            currentBill.setFromWebUser(sessionController.getLoggedUser());
+            currentBill.setDepartment(null);
+            currentBill.setInstitution(null);
+            billController.save(currentBill);
+
+            currentPayment.setPaymentMethod(PaymentMethod.Cash);
+            currentPayment.setCreatedAt(new Date());
+            currentPayment.setBill(currentBill);
+            currentPayment.setDepartment(null);
+            currentPayment.setCurrentHolder(sessionController.getLoggedUser());
+            paymentController.save(currentPayment);
+
+            if (shortageOutstanding - currentPayment.getPaidValue() <= 0.001) {
+                selectedBill.setPaid(true);
+                selectedBill.setEditedAt(new Date());
+                selectedBill.setEditor(sessionController.getLoggedUser());
+                billController.save(selectedBill);
+            }
+            computeShortageSettlementSummary(selectedBill);
+            JsfUtil.addSuccessMessage("Shortage settlement recorded successfully.");
+            return "/cashier/settle_shift_shortage_print?faces-redirect=true";
+        } catch (Exception e) {
+            if (currentBill != null && currentBill.getId() != null) {
+                try {
+                    currentBill.setCancelled(true);
+                    billController.save(currentBill);
+                } catch (Exception ignore) {
+                }
+            }
+            JsfUtil.addErrorMessage("Failed to record settlement: " + e.getMessage());
+            return "";
+        } finally {
+            settlementSubmitting = false;
+        }
+    }
+
+    private void computeShortageSettlementSummary(Bill shortage) {
+        String jpql = "SELECT COALESCE(SUM(b.total), 0.0) FROM Bill b "
+                + "WHERE b.referenceBill = :ref "
+                + "AND b.billTypeAtomic = :bta "
+                + "AND b.cancelled = false";
+        Map<String, Object> params = new HashMap<>();
+        params.put("ref", shortage);
+        params.put("bta", BillTypeAtomic.FUND_SHIFT_SHORTAGE_SETTLEMENT_BILL);
+        Double settled = billFacade.findDoubleByJpql(jpql, params);
+        shortageSettledSoFar = settled != null ? settled : 0.0;
+        shortageOutstanding = Math.abs(shortage.getTotal()) - shortageSettledSoFar;
+        if (shortageOutstanding < 0) {
+            shortageOutstanding = 0;
+        }
+    }
+
+    public double getShortageSettledSoFar() {
+        return shortageSettledSoFar;
+    }
+
+    public double getShortageOutstanding() {
+        return shortageOutstanding;
     }
 
     private void calculateShortageBillTotal() {

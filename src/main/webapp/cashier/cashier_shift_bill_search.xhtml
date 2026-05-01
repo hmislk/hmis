@@ -161,6 +161,17 @@
                                 </h:outputLabel>
                             </p:column>
 
+                            <p:column headerText="Status">
+                                <h:panelGroup rendered="#{bill.paid}">
+                                    <span class="badge bg-success">Settled</span>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{bill.cancelled}">
+                                    <span class="badge bg-danger">Cancelled</span>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{!bill.paid and !bill.cancelled}">
+                                    <span class="badge bg-warning text-dark">Outstanding</span>
+                                </h:panelGroup>
+                            </p:column>
 
                             <p:column headerText="Actions">
                                 <p:commandButton icon="pi pi-wallet" styleClass="m-1" ajax="false" title="Manage Bill" action="#{billSearch.navigateToManageBillByAtomicBillType()}">
