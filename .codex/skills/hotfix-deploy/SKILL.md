@@ -71,7 +71,7 @@ git commit -m "fix: <description of fix>
 <Explanation of why this was needed and what it fixes.>
 References issues #NNNN.
 
-Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>"
+Co-Authored-By: Codex <noreply@openai.com>"
 ```
 
 ## Step 6 — Push
@@ -116,5 +116,5 @@ git branch -d $1-hotfix
 
 ## Reference
 
-- [Commit Conventions — Hotfix Branches](../../developer_docs/git/commit-conventions.md#hotfix-branches)
+- [Commit Conventions — Hotfix Branches](../../../developer_docs/git/commit-conventions.md#hotfix-branches)
 - [Production Deployment Guide](../../wiki-docs/Deployment/Production-Deployment-Guide.md)

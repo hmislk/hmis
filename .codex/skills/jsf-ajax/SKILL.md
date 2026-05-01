@@ -63,7 +63,7 @@ The growl component is in `template.xhtml` outside forms. Use absolute ID with c
 4. Test with `h:panelGroup` wrapper if updates fail
 5. Check component hierarchy - nested components affect id resolution
 
-For complete reference, read [developer_docs/jsf/ajax-update-guidelines.md](../../developer_docs/jsf/ajax-update-guidelines.md).
+For complete reference, read [developer_docs/jsf/ajax-update-guidelines.md](../../../developer_docs/jsf/ajax-update-guidelines.md).
 
 ---
 
@@ -100,4 +100,4 @@ public String navigateToFundTransferBill() {
 
 If you see `f:viewAction` without any `f:viewParam`, it is almost certainly wrong.
 
-For complete reference, read [developer_docs/jsf/navigation-patterns.md](../../developer_docs/jsf/navigation-patterns.md).
+For complete reference, read [developer_docs/jsf/navigation-patterns.md](../../../developer_docs/jsf/navigation-patterns.md).

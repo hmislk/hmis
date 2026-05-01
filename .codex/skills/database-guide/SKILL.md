@@ -66,4 +66,4 @@ Then pipe the output into mysql for that database. See `src/main/webapp/resource
 - **Development**: Use hardcoded JNDI (machine-specific — check your local Payara setup)
 - **Before push**: Must use environment variables (`${JDBC_DATASOURCE}`)
 
-For complete reference, read [developer_docs/database/mysql-developer-guide.md](../../developer_docs/database/mysql-developer-guide.md).
+For complete reference, read [developer_docs/database/mysql-developer-guide.md](../../../developer_docs/database/mysql-developer-guide.md).

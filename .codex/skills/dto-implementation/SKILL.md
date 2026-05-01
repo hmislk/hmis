@@ -77,4 +77,4 @@ Accessing properties through nullable relationships causes **silent query failur
 | Person | age | dob (calculate in Java) |
 | Item | displayName | name |
 
-For complete reference, read [developer_docs/dto/implementation-guidelines.md](../../developer_docs/dto/implementation-guidelines.md).
+For complete reference, read [developer_docs/dto/implementation-guidelines.md](../../../developer_docs/dto/implementation-guidelines.md).

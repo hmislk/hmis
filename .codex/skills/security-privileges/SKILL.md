@@ -46,4 +46,4 @@ user-invocable: true
 - Log in WITH the privilege - verify workflow succeeds end-to-end
 - Document new privilege in release notes
 
-For complete reference, read [developer_docs/security/privilege-system.md](../../developer_docs/security/privilege-system.md).
+For complete reference, read [developer_docs/security/privilege-system.md](../../../developer_docs/security/privilege-system.md).

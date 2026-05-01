@@ -149,4 +149,4 @@ curl -s -H "Finance: <key>" -X DELETE "http://localhost:9090/rh/api/<path>/<id>"
 curl -s http://localhost:9090/rh/api/capabilities | python -m json.tool
 ```
 
-For complete reference: [developer_docs/api/rest-api-development-guide.md](../../developer_docs/api/rest-api-development-guide.md)
+For complete reference: [developer_docs/api/rest-api-development-guide.md](../../../developer_docs/api/rest-api-development-guide.md)

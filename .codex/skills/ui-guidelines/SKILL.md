@@ -76,4 +76,4 @@ When working on any UI/XHTML task, follow these rules and patterns.
 
 ## For complete reference
 
-Read [developer_docs/ui/comprehensive-ui-guidelines.md](../../developer_docs/ui/comprehensive-ui-guidelines.md) for the full UI handbook including responsive design, accessibility, datatables, dialogs, and more.
+Read [developer_docs/ui/comprehensive-ui-guidelines.md](../../../developer_docs/ui/comprehensive-ui-guidelines.md) for the full UI handbook including responsive design, accessibility, datatables, dialogs, and more.

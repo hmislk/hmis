@@ -61,4 +61,4 @@ If deployment fails:
 1. Check GitHub Actions logs for build errors
 2. Verify persistence.xml configuration
 3. Check if QA server is accessible
-4. See [QA Troubleshooting Guide](../../developer_docs/deployment/qa-troubleshooting.md)
+4. See [QA Troubleshooting Guide](../../../developer_docs/deployment/qa-troubleshooting.md)

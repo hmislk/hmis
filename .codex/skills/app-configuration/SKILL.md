@@ -50,6 +50,6 @@ rendered="#{configOptionApplicationController.getBooleanValueByKey('Feature Key'
 - Per-department printer assignment
 
 For complete reference, read:
-- [Application Options](../../developer_docs/configuration/application-options.md)
-- [Bill Number Config](../../developer_docs/configuration/bill-number-config-options.md)
-- [Printer Configuration](../../developer_docs/configuration/printer-configuration-system.md)
+- [Application Options](../../../developer_docs/configuration/application-options.md)
+- [Bill Number Config](../../../developer_docs/configuration/bill-number-config-options.md)
+- [Printer Configuration](../../../developer_docs/configuration/printer-configuration-system.md)

@@ -18,12 +18,12 @@ Commit staged changes following the project's commit message conventions.
 
 ## Commit Message Format
 
-```
+```text
 <Summary of change in imperative mood>
 
 Closes #<issue-number>
 
-Co-Authored-By: Claude <noreply@anthropic.com>
+Co-Authored-By: Codex <noreply@openai.com>
 ```
 
 ## Issue Closing Keywords

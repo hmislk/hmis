@@ -42,7 +42,7 @@ Commit and push pending changes in the sibling `../hmis.wiki` repository to the 
    git add .
    git commit -m "Add/update wiki documentation
 
-   Co-Authored-By: Claude <noreply@anthropic.com>"
+   Co-Authored-By: Codex <noreply@openai.com>"
    git push origin master
    ```
 
