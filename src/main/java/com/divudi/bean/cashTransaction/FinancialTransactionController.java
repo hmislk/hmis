@@ -2793,14 +2793,11 @@ public class FinancialTransactionController implements Serializable {
             JsfUtil.addErrorMessage("Error");
             return;
         }
-        if (currentPayment.getPaymentMethod() == null) {
-            JsfUtil.addErrorMessage("Select a Payment Method");
-            return;
-        }
         if (currentPayment.getPaidValue() <= 0) {
             JsfUtil.addErrorMessage("Payment value must be greater than zero");
             return;
         }
+        currentPayment.setPaymentMethod(PaymentMethod.Cash);
         getCurrentBillPayments().add(currentPayment);
         calculateFundTransferBillTotal();
         currentPayment = null;
