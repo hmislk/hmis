@@ -1594,7 +1594,15 @@ case "manage_inward_rooms": {
                 if(code!=null&&!code.isEmpty()) b.add("code", code); if(printName!=null&&!printName.isEmpty()) b.add("printName", printName); if(reportType!=null&&!reportType.isEmpty()) b.add("reportType", reportType); if(bypassSampleWorkflow!=null&&!bypassSampleWorkflow.isEmpty()) b.add("bypassSampleWorkflow", Boolean.parseBoolean(bypassSampleWorkflow));
                 String u = "POST".equalsIgnoreCase(method) ? root+"/api/investigations" : root+"/api/investigations/"+id;
                 rb = HttpRequest.newBuilder().uri(URI.create(u)).method("POST".equalsIgnoreCase(method)?"POST":"PUT", HttpRequest.BodyPublishers.ofString(b.build().toString())).header("Content-Type", "application/json");
-            } else { String u=root+"/api/investigations/"+id+("ACTIVATE".equalsIgnoreCase(method)?"/activate":"/deactivate"); rb=HttpRequest.newBuilder().uri(URI.create(u)).method("PATCH", HttpRequest.BodyPublishers.noBody()); }
+            } else if ("ACTIVATE".equalsIgnoreCase(method) || "DEACTIVATE".equalsIgnoreCase(method)) {
+                String u = root + "/api/investigations/" + id
+                        + ("ACTIVATE".equalsIgnoreCase(method) ? "/activate" : "/deactivate");
+                rb = HttpRequest.newBuilder().uri(URI.create(u))
+                        .method("PATCH", HttpRequest.BodyPublishers.noBody());
+            } else {
+                return "Error: Unsupported method for manage_investigations: " + method
+                        + ". Allowed methods are GET, GET_BY_ID, POST, PUT, ACTIVATE, DEACTIVATE.";
+            }
             if(!key.isEmpty()) rb.header("Finance", key); HttpResponse<String> resp=client.send(rb.build(), HttpResponse.BodyHandlers.ofString()); return "HTTP "+resp.statusCode()+"\n"+resp.body();
         } catch (Exception e) { return "Investigation API error: "+e.getMessage(); }
     }
