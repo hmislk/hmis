@@ -117,4 +117,4 @@ git branch -d $1-hotfix
 ## Reference
 
 - [Commit Conventions — Hotfix Branches](../../../developer_docs/git/commit-conventions.md#hotfix-branches)
-- [Production Deployment Guide](../../wiki-docs/Deployment/Production-Deployment-Guide.md)
+- [Production Deployment Guide](../hmis.wiki/Deployment/Production-Deployment-Guide.md)

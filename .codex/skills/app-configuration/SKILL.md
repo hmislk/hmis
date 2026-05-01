@@ -11,7 +11,7 @@ user-invocable: true
 
 ## Configuration System
 
-HMIS uses `configOptionApplicationController` for feature toggles and runtime configuration.
+HMIS uses `configOptionApplicationController` for app-wide feature toggles and runtime configuration. Department- or module-specific settings can use `configOptionController` when the scope is narrower than the whole application.
 
 ### Usage Pattern
 
