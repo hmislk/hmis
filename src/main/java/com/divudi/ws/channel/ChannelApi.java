@@ -21,6 +21,7 @@ import com.divudi.core.data.OnlineBookingStatus;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.PersonInstitutionType;
 import com.divudi.core.data.SessionStatusForOnlineBooking;
+import com.divudi.core.data.Sex;
 import com.divudi.core.data.Title;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.ChannelBean;
@@ -3916,6 +3917,23 @@ public class ChannelApi {
         if (requestBody.get("address") != null) {
             person.setAddress(requestBody.get("address").toString());
         }
+        if (requestBody.get("sex") != null) {
+            Sex sex = parseSex(requestBody.get("sex"));
+            if (sex == null) {
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity(errorResponse(400, "Invalid sex value: " + requestBody.get("sex")).toString()).build();
+            }
+            person.setSex(sex);
+        }
+
+        Consultant existingConsultant = findActiveConsultantByNameAndTitle(name, person.getTitle());
+        if (existingConsultant != null) {
+            Map<String, Object> duplicateResponse = new HashMap<>();
+            duplicateResponse.put("status", "already_exists");
+            duplicateResponse.put("id", existingConsultant.getId());
+            duplicateResponse.put("name", existingConsultant.getPerson() != null ? existingConsultant.getPerson().getName() : name);
+            return Response.status(Response.Status.CONFLICT).entity(duplicateResponse).build();
+        }
 
         Consultant consultant = new Consultant();
         consultant.setPerson(person);
@@ -3999,7 +4017,7 @@ public class ChannelApi {
      *
      * Updatable fields (all optional — only supplied fields are changed):
      *   name, title, mobile, phone, fax, address, code, serialNo,
-     *   specialityId, institutionId, registration, qualification, description
+     *   specialityId, institutionId, registration, qualification, description, sex
      */
     @PUT
     @Path("/consultant/{id}")
@@ -4065,6 +4083,19 @@ public class ChannelApi {
         if (requestBody.containsKey("address")) {
             Object v = requestBody.get("address");
             person.setAddress(v != null ? v.toString() : null);
+        }
+        if (requestBody.containsKey("sex")) {
+            Object v = requestBody.get("sex");
+            if (v == null || v.toString().trim().isEmpty()) {
+                person.setSex(null);
+            } else {
+                Sex sex = parseSex(v);
+                if (sex == null) {
+                    return Response.status(Response.Status.BAD_REQUEST)
+                            .entity(errorResponse(400, "Invalid sex value: " + v).toString()).build();
+                }
+                person.setSex(sex);
+            }
         }
 
         if (requestBody.containsKey("code")) {
@@ -4149,6 +4180,109 @@ public class ChannelApi {
         response.put("detailMessage", "Consultant updated successfully");
 
         return Response.status(Response.Status.ACCEPTED).entity(response).build();
+    }
+
+    @GET
+    @Path("/consultant")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response listConsultants(@Context HttpServletRequest requestContext) {
+        String key = requestContext.getHeader("Token");
+        if (!isValidKey(key)) {
+            return Response.status(Response.Status.UNAUTHORIZED)
+                    .entity(errorMessageNotValidKey().toString()).build();
+        }
+
+        String query = context.getQueryParameters().getFirst("query");
+        int page = Math.max(parseIntParam(context.getQueryParameters().getFirst("page"), 0), 0);
+        int size = parseIntParam(context.getQueryParameters().getFirst("size"), 20);
+        if (size < 1) {
+            size = 20;
+        }
+        if (size > 200) {
+            size = 200;
+        }
+
+        Long specialityId = null;
+        String specialityIdRaw = context.getQueryParameters().getFirst("specialityId");
+        if (specialityIdRaw != null && !specialityIdRaw.trim().isEmpty()) {
+            try {
+                specialityId = Long.valueOf(specialityIdRaw.trim());
+            } catch (NumberFormatException e) {
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity(errorResponse(400, "Invalid specialityId value: " + specialityIdRaw).toString()).build();
+            }
+        }
+
+        long offsetLong = (long) page * size;
+        long endLong = offsetLong + size - 1L;
+        if (offsetLong > Integer.MAX_VALUE || endLong > Integer.MAX_VALUE) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(errorResponse(400, "page is too large").toString()).build();
+        }
+
+        String jpql = "select c from Consultant c where c.retired=false "
+                + " and c.person is not null ";
+        Map<String, Object> params = new HashMap<>();
+        if (query != null && !query.trim().isEmpty()) {
+            jpql += " and upper(c.person.name) like :q ";
+            params.put("q", "%" + query.trim().toUpperCase() + "%");
+        }
+        if (specialityId != null) {
+            jpql += " and c.speciality.id = :sid ";
+            params.put("sid", specialityId);
+        }
+        jpql += " order by c.person.name";
+
+        List<Consultant> consultants = consultantFacade.findByJpql(jpql, params, (int) offsetLong, (int) endLong);
+        List<Map<String, Object>> data = new ArrayList<>();
+        for (Consultant consultant : consultants) {
+            Map<String, Object> item = new HashMap<>();
+            item.put("id", consultant.getId());
+            item.put("name", consultant.getPerson() != null ? consultant.getPerson().getName() : null);
+            item.put("title", consultant.getPerson() != null && consultant.getPerson().getTitle() != null ? consultant.getPerson().getTitle().toString() : null);
+            item.put("sex", consultant.getPerson() != null && consultant.getPerson().getSex() != null ? consultant.getPerson().getSex().toString() : null);
+            item.put("specialityId", consultant.getSpeciality() != null ? consultant.getSpeciality().getId() : null);
+            item.put("speciality", consultant.getSpeciality() != null ? consultant.getSpeciality().getName() : null);
+            item.put("institutionId", consultant.getInstitution() != null ? consultant.getInstitution().getId() : null);
+            item.put("institution", consultant.getInstitution() != null ? consultant.getInstitution().getName() : null);
+            item.put("mobile", consultant.getPerson() != null ? consultant.getPerson().getMobile() : null);
+            data.add(item);
+        }
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("code", "200");
+        response.put("message", "OK");
+        response.put("data", data);
+        return Response.ok(response).build();
+    }
+
+    private Sex parseSex(Object raw) {
+        if (raw == null) {
+            return null;
+        }
+        String sexString = raw.toString().trim();
+        if (sexString.isEmpty()) {
+            return null;
+        }
+        for (Sex sex : Sex.values()) {
+            if (sex.name().equalsIgnoreCase(sexString) || sex.getLabel().equalsIgnoreCase(sexString) || sex.getShortLabel().equalsIgnoreCase(sexString)) {
+                return sex;
+            }
+        }
+        return null;
+    }
+
+    private Consultant findActiveConsultantByNameAndTitle(String name, Title title) {
+        if (name == null || name.trim().isEmpty() || title == null) {
+            return null;
+        }
+        String jpql = "select c from Consultant c where c.retired=false and c.person is not null "
+                + " and upper(c.person.name)=:n and c.person.title=:t order by c.id";
+        Map<String, Object> params = new HashMap<>();
+        params.put("n", name.trim().toUpperCase());
+        params.put("t", title);
+        List<Consultant> existing = consultantFacade.findByJpql(jpql, params, 1);
+        return existing == null || existing.isEmpty() ? null : existing.get(0);
     }
 
 }
