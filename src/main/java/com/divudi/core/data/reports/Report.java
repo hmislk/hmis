@@ -46,7 +46,7 @@ import com.itextpdf.layout.properties.UnitValue;
 public class Report<T> {
 
     // List<ReportColumn> columns;
-    protected LinkedHashMap<String, ReportColumn<T>> columns;
+    private LinkedHashMap<String, ReportColumn<T>> columns;
     private List<T> data;
     private boolean serialNoColumnAtStart = false;
 
@@ -64,7 +64,21 @@ public class Report<T> {
     
 
     public Report() {
-        this.columns = new LinkedHashMap<>();
+
+    }
+
+    public Report(LinkedHashMap<String, ReportColumn<T>> columns) {
+        this.columns = columns;
+    }
+
+    public Report(LinkedHashMap<String, ReportColumn<T>> columns, String reportName, String fileName, String institutionName, Map<String, Object> searchCriteria, List<T> data, String reportGeneratedBy) {
+        this.columns = columns;
+        this.reportName = reportName;
+        this.fileName = fileName;
+        this.institutionName = institutionName;
+        this.searchCriteria = searchCriteria;
+        this.data = data;
+        this.reportGeneratedBy = reportGeneratedBy;
     }
 
     public Report(Map<String, Object> searchCriteria, String reportGeneratedBy, String institutionName) {
@@ -679,19 +693,13 @@ public class Report<T> {
 
     public static class OnlineBookingCountReport extends Report<OnlineBookingDetialRow> {
 
-        public OnlineBookingCountReport(String fileName, String institutionName, Map<String, Object> searchCriteria, List<OnlineBookingDetialRow> data, String reportGeneratedBy) {
-            this.setSerialNoColumnAtStart(true);
-            this.columns = new LinkedHashMap<>();
-            this.setReportName("Online Session Bookings");
-            this.setFileName(fileName);
-            this.setInstitutionName(institutionName);
-            this.setSearchCriteria(searchCriteria);
-            this.setData(data);
-            this.setReportGeneratedBy(reportGeneratedBy);
+        private static final LinkedHashMap<String, ReportColumn<OnlineBookingDetialRow>> rpCols;
 
-            columns.put("Bill No", new ReportColumn<>("Bill No", OnlineBookingDetialRow::getBillDeptId, TextAlignment.LEFT, "%s", 4f));
+        static {
+            rpCols = new LinkedHashMap<>();
+            rpCols.put("Bill No", new ReportColumn<>("Bill No", OnlineBookingDetialRow::getBillDeptId, TextAlignment.LEFT, "%s", 4f));
 
-            columns.put("Session Date", new ReportColumn<>("Session Date",
+            rpCols.put("Session Date", new ReportColumn<>("Session Date",
                      row -> {
                             OnlineBookingDetialRow r = (OnlineBookingDetialRow) row;
                             return new SimpleDateFormat("dd MMM yyyy").format(r.getSessionDate());
@@ -700,14 +708,14 @@ public class Report<T> {
                     "%s",
                     3f));
 
-            columns.put("Consultant", new ReportColumn<>("Consultant", OnlineBookingDetialRow::getConsultantName, TextAlignment.LEFT, "%s", 5f));
-            columns.put("Speciality", new ReportColumn<>("Speciality", OnlineBookingDetialRow::getConsultantSpeciality, TextAlignment.LEFT, "%s", 4f));
-            columns.put("Session Name", new ReportColumn<>("Session Name", OnlineBookingDetialRow::getSessionName, TextAlignment.LEFT, "%s", 4f));
-            columns.put("Patient Name", new ReportColumn<>("Patient Name", OnlineBookingDetialRow::getPatientName, TextAlignment.LEFT, "%s", 5f, "Total Amount"));
-            columns.put("Amount", new ReportColumn<>("Amount", OnlineBookingDetialRow::getPaidAmount, TextAlignment.RIGHT, "%,.2f", 4f));
-            columns.put("Agent", new ReportColumn<>("Agent", OnlineBookingDetialRow::getAgentName, TextAlignment.LEFT, "%s", 4f));
-            columns.put("Phone Number", new ReportColumn<>("Phone Number", OnlineBookingDetialRow::getPatientPhone, TextAlignment.LEFT, "%s", 4f));
-            columns.put("State", new ReportColumn<>("State", 
+            rpCols.put("Consultant", new ReportColumn<>("Consultant", OnlineBookingDetialRow::getConsultantName, TextAlignment.LEFT, "%s", 5f));
+            rpCols.put("Speciality", new ReportColumn<>("Speciality", OnlineBookingDetialRow::getConsultantSpeciality, TextAlignment.LEFT, "%s", 4f));
+            rpCols.put("Session Name", new ReportColumn<>("Session Name", OnlineBookingDetialRow::getSessionName, TextAlignment.LEFT, "%s", 4f));
+            rpCols.put("Patient Name", new ReportColumn<>("Patient Name", OnlineBookingDetialRow::getPatientName, TextAlignment.LEFT, "%s", 5f, "Total Amount"));
+            rpCols.put("Amount", new ReportColumn<>("Amount", OnlineBookingDetialRow::getPaidAmount, TextAlignment.RIGHT, "%,.2f", 4f));
+            rpCols.put("Agent", new ReportColumn<>("Agent", OnlineBookingDetialRow::getAgentName, TextAlignment.LEFT, "%s", 4f));
+            rpCols.put("Phone Number", new ReportColumn<>("Phone Number", OnlineBookingDetialRow::getPatientPhone, TextAlignment.LEFT, "%s", 4f));
+            rpCols.put("State", new ReportColumn<>("State", 
                     row -> {
                             OnlineBookingDetialRow r = (OnlineBookingDetialRow) row;
                             if (r.isBillCancelled()) return "Cancelled Bill";
@@ -719,6 +727,17 @@ public class Report<T> {
                     TextAlignment.CENTER, 
                     "%s", 
                     3f));
+        }
+
+        public OnlineBookingCountReport(String fileName, String institutionName, Map<String, Object> searchCriteria, List<OnlineBookingDetialRow> data, String reportGeneratedBy) {
+            super(rpCols);
+            this.setSerialNoColumnAtStart(true);
+            this.setReportName("Online Session Bookings");
+            this.setFileName(fileName);
+            this.setInstitutionName(institutionName);
+            this.setSearchCriteria(searchCriteria);
+            this.setData(data);
+            this.setReportGeneratedBy(reportGeneratedBy);
             
         }
 
@@ -731,11 +750,11 @@ public class Report<T> {
             }
             Object footerValue;
             
-            ReportColumn<OnlineBookingDetialRow> col1 = columns.get("Patient Name");
+            ReportColumn<OnlineBookingDetialRow> col1 = getColumns().get("Patient Name");
             footerValue = col1.getFooter();
             table.addCell(new Cell().add(new Paragraph((footerValue != null ? String.format(col1.getFormat(), footerValue) : ""))).setFont(PdfFontFactory.createFont(getBoldFont())).setTextAlignment(col1.getTextAlignment()).setFontSize(getFontSize()).setBackgroundColor(new DeviceRgb(192, 192, 192)));
 
-            ReportColumn<OnlineBookingDetialRow> col2 = columns.get("Amount");
+            ReportColumn<OnlineBookingDetialRow> col2 = getColumns().get("Amount");
             footerValue = col2.getFooter();
             table.addCell(new Cell().add(new Paragraph((footerValue != null ? String.format(col2.getFormat(), footerValue) : "")).setFont(PdfFontFactory.createFont(getBoldFont()))).setTextAlignment(col2.getTextAlignment()).setFontSize(getFontSize()).setBackgroundColor(new DeviceRgb(192, 192, 192)));
 
@@ -752,16 +771,11 @@ public class Report<T> {
 
     public static class ChannelBillSearch extends Report<Bill> {
 
-        public ChannelBillSearch(String fileName, String institutionName, Map<String, Object> searchCriteria, List<Bill> data, String reportGeneratedBy) {
-            this.columns = new LinkedHashMap<>();
-            this.setReportName("Channel Bills");
-            this.setFileName(fileName);
-            this.setInstitutionName(institutionName);
-            this.setSearchCriteria(searchCriteria);
-            this.setData(data);
-            this.setReportGeneratedBy(reportGeneratedBy);
+        private static final LinkedHashMap<String, ReportColumn<Bill>> rpCols;
 
-            columns.put("Bill No", new ReportColumn<>("Bill No",
+        static {
+            rpCols = new LinkedHashMap<>();
+            rpCols.put("Bill No", new ReportColumn<>("Bill No",
                     row -> {
                             Bill r = (Bill) row;
                             String billDept = r.getDeptId() != null ? r.getDeptId() : "";
@@ -783,7 +797,7 @@ public class Report<T> {
                     "%s",
                     4f));
 
-            columns.put("Consultant", new ReportColumn<>("Consultant",
+            rpCols.put("Consultant", new ReportColumn<>("Consultant",
                     row -> {
                             Bill r = (Bill) row;
                             return (r.getSingleBillSession() != null && r.getSingleBillSession().getSessionInstance() != null && r.getSingleBillSession().getSessionInstance().getStaff() != null &&  r.getSingleBillSession().getSessionInstance().getStaff().getPerson() != null) ?
@@ -793,7 +807,7 @@ public class Report<T> {
                     "%s",
                     4f));
 
-            columns.put("Billed At", new ReportColumn<>("Billed At",
+            rpCols.put("Billed At", new ReportColumn<>("Billed At",
                     row -> {
                             Bill r = (Bill) row;
                             String date = (r.getCreatedAt() != null) ? new SimpleDateFormat("dd MMM yyyy hh:mm a").format(r.getCreatedAt()) : "";
@@ -811,7 +825,7 @@ public class Report<T> {
                     "%s",
                     3f));
 
-            columns.put("Session", new ReportColumn<>("Session",
+            rpCols.put("Session", new ReportColumn<>("Session",
                     row -> {
                             Bill r = (Bill) row;
                             return (r.getSingleBillSession() != null && r.getSingleBillSession().getSessionInstance() != null && r.getSingleBillSession().getSessionInstance().getOriginatingSession() != null) ?
@@ -821,7 +835,7 @@ public class Report<T> {
                     "%s",
                     4f));
 
-            columns.put("Billed For", new ReportColumn<>("Billed For",
+            rpCols.put("Billed For", new ReportColumn<>("Billed For",
                     row -> {
                             Bill r = (Bill) row;
                             return (r.getToDepartment() != null) ? r.getToDepartment().getName() : "";
@@ -830,7 +844,7 @@ public class Report<T> {
                     "%s",
                     3f));
 
-            columns.put("Billed By", new ReportColumn<>("Billed By",
+            rpCols.put("Billed By", new ReportColumn<>("Billed By",
                     row -> {
                             Bill r = (Bill) row;
                             String billedBy = r.getCreater() != null && r.getCreater().getWebUserPerson() != null ? r.getCreater().getWebUserPerson().getName() : "";
@@ -849,7 +863,7 @@ public class Report<T> {
                     "%s",
                     3f));
 
-            columns.put("PaymentMethod", new ReportColumn<>("PaymentMethod",
+            rpCols.put("PaymentMethod", new ReportColumn<>("PaymentMethod",
                     row -> {
                             Bill r = (Bill) row;
                             return (r.getPaymentMethod() != null) ? r.getPaymentMethod().getLabel() : "";
@@ -859,7 +873,7 @@ public class Report<T> {
                     3f));
 
             
-            columns.put("Serial Number", new ReportColumn<>("Serial Number",
+            rpCols.put("Serial Number", new ReportColumn<>("Serial Number",
                     row -> {
                             Bill r = (Bill) row;
                             return (r.getSingleBillSession() != null) ? r.getSingleBillSession().getSerialNo() : "";
@@ -868,7 +882,7 @@ public class Report<T> {
                     "%s",
                     3f));
 
-            columns.put("Client", new ReportColumn<>("Client",
+            rpCols.put("Client", new ReportColumn<>("Client",
                     row -> {
                             Bill r = (Bill) row;
                             String client = "";
@@ -886,7 +900,7 @@ public class Report<T> {
                     "%s",
                     3f));
 
-            columns.put("Remarks", new ReportColumn<>("Remarks",
+            rpCols.put("Remarks", new ReportColumn<>("Remarks",
                     row -> {
                             Bill r = (Bill) row;
                             String remarks = "";
@@ -904,10 +918,20 @@ public class Report<T> {
                     "%s",
                     3f));
 
-            columns.put("Gross Value", new ReportColumn<>("Gross Value", Bill::getTotal, TextAlignment.LEFT, "%s", 4f));
-            columns.put("Discount", new ReportColumn<>("Discount", Bill::getDiscount, TextAlignment.LEFT, "%s", 4f));
-            columns.put("Net Value", new ReportColumn<>("Net Value", Bill::getNetTotal, TextAlignment.LEFT, "%s", 4f));
-            
+            rpCols.put("Gross Value", new ReportColumn<>("Gross Value", Bill::getTotal, TextAlignment.LEFT, "%s", 4f));
+            rpCols.put("Discount", new ReportColumn<>("Discount", Bill::getDiscount, TextAlignment.LEFT, "%s", 4f));
+            rpCols.put("Net Value", new ReportColumn<>("Net Value", Bill::getNetTotal, TextAlignment.LEFT, "%s", 4f));
+        }
+
+        public ChannelBillSearch(String fileName, String institutionName, Map<String, Object> searchCriteria, List<Bill> data, String reportGeneratedBy) {
+            super(rpCols);
+            this.setReportName("Channel Bills");
+            this.setFileName(fileName);
+            this.setInstitutionName(institutionName);
+            this.setSearchCriteria(searchCriteria);
+            this.setData(data);
+            this.setReportGeneratedBy(reportGeneratedBy);
+      
         }
         
     }
