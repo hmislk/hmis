@@ -44,6 +44,7 @@ import com.divudi.core.entity.inward.Admission;
 import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.entity.inward.GuardianRoom;
 import com.divudi.core.entity.inward.PatientRoom;
+import com.divudi.core.entity.inward.RoomFacilityCharge;
 import com.divudi.core.entity.inward.TimedItem;
 import com.divudi.core.entity.inward.TimedItemFee;
 import com.divudi.core.entity.membership.InwardMemberShipDiscount;
@@ -1149,6 +1150,25 @@ public class BhtSummeryController implements Serializable {
         }
 
         // Refresh the tables or any other necessary actions after saving
+        createTables();
+    }
+
+    public void updateChargesForRoom(PatientRoom pr) {
+        if (pr == null || pr.getRoomFacilityCharge() == null) {
+            JsfUtil.addErrorMessage("Room facility charge not set");
+            return;
+        }
+        RoomFacilityCharge rfc = pr.getRoomFacilityCharge();
+        pr.setCurrentRoomCharge(rfc.getRoomCharge() != null ? rfc.getRoomCharge() : 0.0);
+        pr.setCurrentMaintananceCharge(rfc.getMaintananceCharge() != null ? rfc.getMaintananceCharge() : 0.0);
+        pr.setCurrentNursingCharge(rfc.getNursingCharge() != null ? rfc.getNursingCharge() : 0.0);
+        pr.setCurrentMoCharge(rfc.getMoCharge() != null ? rfc.getMoCharge() : 0.0);
+        pr.setCurrentMoChargeForAfterDuration(rfc.getMoChargeForAfterDuration() != null ? rfc.getMoChargeForAfterDuration() : 0.0);
+        pr.setCurrentLinenCharge(rfc.getLinenCharge() != null ? rfc.getLinenCharge() : 0.0);
+        pr.setCurrentAdministrationCharge(rfc.getAdminstrationCharge());
+        pr.setCurrentMedicalCareCharge(rfc.getMedicalCareCharge());
+        getPatientRoomFacade().edit(pr);
+        patientRooms = null;
         createTables();
     }
 

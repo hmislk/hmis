@@ -86,9 +86,22 @@
                                         styleClass="w-100"
                                         rowStyleClass="#{rm.discharged ? '' : 'font-weight-bold'}">
 
-                                        <p:column headerText="Room" style="min-width:140px;">
-                                            <div class="d-flex align-items-center gap-2">
-                                                <h:outputText value="#{rm.roomFacilityCharge.name}" styleClass="fw-semibold"/>
+                                        <!-- Expand toggle column -->
+                                        <p:column style="width:36px; text-align:center;">
+                                            <p:rowToggler/>
+                                        </p:column>
+
+                                        <p:column headerText="Room" style="min-width:220px;">
+                                            <div class="d-flex align-items-center gap-2 flex-wrap">
+                                                <p:autoComplete
+                                                    forceSelection="true"
+                                                    value="#{rm.roomFacilityCharge}"
+                                                    completeMethod="#{roomFacilityChargeController.completeRoomChargeAll}"
+                                                    var="rf"
+                                                    itemLabel="#{rf.name}"
+                                                    itemValue="#{rf}"
+                                                    style="width:160px;"
+                                                    minQueryLength="1"/>
                                                 <h:panelGroup rendered="#{rm.patientRoomClass eq 'class com.divudi.core.entity.inward.GuardianRoom'}">
                                                     <p:badge value="Guardian" severity="success"/>
                                                 </h:panelGroup>
@@ -167,7 +180,7 @@
                                             </h:outputText>
                                         </p:column>
 
-                                        <p:column headerText="Actions" style="width:160px;">
+                                        <p:column headerText="Actions" style="width:220px;">
                                             <div class="d-flex gap-1 flex-wrap">
                                                 <p:commandButton
                                                     ajax="false"
@@ -175,6 +188,12 @@
                                                     title="Save Changes"
                                                     class="ui-button-info"
                                                     action="#{bhtSummeryController.updatePatientRoom(rm)}"/>
+                                                <p:commandButton
+                                                    ajax="false"
+                                                    icon="fa fa-calculator"
+                                                    title="Update Charges from Room Rates"
+                                                    class="ui-button-success"
+                                                    action="#{bhtSummeryController.updateChargesForRoom(rm)}"/>
                                                 <p:commandButton
                                                     ajax="false"
                                                     icon="fa fa-check-square"
@@ -189,6 +208,185 @@
                                                     action="#{roomChangeController.dischargeCancel(rm)}"/>
                                             </div>
                                         </p:column>
+
+                                        <!-- Expandable charge breakdown -->
+                                        <p:rowExpansion>
+                                            <div class="p-3 border rounded" style="background:#f8f9fa;">
+                                                <!-- Duration summary -->
+                                                <div class="mb-3 d-flex flex-wrap gap-3 align-items-center">
+                                                    <small class="text-muted fw-semibold">
+                                                        <i class="fa-solid fa-clock me-1"/>Duration:
+                                                    </small>
+                                                    <small>
+                                                        <h:outputText value="#{rm.admittedAt}">
+                                                            <f:convertDateTime pattern="dd MMM yyyy HH:mm"/>
+                                                        </h:outputText>
+                                                        &#x2192;
+                                                        <h:panelGroup rendered="#{rm.dischargedAt ne null}">
+                                                            <h:outputText value="#{rm.dischargedAt}">
+                                                                <f:convertDateTime pattern="dd MMM yyyy HH:mm"/>
+                                                            </h:outputText>
+                                                        </h:panelGroup>
+                                                        <h:panelGroup rendered="#{rm.dischargedAt eq null}">
+                                                            <span class="text-success fw-semibold">Now</span>
+                                                        </h:panelGroup>
+                                                    </small>
+                                                    <h:panelGroup rendered="#{rm.roomFacilityCharge ne null and rm.roomFacilityCharge.timedItemFee ne null}">
+                                                        <small class="text-muted">|</small>
+                                                        <small class="text-muted">
+                                                            Slot:
+                                                            <h:outputText value="#{rm.roomFacilityCharge.timedItemFee.durationHours}">
+                                                                <f:convertNumber pattern="#,##0.##"/>
+                                                            </h:outputText> hrs
+                                                            &nbsp;|&nbsp;Overshoot:
+                                                            <h:outputText value="#{rm.roomFacilityCharge.timedItemFee.overShootHours}">
+                                                                <f:convertNumber pattern="#,##0.##"/>
+                                                            </h:outputText> hrs
+                                                        </small>
+                                                    </h:panelGroup>
+                                                </div>
+
+                                                <!-- Per-charge breakdown table -->
+                                                <table class="table table-sm table-bordered mb-0" style="font-size:0.85rem;">
+                                                    <thead class="table-secondary">
+                                                        <tr>
+                                                            <th>Charge Type</th>
+                                                            <th class="text-end">Rate / Slot</th>
+                                                            <th class="text-end">Calculated</th>
+                                                            <th class="text-end" style="color:#c0392b;">Discount</th>
+                                                            <th class="text-end fw-bold">Net</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr>
+                                                            <td><i class="fa-solid fa-bed me-1 text-primary"/>Room</td>
+                                                            <td class="text-end">
+                                                                <h:outputText value="#{rm.currentRoomCharge}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                                            </td>
+                                                            <td class="text-end">
+                                                                <h:outputText value="#{rm.calculatedRoomCharge}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                                            </td>
+                                                            <td class="text-end" style="color:#c0392b;">
+                                                                <h:outputText value="#{rm.discountRoomCharge}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                                            </td>
+                                                            <td class="text-end fw-semibold">
+                                                                <h:outputText value="#{rm.adjustedRoomCharge}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><i class="fa-solid fa-wrench me-1 text-secondary"/>Maintenance</td>
+                                                            <td class="text-end">
+                                                                <h:outputText value="#{rm.currentMaintananceCharge}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                                            </td>
+                                                            <td class="text-end">
+                                                                <h:outputText value="#{rm.calculatedMaintainCharge}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                                            </td>
+                                                            <td class="text-end" style="color:#c0392b;">
+                                                                <h:outputText value="#{rm.discountMaintainCharge}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                                            </td>
+                                                            <td class="text-end fw-semibold">
+                                                                <h:outputText value="#{rm.adjustedMaintainCharge}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><i class="fa-solid fa-user-doctor me-1 text-info"/>Medical Officer</td>
+                                                            <td class="text-end">
+                                                                <h:outputText value="#{rm.currentMoCharge}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                                            </td>
+                                                            <td class="text-end">
+                                                                <h:outputText value="#{rm.calculatedMoCharge}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                                            </td>
+                                                            <td class="text-end" style="color:#c0392b;">
+                                                                <h:outputText value="#{rm.discountMoCharge}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                                            </td>
+                                                            <td class="text-end fw-semibold">
+                                                                <h:outputText value="#{rm.adjustedMoCharge}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><i class="fa-solid fa-user-nurse me-1 text-success"/>Nursing</td>
+                                                            <td class="text-end">
+                                                                <h:outputText value="#{rm.currentNursingCharge}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                                            </td>
+                                                            <td class="text-end">
+                                                                <h:outputText value="#{rm.calculatedNursingCharge}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                                            </td>
+                                                            <td class="text-end" style="color:#c0392b;">
+                                                                <h:outputText value="#{rm.discountNursingCharge}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                                            </td>
+                                                            <td class="text-end fw-semibold">
+                                                                <h:outputText value="#{rm.ajdustedNursingCharge}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><i class="fa-solid fa-sheet-plastic me-1 text-warning"/>Linen</td>
+                                                            <td class="text-end">
+                                                                <h:outputText value="#{rm.currentLinenCharge}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                                            </td>
+                                                            <td class="text-end">
+                                                                <h:outputText value="#{rm.calculatedLinenCharge}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                                            </td>
+                                                            <td class="text-end" style="color:#c0392b;">
+                                                                <h:outputText value="#{rm.discountLinenCharge}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                                            </td>
+                                                            <td class="text-end fw-semibold">
+                                                                <h:outputText value="#{rm.ajdustedLinenCharge}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><i class="fa-solid fa-building me-1 text-muted"/>Administration</td>
+                                                            <td class="text-end">
+                                                                <h:outputText value="#{rm.currentAdministrationCharge}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                                            </td>
+                                                            <td class="text-end">
+                                                                <h:outputText value="#{rm.calculatedAdministrationCharge}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                                            </td>
+                                                            <td class="text-end" style="color:#c0392b;">
+                                                                <h:outputText value="#{rm.discountAdministrationCharge}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                                            </td>
+                                                            <td class="text-end fw-semibold">
+                                                                <h:outputText value="#{rm.ajdustedAdministrationCharge}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><i class="fa-solid fa-heart-pulse me-1 text-danger"/>Medical Care / ICU</td>
+                                                            <td class="text-end">
+                                                                <h:outputText value="#{rm.currentMedicalCareCharge}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                                            </td>
+                                                            <td class="text-end">
+                                                                <h:outputText value="#{rm.calculatedMedicalCareCharge}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                                            </td>
+                                                            <td class="text-end" style="color:#c0392b;">
+                                                                <h:outputText value="#{rm.discountMedicalCareCharge}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                                            </td>
+                                                            <td class="text-end fw-semibold">
+                                                                <h:outputText value="#{rm.ajdustedMedicalCareCharge}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                                            </td>
+                                                        </tr>
+                                                        <!-- Totals row -->
+                                                        <tr class="table-secondary fw-bold">
+                                                            <td>Total</td>
+                                                            <td></td>
+                                                            <td class="text-end">
+                                                                <h:outputText value="#{rm.calculatedRoomCharge + rm.calculatedMaintainCharge + rm.calculatedMoCharge + rm.calculatedNursingCharge + rm.calculatedLinenCharge + rm.calculatedAdministrationCharge + rm.calculatedMedicalCareCharge}">
+                                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                                </h:outputText>
+                                                            </td>
+                                                            <td class="text-end" style="color:#c0392b;">
+                                                                <h:outputText value="#{rm.discountRoomCharge + rm.discountMaintainCharge + rm.discountLinenCharge + rm.discountNursingCharge + rm.discountMoCharge + rm.discountAdministrationCharge + rm.discountMedicalCareCharge}">
+                                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                                </h:outputText>
+                                                            </td>
+                                                            <td class="text-end">
+                                                                <h:outputText value="#{rm.adjustedRoomCharge + rm.adjustedMaintainCharge + rm.ajdustedLinenCharge + rm.ajdustedNursingCharge + rm.adjustedMoCharge + rm.ajdustedAdministrationCharge + rm.ajdustedMedicalCareCharge}">
+                                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                                </h:outputText>
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </p:rowExpansion>
 
                                     </p:dataTable>
                                 </h:panelGroup>
