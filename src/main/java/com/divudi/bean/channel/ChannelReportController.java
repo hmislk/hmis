@@ -5200,58 +5200,56 @@ public class ChannelReportController implements Serializable {
     //     return pdfSc;
     // }
 
-    private Report<ChannelIncomeDetailDto> channelCardIncomeReport;
-
     public Report getChannelCardIncomeReport() {
-        if (channelCardIncomeReport == null) {
-            channelCardIncomeReport = new Report();
-            channelCardIncomeReport.setSerialNoColumnAtStart(true);
-            LinkedHashMap columns = new LinkedHashMap<>();
 
-            columns.put("Bill Id", new ReportColumn<>("Bill Id", ChannelIncomeDetailDto::getBillId, TextAlignment.LEFT, "%s", 3f));
+        Report<ChannelIncomeDetailDto> channelCardIncomeReport = new Report();
+        channelCardIncomeReport.setSerialNoColumnAtStart(true);
+        LinkedHashMap columns = new LinkedHashMap<>();
 
-            columns.put("Created At", new ReportColumn<>("Created At",
-                    row -> {
-                            ChannelIncomeDetailDto r = (ChannelIncomeDetailDto) row;
-                            return new SimpleDateFormat("dd MMM yyyy").format(r.getBilledDate());
-                    },
-                    TextAlignment.LEFT,
-                    "%s",
-                    3f));
-            columns.put("Bill No", new ReportColumn<>("Bill No",
-                    row -> {
-                            ChannelIncomeDetailDto r = (ChannelIncomeDetailDto) row;
-                            String billDept = r.getBillDeptId() != null ? r.getBillDeptId() : "";
-                            if (r.isIsCancelled()) {
-                                billDept += "\nCancelled" + (r.getCancelledBillDeptId() != null ? (" - " + r.getCancelledBillDeptId()) : "");
-                            }
-                            if (r.isIsRefunded()) {
-                                billDept += "\nRefunded" + (r.getRefundBillDeptId() != null ? (" - " + r.getRefundBillDeptId()) : "" );
-                            }
-                            if (r.getBillTypeAtomic() != null && r.getBillTypeAtomic() == BillTypeAtomic.CHANNEL_REFUND_WITH_PAYMENT) {
+        columns.put("Bill Id", new ReportColumn<>("Bill Id", ChannelIncomeDetailDto::getBillId, TextAlignment.LEFT, "%s", 3f));
+
+        columns.put("Created At", new ReportColumn<>("Created At",
+                row -> {
+                        ChannelIncomeDetailDto r = (ChannelIncomeDetailDto) row;
+                        return new SimpleDateFormat("dd MMM yyyy").format(r.getBilledDate());
+                },
+                TextAlignment.LEFT,
+                "%s",
+                3f));
+        columns.put("Bill No", new ReportColumn<>("Bill No",
+                row -> {
+                        ChannelIncomeDetailDto r = (ChannelIncomeDetailDto) row;
+                        String billDept = r.getBillDeptId() != null ? r.getBillDeptId() : "";
+                        if (r.isIsCancelled()) {
+                            billDept += "\nCancelled" + (r.getCancelledBillDeptId() != null ? (" - " + r.getCancelledBillDeptId()) : "");
+                        }
+                        if (r.isIsRefunded()) {
+                            billDept += "\nRefunded" + (r.getRefundBillDeptId() != null ? (" - " + r.getRefundBillDeptId()) : "" );
+                        }
+                        if (r.getBillTypeAtomic() != null && r.getBillTypeAtomic() == BillTypeAtomic.CHANNEL_REFUND_WITH_PAYMENT) {
                                 billDept += "\nRefund Bill";
-                            }
-                            if (r.getBillTypeAtomic() != null && r.getBillTypeAtomic() == BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT) {
+                        }
+                        if (r.getBillTypeAtomic() != null && r.getBillTypeAtomic() == BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT) {
                                 billDept += "\nCancel Bill";
-                            }
-                            return billDept;
-                    },
-                    TextAlignment.LEFT,
-                    "%s",
-                    4f));
+                        }
+                        return billDept;
+                },
+                TextAlignment.LEFT,
+                "%s",
+                4f));
 
-            columns.put("Bill Type", new ReportColumn<>("Bill Type", ChannelIncomeDetailDto::getBillType, TextAlignment.LEFT, "%s", 3.5f));
-            columns.put("Patient", new ReportColumn<>("Patient", ChannelIncomeDetailDto::getPatientName, TextAlignment.LEFT, "%s", 4f));
-            columns.put("Cashier", new ReportColumn<>("Cashier", ChannelIncomeDetailDto::getBilledBy, TextAlignment.LEFT, "%s", 3f));
-            columns.put("Hospital Fee", new ReportColumn<>("Hospital Fee", ChannelIncomeDetailDto::getHosFee, TextAlignment.RIGHT, "%,.2f", 4f));
-            columns.put("Doctor Fee", new ReportColumn<>("Doctor Fee", ChannelIncomeDetailDto::getDoctorFee, TextAlignment.RIGHT, "%,.2f", 4f));
-            columns.put("Bill Gross Total", new ReportColumn<>("Bill Gross Total", ChannelIncomeDetailDto::getTotalAppoinmentFee, TextAlignment.RIGHT, "%,.2f", 4f));
-            columns.put("Card Total", new ReportColumn<>("Card Total", ChannelIncomeDetailDto::getCardFee, TextAlignment.RIGHT, "%,.2f", 4f));
-            columns.put("Card Last 4 Numbers", new ReportColumn<>("Card Last 4 Numbers", ChannelIncomeDetailDto::getPaymentReference, TextAlignment.LEFT, "%s", 2.5f));
-            columns.put("Bank", new ReportColumn<>("Bank", ChannelIncomeDetailDto::getCreditCompanyName, TextAlignment.LEFT, "%s", 4f));
+        columns.put("Bill Type", new ReportColumn<>("Bill Type", ChannelIncomeDetailDto::getBillType, TextAlignment.LEFT, "%s", 3.5f));
+        columns.put("Patient", new ReportColumn<>("Patient", ChannelIncomeDetailDto::getPatientName, TextAlignment.LEFT, "%s", 4f));
+        columns.put("Cashier", new ReportColumn<>("Cashier", ChannelIncomeDetailDto::getBilledBy, TextAlignment.LEFT, "%s", 3f));
+        columns.put("Hospital Fee", new ReportColumn<>("Hospital Fee", ChannelIncomeDetailDto::getHosFee, TextAlignment.RIGHT, "%,.2f", 4f));
+        columns.put("Doctor Fee", new ReportColumn<>("Doctor Fee", ChannelIncomeDetailDto::getDoctorFee, TextAlignment.RIGHT, "%,.2f", 4f));
+        columns.put("Bill Gross Total", new ReportColumn<>("Bill Gross Total", ChannelIncomeDetailDto::getTotalAppoinmentFee, TextAlignment.RIGHT, "%,.2f", 4f));
+        columns.put("Card Total", new ReportColumn<>("Card Total", ChannelIncomeDetailDto::getCardFee, TextAlignment.RIGHT, "%,.2f", 4f));
+        columns.put("Card Last 4 Numbers", new ReportColumn<>("Card Last 4 Numbers", ChannelIncomeDetailDto::getPaymentReference, TextAlignment.LEFT, "%s", 2.5f));
+        columns.put("Bank", new ReportColumn<>("Bank", ChannelIncomeDetailDto::getCreditCompanyName, TextAlignment.LEFT, "%s", 4f));
 
-            channelCardIncomeReport.setColumns(columns);
-        }
+        channelCardIncomeReport.setColumns(columns);
+
         String fileName = "Channel_Card_Income_Report";
         String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
         if (dates != null && !dates.isEmpty()) {
