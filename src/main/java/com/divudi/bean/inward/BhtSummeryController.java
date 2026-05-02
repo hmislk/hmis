@@ -34,6 +34,7 @@ import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.BilledBill;
 import com.divudi.core.entity.Item;
 import com.divudi.core.entity.PatientEncounter;
+import com.divudi.core.entity.PaymentScheme;
 import com.divudi.core.entity.PatientItem;
 import com.divudi.core.entity.PreBill;
 import com.divudi.core.entity.PriceMatrix;
@@ -187,6 +188,62 @@ public class BhtSummeryController implements Serializable {
         institution = sessionController.getInstitution();
         createTablesWithEstimatedProfessionalFees();
         return "/inward/inward_bill_intrim_estimate?faces-redirect=true";
+    }
+
+    public String navigateToPatientRoomDetails() {
+        if (patientEncounter == null) {
+            JsfUtil.addErrorMessage("No Admission Selected");
+            return "";
+        }
+        createTables();
+        return "/inward/inward_patient_room_details?faces-redirect=true";
+    }
+
+    public List<RoomGanttBar> getRoomGanttBars() {
+        List<PatientRoom> rooms = getPatientRooms();
+        if (rooms == null || rooms.isEmpty()) {
+            return new ArrayList<>();
+        }
+        Date now = new Date();
+        Date spanStart = null;
+        Date spanEnd = null;
+        for (PatientRoom r : rooms) {
+            if (r.getAdmittedAt() != null) {
+                if (spanStart == null || r.getAdmittedAt().before(spanStart)) {
+                    spanStart = r.getAdmittedAt();
+                }
+            }
+            Date end = r.getDischargedAt() != null ? r.getDischargedAt() : now;
+            if (spanEnd == null || end.after(spanEnd)) {
+                spanEnd = end;
+            }
+        }
+        if (spanStart == null || spanEnd == null || !spanEnd.after(spanStart)) {
+            return new ArrayList<>();
+        }
+        long totalMs = spanEnd.getTime() - spanStart.getTime();
+        List<RoomGanttBar> bars = new ArrayList<>();
+        for (PatientRoom r : rooms) {
+            if (r.getAdmittedAt() == null) {
+                continue;
+            }
+            Date barEnd = r.getDischargedAt() != null ? r.getDischargedAt() : now;
+            long offsetMs = r.getAdmittedAt().getTime() - spanStart.getTime();
+            long durationMs = barEnd.getTime() - r.getAdmittedAt().getTime();
+            double rawOffset = (offsetMs * 100.0) / totalMs;
+            double rawWidth  = Math.max((durationMs * 100.0) / totalMs, 1.0);
+            boolean guardian = "class com.divudi.core.entity.inward.GuardianRoom"
+                                    .equals(r.getPatientRoomClass());
+            bars.add(new RoomGanttBar(
+                r.getRoomFacilityCharge() != null ? r.getRoomFacilityCharge().getName() : "—",
+                guardian,
+                !r.isDischarged(),
+                String.format(java.util.Locale.US, "%.3f", rawOffset),
+                String.format(java.util.Locale.US, "%.3f", rawWidth),
+                rawWidth > 8.0
+            ));
+        }
+        return bars;
     }
 
     public String navigateToInpatientProfile() {
@@ -2504,6 +2561,13 @@ public class BhtSummeryController implements Serializable {
         return patientEncounter;
     }
 
+    public List<EncounterCreditCompany> getEncounterCreditCompanys() {
+        if (patientEncounter == null) {
+            return new ArrayList<>();
+        }
+        return fillCreditCompaniesByPatient(patientEncounter);
+    }
+
     public void setPatientEncounter(PatientEncounter patientEncounter) {
 //        makeNull();
         this.patientEncounter = patientEncounter;
@@ -2544,6 +2608,19 @@ public class BhtSummeryController implements Serializable {
     }
 
     private void setPatientRoomData() {
+        PaymentMethod pm = getPatientEncounter().getPaymentMethod();
+        PaymentScheme scheme = getPatientEncounter().getPaymentScheme();
+        AdmissionType admType = getPatientEncounter().getAdmissionType();
+
+        // Fetch all discount percentages once per recalculation (not per room)
+        double roomPct = getPriceMatrixController().getInwardDiscountPercentForChargeType(pm, scheme, admType, InwardChargeType.RoomCharges);
+        double maintainPct = getPriceMatrixController().getInwardDiscountPercentForChargeType(pm, scheme, admType, InwardChargeType.MaintainCharges);
+        double linenPct = getPriceMatrixController().getInwardDiscountPercentForChargeType(pm, scheme, admType, InwardChargeType.LinenCharges);
+        double nursingPct = getPriceMatrixController().getInwardDiscountPercentForChargeType(pm, scheme, admType, InwardChargeType.NursingCharges);
+        double moPct = getPriceMatrixController().getInwardDiscountPercentForChargeType(pm, scheme, admType, InwardChargeType.MOCharges);
+        double adminPct = getPriceMatrixController().getInwardDiscountPercentForChargeType(pm, scheme, admType, InwardChargeType.AdministrationCharge);
+        double medicalCarePct = getPriceMatrixController().getInwardDiscountPercentForChargeType(pm, scheme, admType, InwardChargeType.MedicalCareICU);
+
         for (PatientRoom p : patientRooms) {
             if (p.getAdmittedAt() == null) {
                 p.setAdmittedAt(new Date());
@@ -2558,18 +2635,38 @@ public class BhtSummeryController implements Serializable {
                 calculateMedicalCareCharge(p);
             }
 
-            p.setAdjustedMaintainCharge(p.getCalculatedMaintainCharge());
-            p.setAdjustedMoCharge(p.getCalculatedMoCharge());
-            p.setAdjustedRoomCharge(p.getCalculatedRoomCharge());
-
-            p.setAjdustedAdministrationCharge(p.getCalculatedAdministrationCharge());
-            p.setAjdustedLinenCharge(p.getCalculatedLinenCharge());
-            p.setAjdustedMedicalCareCharge(p.getCalculatedMedicalCareCharge());
-            p.setAjdustedNursingCharge(p.getCalculatedNursingCharge());
+            applyRoomChargeDiscounts(p, roomPct, maintainPct, linenPct, nursingPct, moPct, adminPct, medicalCarePct);
 
             getPatientRoomFacade().edit(p);
-
         }
+    }
+
+    private void applyRoomChargeDiscounts(PatientRoom p,
+            double roomPct, double maintainPct, double linenPct, double nursingPct,
+            double moPct, double adminPct, double medicalCarePct) {
+        double roomDisc = (roomPct / 100.0) * p.getCalculatedRoomCharge();
+        double maintainDisc = (maintainPct / 100.0) * p.getCalculatedMaintainCharge();
+        double linenDisc = (linenPct / 100.0) * p.getCalculatedLinenCharge();
+        double nursingDisc = (nursingPct / 100.0) * p.getCalculatedNursingCharge();
+        double moDisc = (moPct / 100.0) * p.getCalculatedMoCharge();
+        double adminDisc = (adminPct / 100.0) * p.getCalculatedAdministrationCharge();
+        double medicalCareDisc = (medicalCarePct / 100.0) * p.getCalculatedMedicalCareCharge();
+
+        p.setDiscountRoomCharge(roomDisc);
+        p.setDiscountMaintainCharge(maintainDisc);
+        p.setDiscountLinenCharge(linenDisc);
+        p.setDiscountNursingCharge(nursingDisc);
+        p.setDiscountMoCharge(moDisc);
+        p.setDiscountAdministrationCharge(adminDisc);
+        p.setDiscountMedicalCareCharge(medicalCareDisc);
+
+        p.setAdjustedRoomCharge(p.getCalculatedRoomCharge() - roomDisc);
+        p.setAdjustedMaintainCharge(p.getCalculatedMaintainCharge() - maintainDisc);
+        p.setAjdustedLinenCharge(p.getCalculatedLinenCharge() - linenDisc);
+        p.setAjdustedNursingCharge(p.getCalculatedNursingCharge() - nursingDisc);
+        p.setAdjustedMoCharge(p.getCalculatedMoCharge() - moDisc);
+        p.setAjdustedAdministrationCharge(p.getCalculatedAdministrationCharge() - adminDisc);
+        p.setAjdustedMedicalCareCharge(p.getCalculatedMedicalCareCharge() - medicalCareDisc);
     }
 
     private void calculateLinenCharge(PatientRoom p) {

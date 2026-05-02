@@ -343,8 +343,9 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         }
         patientAllergies = new ArrayList<>();
         Map params = new HashMap<>();
-        String s = "SELECT c FROM ClinicalFindingValue c WHERE c.retired = false AND c.patient = :pt";
+        String s = "SELECT c FROM ClinicalFindingValue c WHERE c.retired = false AND c.patient = :pt AND c.clinicalFindingValueType = :type";
         params.put("pt", pt);
+        params.put("type", ClinicalFindingValueType.PatientAllergy);
         patientAllergies = clinicalFindingValueFacade.findByJpql(s, params);
     }
 
@@ -721,6 +722,11 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         roomChangeController.createGuardianRoom();
         roomChangeController.setInstitution(sessionController.getInstitution());
         return "/inward/inward_room_change_guardian?faces-redirect=true";
+    }
+
+    public String navigateToPatientRoomDetails() {
+        bhtSummeryController.setPatientEncounter(current);
+        return bhtSummeryController.navigateToPatientRoomDetails();
     }
 
     public String navigateToAddBabyAdmission() {
@@ -2542,7 +2548,9 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = CommonFunctions.getStartOfMonth();
+            Calendar cal = Calendar.getInstance();
+            cal.add(Calendar.DAY_OF_MONTH, -6);
+            fromDate = CommonFunctions.getStartOfDay(cal.getTime());
         }
         return fromDate;
     }
