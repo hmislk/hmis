@@ -120,6 +120,13 @@ public class AuditEventController implements Serializable {
         return createNewAuditEvent(eventName, beforeJson, null);
     }
 
+    public AuditEvent createNewAuditEvent(String eventName, String beforeJson, Long objectId, String entityType) {
+        AuditEvent ae = createNewAuditEvent(eventName, beforeJson, objectId);
+        ae.setEntityType(entityType);
+        auditEventApplicationController.saveAuditEvent(ae);
+        return ae;
+    }
+
     public AuditEvent createNewAuditEvent(String eventName, String beforeJson, Long objectId) {
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
@@ -185,6 +192,20 @@ public class AuditEventController implements Serializable {
         auditEvent.setAfterJson(afterJson);
 
         auditEventApplicationController.saveAuditEvent(auditEvent);
+    }
+
+    public String navigateToAllAuditEventsForBill(Long billId) {
+        if (billId == null) {
+            return "/audit/all_audit_events?faces-redirect=true";
+        }
+        String jpql = "select a from AuditEvent a where a.objectId = :id and (a.entityType is null or a.entityType = 'Bill') order by a.id asc";
+        Map<String, Object> params = new HashMap<>();
+        params.put("id", billId);
+        items = getFacade().findByJpql(jpql, params);
+        if (items != null) {
+            items.forEach(AuditEvent::calculateDifference);
+        }
+        return "/audit/all_audit_events?faces-redirect=true";
     }
 
     public void fillAllAuditEvents() {

@@ -110,6 +110,9 @@
                                                         <h:outputText value="Department:" style="font-weight:bold; color: #6c757d;"/>
                                                         <h:outputText value="#{pharmacyStockTakeController.snapshotBillDisplay.departmentName}"
                                                                       style="color: #495057;"/>
+                                                        <h:outputText value="Department Type:" style="font-weight:bold; color: #6c757d;"/>
+                                                        <h:outputText value="#{pharmacyStockTakeController.snapshotBillDisplay.departmentType}"
+                                                                      style="color: #495057;"/>
                                                         <h:outputText value="Bill No:" style="font-weight:bold; color: #6c757d;"/>
                                                         <h:outputText value="#{pharmacyStockTakeController.snapshotBillDisplay.deptId}"
                                                                       style="color: #495057; font-family: monospace;"/>
@@ -197,17 +200,10 @@
                                                             </p:autoComplete>
                                                         </div>
                                                         <div class="col-lg-4">
-                                                            <h:outputLabel for="departmentTypeFilter" value="Department Type (optional):" styleClass="form-label font-weight-bold"/>
-                                                            <p:selectOneMenu id="departmentTypeFilter"
-                                                                             value="#{pharmacyStockTakeController.selectedDepartmentType}"
-                                                                             styleClass="w-100">
-                                                                <f:selectItem itemLabel="-- All --" itemValue="#{null}" noSelectionOption="true"/>
-                                                                <f:selectItems value="#{pharmacyStockTakeController.availableDepartmentTypes}"
-                                                                               var="dt"
-                                                                               itemLabel="#{dt.label}"
-                                                                               itemValue="#{dt}"/>
-                                                                <p:ajax update="filteredDownloadButtons"/>
-                                                            </p:selectOneMenu>
+                                                            <h:outputLabel value="Department Type:" styleClass="form-label font-weight-bold"/>
+                                                            <h:outputText value="#{pharmacyStockTakeController.snapshotBillDisplay.departmentType}"
+                                                                          styleClass="form-control-plaintext"
+                                                                          style="color: #495057; font-weight: bold;"/>
                                                         </div>
                                                     </div>
                                                     <div class="row mt-2">

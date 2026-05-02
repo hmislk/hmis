@@ -15,6 +15,7 @@ import com.divudi.core.data.dto.PrintBillData;
 import com.divudi.core.data.dto.StockDTO;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.PreBill;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Item;
 import com.divudi.core.entity.PatientEncounter;
@@ -99,6 +100,7 @@ public class InpatientDirectIssueNativeSqlController implements Serializable {
     private List<BillItemData> billItemDataList;
     private boolean billPreview = false;
     private String errorMessage = "";
+    private double marginTotal = 0.0;
 
     @PostConstruct
     public void init() {
@@ -242,7 +244,7 @@ public class InpatientDirectIssueNativeSqlController implements Serializable {
     }
 
     private Bill buildBillHeader(Department matrixDept) {
-        Bill b = preBill != null ? preBill : new Bill();
+        Bill b = preBill != null ? preBill : new PreBill();
 
         b.setBillType(BillType.PharmacyBhtPre);
         b.setBillTypeAtomic(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE);
@@ -344,12 +346,14 @@ public class InpatientDirectIssueNativeSqlController implements Serializable {
         bid.setCreaterId(sessionController.getLoggedUser().getId());
         bid.setCatId(null);
 
-        // Rate / value for bill line — apply inward price matrix margin
+        // Rate / value for bill line — apply inward price matrix margin and discount
         double lineRetailRate = selectedStockDto.getRetailRate() != null ? selectedStockDto.getRetailRate() : 0.0;
         double absQty = Math.abs(qty);
         double grossValue = lineRetailRate * absQty;
         double marginRate = 0.0;
         double marginValue = 0.0;
+        double discountPct = 0.0;
+        double discountValue = 0.0;
         try {
             Item itemRef = itemFacade.find(selectedStockDto.getItemId());
             Department matrixDept = determineMatrixDepartment();
@@ -359,13 +363,25 @@ public class InpatientDirectIssueNativeSqlController implements Serializable {
                 marginRate = (pm.getMargin() / 100.0) * lineRetailRate;
                 marginValue = marginRate * absQty;
             }
+            if (Boolean.TRUE.equals(itemRef.isDiscountAllowed())) {
+                discountPct = priceMatrixController.getInwardDiscountPercent(
+                        patientEncounter.getPaymentMethod(),
+                        patientEncounter.getPaymentScheme(),
+                        patientEncounter.getAdmissionType(),
+                        matrixDept,
+                        itemRef);
+                discountValue = (discountPct / 100.0) * grossValue;
+            }
         } catch (Exception e) {
-            LOGGER.log(Level.WARNING, "[addBillItem] margin lookup failed, using retail rate only", e);
+            LOGGER.log(Level.WARNING, "[addBillItem] margin/discount lookup failed, using retail rate only", e);
         }
-        double netRate = lineRetailRate + marginRate;
-        double netValue = grossValue + marginValue;
+        double netRate = lineRetailRate + marginRate - (absQty > 0 ? discountValue / absQty : 0.0);
+        double netValue = grossValue + marginValue - discountValue;
         bid.setRate(lineRetailRate);
         bid.setNetRate(netRate);
+        bid.setDiscountPercent(discountPct);
+        bid.setDiscountValue(discountValue);
+        bid.setMarginValue(marginValue);
         bid.setNetValue(-netValue);
         bid.setGrossValue(-grossValue);
 
@@ -439,15 +455,21 @@ public class InpatientDirectIssueNativeSqlController implements Serializable {
         if (getPreBill() == null) return;
         double netTot = 0.0;
         double grossTot = 0.0;
+        double discountTot = 0.0;
+        double marginTot = 0.0;
         if (billItemDataList != null) {
             for (BillItemData bid : billItemDataList) {
                 netTot += Math.abs(bid.getNetValue());
                 grossTot += Math.abs(bid.getGrossValue());
+                discountTot += bid.getDiscountValue();
+                marginTot += bid.getMarginValue();
             }
         }
         getPreBill().setNetTotal(netTot);
         getPreBill().setTotal(grossTot);
         getPreBill().setGrantTotal(grossTot);
+        getPreBill().setDiscount(discountTot);
+        marginTotal = marginTot;
     }
 
     // -----------------------------------------------------------------------
@@ -510,11 +532,13 @@ public class InpatientDirectIssueNativeSqlController implements Serializable {
         billItemDataList = null;
         billPreview = false;
         errorMessage = "";
+        marginTotal = 0.0;
     }
 
     private void clearBill() {
         preBill = null;
         billItemDataList = null;
+        marginTotal = 0.0;
     }
 
     private void clearBillItem() {
@@ -536,7 +560,13 @@ public class InpatientDirectIssueNativeSqlController implements Serializable {
             return;
         }
         double absQty = Math.abs(bid.getQty());
-        bid.setGrossValue(-absQty * bid.getRate());
+        double gross = absQty * bid.getRate();
+        double discountVal = (bid.getDiscountPercent() / 100.0) * gross;
+        // marginRate = netRate - rate + discountRate (since netRate = rate + marginRate - discountRate)
+        double marginVal = (bid.getNetRate() - bid.getRate() * (1.0 - bid.getDiscountPercent() / 100.0)) * absQty;
+        bid.setGrossValue(-gross);
+        bid.setDiscountValue(discountVal);
+        bid.setMarginValue(marginVal);
         bid.setNetValue(-absQty * bid.getNetRate());
         bid.setPbiQty(-absQty);
         calTotal();
@@ -548,7 +578,7 @@ public class InpatientDirectIssueNativeSqlController implements Serializable {
 
     public Bill getPreBill() {
         if (preBill == null) {
-            preBill = new Bill();
+            preBill = new PreBill();
         }
         return preBill;
     }
@@ -659,6 +689,10 @@ public class InpatientDirectIssueNativeSqlController implements Serializable {
 
     public void setErrorMessage(String errorMessage) {
         this.errorMessage = errorMessage;
+    }
+
+    public double getMarginTotal() {
+        return marginTotal;
     }
 
     public StockDtoConverter getStockDtoConverter() {

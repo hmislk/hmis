@@ -4,7 +4,6 @@
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:prints="http://xmlns.jcp.org/jsf/composite/ezcomp/prints"
       xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <h:body>
@@ -14,31 +13,34 @@
             <ui:define name="subcontent">
                 <h:form>
 
-
-                    <p:panel >
+                    <p:panel>
                         <f:facet name="header">
-                            <i class="fa fa-exchange-alt mt-2"/>
-                            <p:outputLabel value="Float Transfer" class="mx-2 mt-2"></p:outputLabel>
-                            <h:panelGroup rendered="#{webUserController.hasPrivilege('Admin')}">
-                                <p:commandButton
-                                    value="Config"
-                                    icon="fa fa-cog"
-                                    title="Page Configuration Management"
-                                    action="#{pageAdminController.navigateToPageAdmin('cashier/fund_transfer_bill')}"
-                                    ajax="false"
-                                    styleClass="ui-button-secondary ms-5">
-                                </p:commandButton>
-                            </h:panelGroup>
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div>
+                                    <i class="fa fa-exchange-alt me-2"/>
+                                    <h:outputText value="Float Transfer"/>
+                                </div>
+                                <h:panelGroup rendered="#{webUserController.hasPrivilege('Admin')}">
+                                    <p:commandButton
+                                        value="Config"
+                                        icon="fa fa-cog"
+                                        title="Page Configuration Management"
+                                        action="#{pageAdminController.navigateToPageAdmin('cashier/fund_transfer_bill')}"
+                                        ajax="false"
+                                        styleClass="ui-button-secondary">
+                                    </p:commandButton>
+                                </h:panelGroup>
+                            </div>
                         </f:facet>
 
                         <!-- Request info panel: shown when this transfer was initiated from a request -->
                         <h:panelGroup rendered="#{financialTransactionController.selectedFundTransferRequest ne null}" layout="block">
-                            <p:panel styleClass="mb-2" style="background-color: #f0f8ff; border-left: 4px solid #007bff;">
+                            <p:panel styleClass="mb-3" style="background-color: #f0f8ff; border-left: 4px solid #007bff;">
                                 <f:facet name="header">
                                     <i class="fa fa-info-circle me-2"/>
                                     <h:outputText value="Fulfilling Float Request"/>
                                 </f:facet>
-                                <p:panelGrid columns="2" layout="tabular" class="w-100" columnClasses="text-start fw-medium, text-start">
+                                <p:panelGrid columns="2" layout="tabular" class="w-100" columnClasses="fw-medium col-3, col-9">
                                     <h:outputText value="Requested By"/>
                                     <h:outputText value="#{financialTransactionController.selectedFundTransferRequest.fromWebUser.webUserPerson.nameWithTitle}"/>
                                     <h:outputText value="Requested Amount"/>
@@ -57,218 +59,138 @@
                             </p:panel>
                         </h:panelGroup>
 
-                        <p:panelGrid columns="2" class="w-100" >
-                            <p:outputLabel value="Transfer To"
-                                rendered="#{financialTransactionController.selectedFundTransferRequest eq null}"
-                                for="acStaff"/>
-                            <p:outputLabel value="Transfer To"
-                                rendered="#{financialTransactionController.selectedFundTransferRequest ne null}"
-                                for="txtTransferTo"/>
-                            <h:panelGroup>
-                                <!-- Read-only when pre-filled from a request -->
-                                <h:outputText
-                                    id="txtTransferTo"
-                                    rendered="#{financialTransactionController.selectedFundTransferRequest ne null}"
-                                    value="#{financialTransactionController.currentBill.toWebUser.webUserPerson.nameWithTitle}"
-                                    class="mx-2"/>
-                                <p:autoComplete
-                                    rendered="#{financialTransactionController.selectedFundTransferRequest eq null}"
-                                    completeMethod="#{webUserController.completeUser}"
-                                    class="mx-2 w-100"
-                                    id="acStaff"
-                                    value="#{financialTransactionController.currentBill.toWebUser}"
-                                    var="s"
-                                    scrollHeight="450"
-                                    inputStyleClass="w-100"
-                                    itemLabel="#{s.webUserPerson.nameWithTitle}"
-                                    itemValue="#{s}" >
-                                <p:column headerText="Username">
-                                    <h:outputText value="#{s.name}" />
-                                </p:column>
-                                <p:column headerText="Person Name">
-                                    <h:outputText value="#{s.webUserPerson.nameWithTitle}" />
-                                </p:column>
-                                <p:column headerText="Code">
-                                    <h:outputText value="#{s.code}" />
-                                </p:column>
-                            </p:autoComplete>
-                            </h:panelGroup>
-
-                            <p:outputLabel value="Comments" ></p:outputLabel>
-                            <p:inputTextarea
-                                class="mx-2 w-100"
-                                value="#{financialTransactionController.currentBill.comments}" ></p:inputTextarea>
-
-                            <p:spacer ></p:spacer>
-                            <p:commandButton
-                                icon="fa fa-paper-plane"
-                                class="ui-button-success"
-                                value="Transfer Float Out"
-                                title="Finalise and send the float to the selected user"
-                                ajax="false"
-                                rendered="#{webUserController.hasPrivilege('IssueFundTransfer')}"
-                                action="#{financialTransactionController.settleFundTransferBill()}" >
-                            </p:commandButton>
-
-                        </p:panelGrid>
-
-                        <p:panel header="Add Funds to Transfer" >
-
-                            <div class="row">
-                                <div class="col-md-3">
-                                    <p:outputLabel
-                                        class="m-1"
-                                        value="Payment Method" ></p:outputLabel><br/>
-                                    <p:selectOneMenu
-                                        class="m-1"
-                                        style="width: 16em"
-                                        id="cmdPayment"
-                                        value="#{financialTransactionController.currentPayment.paymentMethod}" >
-                                        <f:selectItem itemLabel="Select Payment Method" ></f:selectItem>
-                                        <f:selectItems value="#{enumController.paymentMethods}" ></f:selectItems>
-                                        <p:ajax process="cmdPayment"
-                                                listener="#{financialTransactionController.loadAvailablePaymentsForFundTransfer()}"
-                                                update="paymentDetails nonCashPaymentSelection" ></p:ajax>
-                                    </p:selectOneMenu>
-                                </div>
-
-                                <!-- Cash payment: show value input -->
-                                <h:panelGroup id="paymentDetails" >
-                                    <h:panelGroup
-                                        rendered="#{financialTransactionController.currentPayment.paymentMethod eq 'Cash'}" >
-                                        <div class="col-md-3">
-                                            <p:outputLabel
-                                                class="m-1"
-                                                value="Value" ></p:outputLabel>
-                                            <p:inputText
-                                                class="m-1 text-end"
-                                                id="txtValue"
-                                                onfocus="this.select();"
-                                                value="#{financialTransactionController.currentPayment.paidValue}" >
-                                            </p:inputText>
-                                        </div>
-                                        <div class="col-md-2">
-                                            <p:commandButton
-                                                id="btnAdd"
-                                                style="float: right; margin-top: 25px"
-                                                value="Add"
-                                                icon="fa fa-plus"
-                                                class="ui-button-success"
-                                                process="btnAdd cmdPayment paymentDetails"
-                                                update="tblPayments totals cmdPayment paymentDetails nonCashPaymentSelection :growl"
-                                                action="#{financialTransactionController.addPaymentToFundTransferBill()}" >
-                                            </p:commandButton>
-                                        </div>
-                                    </h:panelGroup>
-                                </h:panelGroup>
+                        <!-- Transfer details -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <p:panel header="Transfer Details" styleClass="h-100">
+                                    <div class="mb-3">
+                                        <p:outputLabel value="Transfer To" styleClass="fw-medium mb-1 d-block"/>
+                                        <!-- Read-only when pre-filled from a request -->
+                                        <h:outputText
+                                            id="txtTransferTo"
+                                            rendered="#{financialTransactionController.selectedFundTransferRequest ne null}"
+                                            value="#{financialTransactionController.currentBill.toWebUser.webUserPerson.nameWithTitle}"
+                                            styleClass="form-control-plaintext ps-2"/>
+                                        <p:autoComplete
+                                            rendered="#{financialTransactionController.selectedFundTransferRequest eq null}"
+                                            completeMethod="#{webUserController.completeUser}"
+                                            styleClass="w-100"
+                                            id="acStaff"
+                                            value="#{financialTransactionController.currentBill.toWebUser}"
+                                            var="s"
+                                            scrollHeight="450"
+                                            inputStyleClass="w-100"
+                                            itemLabel="#{s.webUserPerson.nameWithTitle}"
+                                            itemValue="#{s}">
+                                            <p:column headerText="Username">
+                                                <h:outputText value="#{s.name}"/>
+                                            </p:column>
+                                            <p:column headerText="Person Name">
+                                                <h:outputText value="#{s.webUserPerson.nameWithTitle}"/>
+                                            </p:column>
+                                            <p:column headerText="Code">
+                                                <h:outputText value="#{s.code}"/>
+                                            </p:column>
+                                        </p:autoComplete>
+                                    </div>
+                                    <div class="mb-3">
+                                        <p:outputLabel for="txtTransferComments" value="Comments" styleClass="fw-medium mb-1 d-block"/>
+                                        <p:inputTextarea
+                                            id="txtTransferComments"
+                                            styleClass="w-100"
+                                            rows="3"
+                                            value="#{financialTransactionController.currentBill.comments}"/>
+                                    </div>
+                                    <div class="text-end">
+                                        <p:commandButton
+                                            icon="fa fa-paper-plane"
+                                            styleClass="ui-button-success"
+                                            value="Transfer Float Out"
+                                            title="Finalise and send the float to the selected user"
+                                            ajax="false"
+                                            rendered="#{webUserController.hasPrivilege('IssueFundTransfer')}"
+                                            action="#{financialTransactionController.settleFundTransferBill()}">
+                                        </p:commandButton>
+                                    </div>
+                                </p:panel>
                             </div>
 
-                            <!-- Non-cash payments: show shift transactions for selection -->
-                            <h:panelGroup id="nonCashPaymentSelection" layout="block">
-                                <h:panelGroup layout="block"
-                                    rendered="#{financialTransactionController.currentPayment.paymentMethod ne null
-                                               and financialTransactionController.currentPayment.paymentMethod ne 'Cash'}" >
-
-                                    <p:dataTable id="tblAvailablePayments"
-                                        value="#{financialTransactionController.fundTransferAvailablePayments}"
-                                        var="ap"
-                                        emptyMessage="No payments found for the selected payment method in your current shift." >
-                                        <p:column headerText="Select" width="3em">
-                                            <p:selectBooleanCheckbox id="chkSelect" value="#{ap.selectedForHandover}" >
-                                                <p:ajax process="chkSelect" ></p:ajax>
-                                            </p:selectBooleanCheckbox>
-                                        </p:column>
-                                        <p:column headerText="Bill Number">
-                                            <h:outputText value="#{ap.bill.deptId}" />
-                                        </p:column>
-                                        <p:column headerText="Bill Date">
-                                            <h:outputText value="#{ap.bill.createdAt}" >
-                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                            </h:outputText>
-                                        </p:column>
-                                        <p:column headerText="Bank">
-                                            <h:outputText value="#{ap.bank.name}" />
-                                        </p:column>
-                                        <p:column headerText="Ref No">
-                                            <h:outputText value="#{ap.creditCardRefNo}" />
-                                            <h:outputText value="#{ap.chequeRefNo}" />
-                                            <h:outputText value="#{ap.referenceNo}" />
-                                        </p:column>
-                                        <p:column headerText="Comments">
-                                            <h:outputText value="#{ap.comments}" />
-                                        </p:column>
-                                        <p:column headerText="Value" class="text-end">
-                                            <h:outputText value="#{ap.paidValue}" >
-                                                <f:convertNumber pattern="#,##0.00" />
-                                            </h:outputText>
-                                        </p:column>
-                                    </p:dataTable>
-
-                                    <p:commandButton
-                                        id="btnAddSelected"
-                                        value="Add Selected"
-                                        icon="fa fa-plus"
-                                        class="ui-button-success m-1"
-                                        process="@parent"
-                                        update="tblPayments totals cmdPayment paymentDetails nonCashPaymentSelection :growl"
-                                        action="#{financialTransactionController.addSelectedPaymentsToFundTransferBill()}" >
-                                    </p:commandButton>
-
-                                </h:panelGroup>
-                            </h:panelGroup>
-
-                        </p:panel>
-                        <p:panel  header="Funds" >
-                            <f:facet name="header">
-                                <h:panelGroup id="totals">
-                                    <div class="d-flex justify-content-between">
-                                        <div>
-                                            <h:outputText value="Funds to Transfer" ></h:outputText>
+                            <!-- Add cash to transfer -->
+                            <div class="col-md-6">
+                                <p:panel styleClass="h-100">
+                                    <f:facet name="header">
+                                        <i class="fa fa-money-bill-wave me-2"/>
+                                        <h:outputText value="Add Cash to Transfer"/>
+                                    </f:facet>
+                                    <div class="row align-items-end g-2">
+                                        <div class="col-7">
+                                            <p:outputLabel for="txtValue" value="Cash Amount" styleClass="fw-medium mb-1 d-block"/>
+                                            <p:inputText
+                                                id="txtValue"
+                                                styleClass="w-100 text-end"
+                                                onfocus="this.select();"
+                                                value="#{financialTransactionController.currentPayment.paidValue}">
+                                            </p:inputText>
                                         </div>
-                                        <div class="d-flex">
-                                            <h:outputText value=" Transfer Total : " ></h:outputText>
-                                            <p:outputLabel 
-                                                class="mx-2"
-                                                value="#{financialTransactionController.currentBill.total}" >
-                                            </p:outputLabel>
+                                        <div class="col-5">
+                                            <p:commandButton
+                                                id="btnAdd"
+                                                value="Add"
+                                                icon="fa fa-plus"
+                                                styleClass="ui-button-success w-100"
+                                                process="btnAdd txtValue"
+                                                update="tblPayments totals :growl"
+                                                action="#{financialTransactionController.addPaymentToFundTransferBill()}">
+                                            </p:commandButton>
                                         </div>
                                     </div>
+                                </p:panel>
+                            </div>
+                        </div>
 
+                        <!-- Funds table -->
+                        <p:panel>
+                            <f:facet name="header">
+                                <h:panelGroup id="totals">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <i class="fa fa-list me-2"/>
+                                            <h:outputText value="Cash to Transfer"/>
+                                        </div>
+                                        <div>
+                                            <h:outputText value="Total: "/>
+                                            <h:outputText styleClass="fw-bold" value="#{financialTransactionController.currentBill.total}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </div>
+                                    </div>
                                 </h:panelGroup>
                             </f:facet>
 
-                            <p:dataTable id="tblPayments" value="#{financialTransactionController.currentBillPayments}" var="bp" >
-                                <p:column headerText="Payment Method" >
-                                    <h:outputText value="#{bp.paymentMethod}" ></h:outputText>
+                            <p:dataTable id="tblPayments" value="#{financialTransactionController.currentBillPayments}" var="bp"
+                                         emptyMessage="No cash added yet.">
+                                <p:column headerText="Amount" styleClass="text-end">
+                                    <h:outputText value="#{bp.paidValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
                                 </p:column>
-                                <p:column headerText="Value" >
-                                    <h:outputText value="#{bp.paidValue}" ></h:outputText>
-                                </p:column>
-                                <p:column headerText="Details" >
-                                    <h:outputText value="#{bp.bank.name}" ></h:outputText>
-                                    <h:outputText value="#{bp.chequeRefNo}" ></h:outputText>
-                                    <h:outputText value="#{bp.chequeDate}" ></h:outputText>
-                                </p:column>
-                                <p:column headerText="Action" >
-                                    <p:commandButton 
-                                        class="ui-button-danger"
-                                        icon=" fa-solid fa-trash"
-                                        id="btnRemove"
-                                        value="Remove" 
-                                        action="#{financialTransactionController.removePayment}" 
-                                        process="btnRemove tblPayments"
-                                        update=":#{p:resolveFirstComponentWithId('tblPayments',view).clientId} :#{p:resolveFirstComponentWithId('totals',view).clientId}"
-                                        >
-                                        <f:setPropertyActionListener value="#{bp}" target="#{financialTransactionController.removingPayment}" ></f:setPropertyActionListener>
+                                <p:column headerText="Action" styleClass="text-end" width="6rem">
+                                    <p:commandButton
+                                        styleClass="ui-button-danger"
+                                        icon="fa fa-trash"
+                                        value="Remove"
+                                        action="#{financialTransactionController.removePayment}"
+                                        process="@this tblPayments"
+                                        update=":#{p:resolveFirstComponentWithId('tblPayments',view).clientId} :#{p:resolveFirstComponentWithId('totals',view).clientId}">
+                                        <f:setPropertyActionListener value="#{bp}" target="#{financialTransactionController.removingPayment}"/>
                                     </p:commandButton>
                                 </p:column>
                             </p:dataTable>
-
                         </p:panel>
+
                     </p:panel>
 
                 </h:form>
-
             </ui:define>
         </ui:composition>
 
