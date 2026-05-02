@@ -6,7 +6,8 @@
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
-                xmlns:in="http://xmlns.jcp.org/jsf/composite/inward">
+                xmlns:in="http://xmlns.jcp.org/jsf/composite/inward"
+                xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common">
 
     <ui:define name="content">
 
@@ -109,8 +110,41 @@
 
                     <!-- Patient summary -->
                     <div class="row mb-3">
-                        <div class="col-12">
-                            <in:bhtDetail admission="#{surgeryBillController.surgeryBill.patientEncounter}"/>
+                        <div class="col-6">
+                            <p:panel class="w-100 m-1">
+                                <f:facet name="header">
+                                    <h:outputText styleClass="fas fa-user"/>
+                                    <h:outputLabel value="Patient Details" class="mx-4"/>
+                                </f:facet>
+                                <div class="row">
+                                    <div class="col-md-5"><p:outputLabel value="Name"/></div>
+                                    <div class="col-md-1 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
+                                    <div class="col-md-6"><h:outputText value="#{surgeryBillController.surgeryBill.patientEncounter.patient.person.nameWithTitle}"/></div>
+
+                                    <div class="col-md-5"><p:outputLabel value="Gender"/></div>
+                                    <div class="col-md-1 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
+                                    <div class="col-md-6"><h:outputText value="#{surgeryBillController.surgeryBill.patientEncounter.patient.person.sex}"/></div>
+
+                                    <div class="col-md-5"><p:outputLabel value="Age"/></div>
+                                    <div class="col-md-1 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
+                                    <div class="col-md-6"><h:outputText value="#{surgeryBillController.surgeryBill.patientEncounter.patient.person.ageAsString}"/></div>
+
+                                    <div class="col-md-5"><p:outputLabel value="Mobile No."/></div>
+                                    <div class="col-md-1 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
+                                    <div class="col-md-6"><h:outputText value="#{surgeryBillController.surgeryBill.patientEncounter.patient.person.mobile}"/></div>
+
+                                    <div class="col-md-5"><p:outputLabel value="Phone No."/></div>
+                                    <div class="col-md-1 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
+                                    <div class="col-md-6"><h:outputText value="#{surgeryBillController.surgeryBill.patientEncounter.patient.person.phone}"/></div>
+
+                                    <div class="col-md-5"><p:outputLabel value="NIC"/></div>
+                                    <div class="col-md-1 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
+                                    <div class="col-md-6"><h:outputText value="#{empty surgeryBillController.surgeryBill.patientEncounter.patient.person.nic ? 'N/A' : surgeryBillController.surgeryBill.patientEncounter.patient.person.nic}"/></div>
+                                </div>
+                            </p:panel>
+                        </div>
+                        <div class="col-6">
+                            <common:admission_details admission="#{surgeryBillController.surgeryBill.patientEncounter}" class="w-100 m-1"/>
                         </div>
                     </div>
 
@@ -168,34 +202,28 @@
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
                         </p:column>
-                        <p:column headerText="Professional Fees" styleClass="text-center">
-                            <p:commandButton
-                                value="Add Fees"
-                                icon="fa fa-plus"
-                                class="ui-button-success"
-                                ajax="false"
-                                action="#{inwardProfessionalBillController.navigateToSurgeryProfessionalFees(surg)}"
-                                rendered="#{!surgeryBillController.surgeryBill.patientEncounter.paymentFinalized}">
-                            </p:commandButton>
-                            <p:commandButton
-                                value="View Fees"
-                                icon="fa fa-list"
-                                class="ui-button-secondary"
-                                ajax="false"
-                                action="#{inwardProfessionalBillController.navigateToSurgeryProfessionalFeesList(surg)}">
-                            </p:commandButton>
-                        </p:column>
-
-                        <p:column headerText="Action" styleClass="text-center"
-                                  rendered="#{!surgeryBillController.surgeryBill.patientEncounter.paymentFinalized}">
-                            <p:commandButton
-                                value="Delete"
-                                icon="fa fa-trash"
-                                class="ui-button-danger"
-                                ajax="false"
-                                action="#{surgeryBillController.checkAndDeleteSurgery(surg)}"
-                                onclick="return confirm('Are you sure you want to delete this surgery? This action cannot be undone.');">
-                            </p:commandButton>
+                        <p:column headerText="Action" styleClass="text-center">
+                            <div class="d-flex gap-2 justify-content-center">
+                                <p:commandButton
+                                    value="Surgery Dashboard"
+                                    icon="fa fa-th-large"
+                                    class="ui-button-info"
+                                    ajax="false"
+                                    action="/theater/surgery_workbench?faces-redirect=true">
+                                    <f:setPropertyActionListener
+                                        value="#{surg}"
+                                        target="#{surgeryBillController.surgeryBill}"/>
+                                </p:commandButton>
+                                <p:commandButton
+                                    value="Delete"
+                                    icon="fa fa-trash"
+                                    class="ui-button-danger"
+                                    ajax="false"
+                                    rendered="#{!surgeryBillController.surgeryBill.patientEncounter.paymentFinalized}"
+                                    action="#{surgeryBillController.checkAndDeleteSurgery(surg)}"
+                                    onclick="return confirm('Are you sure you want to delete this surgery? This action cannot be undone.');">
+                                </p:commandButton>
+                            </div>
                         </p:column>
                     </p:dataTable>
 

@@ -75,7 +75,7 @@ public class SignController implements Serializable {
             int rowNum = 1;
             for (ClinicalEntity vocab : items) {
                 Row row = sheet.createRow(rowNum++);
-                row.createCell(0).setCellValue(rowNum);
+                row.createCell(0).setCellValue(rowNum-1);
                 row.createCell(1).setCellValue(vocab.getName());
             }
 

@@ -57,37 +57,11 @@
                                 </p:panelGrid>
                             </div>
                             <div class="col-6" >
-                                <p:dataTable class="m-1" id="tblPayments" value="#{financialTransactionController.currentBillPayments}" var="bp" >
-                                    <p:column headerText="Payment Method" >
-                                        <h:outputText value="#{bp.paymentMethod}" ></h:outputText>
-                                    </p:column>
-                                    <p:column headerText="Bill Number"
-                                        rendered="#{financialTransactionController.fundTransferHasNonCashPayments}" >
-                                        <h:outputText value="#{bp.bill.deptId}" ></h:outputText>
-                                    </p:column>
-                                    <p:column headerText="Bank"
-                                        rendered="#{financialTransactionController.fundTransferHasNonCashPayments}" >
-                                        <h:outputText value="#{bp.bank.name}" ></h:outputText>
-                                    </p:column>
-                                    <p:column headerText="Ref No"
-                                        rendered="#{financialTransactionController.fundTransferHasNonCashPayments}" >
-                                        <h:outputText value="#{bp.creditCardRefNo}" ></h:outputText>
-                                        <h:outputText value="#{bp.chequeRefNo}" ></h:outputText>
-                                        <h:outputText value="#{bp.referenceNo}" ></h:outputText>
-                                    </p:column>
-                                    <p:column headerText="Date"
-                                        rendered="#{financialTransactionController.fundTransferHasNonCashPayments}" >
-                                        <h:outputText value="#{bp.chequeDate}" >
-                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
-                                        </h:outputText>
-                                    </p:column>
-                                    <p:column headerText="Comments"
-                                        rendered="#{financialTransactionController.fundTransferHasNonCashPayments}" >
-                                        <h:outputText value="#{bp.comments}" ></h:outputText>
-                                    </p:column>
-                                    <p:column headerText="Value" class="text-end" >
-                                        <h:outputText value="#{bp.absolutePaidValueTransient}" >
-                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                <p:dataTable class="m-1" id="tblPayments" value="#{financialTransactionController.currentBillPayments}" var="bp"
+                                             emptyMessage="No payments found.">
+                                    <p:column headerText="Amount" styleClass="text-end">
+                                        <h:outputText value="#{bp.absolutePaidValueTransient}">
+                                            <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputText>
                                     </p:column>
                                 </p:dataTable>
