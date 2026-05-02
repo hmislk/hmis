@@ -15,10 +15,17 @@
 
         <p:dataTable
             value="#{financialTransactionController.selectedBundle.getPaymentRows(financialTransactionController.selectedPaymentMethod)}" var="cardPayment" >
-            <p:column  headerText="Select to Handover" width="3em">
-                <p:selectBooleanCheckbox id="checkCardSelected" value="#{cardPayment.payment.selectedForHandover}" >
-                    <p:ajax process="checkCardSelected" ></p:ajax>
+            <p:column headerText="Select to Handover" width="3em">
+                <p:selectBooleanCheckbox id="checkCardSelected" value="#{cardPayment.payment.selectedForHandover}">
+                    <p:ajax process="checkCardSelected" update="@all"/>
                 </p:selectBooleanCheckbox>
+            </p:column>
+            <p:column headerText="Proof Missing" width="3em">
+                <p:selectBooleanCheckbox id="checkProofMissing" value="#{cardPayment.payment.handoverProofMissing}"
+                                         disabled="#{not cardPayment.payment.selectedForHandover}">
+                    <p:ajax process="checkProofMissing" update="@all"/>
+                </p:selectBooleanCheckbox>
+                <p:badge rendered="#{cardPayment.payment.handoverProofMissing}" value="Missing" severity="warn"/>
             </p:column>
             <p:column  headerText="Bill Number">
                 <h:outputText value="#{cardPayment.payment.bill.deptId}" ></h:outputText>

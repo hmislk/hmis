@@ -138,6 +138,7 @@ public enum Privileges {
     ShiftHandoverAcceptAsCashier("Shift Handover Accept As Cashier"),
     ShiftHandoverAcceptAsMainCashier("Shift Handover Accept As Main Cashier"),
     CashierHandoverStatusReport("Cashier Handover Status Report"),
+    SettleHandoverProofMissing("Settle Handover Proof Missing"),
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Lab">
@@ -1019,6 +1020,7 @@ public enum Privileges {
                 return "Approval";
 
             case CashierHandoverStatusReport:
+            case SettleHandoverProofMissing:
                 return "Finance";
 
             case IssueFundTransfer:
