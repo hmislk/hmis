@@ -5956,6 +5956,10 @@ public class FinancialTransactionController implements Serializable {
     }
 
     public String navigateToSettleHandoverProofMissingBill() {
+        if (!webUserController.hasPrivilege("SettleHandoverProofMissing")) {
+            JsfUtil.addErrorMessage("You do not have the required privilege to settle a proof missing bill.");
+            return null;
+        }
         if (selectedBill == null || selectedBill.getId() == null) {
             JsfUtil.addErrorMessage("No proof missing bill selected.");
             return null;
@@ -5981,6 +5985,10 @@ public class FinancialTransactionController implements Serializable {
     }
 
     public String settleHandoverProofMissingBill() {
+        if (!webUserController.hasPrivilege("SettleHandoverProofMissing")) {
+            JsfUtil.addErrorMessage("You do not have the required privilege to settle a proof missing bill.");
+            return "";
+        }
         if (currentPayment == null || currentPayment.getPaidValue() <= 0) {
             JsfUtil.addErrorMessage("Please enter a valid settlement amount greater than zero.");
             return "";

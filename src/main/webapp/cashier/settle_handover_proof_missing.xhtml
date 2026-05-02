@@ -13,7 +13,8 @@
                     <h:panelGroup layout="block"
                                   rendered="#{not empty financialTransactionController.selectedBill
                                               and not empty financialTransactionController.currentPayment
-                                              and not empty financialTransactionController.currentBill}">
+                                              and not empty financialTransactionController.currentBill
+                                              and webUserController.hasPrivilege('SettleHandoverProofMissing')}">
                         <p:panel>
                             <f:facet name="header">
                                 <div class="d-flex align-items-center justify-content-between">
@@ -71,9 +72,17 @@
                         </p:panel>
                     </h:panelGroup>
                     <h:panelGroup layout="block"
-                                  rendered="#{empty financialTransactionController.selectedBill
+                                  rendered="#{not webUserController.hasPrivilege('SettleHandoverProofMissing')}">
+                        <p:panel header="Settle Handover Proof Missing">
+                            <p:messages/>
+                            <h:outputText value="You do not have the required privilege to settle a proof missing bill." styleClass="d-block mb-3 text-danger"/>
+                        </p:panel>
+                    </h:panelGroup>
+                    <h:panelGroup layout="block"
+                                  rendered="#{webUserController.hasPrivilege('SettleHandoverProofMissing')
+                                              and (empty financialTransactionController.selectedBill
                                               or empty financialTransactionController.currentPayment
-                                              or empty financialTransactionController.currentBill}">
+                                              or empty financialTransactionController.currentBill)}">
                         <p:panel header="Settle Handover Proof Missing">
                             <p:messages/>
                             <h:outputText value="No settlement context - please navigate from the proof missing bill list." styleClass="d-block mb-3"/>
