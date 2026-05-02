@@ -3463,8 +3463,10 @@ public class ChannelReportController implements Serializable {
                 + " left join rb.singleBillSession rbs "
                 + " where b.retired=false "
                 + " and bs.retired=false "
-                + " and (bs.absent=true or (rbs.absent=true and rb.paymentMethod= :pmo)) "
-                + " and b.createdAt between :fd and :td";
+                + " and ("
+                + "      (bs.absent=true and b.createdAt between :fd and :td) "
+                + "   or (rbs.absent=true and rb.paymentMethod=:pmo and rb.createdAt between :fd and :td) "
+                + " )";
 
         params.put("onlineCompletedPayment", BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT);
         params.put("onlineCancellation", BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING);
@@ -3478,9 +3480,12 @@ public class ChannelReportController implements Serializable {
         }
         if (paymentMethods != null && !paymentMethods.isEmpty()) {
             if (paymentMethods.contains(PaymentMethod.OnCall)) {
-                sql += " and ((b.paymentMethod in :pm) or (rb is not null and rb.billTypeAtomic= :onCallBTA)) ";
+                sql += " and ((b.paymentMethod in :pm) or (rb is not null and rb.billTypeAtomic in :onCallBTA)) ";
                 params.put("pm", paymentMethods);
-                params.put("onCallBTA", BillTypeAtomic.CHANNEL_BOOKING_WITHOUT_PAYMENT);
+                params.put("onCallBTA", Arrays.asList(
+                    BillTypeAtomic.CHANNEL_BOOKING_WITHOUT_PAYMENT,
+                    BillTypeAtomic.CHANNEL_RESHEDULE_WITH_OUT_PAYMENT
+                ));
             } else {
                 sql += " and b.paymentMethod in :pm and b.billTypeAtomic != :paymentBTA  ";
                 params.put("pm", paymentMethods);

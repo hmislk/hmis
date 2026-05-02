@@ -64,7 +64,7 @@
                     <p:dataTable 
                         value="#{channelReportController.absentPatients}" 
                         var="b" 
-                        id="tbln1" 
+                        id="tbl1" 
                         paginator="true"
                         scrollable="true"
                         rows="10"
@@ -96,7 +96,7 @@
                             <p:tag rendered="#{b.cancelled}" value="Cancelled - #{b.cancelledDeptId}" severity="danger" />
                             <p:tag rendered="#{b.refunded}" value="Refunded - #{b.refundedDeptId}"  severity="warning" />
                             <p:tag rendered="#{b.billTypeAtomic eq 'CHANNEL_REFUND_WITH_PAYMENT'}" value="Refund Bill"  severity="warning" />
-                            <p:tag rendered="#{b.billTypeAtomic eq 'CHANNEL_CANCELLATION_WITH_PAYMENT'}" value="Cancel Bill" severity="danger" />
+                            <p:tag rendered="#{b.billTypeAtomic eq 'CHANNEL_CANCELLATION_WITH_PAYMENT' or b.billTypeAtomic eq 'CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING'}" value="Cancel Bill" severity="danger" />
                         </p:column>
 
                         <p:column style="text-align: center;" width="10em">

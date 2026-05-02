@@ -106,7 +106,7 @@
                                                     <h:outputText rendered="#{b.cancelled}" value="Cancelled - #{b.cancelledDeptId}" style="color: red;" />
                                                     <h:outputText rendered="#{b.refunded}" value="Refunded - #{b.refundedDeptId}"  style="color: rgb(243, 243, 6);" />
                                                     <h:outputText rendered="#{b.billTypeAtomic eq 'CHANNEL_REFUND_WITH_PAYMENT'}" value="Refund Bill"  style="color: rgb(234, 234, 6)" />
-                                                    <h:outputText rendered="#{b.billTypeAtomic eq 'CHANNEL_CANCELLATION_WITH_PAYMENT'}" value="Cancel Bill" style="color: red;" />
+                                                    <h:outputText rendered="#{b.billTypeAtomic eq 'CHANNEL_CANCELLATION_WITH_PAYMENT' or b.billTypeAtomic eq 'CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING'}" value="Cancel Bill" style="color: red;" />
                                                 </h:panelGroup>
                                             </td>
                                             <td style="font-weight: 500; text-align: left; padding: 4px;">
