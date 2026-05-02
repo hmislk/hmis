@@ -52,6 +52,18 @@ Always fetch first — Codex may have auto-pushed fixes you don't have locally.
 - Do NOT make one commit per comment — keep history clean
 - Use imperative mood in commit message, include `Closes #N` if this resolves the issue
 
+### 4a. Code Review After Applying CodeRabbit Fixes — MANDATORY
+
+**After applying any CodeRabbit (or other automated reviewer) suggestion, always review the changed code with the `java-health-code-reviewer` agent before pushing.** Automated tools frequently generate suggestions with wrong method names, incorrect types, or API calls that do not exist in this codebase, causing compilation errors.
+
+Specifically verify:
+- All method names exist on the actual entity class (e.g., `isCompleted()` not `getCompleted()` for primitive `boolean` fields in JPA entities)
+- All referenced fields/variables are in scope
+- Generated `diff` hunks integrate cleanly with surrounding code (no missing lines, no off-by-one context)
+- The fix does not introduce a regression (e.g., null-safety, logic inversion)
+
+> **Why:** CodeRabbit has broken builds multiple times in this project by generating method calls that don't exist (`getCompleted()` on a `boolean` field, wrong constructor signatures, etc.). Never apply a suggestion blindly.
+
 ### 5. Pre-Push Checklist
 
 - **persistence.xml** — must use `${JDBC_DATASOURCE}` and `${JDBC_AUDIT_DATASOURCE}`, not hardcoded JNDI names. See [Persistence Configuration Guide](../deployment/persistence-verification.md)

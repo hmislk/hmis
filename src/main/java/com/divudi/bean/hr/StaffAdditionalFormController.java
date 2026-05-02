@@ -803,8 +803,9 @@ public class StaffAdditionalFormController implements Serializable {
             return true;
         }
 
-        Long timePeriod = CommonFunctions.calTimePeriod(currentAdditionalForm.getFromTime(), currentAdditionalForm.getToTime());
-        if (timePeriod < 0 || (timePeriod / 24) > 1) {
+        double timePeriodMinutes = CommonFunctions.dateDifferenceInMinutes(
+                currentAdditionalForm.getFromTime(), currentAdditionalForm.getToTime());
+        if (timePeriodMinutes < 0 || timePeriodMinutes > 1440) {
             JsfUtil.addErrorMessage("Please Check  From Time and To Time Range");
             return true;
         }
@@ -892,8 +893,9 @@ public class StaffAdditionalFormController implements Serializable {
             JsfUtil.addErrorMessage("Please Select From Time");
             return true;
         }
-        Long timePeriod = CommonFunctions.calTimePeriod(currentAdditionalForm.getFromTime(), currentAdditionalForm.getToTime());
-        if (timePeriod <= 0 || (timePeriod / 24) > 1) {
+        double timePeriodMinutes = CommonFunctions.dateDifferenceInMinutes(
+                currentAdditionalForm.getFromTime(), currentAdditionalForm.getToTime());
+        if (timePeriodMinutes <= 0 || timePeriodMinutes > 1440) {
             JsfUtil.addErrorMessage("Please Check  From Time and To Time Range");
             return true;
         }
@@ -973,8 +975,9 @@ public class StaffAdditionalFormController implements Serializable {
             JsfUtil.addErrorMessage("Please Select From Time");
             return true;
         }
-        Long timePeriod = CommonFunctions.calTimePeriod(currentAdditionalForm.getFromTime(), currentAdditionalForm.getToTime());
-        if (timePeriod <= 0 || (timePeriod / 24) > 1) {
+        double timePeriodMinutes = CommonFunctions.dateDifferenceInMinutes(
+                currentAdditionalForm.getFromTime(), currentAdditionalForm.getToTime());
+        if (timePeriodMinutes <= 0 || timePeriodMinutes > 1440) {
             JsfUtil.addErrorMessage("Please Check  From Time and To Time Range");
             return true;
         }
