@@ -2312,17 +2312,21 @@ public class BhtSummeryController implements Serializable {
 
     }
 
-    public void createIntrimBillTable() {
+    public String createIntrimBillTable() {
+        if (patientEncounter == null) {
+            JsfUtil.addErrorMessage("No Admission Selected");
+            return "";
+        }
         if (configOptionApplicationController.getBooleanValueByKey("Restrict Access to Intrim Bill if Provisional Bill is Created")) {
-            if (patientEncounter != null
-                    && admissionController.isAddmissionHaveProvisionalBill((Admission) patientEncounter)) {
+            if (admissionController.isAddmissionHaveProvisionalBill((Admission) patientEncounter)) {
                 JsfUtil.addErrorMessage("There is a Provisional Bill For This Admission");
-                clear();            // resets patientEncounter and cached data safely
-                return;
+                clear();
+                return "";
             }
         }
         childPatientEncouters = null;
         createTables();
+        return "/inward/inward_bill_intrim?faces-redirect=true";
     }
 
     public void createTables() {
