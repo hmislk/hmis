@@ -83,6 +83,7 @@
                                         id="roomTable"
                                         value="#{bhtSummeryController.patientRooms}"
                                         var="rm"
+                                        rowKey="#{rm.id}"
                                         styleClass="w-100"
                                         rowStyleClass="#{rm.discharged ? '' : 'font-weight-bold'}">
 
