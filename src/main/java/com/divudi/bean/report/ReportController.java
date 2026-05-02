@@ -1806,7 +1806,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
     }
     
     public void exportCollectionCenterBalanceReportToPDF() {
-        if (bundle.getReportTemplateRows() == null || bundle.getReportTemplateRows().isEmpty()) {
+        if (bundle == null || bundle.getReportTemplateRows() == null || bundle.getReportTemplateRows().isEmpty()) {
             JsfUtil.addErrorMessage("No data to export. Please process the report first.");
             return;
         }
@@ -1949,7 +1949,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
                 table.addCell(textCell(acc.getRoute() != null ? acc.getRoute().getName() : "-", bodyFontSmall));
                 table.addCell(textCell(acc.getCode(), bodyFontSmall));
                 table.addCell(textCell(acc.getPhone(), bodyFontSmall));
-                table.addCell(numCell(acc.getMaxCreditLimit(), bodyFontSmall));
+                table.addCell(numCell(acc.getAllowedCreditLimit(), bodyFontSmall));
                 table.addCell(numCell(acc.getMaxCreditLimit(), bodyFontSmall)); // ⚠️ duplicate — verify correct field
                 table.addCell(numCell(ac.getBalanceAfterTransaction(), bodyFontSmall));
                 indexNumber++;
@@ -1960,7 +1960,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
             context.responseComplete();
 
         } catch (Exception e) {
-            Logger.getLogger(ReportsController.class.getName())
+            Logger.getLogger(ReportController.class.getName())
                     .log(Level.SEVERE, "Error exporting Collection Center Balance Report to PDF", e);
         }
     }
