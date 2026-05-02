@@ -10,6 +10,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.ss.usermodel.VerticalAlignment;
@@ -29,6 +31,7 @@ import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.OnlineBookingStatus;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.RefundBill;
+import com.divudi.core.util.JsfUtil;
 import com.itextpdf.io.font.constants.StandardFonts;
 import com.itextpdf.kernel.colors.ColorConstants;
 import com.itextpdf.kernel.colors.DeviceRgb;
@@ -61,6 +64,8 @@ public class Report<T> {
     private int fontSize = 8;
     private String boldFont = StandardFonts.HELVETICA_BOLD;
     // private String normalFont = StandardFonts.HELVETICA;
+
+    private static final Logger logger = LoggerFactory.getLogger(Report.class);
     
 
     public Report() {
@@ -196,6 +201,8 @@ public class Report<T> {
                     .stream(() -> inputStream)
                     .build();
         } catch (Exception e) {
+            logger.error(("Failed to generate PDF file: ") + reportName, e);
+            JsfUtil.addErrorMessage("Failed to generate PDF file. Please try again.");
             return null;
         }
     }
@@ -218,13 +225,14 @@ public class Report<T> {
                     .stream(() -> inputStream)
                     .build();
         } catch (Exception e) {
+            logger.error(("Failed to generate Excel file: ") + reportName, e);
+            JsfUtil.addErrorMessage("Failed to generate Excel file. Please try again.");
             return null;
         }
     }
 
     public byte[] createPdfBytes() throws IOException {
         if (columns == null || columns.isEmpty() || data == null) {
-            System.out.println("OUT");
             return new byte[0];
         }
 
@@ -255,7 +263,6 @@ public class Report<T> {
 
     public byte[] createExcelBytes() throws IOException {
         if (columns == null || columns.isEmpty() || data == null) {
-            System.out.println("OUT");
             return new byte[0];
         }
 
@@ -537,7 +544,7 @@ public class Report<T> {
 
     public void addFooterRow(Table table) throws IOException{
         int i = 0;
-        int start, span;
+        int span;
 
         List<ReportColumn<T>> cols = new ArrayList<>(columns.values());
 
@@ -558,7 +565,6 @@ public class Report<T> {
                 i++;
             } 
             else {
-                start = i;
                 if (serialNoColumnAtStart) {
                     span = 1;
                 } else {
@@ -570,7 +576,7 @@ public class Report<T> {
                     i++;
                 }
 
-                Cell mergedCell = new Cell(start, span)
+                Cell mergedCell = new Cell(1, span)
                         .add(new Paragraph(""))
                         .setBackgroundColor(new DeviceRgb(192, 192, 192));
 
@@ -748,12 +754,7 @@ public class Report<T> {
             footerValue = col2.getFooter();
             table.addCell(new Cell().add(new Paragraph((footerValue != null ? String.format(col2.getFormat(), footerValue) : "")).setFont(PdfFontFactory.createFont(getBoldFont()))).setTextAlignment(col2.getTextAlignment()).setFontSize(getFontSize()).setBackgroundColor(new DeviceRgb(192, 192, 192)));
 
-            if (this.isSerialNoColumnAtStart()) {
-                table.addCell(new Cell(9, 11).add(new Paragraph("")).setBackgroundColor(new DeviceRgb(192, 192, 192)));
-            } else {
-                table.addCell(new Cell(8, 10).add(new Paragraph("")).setBackgroundColor(new DeviceRgb(192, 192, 192)));
-            }
-
+            table.addCell(new Cell(1, 3).add(new Paragraph("")).setBackgroundColor(new DeviceRgb(192, 192, 192)));
         }
  
         
