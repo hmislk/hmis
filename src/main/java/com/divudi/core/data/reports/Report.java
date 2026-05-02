@@ -425,7 +425,7 @@ public class Report<T> {
             throws IOException {
 
         if (searchCriteria == null || searchCriteria.isEmpty()) {
-            return; // or return an empty table if you prefer
+            return;
         }
         float[] colWidths = {1.5f, 2f, 0.1f, 1.5f, 2f, 0.1f, 1.5f, 2f, 0.1f, 1.5f, 2f};
         Table infoTable = new Table(colWidths).useAllAvailableWidth().setFixedLayout();
@@ -435,11 +435,9 @@ public class Report<T> {
 
         for (Map.Entry<String, Object> entry : searchCriteria.entrySet()) {
 
-            // LABEL
             Cell labelCell = new Cell().add(new Paragraph(entry.getKey()).setFont(PdfFontFactory.createFont(boldFont)).setFontSize(8).setTextAlignment(TextAlignment.LEFT));
             infoTable.addCell(labelCell);
 
-            // VALUE
             String valueText = "";
             Object value = entry.getValue();
 
@@ -452,19 +450,16 @@ public class Report<T> {
 
             pairsInRow++;
 
-            // Add spacer only if NOT the 4th pair
             if (pairsInRow < 4) {
                 Cell spacer = new Cell().add(new Paragraph(" "));
                 infoTable.addCell(spacer);
             }
 
-            // Reset after 4 pairs
             if (pairsInRow == 4) {
                 pairsInRow = 0;
             }
         }
 
-        // Fill remaining cells in last row 
         if (pairsInRow > 0) {
             int remainingPairs = 4 - pairsInRow;
 
@@ -575,7 +570,7 @@ public class Report<T> {
                     i++;
                 }
 
-                Cell mergedCell = new Cell(start, span) // rowspan=1, colspan=span
+                Cell mergedCell = new Cell(start, span)
                         .add(new Paragraph(""))
                         .setBackgroundColor(new DeviceRgb(192, 192, 192));
 
@@ -625,7 +620,6 @@ public class Report<T> {
             return 0;
         }
         
-        // Bold style for labels
         CellStyle headerStyle = wb.createCellStyle();
         org.apache.poi.ss.usermodel.Font headerFont = wb.createFont();
         headerFont.setFontHeightInPoints((short) 14);
@@ -642,12 +636,10 @@ public class Report<T> {
 
         for (Map.Entry<String, Object> entry : filters.entrySet()) {
 
-            // LABEL CELL
             org.apache.poi.ss.usermodel.Cell labelCell = row.createCell(pairCounter * 3);
             labelCell.setCellValue(entry.getKey());
             labelCell.setCellStyle(metaStyleBold);
 
-            // VALUE CELL
             org.apache.poi.ss.usermodel.Cell valueCell = row.createCell(pairCounter * 3 + 1);
             Object value = entry.getValue();
 
@@ -655,14 +647,12 @@ public class Report<T> {
 
             pairCounter++;
 
-            // Start new row after 3 pairs
             if (pairCounter == 3) {
                 pairCounter = 0;
                 row = sheet.createRow(rowIndex++);
             }
         }
 
-        // blank row after metadata
         rowIndex++;
 
         return rowIndex;
