@@ -3486,4 +3486,72 @@ public class BhtSummeryController implements Serializable {
         this.childPatientEncouters = childPatientEncouters;
     }
 
+    /**
+     * Computes a detailed duration breakdown for a PatientRoom that mirrors
+     * the slot-counting logic in InwardBeanController.calCount(). Used by the
+     * room details page to show how the billed slot count is derived.
+     */
+    public RoomDurationBreakdown getRoomDurationBreakdown(PatientRoom pr) {
+        if (pr == null || pr.getRoomFacilityCharge() == null
+                || pr.getRoomFacilityCharge().getTimedItemFee() == null
+                || pr.getAdmittedAt() == null) {
+            return null;
+        }
+        TimedItemFee tif = pr.getRoomFacilityCharge().getTimedItemFee();
+        Date dischargedAt = pr.getDischargedAt() != null ? pr.getDischargedAt() : new Date();
+
+        long totalMinutes = CommonFunctions.calculateDurationMin(pr.getAdmittedAt(), dischargedAt);
+        double slotMinutes = tif.getDurationHours() * 60.0;
+        double overshootMinutes = tif.getOverShootHours() * 60.0;
+
+        if (slotMinutes == 0) {
+            return new RoomDurationBreakdown(totalMinutes, slotMinutes, 0, totalMinutes, overshootMinutes, false, 0);
+        }
+
+        long completeSlots = (long) (totalMinutes / slotMinutes);
+        double remainderMinutes = totalMinutes - (completeSlots * slotMinutes);
+        boolean extraSlotCharged = (overshootMinutes != 0 && overshootMinutes <= remainderMinutes) || completeSlots == 0;
+        long billedSlots = completeSlots + (extraSlotCharged ? 1 : 0);
+
+        return new RoomDurationBreakdown(totalMinutes, slotMinutes, completeSlots,
+                remainderMinutes, overshootMinutes, extraSlotCharged, billedSlots);
+    }
+
+    public static class RoomDurationBreakdown {
+
+        private final long totalMinutes;
+        private final double slotMinutes;
+        private final long completeSlots;
+        private final double remainderMinutes;
+        private final double overshootMinutes;
+        private final boolean extraSlotCharged;
+        private final long billedSlots;
+
+        public RoomDurationBreakdown(long totalMinutes, double slotMinutes, long completeSlots,
+                double remainderMinutes, double overshootMinutes,
+                boolean extraSlotCharged, long billedSlots) {
+            this.totalMinutes = totalMinutes;
+            this.slotMinutes = slotMinutes;
+            this.completeSlots = completeSlots;
+            this.remainderMinutes = remainderMinutes;
+            this.overshootMinutes = overshootMinutes;
+            this.extraSlotCharged = extraSlotCharged;
+            this.billedSlots = billedSlots;
+        }
+
+        public long getTotalMinutes() { return totalMinutes; }
+        public long getTotalHours() { return totalMinutes / 60; }
+        public long getTotalRemainingMinutes() { return totalMinutes % 60; }
+        public double getSlotMinutes() { return slotMinutes; }
+        public double getSlotHours() { return slotMinutes / 60.0; }
+        public long getCompleteSlots() { return completeSlots; }
+        public double getRemainderMinutes() { return remainderMinutes; }
+        public long getRemainderHours() { return (long) remainderMinutes / 60; }
+        public long getRemainderRemainingMinutes() { return (long) remainderMinutes % 60; }
+        public double getOvershootMinutes() { return overshootMinutes; }
+        public double getOvershootHours() { return overshootMinutes / 60.0; }
+        public boolean isExtraSlotCharged() { return extraSlotCharged; }
+        public long getBilledSlots() { return billedSlots; }
+    }
+
 }

@@ -213,39 +213,106 @@
                                         <!-- Expandable charge breakdown -->
                                         <p:rowExpansion>
                                             <div class="p-3 border rounded" style="background:#f8f9fa;">
-                                                <!-- Duration summary -->
-                                                <div class="mb-3 d-flex flex-wrap gap-3 align-items-center">
-                                                    <small class="text-muted fw-semibold">
-                                                        <i class="fa-solid fa-clock me-1"/>Duration:
-                                                    </small>
-                                                    <small>
-                                                        <h:outputText value="#{rm.admittedAt}">
-                                                            <f:convertDateTime pattern="dd MMM yyyy HH:mm"/>
-                                                        </h:outputText>
-                                                        &#x2192;
-                                                        <h:panelGroup rendered="#{rm.dischargedAt ne null}">
-                                                            <h:outputText value="#{rm.dischargedAt}">
+                                                <!-- Duration breakdown -->
+                                                <h:panelGroup layout="block" styleClass="mb-3">
+                                                    <!-- Dates row -->
+                                                    <div class="d-flex flex-wrap gap-2 align-items-center mb-2">
+                                                        <i class="fa-solid fa-clock text-muted"/>
+                                                        <span class="fw-semibold">
+                                                            <h:outputText value="#{rm.admittedAt}">
                                                                 <f:convertDateTime pattern="dd MMM yyyy HH:mm"/>
                                                             </h:outputText>
+                                                        </span>
+                                                        <span class="text-muted">&#x2192;</span>
+                                                        <h:panelGroup rendered="#{rm.dischargedAt ne null}">
+                                                            <span class="fw-semibold">
+                                                                <h:outputText value="#{rm.dischargedAt}">
+                                                                    <f:convertDateTime pattern="dd MMM yyyy HH:mm"/>
+                                                                </h:outputText>
+                                                            </span>
                                                         </h:panelGroup>
                                                         <h:panelGroup rendered="#{rm.dischargedAt eq null}">
-                                                            <span class="text-success fw-semibold">Now</span>
+                                                            <span class="text-success fw-semibold">Now (ongoing)</span>
                                                         </h:panelGroup>
-                                                    </small>
-                                                    <h:panelGroup rendered="#{rm.roomFacilityCharge ne null and rm.roomFacilityCharge.timedItemFee ne null}">
-                                                        <small class="text-muted">|</small>
-                                                        <small class="text-muted">
-                                                            Slot:
-                                                            <h:outputText value="#{rm.roomFacilityCharge.timedItemFee.durationHours}">
-                                                                <f:convertNumber pattern="#,##0.##"/>
-                                                            </h:outputText> hrs
-                                                            &nbsp;|&nbsp;Overshoot:
-                                                            <h:outputText value="#{rm.roomFacilityCharge.timedItemFee.overShootHours}">
-                                                                <f:convertNumber pattern="#,##0.##"/>
-                                                            </h:outputText> hrs
+                                                    </div>
+
+                                                    <!-- Slot calculation detail -->
+                                                    <h:panelGroup layout="block"
+                                                                  rendered="#{bhtSummeryController.getRoomDurationBreakdown(rm) ne null}">
+                                                        <table class="table table-sm table-bordered mb-2" style="font-size:0.82rem; max-width:680px;">
+                                                            <thead class="table-light">
+                                                                <tr>
+                                                                    <th>Total Stay</th>
+                                                                    <th>Slot Size</th>
+                                                                    <th>Complete Slots</th>
+                                                                    <th>Remainder</th>
+                                                                    <th>Overshoot Limit</th>
+                                                                    <th>Extra Slot?</th>
+                                                                    <th class="text-primary">Billed Slots</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                <tr>
+                                                                    <td>
+                                                                        <h:outputText value="#{bhtSummeryController.getRoomDurationBreakdown(rm).totalHours}"/> h
+                                                                        <h:outputText value="#{bhtSummeryController.getRoomDurationBreakdown(rm).totalRemainingMinutes}"/> min
+                                                                        <br/>
+                                                                        <small class="text-muted">(<h:outputText value="#{bhtSummeryController.getRoomDurationBreakdown(rm).totalMinutes}"/> min total)</small>
+                                                                    </td>
+                                                                    <td>
+                                                                        <h:outputText value="#{bhtSummeryController.getRoomDurationBreakdown(rm).slotHours}">
+                                                                            <f:convertNumber pattern="#,##0.##"/>
+                                                                        </h:outputText> hrs
+                                                                        <br/>
+                                                                        <small class="text-muted">(<h:outputText value="#{bhtSummeryController.getRoomDurationBreakdown(rm).slotMinutes}">
+                                                                            <f:convertNumber pattern="#,##0.##"/>
+                                                                        </h:outputText> min)</small>
+                                                                    </td>
+                                                                    <td class="fw-semibold">
+                                                                        <h:outputText value="#{bhtSummeryController.getRoomDurationBreakdown(rm).completeSlots}"/>
+                                                                    </td>
+                                                                    <td>
+                                                                        <h:outputText value="#{bhtSummeryController.getRoomDurationBreakdown(rm).remainderHours}"/> h
+                                                                        <h:outputText value="#{bhtSummeryController.getRoomDurationBreakdown(rm).remainderRemainingMinutes}"/> min
+                                                                        <br/>
+                                                                        <small class="text-muted">(<h:outputText value="#{bhtSummeryController.getRoomDurationBreakdown(rm).remainderMinutes}">
+                                                                            <f:convertNumber pattern="#,##0.##"/>
+                                                                        </h:outputText> min)</small>
+                                                                    </td>
+                                                                    <td>
+                                                                        <h:outputText value="#{bhtSummeryController.getRoomDurationBreakdown(rm).overshootHours}">
+                                                                            <f:convertNumber pattern="#,##0.##"/>
+                                                                        </h:outputText> hrs
+                                                                        <br/>
+                                                                        <small class="text-muted">(<h:outputText value="#{bhtSummeryController.getRoomDurationBreakdown(rm).overshootMinutes}">
+                                                                            <f:convertNumber pattern="#,##0.##"/>
+                                                                        </h:outputText> min)</small>
+                                                                    </td>
+                                                                    <td>
+                                                                        <h:panelGroup rendered="#{bhtSummeryController.getRoomDurationBreakdown(rm).extraSlotCharged}">
+                                                                            <span class="badge bg-warning text-dark">Yes — remainder &#x2265; overshoot</span>
+                                                                        </h:panelGroup>
+                                                                        <h:panelGroup rendered="#{not bhtSummeryController.getRoomDurationBreakdown(rm).extraSlotCharged}">
+                                                                            <span class="badge bg-success">No — within overshoot</span>
+                                                                        </h:panelGroup>
+                                                                    </td>
+                                                                    <td class="text-primary fw-bold" style="font-size:1.05rem;">
+                                                                        <h:outputText value="#{bhtSummeryController.getRoomDurationBreakdown(rm).billedSlots}"/>
+                                                                    </td>
+                                                                </tr>
+                                                            </tbody>
+                                                        </table>
+                                                        <small class="text-muted fst-italic">
+                                                            Billed slots = complete slots
+                                                            <h:panelGroup rendered="#{bhtSummeryController.getRoomDurationBreakdown(rm).extraSlotCharged}">
+                                                                + 1 (remainder exceeded overshoot)
+                                                            </h:panelGroup>
+                                                            <h:panelGroup rendered="#{not bhtSummeryController.getRoomDurationBreakdown(rm).extraSlotCharged}">
+                                                                (remainder is within the overshoot grace period)
+                                                            </h:panelGroup>
                                                         </small>
                                                     </h:panelGroup>
-                                                </div>
+                                                </h:panelGroup>
 
                                                 <!-- Per-charge breakdown table -->
                                                 <table class="table table-sm table-bordered mb-0" style="font-size:0.85rem;">
