@@ -103,12 +103,12 @@ public class ServiceApiService implements Serializable {
 
         // Type filter using DTYPE discriminator
         if ("OPD".equalsIgnoreCase(serviceType)) {
-            jpql.append("AND type(i) = com.divudi.core.entity.Service ");
+            jpql.append("AND type(i) = Service ");
         } else if ("Inward".equalsIgnoreCase(serviceType)) {
-            jpql.append("AND type(i) = com.divudi.core.entity.inward.InwardService ");
+            jpql.append("AND type(i) = InwardService ");
         } else {
             // Default: restrict to OPD and Inward only, excluding other subtypes (e.g. TheatreService)
-            jpql.append("AND (type(i) = com.divudi.core.entity.Service OR type(i) = com.divudi.core.entity.inward.InwardService) ");
+            jpql.append("AND (type(i) = Service OR type(i) = InwardService) ");
         }
 
         if (query != null && !query.trim().isEmpty()) {

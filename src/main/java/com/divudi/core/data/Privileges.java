@@ -137,6 +137,7 @@ public enum Privileges {
     CashTransactionListToCashRecieve("Cash Transaction List to Cash Receive"),
     ShiftHandoverAcceptAsCashier("Shift Handover Accept As Cashier"),
     ShiftHandoverAcceptAsMainCashier("Shift Handover Accept As Main Cashier"),
+    CashierHandoverStatusReport("Cashier Handover Status Report"),
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Lab">
@@ -1016,6 +1017,9 @@ public enum Privileges {
             case DrawerAdjustmentDirect:
             case PettyCashCancellationApproval:
                 return "Approval";
+
+            case CashierHandoverStatusReport:
+                return "Finance";
 
             case IssueFundTransfer:
             case ReceiveFundTransfer:

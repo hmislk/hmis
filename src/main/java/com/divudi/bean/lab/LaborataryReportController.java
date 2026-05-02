@@ -595,7 +595,7 @@ public class LaborataryReportController implements Serializable {
         billTypeAtomics.add(BillTypeAtomic.CC_BILL_CANCELLATION);
         billTypeAtomics.add(BillTypeAtomic.CC_BILL_REFUND);
 
-        List<Bill> bills = billService.fetchBills(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme, toInstitution, toDepartment, visitType);
+        List<Bill> bills = billService.fetchBills(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme, toInstitution, toDepartment, visitType, DepartmentType.Lab);
         bundle = new IncomeBundle(bills);
         for (IncomeRow r : bundle.getRows()) {
             if (r.getBill() == null) {
@@ -1853,8 +1853,10 @@ public class LaborataryReportController implements Serializable {
         ReportTemplateRow floatIncomeRow = new ReportTemplateRow();
         floatIncomeRow.setItemName("Float Income");
         initializeRows(floatIncomeRow);
-        List<BillLight> floatIncome = billService.fetchBillDtos(fromDate, toDate, institution, site, department, null, getFloatInconeBillTypeAtomics(), null,null);
-        floatIncomeRow = genarateRowBundleOther(floatIncome, floatIncomeRow);
+        if (configController.getBooleanValueByKey("Daily Lab Summary Report - Include Float Income", true)) {
+            List<BillLight> floatIncome = billService.fetchBillDtos(fromDate, toDate, institution, site, department, null, getFloatInconeBillTypeAtomics(), null,null);
+            floatIncomeRow = genarateRowBundleOther(floatIncome, floatIncomeRow);
+        }
         bundleReport.getReportTemplateRows().add(floatIncomeRow);
         
         //Outher Income
@@ -1873,8 +1875,10 @@ public class LaborataryReportController implements Serializable {
         IncomeRow floatTransferDeductionRow = new IncomeRow();
         floatTransferDeductionRow.setItemName("Float Transfer");
         initializeDeductionRows(floatTransferDeductionRow);
-        List<BillLight> floatTransfer = billService.fetchBillDtos(fromDate, toDate, institution, site, department, null, getFloatTransferBillTypeAtomics(), null,null);
-        floatTransferDeductionRow = genarateDeductionRowBundleOther(floatTransfer, floatTransferDeductionRow);
+        if (configController.getBooleanValueByKey("Daily Lab Summary Report - Include Float Income", true)) {
+            List<BillLight> floatTransfer = billService.fetchBillDtos(fromDate, toDate, institution, site, department, null, getFloatTransferBillTypeAtomics(), null,null);
+            floatTransferDeductionRow = genarateDeductionRowBundleOther(floatTransfer, floatTransferDeductionRow);
+        }
         bundle.getRows().add(floatTransferDeductionRow);
 
         //Deducations Voucher

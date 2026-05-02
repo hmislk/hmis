@@ -2576,8 +2576,21 @@ public class ReportController implements Serializable, ControllerWithReportFilte
             calculateTotalTestCount();
         }, LaboratoryReport.COLLECTION_CENTER_STATEMENT_REPORT, sessionController.getLoggedUser());
     }
+    public String returnSiteIdsString() {
+        if (siteIds == null || siteIds.isEmpty()) {
+            return "All";
+        }
+        StringBuilder sb = new StringBuilder();
+        for (Object element : (List<?>) siteIds) {
+            if (sb.length() > 0) {
+                sb.append(", ");
+            }
+            Institution siteName= institutionController.findInstitution(String.valueOf(element));
+            sb.append(siteName.getName());
+        }
+        return sb.toString();
+    }
 
-    
       // Filters for test count report
     public Map<String, Object> getFiltersForTestCountReport() {
         SimpleDateFormat sdf = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
@@ -2587,6 +2600,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         filters.put("To Date", sdf.format(getToDate()));
         filters.put("Analyzer", machine != null ? machine.getName() : "All");
         filters.put("Institution", institution != null ? institution.getName() : "All");
+        filters.put("Site",siteIds != null && !siteIds.isEmpty() ? returnSiteIdsString() : "All" );
         filters.put("Department", department != null ? department.getName() : "All");
         return filters;
     }

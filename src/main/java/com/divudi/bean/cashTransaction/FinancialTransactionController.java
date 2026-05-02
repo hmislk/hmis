@@ -54,6 +54,7 @@ import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -148,6 +149,10 @@ public class FinancialTransactionController implements Serializable {
     private ReportTemplateRowBundle opdDocPayment;
     private ReportTemplateRowBundle channellingDocPayment;
     private boolean handoverValuesCreated = false;
+    private boolean shortageSubmitting = false;
+    private boolean settlementSubmitting = false;
+    private double shortageSettledSoFar;
+    private double shortageOutstanding;
 
     private ReportTemplateRowBundle opdBilled;
     private ReportTemplateRowBundle opdReturns;
@@ -1311,8 +1316,6 @@ public class FinancialTransactionController implements Serializable {
     }
 
     public String navigateBackToPaymentHandoverAccept() {
-        selectedBundle.calculateTotalsByPaymentsAndDenominations();
-        bundle.calculateTotalsBySelectedChildBundles();
         return "/cashier/handover_accept?faces-redirect=true";
     }
 
@@ -1367,15 +1370,6 @@ public class FinancialTransactionController implements Serializable {
         return "/cashier/cashier_shift_bill_search?faces-redirect=true";
     }
 
-    public String navigateToShiftShortagePrint() {
-        if (currentBill == null
-                || currentBill.getBillTypeAtomic() != BillTypeAtomic.FUND_SHIFT_SHORTAGE_BILL
-                || currentBillPayments == null
-                || currentBillPayments.isEmpty()) {
-            return navigateToRecordShiftShortage();
-        }
-        return "/cashier/record_shift_shortage_print?faces-redirect=true";
-    }
 
     // Method to navigate to the Transfer Payment Method page
     public String navigateToTransferPaymentMethod() {
@@ -1864,21 +1858,51 @@ public class FinancialTransactionController implements Serializable {
         bundle.aggregateTotalsFromAllChildBundles();
         bundle.collectDepartments();
 
-        // Restore cash float net for display. The denomination bill holds the
-        // physical cash the sender counted at handover; bundle.cashValue is the
-        // cash portion collected during the shift (float-exclusive). Their
-        // difference is the net cash float carried into the handover. Using
-        // the denomination bill (instead of selectedBill.total) is independent
-        // of how total was persisted, so legacy handovers created before the
-        // total-persistence fix also restore correctly.
+        // Restore cash handover value and float net after aggregate (aggregate
+        // overwrites cashHandoverValue with sum of child values = collected cash).
+        // The denomination bill holds the physical cash the sender counted.
         if (denoBill != null) {
             double physicalCash = denoBill.getNetTotal();
+            bundle.setCashHandoverValue(physicalCash);
+            bundle.setDenominatorValue(physicalCash);
             double rebuiltCash = bundle.getCashValue();
             double floatNet = physicalCash - rebuiltCash;
             if (floatNet > 0.001) {
                 bundle.setCashFloatInTotal(floatNet);
             } else if (floatNet < -0.001) {
                 bundle.setCashFloatOutTotal(-floatNet);
+            }
+        }
+        bundle.setTotalOut(selectedBill.getNetTotal());
+
+        // Fetch float transfer payments for this shift so the accept page can
+        // display them. Same query as navigateToViewHandoverBill.
+        Bill shiftStartBill = selectedBill.getReferenceBill();
+        if (shiftStartBill != null && shiftStartBill.getId() != null) {
+            List<BillTypeAtomic> floatBtas = new ArrayList<>();
+            floatBtas.add(BillTypeAtomic.FUND_TRANSFER_BILL);
+            floatBtas.add(BillTypeAtomic.FUND_TRANSFER_RECEIVED_BILL);
+            Map<String, Object> floatParams = new HashMap<>();
+            String floatJpql = "SELECT p FROM Payment p JOIN p.bill b "
+                    + "WHERE (p.creater = :cu OR p.floatRecipient = :cu) "
+                    + "AND p.retired = false "
+                    + "AND p.cancelled = false "
+                    + "AND p.handingOverStarted = true "
+                    + "AND b.billTypeAtomic IN :btas "
+                    + "AND b.id > :sid "
+                    + "AND b.id <= :hid "
+                    + "ORDER BY b.id";
+            floatParams.put("cu", selectedBill.getFromWebUser());
+            floatParams.put("btas", floatBtas);
+            floatParams.put("sid", shiftStartBill.getId());
+            floatParams.put("hid", selectedBill.getId());
+            List<Payment> floatPayments = paymentFacade.findByJpql(floatJpql, floatParams);
+            if (floatPayments != null) {
+                for (Payment fp : floatPayments) {
+                    ReportTemplateRow floatRow = new ReportTemplateRow();
+                    floatRow.setPayment(fp);
+                    bundle.getReportTemplateRows().add(floatRow);
+                }
             }
         }
 
@@ -1943,8 +1967,78 @@ public class FinancialTransactionController implements Serializable {
 
         bundle.aggregateTotalsFromAllChildBundles();
         bundle.collectDepartments();
+        bundle.setHandoverBill(selectedBill);
+
+        // Restore cash handover, denominatorValue, and cash float net from the saved
+        // denomination bill. aggregateTotalsFromAllChildBundles() overwrites cashHandoverValue
+        // with the sum of child values (= collected cash), so we must set the correct
+        // physical-cash value after the aggregate call, not before.
+        if (denoBill != null) {
+            double physicalCash = denoBill.getNetTotal();
+            bundle.setCashHandoverValue(physicalCash);
+            bundle.setDenominatorValue(physicalCash);
+            double rebuiltCash = bundle.getCashValue();
+            double floatNet = physicalCash - rebuiltCash;
+            if (floatNet > 0.001) {
+                bundle.setCashFloatInTotal(floatNet);
+            } else if (floatNet < -0.001) {
+                bundle.setCashFloatOutTotal(-floatNet);
+            }
+        }
+        // Restore totalOut so "Handingover Value" is correct on the print.
+        bundle.setTotalOut(selectedBill.getNetTotal());
+
+        // Fetch individual float transfer payments for this shift so the preview can
+        // display them as detail rows. Float payments were marked handingOverStarted=true
+        // during settleHandoverStartBill(). Scope: bill ID range between shift start and
+        // handover bill, for this user as creator or recipient.
+        Bill shiftStartBill = selectedBill.getReferenceBill();
+        if (shiftStartBill != null && shiftStartBill.getId() != null) {
+            List<BillTypeAtomic> floatBtas = new ArrayList<>();
+            floatBtas.add(BillTypeAtomic.FUND_TRANSFER_BILL);
+            floatBtas.add(BillTypeAtomic.FUND_TRANSFER_RECEIVED_BILL);
+            Map<String, Object> floatParams = new HashMap<>();
+            String floatJpql = "SELECT p FROM Payment p JOIN p.bill b "
+                    + "WHERE (p.creater = :cu OR p.floatRecipient = :cu) "
+                    + "AND p.retired = false "
+                    + "AND p.cancelled = false "
+                    + "AND p.handingOverStarted = true "
+                    + "AND b.billTypeAtomic IN :btas "
+                    + "AND b.id > :sid "
+                    + "AND b.id <= :hid "
+                    + "ORDER BY b.id";
+            floatParams.put("cu", selectedBill.getFromWebUser());
+            floatParams.put("btas", floatBtas);
+            floatParams.put("sid", shiftStartBill.getId());
+            floatParams.put("hid", selectedBill.getId());
+            List<Payment> floatPayments = paymentFacade.findByJpql(floatJpql, floatParams);
+            if (floatPayments != null) {
+                for (Payment fp : floatPayments) {
+                    ReportTemplateRow row = new ReportTemplateRow();
+                    row.setPayment(fp);
+                    bundle.getReportTemplateRows().add(row);
+                }
+            }
+        }
 
         return "/cashier/handover_preview?faces-redirect=true";
+    }
+
+    public String navigateToHandoverAcceptBillReprintFromReport() {
+        if (selectedBill == null) {
+            JsfUtil.addErrorMessage("No handover selected.");
+            return null;
+        }
+        Bill acceptBill = selectedBill.getBackwardReferenceBill();
+        if (acceptBill == null) {
+            JsfUtil.addErrorMessage("This handover has not been accepted yet.");
+            return null;
+        }
+        if (bundle == null) {
+            bundle = new ReportTemplateRowBundle();
+        }
+        bundle.setHandoverBill(acceptBill);
+        return "/cashier/handover_accept_bill_print?faces-redirect=true";
     }
 
     public String rejectToReceiveHandoverBill() {
@@ -2178,10 +2272,6 @@ public class FinancialTransactionController implements Serializable {
     public String navigateToMyHandovers() {
         fillMyHandovers();
         return "/cashier/handover_bills_from_me?faces-redirect=true";
-    }
-
-    public String navigateToUserHandovers() {
-        return "/reports/cashier_reports/handovers?faces-redirect=true";
     }
 
     public String navigateToHandoverStatusReport() {
@@ -2699,14 +2789,11 @@ public class FinancialTransactionController implements Serializable {
             JsfUtil.addErrorMessage("Error");
             return;
         }
-        if (currentPayment.getPaymentMethod() == null) {
-            JsfUtil.addErrorMessage("Select a Payment Method");
-            return;
-        }
         if (currentPayment.getPaidValue() <= 0) {
             JsfUtil.addErrorMessage("Payment value must be greater than zero");
             return;
         }
+        currentPayment.setPaymentMethod(PaymentMethod.Cash);
         getCurrentBillPayments().add(currentPayment);
         calculateFundTransferBillTotal();
         currentPayment = null;
@@ -4245,7 +4332,7 @@ public class FinancialTransactionController implements Serializable {
         }
 
         calculateShortageBillTotal();
-        return "/cashier/record_shift_shortage?faces-redirect=true"; // Navigation case
+        return settleShiftShortages();
     }
 
     public List<Payment> fetchPaymentsFromShiftStartToEndByDateAndDepartment(
@@ -5799,6 +5886,9 @@ public class FinancialTransactionController implements Serializable {
             for (Payment ftp : floatPaymentsToMark) {
                 ftp.setHandingOverStarted(true);
                 paymentController.save(ftp);
+                ReportTemplateRow floatRow = new ReportTemplateRow();
+                floatRow.setPayment(ftp);
+                bundle.getReportTemplateRows().add(floatRow);
             }
         }
 
@@ -6571,6 +6661,7 @@ public class FinancialTransactionController implements Serializable {
             case FUND_SHIFT_HANDOVER_CREATE:
                 jpql.append("and (s.completed = false or s.completed is null) ");
                 jpql.append("and (s.cancelled = false or s.cancelled is null) ");
+                jpql.append("and (s.referenceBill is null or s.referenceBill.completed = false or s.referenceBill.completed is null) ");
                 break;
             case FUND_TRANSFER_BILL:
                 jpql.append("and s.referenceBill is null ");
@@ -7537,18 +7628,6 @@ public class FinancialTransactionController implements Serializable {
         currentPayment = null;
     }
 
-    public void addShortageRecord() {
-        if (currentPayment == null) {
-            JsfUtil.addErrorMessage("Please provide valid amount for the shortage.");
-            return;
-        }
-        currentPayment.setPaidValue(0 - Math.abs(currentPayment.getPaidValue()));
-        currentPayment.setCreatedAt(new Date()); // Set payment date to now
-        currentBillPayments.add(currentPayment); // Add to the current bill's payments list
-        calculateShortageBillTotal();
-        JsfUtil.addSuccessMessage("Shortage recorded successfully.");
-        currentPayment = new Payment(); // Reset currentPayment for the next entry
-    }
 
     public void removeShortageRecord(Payment payment) {
         if (payment == null || !currentBillPayments.remove(payment)) {
@@ -7648,6 +7727,260 @@ public class FinancialTransactionController implements Serializable {
             JsfUtil.addErrorMessage("Error settling shift shortages: " + e.getMessage());
             return "";  // Optionally, redirect to an error page
         }
+    }
+
+    public String recordAndSettleShiftShortage() {
+        if (shortageSubmitting) {
+            return "";
+        }
+        if (currentPayment == null || currentPayment.getPaidValue() <= 0) {
+            JsfUtil.addErrorMessage("Please enter a valid shortage amount greater than zero.");
+            return "";
+        }
+        shortageSubmitting = true;
+        currentPayment.setPaymentMethod(PaymentMethod.Cash);
+        currentPayment.setPaidValue(0 - Math.abs(currentPayment.getPaidValue()));
+        currentPayment.setCreatedAt(new Date());
+        getCurrentBillPayments().add(currentPayment);
+        calculateShortageBillTotal();
+
+        currentBill.setBillType(BillType.ShiftShortage);
+        currentBill.setBillTypeAtomic(BillTypeAtomic.FUND_SHIFT_SHORTAGE_BILL);
+        currentBill.setBillDate(new Date());
+        currentBill.setBillTime(new Date());
+        currentBill.setDepartment(sessionController.getDepartment());
+        currentBill.setInstitution(sessionController.getInstitution());
+        currentBill.setFromDepartment(sessionController.getDepartment());
+        currentBill.setFromInstitution(sessionController.getInstitution());
+        currentBill.setFromStaff(sessionController.getLoggedUser().getStaff());
+        currentBill.setFromWebUser(sessionController.getLoggedUser());
+
+        try {
+            billController.save(currentBill);
+            currentPayment.setBill(currentBill);
+            currentPayment.setCurrentHolder(sessionController.getLoggedUser());
+            paymentController.save(currentPayment);
+            JsfUtil.addSuccessMessage("Shift shortage recorded successfully.");
+            return "/cashier/record_shift_shortage_print?faces-redirect=true";
+        } catch (Exception e) {
+            // If the bill was persisted but the payment failed, cancel the bill so it
+            // does not appear as an unmatched record in shortage searches.
+            if (currentBill != null && currentBill.getId() != null) {
+                try {
+                    currentBill.setCancelled(true);
+                    billController.save(currentBill);
+                } catch (Exception ignore) {
+                }
+            }
+            JsfUtil.addErrorMessage("Failed to record shift shortage: " + e.getMessage());
+            return "";
+        } finally {
+            shortageSubmitting = false;
+        }
+    }
+
+    public String navigateToCashierShiftBillSearchWithTodayResults() {
+        Date fromDate = Date.from(LocalDate.now().atStartOfDay().atZone(ZoneId.systemDefault()).toInstant());
+        Date toDate = Date.from(LocalDate.now().atTime(LocalTime.MAX).atZone(ZoneId.systemDefault()).toInstant());
+        searchController.setFromDate(fromDate);
+        searchController.setToDate(toDate);
+        resetClassVariables();
+        searchController.createShiftShortageBillsTable();
+        return "/cashier/cashier_shift_bill_search?faces-redirect=true";
+    }
+
+    public void prepareToViewShortageBill(Bill bill) {
+        selectedBill = findOriginalShortageBill(bill);
+        if (selectedBill == null) {
+            shortageSettledSoFar = 0.0;
+            shortageOutstanding = 0.0;
+            return;
+        }
+        computeShortageSettlementSummary(selectedBill);
+    }
+
+    public String navigateToSettleShiftShortageBill() {
+        selectedBill = findOriginalShortageBill(selectedBill);
+        if (selectedBill == null) {
+            JsfUtil.addErrorMessage("No shortage bill selected.");
+            return "";
+        }
+        if (selectedBill.getBillTypeAtomic() != BillTypeAtomic.FUND_SHIFT_SHORTAGE_BILL) {
+            JsfUtil.addErrorMessage("Only shortage bills can be settled.");
+            return "";
+        }
+        if (selectedBill.isCancelled()) {
+            JsfUtil.addErrorMessage("Cannot settle a cancelled bill.");
+            return "";
+        }
+        if (selectedBill.isPaid()) {
+            JsfUtil.addErrorMessage("This shortage has already been fully settled.");
+            return "";
+        }
+        if (selectedBill.getFromWebUser() == null
+                || !selectedBill.getFromWebUser().getId().equals(sessionController.getLoggedUser().getId())) {
+            JsfUtil.addErrorMessage("You can only settle your own shortage bills.");
+            return "";
+        }
+        computeShortageSettlementSummary(selectedBill);
+        if (shortageOutstanding <= 0.001) {
+            JsfUtil.addErrorMessage("This shortage has already been fully settled.");
+            return "";
+        }
+        currentBill = new Bill();
+        currentPayment = new Payment();
+        currentPayment.setPaidValue(shortageOutstanding);
+        return "/cashier/settle_shift_shortage_bill?faces-redirect=true";
+    }
+
+    public String settleShiftShortageBill() {
+        if (settlementSubmitting) {
+            return "";
+        }
+        if (currentPayment == null || currentPayment.getPaidValue() <= 0) {
+            JsfUtil.addErrorMessage("Please enter a valid settlement amount greater than zero.");
+            return "";
+        }
+        if (currentBill == null) {
+            JsfUtil.addErrorMessage("No settlement context found.");
+            return "";
+        }
+        if (selectedBill == null || selectedBill.getId() == null) {
+            JsfUtil.addErrorMessage("No shortage bill selected.");
+            return "";
+        }
+        // Reload from DB to catch cancellations or concurrent settlements in another tab/session
+        Bill freshBill = findOriginalShortageBill(billFacade.find(selectedBill.getId()));
+        if (freshBill == null) {
+            JsfUtil.addErrorMessage("Shortage bill no longer exists.");
+            return "";
+        }
+        if (freshBill.getBillType() != BillType.ShiftShortage
+                || freshBill.getBillTypeAtomic() != BillTypeAtomic.FUND_SHIFT_SHORTAGE_BILL) {
+            JsfUtil.addErrorMessage("Only shortage bills can be settled.");
+            return "";
+        }
+        if (freshBill.isCancelled()) {
+            JsfUtil.addErrorMessage("Cannot settle a cancelled bill.");
+            return "";
+        }
+        if (freshBill.isPaid()) {
+            JsfUtil.addErrorMessage("This shortage has already been fully settled.");
+            return "";
+        }
+        if (freshBill.getFromWebUser() == null
+                || !freshBill.getFromWebUser().getId().equals(sessionController.getLoggedUser().getId())) {
+            JsfUtil.addErrorMessage("You can only settle your own shortage bills.");
+            return "";
+        }
+        if (freshBill.getFromInstitution() != null
+                && sessionController.getInstitution() != null
+                && !freshBill.getFromInstitution().getId().equals(sessionController.getInstitution().getId())) {
+            JsfUtil.addErrorMessage("You can only settle shortages from your institution.");
+            return "";
+        }
+        if (freshBill.getFromDepartment() != null
+                && sessionController.getDepartment() != null
+                && !freshBill.getFromDepartment().getId().equals(sessionController.getDepartment().getId())) {
+            JsfUtil.addErrorMessage("You can only settle shortages from your department.");
+            return "";
+        }
+        selectedBill = freshBill;
+        computeShortageSettlementSummary(freshBill);
+        if (currentPayment.getPaidValue() > shortageOutstanding + 0.001) {
+            JsfUtil.addErrorMessage("Settlement amount cannot exceed the outstanding amount of "
+                    + String.format("%.2f", shortageOutstanding) + ".");
+            return "";
+        }
+        settlementSubmitting = true;
+        try {
+            currentBill.setBillType(BillType.ShiftShortageSettlement);
+            currentBill.setBillTypeAtomic(BillTypeAtomic.FUND_SHIFT_SHORTAGE_SETTLEMENT_BILL);
+            currentBill.setBillDate(new Date());
+            currentBill.setBillTime(new Date());
+            currentBill.setTotal(currentPayment.getPaidValue());
+            currentBill.setNetTotal(currentPayment.getPaidValue());
+            currentBill.setReferenceBill(selectedBill);
+            currentBill.setFromDepartment(sessionController.getDepartment());
+            currentBill.setFromInstitution(sessionController.getInstitution());
+            currentBill.setFromStaff(sessionController.getLoggedUser().getStaff());
+            currentBill.setFromWebUser(sessionController.getLoggedUser());
+            currentBill.setDepartment(null);
+            currentBill.setInstitution(null);
+            billController.save(currentBill);
+
+            currentPayment.setPaymentMethod(PaymentMethod.Cash);
+            currentPayment.setCreatedAt(new Date());
+            currentPayment.setBill(currentBill);
+            currentPayment.setDepartment(null);
+            currentPayment.setCurrentHolder(sessionController.getLoggedUser());
+            paymentController.save(currentPayment);
+
+            if (shortageOutstanding - currentPayment.getPaidValue() <= 0.001) {
+                selectedBill.setPaid(true);
+                selectedBill.setEditedAt(new Date());
+                selectedBill.setEditor(sessionController.getLoggedUser());
+                billController.save(selectedBill);
+            }
+            computeShortageSettlementSummary(selectedBill);
+            JsfUtil.addSuccessMessage("Shortage settlement recorded successfully.");
+            return "/cashier/settle_shift_shortage_print?faces-redirect=true";
+        } catch (Exception e) {
+            if (currentBill != null && currentBill.getId() != null) {
+                try {
+                    currentBill.setCancelled(true);
+                    billController.save(currentBill);
+                } catch (Exception ignore) {
+                }
+            }
+            JsfUtil.addErrorMessage("Failed to record settlement: " + e.getMessage());
+            return "";
+        } finally {
+            settlementSubmitting = false;
+        }
+    }
+
+    private Bill findOriginalShortageBill(Bill bill) {
+        if (bill == null) {
+            return null;
+        }
+        Bill original = bill;
+        if (bill.getBillTypeAtomic() == BillTypeAtomic.FUND_SHIFT_SHORTAGE_SETTLEMENT_BILL
+                || bill.getBillTypeAtomic() == BillTypeAtomic.FUND_SHIFT_SHORTAGE_SETTLEMENT_BILL_CANCELLED) {
+            Bill referenceBill = bill.getReferenceBill();
+            if (referenceBill == null || referenceBill.getId() == null) {
+                return null;
+            }
+            original = billFacade.find(referenceBill.getId());
+        }
+        if (original == null || original.getBillTypeAtomic() != BillTypeAtomic.FUND_SHIFT_SHORTAGE_BILL) {
+            return null;
+        }
+        return original;
+    }
+
+    private void computeShortageSettlementSummary(Bill shortage) {
+        String jpql = "SELECT COALESCE(SUM(b.total), 0.0) FROM Bill b "
+                + "WHERE b.referenceBill = :ref "
+                + "AND b.billTypeAtomic = :bta "
+                + "AND b.cancelled = false";
+        Map<String, Object> params = new HashMap<>();
+        params.put("ref", shortage);
+        params.put("bta", BillTypeAtomic.FUND_SHIFT_SHORTAGE_SETTLEMENT_BILL);
+        Double settled = billFacade.findDoubleByJpql(jpql, params);
+        shortageSettledSoFar = settled != null ? settled : 0.0;
+        shortageOutstanding = Math.abs(shortage.getTotal()) - shortageSettledSoFar;
+        if (shortageOutstanding < 0) {
+            shortageOutstanding = 0;
+        }
+    }
+
+    public double getShortageSettledSoFar() {
+        return shortageSettledSoFar;
+    }
+
+    public double getShortageOutstanding() {
+        return shortageOutstanding;
     }
 
     private void calculateShortageBillTotal() {

@@ -155,6 +155,7 @@ public class InvestigationController implements Serializable {
 
     List<InvestigationDTO> investigationDtos;
     List<InvestigationDTO> selectedInvestigationDtos;
+    List<InvestigationDTO> investigationListDtos;
 
     private List<Investigation> investigationWithSelectedFormat;
     private Category categoryForFormat;
@@ -235,7 +236,7 @@ public class InvestigationController implements Serializable {
         try {
             // Create a new Excel workbook
             Workbook workbook = new XSSFWorkbook();
-            Sheet sheet = workbook.createSheet("Diagnoses");
+            Sheet sheet = workbook.createSheet("Manage Investigations");
 
             // Create a header row
             Row headerRow = sheet.createRow(0);
@@ -247,7 +248,7 @@ public class InvestigationController implements Serializable {
             int rowNum = 1;
             for (Investigation diag : items) {
                 Row row = sheet.createRow(rowNum++);
-                row.createCell(0).setCellValue(rowNum);
+                row.createCell(0).setCellValue(rowNum-1);
                 row.createCell(1).setCellValue(diag.getName());
             }
 
@@ -255,7 +256,7 @@ public class InvestigationController implements Serializable {
             FacesContext context = FacesContext.getCurrentInstance();
             HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
             response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-            response.setHeader("Content-Disposition", "attachment; filename=\"diagnoses.xlsx\"");
+            response.setHeader("Content-Disposition", "attachment; filename=\"manage_investigations.xlsx\"");
 
             // Write the workbook to the response output stream
             workbook.write(response.getOutputStream());
@@ -1399,7 +1400,7 @@ public class InvestigationController implements Serializable {
     }
 
     public String navigateToListInvestigation() {
-        listAllIxs();
+        fillInvestigationListDtos();
         return "/admin/lims/investigation_list?faces-redirect=true";
     }
 
@@ -1892,6 +1893,24 @@ public class InvestigationController implements Serializable {
         getCurrent();
     }
 
+    public void deleteInvestigationById(Long id) {
+        if (id == null) {
+            JsfUtil.addErrorMessage("Nothing to Delete");
+            return;
+        }
+        Investigation ix = getFacade().find(id);
+        if (ix == null) {
+            JsfUtil.addErrorMessage("Investigation not found");
+            return;
+        }
+        ix.setRetired(true);
+        ix.setRetiredAt(new Date());
+        ix.setRetirer(getSessionController().getLoggedUser());
+        getFacade().edit(ix);
+        JsfUtil.addSuccessMessage("Deleted Successfully");
+        fillInvestigationListDtos();
+    }
+
     private InvestigationFacade getFacade() {
         return ejbFacade;
     }
@@ -1944,6 +1963,25 @@ public class InvestigationController implements Serializable {
                 + "ORDER BY i.name";
 
         investigationDtos = (List<InvestigationDTO>) getFacade().findLightsByJpql(jpql);
+    }
+
+    public void fillInvestigationListDtos() {
+        String jpql = "SELECT new com.divudi.core.data.dto.InvestigationDTO("
+                + "i.id, "
+                + "i.code, "
+                + "i.name, "
+                + "cat.name, "
+                + "ins.name, "
+                + "dep.name, "
+                + "i.retired) "
+                + "FROM Investigation i "
+                + "LEFT JOIN i.category cat "
+                + "LEFT JOIN i.institution ins "
+                + "LEFT JOIN i.department dep "
+                + "WHERE i.retired = false "
+                + "ORDER BY i.name";
+
+        investigationListDtos = (List<InvestigationDTO>) getFacade().findLightsByJpql(jpql);
     }
     
     public List<InvestigationDTO> fillInvestigationNamesDtos() {
@@ -2166,6 +2204,15 @@ public class InvestigationController implements Serializable {
 
     public void setSelectedInvestigationDtos(List<InvestigationDTO> selectedInvestigationDtos) {
         this.selectedInvestigationDtos = selectedInvestigationDtos;
+    }
+
+    public List<InvestigationDTO> getInvestigationListDtos() {
+        fillInvestigationListDtos();
+        return investigationListDtos;
+    }
+
+    public void setInvestigationListDtos(List<InvestigationDTO> investigationListDtos) {
+        this.investigationListDtos = investigationListDtos;
     }
 
 }

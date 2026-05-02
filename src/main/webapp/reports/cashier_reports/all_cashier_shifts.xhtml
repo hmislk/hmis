@@ -115,6 +115,14 @@
                             value="#{financialTransactionController.bundle.reportTemplateRows}" 
                             var="ssb" 
                             rowKey="#{ssb.id}">
+                            <p:column headerText="Username" width="10em">
+                                <h:outputText value="#{ssb.bill.creater.name}" rendered="#{ssb.bill.creater ne null}" />
+                            </p:column>
+
+                            <p:column headerText="Name" width="15em">
+                                <h:outputText value="#{ssb.bill.creater.webUserPerson.name}" rendered="#{ssb.bill.creater ne null and ssb.bill.creater.webUserPerson ne null}" />
+                            </p:column>
+
                             <p:column headerText="Shift" width="15em" styleClass="text-center">
                                 <h:outputText value="#{ssb.bill.deptId}" styleClass="font-weight-bold mb-2" />
                                 <p:spacer height="5" />
