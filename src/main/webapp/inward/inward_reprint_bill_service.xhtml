@@ -246,8 +246,6 @@
                                 <p:dataTable rowIndexVar="rowIndex"
                                              editable="true"
                                              value="#{inwardSearch.billFees}" var="bip" >    
-                                    <p:ajax event="rowEdit" listener="#{billSearch.onEdit}" />  
-                                    <p:ajax event="rowEditCancel" listener="#{billSearch.onEdit}" /> 
                                     <p:column width="2em">
                                         <f:facet name="header" >No</f:facet>
                                         <h:outputLabel value="#{rowIndex+1}"/>
@@ -289,11 +287,7 @@
                                     <p:column headerText="Returned" width="8em;">
                                         <h:outputLabel  rendered="#{bip.billItem.refunded}" value="Returned" style="color: red;"/>
                                     </p:column> 
-
-                                    <p:column width="5em">  
-                                        <p:rowEditor > 
-                                        </p:rowEditor>
-                                    </p:column>                               
+                              
                                 </p:dataTable>
                             </div>
                         </div>
