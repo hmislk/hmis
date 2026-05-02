@@ -5258,10 +5258,12 @@ public class ChannelReportController implements Serializable {
         channelCardIncomeReport.setFileName(fileName);
         channelCardIncomeReport.setReportName("Channel Card Income Report");
         if (sessionController != null && sessionController.getLoggedUser() != null) {
-            if (sessionController.getLoggedUser().getInstitution() != null) {
+            if (sessionController.getLoggedUser().getInstitution() != null && sessionController.getLoggedUser().getInstitution().getName() != null) {
                 channelCardIncomeReport.setInstitutionName(sessionController.getLoggedUser().getInstitution().getName());
             }
-            channelCardIncomeReport.setReportGeneratedBy(sessionController.getLoggedUser().getName());
+            if (sessionController.getLoggedUser().getName() != null) {
+                channelCardIncomeReport.setReportGeneratedBy(sessionController.getLoggedUser().getName());
+            }        
         }
         channelCardIncomeReport.setSearchCriteria(getFiltersForChannelIncomeReports());   
         channelCardIncomeReport.setData(cardPaymentDetails.getIncomeDtos());
@@ -5274,7 +5276,7 @@ public class ChannelReportController implements Serializable {
     }
 
     public StreamedContent getChannelIncomeFromCardPaymentsReportAsPdf() {
-        if (cardPaymentDetails.getIncomeDtos() == null || cardPaymentDetails.getIncomeDtos().isEmpty()) {
+        if (cardPaymentDetails == null || cardPaymentDetails.getIncomeDtos() == null || cardPaymentDetails.getIncomeDtos().isEmpty()) {
             JsfUtil.addErrorMessage("Please generate the Channel Card Income report before exporting.");
             return null;
         }

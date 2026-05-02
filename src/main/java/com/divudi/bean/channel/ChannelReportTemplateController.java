@@ -1015,10 +1015,12 @@ public class ChannelReportTemplateController implements Serializable {
         String institutionName = "";
         String userName = "";
         if (sessionController != null && sessionController.getLoggedUser() != null) {
-            if (sessionController.getLoggedUser().getInstitution() != null) {
+            if (sessionController.getLoggedUser().getInstitution() != null && sessionController.getLoggedUser().getInstitution().getName() != null) {
                 institutionName = sessionController.getLoggedUser().getInstitution().getName();
             }
-            userName = sessionController.getLoggedUser().getName();
+            if (sessionController.getLoggedUser().getName() != null) {
+                userName = sessionController.getLoggedUser().getName();
+            }
         }
 
         OnlineBookingCountReport oBReport = new OnlineBookingCountReport(fileName, institutionName, getFiltersForOnlineBookingCountReports(), onlineBookingDetialRows, userName);
@@ -7953,8 +7955,8 @@ public class ChannelReportTemplateController implements Serializable {
 
         params.put("Speciality", speciality != null ? speciality.getName() : "All");
         params.put("Doctor", (staff != null && staff.getPerson() != null) ? staff.getPerson().getNameWithTitle() : "All");
-        params.put("From Date", sdf.format(fromDate));
-        params.put("To Date", sdf.format(toDate));
+        params.put("From Date", fromDate != null ?  sdf.format(fromDate) : "N/A");
+        params.put("To Date", toDate != null ? sdf.format(toDate) : "N/A");
         params.put("Institution", institution != null ? institution.getName() : "All Institutions");
         params.put("Bill Type", selectedBillTypeInOBReport != null ? selectedBillTypeInOBReport : "All");
 

@@ -23734,10 +23734,12 @@ public class SearchController implements Serializable {
         String institutionName = "";
         String userName = "";
         if (sessionController != null && sessionController.getLoggedUser() != null) {
-            if (sessionController.getLoggedUser().getInstitution() != null) {
+            if (sessionController.getLoggedUser().getInstitution() != null && sessionController.getLoggedUser().getInstitution().getName() != null) {
                 institutionName = sessionController.getLoggedUser().getInstitution().getName();
             }
-            userName = sessionController.getLoggedUser().getName();
+            if (sessionController.getLoggedUser().getName() != null) {
+                userName = sessionController.getLoggedUser().getName();
+            }
         }
 
         ChannelBillSearch oBReport = new ChannelBillSearch(fileName, institutionName, getFiltersForChannelBillSearch(), bills, userName);
@@ -23747,7 +23749,7 @@ public class SearchController implements Serializable {
 
     public StreamedContent getChannelBillsAsExcel() {
         if (bills == null || bills.isEmpty()) {
-            JsfUtil.addErrorMessage("Please generate the Online Session Bookings report before exporting.");
+            JsfUtil.addErrorMessage("Please generate the Channel Bills before exporting.");
             return null;
         }
 
