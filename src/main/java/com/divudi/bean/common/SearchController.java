@@ -1,3 +1,4 @@
+
 package com.divudi.bean.common;
 
 // <editor-fold defaultstate="collapsed" desc="Template">
@@ -23,6 +24,8 @@ import com.divudi.core.data.hr.ReportKeyWord;
 import com.divudi.core.data.reports.FinancialReport;
 import com.divudi.core.data.reports.CashierReports;
 import com.divudi.core.data.reports.ProfessionalPaymentReport;
+import com.divudi.core.data.reports.Report.ChannelBillSearch;
+import com.divudi.core.data.reports.Report.OnlineBookingCountReport;
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.core.entity.AuditEvent;
 import com.divudi.core.entity.Bill;
@@ -23700,4 +23703,56 @@ public class SearchController implements Serializable {
         return bt;
     }
 
+    // Filters for Channel Income Report
+    private Map<String, Object> getFiltersForChannelBillSearch() {
+        Map<String, Object> params = new LinkedHashMap<>();
+        String dateTimeFormat = sessionController.getApplicationPreference().getLongDateTimeFormat();
+        String formattedFromDate = fromDate != null ? new SimpleDateFormat(dateTimeFormat).format(fromDate) : "Not available";
+        String formattedToDate = toDate != null ? new SimpleDateFormat(dateTimeFormat).format(toDate) : "Not available";
+
+        params.put("From Date", formattedFromDate);
+        params.put("To Date", formattedToDate);
+        if (searchKeyword != null) {
+            params.put("Bill No", searchKeyword.getBillNo() != null && !searchKeyword.getBillNo().trim().isEmpty() ? searchKeyword.getBillNo() : "All");
+            params.put("Name", searchKeyword.getPatientName() != null && !searchKeyword.getPatientName().trim().isEmpty() ? searchKeyword.getPatientName() : "All");
+            params.put("Phone", searchKeyword.getPatientPhone() != null && !searchKeyword.getPatientPhone().trim().isEmpty() ? searchKeyword.getPatientPhone() : "All");
+            params.put("Total", searchKeyword.getTotal() != null? searchKeyword.getTotal() : "All");
+            params.put("Net Total", searchKeyword.getNetTotal() != null ? searchKeyword.getNetTotal() : "All");
+        }
+        params.put("Consultant", staff != null && staff.getPerson() != null && staff.getPerson().getNameWithTitle() != null ? staff.getPerson().getNameWithTitle() : "All");
+        params.put("Speciality", speciality != null ? speciality.getName() : "All");
+
+        return params;
+    }
+
+    public ChannelBillSearch getChannelBillSearchReport() {
+        String fileName = "Channel_Bills";
+        String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
+        if (dates != null && !dates.isEmpty()) {
+            fileName += "_" + dates;
+        }
+        String institutionName = "";
+        String userName = "";
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            if (sessionController.getLoggedUser().getInstitution() != null && sessionController.getLoggedUser().getInstitution().getName() != null) {
+                institutionName = sessionController.getLoggedUser().getInstitution().getName();
+            }
+            if (sessionController.getLoggedUser().getName() != null) {
+                userName = sessionController.getLoggedUser().getName();
+            }
+        }
+
+        ChannelBillSearch oBReport = new ChannelBillSearch(fileName, institutionName, getFiltersForChannelBillSearch(), bills, userName);
+
+        return oBReport;
+    }
+
+    public StreamedContent getChannelBillsAsExcel() {
+        if (bills == null || bills.isEmpty()) {
+            JsfUtil.addErrorMessage("Please generate the Channel Bills before exporting.");
+            return null;
+        }
+
+        return getChannelBillSearchReport().createExcelAsStream();
+    }
 }

@@ -133,6 +133,16 @@
                                 action="#{channelReportTemplateController.generateOnlineSessionBookingsReport()}" ajax="false" />
 
                             <p:commandButton
+                                id="btnPdf"
+                                class="mx-1 ui-button-info"
+                                ajax="false"
+                                rendered="true"
+                                icon="fas fa-file-pdf"
+                                value="Export as PDF">
+                                <p:fileDownload value="#{channelReportTemplateController.onlineBookingReportAsPdf}" />
+                            </p:commandButton>
+
+                            <p:commandButton
                                 id="btnPrint"
                                 class="ui-button-danger mx-1"
                                 icon="fas fa-print"
@@ -145,8 +155,9 @@
                                 class="ui-button-success mx-1"
                                 icon ="fas fa-file-excel"
                                 ajax="false"
-                                value="Excel">
-                                <p:dataExporter target="tbl1" fileName="Online_Seesion_Bookings_#{channelReportTemplateController.toDate}" type="xlsx" />
+                                value="Export to Excel">
+                                <!-- <p:dataExporter target="tbl1" fileName="Online_Seesion_Bookings_#{channelReportTemplateController.toDate}" type="xlsx" /> -->
+                                 <p:fileDownload value="#{channelReportTemplateController.onlineBookingReportAsExcel}" />
                             </p:commandButton>
                         </div>
 
