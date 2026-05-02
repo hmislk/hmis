@@ -1152,6 +1152,24 @@ public class BhtSummeryController implements Serializable {
         createTables();
     }
 
+    public void updateChargesForRoom(PatientRoom pr) {
+        if (pr == null || pr.getRoomFacilityCharge() == null) {
+            JsfUtil.addErrorMessage("Room facility charge not set");
+            return;
+        }
+        pr.setCurrentRoomCharge(pr.getRoomFacilityCharge().getRoomCharge());
+        pr.setCurrentMaintananceCharge(pr.getRoomFacilityCharge().getMaintananceCharge());
+        pr.setCurrentNursingCharge(pr.getRoomFacilityCharge().getNursingCharge());
+        pr.setCurrentMoCharge(pr.getRoomFacilityCharge().getMoCharge());
+        pr.setCurrentMoChargeForAfterDuration(pr.getRoomFacilityCharge().getMoChargeForAfterDuration());
+        pr.setCurrentLinenCharge(pr.getRoomFacilityCharge().getLinenCharge());
+        pr.setCurrentAdministrationCharge(pr.getRoomFacilityCharge().getAdminstrationCharge());
+        pr.setCurrentMedicalCareCharge(pr.getRoomFacilityCharge().getMedicalCareCharge());
+        getPatientRoomFacade().edit(pr);
+        patientRooms = null;
+        createTables();
+    }
+
     public void updatePrintingPatientRoom(PatientRoom patientRoom) {
         if (patientRoom.getId() != null) {
             getPatientRoomFacade().edit(patientRoom);
