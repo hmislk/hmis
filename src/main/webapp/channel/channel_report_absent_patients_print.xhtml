@@ -9,7 +9,7 @@
 <h:body>
     <ui:composition template="/resources/template/template.xhtml">
         <ui:define name="content">
-
+            <h:outputStylesheet library="css" name="printing/reportprint.css"/>
             <h:form >
                 <p:panel header="Patient Absent Report Print View" styleClass="w-100">
                     <f:facet name="header"  >
@@ -37,91 +37,6 @@
                         </div>
                     </f:facet>
 
-                    <style>
-
-                        @media screen{
-                            .paper{
-                                position: static !important;
-                                width: 297mm!important;
-                                zoom: 2.0;
-                            }
-
-                            table {
-                                border-collapse: collapse;
-                                width: 100%;
-                                font-size: 12px!important;
-                                margin-top: 1mm!important;
-                            }
-
-                            th, td {
-                                border: 1px solid #000;
-                                padding: 0px!important;
-                                margin: 2px!important;
-                                text-align: left;
-                                margin-left: 10mm!important;
-                                font-size: 11px!important;
-                            }
-
-                            .header{
-                                font-size: 16px!important;
-                            }
-
-                            tfoot{
-                                font-weight: 700!important;
-                                font-size: 11px!important;
-                            }
-                        }
-
-                        @media print {
-                            @page {
-                                @bottom-right {
-                                    content: "Page " counter(page) " of " counter(pages);
-                                    font-family: Arial, sans-serif;
-                                    font-size: 10pt;
-                                }
-                                size: A4 landscape!important;
-                            }
-
-                            body {
-                                counter-reset: page;
-                            }
-
-                            .paper{
-                                position: static !important;
-                                width: 297mm!important;
-
-
-                            }
-
-                            .header{
-                                line-height: 1.1;
-                                margin: 0mm!important;
-                                font-size: 13px!important;
-                            }
-
-                            table {
-                                border-collapse: collapse;
-                                width: 99.9%;
-                                font-size: 12px!important;
-                                margin-top: 1mm!important;
-                            }
-                            th, td {
-                                border: 1px solid #000;
-                                padding: 0px!important;
-                                margin: 2px!important;
-                                text-align: left;
-                                margin-left: 10mm!important;
-                            }
-                            th {
-
-                            }
-                            tfoot{
-                                font-weight: 700!important;
-                                font-size: 11px!important;
-                            }
-                        }
-                    </style>
-
                     <h:panelGroup id="reportView" class="d-flex justify-content-center">
                         <div class="paper">
                             <div class="header" >
@@ -145,7 +60,7 @@
                             </div>
 
                             <div>
-                                <table style="width: 100%; border-collapse: collapse;">
+                                <table class="table">
                                     <thead>
                                     <tr>
                                         <th style="font-weight: 700; text-align: center; padding: 4px;">
@@ -182,37 +97,38 @@
                                     </thead>
 
                                     <tbody>
-                                    <ui:repeat value="#{channelReportController.channelBills}" var="b">
+                                    <ui:repeat value="#{channelReportController.absentPatients}" var="b">
                                         <tr>
                                             <td style="font-weight: 500; text-align: left; padding: 4px;">
-                                                <h:outputText value="#{b.deptId}" >
-                                                    <p:tag rendered="#{b.cancelled}" value="Cancelled - #{b.cancelledBill.deptId}" severity="danger" />
-                                                    <p:tag rendered="#{b.refunded}" value="Refunded - #{b.refundedBill.deptId}"  severity="warning" />
-                                                    <p:tag rendered="#{bookingControllerViewScope.checkBillClass(b) eq 'RefundBill'}" value="Refund Bill"  severity="warning" />
-                                                    <p:tag rendered="#{b.billTypeAtomic eq 'CHANNEL_CANCELLATION_WITH_PAYMENT'}" value="Cancel Bill" severity="danger" />
-                                                </h:outputText>
+                                                <h:panelGroup layout="block">
+                                                    <h:outputText value="#{b.deptId}" />
+                                                    <br/>
+                                                    <h:outputText rendered="#{b.cancelled}" value="Cancelled - #{b.cancelledDeptId}" style="color: red;" />
+                                                    <h:outputText rendered="#{b.refunded}" value="Refunded - #{b.refundedDeptId}"  style="color: rgb(243, 243, 6);" />
+                                                    <h:outputText rendered="#{b.billTypeAtomic eq 'CHANNEL_REFUND_WITH_PAYMENT'}" value="Refund Bill"  style="color: rgb(234, 234, 6)" />
+                                                    <h:outputText rendered="#{b.billTypeAtomic eq 'CHANNEL_CANCELLATION_WITH_PAYMENT' or b.billTypeAtomic eq 'CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING'}" value="Cancel Bill" style="color: red;" />
+                                                </h:panelGroup>
                                             </td>
                                             <td style="font-weight: 500; text-align: left; padding: 4px;">
-                                                <h:outputText value="#{b.singleBillSession.serviceSession.name}"/>
+                                                <h:outputText value="#{b.serviceSessionName}"/>
                                             </td>
                                             <td style="font-weight: 500; text-align: left; padding: 4px;">
                                                 <h:outputText value="Online Booking"  rendered="#{b.billTypeAtomic eq 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT' or b.billTypeAtomic eq 'CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING'}"/>
                                                 <h:outputText value="System Booking"  rendered="#{b.billTypeAtomic ne 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT' and b.billTypeAtomic ne 'CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING'}"/>
                                             </td>
                                             <td style="font-weight: 500; text-align: center; padding: 4px;">
-                                                <h:outputText value="#{b.singleBillSession.serialNo}" />
+                                                <h:outputText value="#{b.billSessionSerialNo}" />
                                             </td>
                                             <td style="font-weight: 500; text-align: left; padding: 4px;">
-                                                <h:outputText value="#{b.patient.person.name}" rendered="#{b.billTypeAtomic ne 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}" />
-                                                <h:outputText value="#{b.referenceBill.onlineBooking.patientName}" rendered="#{b.billTypeAtomic eq 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}" />
-                                                <h:outputText value="#{b.billedBill.referenceBill.onlineBooking.patientName}" rendered="#{b.billTypeAtomic eq 'CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING'}" />
+                                                <h:outputText value="#{b.patientName}" />
+                                                <!-- <h:outputText value="#{b.referenceBill.onlineBooking.patientName}" rendered="#{b.billTypeAtomic eq 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}" />
+                                                <h:outputText value="#{b.billedBill.referenceBill.onlineBooking.patientName}" rendered="#{b.billTypeAtomic eq 'CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING'}" /> -->
                                             </td>
                                             <td style="font-weight: 500; text-align: left; padding: 4px;">
-                                                <h:outputText value="#{b.creater.name}" />
-                                                <h:outputText value="-" rendered="#{empty b.creater}"/>
+                                                <h:outputText value="#{b.cashierName}" />
                                             </td>
                                             <td style="font-weight: 500; text-align: left; padding: 4px;">
-                                                <h:outputText value="#{b.staff.person.name}" />
+                                                <h:outputText value="#{b.doctorName}" />
                                             </td>
                                             <td style="font-weight: 500; text-align: right; padding: 4px;">
                                                 <h:outputLabel styleClass="staffFee" value="#{b.staffFee}">
