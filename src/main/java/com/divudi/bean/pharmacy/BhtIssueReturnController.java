@@ -360,7 +360,13 @@ public class BhtIssueReturnController implements Serializable {
 //                System.out.println("bi.getPharmaceuticalBillItem().getQtyInUnit() = " + bi.getPharmaceuticalBillItem().getQtyInUnit());
 //                System.out.println("bi.getQty() = " + bi.getQty());
 //                System.out.println("bi.getPharmaceuticalBillItem().getQty() = " + bi.getPharmaceuticalBillItem().getQty());
-                double liveAvailableQty = getPharmacyRecieveBean().calQty4(bi.getReferanceBillItem());
+                double returnedQty = getPharmacyRecieveBean().getTotalQty(
+                        bi.getReferanceBillItem(),
+                        getBill().getBillType()
+                );
+                double liveAvailableQty = Math.abs(
+                        bi.getReferanceBillItem().getPharmaceuticalBillItem().getQtyInUnit()
+                ) - Math.abs(returnedQty);
                 if (bi.getQty() > liveAvailableQty) {
 //                    System.out.println("bi.getQty = " + bi.getQty());
                     JsfUtil.addErrorMessage("You cant return over than ballanced Qty ");
