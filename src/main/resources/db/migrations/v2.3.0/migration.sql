@@ -139,17 +139,24 @@ SET @sql = IF(@abort,
     )
 );
 
-PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
 
 -- ============================================================
--- STEP 5: Verification
+-- STEP 5: Verification (skipped when aborted — @col_unitgross is NULL in that path)
 -- ============================================================
-SET @verify_sql = CONCAT(
-    'SELECT ',
-    'COUNT(*) AS total_rows, ',
-    'SUM(CASE WHEN bf.', @col_unitgross, ' IS NULL THEN 1 ELSE 0 END) AS still_null ',
-    'FROM ', @billfee_table, ' bf'
+SET @verify_sql = IF(@abort,
+    'SELECT "Verification skipped — migration was aborted (missing columns)" AS status',
+    CONCAT(
+        'SELECT ',
+        'COUNT(*) AS total_rows, ',
+        'SUM(CASE WHEN bf.', @col_unitgross, ' IS NULL THEN 1 ELSE 0 END) AS still_null ',
+        'FROM ', @billfee_table, ' bf'
+    )
 );
-PREPARE stmt FROM @verify_sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+PREPARE stmt FROM @verify_sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
 
 SELECT 'Migration v2.3.0 complete' AS status;

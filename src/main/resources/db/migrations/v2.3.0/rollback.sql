@@ -42,6 +42,8 @@ SET @sql = CONCAT(
     @col_unitmargin,   ' = NULL, ',
     @col_unitdiscount, ' = NULL'
 );
-PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
 
 SELECT 'Rollback v2.3.0 complete' AS status;
