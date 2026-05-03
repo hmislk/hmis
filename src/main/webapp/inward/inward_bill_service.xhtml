@@ -655,9 +655,14 @@
                                                         rowIndexVar="rowIndex"
                                                         value="#{billBhtController.lstBillFees}"
                                                         var="bif"
+                                                        rowExpandMode="single"
                                                         rowStyleClass="#{(bif.billItem.item.chargesVisibleForInward)
                                                                          or (webUserController.hasPrivilege('ShowInwardFee'))
                                                                          ? '':'noDisplayRow'}">
+                                                        <p:column width="2em">
+                                                            <f:facet name="header"> </f:facet>
+                                                            <p:rowToggler />
+                                                        </p:column>
                                                         <p:column width="3em">
                                                             <f:facet name="header">No</f:facet>
                                                             <h:outputLabel value="#{rowIndex+1}"/>
@@ -743,6 +748,75 @@
                                                                     itemValue="#{bifs}" />
                                                             </p:selectOneMenu>
                                                         </p:column>
+
+                                                        <p:rowExpansion>
+                                                            <div class="p-3 ms-4 border-start border-primary" style="background-color: #f0f4ff;">
+                                                                <div class="row g-3">
+
+                                                                    <!-- Formula -->
+                                                                    <div class="col-12 col-md-5">
+                                                                        <div class="fw-bold mb-1">Calculation</div>
+                                                                        <div class="font-monospace small text-muted">Net = (Unit Rate × Qty) + Service Charge − Discount</div>
+                                                                        <div class="font-monospace mt-1">
+                                                                            =
+                                                                            (<h:outputText value="#{bif.feeUnitGrossValue != null ? bif.feeUnitGrossValue : 0.0}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                                                            ×
+                                                                            <h:outputText value="#{bif.billItem.qty != null ? bif.billItem.qty : 1}"><f:convertNumber pattern="#"/></h:outputText>)
+                                                                            +
+                                                                            <h:outputText value="#{bif.feeMargin}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                                                            −
+                                                                            <h:outputText value="#{bif.feeDiscount}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                                                        </div>
+                                                                        <div class="font-monospace fw-bold mt-1">
+                                                                            = <h:outputText value="#{bif.feeValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                                                        </div>
+                                                                    </div>
+
+                                                                    <!-- Service Charge detail -->
+                                                                    <div class="col-12 col-md-3">
+                                                                        <div class="fw-bold mb-1">Service Charge</div>
+                                                                        <h:panelGroup rendered="#{bif.priceMatrix != null and bif.priceMatrix.margin != null and bif.priceMatrix.margin != 0}">
+                                                                            <div class="small text-muted">
+                                                                                <h:outputText value="#{bif.priceMatrix.margin}"><f:convertNumber pattern="#,##0.##"/></h:outputText>%
+                                                                                of
+                                                                                <h:outputText value="#{bif.feeGrossValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                                                            </div>
+                                                                            <div class="text-success fw-bold">
+                                                                                + <h:outputText value="#{bif.feeMargin}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                                                            </div>
+                                                                            <h:panelGroup rendered="#{bif.priceMatrix.admissionType != null}">
+                                                                                <div class="text-muted small">Admission type: <h:outputText value="#{bif.priceMatrix.admissionType}"/></div>
+                                                                            </h:panelGroup>
+                                                                        </h:panelGroup>
+                                                                        <h:panelGroup rendered="#{bif.feeMargin == 0}">
+                                                                            <div class="text-muted small">Not applicable</div>
+                                                                        </h:panelGroup>
+                                                                    </div>
+
+                                                                    <!-- Discount detail -->
+                                                                    <div class="col-12 col-md-3">
+                                                                        <div class="fw-bold mb-1">Discount</div>
+                                                                        <h:panelGroup rendered="#{bif.feeDiscount != 0}">
+                                                                            <h:panelGroup rendered="#{bif.priceMatrix != null and bif.priceMatrix.discountPercent != 0}">
+                                                                                <div class="small text-muted">
+                                                                                    <h:outputText value="#{bif.priceMatrix.discountPercent}"><f:convertNumber pattern="#,##0.##"/></h:outputText>%
+                                                                                    of
+                                                                                    <h:outputText value="#{bif.feeGrossValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                                                                </div>
+                                                                            </h:panelGroup>
+                                                                            <div class="text-danger fw-bold">
+                                                                                − <h:outputText value="#{bif.feeDiscount}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                                                            </div>
+                                                                        </h:panelGroup>
+                                                                        <h:panelGroup rendered="#{bif.feeDiscount == 0}">
+                                                                            <div class="text-muted small">Not applicable</div>
+                                                                        </h:panelGroup>
+                                                                    </div>
+
+                                                                </div>
+                                                            </div>
+                                                        </p:rowExpansion>
+
                                                     </p:dataTable>
                                                 </p:tab>
                                             </p:tabView>
