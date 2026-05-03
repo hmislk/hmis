@@ -4,6 +4,13 @@ This directory contains comprehensive database documentation for the HMIS projec
 
 ## Documents
 
+### [Bill Investigation Guide](bill-investigation-guide.md)
+**How to investigate billing issues reported by staff**
+- "Bill MP/SALE/124491" always means `deptId`, not `id`
+- Bill lifecycle (PharmacyPre → PharmacySale)
+- Stock lock audit event interpretation
+- NETTOTAL vs billitem sum discrepancy
+
 ### [MySQL Developer Guide](mysql-developer-guide.md) 🆕
 **Primary database development reference**
 - Credential management and security
