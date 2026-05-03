@@ -4203,21 +4203,23 @@ public class BillBeanController implements Serializable {
     }
 
     public void updateBillByBillFee(Bill b) {
-        String sql = "SELECT sum(bi.grossValue)"
-                + " FROM BillItem bi "
-                + " WHERE bi.bill=:bill ";
+        String sql = "SELECT sum(b.feeGrossValue)"
+                + " FROM BillFee b "
+                + " WHERE b.retired=false"
+                + " and b.bill=:bill ";
         HashMap hm = new HashMap();
         hm.put("bill", b);
-        double val = getBillItemFacade().findDoubleByJpql(sql, hm);
+        double val = getBillFeeFacade().findDoubleByJpql(sql, hm);
 
         b.setTotal(val);
 
-        sql = "SELECT sum(bi.netValue)"
-                + " FROM BillItem bi "
-                + " WHERE bi.bill=:bill ";
+        sql = "SELECT sum(b.feeValue)"
+                + " FROM BillFee b "
+                + " WHERE b.retired=false"
+                + " and b.bill=:bill ";
         hm = new HashMap();
         hm.put("bill", b);
-        val = getBillItemFacade().findDoubleByJpql(sql, hm);
+        val = getBillFeeFacade().findDoubleByJpql(sql, hm);
 
         b.setNetTotal(val);
 

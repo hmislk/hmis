@@ -867,6 +867,7 @@ public class BillBhtController implements Serializable {
                 return;
             }
             if (currentBillItemQty % 1 != 0) {
+                currentBillItemQty = null;
                 JsfUtil.addErrorMessage("Quantity cannot be a decimal. Please enter a whole number.");
                 return;
             }
@@ -1040,7 +1041,13 @@ public class BillBhtController implements Serializable {
         lstBillItems = null;
         getLstBillItems();
 
-        PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(bf.getBillItem(), bf.getFeeGrossValue(), getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment(), getPatientEncounter().getPaymentMethod());
+        // Recalculate the per-unit gross from the edited total so that setBillFeeMargin
+        // uses the current unit rate rather than the stale creation-time value.
+        double qty = (bf.getBillItem() != null && bf.getBillItem().getQty() != null && bf.getBillItem().getQty() > 0)
+                ? bf.getBillItem().getQty() : 1.0;
+        bf.setFeeUnitGrossValue(bf.getFeeGrossValue() / qty);
+
+        PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(bf.getBillItem(), bf.getFeeUnitGrossValue(), getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment(), getPatientEncounter().getPaymentMethod());
 
         getInwardBean().updateBillItemMargin(bf, bf.getFeeGrossValue(), getPatientEncounter(), getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment(), priceMatrix);
 
