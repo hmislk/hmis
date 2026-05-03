@@ -650,7 +650,7 @@
                                                     </p:dataTable>
                                                 </p:tab>
                                                 <p:tab id="tabBillFee" title="Fees" >
-                                                    <p:outputLabel value="Fee values are per unit. Totals in the Bill Details panel reflect quantity." styleClass="text-muted small d-block mb-2" />
+                                                    <p:outputLabel value="Unit Rate × Qty = Total Gross. Edit Total Gross to override the charge; Discount and Service Charge are applied automatically." styleClass="text-muted small d-block mb-2" />
                                                     <p:dataTable
                                                         rowIndexVar="rowIndex"
                                                         value="#{billBhtController.lstBillFees}"
@@ -663,16 +663,30 @@
                                                             <h:outputLabel value="#{rowIndex+1}"/>
                                                         </p:column>
 
-                                                        <p:column>
+                                                        <p:column style="min-width: 14em;">
                                                             <f:facet name="header">Item Name</f:facet>
                                                             <h:outputLabel value="#{bif.billItem.item.name}"/>
                                                         </p:column>
 
+                                                        <p:column width="8em" class="text-end">
+                                                            <f:facet name="header">Unit Rate</f:facet>
+                                                            <h:outputLabel value="#{bif.feeUnitGrossValue}">
+                                                                <f:convertNumber pattern="#,##0.00" />
+                                                            </h:outputLabel>
+                                                        </p:column>
+
+                                                        <p:column width="4em" class="text-end">
+                                                            <f:facet name="header">Qty</f:facet>
+                                                            <h:outputLabel value="#{bif.billItem.qty}">
+                                                                <f:convertNumber pattern="#" />
+                                                            </h:outputLabel>
+                                                        </p:column>
+
                                                         <p:column width="10em" class="text-end">
-                                                            <f:facet name="header">Fee Gross Value</f:facet>
-                                                            <p:inputText 
+                                                            <f:facet name="header">Total Gross</f:facet>
+                                                            <p:inputText
                                                                 class="text-end w-100"
-                                                                autocomplete="off" 
+                                                                autocomplete="off"
                                                                 onfocus="this.select();"
                                                                 value="#{bif.feeGrossValue}"
                                                                 disabled="#{!bif.billItem.item.userChangable
@@ -687,9 +701,16 @@
                                                         </p:column>
 
                                                         <p:column width="8em" class="text-end">
-                                                            <f:facet name="header">Margin Value</f:facet>
-                                                            <h:outputLabel 
-                                                                id="matrix" 
+                                                            <f:facet name="header">Discount</f:facet>
+                                                            <h:outputLabel value="#{bif.feeDiscount}" class="text-end w-100">
+                                                                <f:convertNumber pattern="#,##0.00" />
+                                                            </h:outputLabel>
+                                                        </p:column>
+
+                                                        <p:column width="8em" class="text-end">
+                                                            <f:facet name="header">Service Charge</f:facet>
+                                                            <h:outputLabel
+                                                                id="matrix"
                                                                 class="text-end w-100"
                                                                 value="#{bif.feeMargin}">
                                                                 <f:convertNumber pattern="#,##0.00" />
@@ -697,9 +718,9 @@
                                                         </p:column>
 
                                                         <p:column width="8em" class="text-end">
-                                                            <f:facet name="header">Fee Value</f:facet>
-                                                            <h:outputLabel 
-                                                                id="feeValue"  
+                                                            <f:facet name="header">Net Total</f:facet>
+                                                            <h:outputLabel
+                                                                id="feeValue"
                                                                 value="#{bif.feeValue}"
                                                                 class="text-end w-100">
                                                                 <f:convertNumber pattern="#,##0.00" />
