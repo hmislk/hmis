@@ -97,6 +97,13 @@ public class BillFee implements Serializable, RetirableEntity {
     double feeMargin;
     double feeAdjusted;
 
+    // Per-unit rate fields — store the rate for a single unit before qty multiplication.
+    // The main fee fields (feeGrossValue, feeValue, feeMargin, feeDiscount) hold totals (unit × qty).
+    private Double feeUnitGrossValue;
+    private Double feeUnitValue;
+    private Double feeUnitMargin;
+    private Double feeUnitDiscount;
+
     //This records the payment made for the payment due staff or institution
     double paidValue = 0.0;
     //This records the value paid out of the total from the customer
@@ -723,6 +730,38 @@ public class BillFee implements Serializable, RetirableEntity {
 
     public void setFeeGrossValue(Double feeGrossValue) {
         this.feeGrossValue = feeGrossValue;
+    }
+
+    public Double getFeeUnitGrossValue() {
+        return feeUnitGrossValue;
+    }
+
+    public void setFeeUnitGrossValue(Double feeUnitGrossValue) {
+        this.feeUnitGrossValue = feeUnitGrossValue;
+    }
+
+    public Double getFeeUnitValue() {
+        return feeUnitValue;
+    }
+
+    public void setFeeUnitValue(Double feeUnitValue) {
+        this.feeUnitValue = feeUnitValue;
+    }
+
+    public Double getFeeUnitMargin() {
+        return feeUnitMargin;
+    }
+
+    public void setFeeUnitMargin(Double feeUnitMargin) {
+        this.feeUnitMargin = feeUnitMargin;
+    }
+
+    public Double getFeeUnitDiscount() {
+        return feeUnitDiscount;
+    }
+
+    public void setFeeUnitDiscount(Double feeUnitDiscount) {
+        this.feeUnitDiscount = feeUnitDiscount;
     }
 
     public double getSettleValue() {

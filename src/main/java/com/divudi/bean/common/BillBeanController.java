@@ -2664,13 +2664,12 @@ public class BillBeanController implements Serializable {
         BillFee f;
         f = new BillFee();
         f.setFee(i);
-        if (patientEncounter.isForiegner()) {
-            f.setFeeValue(i.getFfee());
-            f.setFeeGrossValue(i.getFfee());
-        } else {
-            f.setFeeValue(i.getFee());
-            f.setFeeGrossValue(i.getFee());
-        }
+        double unitRate = patientEncounter.isForiegner() ? i.getFfee() : i.getFee();
+        double qty = (billItem.getQty() != null && billItem.getQty() > 0) ? billItem.getQty() : 1.0;
+        f.setFeeUnitGrossValue(unitRate);
+        f.setFeeUnitValue(unitRate);
+        f.setFeeGrossValue(unitRate * qty);
+        f.setFeeValue(unitRate * qty);
         f.setDepartment(billItem.getItem().getDepartment());
         f.setBillItem(billItem);
 
@@ -4204,23 +4203,21 @@ public class BillBeanController implements Serializable {
     }
 
     public void updateBillByBillFee(Bill b) {
-        String sql = "SELECT sum(b.feeGrossValue)"
-                + " FROM BillFee b "
-                + " WHERE b.retired=false"
-                + " and b.bill=:bill ";
+        String sql = "SELECT sum(bi.grossValue)"
+                + " FROM BillItem bi "
+                + " WHERE bi.bill=:bill ";
         HashMap hm = new HashMap();
         hm.put("bill", b);
-        double val = getBillFeeFacade().findDoubleByJpql(sql, hm);
+        double val = getBillItemFacade().findDoubleByJpql(sql, hm);
 
         b.setTotal(val);
 
-        sql = "SELECT sum(b.feeValue)"
-                + " FROM BillFee b "
-                + " WHERE b.retired=false"
-                + " and b.bill=:bill ";
+        sql = "SELECT sum(bi.netValue)"
+                + " FROM BillItem bi "
+                + " WHERE bi.bill=:bill ";
         hm = new HashMap();
         hm.put("bill", b);
-        val = getBillFeeFacade().findDoubleByJpql(sql, hm);
+        val = getBillItemFacade().findDoubleByJpql(sql, hm);
 
         b.setNetTotal(val);
 
