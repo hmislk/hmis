@@ -31,11 +31,18 @@
                                         ajax="false">
                                     </p:commandButton>
 
-                                    <p:commandButton 
-                                        class="ui-button-info mx-2" 
-                                        icon="fas fa-print" 
-                                        value="Reprint" 
-                                        ajax="false" 
+                                    <p:outputLabel value="Paper Format" class="mx-2 mt-2"/>
+                                    <p:selectOneMenu value="#{sessionController.departmentPreference.inwardServiceBillPaperType}" style="width: 14em;" class="mx-1">
+                                        <f:selectItem itemLabel="Select Format" />
+                                        <f:selectItems value="#{enumController.paperTypes}" var="pt" itemLabel="#{pt.label}" itemValue="#{pt}" />
+                                    </p:selectOneMenu>
+                                    <p:commandButton ajax="false" icon="fa fa-sync-alt" class="ui-button mx-1" title="Apply Format"></p:commandButton>
+
+                                    <p:commandButton
+                                        class="ui-button-info mx-2"
+                                        icon="fas fa-print"
+                                        value="Reprint"
+                                        ajax="false"
                                         action="#"  >
                                         <p:printer target="gpBillPreview" ></p:printer>
                                     </p:commandButton>
@@ -352,6 +359,27 @@
                             <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'FiveEightInchPaper'}" >
                                 <ui:repeat value="#{inwardSearch.bill}" var="pp">
                                     <print:five_eight_opd_bill_inward bill="#{pp}" duplicate="false" payments="#{inwardSearch.bill.size()}"/>
+                                    <br/>
+                                </ui:repeat>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'FiveFivePrintedPaper'}">
+                                <ui:repeat value="#{inwardSearch.bill}" var="pp">
+                                    <print:five_five_paper_without_headings_inward_service bill="#{pp}" dup="false"/>
+                                    <br/>
+                                </ui:repeat>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'A4Paper'}">
+                                <ui:repeat value="#{inwardSearch.bill}" var="pp">
+                                    <print:A4_paper_with_headings bill="#{pp}" duplicate="false"/>
+                                    <br/>
+                                </ui:repeat>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'A4PrintedPaper'}">
+                                <ui:repeat value="#{inwardSearch.bill}" var="pp">
+                                    <print:A4_paper_without_headings bill="#{pp}" duplicate="false"/>
                                     <br/>
                                 </ui:repeat>
                             </h:panelGroup>

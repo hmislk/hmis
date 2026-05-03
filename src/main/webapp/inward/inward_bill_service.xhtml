@@ -864,9 +864,14 @@
 
                             <h:panelGroup rendered="#{billBhtController.printPreview}" >
                                 <div class="d-flex justify-content-end gap-2 mb-2">
-                                    <h:panelGrid columns="3">
-                                        <p:commandButton ajax="false" icon="fa fa-sync-alt" class="ui-button " title="Redraw Bill"></p:commandButton>
-                                    </h:panelGrid>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <p:outputLabel value="Paper Format" class="mt-2"/>
+                                        <p:selectOneMenu value="#{sessionController.departmentPreference.inwardServiceBillPaperType}" style="width: 14em;">
+                                            <f:selectItem itemLabel="Select Format" />
+                                            <f:selectItems value="#{enumController.paperTypes}" var="pt" itemLabel="#{pt.label}" itemValue="#{pt}" />
+                                        </p:selectOneMenu>
+                                        <p:commandButton ajax="false" icon="fa fa-sync-alt" class="ui-button" title="Redraw Bill"></p:commandButton>
+                                    </div>
                                     <p:commandButton
                                         value="Print"
                                         class="ui-button-info"
@@ -902,7 +907,7 @@
                                                 </f:facet>
                                                 <h:panelGroup id="gpBillPreview" >
 
-                                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Servise Bill size is FiveFive paper')}" >
+                                                    <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'FiveFivePaper'}" >
                                                         <ui:repeat value="#{billBhtController.bills}" var="ffb">
                                                             <div style="page-break-after: always;">
                                                                 <print:five_five_paper_with_headings_inward_service bill="#{ffb}"/>
@@ -911,42 +916,42 @@
                                                         </ui:repeat>
                                                     </h:panelGroup>
 
-                                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Servise Bill size is FiveFivePrinted paper',true)}" >
+                                                    <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'FiveFivePrintedPaper'}" >
                                                         <ui:repeat value="#{billBhtController.bills}" var="ffpp">
                                                             <print:five_five_paper_without_headings_inward_service bill="#{ffpp}" dup="false"/>
                                                             <br/>
                                                         </ui:repeat>
                                                     </h:panelGroup>
 
-                                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Servise Bill size is POS Paper')}" >
+                                                    <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'PosPaper'}" >
                                                         <ui:repeat value="#{billBhtController.bills}" var="pp">
                                                             <print:posOpdBill_inward_service bill="#{pp}" duplicate="false"/>
                                                             <br/>
                                                         </ui:repeat>
                                                     </h:panelGroup>
 
-                                                    <h:panelGroup  rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Servise Bill size is A4 Paper')}" >
+                                                    <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'A4Paper'}" >
                                                         <ui:repeat value="#{billBhtController.bills}" var="pp">
                                                             <print:A4_paper_with_headings bill="#{pp}" duplicate="false"/>
                                                             <br/>
                                                         </ui:repeat>
                                                     </h:panelGroup>
 
-                                                    <h:panelGroup  rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Servise Bill size is A4Printed Paper')}" >
+                                                    <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'A4PrintedPaper'}" >
                                                         <ui:repeat value="#{billBhtController.bills}" var="pp">
                                                             <print:A4_paper_without_headings bill="#{pp}" duplicate="false"/>
                                                             <br/>
                                                         </ui:repeat>
                                                     </h:panelGroup>
 
-                                                    <h:panelGroup  rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Servise Bill size is FiveFiveCustom3 Paper')}" >
+                                                    <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'FiveFiveCustom3'}" >
                                                         <ui:repeat value="#{billBhtController.bills}" var="pp">
                                                             <print:five_five_custom_3_inward bill="#{pp}" duplicate="false" payments="#{billBhtController.bills.size()}"/>
                                                             <br/>
                                                         </ui:repeat>
                                                     </h:panelGroup>
 
-                                                    <h:panelGroup  rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Servise Bill size is 5x8 inch Paper')}" >
+                                                    <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'FiveEightInchPaper'}" >
                                                         <ui:repeat value="#{billBhtController.bills}" var="pp">
                                                             <print:five_eight_opd_bill_inward bill="#{pp}" duplicate="false" payments="#{billBhtController.bills.size()}"/>
                                                             <br/>
