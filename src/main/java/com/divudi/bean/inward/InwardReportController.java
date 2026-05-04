@@ -382,7 +382,6 @@ public class InwardReportController implements Serializable {
             paymentType = "Any";
         }
 
-        // ── Bill type lists ──────────────────────────────────────────────────────
         List<BillTypeAtomic> btasOP = new ArrayList<>();
         List<BillTypeAtomic> btasIP = new ArrayList<>();
 
@@ -391,6 +390,11 @@ public class InwardReportController implements Serializable {
         }
         if ("OP".equals(visitType)) {
             btasOP.addAll(BillTypeAtomic.findByServiceType(ServiceType.OPD));
+        }
+        if("Any".equals(visitType)){
+            btasIP.addAll(BillTypeAtomic.findByServiceType(ServiceType.INWARD_SERVICE));
+            btasOP.addAll(BillTypeAtomic.findByServiceType(ServiceType.OPD));
+            
         }
 
         if (withProfessionalFee) {
@@ -408,6 +412,20 @@ public class InwardReportController implements Serializable {
                         BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES,
                         BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES_RETURN);
                 btasOP.addAll(profBillTypes);
+            }
+            if ("Any".equals(visitType)) {
+                List<BillTypeAtomic> opProfBillTypes = Arrays.asList(
+                        BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES,
+                        BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES_RETURN
+                        );
+                List<BillTypeAtomic> ipProfBillTypes = Arrays.asList(
+                        BillTypeAtomic.INWARD_PROFESSIONAL_FEE_BILL,
+                        BillTypeAtomic.INWARD_PROFESSIONAL_FEE_BILL_CANCELLATION,
+                        BillTypeAtomic.INWARD_THEATRE_PROFESSIONAL_FEE_BILL,
+                        BillTypeAtomic.INWARD_THEATRE_PROFESSIONAL_FEE_BILL_CANCELLATION
+                );
+                btasIP.addAll(ipProfBillTypes);
+                btasOP.addAll(opProfBillTypes);
             }
         }
 
@@ -479,6 +497,27 @@ public class InwardReportController implements Serializable {
                             : nonCreditPaymentMethods);
                 }
                 break;
+            case "Any":
+                jpql.append(" and bi.bill.billTypeAtomic in :btas ");
+                List<BillTypeAtomic> all = new ArrayList<>();
+                all.addAll(btasIP);
+                all.addAll(btasOP);
+                m.put("btas", all);
+
+                if (roomCategories != null && !roomCategories.isEmpty()) {
+                    jpql.append(" AND bi.bill.patientEncounter.currentPatientRoom.roomFacilityCharge.roomCategory IN :cat ");
+                    m.put("cat", roomCategories);
+                }
+                if (admissionTypes != null && !admissionTypes.isEmpty()) {
+                    jpql.append(" AND bi.bill.patientEncounter.admissionType IN :admTypes ");
+                    m.put("admTypes", admissionTypes);
+                }
+                if (paymentType != null && !paymentType.isEmpty() && !"Any".equalsIgnoreCase(paymentType)) {
+                    jpql.append(" and bi.bill.patientEncounter.paymentMethod in :pmIp ");
+                    m.put("pmIp", "Credit".equals(paymentType) ? creditPaymentMethods : nonCreditPaymentMethods);
+                }
+                break;
+
             default:
                 break;
         }
