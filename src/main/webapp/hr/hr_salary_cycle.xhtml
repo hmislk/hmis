@@ -22,7 +22,7 @@
                     }
                 </style>
 
-                <p:growl showDetail="true" life="4000" />
+                <p:growl id="growl" showDetail="true" life="4000" />
                 <p:focus id="selectFocus" context="lstSelect" />
                 <p:focus id="detailFocus" context="gpDetail" />
 
@@ -168,13 +168,14 @@
                         <!-- Actions -->
                         <div style="display: flex; gap: 0.5rem; padding-top: 0.75rem; border-top: 1px solid #e2e8f0; margin-top: 0.5rem;">
                             <p:commandButton
-                                id="btnSave"
-                                value="Save"
-                                icon="fas fa-save"
-                                styleClass="ui-button-warning"
-                                style="flex: 1;"
-                                ajax="false"
-                                action="#{salaryCycleController.saveSelected()}" />
+    id="btnSave"
+    value="Save"
+    icon="fas fa-save"
+    styleClass="ui-button-warning"
+    style="flex: 1;"
+    process="@form"
+    update="@form"
+    action="#{salaryCycleController.saveSelected()}" />
                             <p:commandButton
                                 value="Print"
                                 icon="fas fa-print"
