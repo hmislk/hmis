@@ -4,8 +4,6 @@
  */
 package com.divudi.bean.channel;
 
-import com.divudi.bean.channel.ChannelReportTemplateController.OnlineBookingDetialRow;
-import com.divudi.bean.common.ExcelController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.WebUserController;
 import com.divudi.core.util.JsfUtil;

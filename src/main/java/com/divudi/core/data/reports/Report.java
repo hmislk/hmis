@@ -29,6 +29,7 @@ import com.itextpdf.kernel.pdf.canvas.draw.SolidLine;
 import com.divudi.bean.channel.ChannelReportTemplateController.OnlineBookingDetialRow;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.OnlineBookingStatus;
+import com.divudi.core.data.dto.channel.ChannelAbsentPatientsDTO;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.RefundBill;
 import com.divudi.core.util.JsfUtil;
@@ -757,6 +758,47 @@ public class Report<T> {
             table.addCell(new Cell(1, 3).add(new Paragraph("")).setBackgroundColor(new DeviceRgb(192, 192, 192)));
         }
  
+        
+    }
+
+    public static class ChannelPatientAbsentReport extends Report<ChannelAbsentPatientsDTO> {
+
+        private static final LinkedHashMap<String, ReportColumn<ChannelAbsentPatientsDTO>> rpCols;
+
+        static {
+            rpCols = new LinkedHashMap<>();
+            rpCols.put("Channel Receipt No", new ReportColumn<>("Channel Receipt No", ChannelAbsentPatientsDTO::getChannelReceiptNumber, TextAlignment.LEFT, "%s", 4f));
+            rpCols.put("Session Name", new ReportColumn<>("Session Name", ChannelAbsentPatientsDTO::getServiceSessionName, TextAlignment.LEFT, "%s", 4f));
+            rpCols.put("Booking Type", new ReportColumn<>("Booking Type", ChannelAbsentPatientsDTO::getBookingType, TextAlignment.LEFT, "%s", 2.5f));
+            rpCols.put("Appointment No", new ReportColumn<>("Appointment No", ChannelAbsentPatientsDTO::getBillSessionSerialNo, TextAlignment.LEFT, "%s", 2.5f));
+            rpCols.put("Patient Name", new ReportColumn<>("Patient Name", ChannelAbsentPatientsDTO::getPatientName, TextAlignment.LEFT, "%s", 4f));
+            rpCols.put("Cashier Name", new ReportColumn<>("Cashier Name", ChannelAbsentPatientsDTO::getCashierName, TextAlignment.LEFT, "%s", 3f));
+
+            rpCols.put("Payment Method", new ReportColumn<>("Payment Method",
+                     row -> {
+                            ChannelAbsentPatientsDTO r = (ChannelAbsentPatientsDTO) row;
+                            return r.getPaymentMethod().getLabel();
+                    },
+                    TextAlignment.LEFT,
+                    "%s",
+                    3f));
+
+            rpCols.put("Doctor Name", new ReportColumn<>("Doctor Name", ChannelAbsentPatientsDTO::getDoctorName, TextAlignment.LEFT, "%s", 4f, "Total"));
+            rpCols.put("Doctor Fee", new ReportColumn<>("Doctor Fee", ChannelAbsentPatientsDTO::getStaffFee, TextAlignment.RIGHT, "%,.2f", 3.5f));
+            rpCols.put("Hospital Fee", new ReportColumn<>("Hospital Fee", ChannelAbsentPatientsDTO::getHospitalFee, TextAlignment.RIGHT, "%,.2f", 3.5f));
+            rpCols.put("Net Total", new ReportColumn<>("Net Total", ChannelAbsentPatientsDTO::getNetTotal, TextAlignment.RIGHT, "%,.2f", 3.5f));
+        }
+
+        public ChannelPatientAbsentReport(String fileName, String institutionName, Map<String, Object> searchCriteria, List<ChannelAbsentPatientsDTO> data, String reportGeneratedBy) {
+            super(rpCols);
+            this.setSerialNoColumnAtStart(false);
+            this.setReportName("Patient Absent Report");
+            this.setFileName(fileName);
+            this.setInstitutionName(institutionName);
+            this.setSearchCriteria(searchCriteria);
+            this.setData(data);
+            this.setReportGeneratedBy(reportGeneratedBy);      
+        }
         
     }
 

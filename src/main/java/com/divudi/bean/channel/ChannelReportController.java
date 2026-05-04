@@ -4,23 +4,11 @@
  */
 package com.divudi.bean.channel;
 
-import com.divudi.bean.channel.ChannelReportTemplateController.AgentHistoryWithDate;
-import com.divudi.bean.channel.ChannelReportTemplateController.BookingCountSummryRow;
-import com.divudi.bean.channel.ChannelReportTemplateController.ChannelBillTotals;
-import com.divudi.bean.channel.ChannelReportTemplateController.ChannelReportColumnModel;
-import com.divudi.bean.channel.ChannelReportTemplateController.ChannelReportColumnModelBundle;
-import com.divudi.bean.channel.ChannelReportTemplateController.DepartmentBill;
-import com.divudi.bean.channel.ChannelReportTemplateController.DoctorPaymentSummeryRow;
-import com.divudi.bean.channel.ChannelReportTemplateController.DoctorPaymentSummeryRowSub;
-import com.divudi.bean.channel.ChannelReportTemplateController.FeetypeFee;
-import com.divudi.bean.channel.ChannelReportController.ChannelIncomeDetailDto;
-import com.divudi.bean.channel.ChannelReportTemplateController.OnlineBookingDetialRow;
 import com.divudi.bean.channel.analytics.ReportTemplateController;
 import com.divudi.bean.common.ExcelController;
 import com.divudi.bean.common.InstitutionController;
 import com.divudi.bean.common.PdfController;
 import com.divudi.bean.common.ReportTimerController;
-import com.divudi.bean.common.SearchController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.pharmacy.PharmacyController;
 import com.divudi.core.data.BillClassType;
@@ -29,13 +17,10 @@ import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.FeeType;
-import com.divudi.core.data.FinancialReport;
 import com.divudi.core.data.HistoryType;
 import com.divudi.core.data.InstitutionType;
 import com.divudi.core.data.MessageType;
-import com.divudi.core.data.OnlineBookingStatus;
 import com.divudi.core.data.PaymentMethod;
-import com.divudi.core.data.ReportTemplateRow;
 import com.divudi.core.data.ReportTemplateRowBundle;
 import com.divudi.core.data.channel.DateEnum;
 import com.divudi.core.data.channel.PaymentEnum;
@@ -47,6 +32,7 @@ import com.divudi.core.data.dto.channel.ChannelAbsentPatientsDTO;
 import com.divudi.core.data.hr.ReportKeyWord;
 import com.divudi.core.data.reports.PharmacyReports;
 import com.divudi.core.data.reports.Report;
+import com.divudi.core.data.reports.Report.ChannelPatientAbsentReport;
 import com.divudi.core.data.reports.Report.OnlineBookingCountReport;
 import com.divudi.core.data.reports.ReportColumn;
 import com.divudi.core.data.table.String1Value1;
@@ -81,7 +67,6 @@ import com.divudi.core.facade.ServiceSessionFacade;
 import com.divudi.core.facade.SmsFacade;
 import com.divudi.core.facade.StaffFacade;
 import com.divudi.core.facade.WebUserFacade;
-import com.divudi.core.light.common.BillLight;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.entity.Speciality;
 import com.divudi.core.facade.SessionInstanceFacade;
@@ -107,8 +92,6 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
 
-import org.apache.poi.xssf.usermodel.XSSFSheet;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.primefaces.model.StreamedContent;
@@ -5331,24 +5314,6 @@ public class ChannelReportController implements Serializable {
         return downloadingExcel;
     }
 
-    // PDF Export: Channel Scanning Income Report
-    // public StreamedContent getChannelIncomeFromCardPaymentsReportAsPdf() {
-    //     if (cardPaymentDetails == null || cardPaymentDetails.getIncomeDtos() == null || cardPaymentDetails.getIncomeDtos().isEmpty()) {
-    //         JsfUtil.addErrorMessage("Please generate the Channel Income From Card Payment report before exporting.");
-    //         return null;
-    //     }
-
-    //     StreamedContent pdfSc = null;
-    //     try {            
-    //         pdfSc = pdfController.createPdfForChannelCardIncomeReport(cardPaymentDetails, PageSize.A4.rotate(), true, getFiltersForChannelIncomeReports(), getIncomeFromCardPaymentReportFileName());
-    //     } catch (IOException e) {
-    //         logger.error("getChannelIncomeFromCardPaymentsReportAsPdf: Error creating pdfSc via pdfController.createPdfForChannelCardIncomeReport", e);
-    //         pdfSc = null;
-    //         JsfUtil.addErrorMessage("Failed to generate Channel Income From Card Payment Report PDF file. Please try again.");
-    //     }
-    //     return pdfSc;
-    // }
-
     public Report getChannelCardIncomeReport() {
 
         Report<ChannelIncomeDetailDto> channelCardIncomeReport = new Report();
@@ -5430,6 +5395,49 @@ public class ChannelReportController implements Serializable {
             return null;
         }
         return getChannelCardIncomeReport().createPdfAsStream();
+    }
+
+    public ChannelPatientAbsentReport getPateintAbsentReport() {
+        String fileName = "Patient_Absent_Report";
+        String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
+        if (dates != null && !dates.isEmpty()) {
+            fileName += "_" + dates;
+        }
+        String institutionName = "";
+        String userName = "";
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            if (sessionController.getLoggedUser().getInstitution() != null && sessionController.getLoggedUser().getInstitution().getName() != null) {
+                institutionName = sessionController.getLoggedUser().getInstitution().getName();
+            }
+            if (sessionController.getLoggedUser().getName() != null) {
+                userName = sessionController.getLoggedUser().getName();
+            }
+        }
+
+        ChannelPatientAbsentReport pAReport = new ChannelPatientAbsentReport(fileName, institutionName, getFiltersForOnlineBookingCountReports(), absentPatients, userName);
+        if (summaryAbsentPatients != null) {
+            pAReport.setColumnFooter(summaryAbsentPatients.getStaffFee(), "Doctor Fee");
+            pAReport.setColumnFooter(summaryAbsentPatients.getHospitalFee(), "Hospital Fee");
+            pAReport.setColumnFooter(summaryAbsentPatients.getNetTotal(), "Net Total");
+        }
+
+        return pAReport;
+    }
+
+    public StreamedContent getPatientAbsentReportAsPdf() {
+        if (absentPatients == null || absentPatients.isEmpty()) {
+            JsfUtil.addErrorMessage("Please generate the Patient Absent report before exporting.");
+            return null;
+        }
+        return getPateintAbsentReport().createPdfAsStream();
+    }
+
+    public StreamedContent getPatientAbsentReportAsExcel() {
+        if (absentPatients == null || absentPatients.isEmpty()) {
+            JsfUtil.addErrorMessage("Please generate the Patient Absent report before exporting.");
+            return null;
+        }
+        return getPateintAbsentReport().createExcelAsStream();
     }
 
     // PostProcessor for channem_card_income_report excel export
@@ -5584,6 +5592,43 @@ public class ChannelReportController implements Serializable {
 
         return params;
     }
+
+     // Filters for Channel Scanning Income report && Income With Agent Booking Report
+    public Map<String, Object> getFiltersForOnlineBookingCountReports() {
+        Map<String, Object> params = new LinkedHashMap<>();
+        SimpleDateFormat sdf = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
+
+        params.put("From Date", fromDate != null ?  sdf.format(fromDate) : "N/A");
+        params.put("To Date", toDate != null ? sdf.format(toDate) : "N/A");
+        params.put("Consultant", staff != null ? (staff.getPerson() != null ? staff.getPerson().getCapitalNameWithTitle() : "N/A") : "All");
+        params.put("Payment Method", getSelectedPaymentMethodsAsString());
+
+        return params;
+    }
+
+    // Helper method to convert selected department types to a comma-separated string
+    public String getSelectedPaymentMethodsAsString() {
+        if (paymentMethods == null || paymentMethods.isEmpty()) {
+            return "All";
+        }
+
+        StringBuilder result = new StringBuilder();
+
+        for (int i = 0; i < paymentMethods.size(); i++) {
+            PaymentMethod dt = paymentMethods.get(i);
+
+            if (dt != null && dt.getLabel() != null) {
+                result.append(dt.getLabel());
+            }
+
+            if (i < paymentMethods.size() - 1) {
+                result.append(", ");
+            }
+        }
+
+        return result.toString();
+    }
+
     // Excel Export fileName : channel income from card payment report
     public String getIncomeFromCardPaymentReportFileName() {
         String fileName = "Channel_Card_Income_Report";
