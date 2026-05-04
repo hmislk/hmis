@@ -250,38 +250,73 @@
                                         <f:facet name="header" >No</f:facet>
                                         <h:outputLabel value="#{rowIndex+1}"/>
                                     </p:column>
-                                    <p:column>
+                                    <p:column style="min-width: 14em;">
                                         <f:facet name="header">Item</f:facet>
                                         <h:outputLabel value="#{bip.billItem.item.name}"/>
                                     </p:column>
 
-                                    <p:column>
-                                        <f:facet name="header">Fee</f:facet>
+                                    <p:column width="4em" class="text-end">
+                                        <f:facet name="header">Qty</f:facet>
+                                        <h:outputLabel value="#{bip.billItem.qty}">
+                                            <f:convertNumber pattern="#" />
+                                        </h:outputLabel>
+                                    </p:column>
+
+                                    <p:column width="8em" class="text-end">
+                                        <f:facet name="header">Unit Rate</f:facet>
+                                        <h:outputLabel value="#{bip.feeUnitGrossValue}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </p:column>
+
+                                    <p:column width="8em" class="text-end">
+                                        <f:facet name="header">Total Gross</f:facet>
+                                        <h:outputLabel value="#{bip.feeGrossValue}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </p:column>
+
+                                    <p:column width="8em" class="text-end">
+                                        <f:facet name="header">Discount</f:facet>
+                                        <h:outputLabel value="#{bip.feeDiscount}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </p:column>
+
+                                    <p:column width="8em" class="text-end">
+                                        <f:facet name="header">Service Charge</f:facet>
+                                        <h:outputLabel value="#{bip.feeMargin}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </p:column>
+
+                                    <p:column width="8em" class="text-end">
+                                        <f:facet name="header">Net Total</f:facet>
                                         <h:outputLabel value="#{bip.feeValue}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
-                                    </p:column>  
+                                    </p:column>
+
                                     <p:column>
                                         <f:facet name="header">Fee Name</f:facet>
                                         <h:outputLabel value="#{bip.fee.name}"/>
-                                    </p:column> 
+                                    </p:column>
                                     <p:column>
                                         <f:facet name="header">Speciality</f:facet>
                                         <h:outputLabel value="#{bip.fee.speciality.name}"/>
-                                    </p:column> 
+                                    </p:column>
                                     <p:column headerText="Payee">
-                                        <p:cellEditor>  
-                                            <f:facet name="output"> 
+                                        <p:cellEditor>
+                                            <f:facet name="output">
                                                 <h:outputLabel value="#{bip.staff.person.name}"  ></h:outputLabel>
-                                            </f:facet>  
-                                            <f:facet name="input">  
+                                            </f:facet>
+                                            <f:facet name="input">
                                                 <p:selectOneMenu value="#{bip.staff}" rendered="#{bip.fee.speciality!=null}" disabled="#{bip.paidValue!=0 or !webUserController.hasPrivilege('ChangeProfessionalFee')}" >
                                                     <f:selectItem itemLabel="Select Staff" />
                                                     <f:selectItems  value="#{staffController.getSpecialityStaff(bip.fee.speciality)}" var="bifs" itemLabel="#{bifs.person.name}" itemValue="#{bifs}" />
                                                 </p:selectOneMenu>
-                                            </f:facet>  
-                                        </p:cellEditor>  
-
+                                            </f:facet>
+                                        </p:cellEditor>
                                     </p:column>
 
                                     <p:column headerText="Returned" width="8em;">
