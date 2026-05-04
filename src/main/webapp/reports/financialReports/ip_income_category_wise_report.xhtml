@@ -134,14 +134,16 @@
                                 <h:outputLabel value="Room Category" for="rCat" class="m-3"/>
                             </h:panelGroup>
                             <p:selectCheckboxMenu id="rCat"
+                                                  value="#{inwardReportController.roomCategories}"
+                                                  converter="#{roomCategoryConverter}"
                                                   styleClass="w-100"
                                                   label="Select Category"
                                                   updateLabel="true">
-                                <f:selectItem itemLabel="Superior A" itemValue="1" />
-                                <f:selectItem itemLabel="Superior B" itemValue="2" />
-                                <f:selectItem itemLabel="Premium Rage" itemValue="3" />
-                                <f:selectItem itemLabel="Bay Window" itemValue="4" />
-                                <f:selectItem itemLabel="Kings Court" itemValue="5" />
+                                <f:selectItems
+                                    value="#{roomCategoryController.items}"
+                                    var="cat"
+                                    itemLabel="#{cat.name}"
+                                    itemValue="#{cat}" />
                             </p:selectCheckboxMenu>
 
 
@@ -225,7 +227,7 @@
                                 icon="fas fa-file-pdf"
                                 ajax="false"
                                 value="PDF">
-<!--                                <p:fileDownload  />-->
+                                <!--                                <p:fileDownload  />-->
                             </p:commandButton>
 
                         </div>
@@ -756,8 +758,8 @@
                                     </p:column>
 
                                 </p:dataTable>
-                                
-                                      <p:panel header="Profit Matrix" styleClass="my-2">
+
+                                <p:panel header="Profit Matrix" styleClass="my-2">
                                     <p:dataTable
                                         id="tbPmtx2"
                                         var="var"

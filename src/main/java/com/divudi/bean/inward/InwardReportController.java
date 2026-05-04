@@ -246,6 +246,7 @@ public class InwardReportController implements Serializable {
     private String visitType;
     private String paymentType;
     private Category category;
+    private List<RoomCategory> roomCategories;
     private boolean withProfessionalFee;
     private double ipIncomeTotalSponsorPay;
     private double ipIncomeTotalPatientPay;
@@ -490,6 +491,13 @@ public class InwardReportController implements Serializable {
             if (category != null) {
                 jpqlIP += " and bi.item.category=:cat ";
                 mIP.put("cat", category);
+            }
+            if (roomCategories != null && !roomCategories.isEmpty()) {
+                jpqlIP += " and bi.bill.patientEncounter.currentPatientRoom.roomFacilityCharge.roomCategory in :roomCats ";
+//                List<Long> roomCatIds = roomCategories.stream()
+//                        .map(rc -> rc.getId())
+//                        .collect(java.util.stream.Collectors.toList());
+                mIP.put("roomCats", roomCategories);
             }
 
             bisIP = billItemFacade.findByJpql(jpqlIP, mIP, TemporalType.TIMESTAMP);
@@ -5440,6 +5448,14 @@ public class InwardReportController implements Serializable {
 
     public void setBundle(ReportTemplateRowBundle bundle) {
         this.bundle = bundle;
+    }
+
+    public List<RoomCategory> getRoomCategories() {
+        return roomCategories;
+    }
+
+    public void setRoomCategories(List<RoomCategory> roomCategories) {
+        this.roomCategories = roomCategories;
     }
 
     public class IncomeByCategoryRecord {
