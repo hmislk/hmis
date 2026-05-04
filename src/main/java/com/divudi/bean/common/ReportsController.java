@@ -5348,7 +5348,7 @@ public class ReportsController implements Serializable {
         try {
             String value = supplier.get();
             return (value != null && !value.isEmpty()) ? value : "-";
-        } catch (Exception e) {
+        } catch (NullPointerException e) {
             return "-";
         }
     }
