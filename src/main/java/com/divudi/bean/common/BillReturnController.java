@@ -166,9 +166,7 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
             return null;
         }
 
-        //System.out.println("Original Bill= " + originalBillToReturn);
         originalBillItemsAvailableToReturn = billBeanController.fetchBillItems(originalBillToReturn);
-        //System.out.println("Bill Items Available To Return = " + originalBillItemsAvailableToReturn.size());
         returningStarted.set(false);
         paymentMethod = originalBillToReturn.getPaymentMethod();
         return "/collecting_centre/bill_return?faces-redirect=true";
@@ -259,13 +257,6 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
                     getPaymentMethodData().getSlip().setTotalValue(Math.abs(originalBillToReturn.getNetTotal()));
                     break;
                 case ewallet:
-                    System.out.println("=== EWALLET CASE DEBUG ===");
-                    System.out.println("Original Payment ID: " + originalPayment.getId());
-                    System.out.println("Bank: " + (originalPayment.getBank() != null ? originalPayment.getBank().getName() + " (ID: " + originalPayment.getBank().getId() + ")" : "null"));
-                    System.out.println("Institution: " + (originalPayment.getInstitution() != null ? originalPayment.getInstitution().getName() + " (ID: " + originalPayment.getInstitution().getId() + ")" : "null"));
-                    System.out.println("CreditCompany: " + (originalPayment.getCreditCompany() != null ? originalPayment.getCreditCompany().getName() + " (ID: " + originalPayment.getCreditCompany().getId() + ")" : "null"));
-                    System.out.println("ReferenceNo: " + originalPayment.getReferenceNo());
-                    System.out.println("Comments: " + originalPayment.getComments());
 
                     // For backward compatibility: try bank first, then creditCompany (used for ewallet in older records)
                     Institution ewalletInstitution = originalPayment.getBank();
@@ -279,7 +270,6 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
                         ewalletInstitution = institutionFacade.find(ewalletInstitution.getId());
                     }
 
-                    System.out.println("Selected Institution: " + (ewalletInstitution != null ? ewalletInstitution.getName() + " (ID: " + ewalletInstitution.getId() + ")" : "null"));
 
                     // Get reference to ewallet once to avoid multiple getter calls creating new objects
                     ComponentDetail ewalletDetail = getPaymentMethodData().getEwallet();
@@ -290,11 +280,6 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
                     ewalletDetail.setTotalValue(Math.abs(originalBillToReturn.getNetTotal()));
                     ewalletDetail.setComment(originalPayment.getComments());
 
-                    System.out.println("After setting - PaymentMethodData eWallet Institution: "
-                            + (ewalletDetail.getInstitution() != null
-                            ? ewalletDetail.getInstitution().getName() + " (ID: " + ewalletDetail.getInstitution().getId() + ")"
-                            : "null"));
-                    System.out.println("=== END EWALLET CASE DEBUG ===");
                     break;
                 case PatientDeposit:
                     getPaymentMethodData().getPatient_deposit().setTotalValue(Math.abs(originalBillToReturn.getNetTotal()));
@@ -362,9 +347,7 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
             paymentMethod = PaymentMethod.MultiplePaymentMethods;
             // Note: For multiple payments, the user would need to manually configure them
             // This is a complex scenario that may require additional UI handling
-            System.out.println("Multiple payments detected - set to MultiplePaymentMethods");
         }
-        System.out.println("=== END initializePaymentDataFromOriginalPayments DEBUG ===");
     }
 
     /**
@@ -610,19 +593,11 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
     }
 
     public String settleOpdReturnBill() {
-        System.out.println("=== settleOpdReturnBill() START ===");
-        System.out.println("Payment Method: " + paymentMethod);
-        System.out.println("PaymentMethodData: " + (paymentMethodData != null ? "NOT NULL" : "NULL"));
         if (paymentMethodData != null && paymentMethod == PaymentMethod.ewallet) {
             ComponentDetail ewalletDetail = paymentMethodData.getEwallet();
-            System.out.println("Ewallet ComponentDetail: " + (ewalletDetail != null ? "NOT NULL" : "NULL"));
             if (ewalletDetail != null) {
-                System.out.println("Ewallet Institution: " + (ewalletDetail.getInstitution() != null ? ewalletDetail.getInstitution().getName() + " (ID: " + ewalletDetail.getInstitution().getId() + ")" : "NULL"));
-                System.out.println("Ewallet ReferenceNo: " + ewalletDetail.getReferenceNo());
-                System.out.println("Ewallet TotalValue: " + ewalletDetail.getTotalValue());
             }
         }
-        System.out.println("=== END settleOpdReturnBill() START DEBUG ===");
 
         if (!returningStarted.compareAndSet(false, true)) {
             JsfUtil.addErrorMessage("Already Returning Started");
@@ -888,7 +863,6 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
 //            patientDepositController.updateBalance(newlyReturnedBill, pd);
 //        } else if (paymentMethod == PaymentMethod.Staff_Welfare) {
 //            staffBean.updateStaffWelfare(newlyReturnedBill.getToStaff(), -Math.abs(newlyReturnedBill.getNetTotal()));
-//            System.out.println("updated = ");
 //        }
         // drawer Update
 //        drawerController.updateDrawerForOuts(returningPayment);
@@ -1158,12 +1132,6 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
         }
 
 // Print the original values
-        System.out.println("Original returningTotal: " + returningTotal);
-        System.out.println("Original returningNetTotal: " + returningNetTotal);
-        System.out.println("Original returningHospitalTotal: " + returningHospitalTotal);
-        System.out.println("Original returningCCTotal: " + returningCCTotal);
-        System.out.println("Original returningStaffTotal: " + returningStaffTotal);
-        System.out.println("Original returningDiscount: " + returningDiscount);
 
 // Convert all values to negative absolute amounts
         returningTotal = -Math.abs(returningTotal);
@@ -1175,12 +1143,6 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
 // Print the adjusted values
 
 // Print the adjusted values
-        System.out.println("Adjusted returningTotal: " + returningTotal);
-        System.out.println("Adjusted returningNetTotal: " + returningNetTotal);
-        System.out.println("Adjusted returningHospitalTotal: " + returningHospitalTotal);
-        System.out.println("Adjusted returningCCTotal: " + returningCCTotal);
-        System.out.println("Adjusted returningStaffTotal: " + returningStaffTotal);
-        System.out.println("Adjusted returningDiscount: " + returningDiscount);
 
 // Assign the adjusted values to newlyReturnedBill
         newlyReturnedBill.setGrantTotal(returningTotal);
@@ -1193,8 +1155,6 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
 // Print the values before setting
 
 // Print the values before setting
-        System.out.println("Setting TotalHospitalFee: " + returningHospitalTotal);
-        System.out.println("Setting TotalCenterFee: " + returningCCTotal);
 
 // Assign the values
         newlyReturnedBill.setTotalHospitalFee(returningHospitalTotal);
@@ -1359,16 +1319,10 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
 
     @Override
     public void setPaymentMethodData(PaymentMethodData paymentMethodData) {
-        System.out.println("setPaymentMethodData");
-        System.out.println("paymentMethodData = " + paymentMethodData);
         if (paymentMethodData != null) {
-            System.out.println("paymentMethodData.getPaymentMethod() = " + paymentMethodData.getPaymentMethod());
             if (paymentMethodData.getPaymentMethod() != null) {
                 if(paymentMethodData.getPaymentMethod()==PaymentMethod.ewallet){
-                    System.out.println("ewallet");
-                    System.out.println("paymentMethodData.getEwallet() = " + paymentMethodData.getEwallet());
                     if(paymentMethodData.getEwallet()!=null){
-                        System.out.println("paymentMethodData.getEwallet().getInstitution() = " + paymentMethodData.getEwallet().getInstitution());
                     }
                 }
             }
@@ -1493,14 +1447,6 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
             // Save the updated bill
             billFacade.edit(batchBill);
 
-            System.out.println("=== OPD Return - Batch Bill Balance Updated ===");
-            System.out.println("Batch Bill ID: " + batchBill.getInsId());
-            System.out.println("Original Bill: " + originalBillToReturn.getInsId());
-            System.out.println("Return Bill: " + newlyReturnedBill.getInsId());
-            System.out.println("Refund Amount: " + refundAmount);
-            System.out.println("Old Balance: " + oldBalance + " → New Balance: " + batchBill.getBalance());
-            System.out.println("Old Paid: " + oldPaidAmount + " → New Paid: " + batchBill.getPaidAmount());
-            System.out.println("Old Refund: " + oldRefundAmount + " → New Refund: " + batchBill.getRefundAmount());
 
         } catch (Exception e) {
             JsfUtil.addErrorMessage("Error updating batch bill balance: " + e.getMessage());
@@ -1517,16 +1463,12 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
      * Otherwise, creates new payment data for the selected method.
      */
     public void onPaymentMethodChange() {
-        System.out.println("=== onPaymentMethodChange() CALLED ===");
-        System.out.println("Current paymentMethod: " + paymentMethod);
 
         // Check if user selected the original payment method - if so, restore original details
         if (originalBillPayments != null && !originalBillPayments.isEmpty()) {
             Payment originalPayment = originalBillPayments.get(0);
-            System.out.println("Original payment method: " + originalPayment.getPaymentMethod());
             if (paymentMethod == originalPayment.getPaymentMethod()) {
                 // User switched back to original payment method - restore original details
-                System.out.println("Restoring original payment details - creating NEW PaymentMethodData");
                 paymentMethodData = new PaymentMethodData();
                 initializePaymentDataFromOriginalPayments(originalBillPayments);
                 return;
@@ -1534,7 +1476,6 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
         }
 
         // User selected a different payment method - create new payment data
-        System.out.println("Different payment method selected - creating NEW PaymentMethodData");
         paymentMethodData = new PaymentMethodData();
 
         // Clear controller properties that should only be set for specific payment methods
