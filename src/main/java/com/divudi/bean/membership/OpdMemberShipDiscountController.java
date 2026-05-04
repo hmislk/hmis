@@ -57,7 +57,7 @@ public class OpdMemberShipDiscountController implements Serializable {
     @EJB
     private PriceMatrixFacade ejbFacade;
     @EJB
-    PaymentSchemeDiscountFacade paymentSchemeDiscountFacade;
+    private PaymentSchemeDiscountFacade paymentSchemeDiscountFacade;
     private PriceMatrix current;
     private List<PriceMatrix> items = null;
     BillType billType;
@@ -76,6 +76,9 @@ public class OpdMemberShipDiscountController implements Serializable {
     
     private Institution selectedCreditCompany;
     private Institution company;
+    
+    private Institution creditCompanyForSearch;
+    private PaymentScheme paymentSchemeForSearch;
 
     public Item getItem() {
         return item;
@@ -338,6 +341,133 @@ public class OpdMemberShipDiscountController implements Serializable {
         clearInstanceVars();
     }
 
+    public void saveOpdCreditCompanyPaymentScheme() {
+        createItemsCreditCompanyOpdPaymentScheme();
+        clearInstanceVars();
+    }
+
+    public void saveSelectedCreditCompany() {
+
+        if (paymentScheme == null) {
+            JsfUtil.addErrorMessage("Please select a Discount Scheme");
+            return;
+        }
+
+        if (selectedCreditCompany == null) {
+            JsfUtil.addErrorMessage("Please select a Credit Company");
+            return;
+        }
+
+        if (category == null) {
+            JsfUtil.addErrorMessage("Please select a Category or Item");
+            return;
+        }
+
+        if (paymentMethod == null) {
+            JsfUtil.addErrorMessage("Please select Payment Method");
+            return;
+        }
+        
+        if (paymentMethod != PaymentMethod.Credit) {
+            JsfUtil.addErrorMessage("This Discount Scheme allow only Credit Payment Method.");
+            return;
+        }
+
+        if (isDuplicateCreditCompanyDiscount(paymentScheme, selectedCreditCompany, category, paymentMethod, null)) {
+            JsfUtil.addErrorMessage("A discount entry already exists for this Scheme, Credit Company, Category and Payment Method.");
+            return;
+        }
+
+        PriceMatrix a = new PaymentSchemeDiscount();
+        a.setPaymentScheme(paymentScheme);
+        a.setPaymentMethod(paymentMethod);
+        a.setCategory(category);
+        a.setCreditCompany(selectedCreditCompany);
+        a.setDiscountPercent(margin);
+        a.setCreatedAt(new Date());
+        a.setCreater(getSessionController().getLoggedUser());
+        getFacade().create(a);
+
+        createItemsCreditCompanyOpdPaymentScheme();
+        clearCreditCompanyDiscountData();
+
+        JsfUtil.addSuccessMessage("Saved Successfully");
+
+    }
+
+    public void onEditCreditCompanyDiscount(PriceMatrix tmp) {
+        if (tmp == null) {
+            JsfUtil.addErrorMessage("Nothing to update");
+            return;
+        }
+        if (tmp.getPaymentScheme() == null || tmp.getCreditCompany() == null
+                || tmp.getCategory() == null || tmp.getPaymentMethod() == null) {
+            JsfUtil.addErrorMessage("Scheme, Credit Company, Category and Payment Method are required");
+            return;
+        }
+        if (isDuplicateCreditCompanyDiscount(tmp.getPaymentScheme(), tmp.getCreditCompany(),
+                tmp.getCategory(), tmp.getPaymentMethod(), tmp.getId())) {
+            JsfUtil.addErrorMessage("A discount entry already exists for this Scheme, Credit Company, Category and Payment Method.");
+            createItemsCreditCompanyOpdPaymentScheme();
+            return;
+        }
+        getFacade().edit(tmp);
+        JsfUtil.addSuccessMessage("Update Successfully");
+        clearCreditCompanyDiscountData();
+    }
+
+    private boolean isDuplicateCreditCompanyDiscount(PaymentScheme ps, Institution cc, Category cat,
+            PaymentMethod pm, Long excludeId) {
+        StringBuilder jpql = new StringBuilder("select a from PaymentSchemeDiscount a "
+                + " where a.retired=false "
+                + " and a.paymentScheme=:ps "
+                + " and a.department is null "
+                + " and a.creditCompany is not null "
+                + " and a.creditCompany=:cc "
+                + " and a.category=:cat "
+                + " and a.paymentMethod=:pm ");
+        Map<String, Object> params = new HashMap<>();
+        params.put("ps", ps);
+        params.put("cc", cc);
+        params.put("cat", cat);
+        params.put("pm", pm);
+        if (excludeId != null) {
+            jpql.append(" and a.id <> :id ");
+            params.put("id", excludeId);
+        }
+        PaymentSchemeDiscount existing = paymentSchemeDiscountFacade.findFirstByJpql(jpql.toString(), params);
+        return existing != null;
+    }
+    
+    public void createItemsCreditCompanyOpdPaymentScheme() {
+        filterItems = null;
+        StringBuilder sql = new StringBuilder("select a from PaymentSchemeDiscount a ");
+        sql.append(" where a.retired=false ");
+        sql.append(" and a.department is null ");
+        sql.append(" and a.creditCompany is not null ");
+
+        HashMap temMap = new HashMap();
+
+        if (paymentSchemeForSearch != null) {
+            sql.append(" and a.paymentScheme=:pm ");
+            temMap.put("pm", paymentSchemeForSearch);
+        }
+
+        if (creditCompanyForSearch != null) {
+            sql.append(" and a.creditCompany=:cc ");
+            temMap.put("cc", creditCompanyForSearch);
+        }
+
+        sql.append(" order by a.creditCompany.name, a.category.name");
+
+        items = getFacade().findByJpql(sql.toString(), temMap);
+    }
+
+    public void deleteCreditCompanyOpdPaymentScheme() {
+        deleteCategory();
+        createItemsCreditCompanyOpdPaymentScheme();
+    }
+
     public void saveOpdCategoryPaymentMethod() {
         PriceMatrix p = new PaymentSchemeDiscount();
         saveSelectedCategoryPaymentMethod(p);
@@ -351,6 +481,13 @@ public class OpdMemberShipDiscountController implements Serializable {
         department = null;
         paymentMethod = null;
         site = null;
+        margin = 0.0;
+    }
+    
+    public void clearCreditCompanyDiscountData(){
+        selectedCreditCompany = null;
+        category = null;
+        paymentMethod = PaymentMethod.Credit;
         margin = 0.0;
     }
 
@@ -1074,6 +1211,22 @@ public class OpdMemberShipDiscountController implements Serializable {
 
     public void setCompany(Institution company) {
         this.company = company;
+    }
+
+    public Institution getCreditCompanyForSearch() {
+        return creditCompanyForSearch;
+    }
+
+    public void setCreditCompanyForSearch(Institution creditCompanyForSearch) {
+        this.creditCompanyForSearch = creditCompanyForSearch;
+    }
+
+    public PaymentScheme getPaymentSchemeForSearch() {
+        return paymentSchemeForSearch;
+    }
+
+    public void setPaymentSchemeForSearch(PaymentScheme paymentSchemeForSearch) {
+        this.paymentSchemeForSearch = paymentSchemeForSearch;
     }
 
 }
