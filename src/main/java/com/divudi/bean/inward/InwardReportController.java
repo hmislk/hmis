@@ -499,6 +499,10 @@ public class InwardReportController implements Serializable {
 //                        .collect(java.util.stream.Collectors.toList());
                 mIP.put("roomCats", roomCategories);
             }
+            if (admissionTypes != null && !admissionTypes.isEmpty()) {
+                jpqlIP += " AND bi.bill.patientEncounter.admissionType IN :admTypes ";
+                mIP.put("admTypes", admissionTypes);
+            }
 
             bisIP = billItemFacade.findByJpql(jpqlIP, mIP, TemporalType.TIMESTAMP);
         }
