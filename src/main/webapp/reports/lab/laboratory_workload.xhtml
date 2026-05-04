@@ -345,11 +345,8 @@
                             icon="fas fa-file-pdf"
                             ajax="false"
                             value="PDF"
-                            rendered="#{reportsController.reportType eq 'summary'}">
-                        <p:dataExporter type="pdf"
-                                        target="#{'tblExport2'}"
-                                        fileName="laborataory_workload_report_#{reportsController.fromDateFormatted()}_to_#{reportsController.toDateFormatted()}.pdf"
-                                        preProcessor="#{reportsController.preProcessLaboratoryWorkloadSummaryReportPDF}"/>
+                            rendered="#{reportsController.reportType eq 'summary'}"
+                            action="#{reportsController.exportLaboratoryWorkloadReportToPDF()}">
                     </p:commandButton>
                     <p:commandButton
                             class="ui-button-danger my-4 mx-2"
