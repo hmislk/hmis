@@ -369,7 +369,7 @@ public class OpdMemberShipDiscountController implements Serializable {
         }
         
         if (paymentMethod != PaymentMethod.Credit) {
-            JsfUtil.addErrorMessage("This Discount Schme allow only Credit Paymnet Method.");
+            JsfUtil.addErrorMessage("This Discount Scheme allow only Credit Payment Method.");
             return;
         }
 
@@ -413,7 +413,7 @@ public class OpdMemberShipDiscountController implements Serializable {
         }
         getFacade().edit(tmp);
         JsfUtil.addSuccessMessage("Update Successfully");
-        clearInstanceVars();
+        clearCreditCompanyDiscountData();
     }
 
     private boolean isDuplicateCreditCompanyDiscount(PaymentScheme ps, Institution cc, Category cat,
@@ -421,6 +421,8 @@ public class OpdMemberShipDiscountController implements Serializable {
         StringBuilder jpql = new StringBuilder("select a from PaymentSchemeDiscount a "
                 + " where a.retired=false "
                 + " and a.paymentScheme=:ps "
+                + " and a.department is null "
+                + " and a.creditCompany is not null "
                 + " and a.creditCompany=:cc "
                 + " and a.category=:cat "
                 + " and a.paymentMethod=:pm ");
