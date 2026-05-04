@@ -2121,7 +2121,7 @@ public class PharmacyController implements Serializable {
         grantIssueQty = 0.00;
         grantIssueValue = 0.00;
 
-        fromDate = CommonFunctions.addDaysToDate(new Date(), -30L);
+        fromDate = CommonFunctions.getStartOfDay(CommonFunctions.addDaysToDate(new Date(), -30L));
         toDate = CommonFunctions.getEndOfDay(new Date());
 
         pharmacyItem = null;
