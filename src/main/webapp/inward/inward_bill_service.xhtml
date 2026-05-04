@@ -656,7 +656,7 @@
                                                         rowIndexVar="rowIndex"
                                                         value="#{billBhtController.lstBillFees}"
                                                         var="bif"
-                                                        rowKey="#{rowIndex}"
+                                                        rowKey="#{bif.id}"
                                                         rowExpandMode="single"
                                                         rowStyleClass="#{(bif.billItem.item.chargesVisibleForInward)
                                                                          or (webUserController.hasPrivilege('ShowInwardFee'))
