@@ -9,9 +9,14 @@ import com.divudi.bean.common.SessionController;
 
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.EncounterType;
 import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.PaymentType;
 import com.divudi.core.data.Sex;
+import com.divudi.core.data.ReportTemplateRow;
+import com.divudi.core.data.ReportTemplateRowBundle;
+import com.divudi.core.data.ServiceType;
 import com.divudi.core.data.dto.InwardAdmissionDTO;
 import com.divudi.core.data.dto.InwardAdmissionDemographicDataDTO;
 import com.divudi.core.data.dto.InwardIncomeDoctorSpecialtyDTO;
@@ -56,6 +61,7 @@ import com.divudi.core.facade.PatientEncounterFacade;
 import com.divudi.core.facade.PatientInvestigationFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.util.JsfUtil;
+import com.divudi.bean.common.EnumController;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -68,6 +74,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
@@ -173,6 +180,8 @@ public class InwardReportController implements Serializable {
     BhtSummeryController bhtSummeryController;
     @Inject
     InwardBeanController inwardBeanController;
+    @Inject
+    EnumController enumController;
 
     PaymentMethod paymentMethod;
     AdmissionType admissionType;
@@ -234,6 +243,13 @@ public class InwardReportController implements Serializable {
 
     // Surgery Survey Report
     private String reportType;
+    private String visitType;
+    private String paymentType;
+    private Category category;
+    private boolean withProfessionalFee;
+    private double ipIncomeTotalSponsorPay;
+    private double ipIncomeTotalPatientPay;
+    private ReportTemplateRowBundle bundle;
     private SurgeryType surgeryType;
     private List<MonthlySurgeryCountDTO> monthlySurgeryCountList;
     private List<String> surgeryHeaders;
@@ -346,6 +362,321 @@ public class InwardReportController implements Serializable {
     }
 
     private List<SurgeryCountDoctorWiseDTO> billList;
+
+    public void createIpIncomeCategoryWiseReport() {
+        if (reportType == null || reportType.trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Please select a report type");
+            return;
+        }
+        bundle = generateIpIncomeCategoryWiseReport();
+    }
+
+    public ReportTemplateRowBundle generateIpIncomeCategoryWiseReport() {
+        ReportTemplateRowBundle rtrb = new ReportTemplateRowBundle();
+
+        if (visitType == null || visitType.trim().isEmpty()) {
+            visitType = "Any";
+        }
+        if (paymentType == null || paymentType.trim().isEmpty()) {
+            paymentType = "Any";
+        }
+
+        Map<String, Object> mOP = new HashMap<>();
+        Map<String, Object> mIP = new HashMap<>();
+        mOP.put("br", false);
+        mOP.put("fd", fromDate);
+        mOP.put("td", toDate);
+        mIP.putAll(mOP);
+
+        List<BillTypeAtomic> obtas = BillTypeAtomic.findByServiceType(ServiceType.OPD);
+        List<BillTypeAtomic> ibtas = BillTypeAtomic.findByServiceType(ServiceType.INWARD_SERVICE);
+
+        List<BillTypeAtomic> btasOP = new ArrayList<>();
+        List<BillTypeAtomic> btasIP = new ArrayList<>();
+
+        switch (visitType) {
+            case "Any":
+                btasOP.addAll(obtas);
+                btasIP.addAll(ibtas);
+                break;
+            case "OP":
+                btasOP.addAll(obtas);
+                break;
+            case "IP":
+                btasIP.addAll(ibtas);
+                break;
+            default:
+                break;
+        }
+
+        List<PaymentMethod> creditPaymentMethods = enumController.getPaymentTypeOfPaymentMethods(PaymentType.CREDIT);
+        List<PaymentMethod> nonCreditPaymentMethods = enumController.getPaymentTypeOfPaymentMethods(PaymentType.NON_CREDIT);
+
+        List<BillItem> bisOP = new ArrayList<>();
+        List<BillItem> bisIP = new ArrayList<>();
+
+        if (!btasOP.isEmpty()) {
+            String jpqlOP = "select bi "
+                    + " from BillItem bi "
+                    + " where bi.bill.retired=:br "
+                    + " and bi.bill.createdAt between :fd and :td "
+                    + " and bi.bill.patientEncounter is null "
+                    + " and bi.bill.billTypeAtomic in :bts ";
+
+            mOP.put("bts", btasOP);
+
+            if (!"Any".equals(paymentType)) {
+                if ("Credit".equals(paymentType)) {
+                    jpqlOP += " and bi.bill.paymentMethod in :pm ";
+                    mOP.put("pm", creditPaymentMethods);
+                } else if ("NonCredit".equals(paymentType)) {
+                    jpqlOP += " and bi.bill.paymentMethod in :pm ";
+                    mOP.put("pm", nonCreditPaymentMethods);
+                }
+            }
+
+            if (department != null) {
+                jpqlOP += " and bi.bill.department=:dep ";
+                mOP.put("dep", department);
+            }
+            if (institution != null) {
+                jpqlOP += " and bi.bill.department.institution=:ins ";
+                mOP.put("ins", institution);
+            }
+            if (site != null) {
+                jpqlOP += " and bi.bill.department.site=:site ";
+                mOP.put("site", site);
+            }
+            if (category != null) {
+                jpqlOP += " and bi.item.category=:cat ";
+                mOP.put("cat", category);
+            }
+
+            bisOP = billItemFacade.findByJpql(jpqlOP, mOP, TemporalType.TIMESTAMP);
+        }
+
+        if (!btasIP.isEmpty()) {
+            String jpqlIP = "select bi "
+                    + " from BillItem bi "
+                    + " where bi.bill.retired=:br "
+                    + " and bi.bill.createdAt between :fd and :td "
+                    + " and bi.bill.patientEncounter is not null "
+                    + " and bi.bill.billTypeAtomic in :bts ";
+
+            mIP.put("bts", btasIP);
+
+            if (!"Any".equals(paymentType)) {
+                if ("Credit".equals(paymentType)) {
+                    jpqlIP += " and bi.bill.patientEncounter.paymentMethod in :pm ";
+                    mIP.put("pm", creditPaymentMethods);
+                } else if ("NonCredit".equals(paymentType)) {
+                    jpqlIP += " and bi.bill.patientEncounter.paymentMethod in :pm ";
+                    mIP.put("pm", nonCreditPaymentMethods);
+                }
+            }
+
+            if (department != null) {
+                jpqlIP += " and bi.bill.department=:dep ";
+                mIP.put("dep", department);
+            }
+            if (institution != null) {
+                jpqlIP += " and bi.bill.department.institution=:ins ";
+                mIP.put("ins", institution);
+            }
+            if (site != null) {
+                jpqlIP += " and bi.bill.department.site=:site ";
+                mIP.put("site", site);
+            }
+            if (category != null) {
+                jpqlIP += " and bi.item.category=:cat ";
+                mIP.put("cat", category);
+            }
+
+            bisIP = billItemFacade.findByJpql(jpqlIP, mIP, TemporalType.TIMESTAMP);
+        }
+
+        List<BillItem> bis = new ArrayList<>();
+        bis.addAll(bisOP);
+        bis.addAll(bisIP);
+
+        boolean includeItems = "detail".equalsIgnoreCase(reportType);
+        summarizeBillItemsToIpIncomeCategoryWise(rtrb, bis, includeItems);
+
+        if (includeItems) {
+            rtrb.setName("IP Income Category Wise Report - Detail");
+            rtrb.setBundleType("ip_income_category_wise_detail");
+        } else {
+            rtrb.setName("IP Income Category Wise Report - Summary");
+            rtrb.setBundleType("ip_income_category_wise_summary");
+        }
+
+        rtrb.getReportTemplateRows().forEach(rtr -> {
+            rtr.setInstitution(institution);
+            rtr.setDepartment(department);
+            rtr.setSite(site);
+            rtr.setFromDate(fromDate);
+            rtr.setToDate(toDate);
+        });
+
+        return rtrb;
+    }
+
+    private void summarizeBillItemsToIpIncomeCategoryWise(ReportTemplateRowBundle reportBundle, List<BillItem> billItems, boolean includeItems) {
+        Map<String, ReportTemplateRow> categoryMap = new TreeMap<>();
+        Map<String, ReportTemplateRow> itemMap = new TreeMap<>();
+        List<ReportTemplateRow> rowsToAdd = new ArrayList<>();
+        double totalNetIncome = 0.0;
+        double totalIncome = 0.0;
+        double totalDiscount = 0.0;
+        double totalHospitalFees = 0.0;
+        double totalStaffFees = 0.0;
+        double totalSponsorPay = 0.0;
+        double totalPatientPay = 0.0;
+        long totalCount = 0L;
+
+        for (BillItem iteratingBillItem : billItems) {
+            if (iteratingBillItem.getBill() == null) {
+                continue;
+            }
+
+            PaymentMethod paymentMethodForBillItem = null;
+            if (iteratingBillItem.getBill().getPatientEncounter() != null) {
+                paymentMethodForBillItem = iteratingBillItem.getBill().getPatientEncounter().getPaymentMethod();
+            } else {
+                paymentMethodForBillItem = iteratingBillItem.getBill().getPaymentMethod();
+            }
+
+            if (paymentMethodForBillItem == null || paymentMethodForBillItem.getPaymentType() == PaymentType.NONE) {
+                continue;
+            }
+
+            String categoryName = iteratingBillItem.getItem() != null && iteratingBillItem.getItem().getCategory() != null
+                    ? iteratingBillItem.getItem().getCategory().getName() : "No Category";
+            String itemName = iteratingBillItem.getItem() != null ? iteratingBillItem.getItem().getName() : "No Item";
+            String itemKey = categoryName + "->" + itemName;
+
+            categoryMap.putIfAbsent(categoryName, new ReportTemplateRow());
+
+            ReportTemplateRow categoryRow = categoryMap.get(categoryName);
+            if (iteratingBillItem.getItem() != null) {
+                categoryRow.setCategory(iteratingBillItem.getItem().getCategory());
+            }
+
+            ReportTemplateRow itemRow = null;
+            if (includeItems) {
+                itemMap.putIfAbsent(itemKey, new ReportTemplateRow());
+                itemRow = itemMap.get(itemKey);
+                if (iteratingBillItem.getItem() != null) {
+                    itemRow.setItem(iteratingBillItem.getItem());
+                }
+            }
+
+            long countModifier = (iteratingBillItem.getBill().getBillClassType() == BillClassType.CancelledBill
+                    || iteratingBillItem.getBill().getBillClassType() == BillClassType.RefundBill) ? -1 : 1;
+
+            double grossValue = countModifier * Math.abs(iteratingBillItem.getGrossValue());
+            double hospitalFee = countModifier * Math.abs(iteratingBillItem.getHospitalFee());
+            double iteratingDiscount = countModifier * Math.abs(iteratingBillItem.getDiscount());
+            double staffFee = countModifier * Math.abs(iteratingBillItem.getStaffFee());
+            double netValue;
+            if (withProfessionalFee) {
+                netValue = countModifier * Math.abs(iteratingBillItem.getNetValue());
+            } else {
+                netValue = countModifier * Math.abs(iteratingBillItem.getNetValue() - iteratingBillItem.getStaffFee());
+            }
+
+            double sponsorDiscount = 0.0;
+            double sponsorPay = 0.0;
+            double patientPay = 0.0;
+            if (paymentMethodForBillItem.getPaymentType() == PaymentType.CREDIT) {
+                sponsorPay = netValue;
+            } else if (paymentMethodForBillItem.getPaymentType() == PaymentType.NON_CREDIT) {
+                patientPay = netValue;
+            }
+
+            totalIncome += grossValue;
+            totalNetIncome += netValue;
+            totalHospitalFees += hospitalFee;
+            totalDiscount += iteratingDiscount;
+            totalStaffFees += staffFee;
+            totalSponsorPay += sponsorPay;
+            totalPatientPay += patientPay;
+            totalCount += countModifier;
+
+            updateIpIncomeCategoryRow(categoryRow, countModifier, grossValue, hospitalFee, iteratingDiscount,
+                    sponsorDiscount, staffFee, netValue, sponsorPay, patientPay);
+
+            if (includeItems && itemRow != null) {
+                updateIpIncomeCategoryRow(itemRow, countModifier, grossValue, hospitalFee, iteratingDiscount,
+                        sponsorDiscount, staffFee, netValue, sponsorPay, patientPay);
+            }
+        }
+
+        categoryMap.forEach((categoryName, catRow) -> {
+            rowsToAdd.add(catRow);
+            if (includeItems) {
+                itemMap.values().stream()
+                        .filter(iRow -> iRow.getItem() != null
+                        && iRow.getItem().getCategory() != null
+                        && iRow.getItem().getCategory().getName().equals(categoryName))
+                        .forEach(rowsToAdd::add);
+            }
+        });
+
+        reportBundle.getReportTemplateRows().addAll(rowsToAdd);
+
+        reportBundle.setTotal(totalNetIncome);
+        reportBundle.setDiscount(totalDiscount);
+        reportBundle.setGrossTotal(totalIncome);
+        reportBundle.setHospitalTotal(totalHospitalFees);
+        reportBundle.setStaffTotal(totalStaffFees);
+        reportBundle.setCount(totalCount);
+
+        ipIncomeTotalSponsorPay = totalSponsorPay;
+        ipIncomeTotalPatientPay = totalPatientPay;
+    }
+
+    private void updateIpIncomeCategoryRow(ReportTemplateRow row, long countModifier, double grossValue, double hospitalFee,
+            double discount, double sponsorDiscount, double professionalFee, double netValue, double sponsorPay, double patientPay) {
+
+        if (row.getItemCount() == null) {
+            row.setItemCount(0L);
+        }
+        if (row.getItemTotal() == null) {
+            row.setItemTotal(0.0);
+        }
+        if (row.getItemHospitalFee() == null) {
+            row.setItemHospitalFee(0.0);
+        }
+        if (row.getItemDiscountAmount() == null) {
+            row.setItemDiscountAmount(0.0);
+        }
+        if (row.getItemDiscount() == null) {
+            row.setItemDiscount(0.0);
+        }
+        if (row.getItemProfessionalFee() == null) {
+            row.setItemProfessionalFee(0.0);
+        }
+        if (row.getItemNetTotal() == null) {
+            row.setItemNetTotal(0.0);
+        }
+        if (row.getRowValueIn() == null) {
+            row.setRowValueIn(0.0);
+        }
+        if (row.getRowValueOut() == null) {
+            row.setRowValueOut(0.0);
+        }
+
+        row.setItemCount(row.getItemCount() + countModifier);
+        row.setItemTotal(row.getItemTotal() + grossValue);
+        row.setItemHospitalFee(row.getItemHospitalFee() + hospitalFee);
+        row.setItemDiscountAmount(row.getItemDiscountAmount() + discount);
+        row.setItemDiscount(row.getItemDiscount() + sponsorDiscount);
+        row.setItemProfessionalFee(row.getItemProfessionalFee() + professionalFee);
+        row.setItemNetTotal(row.getItemNetTotal() + netValue);
+        row.setRowValueIn(row.getRowValueIn() + sponsorPay);
+        row.setRowValueOut(row.getRowValueOut() + patientPay);
+    }
 
     public void processSurgeryCountDoctorWiseReport() {
         billList = new ArrayList<>();
@@ -5053,6 +5384,62 @@ public class InwardReportController implements Serializable {
 
     public void setAdmissionReportProcessedBy(String admissionReportProcessedBy) {
         this.admissionReportProcessedBy = admissionReportProcessedBy;
+    }
+
+    public String getVisitType() {
+        return visitType;
+    }
+
+    public void setVisitType(String visitType) {
+        this.visitType = visitType;
+    }
+
+    public String getPaymentType() {
+        return paymentType;
+    }
+
+    public void setPaymentType(String paymentType) {
+        this.paymentType = paymentType;
+    }
+
+    public Category getCategory() {
+        return category;
+    }
+
+    public void setCategory(Category category) {
+        this.category = category;
+    }
+
+    public boolean isWithProfessionalFee() {
+        return withProfessionalFee;
+    }
+
+    public void setWithProfessionalFee(boolean withProfessionalFee) {
+        this.withProfessionalFee = withProfessionalFee;
+    }
+
+    public double getIpIncomeTotalSponsorPay() {
+        return ipIncomeTotalSponsorPay;
+    }
+
+    public void setIpIncomeTotalSponsorPay(double ipIncomeTotalSponsorPay) {
+        this.ipIncomeTotalSponsorPay = ipIncomeTotalSponsorPay;
+    }
+
+    public double getIpIncomeTotalPatientPay() {
+        return ipIncomeTotalPatientPay;
+    }
+
+    public void setIpIncomeTotalPatientPay(double ipIncomeTotalPatientPay) {
+        this.ipIncomeTotalPatientPay = ipIncomeTotalPatientPay;
+    }
+
+    public ReportTemplateRowBundle getBundle() {
+        return bundle;
+    }
+
+    public void setBundle(ReportTemplateRowBundle bundle) {
+        this.bundle = bundle;
     }
 
     public class IncomeByCategoryRecord {
