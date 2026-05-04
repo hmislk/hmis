@@ -375,6 +375,9 @@ public class ChannelService {
         List<BillSession> billSessionList = getBillSessionFacade().findByJpql(sql, hh, TemporalType.DATE);
 
         List<Integer> reservedNumbersList = CommonFunctions.convertStringToIntegerList(session.getOriginatingSession().getReserveNumbers());
+        if (reservedNumbersList == null) {
+             reservedNumbersList = Collections.emptyList();
+        }
         Set<Integer> reservedNumbers = new HashSet<>(reservedNumbersList);
 
         int nextNumber = 0;
@@ -1295,6 +1298,9 @@ public class ChannelService {
         bs.setStaff(session.getStaff());
 
         List<Integer> reservedNumbers = CommonFunctions.convertStringToIntegerList(session.getOriginatingSession().getReserveNumbers());
+        if (reservedNumbers == null) {
+            reservedNumbers = Collections.emptyList();
+        }
         Integer count = null;
 
         List<Integer> availableReleasedApoinmentNumbers = getReleasedAppoinmentNumbersForApiBookings(session, reservedNumbers);
