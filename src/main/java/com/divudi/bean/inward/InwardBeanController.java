@@ -2398,8 +2398,6 @@ public class InwardBeanController implements Serializable {
     }
 
     public void setBillFeeMargin(BillFee billFee, Item item, PriceMatrix priceMatrix, PatientEncounter patientEncounter) {
-        double margin = 0;
-
         if (billFee == null || item.isMarginNotAllowed()) {
             return;
         }
@@ -2407,19 +2405,28 @@ public class InwardBeanController implements Serializable {
             return;
         }
 
+        double qty = (billFee.getBillItem() != null && billFee.getBillItem().getQty() != null && billFee.getBillItem().getQty() > 0)
+                ? billFee.getBillItem().getQty() : 1.0;
+        double unitGross = (billFee.getFeeUnitGrossValue() != null)
+                ? billFee.getFeeUnitGrossValue()
+                : (billFee.getFeeGrossValue() != null ? billFee.getFeeGrossValue() / qty : 0.0);
+
+        double unitMargin = 0;
         if (patientEncounter.getAdmissionType().isAllowToCalculateMargin()) {
             if (billFee.getFee().getFeeType() != FeeType.Staff && priceMatrix != null) {
-                margin = (billFee.getFeeGrossValue() * priceMatrix.getMargin()) / 100;
-                billFee.setFeeMargin(margin);
+                unitMargin = (unitGross * priceMatrix.getMargin()) / 100;
+                billFee.setFeeUnitMargin(unitMargin);
+                billFee.setFeeMargin(unitMargin * qty);
                 billFeeFacade.edit(billFee);
             }
         }
 
         applyInwardDiscountToBillFee(billFee, item, patientEncounter);
 
-        double net = (billFee.getFeeGrossValue() + margin) - billFee.getFeeDiscount();
-
-        billFee.setFeeValue(net);
+        double unitDiscount = (billFee.getFeeUnitDiscount() != null) ? billFee.getFeeUnitDiscount() : 0.0;
+        double unitNet = (unitGross + unitMargin) - unitDiscount;
+        billFee.setFeeUnitValue(unitNet);
+        billFee.setFeeValue(unitNet * qty);
     }
 
     /**
@@ -2452,9 +2459,14 @@ public class InwardBeanController implements Serializable {
                 patientEncounter.getAdmissionType(),
                 matrixDept,
                 item);
-        double gross = billFee.getFeeGrossValue();
-        double discount = pct > 0.0 ? (gross * pct) / 100.0 : 0.0;
-        billFee.setFeeDiscount(discount);
+        double qty = (billFee.getBillItem() != null && billFee.getBillItem().getQty() != null && billFee.getBillItem().getQty() > 0)
+                ? billFee.getBillItem().getQty() : 1.0;
+        double unitGross = (billFee.getFeeUnitGrossValue() != null)
+                ? billFee.getFeeUnitGrossValue()
+                : (billFee.getFeeGrossValue() != null ? billFee.getFeeGrossValue() / qty : 0.0);
+        double unitDiscount = pct > 0.0 ? (unitGross * pct) / 100.0 : 0.0;
+        billFee.setFeeUnitDiscount(unitDiscount);
+        billFee.setFeeDiscount(unitDiscount * qty);
     }
 
     public void updateBillItemMargin(BillItem billItem, double serviceValue, PatientEncounter patientEncounter, Department matrixDepartment, PriceMatrix priceMatrix) {
