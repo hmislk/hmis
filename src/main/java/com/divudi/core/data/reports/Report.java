@@ -845,11 +845,11 @@ public class Report<T> {
                             Bill r = (Bill) row;
                             String date = (r.getCreatedAt() != null) ? new SimpleDateFormat("dd MMM yyyy hh:mm a").format(r.getCreatedAt()) : "";
 
-                            if (r.isCancelled() && r.getCancelledBill() != null) {
-                                date += "\n(Cancelled: " + (r.getCancelledBill().getCreatedAt() != null ? new SimpleDateFormat("dd MMM yyyy hh:mm a").format(r.getCancelledBill().getCreatedAt()) : "") + ")";
+                            if (r.isCancelled() && r.getCancelledBill() != null && r.getCancelledBill().getCreatedAt() != null) {
+                                date += "\n(Cancelled: " + new SimpleDateFormat("dd MMM yyyy hh:mm a").format(r.getCancelledBill().getCreatedAt()) + ")";
                             }
-                            if (r.isRefunded() && r.getRefundedBill() != null) {
-                                date += "\n(Refunded: " + (r.getRefundedBill().getCreatedAt() != null ? new SimpleDateFormat("dd MMM yyyy hh:mm a").format(r.getRefundedBill().getCreatedAt()) : "") + ")";
+                            if (r.isRefunded() && r.getRefundedBill() != null && r.getRefundedBill().getCreatedAt() != null) {
+                                date += "\n(Refunded: " + new SimpleDateFormat("dd MMM yyyy hh:mm a").format(r.getRefundedBill().getCreatedAt()) + ")";
                             }
 
                             return date;
@@ -884,11 +884,11 @@ public class Report<T> {
                             if (r.getCreditCompany() != null && (r.getBillTypeAtomic() == BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT || r.getBillTypeAtomic() == BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING)) {
                                 billedBy += "\n" + r.getCreditCompany().getName();
                             }
-                            if (r.isCancelled() && r.getCancelledBill() != null) {
-                                billedBy += "\n(Cancelled: " +  (r.getCancelledBill().getCreater() != null && r.getCancelledBill().getCreater().getWebUserPerson() != null ? r.getCancelledBill().getCreater().getWebUserPerson().getName() : "" ) + ")";
+                            if (r.isCancelled() && r.getCancelledBill() != null && r.getCancelledBill().getCreater() != null && r.getCancelledBill().getCreater().getWebUserPerson() != null) {
+                                billedBy += "\n(Cancelled: " +  r.getCancelledBill().getCreater().getWebUserPerson().getName() + ")";
                             }
-                            if (r.isRefunded() && r.getRefundedBill() != null) {
-                                billedBy += "\n(Refunded: " +  (r.getRefundedBill().getCreater() != null && r.getRefundedBill().getCreater().getWebUserPerson() != null ? r.getRefundedBill().getCreater().getWebUserPerson().getName() : "" ) + ")";
+                            if (r.isRefunded() && r.getRefundedBill() != null && r.getRefundedBill().getCreater() != null && r.getRefundedBill().getCreater().getWebUserPerson() != null) {
+                                billedBy += "\n(Refunded: " +  r.getRefundedBill().getCreater().getWebUserPerson().getName() + ")";
                             }
                             return billedBy;
                     },
@@ -959,6 +959,154 @@ public class Report<T> {
         public ChannelBillSearch(String fileName, String institutionName, Map<String, Object> searchCriteria, List<Bill> data, String reportGeneratedBy) {
             super(rpCols);
             this.setReportName("Channel Bills");
+            this.setFileName(fileName);
+            this.setInstitutionName(institutionName);
+            this.setSearchCriteria(searchCriteria);
+            this.setData(data);
+            this.setReportGeneratedBy(reportGeneratedBy);
+      
+        }
+        
+    }
+
+    public static class OpdBillSearch extends Report<Bill> {
+
+        private static final LinkedHashMap<String, ReportColumn<Bill>> rpCols;
+
+        static {
+            rpCols = new LinkedHashMap<>();
+            rpCols.put("Bill No", new ReportColumn<>("Bill No",
+                    row -> {
+                            Bill r = (Bill) row;
+                            String billDept = r.getDeptId() != null ? r.getDeptId() : "";
+                            if (r.isCancelled()) {
+                                billDept += "\nCancelled" + (r.getCancelledBill() != null ? (": " + r.getCancelledBill().getDeptId()) : "");
+                            }
+                            if (r.isRefunded()) {
+                                billDept += "\nRefunded" + (r.getRefundedBill() != null ? (": " + r.getRefundedBill().getDeptId()) : "" );
+                            }
+                            if (r instanceof RefundBill) {
+                                billDept += "\nRefund Bill";
+                            }
+                            if (r.getBillTypeAtomic() != null && r.getBillTypeAtomic() == BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT) {
+                                billDept += "\nCancel Bill";
+                            }
+                            return billDept;
+                    },
+                    TextAlignment.LEFT,
+                    "%s",
+                    4f));
+
+            rpCols.put("Batch Bill", new ReportColumn<>("Batch Bill",
+                    row -> {
+                            Bill r = (Bill) row;
+                            return (r.getBackwardReferenceBill() != null) ?
+                               r.getBackwardReferenceBill().getDeptId() : "" ;
+                    },
+                    TextAlignment.LEFT,
+                    "%s",
+                    4f));
+
+            rpCols.put("Billed At", new ReportColumn<>("Billed At",
+                    row -> {
+                            Bill r = (Bill) row;
+                            String date = (r.getCreatedAt() != null) ? new SimpleDateFormat("dd MMM yyyy hh:mm a").format(r.getCreatedAt()) : "";
+
+                            if (r.isCancelled() && r.getCancelledBill() != null && r.getCancelledBill().getCreatedAt() != null) {
+                                date += "\n(Cancelled: " + new SimpleDateFormat("dd MMM yyyy hh:mm a").format(r.getCancelledBill().getCreatedAt()) + ")";
+                            }
+                            if (r.isRefunded() && r.getRefundedBill() != null && r.getRefundedBill().getCreatedAt() != null ) {
+                                date += "\n(Refunded: " + new SimpleDateFormat("dd MMM yyyy hh:mm a").format(r.getRefundedBill().getCreatedAt()) + ")";
+                            }
+
+                            return date;
+                    },
+                    TextAlignment.LEFT,
+                    "%s",
+                    3f));
+
+            rpCols.put("Billed By (Department)", new ReportColumn<>("Billed By (Department)",
+                    row -> {
+                            Bill r = (Bill) row;
+                            String dept = r.getFromDepartment() != null ? r.getFromDepartment().getName() : "";
+                            
+                            if (r.isCancelled() && r.getCancelledBill() != null && r.getCancelledBill().getDepartment() != null) {
+                                dept += "\n(Cancelleda: " + r.getCancelledBill().getDepartment().getName() + ")";
+                            }
+                            if (r.isRefunded() && r.getRefundedBill() != null && r.getRefundedBill().getDepartment() != null) {
+                                dept += "\n(Refunded: " + r.getRefundedBill().getDepartment().getName() + ")";
+                            }
+                            return dept;
+                    },
+                    TextAlignment.LEFT,
+                    "%s",
+                    4f));
+
+            rpCols.put("Billed For", new ReportColumn<>("Billed For",
+                    row -> {
+                            Bill r = (Bill) row;
+                            return (r.getToDepartment() != null) ? r.getToDepartment().getName() : "";
+                    },
+                    TextAlignment.LEFT,
+                    "%s",
+                    3f));
+
+            rpCols.put("Billed By (Cashier)", new ReportColumn<>("Billed By (Cashier)",
+                    row -> {
+                            Bill r = (Bill) row;
+                            String billedBy = r.getCreater() != null && r.getCreater().getWebUserPerson() != null ? r.getCreater().getWebUserPerson().getName() : "";
+                            if (r.isCancelled() && r.getCancelledBill() != null && r.getCancelledBill().getCreater() != null && r.getCancelledBill().getCreater().getWebUserPerson() != null) {
+                                billedBy += "\n(Cancelled: " + r.getCancelledBill().getCreater().getWebUserPerson().getName() + ")";
+                            }
+                            if (r.isRefunded() && r.getRefundedBill() != null && r.getRefundedBill().getCreater() != null && r.getRefundedBill().getCreater().getWebUserPerson() != null) {
+                                billedBy += "\n(Refunded: " +  r.getRefundedBill().getCreater().getWebUserPerson().getName() + ")";
+                            }
+                            return billedBy;
+                    },
+                    TextAlignment.LEFT,
+                    "%s",
+                    3f));
+
+            rpCols.put("Client", new ReportColumn<>("Client",
+                    row -> {
+                            Bill r = (Bill) row;
+                            return (r.getPatient() != null && r.getPatient().getPerson() != null) ? r.getPatient().getPerson().getName() : "";
+                    },
+                    TextAlignment.LEFT,
+                    "%s",
+                    3f));
+
+            rpCols.put("Remarks", new ReportColumn<>("Remarks",
+                    row -> {
+                            Bill r = (Bill) row;
+                            String remarks = "";
+                            if (r.getMembershipScheme() != null) {
+                                remarks += r.getMembershipScheme().getName();
+                            }
+                            if (r.isCancelled()) {
+                                remarks += "\nCancelled";
+                            }
+                            if (r.getBillTypeAtomic() == BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT) {
+                                remarks += "\nPackage Bill";
+                            }
+                            if(r.isRefunded()) {
+                                remarks += "\nRefunded";
+                            }
+
+                            return remarks;
+                    },
+                    TextAlignment.LEFT,
+                    "%s",
+                    3f));
+
+            rpCols.put("Gross Value", new ReportColumn<>("Gross Value", Bill::getTotal, TextAlignment.LEFT, "%s", 4f));
+            rpCols.put("Discount", new ReportColumn<>("Discount", Bill::getDiscount, TextAlignment.LEFT, "%s", 4f));
+            rpCols.put("Net Value", new ReportColumn<>("Net Value", Bill::getNetTotal, TextAlignment.LEFT, "%s", 4f));
+        }
+
+        public OpdBillSearch(String fileName, String institutionName, Map<String, Object> searchCriteria, List<Bill> data, String reportGeneratedBy) {
+            super(rpCols);
+            this.setReportName("OPD Bills");
             this.setFileName(fileName);
             this.setInstitutionName(institutionName);
             this.setSearchCriteria(searchCriteria);
