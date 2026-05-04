@@ -292,6 +292,11 @@ public class InwardReportController implements Serializable {
 
     private Date admissionReportProcessedAt;
     private String admissionReportProcessedBy;
+    private double ipIncomeCashTotal;
+    private double ipIncomeCreditTotal;
+
+    private List<Map<String, Object>> ipIncomeBillDiscounts;
+    private double ipIncomeTotalBillDiscount;
 
     public List<PatientEncounter> getPatientEncounters() {
         return patientEncounters;
@@ -391,10 +396,10 @@ public class InwardReportController implements Serializable {
         if ("OP".equals(visitType)) {
             btasOP.addAll(BillTypeAtomic.findByServiceType(ServiceType.OPD));
         }
-        if("Any".equals(visitType)){
+        if ("Any".equals(visitType)) {
             btasIP.addAll(BillTypeAtomic.findByServiceType(ServiceType.INWARD_SERVICE));
             btasOP.addAll(BillTypeAtomic.findByServiceType(ServiceType.OPD));
-            
+
         }
 
         if (withProfessionalFee) {
@@ -417,7 +422,7 @@ public class InwardReportController implements Serializable {
                 List<BillTypeAtomic> opProfBillTypes = Arrays.asList(
                         BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES,
                         BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES_RETURN
-                        );
+                );
                 List<BillTypeAtomic> ipProfBillTypes = Arrays.asList(
                         BillTypeAtomic.INWARD_PROFESSIONAL_FEE_BILL,
                         BillTypeAtomic.INWARD_PROFESSIONAL_FEE_BILL_CANCELLATION,
@@ -434,6 +439,8 @@ public class InwardReportController implements Serializable {
         // ── Summarise ────────────────────────────────────────────────────────────
         boolean includeItems = "detail".equalsIgnoreCase(reportType);
         summarizeBillItemsToIpIncomeCategoryWise(rtrb, bis, includeItems);
+
+        populateIpIncomeProfitMatrixAndBillDiscounts(bis);
 
         rtrb.setName(includeItems
                 ? "IP Income Category Wise Report - Detail"
@@ -700,6 +707,76 @@ public class InwardReportController implements Serializable {
         row.setItemNetTotal(row.getItemNetTotal() + netValue);
         row.setRowValueIn(row.getRowValueIn() + sponsorPay);
         row.setRowValueOut(row.getRowValueOut() + patientPay);
+    }
+
+    private void populateIpIncomeProfitMatrixAndBillDiscounts(List<BillItem> billItems) {
+        ipIncomeCashTotal = 0.0;
+        ipIncomeCreditTotal = 0.0;
+        ipIncomeTotalBillDiscount = 0.0;
+        ipIncomeBillDiscounts = new ArrayList<>();
+
+        // Collect per-bill bill-level discounts (one entry per bill, avoid duplicates)
+        // Key: bill.id  →  { invoiceNo, billDiscount }
+        Map<Long, Map<String, Object>> billDiscountMap = new LinkedHashMap<>();
+
+        for (BillItem bi : billItems) {
+            Bill bill = bi.getBill();
+            if (bill == null) {
+                continue;
+            }
+
+            // ── Resolve payment method ──────────────────────────────────────────
+            PaymentMethod pm = null;
+            if (bill.getPatientEncounter() != null) {
+                pm = bill.getPatientEncounter().getPaymentMethod();
+            } else {
+                pm = bill.getPaymentMethod();
+            }
+            if (pm == null || pm.getPaymentType() == PaymentType.NONE) {
+                continue;
+            }
+
+            // ── Count modifier (cancellations/refunds subtract) ─────────────────
+            long countModifier = (bill.getBillClassType() == BillClassType.CancelledBill
+                    || bill.getBillClassType() == BillClassType.RefundBill) ? -1 : 1;
+
+            // ── Net value (same logic as summarizeBillItemsToIpIncomeCategoryWise) ──
+            boolean isProfPayment = bill.getBillType() == BillType.PaymentBill;
+            double netValue;
+            if (isProfPayment || withProfessionalFee) {
+                netValue = countModifier * Math.abs(bi.getNetValue());
+            } else {
+                netValue = countModifier * Math.abs(bi.getNetValue() - bi.getStaffFee());
+            }
+
+            // ── Profit Matrix: Cash vs Credit ───────────────────────────────────
+            if (pm.getPaymentType() == PaymentType.NON_CREDIT) {
+                ipIncomeCashTotal += netValue;
+            } else if (pm.getPaymentType() == PaymentType.CREDIT) {
+                ipIncomeCreditTotal += netValue;
+            }
+
+            // ── Bill Discount: aggregate per bill ───────────────────────────────
+            if (bill.getDiscount() != 0.0) {
+                Long billId = bill.getId();
+                if (!billDiscountMap.containsKey(billId)) {
+                    Map<String, Object> entry = new LinkedHashMap<>();
+                    entry.put("invoiceNo", bill.getDeptId()!= null
+                            ? bill.getDeptId() : String.valueOf(billId));
+                    entry.put("discount", countModifier * Math.abs(bill.getDiscount()));
+                    billDiscountMap.put(billId, entry);
+                } else {
+                    Map<String, Object> entry = billDiscountMap.get(billId);
+                    double existing = (Double) entry.get("discount");
+                    entry.put("discount", existing + countModifier * Math.abs(bill.getDiscount()));
+                }
+            }
+        }
+
+        ipIncomeBillDiscounts = new ArrayList<>(billDiscountMap.values());
+        ipIncomeTotalBillDiscount = ipIncomeBillDiscounts.stream()
+                .mapToDouble(e -> (Double) e.get("discount"))
+                .sum();
     }
 
     public void processSurgeryCountDoctorWiseReport() {
@@ -5472,6 +5549,38 @@ public class InwardReportController implements Serializable {
 
     public void setRoomCategories(List<RoomCategory> roomCategories) {
         this.roomCategories = roomCategories;
+    }
+
+    public double getIpIncomeCashTotal() {
+        return ipIncomeCashTotal;
+    }
+
+    public void setIpIncomeCashTotal(double ipIncomeCashTotal) {
+        this.ipIncomeCashTotal = ipIncomeCashTotal;
+    }
+
+    public double getIpIncomeCreditTotal() {
+        return ipIncomeCreditTotal;
+    }
+
+    public void setIpIncomeCreditTotal(double ipIncomeCreditTotal) {
+        this.ipIncomeCreditTotal = ipIncomeCreditTotal;
+    }
+
+    public List<Map<String, Object>> getIpIncomeBillDiscounts() {
+        return ipIncomeBillDiscounts;
+    }
+
+    public void setIpIncomeBillDiscounts(List<Map<String, Object>> ipIncomeBillDiscounts) {
+        this.ipIncomeBillDiscounts = ipIncomeBillDiscounts;
+    }
+
+    public double getIpIncomeTotalBillDiscount() {
+        return ipIncomeTotalBillDiscount;
+    }
+
+    public void setIpIncomeTotalBillDiscount(double ipIncomeTotalBillDiscount) {
+        this.ipIncomeTotalBillDiscount = ipIncomeTotalBillDiscount;
     }
 
     public class IncomeByCategoryRecord {

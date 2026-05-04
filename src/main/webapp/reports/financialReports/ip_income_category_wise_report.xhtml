@@ -443,78 +443,60 @@
                                 </p:dataTable>
 
                                 <p:panel header="Profit Matrix" styleClass="my-2">
-                                    <p:dataTable
-                                        id="tbPmtx"
-                                        var="var"
-                                        value=""
-                                        styleClass="table-sm">
+                                    <p:dataTable id="tbPmtx" var="var"
+                                                 value="#{['dummy']}"
+                                                 styleClass="table-sm">
+
                                         <p:column width="8em">
-                                            <f:facet name="header">
-                                                <h:outputText value="Cash" />
-                                            </f:facet>
-                                            <h:outputText value="150241.41">
+                                            <f:facet name="header"><h:outputText value="Cash"/></f:facet>
+                                            <h:outputText value="#{inwardReportController.ipIncomeCashTotal}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputText>
                                         </p:column>
 
                                         <p:column width="8em">
-                                            <f:facet name="header">
-                                                <h:outputText value="Credit" />
-                                            </f:facet>
-                                            <h:outputText value="40178">
+                                            <f:facet name="header"><h:outputText value="Credit"/></f:facet>
+                                            <h:outputText value="#{inwardReportController.ipIncomeCreditTotal}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputText>
                                         </p:column>
 
                                         <p:column width="8em">
-                                            <f:facet name="header">
-                                                <h:outputText value="Total" />
-                                            </f:facet>
-                                            <h:outputText value="190419.41">
+                                            <f:facet name="header"><h:outputText value="Total"/></f:facet>
+                                            <h:outputText value="#{inwardReportController.ipIncomeCashTotal
+                                                                   + inwardReportController.ipIncomeCreditTotal}">
                                                 <f:convertNumber pattern="#,##0.00"/>
-                                            </h:outputText>                                           
+                                            </h:outputText>
                                         </p:column>
 
                                     </p:dataTable>
-
                                 </p:panel>
-
                                 <p:panel header="Bill Discount" styleClass="my-2">
+                                    <p:dataTable id="tbBdsct" var="discRow"
+                                                 value="#{inwardReportController.ipIncomeBillDiscounts}"
+                                                 styleClass="table-sm">
 
-                                    <p:dataTable
-                                        id="tbBdsct"
-                                        var="var"
-                                        value=""
-                                        styleClass="table-sm">
-
-                                        <p:column width="8em">
-                                            <f:facet name="header">
-                                                <h:outputText value="Invoice No." />
-                                            </f:facet>
-                                            <h:outputText value="INV-RH-23005042">
-                                            </h:outputText>
+                                        <p:column width="12em">
+                                            <f:facet name="header"><h:outputText value="Invoice No."/></f:facet>
+                                            <h:outputText value="#{discRow['invoiceNo']}"/>
                                             <f:facet name="footer">
-                                                <h:outputText value="Total Bill Discount">
-                                                </h:outputText>
+                                                <h:outputText value="Total Bill Discount"/>
                                             </f:facet>
                                         </p:column>
 
                                         <p:column width="8em">
-                                            <f:facet name="header">
-                                                <h:outputText value="Bill Discount" />
-                                            </f:facet>
-                                            <h:outputText value="1500">
+                                            <f:facet name="header"><h:outputText value="Bill Discount"/></f:facet>
+                                            <h:outputText value="#{discRow['discount']}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputText>
                                             <f:facet name="footer">
-                                                <h:outputText value="1500">
+                                                <h:outputText value="#{inwardReportController.ipIncomeTotalBillDiscount}">
                                                     <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputText>
                                             </f:facet>
                                         </p:column>
 
                                     </p:dataTable>
-
                                 </p:panel>
 
                                 <p:panel header="Summary Details" styleClass="my-2">
@@ -761,79 +743,61 @@
 
                                 </p:dataTable>
 
-                                <p:panel header="Profit Matrix" styleClass="my-2">
-                                    <p:dataTable
-                                        id="tbPmtx2"
-                                        var="var"
-                                        value=""
-                                        styleClass="table-sm">
+                                 <p:panel header="Profit Matrix" styleClass="my-2">
+                                    <p:dataTable id="tbPmtxDe" var="var"
+                                                 value="#{['dummy']}"
+                                                 styleClass="table-sm">
+
                                         <p:column width="8em">
-                                            <f:facet name="header">
-                                                <h:outputText value="Cash" />
-                                            </f:facet>
-                                            <h:outputText value="150241.41">
+                                            <f:facet name="header"><h:outputText value="Cash"/></f:facet>
+                                            <h:outputText value="#{inwardReportController.ipIncomeCashTotal}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputText>
                                         </p:column>
 
                                         <p:column width="8em">
-                                            <f:facet name="header">
-                                                <h:outputText value="Credit" />
-                                            </f:facet>
-                                            <h:outputText value="40178">
+                                            <f:facet name="header"><h:outputText value="Credit"/></f:facet>
+                                            <h:outputText value="#{inwardReportController.ipIncomeCreditTotal}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputText>
                                         </p:column>
 
                                         <p:column width="8em">
-                                            <f:facet name="header">
-                                                <h:outputText value="Total" />
-                                            </f:facet>
-                                            <h:outputText value="190419.41">
+                                            <f:facet name="header"><h:outputText value="Total"/></f:facet>
+                                            <h:outputText value="#{inwardReportController.ipIncomeCashTotal
+                                                                   + inwardReportController.ipIncomeCreditTotal}">
                                                 <f:convertNumber pattern="#,##0.00"/>
-                                            </h:outputText>                                           
+                                            </h:outputText>
                                         </p:column>
 
                                     </p:dataTable>
-
                                 </p:panel>
-
                                 <p:panel header="Bill Discount" styleClass="my-2">
+                                    <p:dataTable id="tbBdsctDe" var="discRow"
+                                                 value="#{inwardReportController.ipIncomeBillDiscounts}"
+                                                 styleClass="table-sm">
 
-                                    <p:dataTable
-                                        id="tbBdsct2"
-                                        var="var"
-                                        value=""
-                                        styleClass="table-sm">
-
-                                        <p:column width="8em">
-                                            <f:facet name="header">
-                                                <h:outputText value="Invoice No." />
-                                            </f:facet>
-                                            <h:outputText value="INV-RH-23005042">
-                                            </h:outputText>
+                                        <p:column width="12em">
+                                            <f:facet name="header"><h:outputText value="Invoice No."/></f:facet>
+                                            <h:outputText value="#{discRow['invoiceNo']}"/>
                                             <f:facet name="footer">
-                                                <h:outputText value="Total Bill Discount">
-                                                </h:outputText>
+                                                <h:outputText value="Total Bill Discount"/>
                                             </f:facet>
                                         </p:column>
 
                                         <p:column width="8em">
-                                            <f:facet name="header">
-                                                <h:outputText value="Bill Discount" />
-                                            </f:facet>
-                                            <h:outputText value="1500">
+                                            <f:facet name="header"><h:outputText value="Bill Discount"/></f:facet>
+                                            <h:outputText value="#{discRow['discount']}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputText>
                                             <f:facet name="footer">
-                                                <h:outputText value="1500">
+                                                <h:outputText value="#{inwardReportController.ipIncomeTotalBillDiscount}">
                                                     <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputText>
                                             </f:facet>
                                         </p:column>
 
                                     </p:dataTable>
-
                                 </p:panel>
 
                                 <p:panel header="Summary Details" styleClass="my-2">
@@ -843,7 +807,7 @@
                                         <tr>
                                             <th class="w-50">Total Patient Pay</th>
                                             <td class="w-50 text-end">
-                                                <h:outputText value="3,079,547.40">
+                                                <h:outputText value="#{inwardReportController.ipIncomeTotalPatientPay}">
                                                     <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputText>
 
@@ -853,7 +817,7 @@
                                         <tr>
                                             <th class="w-50">Total Sponsor Pay</th>
                                             <td class="w-50 text-end">
-                                                <h:outputText value="732,920.34">
+                                                <h:outputText value="#{inwardReportController.ipIncomeTotalSponsorPay}">
                                                     <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputText>
                                             </td>
@@ -862,7 +826,7 @@
                                         <tr>
                                             <th class="w-50">Net Amount</th>
                                             <td class="w-50 text-end">
-                                                <h:outputText value="3,812,467.74">
+                                                <h:outputText value="#{inwardReportController.bundle.total}">
                                                     <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputText>
                                             </td>
