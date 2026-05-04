@@ -403,6 +403,33 @@
                                     <bill:inwardBillPrintPos bill="#{bill}" duplicate="false"/>
                                 </ui:repeat>
                             </h:panelGroup>
+
+                            <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'FiveFivePrintedPaper'}">
+                                <ui:repeat value="#{inwardSearch.bill.refundBills}" var="bill" rendered="#{!inwardSearch.bill.cancelled}">
+                                    <print:five_five_paper_without_headings_inward_service bill="#{bill}" dup="false"/>
+                                </ui:repeat>
+                                <ui:repeat value="#{inwardSearch.bill.cancelledBill}" var="bill" rendered="#{inwardSearch.bill.cancelled}">
+                                    <print:five_five_paper_without_headings_inward_service bill="#{bill}" dup="false"/>
+                                </ui:repeat>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'A4Paper'}">
+                                <ui:repeat value="#{inwardSearch.bill.refundBills}" var="bill" rendered="#{!inwardSearch.bill.cancelled}">
+                                    <print:A4_paper_with_headings bill="#{bill}" duplicate="false"/>
+                                </ui:repeat>
+                                <ui:repeat value="#{inwardSearch.bill.cancelledBill}" var="bill" rendered="#{inwardSearch.bill.cancelled}">
+                                    <print:A4_paper_with_headings bill="#{bill}" duplicate="false"/>
+                                </ui:repeat>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'A4PrintedPaper'}">
+                                <ui:repeat value="#{inwardSearch.bill.refundBills}" var="bill" rendered="#{!inwardSearch.bill.cancelled}">
+                                    <print:A4_paper_without_headings bill="#{bill}" duplicate="false"/>
+                                </ui:repeat>
+                                <ui:repeat value="#{inwardSearch.bill.cancelledBill}" var="bill" rendered="#{inwardSearch.bill.cancelled}">
+                                    <print:A4_paper_without_headings bill="#{bill}" duplicate="false"/>
+                                </ui:repeat>
+                            </h:panelGroup>
                         </p:panel>
                     </div>
 
