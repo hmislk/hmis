@@ -1461,7 +1461,7 @@ public class ChannelApi {
 
         Bill completedBill = channelService.settleOnlineAgentInitialBooking(temporarySavedBill.getSingleBillSession(), clientsReferanceNo, agencyCharge);
 
-        OnlineBooking bookingDetails = completedBill.getReferenceBill().getOnlineBooking();
+        OnlineBooking bookingDetails = bookingData;
         SessionInstance session = completedBill.getSingleBillSession().getSessionInstance();
 
         try {
