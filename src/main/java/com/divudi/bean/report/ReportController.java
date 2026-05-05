@@ -3954,15 +3954,15 @@ public class ReportController implements Serializable, ControllerWithReportFilte
             for (ReportTemplateRow row : bundle.getReportTemplateRows()) {
                 table.addCell(textCell(String.valueOf(indexRow), bodyFontSmall));
                 Bill b = row.getBill();
-                table.addCell(textCell(b.getDeptId(), bodyFontSmall));
+                table.addCell(textCell(b.getDeptId() != null ? b.getDeptId() : "-" , bodyFontSmall));
                 table.addCell(textCell( b.getCreatedAt() != null ? sdf.format(b.getCreatedAt()) : "-", bodyFontSmall));
-                table.addCell(textCell(b.getCreater().getName(), bodyFontSmall));
-                table.addCell(textCell(b.getPaymentMethod().getLabel(), bodyFontSmall));
-                table.addCell(textCell(b.getFromInstitution().getCode(), bodyFontSmall));
-                table.addCell(textCell(b.getFromInstitution().getName(), bodyFontSmall));
+                table.addCell(textCell(b.getCreater() != null ?  b.getCreater().getName() : "-", bodyFontSmall));
+                table.addCell(textCell(b.getPaymentMethod() != null ? b.getPaymentMethod().getLabel() : "-", bodyFontSmall));
+                table.addCell(textCell(b.getFromInstitution() != null ?  b.getFromInstitution().getCode() : "-", bodyFontSmall));
+                table.addCell(textCell(b.getFromInstitution() != null ? b.getFromInstitution().getName() : "-", bodyFontSmall));
 
                 table.addCell(numCell(b.getTotal(), bodyFontSmall));
-                table.addCell(textCell(b.getComments(), bodyFontSmall));
+                table.addCell(textCell(b.getComments() != null ? b.getComments() : "-", bodyFontSmall));
                 indexRow++;
 
             }
@@ -3980,7 +3980,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
 
         } catch (Exception e) {
             Logger.getLogger(ReportController.class
-                    .getName()).log(Level.SEVERE, "Error exporting Test Wise Count Report to PDF", e);
+                    .getName()).log(Level.SEVERE, "Error exporting Collection center recipt report to PDF", e);
         }
     }
     
