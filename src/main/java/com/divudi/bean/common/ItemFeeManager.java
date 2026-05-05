@@ -1334,20 +1334,18 @@ public class ItemFeeManager implements Serializable {
         if (fee == null) {
             return "";
         }
-        ItemFee dbFee = fee.getId() == null ? fee : itemFeeFacade.find(fee.getId());
-        ItemFee source = dbFee == null ? fee : dbFee;
         Map<String, Object> snapshot = new HashMap<>();
-        snapshot.put("id", source.getId());
-        snapshot.put("name", source.getName());
-        snapshot.put("feeType", source.getFeeType() == null ? null : source.getFeeType().name());
-        snapshot.put("fee", source.getFee());
-        snapshot.put("ffee", source.getFfee());
-        snapshot.put("retired", source.isRetired());
-        snapshot.put("itemId", source.getItem() == null ? null : source.getItem().getId());
-        snapshot.put("itemName", source.getItem() == null ? null : source.getItem().getName());
-        snapshot.put("forInstitutionId", source.getForInstitution() == null ? null : source.getForInstitution().getId());
-        snapshot.put("forDepartmentId", source.getForDepartment() == null ? null : source.getForDepartment().getId());
-        snapshot.put("forCategoryId", source.getForCategory() == null ? null : source.getForCategory().getId());
+        snapshot.put("id", fee.getId());
+        snapshot.put("name", fee.getName());
+        snapshot.put("feeType", fee.getFeeType() == null ? null : fee.getFeeType().name());
+        snapshot.put("fee", fee.getFee());
+        snapshot.put("ffee", fee.getFfee());
+        snapshot.put("retired", fee.isRetired());
+        snapshot.put("itemId", fee.getItem() == null ? null : fee.getItem().getId());
+        snapshot.put("itemName", fee.getItem() == null ? null : fee.getItem().getName());
+        snapshot.put("forInstitutionId", fee.getForInstitution() == null ? null : fee.getForInstitution().getId());
+        snapshot.put("forDepartmentId", fee.getForDepartment() == null ? null : fee.getForDepartment().getId());
+        snapshot.put("forCategoryId", fee.getForCategory() == null ? null : fee.getForCategory().getId());
         return new Gson().toJson(snapshot);
     }
 
