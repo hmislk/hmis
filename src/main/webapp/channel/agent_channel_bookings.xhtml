@@ -268,15 +268,15 @@
                             value="#{searchController.agentBookings}"
                             var="b"
                             paginator="true"
-                            scrollable="true"
                             rows="10"
                             rowIndexVar="n"
                             paginatorPosition="bottom"
                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                             rowsPerPageTemplate="5,10,20"
-                            rowKey="#{b.id}">
+                            rowKey="#{b.id}"
+                            tableStyle="table-layout: auto;">
 
-                        <p:column width="2em">
+                        <p:column>
                             <f:facet name="header">
                                 <h:outputText value="Serial"/>
                             </f:facet>
@@ -284,7 +284,7 @@
                         </p:column>
 
 
-                        <p:column width="5em">
+                        <p:column style="min-width: 100px;">
                             <f:facet name="header">
                                 <h:outputText value="Date &amp; Time"/>
                             </f:facet>
@@ -294,7 +294,7 @@
                             </h:outputText>
                         </p:column>
 
-                        <p:column width="7em">
+                        <p:column style="white-space: nowrap;">
                             <f:facet name="header">
                                 <h:outputText value="Bill No"/>
                             </f:facet>
@@ -303,14 +303,14 @@
                             <p:badge value="Refunded" severity="warning" rendered="#{b.refunded}"/>
                         </p:column>
 
-                        <p:column rendered="#{webUserController.hasPrivilege('Developers')}" width="7em" style="overflow-wrap: break-word;">
+                        <p:column rendered="#{webUserController.hasPrivilege('Developers')}" style="overflow-wrap: break-word; ">
                             <f:facet name="header">
                                 <h:outputText value="Bill Type"/>
                             </f:facet>
                             <h:outputText value="#{b.billTypeAtomic}"/>
                         </p:column>
 
-                        <p:column>
+                        <p:column style="overflow-wrap: break-word;  min-width: 200px;">
                             <f:facet name="header">
                                 <h:outputText value="Patient"/>
                             </f:facet>
@@ -318,7 +318,7 @@
                             </h:outputText>
                         </p:column>
 
-                        <p:column>
+                        <p:column style="overflow-wrap: break-word; min-width: 200px;">
                             <f:facet name="header">
                                 <h:outputText value="Booked From"/>
                             </f:facet>
@@ -326,7 +326,7 @@
                             </h:outputText>
                         </p:column>
 
-                        <p:column>
+                        <p:column style="overflow-wrap: break-word;  min-width: 200px;">
                             <f:facet name="header">
                                 <h:outputText value="Channel at"/>
                             </f:facet>
@@ -342,7 +342,7 @@
                             </h:outputText>
                         </p:column>
 
-                        <p:column filterMatchMode="contains" filterBy="#{b.creditCompanyName}">
+                        <p:column filterMatchMode="contains" filterBy="#{b.creditCompanyName}" style="overflow-wrap: break-word;">
                             <f:facet name="header">
                                 <h:outputText value="Agent"/>
                             </f:facet>
@@ -350,7 +350,7 @@
                             </h:outputText>
                         </p:column>
                         
-                        <p:column style="text-align: center" filterMatchMode="contains" filterBy="#{b.paymentReference}">
+                        <p:column style="text-align: center; white-space: nowrap;" filterMatchMode="contains" filterBy="#{b.paymentReference}">
                             <f:facet name="header">
                                 <h:outputText value="Ref No"/>
                             </f:facet>
@@ -358,7 +358,7 @@
                             </h:outputText>
                         </p:column>
 
-                        <p:column class="text-end">
+                        <p:column class="text-end" style="white-space: nowrap;">
                             <f:facet name="header">
                                 <h:outputText value="Hospital Fee"/>
                             </f:facet>
@@ -372,7 +372,7 @@
                             </f:facet>
                         </p:column>
 
-                        <p:column class="text-end">
+                        <p:column class="text-end" style="white-space: nowrap;" >
                             <f:facet name="header">
                                 <h:outputText value="Doctor Fee"/>
                             </f:facet>
@@ -386,7 +386,7 @@
                             </f:facet>
                         </p:column>
 
-                        <p:column class="text-end">
+                        <p:column class="text-end"  style="white-space: nowrap;">
                             <f:facet name="header">
                                 <h:outputText value="Gross Total"/>
                             </f:facet>
@@ -401,7 +401,7 @@
                             </f:facet>
                         </p:column>
 
-                        <p:column class="text-end" rendered="#{configOptionApplicationController.getBooleanValueByKey('Add discount column to the channel income report', false)}">
+                        <p:column class="text-end" rendered="#{configOptionApplicationController.getBooleanValueByKey('Add discount column to the channel income report', false)}"  style="white-space: nowrap;">
                             <f:facet name="header">
                                 <h:outputText value="Discount"/>
                             </f:facet>
@@ -415,7 +415,7 @@
                             </f:facet>
                         </p:column>
 
-                        <p:column class="text-end" rendered="#{configOptionApplicationController.getBooleanValueByKey('Add discount column to the channel income report', false)}">
+                        <p:column class="text-end" rendered="#{configOptionApplicationController.getBooleanValueByKey('Add discount column to the channel income report', false)}"  style="white-space: nowrap;">
                             <f:facet name="header">
                                 <h:outputText value="Net Total"/>
                             </f:facet>
