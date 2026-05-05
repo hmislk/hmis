@@ -133,6 +133,7 @@ public class Payment implements Serializable, RetirableEntity {
     private boolean paymentRecordCompleted;
 
     private boolean selectedForHandover;
+    private boolean handoverProofMissing;
     private boolean selectedForCashbookEntry;
     private boolean selectedForRecording;
     private boolean selectedForRecordingConfirmation;
@@ -728,6 +729,14 @@ public class Payment implements Serializable, RetirableEntity {
 
     public void setSelectedForHandover(boolean selectedForHandover) {
         this.selectedForHandover = selectedForHandover;
+    }
+
+    public boolean isHandoverProofMissing() {
+        return handoverProofMissing;
+    }
+
+    public void setHandoverProofMissing(boolean handoverProofMissing) {
+        this.handoverProofMissing = handoverProofMissing;
     }
 
     public boolean isSelectedForRecording() {
