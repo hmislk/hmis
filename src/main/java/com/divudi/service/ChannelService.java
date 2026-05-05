@@ -2757,7 +2757,7 @@ public class ChannelService {
 
         List<Payment> p = createPayment(paidBill, paidBill.getPaymentMethod());
 
-        OnlineBooking bookingDetails = paidBill.getReferenceBill().getOnlineBooking();
+        OnlineBooking bookingDetails = preBillSession.getBill().getOnlineBooking();
         bookingDetails.setOnlineBookingPayment(agencyCharge);
         bookingDetails.setHospitalFee(paidBill.getHospitalFee());
         bookingDetails.setDoctorFee(paidBill.getStaffFee());
@@ -2765,7 +2765,7 @@ public class ChannelService {
         bookingDetails.setOnlineBookingStatus(OnlineBookingStatus.ACTIVE);
         bookingDetails.setAppoinmentTotalAmount(paidBill.getNetTotal());
 
-        getOnlineBookingFacade().edit(paidBill.getReferenceBill().getOnlineBooking());
+        getOnlineBookingFacade().edit(bookingDetails);
 
         fillBillSessionsAndUpdateBookingsCountInSessionInstance(preBillSession.getSessionInstance());
 
@@ -2809,8 +2809,8 @@ public class ChannelService {
         bi.copy(bs.getBillItem());
         bi.setCreatedAt(new Date());
         bi.setBill(b);
-        getBillItemFacade().create(bi);
-        return getBillItemFacade().find(bi.getId());
+        getBillItemFacade().createAndFlush(bi);
+        return bi;
     }
 
     private void savePaidBillFee(Bill b, BillItem bi, BillSession bs) {
