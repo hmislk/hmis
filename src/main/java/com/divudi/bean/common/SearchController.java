@@ -10558,12 +10558,15 @@ public class SearchController implements Serializable {
 
     }
 
+    private Map<String, Object> opdBillsSearchCriteria;
+
     public void searchOpdBills() {
         List<BillTypeAtomic> billTypesAtomics = new ArrayList<>();
         billTypesAtomics.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
         billTypesAtomics.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
         createTableByKeyword(billTypesAtomics, institution, department, fromInstitution, fromDepartment, toInstitution, toDepartment);
 
+        opdBillsSearchCriteria = getFiltersForOpdBillSearch();
     }
 
     public void searchOpdPackageBills() {
@@ -10606,6 +10609,8 @@ public class SearchController implements Serializable {
 
     }
 
+    private Map<String, Object> channelBillsSearchCriteria;
+
     public void searchChannelBills() {
         Date startTime = new Date();
         List<BillTypeAtomic> billTypesAtomics = new ArrayList<>();
@@ -10622,6 +10627,7 @@ public class SearchController implements Serializable {
         billTypesAtomics.add(BillTypeAtomic.CHANNEL_REFUND_WITH_PAYMENT);
         billTypesAtomics.add(BillTypeAtomic.CHANNEL_REFUND_WITH_PAYMENT_FOR_CREDIT_SETTLED_BOOKINGS);
         createTableByKeywordForChannelBills(billTypesAtomics, institution, department, fromInstitution, fromDepartment, toInstitution, toDepartment, staff, speciality);
+        channelBillsSearchCriteria = getFiltersForChannelBillSearch();
 
     }
 
@@ -23707,12 +23713,9 @@ public class SearchController implements Serializable {
     // Filters for Channel Income Report
     private Map<String, Object> getFiltersForChannelBillSearch() {
         Map<String, Object> params = new LinkedHashMap<>();
-        String dateTimeFormat = sessionController.getApplicationPreference().getLongDateTimeFormat();
-        String formattedFromDate = fromDate != null ? new SimpleDateFormat(dateTimeFormat).format(fromDate) : "Not available";
-        String formattedToDate = toDate != null ? new SimpleDateFormat(dateTimeFormat).format(toDate) : "Not available";
 
-        params.put("From Date", formattedFromDate);
-        params.put("To Date", formattedToDate);
+        params.put("From Date", fromDate);
+        params.put("To Date", toDate);
         if (searchKeyword != null) {
             params.put("Bill No", searchKeyword.getBillNo() != null && !searchKeyword.getBillNo().trim().isEmpty() ? searchKeyword.getBillNo() : "All");
             params.put("Name", searchKeyword.getPatientName() != null && !searchKeyword.getPatientName().trim().isEmpty() ? searchKeyword.getPatientName() : "All");
@@ -23729,12 +23732,9 @@ public class SearchController implements Serializable {
     // Filters for Opd Bills Report
     private Map<String, Object> getFiltersForOpdBillSearch() {
         Map<String, Object> params = new LinkedHashMap<>();
-        String dateTimeFormat = sessionController.getApplicationPreference().getLongDateTimeFormat();
-        String formattedFromDate = fromDate != null ? new SimpleDateFormat(dateTimeFormat).format(fromDate) : "Not available";
-        String formattedToDate = toDate != null ? new SimpleDateFormat(dateTimeFormat).format(toDate) : "Not available";
 
-        params.put("From Date", formattedFromDate);
-        params.put("To Date", formattedToDate);
+        params.put("From Date", fromDate);
+        params.put("To Date", toDate);
         params.put("Logged Department Only", showLoggedDepartmentOnly);
         if (searchKeyword != null) {
             params.put("Bill No", searchKeyword.getBillNo() != null && !searchKeyword.getBillNo().trim().isEmpty() ? searchKeyword.getBillNo() : "All");
@@ -23754,7 +23754,13 @@ public class SearchController implements Serializable {
 
     public ChannelBillSearch getChannelBillSearchReport() {
         String fileName = "Channel_Bills";
-        String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
+        String dates;
+        if (channelBillsSearchCriteria != null && channelBillsSearchCriteria.get("From Date") instanceof Date && channelBillsSearchCriteria.get("To Date") instanceof Date) {
+            dates = CommonFunctions.dateRangeForFileName((Date) channelBillsSearchCriteria.get("From Date"), (Date) channelBillsSearchCriteria.get("To Date"), sessionController.getApplicationPreference().getLongDateFormat());
+        } else {
+            dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
+        }
+        
         if (dates != null && !dates.isEmpty()) {
             fileName += "_" + dates;
         }
@@ -23769,7 +23775,7 @@ public class SearchController implements Serializable {
             }
         }
 
-        ChannelBillSearch oBReport = new ChannelBillSearch(fileName, institutionName, getFiltersForChannelBillSearch(), bills, userName);
+        ChannelBillSearch oBReport = new ChannelBillSearch(fileName, institutionName, channelBillsSearchCriteria != null ? channelBillsSearchCriteria : getFiltersForChannelBillSearch(), bills, userName);
 
         return oBReport;
     }
@@ -23785,7 +23791,12 @@ public class SearchController implements Serializable {
 
     public OpdBillSearch getOpdBillSearchReport() {
         String fileName = "OPD_Bills";
-        String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
+        String dates;
+        if (opdBillsSearchCriteria != null && opdBillsSearchCriteria.get("From Date") instanceof Date && opdBillsSearchCriteria.get("To Date") instanceof Date) {
+            dates = CommonFunctions.dateRangeForFileName((Date) opdBillsSearchCriteria.get("From Date"), (Date) opdBillsSearchCriteria.get("To Date"), sessionController.getApplicationPreference().getLongDateFormat());
+        } else {
+            dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
+        }
         if (dates != null && !dates.isEmpty()) {
             fileName += "_" + dates;
         }
@@ -23800,7 +23811,7 @@ public class SearchController implements Serializable {
             }
         }
 
-        OpdBillSearch oBReport = new OpdBillSearch(fileName, institutionName, getFiltersForOpdBillSearch(), bills, userName);
+        OpdBillSearch oBReport = new OpdBillSearch(fileName, institutionName, opdBillsSearchCriteria != null ? opdBillsSearchCriteria : getFiltersForOpdBillSearch(), bills, userName);
 
         return oBReport;
     }

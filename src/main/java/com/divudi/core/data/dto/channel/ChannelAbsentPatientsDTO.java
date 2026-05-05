@@ -216,7 +216,7 @@ public class ChannelAbsentPatientsDTO {
         if (billTypeAtomic == BillTypeAtomic.CHANNEL_REFUND_WITH_PAYMENT) {
             rcptNumber += "\n(Refund Bill)";
         }
-        if (billTypeAtomic == BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT) {
+        if (billTypeAtomic == BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT || billTypeAtomic == BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING) {
             rcptNumber += "\n(Cancel Bill)";
         }
 

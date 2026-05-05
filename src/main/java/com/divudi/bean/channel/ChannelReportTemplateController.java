@@ -1006,7 +1006,13 @@ public class ChannelReportTemplateController implements Serializable {
 
     public OnlineBookingCountReport getOnlineBookingCountReport() {
         String fileName = "Online_Session_Bookings_Report";
-        String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
+        String dates;
+        if (onlineBookingSessionsSC != null && onlineBookingSessionsSC.get("From Date") instanceof Date && onlineBookingSessionsSC.get("To Date") instanceof Date) {
+            dates = CommonFunctions.dateRangeForFileName((Date) onlineBookingSessionsSC.get("From Date"), (Date) onlineBookingSessionsSC.get("To Date"), sessionController.getApplicationPreference().getLongDateFormat());
+        } else {
+            dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
+        }
+
         if (dates != null && !dates.isEmpty()) {
             fileName += "_" + dates;
         }
@@ -1021,7 +1027,7 @@ public class ChannelReportTemplateController implements Serializable {
             }
         }
 
-        OnlineBookingCountReport oBReport = new OnlineBookingCountReport(fileName, institutionName, getFiltersForOnlineBookingCountReports(), onlineBookingDetialRows, userName);
+        OnlineBookingCountReport oBReport = new OnlineBookingCountReport(fileName, institutionName, onlineBookingSessionsSC != null ? onlineBookingSessionsSC : getFiltersForOnlineBookingCountReports(), onlineBookingDetialRows, userName);
         oBReport.setColumnFooter(totalNetTotalInOBReport, "Amount");
 
         return oBReport;
@@ -1043,6 +1049,8 @@ public class ChannelReportTemplateController implements Serializable {
 
         return getOnlineBookingCountReport().createExcelAsStream();
     }
+
+    private Map<String, Object> onlineBookingSessionsSC;
 
     public void generateOnlineSessionBookingsReport() {
         onlineBookingDetialRows = new ArrayList<>();
@@ -1127,6 +1135,8 @@ public class ChannelReportTemplateController implements Serializable {
             }
             totalNetTotalInOBReport += row.getPaidAmount();
         }
+        
+        onlineBookingSessionsSC = getFiltersForOnlineBookingCountReports();
     }
 
     public void fillDailyDoctorCounts() {
@@ -7953,8 +7963,8 @@ public class ChannelReportTemplateController implements Serializable {
 
         params.put("Speciality", speciality != null ? speciality.getName() : "All");
         params.put("Doctor", (staff != null && staff.getPerson() != null) ? staff.getPerson().getNameWithTitle() : "All");
-        params.put("From Date", fromDate != null ?  sdf.format(fromDate) : "N/A");
-        params.put("To Date", toDate != null ? sdf.format(toDate) : "N/A");
+        params.put("From Date", fromDate);
+        params.put("To Date", toDate);
         params.put("Institution", institution != null ? institution.getName() : "All Institutions");
         params.put("Bill Type", selectedBillTypeInOBReport != null ? selectedBillTypeInOBReport : "All");
 

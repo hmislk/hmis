@@ -7,7 +7,6 @@ import com.itextpdf.layout.properties.TextAlignment;
 public class ReportColumn<T> {
 
     String header;
-    Object footer;
     Function<T, Object> dataExtractor;
     String format;
     TextAlignment textAlignment;
@@ -28,29 +27,12 @@ public class ReportColumn<T> {
         this.columnWidth = cW;
     }
 
-    public ReportColumn(String header, Function<T, Object> dataExtractor, TextAlignment textAlignment, String format, Float cW, Object footer) {
-        this.header = header;
-        this.dataExtractor = dataExtractor;
-        this.textAlignment = textAlignment;
-        this.format = format;
-        this.footer = footer;
-        this.columnWidth = cW;
-    }
-
     public String getHeader() {
         return header;
     }
 
     public void setHeader(String header) {
         this.header = header;
-    }
-
-    public Object getFooter() {
-        return footer;
-    }
-
-    public void setFooter(Object footer) {
-        this.footer = footer;
     }
 
     public Function<T, Object> getDataExtractor() {

@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -51,6 +52,7 @@ public class Report<T> {
 
     // List<ReportColumn> columns;
     private LinkedHashMap<String, ReportColumn<T>> columns;
+    private HashMap<String, Object> footers;
     private List<T> data;
     private boolean serialNoColumnAtStart = false;
 
@@ -70,11 +72,12 @@ public class Report<T> {
     
 
     public Report() {
-
+        this.footers = new HashMap<>();
     }
 
     public Report(LinkedHashMap<String, ReportColumn<T>> columns) {
         this.columns = columns;
+        this.footers = new HashMap<>();
     }
 
     public Report(LinkedHashMap<String, ReportColumn<T>> columns, String reportName, String fileName, String institutionName, Map<String, Object> searchCriteria, List<T> data, String reportGeneratedBy) {
@@ -85,6 +88,7 @@ public class Report<T> {
         this.searchCriteria = searchCriteria;
         this.data = data;
         this.reportGeneratedBy = reportGeneratedBy;
+        this.footers = new HashMap<>();
     }
 
     public Report(Map<String, Object> searchCriteria, String reportGeneratedBy, String institutionName) {
@@ -100,6 +104,14 @@ public class Report<T> {
 
     public void setColumns(LinkedHashMap<String, ReportColumn<T>> columns) {
         this.columns = columns;
+    }
+
+    public HashMap<String, Object> getFooters() {
+        return footers;
+    }
+
+    public void setFooters(HashMap<String, Object> footers) {
+        this.footers = footers;
     }
 
     public Map<String, Object> getSearchCriteria() {
@@ -160,10 +172,8 @@ public class Report<T> {
 
 
     public void setColumnFooter(Object data, String columnKey) {
-        ReportColumn<T> c = columns.get(columnKey);
-
-        if (c != null) {
-            c.setFooter(data);
+        if (columns.containsKey(columnKey)) {
+            footers.put(columnKey, data);
         }
     }
 
@@ -374,26 +384,28 @@ public class Report<T> {
         }
 
         // Footer Row
-        Row footerRow = dataSheet.createRow(currentRow++);
-        int footerCol = 0;
-        if (serialNoColumnAtStart) {
-            footerRow.createCell(footerCol++).setCellValue("");
-        }
-        for (ReportColumn<T> column : columns.values()) {
-            Object footerValue = column.getFooter();
-            org.apache.poi.ss.usermodel.Cell cell = footerRow.createCell(footerCol++);
-            if (footerValue == null) {
-                cell.setCellValue("");
-            } else if (footerValue instanceof String)  {
-                String text = (String) footerValue;
-                cell.setCellValue(text);
-                cell.setCellStyle(centerSmallStyle);
-            } else if (footerValue instanceof Double) {
-                cell.setCellValue((Double) footerValue);
-                cell.setCellStyle(footer);
-            } else {
-                cell.setCellValue(footerValue != null ? footerValue.toString() : "");
-                cell.setCellStyle(footer);
+        if (footers != null && !footers.isEmpty()) {
+            Row footerRow = dataSheet.createRow(currentRow++);
+            int footerCol = 0;
+            if (serialNoColumnAtStart) {
+                footerRow.createCell(footerCol++).setCellValue("");
+            }
+            for (String column : columns.keySet()) {
+                Object footerValue = footers.get(column);
+                org.apache.poi.ss.usermodel.Cell cell = footerRow.createCell(footerCol++);
+                if (footerValue == null) {
+                    cell.setCellValue("");
+                } else if (footerValue instanceof String)  {
+                    String text = (String) footerValue;
+                    cell.setCellValue(text);
+                    cell.setCellStyle(centerSmallStyle);
+                } else if (footerValue instanceof Double) {
+                    cell.setCellValue((Double) footerValue);
+                    cell.setCellStyle(footer);
+                } else {
+                    cell.setCellValue(footerValue != null ? footerValue.toString() : "");
+                    cell.setCellStyle(footer);
+                }
             }
         }
 
@@ -450,7 +462,11 @@ public class Report<T> {
             Object value = entry.getValue();
 
             if (value != null) {
-                valueText = value.toString();
+                if (value instanceof Date) {
+                    valueText = new SimpleDateFormat("dd MMM yyyy hh:mm a").format(value);
+                } else {
+                    valueText = value.toString();
+                }   
             }
 
             Cell valueCell = new Cell().add(new Paragraph(valueText).setTextAlignment(TextAlignment.LEFT).setFontSize(8));
@@ -547,32 +563,37 @@ public class Report<T> {
         int i = 0;
         int span;
 
-        List<ReportColumn<T>> cols = new ArrayList<>(columns.values());
+        List<String> cols = new ArrayList<>(columns.keySet());
+
+        if (footers == null || footers.isEmpty()) {
+            return;
+        }
 
         while (i < cols.size()) {
-            ReportColumn<T> column = cols.get(i);
-            Object footerValue = column.getFooter();
+            String column = cols.get(i);
+            if (footers.containsKey(column)) {
+                Object footerValue = footers.get(column);
 
-            if (footerValue != null) {
-                String text = String.format(column.getFormat(), footerValue);
+                if (footerValue != null) {
+                    String text = String.format(columns.get(column).getFormat(), footerValue);
 
-                Cell cell = new Cell()
-                        .add(new Paragraph(text).setFont(PdfFontFactory.createFont(boldFont)))
-                        .setTextAlignment(column.getTextAlignment())
-                        .setFontSize(fontSize)
-                        .setBackgroundColor(new DeviceRgb(192, 192, 192));
+                    Cell cell = new Cell()
+                            .add(new Paragraph(text).setFont(PdfFontFactory.createFont(boldFont)))
+                            .setTextAlignment(columns.get(column).getTextAlignment())
+                            .setFontSize(fontSize)
+                            .setBackgroundColor(new DeviceRgb(192, 192, 192));
 
-                table.addCell(cell);
-                i++;
-            } 
-            else {
+                    table.addCell(cell);
+                    i++;
+                } 
+            } else {
                 if (serialNoColumnAtStart) {
                     span = 1;
                 } else {
                     span = 0;
                 }
 
-                while (i < cols.size() && cols.get(i).getFooter() == null) {
+                while (i < cols.size() && !footers.containsKey(cols.get(i))) {
                     span++;
                     i++;
                 }
@@ -650,7 +671,15 @@ public class Report<T> {
             org.apache.poi.ss.usermodel.Cell valueCell = row.createCell(pairCounter * 3 + 1);
             Object value = entry.getValue();
 
-            valueCell.setCellValue((value != null) ? value.toString() : "");
+            if (value != null) {
+                if (value instanceof Date) {
+                    valueCell.setCellValue( new SimpleDateFormat("dd MMM yyyy hh:mm a").format(value));
+                } else {
+                    valueCell.setCellValue(value.toString());
+                }
+            } else {
+                valueCell.setCellValue( "");
+            }
 
             pairCounter++;
 
@@ -708,7 +737,7 @@ public class Report<T> {
             rpCols.put("Consultant", new ReportColumn<>("Consultant", OnlineBookingDetialRow::getConsultantName, TextAlignment.LEFT, "%s", 5f));
             rpCols.put("Speciality", new ReportColumn<>("Speciality", OnlineBookingDetialRow::getConsultantSpeciality, TextAlignment.LEFT, "%s", 4f));
             rpCols.put("Session Name", new ReportColumn<>("Session Name", OnlineBookingDetialRow::getSessionName, TextAlignment.LEFT, "%s", 4f));
-            rpCols.put("Patient Name", new ReportColumn<>("Patient Name", OnlineBookingDetialRow::getPatientName, TextAlignment.LEFT, "%s", 5f, "Total Amount"));
+            rpCols.put("Patient Name", new ReportColumn<>("Patient Name", OnlineBookingDetialRow::getPatientName, TextAlignment.LEFT, "%s", 5f));
             rpCols.put("Amount", new ReportColumn<>("Amount", OnlineBookingDetialRow::getPaidAmount, TextAlignment.RIGHT, "%,.2f", 4f));
             rpCols.put("Agent", new ReportColumn<>("Agent", OnlineBookingDetialRow::getAgentName, TextAlignment.LEFT, "%s", 4f));
             rpCols.put("Phone Number", new ReportColumn<>("Phone Number", OnlineBookingDetialRow::getPatientPhone, TextAlignment.LEFT, "%s", 4f));
@@ -736,6 +765,7 @@ public class Report<T> {
             this.setData(data);
             this.setReportGeneratedBy(reportGeneratedBy);
             
+            this.setColumnFooter("Total Amount", "Patient Name");
         }
 
         @Override
@@ -746,13 +776,13 @@ public class Report<T> {
                 table.addCell(new Cell(1, 5).add(new Paragraph("")).setBackgroundColor(new DeviceRgb(192, 192, 192)));
             }
             Object footerValue;
-            
+ 
             ReportColumn<OnlineBookingDetialRow> col1 = getColumns().get("Patient Name");
-            footerValue = col1.getFooter();
+            footerValue = this.getFooters().get("Patient Name");
             table.addCell(new Cell().add(new Paragraph((footerValue != null ? String.format(col1.getFormat(), footerValue) : ""))).setFont(PdfFontFactory.createFont(getBoldFont())).setTextAlignment(col1.getTextAlignment()).setFontSize(getFontSize()).setBackgroundColor(new DeviceRgb(192, 192, 192)));
 
             ReportColumn<OnlineBookingDetialRow> col2 = getColumns().get("Amount");
-            footerValue = col2.getFooter();
+            footerValue = this.getFooters().get("Amount");
             table.addCell(new Cell().add(new Paragraph((footerValue != null ? String.format(col2.getFormat(), footerValue) : "")).setFont(PdfFontFactory.createFont(getBoldFont()))).setTextAlignment(col2.getTextAlignment()).setFontSize(getFontSize()).setBackgroundColor(new DeviceRgb(192, 192, 192)));
 
             table.addCell(new Cell(1, 3).add(new Paragraph("")).setBackgroundColor(new DeviceRgb(192, 192, 192)));
@@ -777,13 +807,13 @@ public class Report<T> {
             rpCols.put("Payment Method", new ReportColumn<>("Payment Method",
                      row -> {
                             ChannelAbsentPatientsDTO r = (ChannelAbsentPatientsDTO) row;
-                            return r.getPaymentMethod().getLabel();
+                            return r.getPaymentMethod() != null ? r.getPaymentMethod().getLabel() : "";
                     },
                     TextAlignment.LEFT,
                     "%s",
                     3f));
 
-            rpCols.put("Doctor Name", new ReportColumn<>("Doctor Name", ChannelAbsentPatientsDTO::getDoctorName, TextAlignment.LEFT, "%s", 4f, "Total"));
+            rpCols.put("Doctor Name", new ReportColumn<>("Doctor Name", ChannelAbsentPatientsDTO::getDoctorName, TextAlignment.LEFT, "%s", 4f));
             rpCols.put("Doctor Fee", new ReportColumn<>("Doctor Fee", ChannelAbsentPatientsDTO::getStaffFee, TextAlignment.RIGHT, "%,.2f", 3.5f));
             rpCols.put("Hospital Fee", new ReportColumn<>("Hospital Fee", ChannelAbsentPatientsDTO::getHospitalFee, TextAlignment.RIGHT, "%,.2f", 3.5f));
             rpCols.put("Net Total", new ReportColumn<>("Net Total", ChannelAbsentPatientsDTO::getNetTotal, TextAlignment.RIGHT, "%,.2f", 3.5f));
@@ -797,7 +827,10 @@ public class Report<T> {
             this.setInstitutionName(institutionName);
             this.setSearchCriteria(searchCriteria);
             this.setData(data);
-            this.setReportGeneratedBy(reportGeneratedBy);      
+            this.setReportGeneratedBy(reportGeneratedBy); 
+            
+            //footers
+            this.setColumnFooter("Total", "Doctor Name");
         }
         
     }
@@ -1031,7 +1064,7 @@ public class Report<T> {
                             String dept = r.getFromDepartment() != null ? r.getFromDepartment().getName() : "";
                             
                             if (r.isCancelled() && r.getCancelledBill() != null && r.getCancelledBill().getDepartment() != null) {
-                                dept += "\n(Cancelleda: " + r.getCancelledBill().getDepartment().getName() + ")";
+                                dept += "\n(Cancelled: " + r.getCancelledBill().getDepartment().getName() + ")";
                             }
                             if (r.isRefunded() && r.getRefundedBill() != null && r.getRefundedBill().getDepartment() != null) {
                                 dept += "\n(Refunded: " + r.getRefundedBill().getDepartment().getName() + ")";

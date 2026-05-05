@@ -497,6 +497,8 @@ public class ChannelReportController implements Serializable {
         return list;
     }
 
+    private Map<String, Object> cardIncomeReportSC;
+
     public void getPaymentsForChannelCardAppoinments() {
 
         if (institution == null) {
@@ -505,6 +507,8 @@ public class ChannelReportController implements Serializable {
         }
 
         cardPaymentDetails = channelService.fetchCardPaymentDetailsForChannelIncome(fromDate, toDate, institution, reportStatus);
+
+        cardIncomeReportSC = getFiltersForChannelIncomeDailySummaryReport();
     }
 
     public double calculateTotalsFromPayment(List<Payment> payments, String type) {
@@ -3408,6 +3412,7 @@ public class ChannelReportController implements Serializable {
 
     private List<ChannelAbsentPatientsDTO> absentPatients;
     private ChannelAbsentPatientsDTO summaryAbsentPatients;
+    private Map<String, Object> absentPatientsSC;
 
     // Patient Absent Report 
     // Consider temporary bookings can not be makred absent
@@ -3523,6 +3528,8 @@ public class ChannelReportController implements Serializable {
         summaryAbsentPatients.setStaffFee(totalStaffFee);
         summaryAbsentPatients.setHospitalFee(totalHosFee);
         summaryAbsentPatients.setNetTotal(totalNetTotal);
+
+        absentPatientsSC = getFiltersForPatientAbsentReports();
     }
 
     public List<Bill> getChannelBillsAbsentPatient(Staff stf, List<PaymentMethod> pms) {
@@ -5365,7 +5372,12 @@ public class ChannelReportController implements Serializable {
         channelCardIncomeReport.setColumns(columns);
 
         String fileName = "Channel_Card_Income_Report";
-        String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
+        String dates;
+        if (cardIncomeReportSC != null && cardIncomeReportSC.get("From Date") instanceof Date && cardIncomeReportSC.get("To Date") instanceof Date) {
+            dates = CommonFunctions.dateRangeForFileName((Date) cardIncomeReportSC.get("From Date"), (Date) cardIncomeReportSC.get("To Date"), sessionController.getApplicationPreference().getLongDateFormat());
+        } else {
+            dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
+        }
         if (dates != null && !dates.isEmpty()) {
             fileName += "_" + dates;
         }
@@ -5379,7 +5391,7 @@ public class ChannelReportController implements Serializable {
                 channelCardIncomeReport.setReportGeneratedBy(sessionController.getLoggedUser().getName());
             }        
         }
-        channelCardIncomeReport.setSearchCriteria(getFiltersForChannelIncomeReports());   
+        channelCardIncomeReport.setSearchCriteria(cardIncomeReportSC != null ? cardIncomeReportSC : getFiltersForChannelIncomeReports());   
         channelCardIncomeReport.setData(cardPaymentDetails.getIncomeDtos());
         channelCardIncomeReport.setColumnFooter(cardPaymentDetails.getAllHosFeeTotal(), "Hospital Fee");
         channelCardIncomeReport.setColumnFooter(cardPaymentDetails.getAllDoctorFeeTotal(), "Doctor Fee");
@@ -5399,7 +5411,12 @@ public class ChannelReportController implements Serializable {
 
     public ChannelPatientAbsentReport getPateintAbsentReport() {
         String fileName = "Patient_Absent_Report";
-        String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
+        String dates;
+        if (absentPatientsSC != null && absentPatientsSC.get("From Date") instanceof Date && absentPatientsSC.get("To Date") instanceof Date) {
+            dates = CommonFunctions.dateRangeForFileName((Date) absentPatientsSC.get("From Date"), (Date) absentPatientsSC.get("To Date"), sessionController.getApplicationPreference().getLongDateFormat());
+        } else {
+            dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
+        }
         if (dates != null && !dates.isEmpty()) {
             fileName += "_" + dates;
         }
@@ -5414,7 +5431,7 @@ public class ChannelReportController implements Serializable {
             }
         }
 
-        ChannelPatientAbsentReport pAReport = new ChannelPatientAbsentReport(fileName, institutionName, getFiltersForOnlineBookingCountReports(), absentPatients, userName);
+        ChannelPatientAbsentReport pAReport = new ChannelPatientAbsentReport(fileName, institutionName, absentPatientsSC != null ? absentPatientsSC : getFiltersForPatientAbsentReports(), absentPatients, userName);
         if (summaryAbsentPatients != null) {
             pAReport.setColumnFooter(summaryAbsentPatients.getStaffFee(), "Doctor Fee");
             pAReport.setColumnFooter(summaryAbsentPatients.getHospitalFee(), "Hospital Fee");
@@ -5459,7 +5476,7 @@ public class ChannelReportController implements Serializable {
         workbook.setSheetName(0, "Channel Card Income Report");
         sheet.shiftRows(0, sheet.getLastRowNum(), 6);
 
-        Map<String, Object> filters = getFiltersForChannelIncomeReports();
+        Map<String, Object> filters = cardIncomeReportSC != null ? cardIncomeReportSC : getFiltersForChannelIncomeReports();
 
         if (filters != null && !filters.isEmpty()) {
             pharmacyController.addMetaDataToExcelSheet(workbook, sheet, 0, "Channel Card Income Report", filters);
@@ -5594,12 +5611,12 @@ public class ChannelReportController implements Serializable {
     }
 
      // Filters for Channel Scanning Income report && Income With Agent Booking Report
-    public Map<String, Object> getFiltersForOnlineBookingCountReports() {
+    public Map<String, Object> getFiltersForPatientAbsentReports() {
         Map<String, Object> params = new LinkedHashMap<>();
         SimpleDateFormat sdf = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
 
-        params.put("From Date", fromDate != null ?  sdf.format(fromDate) : "N/A");
-        params.put("To Date", toDate != null ? sdf.format(toDate) : "N/A");
+        params.put("From Date", fromDate);
+        params.put("To Date", toDate);
         params.put("Consultant", staff != null ? (staff.getPerson() != null ? staff.getPerson().getCapitalNameWithTitle() : "N/A") : "All");
         params.put("Payment Method", getSelectedPaymentMethodsAsString());
 
@@ -5632,7 +5649,12 @@ public class ChannelReportController implements Serializable {
     // Excel Export fileName : channel income from card payment report
     public String getIncomeFromCardPaymentReportFileName() {
         String fileName = "Channel_Card_Income_Report";
-        String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
+        String dates;
+        if (cardIncomeReportSC != null && cardIncomeReportSC.get("From Date") instanceof Date && cardIncomeReportSC.get("To Date") instanceof Date) {
+            dates = CommonFunctions.dateRangeForFileName((Date) cardIncomeReportSC.get("From Date"), (Date) cardIncomeReportSC.get("To Date"), sessionController.getApplicationPreference().getLongDateFormat());
+        } else {
+            dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
+        }
         if (dates != null && !dates.isEmpty()) {
             fileName += "_" + dates;
         }
@@ -5667,9 +5689,6 @@ public class ChannelReportController implements Serializable {
     // Filters for Channel Income Daily Summary  Report
     public Map<String, Object> getFiltersForChannelIncomeDailySummaryReport() {
         Map<String, Object> params = new LinkedHashMap<>();
-        String dateTimeFormat = sessionController.getApplicationPreference().getLongDateTimeFormat();
-        String formattedFromDate = fromDate != null ? new SimpleDateFormat(dateTimeFormat).format(fromDate) : "Not available";
-        String formattedToDate = toDate != null ? new SimpleDateFormat(dateTimeFormat).format(toDate) : "Not available";
 
         String reportStatusString = "";
         if (reportStatus != null && !reportStatus.isEmpty()) {
@@ -5680,8 +5699,8 @@ public class ChannelReportController implements Serializable {
             }
         }
 
-        params.put("From Date", formattedFromDate);
-        params.put("To Date", formattedToDate);
+        params.put("From Date", fromDate);
+        params.put("To Date", toDate);
         params.put("Institution", institution != null ? institution.getName() : "All Institutions");
         params.put("Report Status", reportStatusString);
         params.put("User", webUser != null ? webUser.getName() : "All Users");
