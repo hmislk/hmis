@@ -61,9 +61,9 @@ public class PriceMatrixController implements Serializable {
         Category category;
         boolean isPaymentMethodAllowedInInwardMatrix = configOptionApplicationController.getBooleanValueByKey("Inward Matrix - Allow PaymentMethod for Inward Matrix Calculation", false);
         if (billItem.getItem() instanceof Investigation) {
-            if(configOptionApplicationController.getBooleanValueByKey("Get Category Instead of Investigation Category In Price Matrix")){
+            if (configOptionApplicationController.getBooleanValueByKey("Get Category Instead of Investigation Category In Price Matrix")) {
                 category = ((Investigation) billItem.getItem()).getCategory();
-            }else{
+            } else {
                 category = ((Investigation) billItem.getItem()).getInvestigationCategory();
             }
         } else {
@@ -455,6 +455,67 @@ public class PriceMatrixController implements Serializable {
         return paymentSchemeDiscount;
     }
 
+    // OLD: Entity-based method (kept for backward compatibility)
+    public PaymentSchemeDiscount getPaymentSchemeDiscount(PaymentMethod paymentMethod, PaymentScheme paymentScheme, Institution creditCompany, Item item) {
+        System.out.println("Start - getPaymentSchemeDiscount for Credit Company");
+
+        if (paymentMethod == null) {
+            System.out.println("Payment Method == Null ----> SKIPPED - No Payment Method selected");
+            return null;
+        }
+        
+        if (paymentScheme == null) {
+            System.out.println("Payment Scheme == Null ----> SKIPPED - No Payment Scheme selected");
+            return null;
+        }
+        
+        if (creditCompany == null) {
+            System.out.println("Credit Company == Null ----> SKIPPED - No Credit Company selected");
+            return null;
+        }
+
+        PaymentSchemeDiscount paymentSchemeDiscount = null;
+        Category category = null;
+
+        if (item != null) {
+            category = item.getCategory();
+        }
+
+        //Get Discount (Item + Credit Company)
+        System.out.println("1. Use = (Item + Credit Company)");
+        paymentSchemeDiscount = fetchPaymentSchemeDiscount(paymentScheme, creditCompany, paymentMethod, item);
+
+        if (paymentSchemeDiscount == null) {
+            System.out.println("Not Found Discount Scheme for (Item + Credit Company) ");
+            //Get Discount (Category + Credit Company)
+            System.out.println("2. Use = (Category + Credit Company)");
+            paymentSchemeDiscount = fetchPaymentSchemeDiscount(paymentScheme, creditCompany, paymentMethod, category);
+
+            if (paymentSchemeDiscount == null) {
+                System.out.println("Not Found Discount Scheme for (Category + Credit Company) ");
+                //Get Discount (Parent Category + Credit Company)
+                System.out.println("3. Use = (Parent Category + Credit Company)");
+                paymentSchemeDiscount = fetchPaymentSchemeDiscount(paymentScheme, creditCompany, paymentMethod, category.getParentCategory());
+                
+                if(paymentSchemeDiscount == null){
+                    System.out.println("Found Discount Scheme for (Category + Credit Company) = " + paymentSchemeDiscount);
+                }
+            }else{
+                System.out.println("Found Discount Scheme for (Category + Credit Company) = " + paymentSchemeDiscount);
+            }
+        }else{
+            System.out.println("Found Discount Scheme for (Item + Credit Company) = " + paymentSchemeDiscount);
+        }
+
+        if(paymentSchemeDiscount == null){
+            System.out.println("Final ---> Not Found Discount Scheme " + item.getName());
+        }else{
+            System.out.println("Final ---> Found Discount Scheme for = " + item.getName() +" --->>> "+ paymentSchemeDiscount.getId());
+        }
+
+        return paymentSchemeDiscount;
+    }
+
     // NEW: DTO-based method - returns only discount percent (optimized for performance)
     public Double getPaymentSchemeDiscountPercent(PaymentMethod paymentMethod, Department department, Item item) {
         // Skip discount calculation if no payment method is provided
@@ -585,6 +646,23 @@ public class PriceMatrixController implements Serializable {
 
     }
 
+    public PaymentSchemeDiscount fetchPaymentSchemeDiscount(PaymentScheme paymentScheme, Institution creditCompany, PaymentMethod paymentMethod, Category category) {
+        String sql;
+        HashMap hm = new HashMap();
+        hm.put("p", paymentMethod);
+        hm.put("m", paymentScheme);
+        hm.put("cc", creditCompany);
+        hm.put("cat", category);
+        sql = "Select i from PaymentSchemeDiscount i"
+                + "  where i.retired=false "
+                + " and i.paymentScheme=:m "
+                + " and i.paymentMethod=:p"
+                + " and i.creditCompany=:cc"
+                + " and i.category=:cat ";
+        return (PaymentSchemeDiscount) getPriceMatrixFacade().findFirstByJpql(sql, hm);
+
+    }
+
     public PaymentSchemeDiscount fetchPaymentSchemeDiscount(PaymentMethod paymentMethod, Category category) {
         String sql;
         HashMap hm = new HashMap();
@@ -612,6 +690,24 @@ public class PriceMatrixController implements Serializable {
                 + "  where i.retired=false "
                 + " and i.paymentScheme=:m "
                 + " and i.paymentMethod=:p"
+                + " and i.item=:i ";
+        PaymentSchemeDiscount psd = (PaymentSchemeDiscount) getPriceMatrixFacade().findFirstByJpql(jpql, params);
+        return psd;
+    }
+
+    public PaymentSchemeDiscount fetchPaymentSchemeDiscount(PaymentScheme paymentScheme, Institution creditCompany, PaymentMethod paymentMethod, Item item) {
+        System.out.println("fetchPaymentSchemeDiscount with [creditCompany + Item]");
+        String jpql;
+        HashMap params = new HashMap();
+        params.put("p", paymentMethod);
+        params.put("m", paymentScheme);
+        params.put("cc", creditCompany);
+        params.put("i", item);
+        jpql = "Select i from PaymentSchemeDiscount i"
+                + " where i.retired=false "
+                + " and i.paymentScheme=:m "
+                + " and i.paymentMethod=:p"
+                + " and i.creditCompany=:cc"
                 + " and i.item=:i ";
         PaymentSchemeDiscount psd = (PaymentSchemeDiscount) getPriceMatrixFacade().findFirstByJpql(jpql, params);
         return psd;
@@ -729,7 +825,6 @@ public class PriceMatrixController implements Serializable {
     }
 
     // NEW: DTO-based fetch methods - return only discount percent (optimized)
-
     public Double fetchPaymentSchemeDiscountPercent(PaymentScheme paymentScheme, PaymentMethod paymentMethod, Category category) {
         if (category == null) {
             return null;
@@ -994,12 +1089,12 @@ public class PriceMatrixController implements Serializable {
     // Inward Discount Matrix lookup (used by inpatient service/investigation
     // billing and surgery service add flows)
     // -------------------------------------------------------------------------
-
     /**
      * Walk the InwardDiscountMatrix for a discount percent applicable to the
-     * given bill context. Order: Item → Category → Parent Category → Department.
-     * At each level the matching scheme is preferred; if not found, a row with
-     * a null paymentScheme is accepted as a plain per-BHT/admission-type rule.
+     * given bill context. Order: Item → Category → Parent Category →
+     * Department. At each level the matching scheme is preferred; if not found,
+     * a row with a null paymentScheme is accepted as a plain
+     * per-BHT/admission-type rule.
      *
      * Returns 0.0 when no matching row exists — the caller can treat that as
      * "no discount" without any feature toggle.
@@ -1094,9 +1189,9 @@ public class PriceMatrixController implements Serializable {
 
     /**
      * Core fetch shared by both variants. When chargeTypeSpecific is true the
-     * query adds AND a.inwardChargeType = :chargeType; otherwise it adds
-     * AND a.inwardChargeType IS NULL to keep service/pharmacy rows isolated
-     * from room-charge-type rows.
+     * query adds AND a.inwardChargeType = :chargeType; otherwise it adds AND
+     * a.inwardChargeType IS NULL to keep service/pharmacy rows isolated from
+     * room-charge-type rows.
      */
     private Double fetchInwardDiscountMatrixPercentCore(PaymentMethod bhtType, PaymentScheme scheme,
             AdmissionType admissionType, Department department, Category category, Item item,
