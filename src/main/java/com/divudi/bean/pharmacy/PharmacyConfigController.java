@@ -165,6 +165,12 @@ public class PharmacyConfigController implements Serializable {
     private boolean inwardCopaymentFiveFivePaper;
     private boolean inwardCopaymentA4Paper;
 
+    // Inward Payment Bill Settings
+    private boolean inwardPaymentPosPaper;
+    private boolean inwardPaymentFiveFivePaper;
+    private boolean inwardPaymentFiveFiveCustom3Paper;
+    private boolean inwardPaymentA4Paper;
+
     // Petty Cash Settings
     private boolean pettyCashPosPaper;
     private boolean pettyCashA4Paper;
@@ -337,6 +343,12 @@ public class PharmacyConfigController implements Serializable {
         inwardCopaymentPosPaper = configOptionController.getBooleanValueByKey("Inward Copayment Bill POS Paper", true);
         inwardCopaymentFiveFivePaper = configOptionController.getBooleanValueByKey("Inward Copayment Bill Five Five Paper", false);
         inwardCopaymentA4Paper = configOptionController.getBooleanValueByKey("Inward Copayment Bill A4 Paper", false);
+
+        // Inward Payment Bill Settings
+        inwardPaymentPosPaper = configOptionController.getBooleanValueByKey("Inward Payment Bill POS Paper", true);
+        inwardPaymentFiveFivePaper = configOptionController.getBooleanValueByKey("Inward Payment Bill Five Five Paper", false);
+        inwardPaymentFiveFiveCustom3Paper = configOptionController.getBooleanValueByKey("Inward Payment Bill Five Five Custom 3 Paper", false);
+        inwardPaymentA4Paper = configOptionController.getBooleanValueByKey("Inward Payment Bill A4 Paper", false);
 
         // Petty Cash Settings
         pettyCashPosPaper = configOptionController.getBooleanValueByKey("Petty Cash Receipt POS Paper", true);
@@ -743,6 +755,22 @@ public class PharmacyConfigController implements Serializable {
             loadCurrentConfig();
         } catch (Exception e) {
             JsfUtil.addErrorMessage("Error saving Inward Copayment Bill configuration: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Save Inward Payment Bill configuration changes specifically
+     */
+    public void saveInwardPaymentConfig() {
+        try {
+            configOptionController.setBooleanValueByKey("Inward Payment Bill POS Paper", inwardPaymentPosPaper);
+            configOptionController.setBooleanValueByKey("Inward Payment Bill Five Five Paper", inwardPaymentFiveFivePaper);
+            configOptionController.setBooleanValueByKey("Inward Payment Bill Five Five Custom 3 Paper", inwardPaymentFiveFiveCustom3Paper);
+            configOptionController.setBooleanValueByKey("Inward Payment Bill A4 Paper", inwardPaymentA4Paper);
+            JsfUtil.addSuccessMessage("Inward Payment Bill configuration saved successfully");
+            loadCurrentConfig();
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error saving Inward Payment Bill configuration: " + e.getMessage());
         }
     }
 
@@ -1579,6 +1607,39 @@ public class PharmacyConfigController implements Serializable {
 
     public void setInwardCopaymentA4Paper(boolean inwardCopaymentA4Paper) {
         this.inwardCopaymentA4Paper = inwardCopaymentA4Paper;
+    }
+
+    // Inward Payment Bill Getters and Setters
+    public boolean isInwardPaymentPosPaper() {
+        return inwardPaymentPosPaper;
+    }
+
+    public void setInwardPaymentPosPaper(boolean inwardPaymentPosPaper) {
+        this.inwardPaymentPosPaper = inwardPaymentPosPaper;
+    }
+
+    public boolean isInwardPaymentFiveFivePaper() {
+        return inwardPaymentFiveFivePaper;
+    }
+
+    public void setInwardPaymentFiveFivePaper(boolean inwardPaymentFiveFivePaper) {
+        this.inwardPaymentFiveFivePaper = inwardPaymentFiveFivePaper;
+    }
+
+    public boolean isInwardPaymentFiveFiveCustom3Paper() {
+        return inwardPaymentFiveFiveCustom3Paper;
+    }
+
+    public void setInwardPaymentFiveFiveCustom3Paper(boolean inwardPaymentFiveFiveCustom3Paper) {
+        this.inwardPaymentFiveFiveCustom3Paper = inwardPaymentFiveFiveCustom3Paper;
+    }
+
+    public boolean isInwardPaymentA4Paper() {
+        return inwardPaymentA4Paper;
+    }
+
+    public void setInwardPaymentA4Paper(boolean inwardPaymentA4Paper) {
+        this.inwardPaymentA4Paper = inwardPaymentA4Paper;
     }
 
     // Patient Deposit Getters and Setters

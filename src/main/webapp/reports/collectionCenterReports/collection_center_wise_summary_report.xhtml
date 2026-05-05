@@ -157,12 +157,8 @@
                                 ajax="false" 
                                 value="PDF" 
                                 icon="fas fa-file-pdf" 
-                                class="ui-button-danger mx-1" >
-                                <p:dataExporter 
-                                    fileName="Collection_Centre_Wise_Summary_Report_#{reportController.fromDateFormatted()}_to_#{reportController.toDateFormatted()}" 
-                                    type="pdf" 
-                                    target="dtaPr" 
-                                    preProcessor="#{reportController.preProcessCollectionCenterWiseSummaryReportPDF}"/>
+                                class="ui-button-danger mx-1" 
+                                action="#{reportController.exportCollectionCenterWiseSummaryReportToPDF()}">
                             </p:commandButton>
                         </h:panelGrid>
 

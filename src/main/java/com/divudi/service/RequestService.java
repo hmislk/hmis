@@ -135,5 +135,63 @@ public class RequestService {
 
         return req;
     }
+    
+    public List<Request> fillAllRequest(
+            Date fromDate,
+            Date toDate,
+            String billNo,
+            String bhtNo,
+            String requestNo,
+            List<RequestType> requestTypes,
+            List<RequestStatus> status,
+            DepartmentType departmentType) {
+        
+        HashMap params = new HashMap();
+
+        String jpql = "Select q from Request q "
+                + " where q.retired =:ret "
+                + " and q.id is not null ";
+                
+
+        if (fromDate != null && toDate != null) {
+            jpql += " and q.createdAt between :frm and :to";
+            params.put("frm", fromDate);
+            params.put("to", toDate);
+        }
+        
+        if (requestNo != null && !requestNo.trim().equals("")) {
+            jpql += " and q.requestNo like :reqNo ";
+            params.put("reqNo", "%" + requestNo.trim() + "%");
+        }
+
+        if (billNo != null && !billNo.trim().equals("")) {
+            jpql += " and  q.bill.deptId like :billNo ";
+            params.put("billNo", "%" + billNo.trim() + "%");
+        }
+
+        if (bhtNo != null && !bhtNo.trim().equals("")) {
+            jpql += " and  q.bill.patientEncounter.bhtNo like :bht ";
+            params.put("bht", "%" + bhtNo.trim() + "%");
+        }
+
+        if (status != null) {
+            jpql += " and q.status in :status ";
+            params.put("status", status);
+        }
+
+        if (requestTypes != null) {
+            jpql += " and q.requestType in :type ";
+            params.put("type", requestTypes);
+        }
+
+        jpql += " order by q.id desc ";
+
+        params.put("ret", false);
+        
+
+        List<Request> req = requestFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+
+        return req;
+    }
 
 }

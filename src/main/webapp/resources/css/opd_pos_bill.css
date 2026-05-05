@@ -64,7 +64,7 @@
         /*        font:*/
         font-size: 11px!important; 
         /*        text-transform: uppercase!important;*/
-        page-break-after:always!important;
+        page-break-before:always!important;
 
     }
 

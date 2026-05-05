@@ -48,6 +48,12 @@
             <!-- already in the L2 cache. Avoids fetching large blobs on        -->
             <!-- every cache hit.                                               -->
             <property name="eclipselink.jdbc.result-set-access-optimization" value="true"/>
+
+            <!-- Force full persistence-unit deployment at server startup,    -->
+            <!-- moving descriptor init + session login off the first user    -->
+            <!-- request path. Deployment takes ~20s longer but no user ever  -->
+            <!-- waits for EntityManagerSetupImpl.deploy(). Issue #20138.     -->
+            <property name="eclipselink.deploy-on-startup" value="true"/>
         </properties>
     </persistence-unit>
     <persistence-unit name="hmisAuditPU" transaction-type="JTA">
@@ -56,6 +62,7 @@
         <properties>
             <property name="eclipselink.logging.level.sql" value="SEVERE"/>
             <property name="eclipselink.logging.level" value="SEVERE"/>
+            <property name="eclipselink.deploy-on-startup" value="true"/>
         </properties>
     </persistence-unit>
 </persistence>

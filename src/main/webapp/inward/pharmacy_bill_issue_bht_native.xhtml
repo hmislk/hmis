@@ -1,0 +1,620 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:phe="http://xmlns.jcp.org/jsf/composite/pharmacy/inward"
+                xmlns:phi="http://xmlns.jcp.org/jsf/composite/pharmacy"
+                xmlns:bill="http://xmlns.jcp.org/jsf/composite/inward">
+
+    <ui:define name="content">
+        <h:form id="bill">
+
+            <p:growl id="panelErrorMsg" showDetail="true" life="4000" />
+
+            <!-- Blocking overlay shown during settle -->
+            <div id="settlingOverlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:99999;align-items:center;justify-content:center;">
+                <div style="background:#fff;border-radius:8px;padding:2rem 3rem;text-align:center;box-shadow:0 4px 16px rgba(0,0,0,0.4);min-width:280px;">
+                    <i class="fa-solid fa-spinner fa-spin fa-2x text-success mb-3 d-block"></i>
+                    <h5 class="mb-1">Settling Bill</h5>
+                    <p class="text-muted mb-0 small">Please wait, do not close this page...</p>
+                </div>
+            </div>
+
+            <!-- ===================== PATIENT SELECTION ===================== -->
+            <h:panelGroup rendered="#{inpatientDirectIssueNativeSqlController.patientEncounter eq null}" class="row">
+                <div class="col-12">
+                    <p:panel styleClass="shadow-sm">
+                        <f:facet name="header">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="d-flex align-items-center">
+                                    <i class="fa-solid fa-user-injured fa-lg text-primary me-3"></i>
+                                    <div>
+                                        <h4 class="mb-1 text-primary">Patient Selection</h4>
+                                        <p class="mb-0 text-muted small">Search and select an inpatient for pharmacy bill issue (Native SQL)</p>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h:panelGroup rendered="#{webUserController.hasPrivilege('NursingWorkBench')}">
+                                        <p:commandButton
+                                            value="Nursing WorkBench"
+                                            action="#{nursingWorkBenchController.navigateToBackNursingWorkBench()}"
+                                            ajax="false"
+                                            class="ui-button-operating-theatre"
+                                            icon="fa fa-arrow-left">
+                                        </p:commandButton>
+                                    </h:panelGroup>
+                                </div>
+                            </div>
+                        </f:facet>
+
+                        <div class="row justify-content-center">
+                            <div class="col-12 col-lg-10 col-xl-8">
+                                <div class="card border-0 bg-light">
+                                    <div class="card-body p-4">
+                                        <div class="text-center mb-4">
+                                            <i class="fa-solid fa-search fa-3x text-info mb-3"></i>
+                                            <h5 class="text-dark mb-2">Find Inpatient</h5>
+                                            <p class="text-muted">Search by patient name, BHT number, or PHN to continue with medicine issuing</p>
+                                        </div>
+
+                                        <div class="row align-items-end">
+                                            <div class="col-12 col-md-9 mb-3 mb-md-0">
+                                                <label class="form-label fw-bold text-dark mb-2">
+                                                    <i class="fa-solid fa-user me-2 text-primary"></i>
+                                                    Patient Search
+                                                </label>
+                                                <p:autoComplete
+                                                    widgetVar="aPtNative"
+                                                    id="acPtNative"
+                                                    forceSelection="true"
+                                                    value="#{inpatientDirectIssueNativeSqlController.patientEncounter}"
+                                                    completeMethod="#{admissionController.completePatient}"
+                                                    var="apt"
+                                                    itemLabel="#{apt.bhtNo}"
+                                                    itemValue="#{apt}"
+                                                    placeholder="Type patient name, BHT number, or PHN..."
+                                                    minQueryLength="2"
+                                                    style="width: 100%;"
+                                                    inputStyleClass="form-control form-control-lg">
+                                                    <p:column headerText="PHN" style="padding: 8px; min-width: 100px;">
+                                                        <div class="d-flex align-items-center">
+                                                            <i class="fa-solid fa-id-card me-2 text-info"></i>
+                                                            <strong>#{apt.patient.phn}</strong>
+                                                        </div>
+                                                    </p:column>
+                                                    <p:column headerText="BHT No" style="padding: 8px; min-width: 120px;">
+                                                        <div class="d-flex align-items-center">
+                                                            <i class="fa-solid fa-hospital me-2 text-warning"></i>
+                                                            <strong class="text-primary">#{apt.bhtNo}</strong>
+                                                        </div>
+                                                    </p:column>
+                                                    <p:column headerText="Patient Name" style="padding: 8px; min-width: 250px;">
+                                                        <div class="d-flex align-items-center">
+                                                            <i class="fa-solid fa-user me-2 text-success"></i>
+                                                            <span class="fw-medium">#{apt.patient.person.nameWithTitle}</span>
+                                                        </div>
+                                                    </p:column>
+                                                    <p:column headerText="Room" style="padding: 8px; min-width: 150px;">
+                                                        <h:panelGroup rendered="#{apt.currentPatientRoom ne null}">
+                                                            <div class="d-flex align-items-center">
+                                                                <i class="fa-solid fa-bed me-2 text-secondary"></i>
+                                                                <span>#{apt.currentPatientRoom.roomFacilityCharge.name}</span>
+                                                            </div>
+                                                        </h:panelGroup>
+                                                        <h:panelGroup rendered="#{apt.currentPatientRoom eq null}">
+                                                            <span class="text-muted">
+                                                                <i class="fa-solid fa-question-circle me-1"></i>No room assigned
+                                                            </span>
+                                                        </h:panelGroup>
+                                                    </p:column>
+                                                    <p:column headerText="Status" style="padding: 8px; min-width: 120px;">
+                                                        <p:badge value="Discharged" styleClass="ui-badge-danger" rendered="#{apt.discharged}" />
+                                                        <p:badge value="Active" styleClass="ui-badge-success" rendered="#{!apt.discharged}" />
+                                                    </p:column>
+                                                </p:autoComplete>
+                                            </div>
+                                            <div class="col-12 col-md-3">
+                                                <p:commandButton
+                                                    id="btnSelect"
+                                                    value="Continue"
+                                                    ajax="false"
+                                                    class="ui-button-success w-100 btn-lg"
+                                                    style="height: 50px;"
+                                                    icon="fa-solid fa-arrow-right">
+                                                </p:commandButton>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </p:panel>
+                </div>
+            </h:panelGroup>
+
+            <!-- ===================== BILL ENTRY ===================== -->
+            <h:panelGroup rendered="#{inpatientDirectIssueNativeSqlController.patientEncounter ne null}">
+
+                <p:panel rendered="#{!inpatientDirectIssueNativeSqlController.billPreview}">
+                    <f:facet name="header">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h:outputText styleClass="fa-solid fa-pills fa-lg" />
+                                <p:outputLabel value="Direct Issue of Medicines to Inpatients (Native SQL)" class="mx-4" />
+                            </div>
+                            <div class="d-flex gap-2">
+                                <p:commandButton
+                                    value="New Bill"
+                                    ajax="false"
+                                    class="ui-button-warning"
+                                    icon="fa-solid fa-plus"
+                                    action="pharmacy_bill_issue_bht_native"
+                                    actionListener="#{inpatientDirectIssueNativeSqlController.resetAll}">
+                                </p:commandButton>
+                                <h:panelGroup rendered="#{webUserController.hasPrivilege('NursingWorkBench')}">
+                                    <p:commandButton
+                                        value="Nursing WorkBench"
+                                        action="#{nursingWorkBenchController.navigateToBackNursingWorkBench()}"
+                                        ajax="false"
+                                        class="ui-button-operating-theatre"
+                                        icon="fa fa-arrow-left">
+                                    </p:commandButton>
+                                </h:panelGroup>
+                            </div>
+                        </div>
+                    </f:facet>
+
+                    <!-- Settle button row -->
+                    <div class="row mb-3">
+                        <div class="d-flex justify-content-end align-items-center">
+                            <p:commandButton
+                                id="btnSettleNative"
+                                value="Settle"
+                                ajax="true"
+                                onclick="if(!confirm('Are you sure you want to settle this pharmacy bill issue?')){return false;} var o=document.getElementById('settlingOverlay'); o.style.display='flex'; o.style.pointerEvents='all';"
+                                oncomplete="document.getElementById('settlingOverlay').style.display='none';"
+                                ondblclick="return false;"
+                                action="#{inpatientDirectIssueNativeSqlController.settleInpatientDirectIssue()}"
+                                update="@form"
+                                class="ui-button-success mx-2"
+                                icon="fa-solid fa-check">
+                            </p:commandButton>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <!-- Patient detail panel -->
+                        <div class="col-12 col-md-3" id="gpDetail">
+                            <p:panel class="w-100">
+                                <f:facet name="header">
+                                    <h:outputText styleClass="fas fa-id-card-alt"></h:outputText>
+                                    <h:outputLabel value="Patient Details" class="mx-4"></h:outputLabel>
+                                </f:facet>
+                                <bill:bhtDetail admission="#{inpatientDirectIssueNativeSqlController.patientEncounter}"/>
+                            </p:panel>
+                        </div>
+
+                        <!-- Item entry panel -->
+                        <div class="col-12 col-md-9">
+                            <p:panel class="w-100">
+                                <f:facet name="header">
+                                    <h:outputText styleClass="fas fa-list-alt"></h:outputText>
+                                    <h:outputLabel value="Item Requests" class="mx-2"></h:outputLabel>
+                                </f:facet>
+
+                                <div class="row m-1">
+                                    <div class="col-12 col-md-5">
+                                        <p:outputLabel value="Medicine" styleClass="form-label"></p:outputLabel>
+                                        <h:panelGroup id="acStock">
+                                            <p:autoComplete
+                                                accesskey="i"
+                                                id="acStockNative"
+                                                widgetVar="acStockNativeWgt"
+                                                inputStyleClass="w-100"
+                                                minQueryLength="3"
+                                                maxResults="50"
+                                                class="w-100"
+                                                forceSelection="true"
+                                                value="#{inpatientDirectIssueNativeSqlController.selectedStockDto}"
+                                                completeMethod="#{inpatientDirectIssueNativeSqlController.completeAvailableStockOptimizedDto}"
+                                                converter="#{inpatientDirectIssueNativeSqlController.stockDtoConverter}"
+                                                var="i"
+                                                itemLabel="#{i.itemName}"
+                                                itemValue="#{i}">
+                                                <p:ajax
+                                                    event="itemSelect"
+                                                    listener="#{inpatientDirectIssueNativeSqlController.handleStockSelect}"
+                                                    process="acStockNative"
+                                                    update="focusQty txtRate txtValue panelErrorMsg" />
+                                                <p:column headerText="Item" style="padding: 8px;" styleClass="#{commonFunctionsProxy.currentDateTime gt i.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime gt i.dateOfExpire ?'ui-messages-warn':''}">
+                                                    <h:outputText value="#{i.itemName}" style="width: 300px!important;">
+                                                        <f:verbatim>&#160;</f:verbatim>
+                                                        <p:tag rendered="#{commonFunctionsProxy.currentDateTime gt i.dateOfExpire}" value="Expired" severity="danger" />
+                                                        <p:tag rendered="#{!(commonFunctionsProxy.currentDateTime gt i.dateOfExpire) and commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime gt i.dateOfExpire}" value="Expiring Soon" severity="warn" />
+                                                    </h:outputText>
+                                                </p:column>
+                                                <p:column headerText="Rate" style="padding: 8px;" class="text-end"
+                                                          rendered="#{webUserController.hasPrivilege('ShowDrugCharges')}">
+                                                    <h:outputLabel value="#{i.retailRate}" style="width: 80px!important;">
+                                                        <f:convertNumber pattern="#,##0.00"></f:convertNumber>
+                                                    </h:outputLabel>
+                                                </p:column>
+                                                <p:column headerText="Stocks" style="padding: 8px;" class="text-end">
+                                                    <h:outputLabel value="#{i.stockQty}">
+                                                        <f:convertNumber pattern="#,###"></f:convertNumber>
+                                                    </h:outputLabel>
+                                                </p:column>
+                                                <p:column headerText="Expiry" style="padding: 8px;" class="text-end">
+                                                    <h:outputLabel value="#{i.dateOfExpire}" style="width: 100px!important;">
+                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"></f:convertDateTime>
+                                                    </h:outputLabel>
+                                                </p:column>
+                                            </p:autoComplete>
+                                        </h:panelGroup>
+                                    </div>
+
+                                    <div class="col-12 col-md-2 text-end">
+                                        <p:outputLabel value="Quantity" styleClass="form-label text-end"></p:outputLabel>
+                                        <p:inputText
+                                            class="w-100 form-control text-end"
+                                            autocomplete="off"
+                                            accesskey="q"
+                                            id="txtQty"
+                                            onfocus="this.select()"
+                                            value="#{inpatientDirectIssueNativeSqlController.qty}">
+                                            <p:ajax event="keyup" process="acStockNative txtQty" update="txtRate txtValue" />
+                                            <p:ajax event="blur"  process="acStockNative txtQty" update="txtRate txtValue" />
+                                        </p:inputText>
+                                    </div>
+
+                                    <div class="col-12 col-md-2 text-end">
+                                        <p:outputLabel value="Rate" styleClass="form-label text-end"
+                                                       rendered="#{webUserController.hasPrivilege('ShowDrugCharges')}"></p:outputLabel>
+                                        <p:inputText
+                                            class="w-100 form-control text-end"
+                                            autocomplete="off"
+                                            disabled="true"
+                                            id="txtRate"
+                                            value="#{inpatientDirectIssueNativeSqlController.previewRate}"
+                                            rendered="#{webUserController.hasPrivilege('ShowDrugCharges')}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </p:inputText>
+                                    </div>
+
+                                    <div class="col-12 col-md-2 text-end">
+                                        <p:outputLabel value="Value" styleClass="form-label text-end"
+                                                       rendered="#{webUserController.hasPrivilege('ShowDrugCharges')}"></p:outputLabel>
+                                        <p:inputText
+                                            class="w-100 form-control text-end"
+                                            autocomplete="off"
+                                            disabled="true"
+                                            id="txtValue"
+                                            value="#{inpatientDirectIssueNativeSqlController.previewNetValue}"
+                                            rendered="#{webUserController.hasPrivilege('ShowDrugCharges')}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </p:inputText>
+                                    </div>
+
+                                    <div class="col-12 col-md-1">
+                                        <p:outputLabel value="&#160;&#160;" styleClass="form-label"></p:outputLabel>
+                                        <p:commandButton
+                                            accesskey="a"
+                                            id="btnAdd"
+                                            value="Add"
+                                            class="ui-button-success w-100"
+                                            icon="fa-solid fa-plus"
+                                            action="#{inpatientDirectIssueNativeSqlController.addBillItem}"
+                                            process="@this txtQty acStockNative"
+                                            update=":bill:pBillItems :bill:pBillDetails acStock txtQty txtRate txtValue panelErrorMsg"
+                                            oncomplete="pharmacyNativeRefocusItem();" />
+                                    </div>
+                                </div>
+
+                                <p:focus id="focusQty" for="txtQty"></p:focus>
+                                <p:focus id="focusItem" for="acStock"></p:focus>
+                            </p:panel>
+
+                            <script>
+                            (function() {
+                                // Wire listeners using capture phase on the form so we intercept before PrimeFaces.
+                                // The form itself is never re-created by AJAX, so one-time registration is enough.
+                                // Individual input nodes (acStock wrapper is updated) may be replaced; we re-check
+                                // by ID on every keydown — no per-node flags needed.
+
+                                var FORM_ID    = 'bill';
+                                var AC_SEL     = '#bill\\:acStockNative_input';
+                                var AC_PANEL   = 'bill:acStockNative_panel';
+                                var QTY_ID     = 'bill:txtQty';
+                                var ADD_ID     = 'bill:btnAdd';
+                                var SETTLE_ID  = 'bill:btnSettleNative';
+
+                                function onFormKeydown(e) {
+                                    if (e.key !== 'Enter') return;
+
+                                    var acInput  = document.querySelector(AC_SEL);
+                                    var qtyInput = document.getElementById(QTY_ID);
+
+                                    if (e.target === acInput) {
+                                        // Panel open → let PrimeFaces commit the selection, then we'll get another keydown
+                                        var panel = document.getElementById(AC_PANEL);
+                                        if (panel &amp;&amp; panel.style.display !== 'none') return;
+                                        // Panel closed → move to qty
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        if (qtyInput) { qtyInput.focus(); qtyInput.select(); }
+                                        return;
+                                    }
+
+                                    if (e.target === qtyInput) {
+                                        var addBtn = document.getElementById(ADD_ID);
+                                        if (addBtn) {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            addBtn.click();
+                                        }
+                                        return;
+                                    }
+
+                                    // Any other input/textarea → Settle
+                                    var tag = e.target.tagName;
+                                    if (tag === 'BUTTON' || tag === 'A') return;
+                                    var settleBtn = document.getElementById(SETTLE_ID);
+                                    if (settleBtn) {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        settleBtn.click();
+                                    }
+                                }
+
+                                // After Add AJAX completes, clear &amp; refocus the autocomplete
+                                window.pharmacyNativeRefocusItem = function() {
+                                    // Use PrimeFaces widget API to clear the autocomplete properly
+                                    setTimeout(function() {
+                                        try {
+                                            PF('acStockNativeWgt').clear();
+                                        } catch(ex) { /* widget var not set, fall back */ }
+                                        var acInput = document.querySelector(AC_SEL);
+                                        if (acInput) { acInput.value = ''; acInput.focus(); }
+                                    }, 50);
+                                };
+
+                                // Register once on the form in capture phase — survives all AJAX updates
+                                function init() {
+                                    var form = document.getElementById(FORM_ID);
+                                    if (form &amp;&amp; !form._phNavWired) {
+                                        form._phNavWired = true;
+                                        form.addEventListener('keydown', onFormKeydown, true);
+                                    }
+                                }
+
+                                document.addEventListener('DOMContentLoaded', init);
+                                document.addEventListener('pfAjaxComplete', init);
+                            })();
+                            </script>
+
+                            <!-- Bill items table -->
+                            <p:panel header="Bill Items" id="pBillItems" class="my-1">
+                                <p:dataTable
+                                    id="tblBillItems"
+                                    value="#{inpatientDirectIssueNativeSqlController.billItemDataList}"
+                                    var="bid"
+                                    rowIndexVar="s">
+                                    <p:column headerText="#" width="2em">
+                                        <h:outputText value="#{s+1}"></h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Item" style="min-width: 20em;">
+                                        <h:outputText value="#{bid.itemName}"></h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Quantity" width="8em" class="text-end">
+                                        <p:inputText
+                                            autocomplete="off"
+                                            id="ipQty"
+                                            value="#{bid.qty}"
+                                            onfocus="this.select();"
+                                            class="mx-1 text-end w-100"
+                                            styleClass="text-end w-100">
+                                            <p:ajax
+                                                event="change"
+                                                listener="#{inpatientDirectIssueNativeSqlController.onEdit(bid)}"
+                                                update=":bill:pBillItems :bill:pBillDetails panelErrorMsg" />
+                                        </p:inputText>
+                                    </p:column>
+                                    <p:column headerText="Rate" width="8em" class="text-end"
+                                              rendered="#{webUserController.hasPrivilege('ShowDrugCharges')}">
+                                        <h:outputText value="#{bid.rate}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Gross Value" width="8em" class="text-end"
+                                              rendered="#{webUserController.hasPrivilege('ShowDrugCharges')}">
+                                        <h:outputText value="#{bid.grossValue &lt; 0 ? -bid.grossValue : bid.grossValue}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                        <f:facet name="footer">
+                                            <h:outputText value="#{inpatientDirectIssueNativeSqlController.preBill.total}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </f:facet>
+                                    </p:column>
+                                    <p:column headerText="Service Charge" width="8em" class="text-end"
+                                              rendered="#{webUserController.hasPrivilege('ShowDrugCharges')}">
+                                        <h:outputText value="#{bid.marginValue}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                        <f:facet name="footer">
+                                            <h:outputText value="#{inpatientDirectIssueNativeSqlController.marginTotal}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </f:facet>
+                                    </p:column>
+                                    <p:column headerText="Discount" width="8em" class="text-end"
+                                              rendered="#{webUserController.hasPrivilege('ShowDrugCharges')}">
+                                        <h:outputText value="#{bid.discountValue}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                        <f:facet name="footer">
+                                            <h:outputText value="#{inpatientDirectIssueNativeSqlController.preBill.discount}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </f:facet>
+                                    </p:column>
+                                    <p:column headerText="Net Value" width="8em" class="text-end"
+                                              rendered="#{webUserController.hasPrivilege('ShowDrugCharges')}">
+                                        <h:outputText value="#{bid.netValue &lt; 0 ? -bid.netValue : bid.netValue}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                        <f:facet name="footer">
+                                            <h:outputText value="#{inpatientDirectIssueNativeSqlController.preBill.netTotal}">
+                                                <f:convertNumber pattern="#,##0.00"></f:convertNumber>
+                                            </h:outputText>
+                                        </f:facet>
+                                    </p:column>
+                                    <p:column headerText="Expiry" width="8em" class="text-end">
+                                        <h:outputLabel value="#{bid.doe}">
+                                            <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}"></f:convertDateTime>
+                                        </h:outputLabel>
+                                    </p:column>
+                                    <p:column headerText="Actions" width="10em" class="text-center">
+                                        <p:commandButton
+                                            class="ui-button-danger mx-1"
+                                            icon="fas fa-trash"
+                                            value="Remove"
+                                            action="#{inpatientDirectIssueNativeSqlController.removeBillItemData(bid)}"
+                                            update=":bill:pBillItems :bill:pBillDetails panelErrorMsg">
+                                        </p:commandButton>
+                                    </p:column>
+                                </p:dataTable>
+                            </p:panel>
+
+                            <p:panel header="Bill Details" id="pBillDetails" class="my-1" rendered="#{webUserController.hasPrivilege('ShowDrugCharges')}">
+                                <div class="row">
+                                    <div class="col-6 fw-bold">Gross Total</div>
+                                    <div class="col-6 text-end">
+                                        <h:outputText value="#{inpatientDirectIssueNativeSqlController.preBill.total}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </div>
+                                    <div class="col-6 fw-bold">Service Charge</div>
+                                    <div class="col-6 text-end">
+                                        <h:outputText value="#{inpatientDirectIssueNativeSqlController.marginTotal}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </div>
+                                    <div class="col-6 fw-bold">Discount</div>
+                                    <div class="col-6 text-end">
+                                        <h:outputText value="#{inpatientDirectIssueNativeSqlController.preBill.discount}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </div>
+                                    <div class="col-6 fw-bold">Net Total</div>
+                                    <div class="col-6 text-end">
+                                        <h:outputText value="#{inpatientDirectIssueNativeSqlController.preBill.netTotal}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </div>
+                                </div>
+                            </p:panel>
+                        </div>
+                    </div>
+                </p:panel>
+
+                <!-- ===================== BILL PREVIEW ===================== -->
+                <h:panelGroup rendered="#{inpatientDirectIssueNativeSqlController.billPreview}">
+                    <p:panel>
+                        <f:facet name="header">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h:outputText styleClass="fa-solid fa-screwdriver-wrench fa-lg" />
+                                    <p:outputLabel value="BHT Issue (Native SQL)" class="mx-1"/>
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <p:commandButton
+                                        id="btnPrint"
+                                        icon="fa-solid fa-print"
+                                        class="ui-button-info"
+                                        value="Print"
+                                        ajax="false">
+                                        <p:printer target="gpBillPreview"></p:printer>
+                                    </p:commandButton>
+                                    <p:commandButton
+                                        value="New Bill"
+                                        ajax="false"
+                                        class="ui-button-warning"
+                                        icon="fa-solid fa-plus"
+                                        action="pharmacy_bill_issue_bht_native?faces-redirect=true"
+                                        actionListener="#{inpatientDirectIssueNativeSqlController.resetAll}">
+                                    </p:commandButton>
+                                    <h:panelGroup rendered="#{webUserController.hasPrivilege('InwardSearch')}">
+                                        <p:commandButton
+                                            ajax="false"
+                                            value="Patient Lookup"
+                                            icon="fa fa-search"
+                                            class="ui-button-warning"
+                                            action="#{patientController.navigateToSearchPatients()}">
+                                        </p:commandButton>
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{webUserController.hasPrivilege('InwardSearch')}">
+                                        <p:commandButton
+                                            ajax="false"
+                                            icon="fa fa-user"
+                                            value="Patient Profile"
+                                            class="ui-button-success"
+                                            action="#{patientController.navigateToOpdPatientProfile()}">
+                                            <f:setPropertyActionListener
+                                                value="#{inpatientDirectIssueNativeSqlController.patientEncounter.patient}"
+                                                target="#{patientController.current}">
+                                            </f:setPropertyActionListener>
+                                        </p:commandButton>
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{webUserController.hasPrivilege('InwardSearch')}">
+                                        <p:commandButton
+                                            ajax="false"
+                                            icon="fa fa-id-card"
+                                            value="Inpatient Dashboard"
+                                            class="ui-button-secondary"
+                                            action="#{admissionController.navigateToAdmissionProfilePage}">
+                                            <f:setPropertyActionListener
+                                                value="#{inpatientDirectIssueNativeSqlController.patientEncounter}"
+                                                target="#{admissionController.current}">
+                                            </f:setPropertyActionListener>
+                                        </p:commandButton>
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{webUserController.hasPrivilege('NursingWorkBench')}">
+                                        <p:commandButton
+                                            value="Nursing WorkBench"
+                                            action="#{nursingWorkBenchController.navigateToBackNursingWorkBench()}"
+                                            ajax="false"
+                                            class="ui-button-operating-theatre"
+                                            icon="fa fa-arrow-left">
+                                        </p:commandButton>
+                                    </h:panelGroup>
+                                </div>
+                            </div>
+                        </f:facet>
+
+                        <h:panelGroup id="gpBillPreview">
+                            <h:panelGroup id="gpBillPreviewFiveFiveCustom3"
+                                          rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is FiveFiveCustom3',true)}">
+                                <phi:inward_direct_issue_bill_native_five_five_custom_3
+                                    bill="#{inpatientDirectIssueNativeSqlController.printBill}"
+                                    items="#{inpatientDirectIssueNativeSqlController.printBillItems}"/>
+                            </h:panelGroup>
+                            <h:panelGroup id="gpBillPreviewPosHeader"
+                                          rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is PosHeaderPaper',false)}">
+                                <phi:saleBill_Header_Inward_native
+                                    bill="#{inpatientDirectIssueNativeSqlController.printBill}"
+                                    items="#{inpatientDirectIssueNativeSqlController.printBillItems}"/>
+                            </h:panelGroup>
+                        </h:panelGroup>
+                    </p:panel>
+                </h:panelGroup>
+
+            </h:panelGroup>
+
+        </h:form>
+    </ui:define>
+
+</ui:composition>

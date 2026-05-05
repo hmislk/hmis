@@ -258,38 +258,42 @@
                                 </div>
                             </f:facet>
                             
-                            <p:column headerText="Bill No" width="12em" style="padding: 2px!important; margin: 0px!important;" >
-                                <h:outputText value="#{p.bill.deptId}"  style="padding: 2px!important; margin: 0px!important;" />
+                            <p:column headerText="Bill No" width="12em" style="padding: 2px!important;" >
+                                <h:outputText value="#{p.bill.deptId}"  style="" />
                             </p:column>
                             
-                            <p:column headerText="Date"   width="8em" style="padding: 2px!important; margin: 0px!important;">
-                                <h:outputText value="#{p.createdAt}"  style="padding: 2px!important; margin: 0px!important;" >
+                            <p:column headerText="Ref. Bill No" width="12em" style="padding: 2px!important;" >
+                                <h:outputText value="#{p.bill.referenceBill.deptId}" rendered="#{p.bill.referenceBill.cancelled}" />
+                            </p:column>
+                            
+                            <p:column headerText="Date" width="8em" style="padding: 6px!important;">
+                                <h:outputText value="#{p.createdAt}" >
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
                                 </h:outputText>
                             </p:column>
                               
-                            <p:column headerText="Patient Name"   width="8em" style="padding: 2px!important; margin: 0px!important;">
+                            <p:column headerText="Patient Name" style="padding: 6px!important;">
                                 <h:outputText value="#{p.bill.patient.person.nameWithTitle}"  style="padding: 2px!important; margin: 0px!important;"/>
                             </p:column>
                             
-                            <p:column headerText="Bank"   width="8em" style="padding: 2px!important; margin: 0px!important;">
-                                <h:outputText value="#{p.bank.name}"  style="padding: 2px!important; margin: 0px!important;"/>
+                            <p:column headerText="Bank" width="12em" style="padding: 6px!important;" >
+                                <h:outputText value="#{p.bank.name}" />
                             </p:column>
                             
-                            <p:column headerText="Last 4 Number"   width="8em" style="padding: 2px!important; margin: 0px!important;">
-                                <h:outputText value="#{p.creditCardRefNo}"  style="padding: 2px!important; margin: 0px!important;" />
+                            <p:column headerText="Last 4 Number" width="8em" style="padding: 6px!important; ">
+                                <h:outputText value="#{p.creditCardRefNo}" />
                             </p:column>
                             
-                            <p:column headerText="Comments"   width="8em" style="padding: 2px!important; margin: 0px!important;">
-                                <h:outputText value="#{p.comments}"  style="padding: 2px!important; margin: 0px!important;" />
+                            <p:column headerText="Comments" width="8em" style="padding: 6px!important;">
+                                <h:outputText value="#{p.comments}" />
                             </p:column>
                             
-                            <p:column headerText="Value"   width="8em" style="padding: 2px!important; margin: 0px!important;">
-                                <h:outputText value="#{p.paidValue}"  style="padding: 2px!important; margin: 0px!important;" >
+                            <p:column headerText="Value"   width="8em" style="padding: 2px!important;" class="text-end">
+                                <h:outputText value="#{p.paidValue}" class="text-end" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                                 <f:facet name="footer" >
-                                    <h:outputText value="#{laborataryReportController.totalNetTotal}" style="padding: 2px!important; margin: 0px!important;" >
+                                    <h:outputText value="#{laborataryReportController.totalNetTotal}" style="padding: 2px!important; font-weight: 700"  class="text-end">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                 </f:facet>

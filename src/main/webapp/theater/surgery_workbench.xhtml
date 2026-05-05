@@ -6,7 +6,8 @@
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
-                xmlns:in="http://xmlns.jcp.org/jsf/composite/inward">
+                xmlns:in="http://xmlns.jcp.org/jsf/composite/inward"
+                xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common">
 
 
     <ui:define name="content">
@@ -174,110 +175,94 @@
 
                     </f:facet>
 
-                    <!-- Dashboard layout: 4 columns like admission_profile.xhtml -->
+                    <!-- Dashboard layout -->
                     <div class="row">
 
-                        <!-- Column 1: Patient & Surgery Details -->
+                        <!-- Column 1 (always col-3): Patient Details; Surgery Details + Edit Surgery when id != null -->
                         <div class="col-3">
-                            <p:panel class="m-1">
-                                <f:facet name="header">
-                                    <h:outputText styleClass="fas fa-id-card-alt"/>
-                                    <h:outputLabel value="Patient Details" class="mx-4"/>
-                                </f:facet>
-                                <in:bhtDetail admission="#{surgeryBillController.surgeryBill.patientEncounter}"/>
-                            </p:panel>
+                            <common:patient_details_view patient="#{surgeryBillController.surgeryBill.patientEncounter.patient}"/>
+                            <common:admission_details admission="#{surgeryBillController.surgeryBill.patientEncounter}"/>
 
+                            <!-- Surgery Details: only when a surgery is selected -->
                             <p:panel class="m-1" rendered="#{surgeryBillController.surgeryBill.id ne null}">
                                 <f:facet name="header">
                                     <h:outputText styleClass="fa-solid fa-scissors"/>
                                     <h:outputLabel value="Surgery" class="mx-4"/>
                                 </f:facet>
-                                <in:surgeryDetail procedure="#{surgeryBillController.surgeryBill.procedure}"/>
+                                <in:surgeryDetail bill="#{surgeryBillController.surgeryBill}"/>
                             </p:panel>
 
-                            <!-- Add/Edit Surgery form — shown when no surgery is selected yet or editing -->
-                            <p:panel class="m-1">
-                                <f:facet name="header">
-                                    <h:outputText styleClass="fa-solid fa-plus-circle"/>
-                                    <h:outputLabel value="#{surgeryBillController.surgeryBill.id == null ? 'Add Surgery' : 'Edit Surgery'}" class="mx-4"/>
-                                </f:facet>
-
-                                <div class="row m-1">
-                                    <div class="col-4">
-                                        <h:outputLabel value="Surgery Name"/>
-                                    </div>
-                                    <div class="col-8">
-                                        <p:autoComplete
-                                            forceSelection="true"
-                                            value="#{surgeryBillController.surgeryBill.procedure.item}"
-                                            completeMethod="#{procedureController.completeProcedures}"
-                                            var="apt2"
-                                            itemLabel="#{apt2.name}"
-                                            itemValue="#{apt2}"
-                                            size="30">
-                                        </p:autoComplete>
-                                    </div>
-                                </div>
-
-                                <div class="d-flex gap-2 m-2">
-                                    <p:commandButton
-                                        value="Add New Surgery"
-                                        class="ui-button-success"
-                                        action="#{surgeryBillController.checkBeforeSave()}"
-                                        update="@form"
-                                        rendered="#{surgeryBillController.surgeryBill.id == null}"
-                                        disabled="#{surgeryBillController.surgeryBill.patientEncounter.paymentFinalized}">
-                                    </p:commandButton>
-                                    <p:commandButton
-                                        value="Save Edit"
-                                        class="ui-button-success"
-                                        action="#{surgeryBillController.edit()}"
-                                        ajax="false"
-                                        rendered="#{surgeryBillController.surgeryBill.id != null}"
-                                        disabled="#{surgeryBillController.surgeryBill.patientEncounter.paymentFinalized}">
-                                    </p:commandButton>
-                                </div>
-
-                                <p:dialog id="dlgDupConfirm"
-                                          widgetVar="dlgDupConfirm"
-                                          header="&#9888; Duplicate Surgery Warning"
-                                          modal="true"
-                                          resizable="false"
-                                          closable="true"
-                                          style="width:480px">
-                                    <div style="padding:12px">
-                                        <p style="color:#b71c1c; font-weight:bold; font-size:1.1em;">
-                                            &#9888; WARNING: This surgery is already recorded for this admission.
-                                        </p>
-                                        <p>
-                                            Adding the same surgery twice is <strong>highly unusual</strong> and may indicate a data-entry error.
-                                            Duplicate entries can lead to incorrect billing and audit issues.
-                                        </p>
-                                        <p style="font-weight:bold;">
-                                            Are you absolutely sure this surgery was genuinely performed a second time on this patient?
-                                        </p>
-                                        <div class="d-flex justify-content-end gap-2 mt-3">
-                                            <p:commandButton
-                                                value="Cancel — Do Not Add"
-                                                icon="fa fa-times"
-                                                class="ui-button-secondary"
-                                                onclick="PF('dlgDupConfirm').hide(); return false;"/>
-                                            <p:commandButton
-                                                value="Yes, Add Duplicate Surgery"
-                                                icon="fa fa-exclamation-triangle"
-                                                class="ui-button-danger"
-                                                action="#{surgeryBillController.saveConfirmed()}"
-                                                ajax="false"
-                                                onclick="PF('dlgDupConfirm').hide();"/>
-                                        </div>
-                                    </div>
-                                </p:dialog>
-
-                            </p:panel>
+                            <!-- Navigate to Edit Surgery page -->
+                            <h:panelGroup layout="block" styleClass="m-1"
+                                          rendered="#{surgeryBillController.surgeryBill.id ne null}">
+                                <p:commandButton
+                                    value="Edit Surgery"
+                                    icon="fa fa-pen-to-square"
+                                    class="ui-button-warning w-100"
+                                    ajax="false"
+                                    action="#{surgeryBillController.navigateToEditSurgery()}"
+                                    disabled="#{surgeryBillController.surgeryBill.patientEncounter.paymentFinalized}"/>
+                            </h:panelGroup>
                         </div>
 
-                        <!-- Column 2: Surgery Billing & Services -->
-                        <div class="col-3">
+                        <!-- Columns 2+3 when NO surgery selected: prominent "Add Surgery" card spanning col-9 -->
+                        <h:panelGroup layout="block" styleClass="col-9"
+                                      rendered="#{surgeryBillController.surgeryBill.id == null}">
+                            <div class="d-flex align-items-center justify-content-center" style="min-height: 420px;">
+                                <div style="width: 100%; max-width: 560px;">
+                                    <p:panel class="m-1">
+                                        <f:facet name="header">
+                                            <div class="d-flex align-items-center gap-2">
+                                                <h:outputText styleClass="fa-solid fa-scissors fa-lg"/>
+                                                <h:outputLabel value="Add Surgery" class="mx-2"
+                                                               style="font-size: 1.15em; font-weight: 600;"/>
+                                            </div>
+                                        </f:facet>
+
+                                        <div class="d-flex flex-column align-items-center gap-3 p-4">
+
+                                            <h:outputText styleClass="fa-solid fa-scissors"
+                                                          style="font-size: 3rem; color: #78909c; opacity: 0.55;"/>
+
+                                            <h:outputLabel value="Select a surgery to begin"
+                                                           style="font-size: 1.05em; color: #546e7a; margin-bottom: 0.25rem;"/>
+
+                                            <div class="w-100" style="max-width: 440px;">
+                                                <h:outputLabel value="Surgery Name" for="surgeryNameAC"
+                                                               style="font-weight: 500; margin-bottom: 0.35rem; display: block;"/>
+                                                <p:autoComplete
+                                                    id="surgeryNameAC"
+                                                    forceSelection="true"
+                                                    value="#{surgeryBillController.surgeryBill.procedure.item}"
+                                                    completeMethod="#{procedureController.completeProcedures}"
+                                                    var="apt2"
+                                                    itemLabel="#{apt2.name}"
+                                                    itemValue="#{apt2}"
+                                                    size="40"
+                                                    style="width: 100%;"
+                                                    styleClass="w-100">
+                                                </p:autoComplete>
+                                            </div>
+
+                                            <p:commandButton
+                                                value="Add New Surgery"
+                                                icon="fa fa-plus"
+                                                class="ui-button-success"
+                                                style="min-width: 200px; font-size: 1.05em;"
+                                                action="#{surgeryBillController.checkBeforeSave()}"
+                                                update="@form"
+                                                disabled="#{surgeryBillController.surgeryBill.patientEncounter.paymentFinalized}">
+                                            </p:commandButton>
+
+                                        </div>
+                                    </p:panel>
+                                </div>
+                            </div>
+                        </h:panelGroup>
+
+                        <!-- Column 2 (col-3): Surgery Billing buttons + Bill Details — only when surgery selected -->
+                        <h:panelGroup layout="block" styleClass="col-3"
+                                      rendered="#{surgeryBillController.surgeryBill.id ne null}">
                             <p:panel header="Surgery Billing" class="m-1">
                                 <div class="d-grid gap-3">
                                     <p:commandButton
@@ -285,8 +270,7 @@
                                         ajax="false"
                                         action="/theater/inward_bill_surgery_service?faces-redirect=true"
                                         icon="fa fa-plus-square"
-                                        class="w-100"
-                                        rendered="#{surgeryBillController.surgeryBill.id ne null}">
+                                        class="w-100">
                                         <f:setPropertyActionListener
                                             value="#{surgeryBillController.surgeryBill}"
                                             target="#{billBhtController.batchBill}"/>
@@ -298,8 +282,7 @@
                                         action="/theater/inward_bill_surgery_issue?faces-redirect=true"
                                         actionListener="#{pharmacySaleBhtController.resetAll()}"
                                         icon="fa fa-pills"
-                                        class="w-100"
-                                        rendered="#{surgeryBillController.surgeryBill.id ne null}">
+                                        class="w-100">
                                         <f:setPropertyActionListener
                                             value="#{surgeryBillController.surgeryBill}"
                                             target="#{pharmacySaleBhtController.batchBill}"/>
@@ -310,8 +293,7 @@
                                         ajax="false"
                                         action="/theater/inward_timed_service_consume_surgery?faces-redirect=true"
                                         icon="fa fa-clock"
-                                        class="w-100"
-                                        rendered="#{surgeryBillController.surgeryBill.id ne null}">
+                                        class="w-100">
                                         <f:setPropertyActionListener
                                             value="#{surgeryBillController.surgeryBill.patientEncounter}"
                                             target="#{inwardTimedItemController.current.patientEncounter}"/>
@@ -322,8 +304,7 @@
                                         ajax="false"
                                         action="#{inwardProfessionalBillController.navigateToSurgeryProfessionalFees(surgeryBillController.surgeryBill)}"
                                         icon="fa fa-user-md"
-                                        class="w-100"
-                                        rendered="#{surgeryBillController.surgeryBill.id ne null}">
+                                        class="w-100">
                                     </p:commandButton>
 
                                     <p:commandButton
@@ -331,8 +312,7 @@
                                         ajax="false"
                                         action="#{inwardProfessionalBillController.navigateToSurgeryProfessionalFeesList(surgeryBillController.surgeryBill)}"
                                         icon="fa fa-list"
-                                        class="w-100"
-                                        rendered="#{surgeryBillController.surgeryBill.id ne null}">
+                                        class="w-100">
                                     </p:commandButton>
 
                                     <p:commandButton
@@ -340,13 +320,12 @@
                                         ajax="false"
                                         action="#{surgeryBillController.navigateToSurgicalDetails(surgeryBillController.surgeryBill)}"
                                         icon="fa fa-notes-medical"
-                                        class="w-100"
-                                        rendered="#{surgeryBillController.surgeryBill.id ne null}">
+                                        class="w-100">
                                     </p:commandButton>
                                 </div>
                             </p:panel>
 
-                            <p:panel id="pBillDetails" class="m-1" rendered="#{surgeryBillController.surgeryBill.id ne null}">
+                            <p:panel id="pBillDetails" class="m-1">
                                 <f:facet name="header">
                                     <h:outputText styleClass="fas fa-file-invoice" />
                                     <h:outputLabel class="mx-4" value="Bill Details"/>
@@ -356,11 +335,12 @@
                                     <h:outputLabel value="#{surgeryBillController.surgeryBill.total}" class="m-2"/>
                                 </p:panelGrid>
                             </p:panel>
-                        </div>
+                        </h:panelGroup>
 
-                        <!-- Column 3: Summary tabs -->
-                        <div class="col-6">
-                            <p:panel class="m-1" rendered="#{surgeryBillController.surgeryBill.id ne null}">
+                        <!-- Column 3 (col-6): Summary tabs — only when surgery selected -->
+                        <h:panelGroup layout="block" styleClass="col-6"
+                                      rendered="#{surgeryBillController.surgeryBill.id ne null}">
+                            <p:panel class="m-1">
                                 <f:facet name="header">
                                     <h:outputText styleClass="fas fa-chart-bar"/>
                                     <h:outputLabel value="Surgery Summary" class="mx-4"/>
@@ -521,9 +501,45 @@
                                 </p:tabView>
 
                             </p:panel>
-                        </div>
+                        </h:panelGroup>
 
                     </div>
+
+                    <!-- Duplicate-surgery confirmation dialog — outside column structure, inside form -->
+                    <p:dialog id="dlgDupConfirm"
+                              widgetVar="dlgDupConfirm"
+                              header="&#9888; Duplicate Surgery Warning"
+                              modal="true"
+                              resizable="false"
+                              closable="true"
+                              style="width:480px">
+                        <div style="padding:12px">
+                            <p style="color:#b71c1c; font-weight:bold; font-size:1.1em;">
+                                &#9888; WARNING: This surgery is already recorded for this admission.
+                            </p>
+                            <p>
+                                Adding the same surgery twice is <strong>highly unusual</strong> and may indicate a data-entry error.
+                                Duplicate entries can lead to incorrect billing and audit issues.
+                            </p>
+                            <p style="font-weight:bold;">
+                                Are you absolutely sure this surgery was genuinely performed a second time on this patient?
+                            </p>
+                            <div class="d-flex justify-content-end gap-2 mt-3">
+                                <p:commandButton
+                                    value="Cancel — Do Not Add"
+                                    icon="fa fa-times"
+                                    class="ui-button-secondary"
+                                    onclick="PF('dlgDupConfirm').hide(); return false;"/>
+                                <p:commandButton
+                                    value="Yes, Add Duplicate Surgery"
+                                    icon="fa fa-exclamation-triangle"
+                                    class="ui-button-danger"
+                                    action="#{surgeryBillController.saveConfirmed()}"
+                                    ajax="false"
+                                    onclick="PF('dlgDupConfirm').hide();"/>
+                            </div>
+                        </div>
+                    </p:dialog>
 
                 </p:panel>
 

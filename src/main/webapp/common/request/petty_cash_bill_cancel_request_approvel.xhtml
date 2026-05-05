@@ -31,10 +31,19 @@
 
                                 <div class="row mt-2 mb-3">
                                     <div class="d-flex justify-content-end gap-2">
+                                        <p:inputText 
+                                            value="#{requestController.comment}" 
+                                            style="width: 550px;"
+                                            rendered="#{!(requestController.currentRequest.status eq 'APPROVED')}"
+                                            readonly="#{(requestController.currentRequest.status eq 'REJECTED' or requestController.currentRequest.status eq 'COMPLETED' or requestController.currentRequest.status eq 'CANCELLED')}"
+                                            placeholder="Add Reason for Reject" >
+                                        </p:inputText>
                                         <p:commandButton 
                                             ajax="false"
                                             value="Approve" 
                                             icon="fa fa-check"
+                                            onclick="if (!confirm('Are you sure you want to approve this petty cash bill?'))
+                                                        return false;"
                                             rendered="#{!(requestController.currentRequest.status eq 'APPROVED')}"
                                             disabled="#{(requestController.currentRequest.status eq 'REJECTED' or requestController.currentRequest.status eq 'COMPLETED' or requestController.currentRequest.status eq 'CANCELLED')}"
                                             class="ui-button-success" 
@@ -45,6 +54,8 @@
                                             ajax="false"
                                             value="Reject" 
                                             icon="fa fa-times"
+                                            onclick="if (!confirm('Are you sure you want to Reject this petty cash bill?'))
+                                                        return false;"
                                             rendered="#{!(requestController.currentRequest.status eq 'APPROVED')}"
                                             disabled="#{(requestController.currentRequest.status eq 'REJECTED' or requestController.currentRequest.status eq 'COMPLETED' or requestController.currentRequest.status eq 'CANCELLED')}"
                                             class="ui-button-danger" 
@@ -119,11 +130,21 @@
                                                 <div class="row mb-2">
                                                     <div class="col-4"><h:outputLabel value="Voucher No"></h:outputLabel></div>
                                                     <div class="col-8">
-                                                        <p:inputText
-                                                            class="w-100"
-                                                            value="#{requestController.currentRequest.bill.invoiceNumber}"
-                                                            disabled="#{(requestController.currentRequest.status eq 'REJECTED' or requestController.currentRequest.status eq 'APPROVED' or requestController.currentRequest.status eq 'COMPLETED' or requestController.currentRequest.status eq 'CANCELLED')}">
-                                                        </p:inputText>
+                                                        <div class="d-flex gap-2 align-items-center">
+                                                            <p:inputText
+                                                                style="width: 6em;"
+                                                                class="text-center"
+                                                                value="#{requestController.pettyCashFinancialYear}"
+                                                                readonly="#{!webUserController.hasPrivilege('PettyCashEditFinancialYear')}"
+                                                                disabled="#{(requestController.currentRequest.status eq 'REJECTED' or requestController.currentRequest.status eq 'APPROVED' or requestController.currentRequest.status eq 'COMPLETED' or requestController.currentRequest.status eq 'CANCELLED')}">
+                                                            </p:inputText>
+                                                            <h:outputLabel value="-"></h:outputLabel>
+                                                            <p:inputText
+                                                                class="w-100"
+                                                                value="#{requestController.pettyCashReceiptNo}"
+                                                                disabled="#{(requestController.currentRequest.status eq 'REJECTED' or requestController.currentRequest.status eq 'APPROVED' or requestController.currentRequest.status eq 'COMPLETED' or requestController.currentRequest.status eq 'CANCELLED')}">
+                                                            </p:inputText>
+                                                        </div>
                                                     </div>
                                                 </div>
                                                 <div class="row mb-2">
@@ -227,11 +248,39 @@
                                                         </h:outputLabel>
                                                     </div>
                                                 </div>
+
                                                 <div class="row">
                                                     <div class="col-3"><h:outputLabel value="Request Reason"></h:outputLabel></div>
                                                     <div class="col-1"><h:outputLabel value=":" class="d-flex justify-content-center"></h:outputLabel></div>
                                                     <div class="col-8"><h:outputLabel value="#{requestController.currentRequest.requestReason}"></h:outputLabel></div>
                                                 </div>
+
+                                                <h:panelGroup rendered="#{requestController.currentRequest.rejected}">
+
+                                                    <hr/>
+
+                                                    <div class="row">
+                                                        <div class="col-3"><h:outputLabel value="Rejected Reason"></h:outputLabel></div>
+                                                        <div class="col-1"><h:outputLabel value=":" class="d-flex justify-content-center"></h:outputLabel></div>
+                                                        <div class="col-8"><h:outputLabel value="#{requestController.currentRequest.rejectionReason}"></h:outputLabel></div>
+                                                    </div>
+
+                                                    <div class="row">
+                                                        <div class="col-3"><h:outputLabel value="Rejected By"></h:outputLabel></div>
+                                                        <div class="col-1"><h:outputLabel value=":" class="d-flex justify-content-center"></h:outputLabel></div>
+                                                        <div class="col-8"><h:outputLabel value="#{requestController.currentRequest.rejectedBy.webUserPerson.nameWithTitle}"></h:outputLabel></div>
+                                                    </div>
+
+                                                    <div class="row">
+                                                        <div class="col-3"><h:outputLabel value="Rejected At"></h:outputLabel></div>
+                                                        <div class="col-1"><h:outputLabel value=":" class="d-flex justify-content-center"></h:outputLabel></div>
+                                                        <div class="col-8">
+                                                            <h:outputLabel value="#{requestController.currentRequest.rejectedAt}">
+                                                                <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"></f:convertDateTime>
+                                                            </h:outputLabel>
+                                                        </div>
+                                                    </div>
+                                                </h:panelGroup>
                                             </div>
 
                                         </p:panel>

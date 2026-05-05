@@ -2914,6 +2914,18 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
 
         // Create payments using PaymentService
         List<Payment> ps = paymentService.createPayment(cancellationBill, paymentMethodData);
+
+        // For Multi payment methods, restore non-drawer balances (Staff Welfare,
+        // Patient Deposit, Staff Credit, Company Credit) per component. The 5-arg
+        // createPayment overload only writes Payment rows + drawer/cashbook; it does
+        // not touch these balances. The post-create Staff_Welfare/Credit/PatientDeposit
+        // blocks below only fire when the cancellation bill's top-level method matches,
+        // so Multi(Cash + Staff Welfare) would otherwise leave the welfare balance
+        // un-refunded. Mirrors OpdBatchBillCancellationController.cancelOpdBatchBill.
+        if (cancellationBill.getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
+            paymentService.updateBalances(ps);
+        }
+
         List<BillItem> list = cancelBillItems(getBill(), cancellationBill, ps);
 
         try {
@@ -4673,8 +4685,33 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
     }
 
     public String navigateToViewCashierShiftShortageBill(Bill bill) {
-        loadBillDetails(bill);
+        Bill shortageBill = findOriginalShiftShortageBill(bill);
+        if (shortageBill == null) {
+            JsfUtil.addErrorMessage("No shortage bill selected.");
+            return "";
+        }
+        loadBillDetails(shortageBill);
+        financialTransactionController.prepareToViewShortageBill(shortageBill);
         return "/cashier/shift_shortage_bill_reprint?faces-redirect=true";
+    }
+
+    private Bill findOriginalShiftShortageBill(Bill bill) {
+        if (bill == null) {
+            return null;
+        }
+        Bill original = bill;
+        if (bill.getBillTypeAtomic() == BillTypeAtomic.FUND_SHIFT_SHORTAGE_SETTLEMENT_BILL
+                || bill.getBillTypeAtomic() == BillTypeAtomic.FUND_SHIFT_SHORTAGE_SETTLEMENT_BILL_CANCELLED) {
+            Bill referenceBill = bill.getReferenceBill();
+            if (referenceBill == null || referenceBill.getId() == null) {
+                return null;
+            }
+            original = billFacade.find(referenceBill.getId());
+        }
+        if (original == null || original.getBillTypeAtomic() != BillTypeAtomic.FUND_SHIFT_SHORTAGE_BILL) {
+            return null;
+        }
+        return original;
     }
 //    //to do
 //    public String navigateToViewOpdProfessionalPaymentBill() {
@@ -5874,6 +5911,7 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
             case OPERATIONAL_EXPENSES_CANCELLED:
                 return navigateToManageCancelExpenseBill();
             case FUND_SHIFT_SHORTAGE_BILL:
+            case FUND_SHIFT_SHORTAGE_SETTLEMENT_BILL:
                 return navigateToViewCashierShiftShortageBill(bill);
             //                opdBillController.setBill(bill);
 //                return opdBillController.navigateToViewPackageBatchBill();

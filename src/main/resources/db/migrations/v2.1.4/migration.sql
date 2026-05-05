@@ -37,24 +37,16 @@ WHERE TABLE_SCHEMA = DATABASE()
   AND (TABLE_NAME = 'USER_STOCK' OR TABLE_NAME = 'userstock')
 ORDER BY INDEX_NAME;
 
--- Count total records to estimate impact (only if tables exist)
--- Note: Direct count queries avoid PREPARE statement issues with statement-by-statement execution
-SELECT 'Counting records in USER_STOCK/userstock tables...' AS status;
-
--- Try uppercase table first
-SELECT CONCAT('Total records in USER_STOCK: ', COUNT(*)) AS record_count
-FROM USER_STOCK
-WHERE (SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'USER_STOCK') > 0
-UNION ALL
--- Try lowercase table if uppercase doesn't exist
-SELECT CONCAT('Total records in userstock: ', COUNT(*)) AS record_count
-FROM userstock
-WHERE (SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'userstock') > 0
-   AND (SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'USER_STOCK') = 0
-UNION ALL
--- Show message if neither table exists
-SELECT 'No USER_STOCK/userstock table found - cannot count records' AS record_count
-WHERE (SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME IN ('USER_STOCK', 'userstock')) = 0;
+-- Report which USER_STOCK/userstock table variants exist.
+-- NOTE: UNION ALL across both casings cannot be used here — MySQL validates all table
+-- references at parse time before any WHERE guard executes, throwing error 1146 when
+-- the table exists only under one casing (e.g. userstock on Linux, USER_STOCK on Windows).
+-- Use INFORMATION_SCHEMA only — always present regardless of table casing.
+SELECT 'Checking USER_STOCK/userstock table existence via INFORMATION_SCHEMA...' AS status;
+SELECT CONCAT('USER_STOCK/userstock table variants found: ', COUNT(*)) AS table_variant_count
+FROM INFORMATION_SCHEMA.TABLES
+WHERE TABLE_SCHEMA = DATABASE()
+  AND TABLE_NAME IN ('USER_STOCK', 'userstock');
 
 -- ==========================================
 -- STEP 1: CHECK IF INDEX ALREADY EXISTS

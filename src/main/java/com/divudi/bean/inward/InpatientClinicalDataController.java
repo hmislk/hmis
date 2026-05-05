@@ -43,9 +43,12 @@ import com.divudi.core.entity.lab.PatientInvestigation;
 import com.divudi.core.entity.lab.PatientReportItemValue;
 import com.divudi.core.entity.pharmacy.Amp;
 import com.divudi.core.entity.pharmacy.Vmp;
+import com.divudi.core.data.inward.PatientEncounterComponentType;
+import com.divudi.core.entity.inward.EncounterComponent;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.ClinicalEntityFacade;
 import com.divudi.core.facade.ClinicalFindingValueFacade;
+import com.divudi.core.facade.EncounterComponentFacade;
 import com.divudi.core.facade.ItemUsageFacade;
 import com.divudi.core.facade.PatientEncounterFacade;
 import com.divudi.core.facade.PatientFacade;
@@ -121,6 +124,8 @@ public class InpatientClinicalDataController implements Serializable {
     PatientFacade patientFacade;
     @EJB
     BillFacade billFacade;
+    @EJB
+    EncounterComponentFacade encounterComponentFacade;
     @EJB
     PatientInvestigationFacade piFacade;
     @EJB
@@ -1043,6 +1048,14 @@ public class InpatientClinicalDataController implements Serializable {
 
         String clinicalSummary = buildClinicalDataSummary(current);
         String systemPrompt = buildDiagnosisCardSystemPrompt();
+        String cardTitle = "AI Generated Diagnosis Card";
+        if (selectedDocumentTemplate != null
+                && selectedDocumentTemplate.getContents() != null
+                && !selectedDocumentTemplate.getContents().trim().isEmpty()) {
+            systemPrompt += "\n\nTEMPLATE INSTRUCTIONS (follow these exactly while preserving the rules above):\n"
+                    + selectedDocumentTemplate.getContents().trim();
+            cardTitle = selectedDocumentTemplate.getName();
+        }
 
         try {
             AnthropicApiService.AnthropicResponse response = anthropicApiService.sendMessage(
@@ -1076,7 +1089,7 @@ public class InpatientClinicalDataController implements Serializable {
             ClinicalFindingValue ref = new ClinicalFindingValue();
             ref.setClinicalFindingValueType(ClinicalFindingValueType.VisitDocument);
             ref.setLobValue(html);
-            ref.setStringValue("AI Generated Diagnosis Card");
+            ref.setStringValue(cardTitle);
             ref.setEncounter(current);
             ref.setOrderNo(getEncounterDocuments().size() + 1);
             clinicalFindingValueFacade.create(ref);
@@ -1095,20 +1108,23 @@ public class InpatientClinicalDataController implements Serializable {
         String name = e.getPatient().getPerson().getNameWithTitle();
         String age = e.getPatient().getPerson().getAgeAsString() != null ? e.getPatient().getPerson().getAgeAsString() : "";
         String sex = e.getPatient().getPerson().getSex() != null ? e.getPatient().getPerson().getSex().name() : "";
-        String address = e.getPatient().getPerson().getAddress() != null ? e.getPatient().getPerson().getAddress() : "";
-        String phone = e.getPatient().getPerson().getPhone() != null ? e.getPatient().getPerson().getPhone() : "";
         String bht = e.getBhtNo() != null ? e.getBhtNo() : "";
         String doa = CommonFunctions.formatDate(e.getDateOfAdmission(), sessionController.getApplicationPreference().getLongDateFormat());
+        String institutionName = (e.getInstitution() != null && e.getInstitution().getName() != null)
+                ? e.getInstitution().getName() : sessionController.getInstitution() != null ? sessionController.getInstitution().getName() : "";
+
+        // Prefer the confirmed clinical discharge datetime on the admission; fall back to encounter discharge date
         String dod;
-        if (e.getDateOfDischarge() == null) {
-            dod = CommonFunctions.formatDate(new Date(), sessionController.getApplicationPreference().getLongDateFormat()) + " (still admitted)";
-        } else {
+        if (e.getClinicalDischargeDateTime() != null) {
+            dod = CommonFunctions.formatDate(e.getClinicalDischargeDateTime(), sessionController.getApplicationPreference().getLongDateFormat());
+        } else if (e.getDateOfDischarge() != null) {
             dod = CommonFunctions.formatDate(e.getDateOfDischarge(), sessionController.getApplicationPreference().getLongDateFormat());
+        } else {
+            dod = CommonFunctions.formatDate(new Date(), sessionController.getApplicationPreference().getLongDateFormat()) + " (still admitted)";
         }
 
+        sb.append("INSTITUTION: ").append(institutionName).append("\n");
         sb.append("PATIENT: ").append(name).append(", ").append(age).append(", ").append(sex).append("\n");
-        sb.append("ADDRESS: ").append(address).append("\n");
-        sb.append("PHONE: ").append(phone).append("\n");
         sb.append("BHT: ").append(bht).append(", DOA: ").append(doa).append(", DOD: ").append(dod).append("\n\n");
 
         List<PatientEncounter> assessments = fillAssessmentsForEncounter(e);
@@ -1202,9 +1218,67 @@ public class InpatientClinicalDataController implements Serializable {
         if (!hasProc) sb.append("  No procedures performed\n");
         sb.append("\n");
 
+        // Surgery details from theater
+        Map<String, Object> surgParams = new HashMap<>();
+        surgParams.put("bt", BillType.SurgeryBill);
+        surgParams.put("pe", e);
+        surgParams.put("ret", false);
+        List<Bill> surgeryBills = billFacade.findByJpql(
+                "select b from Bill b where b.billType=:bt and b.patientEncounter=:pe and b.retired=:ret order by b.createdAt",
+                surgParams);
+        if (surgeryBills != null && !surgeryBills.isEmpty()) {
+            sb.append("SURGERIES / OPERATIONS:\n");
+            for (Bill surgBill : surgeryBills) {
+                PatientEncounter proc = surgBill.getProcedure();
+                String surgName = (proc != null && proc.getItem() != null)
+                        ? proc.getItem().getName()
+                        : (surgBill.getItem() != null ? surgBill.getItem().getName() : "Surgery");
+                sb.append("  Procedure: **").append(surgName).append("**\n");
+                if (proc != null && proc.getFromTime() != null) {
+                    sb.append("  Start: ").append(proc.getFromTime()).append("\n");
+                }
+                if (proc != null && proc.getToTime() != null) {
+                    sb.append("  End: ").append(proc.getToTime()).append("\n");
+                }
+                if (proc != null) {
+                    // Surgical team
+                    Map<String, Object> compParams = new HashMap<>();
+                    compParams.put("proc", proc);
+                    compParams.put("ret", false);
+                    List<EncounterComponent> components = encounterComponentFacade.findByJpql(
+                            "select ec from EncounterComponent ec where ec.patientEncounter=:proc and ec.retired=:ret",
+                            compParams);
+                    if (components != null) {
+                        for (EncounterComponent ec : components) {
+                            if (ec.getPatientEncounterComponentType() == null || ec.getStaff() == null) continue;
+                            String staffName = ec.getStaff().getPerson() != null ? ec.getStaff().getPerson().getNameWithTitle() : ec.getStaff().getName();
+                            switch (ec.getPatientEncounterComponentType()) {
+                                case Performed_By:
+                                    sb.append("  Surgeon: ").append(staffName).append("\n");
+                                    break;
+                                case Assisted_by:
+                                    sb.append("  Assistant: ").append(staffName).append("\n");
+                                    break;
+                                case Ananesthesia_by:
+                                    sb.append("  Anaesthetist: ").append(staffName).append("\n");
+                                    break;
+                                default:
+                                    break;
+                            }
+                        }
+                    }
+                    if (proc.getComments() != null && !proc.getComments().isEmpty()) {
+                        sb.append("  Operative Notes: ").append(proc.getComments()).append("\n");
+                    }
+                }
+            }
+            sb.append("\n");
+        }
+
         sb.append("INPATIENT MEDICATIONS (Rx):\n");
+        boolean hasRx = false;
         for (ClinicalFindingValue cf : getEncounterMedicines()) {
-            if (cf != null && cf.getPrescription() != null && !cf.getPrescription().isIndoor()) {
+            if (cf != null && cf.getPrescription() != null) {
                 String rxName = cf.getPrescription().getItem() != null ? cf.getPrescription().getItem().getName() : "";
                 String dose = cf.getPrescription().getDose() != null ? String.format("%.0f", cf.getPrescription().getDose()) : "";
                 String doseUnit = cf.getPrescription().getDoseUnit() != null ? cf.getPrescription().getDoseUnit().getName() : "";
@@ -1213,13 +1287,16 @@ public class InpatientClinicalDataController implements Serializable {
                 String durUnit = cf.getPrescription().getDurationUnit() != null ? cf.getPrescription().getDurationUnit().getName() : "";
                 sb.append("  - ").append(rxName).append(" ").append(dose).append(" ").append(doseUnit)
                   .append(" ").append(freqUnit).append(" ").append(dur).append(" ").append(durUnit).append("\n");
+                hasRx = true;
             }
         }
+        if (!hasRx) sb.append("  None\n");
         sb.append("\n");
 
         sb.append("DISCHARGE MEDICATIONS (DRx):\n");
+        boolean hasDrx = false;
         for (ClinicalFindingValue cf : getDischargeMedicines()) {
-            if (cf != null && cf.getPrescription() != null && cf.getPrescription().isIndoor()) {
+            if (cf != null && cf.getPrescription() != null) {
                 String rxName = cf.getPrescription().getItem() != null ? cf.getPrescription().getItem().getName() : "";
                 String dose = cf.getPrescription().getDose() != null ? String.format("%.0f", cf.getPrescription().getDose()) : "";
                 String doseUnit = cf.getPrescription().getDoseUnit() != null ? cf.getPrescription().getDoseUnit().getName() : "";
@@ -1228,8 +1305,10 @@ public class InpatientClinicalDataController implements Serializable {
                 String durUnit = cf.getPrescription().getDurationUnit() != null ? cf.getPrescription().getDurationUnit().getName() : "";
                 sb.append("  - ").append(rxName).append(" ").append(dose).append(" ").append(doseUnit)
                   .append(" ").append(freqUnit).append(" ").append(dur).append(" ").append(durUnit).append("\n");
+                hasDrx = true;
             }
         }
+        if (!hasDrx) sb.append("  None\n");
         sb.append("\n");
 
         sb.append("ROUTINE MEDICINES:\n");
@@ -1243,6 +1322,44 @@ public class InpatientClinicalDataController implements Serializable {
             }
         }
         sb.append("\n");
+
+        // Clinical discharge details
+        Map<String, Object> dischargeParams = new HashMap<>();
+        dischargeParams.put("parent", e);
+        dischargeParams.put("type", PatientEncounterType.ClinicalDischarge);
+        dischargeParams.put("ret", false);
+        List<PatientEncounter> dischargeRecords = ejbFacade.findByJpql(
+                "select pe from PatientEncounter pe where pe.parentEncounter=:parent and pe.patientEncounterType=:type and pe.retired=:ret order by pe.id desc",
+                dischargeParams, 1);
+        if (dischargeRecords != null && !dischargeRecords.isEmpty()) {
+            PatientEncounter dr = dischargeRecords.get(0);
+            sb.append("CLINICAL DISCHARGE DETAILS:\n");
+            if (dr.getDischargeCondition() != null && dr.getDischargeCondition().getName() != null) {
+                sb.append("  Discharge Condition: ").append(dr.getDischargeCondition().getName()).append("\n");
+            }
+            if (dr.getComments() != null && !dr.getComments().isEmpty()) {
+                sb.append("  Discharge Summary: ").append(dr.getComments()).append("\n");
+            }
+            List<ClinicalFindingValue> dischargeDiagnoses = fillEncounterDiagnoses(dr);
+            if (dischargeDiagnoses != null && !dischargeDiagnoses.isEmpty()) {
+                sb.append("  Discharge Diagnoses:\n");
+                for (ClinicalFindingValue dx : dischargeDiagnoses) {
+                    if (dx != null && dx.getItemValue() != null) {
+                        sb.append("    - ").append(dx.getItemValue().getName()).append("\n");
+                    }
+                }
+            }
+            if (dr.getFollowUpPlan() != null && !dr.getFollowUpPlan().isEmpty()) {
+                sb.append("  Follow-Up Plan: ").append(dr.getFollowUpPlan()).append("\n");
+            }
+            if (dr.getActivityInstructions() != null && !dr.getActivityInstructions().isEmpty()) {
+                sb.append("  Activity Instructions: ").append(dr.getActivityInstructions()).append("\n");
+            }
+            if (dr.getDietInstructions() != null && !dr.getDietInstructions().isEmpty()) {
+                sb.append("  Diet Instructions: ").append(dr.getDietInstructions()).append("\n");
+            }
+            sb.append("\n");
+        }
 
         String comments = current.getComments() != null ? current.getComments() : "";
         if (!comments.isEmpty()) {
@@ -1262,7 +1379,11 @@ public class InpatientClinicalDataController implements Serializable {
                 + "4. OMIT any section that has no meaningful data (do not show empty sections).\n"
                 + "5. NEVER fabricate, infer, or add clinical data that is not provided. Only use the data given.\n"
                 + "6. Use professional medical formatting: proper headings, clean borders, readable font sizes.\n"
-                + "7. The card should fit on an A4 page when printed.\n\n"
+                + "7. The card should fit on an A4 page when printed.\n"
+                + "8. The INSTITUTION name (if provided) must appear prominently in the header in bold.\n"
+                + "9. Procedure/surgery names must always be rendered in <b>bold</b>.\n"
+                + "10. Surgeon and Anaesthetist names (if provided) must appear clearly labelled under the surgery section.\n"
+                + "11. DOD must be taken from the clinical discharge record date; if it shows '(still admitted)' render it in a distinct colour (e.g. orange).\n\n"
                 + "SAMPLE TEMPLATE STRUCTURE (adapt loosely, do not copy verbatim):\n"
                 + SAMPLE_DIAGNOSIS_CARD_TEMPLATE;
     }

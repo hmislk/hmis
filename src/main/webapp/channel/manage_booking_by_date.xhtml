@@ -496,7 +496,7 @@
                                                     <p:ajax process="@this" 
                                                             update="gdManageBookings :#{p:resolveFirstComponentWithId('totalsPanel',view).clientId} paymentDetails"
                                                             event="change"
-                                                            listener="#{bookingControllerViewScope.calculateSelectedBillSessionTotalForSettling()}"/>
+                                                            listener="#{bookingControllerViewScope.calculateSelectedBillSessionTotalForSettlingByBillFees()}"/>
                                                 </p:selectOneMenu>
 
                                                 <p:outputLabel value="Discount Scheme"/>
@@ -515,7 +515,7 @@
                                                         process="@this "
                                                         update="gdManageBookings :#{p:resolveFirstComponentWithId('totalsPanel',view).clientId} paymentDetails lstItems"
                                                         event="change"
-                                                        listener="#{bookingControllerViewScope.calculateSelectedBillSessionTotalForSettling()}"/>
+                                                        listener="#{bookingControllerViewScope.calculateSelectedBillSessionTotalForSettlingByBillFees()}"/>
                                                 </p:selectOneMenu>
 
                                                 <p:outputLabel value="Citizenship" ></p:outputLabel>
@@ -807,7 +807,7 @@
                                                 icon="fas fa-plus"
                                                 class="ui-button-success"
                                                 action="#{bookingControllerViewScope.addItemToBookingAtSettling()}"
-                                                update="lstItems tblBillItemsForAddingNewItem tblBillFeesForAddingNewItem totalsPanel gdManageBookings balance :#{p:resolveFirstComponentWithId('balance',view).clientId} "
+                                                update="paymentDetails lstItems tblBillItemsForAddingNewItem tblBillFeesForAddingNewItem totalsPanel gdManageBookings balance :#{p:resolveFirstComponentWithId('balance',view).clientId} "
                                                 ></p:commandButton>
 
                                             <p:dataTable id="tblBillItemsForAddingNewItem" 
@@ -822,10 +822,11 @@
                                                 <p:column >
                                                     <p:commandButton 
                                                         id="btnRemove"
-                                                        ajax="false"
                                                         icon="fas fa-trash"
                                                         disabled="#{bookingControllerViewScope.checkItemIsSessionInstance(bi)}"
                                                         class="ui-button-danger"
+                                                        update="@form"
+                                                        process="@this"
                                                         action="#{bookingControllerViewScope.removeAddedAditionalItem()}"
                                                         >
                                                         <f:setPropertyActionListener target="#{bookingControllerViewScope.selectedBillItem}" value="#{bi}"/>
@@ -1619,15 +1620,16 @@
                         </p:tab>
 
                         <p:tab title="Status" id="statusTab">
-                            <p:outputLabel value="Mark As Present / Absent"/>
+                            <div class="d-flex gap-2 align-items-center">
+                                <p:outputLabel value="Mark As Present / Absent "/>
 
-                            <p:selectBooleanButton onLabel="Absent" offLabel="Absent" disabled="#{bookingControllerViewScope.selectedBillSession.bill.refunded==true
-                                                                                                  or bookingControllerViewScope.selectedBillSession.bill.cancelled==true or bookingControllerViewScope.checkPaid()}"  value="#{bookingControllerViewScope.absent}" >
-                                <p:ajax process="@this" update="statusTab" listener="#{bookingControllerViewScope.updatePresentStatusOfPatient(bookingControllerViewScope.absent)}" ></p:ajax>
-                            </p:selectBooleanButton>
+                                <p:selectBooleanButton onLabel="Absent" offLabel="Absent" disabled="#{bookingControllerViewScope.selectedBillSession.bill.refunded==true
+                                                                                                    or bookingControllerViewScope.selectedBillSession.bill.cancelled==true or bookingControllerViewScope.checkPaid()}"  value="#{bookingControllerViewScope.absent}" >
+                                    <p:ajax process="@this" listener="#{bookingControllerViewScope.updatePresentStatusOfPatient(bookingControllerViewScope.absent)}" ></p:ajax>
+                                </p:selectBooleanButton>
 
-                            <p:outputLabel class="mx-3" value="Can't change the status. Staff pay already done for this appoinment." rendered="#{bookingControllerViewScope.checkPaid()}" style="color: red; font-weight: bold"/>
-
+                                <p:outputLabel class="mx-3" value="Can't change the status. Staff pay already done for this appointment." rendered="#{bookingControllerViewScopeMonth.checkPaid()}" style="color: red; font-weight: bold"/>
+                            </div>
                         </p:tab>
 
                         <p:tab title="Search" rendered="false">
@@ -1773,33 +1775,37 @@
 
 
                         <p:tab title="Views">
-                            <h:panelGrid columns="2">
-                                <p:panel header="Selected Session">
-                                    <h:panelGrid columns="1">
-                                        <p:commandButton value="Nurse View " 
-                                                         action="#{bookingControllerViewScope.navigateToNurseView}" 
-                                                         onclick="onSubmitButton();" >                                       
-                                        </p:commandButton>
-                                        <p:commandButton value="Doctor View " action="#{bookingControllerViewScope.navigateToDoctorView}" ajax="false" onclick="onSubmitButton();">                                        
-                                        </p:commandButton>
-                                        <p:commandButton value="Session View " action="#{bookingControllerViewScope.navigateToSessionView}" ajax="false" onclick="onSubmitButton();">                                        
-                                        </p:commandButton>
-                                        <p:commandButton value="Phone View " action="#{bookingControllerViewScope.navigateToPhoneView}" ajax="false" onclick="onSubmitButton();">                                        
-                                        </p:commandButton>
-                                        <p:commandButton value="User View " action="#{bookingControllerViewScope.navigateToUserView}" ajax="false" onclick="onSubmitButton();">                                        
-                                        </p:commandButton>
-                                    </h:panelGrid>
 
-                                </p:panel>
-                                <p:panel header="Today's">
-                                    <h:panelGrid columns="1">
-                                        <p:commandButton value="All Patient" action="channel_patient_view_today" ajax="false" onclick="onSubmitButton();">                                        
-                                        </p:commandButton>
-                                        <p:commandButton value="All Doctor" action="channel_doctor_view_today" ajax="false" onclick="onSubmitButton();">                                        
-                                        </p:commandButton>
-                                    </h:panelGrid>                                    
-                                </p:panel>
-                            </h:panelGrid>
+                            <div class="row">
+                                <div class="col-2">
+                                    <p:panel header="Selected Session">
+                                        <div class="d-flex flex-column gap-2">
+                                            <p:commandButton value="Nurse View " 
+                                                            action="#{bookingControllerViewScope.navigateToNurseView}" 
+                                                            onclick="onSubmitButton();" >                                       
+                                            </p:commandButton>
+                                            <p:commandButton value="Doctor View " action="#{bookingControllerViewScope.navigateToDoctorView}" ajax="false" onclick="onSubmitButton();">                                        
+                                            </p:commandButton>
+                                            <p:commandButton value="Session View " action="#{bookingControllerViewScope.navigateToSessionView}" ajax="false" onclick="onSubmitButton();">                                        
+                                            </p:commandButton>
+                                            <p:commandButton value="Phone View " action="#{bookingControllerViewScope.navigateToPhoneView}" ajax="false" onclick="onSubmitButton();">                                        
+                                            </p:commandButton>
+                                            <p:commandButton value="User View " action="#{bookingControllerViewScope.navigateToUserView}" ajax="false" onclick="onSubmitButton();">                                        
+                                            </p:commandButton>
+                                        </div>
+                                    </p:panel>
+                                </div>
+                                <div class="col-2">
+                                    <p:panel header="Today's">
+                                        <div class="d-flex flex-column gap-2">
+                                            <p:commandButton value="All Patient" action="channel_patient_view_today" ajax="false" onclick="onSubmitButton();">                                        
+                                            </p:commandButton>
+                                            <p:commandButton value="All Doctor" action="channel_doctor_view_today" ajax="false" onclick="onSubmitButton();">                                        
+                                            </p:commandButton>
+                                        </div>
+                                    </p:panel>
+                                </div>
+                            </div>
 
                         </p:tab>
                         <p:tab title="Doctor Payment">

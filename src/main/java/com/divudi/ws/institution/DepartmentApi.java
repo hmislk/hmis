@@ -91,10 +91,6 @@ public class DepartmentApi {
             String institutionIdStr = uriInfo.getQueryParameters().getFirst("institutionId");
             String limitStr = uriInfo.getQueryParameters().getFirst("limit");
 
-            if (query == null || query.trim().isEmpty()) {
-                return errorResponse("Query parameter is required", 400);
-            }
-
             // Parse department type if provided
             DepartmentType type = null;
             if (typeStr != null && !typeStr.trim().isEmpty()) {
@@ -115,6 +111,12 @@ public class DepartmentApi {
                 }
             }
 
+            // Either query or institutionId must be provided so we don't list
+            // the entire department table (issue #20276)
+            if ((query == null || query.trim().isEmpty()) && institutionId == null) {
+                return errorResponse("Either query or institutionId is required", 400);
+            }
+
             // Parse limit if provided
             Integer limit = null;
             if (limitStr != null && !limitStr.trim().isEmpty()) {
@@ -126,7 +128,8 @@ public class DepartmentApi {
             }
 
             // Perform search
-            List<DepartmentDTO> results = departmentService.searchDepartments(query.trim(), type, institutionId, limit);
+            String trimmedQuery = (query != null) ? query.trim() : null;
+            List<DepartmentDTO> results = departmentService.searchDepartments(trimmedQuery, type, institutionId, limit);
 
             return successResponse(results);
 

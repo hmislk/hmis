@@ -152,46 +152,49 @@
 
                                 </h:panelGrid>
 
-                                <p:commandButton
-                                    id="btnList" class="m-1 ui-button-danger"
-                                    icon="fas fa-list"
-                                    ajax="false" value="View List"
-                                    action="#{searchController.generateChannelIncome()}"/>
+                                <div class="d-flex align-items-center my-2">
+                                    <p:commandButton
+                                        id="btnList" class="mx-1 ui-button-warning"
+                                        icon="fas fa-cogs"
+                                        ajax="false" value="Process"
+                                        action="#{searchController.generateChannelIncome()}"/>
 
-                                <p:commandButton
-                                    id="btnPdf"
-                                    class="m-1 ui-button-info"
-                                    ajax="false"
-                                    rendered="false"
-                                    icon="fas fa-file-pdf"
-                                    value="Export as PDF">
-                                    <p:dataExporter type="pdf" target="tbl" fileName="Channel_income_report"/>
-                                </p:commandButton>
+                                    <p:commandButton
+                                        id="btnPdf"
+                                        class="mx-1 ui-button-info"
+                                        ajax="false"
+                                        rendered="false"
+                                        icon="fas fa-file-pdf"
+                                        value="Export as PDF">
+                                        <p:dataExporter type="pdf" target="tbl" fileName="Channel_income_report"/>
+                                    </p:commandButton>
 
-                                <p:commandButton 
-                                    value="Export as PDF" 
-                                    ajax="false" 
-                                    icon="fas fa-file-pdf"
-                                    class="m-1 ui-button-info">
-                                    <p:fileDownload value="#{searchController.channelIncomeReportAsPdf}" />
-                                </p:commandButton>
+                                    <p:commandButton 
+                                        value="Export as PDF" 
+                                        ajax="false" 
+                                        icon="fas fa-file-pdf"
+                                        class="mx-1 ui-button-info">
+                                        <p:fileDownload value="#{searchController.channelIncomeReportAsPdf}" />
+                                    </p:commandButton>
 
-                                <p:commandButton
-                                    id="btnPrint"
-                                    class="m-1 ui-button-primary"
-                                    icon="fas fa-print"
-                                    ajax="false"
-                                    value="Print Table"
-                                    action="channel_income_bill_print?faces-redirect=true">
-                                </p:commandButton>
+                                    <p:commandButton
+                                        id="btnPrint"
+                                        class="mx-1 ui-button-danger"
+                                        icon="fas fa-print"
+                                        ajax="false"
+                                        value="Print Table"
+                                        action="channel_income_bill_print?faces-redirect=true">
+                                    </p:commandButton>
 
-                                <p:commandButton
-                                    id="btnExcel"
-                                    class="m-1 ui-button-success"
-                                    icon="fas fa-file-excel"
-                                    ajax="false" value="Export to Excel">
-                                    <p:dataExporter type="xlsx" exportFooter="true" target="tbl" fileName="#{searchController.channelIncomeReportFileName}" postProcessor="#{searchController.postProcessChannelIncomeReportExcel}"/>
-                                </p:commandButton>
+                                    <p:commandButton
+                                        id="btnExcel"
+                                        class="mx-1 ui-button-success"
+                                        icon="fas fa-file-excel"
+                                        ajax="false" value="Export to Excel">
+                                        <p:dataExporter type="xlsx" exportFooter="true" target="tbl" fileName="#{searchController.channelIncomeReportFileName}" postProcessor="#{searchController.postProcessChannelIncomeReportExcel}"/>
+                                    </p:commandButton>
+                                </div>
+                                
                             </div>
                         </div>
 

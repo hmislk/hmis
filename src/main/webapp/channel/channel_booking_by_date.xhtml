@@ -393,7 +393,8 @@
                                                         <p:selectOneMenu class="w-75 mx-1" autoWidth="false" id="lstItems" value="#{bookingControllerViewScope.itemToAddToBooking}" >
                                                             <f:selectItem itemLabel="Select" ></f:selectItem>
                                                             <f:selectItems  value="#{bookingControllerViewScope.itemsAvailableToAddToBooking}" var="iata" itemValue="#{iata}"  itemLabel="#{iata.name}" ></f:selectItems>
-                                                            <p:ajax event="change" process="lstItems" update="totalsPanel :#{p:resolveFirstComponentWithId('gpFeeTotal',view).clientId}" listener="#{bookingControllerViewScope.fillBaseFees}" ></p:ajax>
+                                                            <!-- <p:ajax event="change" process="lstItems" update="totalsPanel :#{p:resolveFirstComponentWithId('gpFeeTotal',view).clientId}" listener="#{bookingControllerViewScope.fillBaseFees}" ></p:ajax> -->
+                                                            <p:ajax event="change" process="lstItems" update="totalsPanel :#{p:resolveFirstComponentWithId('gpFeeTotal',view).clientId}" ></p:ajax>
                                                         </p:selectOneMenu>
                                                     </p:column>
                                                     <p:column >
@@ -534,7 +535,7 @@
                                                             action="#{bookingControllerViewScope.markAsForeigner}" 
                                                             rendered="#{!bookingControllerViewScope.foriegn}" 
                                                             process="@this" 
-                                                            update="gpLocalForeign totalsPanel panelBookingDetails" 
+                                                            update="gpLocalForeign totalsPanel panelBookingDetails lstAddedItems paymentDetails" 
                                                             >
                                                         </p:commandButton>
                                                         <p:commandButton 
@@ -543,7 +544,7 @@
                                                             action="#{bookingControllerViewScope.markAsLocal}" 
                                                             rendered="#{bookingControllerViewScope.foriegn}" 
                                                             process="@this" 
-                                                            update="gpLocalForeign totalsPanel panelBookingDetails" 
+                                                            update="gpLocalForeign totalsPanel panelBookingDetails lstAddedItems paymentDetails" 
                                                             >
                                                         </p:commandButton>
 

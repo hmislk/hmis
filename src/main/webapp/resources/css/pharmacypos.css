@@ -26,6 +26,7 @@
         background-size: 100% auto !important;
         font-size: 130%;
         text-transform: capitalize !important;
+        page-break-before: always!important;
     }
 
     /* Add this new rule to hide the header specifically for inward service bills */
@@ -68,8 +69,8 @@
         /*        font:*/
         font-size: 11px!important;
         /*        text-transform: uppercase!important;*/
-        page-break-after:always!important;
-
+        page-break-before: always!important;
+        page-break-after:avoid!important;
     }
 
     /*    .billDetails{
@@ -79,7 +80,8 @@
         }*/
 
     .a4bill{
-        page-break-after:always!important;
+        page-break-after:avoid!important;
+        page-break-before: always!important;
         font-family: sans-serif!important;
         font-size: 11px!important;
         position: relative!important;

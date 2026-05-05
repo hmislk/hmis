@@ -290,6 +290,32 @@
                                 <h:outputText value="#{row.creditCompanyNames}" />
                             </p:column>
 
+                            <p:column headerText="Final Bill No" style="white-space:nowrap;">
+                                <h:outputText value="#{row.finalBillNumber}" />
+                            </p:column>
+
+                            <p:column headerText="Total Bill Value" style="text-align:right; white-space:nowrap;">
+                                <h:outputText value="#{row.finalBillTotal}">
+                                    <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{bhtPaymentSummaryReportController.grandTotalFinalBills}">
+                                        <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column headerText="Balance" style="text-align:right; white-space:nowrap; font-weight:bold;">
+                                <h:outputText value="#{row.balance}">
+                                    <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{bhtPaymentSummaryReportController.grandTotalBalance}">
+                                        <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
+
                             <f:facet name="footer">
                                 <div class="text-end">
                                     <strong>Grand Total Deposits: </strong>

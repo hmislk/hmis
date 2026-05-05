@@ -1942,6 +1942,54 @@ public class ItemController implements Serializable {
             JsfUtil.addSuccessMessage(updatedCount + " item(s) unmarked for report SMS.");
         }
     }
+    
+    public void markSelectedItemsToAllowCalculatedRequerd() {
+        if (selectedList == null || selectedList.isEmpty()) {
+            JsfUtil.addErrorMessage("Nothing is selected");
+            return;
+        }
+        int updatedCount = 0;
+
+        for (Item i : selectedList) {
+            if (i instanceof Investigation) {
+                Item item = itemFacade.findWithoutCache(i.getId());
+                
+                item.setCalculatedRequerd(true);
+                itemFacade.editAndCommit(item);
+                updatedCount++;
+            }
+        }
+        if (updatedCount == 0) {
+            JsfUtil.addErrorMessage("No Investigation items selected.");
+        } else {
+            fillItemsWithInvestigationsAndServices();
+            JsfUtil.addSuccessMessage(updatedCount + " item(s) marked to allow report SMS.");
+        }
+    }
+
+    public void unMarkSelectedItemsToAllowCalculatedRequerd() {
+        if (selectedList == null || selectedList.isEmpty()) {
+            JsfUtil.addErrorMessage("Nothing is selected");
+            return;
+        }
+        int updatedCount = 0;
+
+        for (Item i : selectedList) {
+            if (i instanceof Investigation) {
+                Item item = itemFacade.findWithoutCache(i.getId());
+                
+                item.setCalculatedRequerd(false);
+                itemFacade.editAndCommit(item);
+                updatedCount++;
+            }
+        }
+        if (updatedCount == 0) {
+            JsfUtil.addErrorMessage("No Investigation items selected.");
+        } else {
+            fillItemsWithInvestigationsAndServices();
+            JsfUtil.addSuccessMessage(updatedCount + " item(s) unmarked for report SMS.");
+        }
+    }
 
     public void addSessionNumberType() {
         if (selectedList == null || selectedList.isEmpty()) {

@@ -6,6 +6,7 @@ public class InvestigationDTO implements Serializable {
     private static final long serialVersionUID = 1L;
     
     private Long id;
+    private String code;
     private String name;
     private String categoryName;
     private String institutionName;
@@ -48,9 +49,32 @@ public class InvestigationDTO implements Serializable {
     public InvestigationDTO(Long id) {
         this.id = id;
     }
-    
-    
-    
+
+    public InvestigationDTO(
+            Long id,
+            String code,
+            String name,
+            String categoryName,
+            String institutionName,
+            String departmentName,
+            Boolean retired) {
+        this.id = id;
+        this.code = code;
+        this.name = name;
+        this.categoryName = categoryName;
+        this.institutionName = institutionName;
+        this.departmentName = departmentName;
+        this.retired = retired;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
+    }
+
     public Long getId() {
         return id;
     }

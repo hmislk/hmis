@@ -35,6 +35,12 @@ public class InwardInvoiceJournalRowDto implements Serializable {
             new EnumMap<>(InwardChargeType.class);
 
     // -------------------------------------------------------------------------
+    // Discount / service charge totals (per encounter, across all fees)
+    // -------------------------------------------------------------------------
+    private double totalDiscount;
+    private double totalServiceCharge;
+
+    // -------------------------------------------------------------------------
     // Deposit / settlement summary
     // -------------------------------------------------------------------------
     private double totalDeposits;
@@ -56,8 +62,12 @@ public class InwardInvoiceJournalRowDto implements Serializable {
         chargesByType.merge(type, amount, Double::sum);
     }
 
-    public double getGrandTotal() {
+    public double getGrossTotal() {
         return chargesByType.values().stream().mapToDouble(Double::doubleValue).sum();
+    }
+
+    public double getGrandTotal() {
+        return getGrossTotal() - totalDiscount + totalServiceCharge;
     }
 
     // -------------------------------------------------------------------------
@@ -86,6 +96,12 @@ public class InwardInvoiceJournalRowDto implements Serializable {
     public void setAdmissionType(AdmissionType admissionType) { this.admissionType = admissionType; }
 
     public Map<InwardChargeType, Double> getChargesByType() { return chargesByType; }
+
+    public double getTotalDiscount() { return totalDiscount; }
+    public void setTotalDiscount(double totalDiscount) { this.totalDiscount = totalDiscount; }
+
+    public double getTotalServiceCharge() { return totalServiceCharge; }
+    public void setTotalServiceCharge(double totalServiceCharge) { this.totalServiceCharge = totalServiceCharge; }
 
     public double getTotalDeposits() { return totalDeposits; }
     public void setTotalDeposits(double totalDeposits) { this.totalDeposits = totalDeposits; }

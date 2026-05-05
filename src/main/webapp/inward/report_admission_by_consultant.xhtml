@@ -260,8 +260,8 @@
                                         value="PDF"
                                         icon="fas fa-file-pdf"
                                         class="ui-button-danger"
-                                        ajax="false">
-                                        <p:dataExporter type="pdf" target="tblAdmissions" fileName="admission_report_by_consultant" />
+                                        ajax="false"
+                                        action="#{admissionReportController.downloadAdmissionsByConsultantPdf()}">
                                     </p:commandButton>
                                 </div>
                             </div>

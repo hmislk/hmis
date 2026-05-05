@@ -5154,10 +5154,10 @@ public class ReportsController implements Serializable {
 
             if (isVisitCC){
                 headers = new String[]{"Sample ID", "Invoice No.", "MRN", "Name", "Age","Gender","Investigation","Lab Department", "CC", "CC Route","Invoiced Date","Invoiced By","Received Date","Received By","Remarks","Patient Source","Patient Type","Referring Doctor","Item Value"};
-                columnWidths = new float[]{1f, 2f, 1f, 2f, 0.5f, 0.5f, 2f, 1f,1f,1f,1f,1f,1f,1f,1f,0.5f,0.5f,2f,1f};
+                columnWidths = new float[]{1f, 2f, 1f, 2f, 1f, 0.5f, 2f, 1f,1f,1f,1f,1f,1f,1f,1f,0.5f,1f,2f,1f};
             } else{
                 headers = new String[]{"Sample ID", "Invoice No.", "MRN", "Name", "Age","Gender","Investigation","Lab Department","Invoiced Date","Invoiced By","Received Date","Received By","Remarks","Patient Source","Patient Type","Referring Doctor","Item Value"};
-                columnWidths = new float[]{1f, 2f, 1f, 2f, 0.5f, 0.5f, 2f, 1f,1f,1f,1f,1f,1f,0.5f,0.5f,2f,1f};
+                columnWidths = new float[]{1f, 2f, 1f, 2f, 1f, 0.5f, 2f, 1f,1f,1f,1f,1f,1f,0.5f,1f,2f,1f};
             }
             table.setWidths(columnWidths);
 
@@ -5180,8 +5180,9 @@ public class ReportsController implements Serializable {
                 table.addCell(textCell(row.getBillItem().getItem().getDepartment().getName(),bodyFontSmall));
                 
                 if (isVisitCC){
-                   table.addCell(textCell(row.getBillItem().getBill().getCollectingCentre().getName(),bodyFontSmall)); 
-                   table.addCell(textCell( row.getBillItem().getBill().getCollectingCentre().getRoute().getName(),bodyFontSmall)); 
+                   Institution cc =  row.getBillItem().getBill().getCollectingCentre();
+                   table.addCell(textCell(cc != null ? cc.getName() : "-",bodyFontSmall)); 
+                   table.addCell(textCell( cc != null && cc.getRoute()!=null ? cc.getRoute().getName() : "-",bodyFontSmall)); 
                 }
  
                 table.addCell(textCell(row.getBillItem().getPatientEncounter() != null ? sdf.format(row.getBillItem().getPatientEncounter().getFinalBill().getCreatedAt()) : sdf.format(row.getBillItem().getBill().getCreatedAt()),bodyFontSmall));

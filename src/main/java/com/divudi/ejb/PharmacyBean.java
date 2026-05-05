@@ -1471,18 +1471,23 @@ public class PharmacyBean {
 //                }
 //            }
 //        }
-        // Re-check stock against FRESH DB state to prevent TOCTOU races where
-        // the in-memory Stock (selected in the UI) is stale vs. the actual
-        // committed value. Without this guard, a stale Stock snapshot can
-        // drive a batch/department row into negative values — see issue in
-        // coop database where Cetapin XR 500mg batch 1528539 in OPD Pharmacy
-        // went to -144 on 2025-10-12 (bill COOPPHTI/664).
-        stock = getStockFacade().findWithoutCache(stock.getId());
-        if (stock == null || stock.getStock() < qty) {
+        // Atomic check-and-decrement via JPQL UPDATE to prevent TOCTOU races
+        // where the in-memory Stock is stale vs the committed DB value (issue:
+        // Cetapin XR 500mg batch 1528539 went to -144 on 2025-10-12).
+        // Using a conditional UPDATE avoids loading the full EAGER cascade
+        // (Stock → ItemBatch → Item → ...) that findWithoutCache triggered,
+        // cutting per-item cold latency from ~800ms to ~50ms. Issue #20138.
+        // The WHERE s.stock >= :qty clause is the atomicity guard — 0 rows
+        // updated means insufficient stock at commit time.
+        Map<String, Object> params = new HashMap<>();
+        params.put("qty", qty);
+        params.put("id", stock.getId());
+        int updated = getStockFacade().updateByJpql(
+                "UPDATE Stock s SET s.stock = s.stock - :qty WHERE s.id = :id AND s.stock >= :qty",
+                params);
+        if (updated == 0) {
             return false;
         }
-        stock.setStock(stock.getStock() - qty);
-        getStockFacade().editAndCommit(stock);
         addToStockHistory(pbi, stock, d);
         return true;
     }

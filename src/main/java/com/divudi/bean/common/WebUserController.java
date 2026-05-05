@@ -1202,6 +1202,7 @@ public class WebUserController implements Serializable {
             JsfUtil.addErrorMessage("Please select a user");
             return "";
         }
+        webUserRoleController.setActivatediItems(null);
         webUserRoleUserController.setWebUser(selected);
         webUserRoleUserController.setDepartments(fillWebUserDepartments(selected));
         webUserRoleUserController.loadWebUserRoles();

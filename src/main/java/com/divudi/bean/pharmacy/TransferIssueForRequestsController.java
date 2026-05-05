@@ -457,6 +457,10 @@ public class TransferIssueForRequestsController implements Serializable {
             return;
         }
 
+        if (getIssuedBill().getDepartmentType() == null && getRequestedBill() != null) {
+            getIssuedBill().setDepartmentType(getRequestedBill().getDepartmentType());
+        }
+
         saveBill();
         for (BillItem billItemsInIssue : getBillItems()) {
             BillItem originalOrderItem = billItemsInIssue.getReferanceBillItem();

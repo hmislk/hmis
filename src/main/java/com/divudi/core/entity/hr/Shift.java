@@ -80,13 +80,18 @@ public class Shift implements Serializable {
     private Date retiredAt;
     private String retireComments;
     @ManyToOne
-    Shift previousShift;
+    private Shift previousShift;
     @ManyToOne
-    Shift nextShift;
+    private Shift nextShift;
     boolean halfShift;
     boolean firstShift;
     boolean lastShift;
     private boolean hideShift;
+    @OneToOne(mappedBy = "shift", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private ShiftStaffRequirement staffRequirement;
+
+    public Shift() {
+    }
 
     public boolean isFirstShift() {
         return firstShift;
@@ -152,10 +157,6 @@ public class Shift implements Serializable {
         this.nextShift = nextShift;
     }
 
-    public Shift() {
-
-    }
-
     public double getDurationHour() {
         if (getStartingTime() == null && getEndingTime() == null) {
             return 0;
@@ -211,6 +212,28 @@ public class Shift implements Serializable {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public ShiftStaffRequirement getStaffRequirement() {
+        return staffRequirement;
+    }
+
+    public ShiftStaffRequirement getOrCreateStaffRequirement() {
+        if (staffRequirement == null) {
+            staffRequirement = new ShiftStaffRequirement();
+            staffRequirement.setShift(this);
+        }
+        return staffRequirement;
+    }
+
+    public void setStaffRequirement(ShiftStaffRequirement staffRequirement) {
+        if (this.staffRequirement != null && this.staffRequirement != staffRequirement) {
+            this.staffRequirement.setShift(null);
+        }
+        this.staffRequirement = staffRequirement;
+        if (this.staffRequirement != null) {
+            this.staffRequirement.setShift(this);
+        }
     }
 
     @Override

@@ -57,11 +57,21 @@ public class CapabilityStatementResource {
                         "API Key",
                         "GET", "POST"))
                 .add(resource("Consultant", "/api/channel/consultant",
-                        "Create a new consultant via POST. Update an existing consultant by ID via PUT /api/channel/consultant/{id}. "
-                        + "Required field for POST: name. Optional: title, mobile, phone, fax, address, code, serialNo, "
+                        "List consultants via GET (supports query, page, size, specialityId). "
+                        + "Create a new consultant via POST with duplicate detection (returns already_exists/409 when matched by name+title). "
+                        + "Update an existing consultant by ID via PUT /api/channel/consultant/{id}. "
+                        + "Required field for POST: name. Optional: title, sex, mobile, phone, fax, address, code, serialNo, "
                         + "specialityId, institutionId, registration, qualification, description.",
                         "API Key (Token header)",
-                        "POST", "PUT"))
+                        "GET", "POST", "PUT"))
+                .add(resource("Doctor Speciality", "/api/channel/speciality",
+                        "CRUD for DoctorSpeciality records. "
+                        + "GET lists active specialities (supports ?query=&page=&size=). "
+                        + "POST creates a speciality (required: name; optional: code, description); returns 200 with status=already_exists if a duplicate name exists. "
+                        + "PUT /{id} updates name, code, or description (only supplied fields changed). "
+                        + "DELETE /{id} soft-retires the speciality.",
+                        "API Key (Token header)",
+                        "GET", "POST", "PUT", "DELETE"))
                 .add(resource("Clinical Metadata", "/api/clinical/metadata",
                         "CRUD for EMR clinical metadata types: symptom, sign, diagnosis, procedure, plan, vocabulary, "
                         + "race, religion, blood_group, civil_status, employment, relationship. "
@@ -121,6 +131,36 @@ public class CapabilityStatementResource {
                         "Inward patient workflows",
                         "API Key",
                         "GET", "POST"))
+                .add(resource("Inward Discount Matrix", "/api/inward-discount-matrix",
+                        "Manage inward discount matrix entries for services/investigations and pharmacy. "
+                        + "Supports scope=service|pharmacy to restrict category types. "
+                        + "Lookup sub-paths for resolving names to IDs: "
+                        + "/admission-types/search, /payment-schemes/search, "
+                        + "/pharmaceutical-item-categories/search, /payment-methods. "
+                        + "POST returns HTTP 409 with existing id when a duplicate combination exists.",
+                        "API Key",
+                        "GET", "POST", "PUT", "DELETE"))
+                .add(resource("Inward Room Categories", "/api/inward/room-categories",
+                        "Manage inward room categories (backs /inward/inward_room_category.xhtml). "
+                        + "POST returns HTTP 409 with existing id when a duplicate name already exists.",
+                        "API Key",
+                        "GET", "POST", "PUT", "DELETE"))
+                .add(resource("Inward Rooms", "/api/inward/rooms",
+                        "Manage inward rooms (backs /inward/inward_room.xhtml). "
+                        + "Supports optional filter roomCategoryId. "
+                        + "POST returns HTTP 409 with existing id when a duplicate name already exists.",
+                        "API Key",
+                        "GET", "POST", "PUT", "DELETE"))
+                .add(resource("Inward Room Facility Charges", "/api/inward/room-facility-charges",
+                        "Manage inward room facility charges / room fees (backs /inward/inward_room_facility.xhtml). "
+                        + "Supports optional filters roomId and roomCategoryId. "
+                        + "departmentId is required on POST and may not be set to null on PUT. "
+                        + "Charge fields: roomCharge, maintananceCharge, linenCharge, nursingCharge, "
+                        + "moCharge, moChargeForAfterDuration, adminstrationCharge, medicalCareCharge. "
+                        + "TimedItemFee fields: timedItemFeeDurationHours, timedItemFeeOverShootHours, "
+                        + "timedItemFeeDurationDaysForMoCharge.",
+                        "API Key",
+                        "GET", "POST", "PUT", "DELETE"))
                 .add(resource("LIMS", "/api/lims",
                         "Laboratory Information Management System integrations",
                         "API Key",
@@ -187,6 +227,10 @@ public class CapabilityStatementResource {
                         "User role CRUD and role-level privilege assignment with optional department scope.",
                         "API Key",
                         "GET", "POST", "PUT", "DELETE"))
+                                .add(resource("Investigations", "/api/investigations",
+                        "Investigation master management including search, create, update, and activate/deactivate for item import workflows",
+                        "API Key",
+                        "GET", "POST", "PUT", "PATCH"))
                 .add(resource("Services", "/api/services",
                         "OPD and Inward service management including fees and categories",
                         "API Key",

@@ -1,0 +1,205 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+
+    <cc:interface>
+        <cc:attribute name="bill"      required="true"  type="com.divudi.core.data.dto.PrintBillData" />
+        <cc:attribute name="items"     required="true"  type="java.util.List" />
+        <cc:attribute name="duplicate" required="false" />
+    </cc:interface>
+
+    <cc:implementation>
+        <h:outputStylesheet library="css" name="sale_bill_five_five_custom_3.css" />
+
+        <div class="receipt-container">
+
+            <div class="hospital-name">
+                <h:outputLabel value="#{cc.attrs.bill.departmentPrintingName}" />
+                <h:outputLabel value="**Duplicate**" rendered="#{cc.attrs.duplicate eq true}" />
+            </div>
+
+            <div class="separator"></div>
+
+            <table class="info-table">
+                <h:panelGroup rendered="#{cc.attrs.bill.patientName ne null}">
+                    <tr>
+                        <td style="padding: 2px;">Name :</td>
+                        <td style="padding: 2px;">
+                            <h:outputLabel value="#{cc.attrs.bill.patientName}"/>
+                        </td>
+                        <td style="padding: 2px;" class="spacer"></td>
+                        <h:panelGroup rendered="#{cc.attrs.bill.patientAgeSex ne null}">
+                            <td style="padding: 2px;">Age/Sex :</td>
+                            <td style="padding: 2px;">
+                                <h:outputLabel value="#{cc.attrs.bill.patientAgeSex}"/>
+                            </td>
+                        </h:panelGroup>
+                    </tr>
+                </h:panelGroup>
+
+                <tr>
+                    <td style="padding: 2px;">Bill Date:</td>
+                    <td style="padding: 2px;">
+                        <h:outputLabel value="#{cc.attrs.bill.createdAt}">
+                            <f:convertDateTime pattern="yyyy-MM-dd" />
+                        </h:outputLabel>
+                    </td>
+                    <td style="padding: 2px;" class="spacer"></td>
+                    <td style="padding: 2px;">Bill Time:</td>
+                    <td style="padding: 2px;">
+                        <h:outputLabel value="#{cc.attrs.bill.createdAt}">
+                            <f:convertDateTime pattern="HH:mm a" />
+                        </h:outputLabel>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding: 2px;">Bill No:</td>
+                    <td style="padding: 2px;">
+                        <h:outputLabel value="#{cc.attrs.bill.billNo}"/>
+                    </td>
+                    <td style="padding: 2px;" class="spacer"></td>
+                    <td style="padding: 2px;">
+                        <h:outputLabel value="BHT No : " rendered="#{cc.attrs.bill.bhtNo ne null}"/>
+                    </td>
+                    <td style="padding: 2px;">
+                        <h:outputLabel value="#{cc.attrs.bill.bhtNo}" rendered="#{cc.attrs.bill.bhtNo ne null}"/>
+                    </td>
+                </tr>
+            </table>
+
+            <div class="separator"></div>
+
+            <table class="receipt-table">
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>Item Name</th>
+                        <th>Rate</th>
+                        <th>Qty</th>
+                        <th style="text-align: right">Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <ui:repeat value="#{cc.attrs.items}" var="item" varStatus="s">
+                        <tr>
+                            <td>#{s.index + 1}</td>
+                            <td>#{item.itemName}</td>
+                            <td>
+                                <h:outputLabel value="#{item.rate}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </td>
+                            <td>
+                                <h:outputLabel value="#{item.qty}">
+                                    <f:convertNumber integerOnly="true" />
+                                </h:outputLabel>
+                            </td>
+                            <td style="text-align: right">
+                                <h:outputLabel value="#{item.grossValue}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </td>
+                        </tr>
+                    </ui:repeat>
+                </tbody>
+            </table>
+
+            <div class="separator"></div>
+
+            <table class="total-table">
+                <tr>
+                    <td>Total:</td>
+                    <td style="text-align: right;">
+                        <h:outputLabel value="#{cc.attrs.bill.total}">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputLabel>
+                    </td>
+                </tr>
+                <h:panelGroup rendered="#{cc.attrs.bill.discount ne 0.0}">
+                    <tr>
+                        <td>Discount:</td>
+                        <td style="text-align: right;">
+                            <h:outputLabel value="#{-cc.attrs.bill.discount}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Net Total:</td>
+                        <td style="text-align: right;">
+                            <h:outputLabel value="#{cc.attrs.bill.netTotal}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                        </td>
+                    </tr>
+                </h:panelGroup>
+                <tr>
+                    <td>No of Items:</td>
+                    <td style="text-align: right;">
+                        <h:outputLabel value="#{cc.attrs.items.size()}">
+                            <f:convertNumber integerOnly="true" />
+                        </h:outputLabel>
+                    </td>
+                </tr>
+            </table>
+
+            <table style="font-size: 8pt;">
+                <tr>
+                    <td style="width: 4cm; vertical-align: top;">
+                        <h:outputLabel value="Billed By : "/>
+                        <h:outputLabel value="#{cc.attrs.bill.creatorName}"/>
+                    </td>
+                    <td style="width: 2cm;"></td>
+                    <td style="vertical-align: top;">
+                        <h:panelGroup rendered="#{cc.attrs.bill.paymentMethodLabel ne null}">
+                            <table>
+                                <tr>
+                                    <td style="width: 4cm;">
+                                        <h:outputText style="font-size: 8pt;" value="#{cc.attrs.bill.paymentMethodLabel}"/>
+                                    </td>
+                                    <td style="width: 2cm; text-align: end;">
+                                        <h:outputText style="font-size: 8pt; width: 2cm;" value="#{cc.attrs.bill.cashPaid}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </td>
+                                </tr>
+                            </table>
+                        </h:panelGroup>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="width: 6cm;">
+                        <h:panelGroup rendered="#{cc.attrs.bill.toStaffName ne null}">
+                            <h:outputText style="font-size: 8pt;" value="(Staff : "/>
+                            <h:outputText style="font-size: 8pt;" value="#{cc.attrs.bill.toStaffName})"/>
+                        </h:panelGroup>
+                    </td>
+                </tr>
+            </table>
+
+            <h:panelGroup rendered="#{cc.attrs.duplicate eq true}">
+                <table>
+                    <tr>
+                        <td style="width: 4cm;">
+                            <h:outputLabel value="Printed By : " style="font-size: 8pt;"/>
+                            <h:outputLabel style="font-size: 8pt;" value="#{cc.attrs.bill.creatorName}"/>
+                        </td>
+                        <td style="width: 2cm;"></td>
+                        <td>
+                            <h:outputLabel style="font-size: 8pt;" value="#{cc.attrs.bill.createdAt}">
+                                <f:convertDateTime pattern="yyyy-MM-dd HH:mm" />
+                            </h:outputLabel>
+                        </td>
+                    </tr>
+                </table>
+            </h:panelGroup>
+
+        </div>
+
+    </cc:implementation>
+
+</html>

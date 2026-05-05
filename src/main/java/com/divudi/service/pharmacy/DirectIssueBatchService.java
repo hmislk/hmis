@@ -23,6 +23,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import javax.persistence.TemporalType;
 
@@ -38,6 +40,8 @@ import javax.persistence.TemporalType;
 @Dependent
 @Transactional
 public class DirectIssueBatchService implements Serializable {
+
+    private static final Logger LOGGER = Logger.getLogger(DirectIssueBatchService.class.getName());
 
     @EJB
     private StockFacade stockFacade;
@@ -83,11 +87,8 @@ public class DirectIssueBatchService implements Serializable {
             }
         }
 
-        long endTime = System.currentTimeMillis();
-        System.out.println("=== Stock Deduction Performance ===");
-        System.out.println("Items processed: " + successCount + "/" + billItems.size());
-        System.out.println("Total time: " + (endTime - startTime) + "ms");
-        System.out.println("Average per item: " + ((endTime - startTime) / Math.max(1, successCount)) + "ms");
+        LOGGER.log(Level.INFO, "batchStockDeduction: {0}/{1} items in {2}ms",
+                new Object[]{successCount, billItems.size(), System.currentTimeMillis() - startTime});
     }
 
     /**

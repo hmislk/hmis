@@ -54,11 +54,18 @@ public class DatabaseMigrationService {
             String storedVersion = readStoredDdlVersion();
             if (storedVersion != null && !storedVersion.isEmpty() && !"UNCHECKED".equals(storedVersion)) {
                 String wikiVersion = fetchWikiDdlVersion();
-                if (wikiVersion != null && wikiVersion.equals(storedVersion)) {
+                if (wikiVersion == null) {
+                    // Wiki unreachable — trust the admin's stored confirmation rather than falsely alarming
                     migrationPending = false;
-                    LOGGER.info("DatabaseMigrationService: Wiki DDL version matches stored version (" + storedVersion + "). No migration pending.");
+                    LOGGER.info("DatabaseMigrationService: Wiki unreachable at startup; trusting stored confirmation (" + storedVersion + "). No migration pending.");
                     return;
                 }
+                if (wikiVersion.equals(storedVersion) || "CONFIRMED".equals(storedVersion)) {
+                    migrationPending = false;
+                    LOGGER.info("DatabaseMigrationService: Schema confirmed (wiki=" + wikiVersion + ", stored=" + storedVersion + "). No migration pending.");
+                    return;
+                }
+                LOGGER.info("DatabaseMigrationService: DDL version mismatch (wiki=" + wikiVersion + ", stored=" + storedVersion + "). Migration may be pending.");
             }
         } catch (Exception e) {
             LOGGER.log(Level.WARNING, "DatabaseMigrationService: Could not auto-check DDL version at startup.", e);

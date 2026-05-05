@@ -13,6 +13,7 @@
         <cc:attribute name="editable" type="java.lang.Boolean"  />
         <cc:attribute name="searchable" type="java.lang.Boolean" default="true" />
         <cc:attribute name="controller" type="com.divudi.bean.common.ControllerWithPatient"/>
+        <cc:attribute name="extraUpdateIds" default="" />
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -106,11 +107,11 @@
                             #{ps.person.phone}
                         </p:column>
                         <p:column>
-                            <p:commandButton 
-                                action="#{patientController.selectQuickOneFromQuickSearchPatient(cc.attrs.controller)}" 
+                            <p:commandButton
+                                action="#{patientController.selectQuickOneFromQuickSearchPatient(cc.attrs.controller)}"
                                 id="btnSelectPt"
                                 process="btnSelectPt tblPatients"
-                                update=":#{p:resolveFirstComponentWithId('ptImp',view).clientId}"
+                                update=":#{p:resolveFirstComponentWithId('ptImp',view).clientId} #{cc.attrs.extraUpdateIds}"
                                 value="select">
                                 <f:setPropertyActionListener value="#{ps}" target="#{patientController.current}" />
                             </p:commandButton>

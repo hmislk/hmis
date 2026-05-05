@@ -990,6 +990,218 @@ public class PriceMatrixController implements Serializable {
 
     }
 
+    // -------------------------------------------------------------------------
+    // Inward Discount Matrix lookup (used by inpatient service/investigation
+    // billing and surgery service add flows)
+    // -------------------------------------------------------------------------
+
+    /**
+     * Walk the InwardDiscountMatrix for a discount percent applicable to the
+     * given bill context. Order: Item → Category → Parent Category → Department.
+     * At each level the matching scheme is preferred; if not found, a row with
+     * a null paymentScheme is accepted as a plain per-BHT/admission-type rule.
+     *
+     * Returns 0.0 when no matching row exists — the caller can treat that as
+     * "no discount" without any feature toggle.
+     */
+    public double getInwardDiscountPercent(PaymentMethod bhtType, PaymentScheme scheme,
+            AdmissionType admissionType, Department department, Item item) {
+        if (bhtType == null || admissionType == null) {
+            return 0.0;
+        }
+
+        Category category = null;
+        if (item != null) {
+            category = item.getCategory();
+        }
+
+        Double pct = fetchInwardDiscountPercentForItem(bhtType, scheme, admissionType, item);
+        if (pct == null) {
+            pct = fetchInwardDiscountPercentForCategory(bhtType, scheme, admissionType, department, category);
+        }
+        if (pct == null && category != null) {
+            pct = fetchInwardDiscountPercentForCategory(bhtType, scheme, admissionType, department, category.getParentCategory());
+        }
+        if (pct == null) {
+            pct = fetchInwardDiscountPercentForDepartment(bhtType, scheme, admissionType, department);
+        }
+        // Global wildcard: rows with null dept/category/item apply to everything
+        if (pct == null) {
+            pct = fetchInwardDiscountMatrixPercent(bhtType, scheme, admissionType, null, null, null);
+            if (pct == null && scheme != null) {
+                pct = fetchInwardDiscountMatrixPercent(bhtType, null, admissionType, null, null, null);
+            }
+        }
+        return pct != null ? pct : 0.0;
+    }
+
+    private Double fetchInwardDiscountPercentForItem(PaymentMethod bhtType, PaymentScheme scheme,
+            AdmissionType admissionType, Item item) {
+        if (item == null) {
+            return null;
+        }
+        Double pct = fetchInwardDiscountMatrixPercent(bhtType, scheme, admissionType, null, null, item);
+        if (pct == null && scheme != null) {
+            pct = fetchInwardDiscountMatrixPercent(bhtType, null, admissionType, null, null, item);
+        }
+        return pct;
+    }
+
+    private Double fetchInwardDiscountPercentForCategory(PaymentMethod bhtType, PaymentScheme scheme,
+            AdmissionType admissionType, Department department, Category category) {
+        if (category == null) {
+            return null;
+        }
+        Double pct = fetchInwardDiscountMatrixPercent(bhtType, scheme, admissionType, department, category, null);
+        if (pct == null && scheme != null) {
+            pct = fetchInwardDiscountMatrixPercent(bhtType, null, admissionType, department, category, null);
+        }
+        return pct;
+    }
+
+    private Double fetchInwardDiscountPercentForDepartment(PaymentMethod bhtType, PaymentScheme scheme,
+            AdmissionType admissionType, Department department) {
+        if (department == null) {
+            return null;
+        }
+        Double pct = fetchInwardDiscountMatrixPercent(bhtType, scheme, admissionType, department, null, null);
+        if (pct == null && scheme != null) {
+            pct = fetchInwardDiscountMatrixPercent(bhtType, null, admissionType, department, null, null);
+        }
+        return pct;
+    }
+
+    /**
+     * Single-row matrix fetch for service/pharmacy discounts (rows where
+     * inwardChargeType IS NULL). Each argument except bhtType and admissionType
+     * may be null; a null argument is translated to an IS NULL filter so the
+     * row-matching semantics are exact.
+     */
+    private Double fetchInwardDiscountMatrixPercent(PaymentMethod bhtType, PaymentScheme scheme,
+            AdmissionType admissionType, Department department, Category category, Item item) {
+        return fetchInwardDiscountMatrixPercentCore(bhtType, scheme, admissionType, department, category, item, null, false);
+    }
+
+    /**
+     * Single-row matrix fetch for room-charge-type-specific discounts (rows
+     * where inwardChargeType = chargeType). Filters explicitly on the given
+     * chargeType; does NOT fall back to null-chargeType rows.
+     */
+    private Double fetchInwardDiscountMatrixPercentForChargeType(PaymentMethod bhtType, PaymentScheme scheme,
+            AdmissionType admissionType, InwardChargeType chargeType) {
+        return fetchInwardDiscountMatrixPercentCore(bhtType, scheme, admissionType, null, null, null, chargeType, true);
+    }
+
+    /**
+     * Core fetch shared by both variants. When chargeTypeSpecific is true the
+     * query adds AND a.inwardChargeType = :chargeType; otherwise it adds
+     * AND a.inwardChargeType IS NULL to keep service/pharmacy rows isolated
+     * from room-charge-type rows.
+     */
+    private Double fetchInwardDiscountMatrixPercentCore(PaymentMethod bhtType, PaymentScheme scheme,
+            AdmissionType admissionType, Department department, Category category, Item item,
+            InwardChargeType chargeType, boolean chargeTypeSpecific) {
+        StringBuilder jpql = new StringBuilder(
+                "select a.discountPercent from InwardDiscountMatrix a"
+                + " where a.retired = false");
+        HashMap<String, Object> params = new HashMap<>();
+
+        // NULL in the matrix means "all BHT types" — match exact value or wildcard row
+        if (bhtType != null) {
+            jpql.append(" and (a.paymentMethod = :pm or a.paymentMethod is null)");
+            params.put("pm", bhtType);
+        } else {
+            jpql.append(" and a.paymentMethod is null");
+        }
+        // NULL in the matrix means "all admission types" — match exact value or wildcard row
+        if (admissionType != null) {
+            jpql.append(" and (a.admissionType = :admTp or a.admissionType is null)");
+            params.put("admTp", admissionType);
+        } else {
+            jpql.append(" and a.admissionType is null");
+        }
+
+        if (scheme != null) {
+            jpql.append(" and a.paymentScheme = :sch");
+            params.put("sch", scheme);
+        } else {
+            jpql.append(" and a.paymentScheme is null");
+        }
+        if (department != null) {
+            jpql.append(" and a.department = :dep");
+            params.put("dep", department);
+        } else {
+            jpql.append(" and a.department is null");
+        }
+        if (category != null) {
+            jpql.append(" and a.category = :cat");
+            params.put("cat", category);
+        } else {
+            jpql.append(" and a.category is null");
+        }
+        if (item != null) {
+            jpql.append(" and a.item = :itm");
+            params.put("itm", item);
+        } else {
+            jpql.append(" and a.item is null");
+        }
+        if (chargeTypeSpecific) {
+            // Room-charge-type lookup: match the specific charge type
+            jpql.append(" and a.inwardChargeType = :chargeType");
+            params.put("chargeType", chargeType);
+        } else {
+            // Service/pharmacy lookup: only rows with no charge-type restriction
+            jpql.append(" and a.inwardChargeType is null");
+        }
+        // Prefer specific rows over wildcards: non-null fields rank higher
+        jpql.append(" order by"
+                + " case when a.paymentMethod is null then 1 else 0 end asc,"
+                + " case when a.admissionType is null then 1 else 0 end asc,"
+                + " case when a.department is null then 1 else 0 end asc,"
+                + " case when a.category is null then 1 else 0 end asc,"
+                + " case when a.item is null then 1 else 0 end asc");
+        try {
+            List<Object> rs = getPriceMatrixFacade().findObjects(jpql.toString(), params);
+            if (rs == null || rs.isEmpty()) {
+                return null;
+            }
+            Object v = rs.get(0);
+            if (v == null) {
+                return null;
+            }
+            if (v instanceof Number) {
+                return ((Number) v).doubleValue();
+            }
+            return null;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /**
+     * Look up the discount percent for a specific room charge type (e.g.
+     * RoomCharges, LinenCharges, MOCharges). Searches InwardDiscountMatrix rows
+     * whose inwardChargeType matches the given chargeType. Falls back to a
+     * global service/pharmacy wildcard (null inwardChargeType) if no
+     * charge-type-specific row exists.
+     *
+     * Returns 0.0 when no matching row is found.
+     */
+    public double getInwardDiscountPercentForChargeType(PaymentMethod bhtType, PaymentScheme scheme,
+            AdmissionType admissionType, InwardChargeType chargeType) {
+        if (bhtType == null || admissionType == null || chargeType == null) {
+            return 0.0;
+        }
+        // Try charge-type-specific row first; no fallback to service/pharmacy
+        // wildcard rows (inwardChargeType IS NULL) — absence of a room-charge
+        // row means 0% discount, not inheritance of a service discount.
+        Double pct = fetchInwardDiscountMatrixPercentForChargeType(bhtType, scheme, admissionType, chargeType);
+        if (pct == null && scheme != null) {
+            pct = fetchInwardDiscountMatrixPercentForChargeType(bhtType, null, admissionType, chargeType);
+        }
+        return pct != null ? pct : 0.0;
+    }
+
     // Add business logic below. (Right-click in editor and choose
     // "Insert Code > Add Business Method")
     public PriceMatrixFacade getPriceMatrixFacade() {

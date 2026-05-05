@@ -1029,6 +1029,49 @@ public class DataAdministrationController implements Serializable {
         }
     }
 
+    public void markStaleHandoverCreateBillsAsCompleted() {
+        executionFeedback = "";
+        try {
+            String jpql = "SELECT b FROM Bill b "
+                    + "WHERE b.retired = false "
+                    + "AND b.billTypeAtomic = :btype "
+                    + "AND (b.completed = false OR b.completed IS NULL) "
+                    + "AND (b.cancelled = false OR b.cancelled IS NULL) "
+                    + "AND b.referenceBill IS NOT NULL "
+                    + "AND b.referenceBill.completed = true";
+            Map<String, Object> params = new HashMap<>();
+            params.put("btype", BillTypeAtomic.FUND_SHIFT_HANDOVER_CREATE);
+            List<Bill> staleBills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+            if (staleBills == null || staleBills.isEmpty()) {
+                executionFeedback = "No stale handover create bills found. Nothing to update.";
+                return;
+            }
+            Date now = new Date();
+            WebUser currentUser = sessionController.getLoggedUser();
+            int updatedCount = 0;
+            for (Bill stale : staleBills) {
+                Bill bill = billFacade.find(stale.getId());
+                if (bill == null) {
+                    continue;
+                }
+                if (bill.isCompleted() || bill.isCancelled()) {
+                    continue;
+                }
+                if (bill.getReferenceBill() == null || !bill.getReferenceBill().isCompleted()) {
+                    continue;
+                }
+                bill.setCompleted(true);
+                bill.setCompletedAt(now);
+                bill.setCompletedBy(currentUser);
+                billFacade.edit(bill);
+                updatedCount++;
+            }
+            executionFeedback = "Marked " + updatedCount + " stale handover create bill(s) as completed.";
+        } catch (Exception e) {
+            executionFeedback = "Error: " + getExceptionMessage(e);
+        }
+    }
+
     /**
      * Helper method to correct BillFinanceDetails values to NEGATIVE
      * Returns true if any correction was made
@@ -2253,11 +2296,27 @@ public class DataAdministrationController implements Serializable {
     }
 
     public void markMigrationComplete() {
+        String version = fetchWikiDdlVersion();
+        if (version != null) {
+            configOptionApplicationController.saveShortTextOption(CONFIG_KEY_DDL_VERSION, version);
+            wikiDdlVersion = version;
+        } else {
+            configOptionApplicationController.saveShortTextOption(CONFIG_KEY_DDL_VERSION, "CONFIRMED");
+            JsfUtil.addInfoMessage("Wiki unreachable. Schema confirmation saved locally — banner will not return after restart.");
+        }
         databaseMigrationService.markMigrationComplete();
         JsfUtil.addSuccessMessage("Migration marked as complete. The migration page is now restricted to administrators.");
     }
 
     public void markMigrationNotNecessary() {
+        String version = fetchWikiDdlVersion();
+        if (version != null) {
+            configOptionApplicationController.saveShortTextOption(CONFIG_KEY_DDL_VERSION, version);
+            wikiDdlVersion = version;
+        } else {
+            configOptionApplicationController.saveShortTextOption(CONFIG_KEY_DDL_VERSION, "CONFIRMED");
+            JsfUtil.addInfoMessage("Wiki unreachable. Schema confirmation saved locally — banner will not return after restart.");
+        }
         databaseMigrationService.markMigrationNotNecessary();
         JsfUtil.addSuccessMessage("Migration marked as not necessary. The migration page is now restricted to administrators.");
     }
@@ -2324,6 +2383,7 @@ public class DataAdministrationController implements Serializable {
         if (wikiDdlVersion != null) {
             String storedVersion = configOptionApplicationController.getShortTextValueByKey(CONFIG_KEY_DDL_VERSION);
             if (wikiDdlVersion.equals(storedVersion) && !"UNCHECKED".equals(storedVersion)) {
+                databaseMigrationService.markMigrationComplete();
                 errors = "Schema is up to date (Wiki DDL version: " + wikiDdlVersion + "). No missing fields expected.";
                 return;
             }
@@ -5057,12 +5117,12 @@ public class DataAdministrationController implements Serializable {
                     + "  WHERE pe2.discharged = 0 AND pe2.paymentFinalized = 0 AND pe2.currentPatientRoom_id IS NOT NULL "
                     + "  GROUP BY prm2.roomFacilityCharge_id "
                     + ") latest ON prm.roomFacilityCharge_id = latest.roomFacilityCharge_id "
-                    + "SET pe.discharged = 1 "
+                    + "SET pe.discharged = 1, pe.currentPatientRoom_id = NULL, prm.discharged = 1, prm.dischargedAt = NOW() "
                     + "WHERE pe.discharged = 0 AND pe.paymentFinalized = 0 "
                     + "AND pe.id != latest.keep_id "
                     + "AND pe.currentPatientRoom_id IS NOT NULL";
             patientEncounterFacade.executeNativeSql(sql);
-            JsfUtil.addSuccessMessage("Done. Old duplicate undischarged encounters have been discharged, keeping the latest per room.");
+            JsfUtil.addSuccessMessage("Done. Old duplicate undischarged encounters have been discharged, and their current rooms have been released.");
         } catch (Exception e) {
             JsfUtil.addErrorMessage("Error: " + getExceptionMessage(e));
         }
@@ -5077,12 +5137,15 @@ public class DataAdministrationController implements Serializable {
         }
         try {
             String t = patientEncounterFacade.getTableName();
-            String sql = "UPDATE " + t + " "
-                    + "SET discharged = 1 "
-                    + "WHERE discharged = 0 AND paymentFinalized = 0 "
-                    + "AND createdAt < DATE_SUB(NOW(), INTERVAL " + staleEncounterDays + " DAY)";
+            String pr = patientRoomFacade.getTableName();
+            String sql = "UPDATE " + t + " pe "
+                    + "JOIN " + pr + " prm ON pe.currentPatientRoom_id = prm.id "
+                    + "SET pe.discharged = 1, pe.currentPatientRoom_id = NULL, prm.discharged = 1, prm.dischargedAt = NOW() "
+                    + "WHERE pe.discharged = 0 AND pe.paymentFinalized = 0 "
+                    + "AND pe.currentPatientRoom_id IS NOT NULL "
+                    + "AND pe.createdAt < DATE_SUB(NOW(), INTERVAL " + staleEncounterDays + " DAY)";
             patientEncounterFacade.executeNativeSql(sql);
-            JsfUtil.addSuccessMessage("Done. Undischarged encounters older than " + staleEncounterDays + " days have been marked as discharged.");
+            JsfUtil.addSuccessMessage("Done. Undischarged encounters older than " + staleEncounterDays + " days have been marked as discharged and their current rooms have been released.");
         } catch (Exception e) {
             JsfUtil.addErrorMessage("Error: " + getExceptionMessage(e));
         }

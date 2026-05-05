@@ -655,7 +655,8 @@
                                                         <p:selectOneMenu class="w-75 mx-1" autoWidth="false" id="lstItems" value="#{bookingControllerViewScopeMonth.itemToAddToBooking}" >
                                                             <f:selectItem itemLabel="Select" ></f:selectItem>
                                                             <f:selectItems  value="#{bookingControllerViewScopeMonth.itemsAvailableToAddToBooking}" var="iata" itemValue="#{iata}"  itemLabel="#{iata.name}" ></f:selectItems>
-                                                            <p:ajax event="change" process="lstItems" update="totalsPanel :#{p:resolveFirstComponentWithId('gpFeeTotal',view).clientId}" listener="#{bookingControllerViewScopeMonth.fillFees}" ></p:ajax>
+                                                            <!-- <p:ajax event="change" process="lstItems" update="totalsPanel :#{p:resolveFirstComponentWithId('gpFeeTotal',view).clientId}" listener="#{bookingControllerViewScopeMonth.fillFees}" ></p:ajax> -->
+                                                             <p:ajax event="change" process="lstItems" update="totalsPanel :#{p:resolveFirstComponentWithId('gpFeeTotal',view).clientId}"></p:ajax>
                                                         </p:selectOneMenu>
                                                     </p:column>
                                                     <p:column >
@@ -666,7 +667,7 @@
                                                             icon="fas fa-plus"
                                                             class="ui-button-success"
                                                             action="#{bookingControllerViewScopeMonth.addItemToBooking}"
-                                                            update="totalsPanel paymentDetails :#{p:resolveFirstComponentWithId('gpFeeTotal',view).clientId} :#{p:resolveFirstComponentWithId('lstAddedItems',view).clientId} lstItems panelBookingDetails"
+                                                            update="totalsPanel gdManageBookings paymentDetails :#{p:resolveFirstComponentWithId('gpFeeTotal',view).clientId} :#{p:resolveFirstComponentWithId('lstAddedItems',view).clientId} lstItems panelBookingDetails"
                                                             ></p:commandButton>
                                                     </p:column>
                                                 </p:row>
@@ -683,7 +684,7 @@
                                                                     class="ui-button-danger" 
                                                                     action="#{bookingControllerViewScopeMonth.removeAddedAditionalItems(item)}" 
                                                                     process="btnRemoveAdditem" 
-                                                                    update=":#{p:resolveFirstComponentWithId('lstAddedItems',view).clientId} :#{p:resolveFirstComponentWithId('paymentDetails',view).clientId} :#{p:resolveFirstComponentWithId('gpFeeTotal',view).clientId} :#{p:resolveFirstComponentWithId('panelBookingDetails',view).clientId}"/>
+                                                                    update=":#{p:resolveFirstComponentWithId('lstAddedItems',view).clientId} :#{p:resolveFirstComponentWithId('paymentDetails',view).clientId} :#{p:resolveFirstComponentWithId('gpFeeTotal',view).clientId} :#{p:resolveFirstComponentWithId('panelBookingDetails',view).clientId} gdManageBookings"/>
                                                             </div>
                                                         </div>
                                                     </ui:repeat>
@@ -759,7 +760,7 @@
                                                 </h:panelGroup>
                                             </h:panelGroup>
 
-                                            <h:panelGrid id="gdManageBookings" class="w-100 m-2" columns="2"  >
+                                            <h:panelGrid id="gdManageBookings" class="w-100 m-2 ui-fluid" columns="2"  style="table-layout: fixed;">
                                                 <p:outputLabel value="Tenderd Amount" rendered="#{bookingControllerViewScopeMonth.paymentMethod eq 'Cash'}"/>
                                                 <h:panelGroup class="w-100 my-2" style="font-weight: bolder" rendered="#{bookingControllerViewScopeMonth.paymentMethod eq 'Cash'}">
                                                     <p:inputText id="paid" value="#{bookingControllerViewScopeMonth.strTenderedValue}">
@@ -773,9 +774,24 @@
                                                 </h:panelGroup>
 
                                                 <h:outputLabel value="Foriegner"/>
-                                                <p:selectBooleanCheckbox class="w-75" id="f" value="#{bookingControllerViewScopeMonth.foriegn}">
-                                                    <f:ajax event="change" execute="@this" render="totalsPanel panelBookingDetails"/>
-                                                </p:selectBooleanCheckbox>
+                                                <h:panelGroup id="gpLocalForeign"  class="col-md-6" rendered="#{!configOptionApplicationController.getBooleanValueByKey('Save the Patient with Patient Status')}">
+                                                    <p:commandButton 
+                                                        value="Mark Foreigner" 
+                                                        action="#{bookingControllerViewScopeMonth.markAsForeigner}" 
+                                                        rendered="#{!bookingControllerViewScopeMonth.foriegn}" 
+                                                        process="@this" 
+                                                        update="gpLocalForeign totalsPanel panelBookingDetails gdManageBookings" 
+                                                        >
+                                                    </p:commandButton>
+                                                    <p:commandButton 
+                                                        value="Mark Local" 
+                                                        action="#{bookingControllerViewScopeMonth.markAsLocal}" 
+                                                        rendered="#{bookingControllerViewScopeMonth.foriegn}" 
+                                                        process="@this" 
+                                                        update="gpLocalForeign totalsPanel panelBookingDetails gdManageBookings" 
+                                                    >
+                                                    </p:commandButton>
+                                                </h:panelGroup>
 
 
                                                 <p:outputLabel value="Payment Method"/>
@@ -786,6 +802,7 @@
                                                         id="cmbPs"
                                                         filter="true"
                                                         filterMatchMode="contains"
+                                                        styleClass="form-control"
                                                         value="#{bookingControllerViewScopeMonth.paymentMethod}">
                                                         <f:selectItem itemLabel="Select Payment Method" ></f:selectItem>
                                                         <f:selectItems value="#{enumController.paymentMethodsForChanneling}"/>
@@ -812,6 +829,7 @@
                                                 <p:outputLabel value="Discount Scheme"/>
                                                 <p:selectOneMenu 
                                                     class="w-75" 
+                                                    styleClass="form-control"
                                                     autoWidth="false" 
                                                     id="cmbPs2" 
                                                     value="#{bookingControllerViewScopeMonth.paymentScheme}">
@@ -1141,104 +1159,98 @@
                                             </h:panelGrid>
                                         </p:panel>
 
-                                        <p:panelGrid id="panelBookingDetails" class="w-100 mt-1">
-                                            <f:facet name="header">
-                                                <p:row>
-                                                    <p:column colspan="2" class="w-100" style="text-align: left" >
+                                        <h:panelGroup id="panelBookingDetails">
+                                            <p:panelGrid columns="2" layout="tabular"  class="w-100 mt-1">
+                                                    <f:facet name="header">
                                                         <h:outputText styleClass="fa-solid fa-calendar-plus"/>
                                                         <h:outputText class="mx-4" value="Booking Details"/>
-                                                    </p:column>
-                                                </p:row>
+                                                    </f:facet>
 
-                                            </f:facet>
-                                            <p:row>
-                                                <p:column><p:outputLabel value="Speciality" /></p:column>
-                                                <p:column><p:outputLabel value="#{bookingControllerViewScopeMonth.speciality.name}" /></p:column>
-                                            </p:row>
-                                            <p:row>
-                                                <p:column><p:outputLabel value="Consultant" /></p:column>
-                                                <p:column><p:outputLabel value="#{bookingControllerViewScopeMonth.staff.person.nameWithTitle}" /></p:column>
-                                            </p:row>
-                                            <p:row>
-                                                <p:column><p:outputLabel value="Session" /></p:column>
-                                                <p:column><p:outputLabel value="#{bookingControllerViewScopeMonth.selectedSessionInstance.name}" /></p:column>
-                                            </p:row>
-                                            <p:row>
-                                                <p:column><p:outputLabel value="Date" /></p:column>
-                                                <p:column>
+                                                    <p:outputLabel value="Speciality" />
+                                                    <p:outputLabel value="#{bookingControllerViewScopeMonth.selectedSessionInstance.staff.speciality.name}" />
+
+
+                                                    <p:outputLabel value="Consultant" />
+                                                    <p:outputLabel value="#{bookingControllerViewScopeMonth.selectedSessionInstance.staff.person.nameWithTitle}" />
+
+
+                                                    <p:outputLabel value="Session" />
+                                                    <p:outputLabel value="#{bookingControllerViewScopeMonth.selectedSessionInstance.name}" />
+
+
+                                                    <p:outputLabel value="Date" />
+
                                                     <p:outputLabel value="#{bookingControllerViewScopeMonth.selectedSessionInstance.sessionDate}">
                                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
                                                     </p:outputLabel>
-                                                </p:column>
-                                            </p:row>
-                                            <p:row>
-                                                <p:column><p:outputLabel value="Time" /></p:column>
-                                                <p:column>
+
+
+
+                                                    <p:outputLabel value="Time" />
+
                                                     <p:outputLabel value="#{bookingControllerViewScopeMonth.selectedSessionInstance.originatingSession.startingTime}">
                                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longTimeFormat}" />
                                                     </p:outputLabel>
-                                                </p:column>
-                                            </p:row>
-                                            <p:row>
-                                                <p:column><p:outputLabel value="Reserved Numbers" /></p:column>
-                                                <p:column>
+
+
+
+                                                    <p:outputLabel value="Reserved Numbers" />
+
                                                     <p:outputLabel value="#{bookingControllerViewScopeMonth.selectedSessionInstance.originatingSession.reserveNumbers}">
                                                     </p:outputLabel>
-                                                </p:column>
-                                            </p:row>
-                                            <p:row>
-                                                <p:column><p:outputLabel value="Total Fee" /></p:column>
-                                                <p:column >
+
+
+
+                                                    <p:outputLabel value="Total Fee" />
+
                                                     <h:panelGroup id="gpFeeTotal">
                                                         <p:outputLabel  rendered="#{!bookingControllerViewScopeMonth.foriegn}"
                                                                         value="#{bookingControllerViewScopeMonth.feeTotalForSelectedBill}">
                                                             <f:convertNumber pattern="#,##0.00" />
                                                         </p:outputLabel>
                                                         <p:outputLabel rendered="#{bookingControllerViewScopeMonth.foriegn}"
-                                                                       value="#{bookingControllerViewScopeMonth.feeTotalForSelectedBill}">
+                                                                    value="#{bookingControllerViewScopeMonth.feeTotalForSelectedBill}">
                                                             <f:convertNumber pattern="#,##0.00" />
                                                         </p:outputLabel>
                                                     </h:panelGroup>
-                                                </p:column>
-                                            </p:row>
-                                            <p:row>
-                                                <p:column colspan="2">
-                                                    <p:dataTable value="#{bookingControllerViewScopeMonth.selectedItemFeesWithouZeros}" var="i" >
-                                                        <p:column headerText="Name">
-                                                            <h:outputLabel value="#{i.item.name}"/> 
-                                                            <h:outputLabel class="mr-4" value="("/> 
-                                                            <h:outputLabel value="#{i.feeType.label}"/> 
-                                                            <h:outputLabel value=")"/> 
-                                                        </p:column>
-                                                        <p:column headerText="Fee for">
-                                                            <h:panelGroup rendered="#{i.feeType eq 'Staff'}" >
-                                                                <h:outputLabel rendered="#{i.staff.person.name ne null}"  value=" #{i.staff.person.name}"></h:outputLabel>
-                                                                <h:outputLabel  rendered="#{i.speciality.name ne null}" class="mr-4" value="("/> 
-                                                                <h:outputLabel rendered="#{i.speciality.name ne null}"  value="#{i.speciality.name}"/> 
-                                                                <h:outputLabel  rendered="#{i.speciality.name ne null}" value=")"/> 
-                                                            </h:panelGroup>
-                                                            <h:panelGroup rendered="#{i.feeType eq 'OwnInstitution' or i.feeType eq 'OtherInstitution' }" >
-                                                                <h:outputLabel rendered="#{i.institution.name ne null}"  value="#{i.institution.name}"></h:outputLabel>
-                                                                <h:outputLabel  rendered="#{i.department.name ne null}" class="mr-4" value="("/> 
-                                                                <h:outputLabel rendered="#{i.department.name ne null}"  value=" #{i.department.name}"></h:outputLabel>
-                                                                <h:outputLabel  rendered="#{i.department.name ne null}" value=")"/> 
-                                                            </h:panelGroup>
-                                                        </p:column>
-                                                        <p:column headerText="Fee" rendered="#{!bookingControllerViewScopeMonth.foriegn}">
-                                                            <h:outputText value="#{i.fee}" >
-                                                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                                            </h:outputText>
-                                                        </p:column>
-                                                        <p:column headerText="Fee" rendered="#{bookingControllerViewScopeMonth.foriegn}">
-                                                            <h:outputText value="#{i.ffee}" >
-                                                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                                            </h:outputText>
-                                                        </p:column>
-                                                    </p:dataTable>
-                                                </p:column>
+                                            </p:panelGrid>
+                                                <p:dataTable value="#{bookingControllerViewScopeMonth.selectedItemFeesWithouZeros}" var="i" >
+                                                    <p:column headerText="Name">
+                                                        <h:outputLabel value="#{i.item.name}"/> 
+                                                        <h:outputLabel class="mr-4" value="("/> 
+                                                        <h:outputLabel value="#{i.feeType.label}"/> 
+                                                        <h:outputLabel value=")"/> 
+                                                    </p:column>
 
-                                            </p:row>
-                                        </p:panelGrid>
+                                                    <p:column headerText="Fee for">
+                                                        <h:panelGroup rendered="#{i.feeType eq 'Staff'}" >
+                                                            <h:outputLabel rendered="#{i.staff.person.name ne null}"  value=" #{i.staff.person.name}"></h:outputLabel>
+                                                            <h:outputLabel  rendered="#{i.speciality.name ne null}" class="mr-4" value="("/> 
+                                                            <h:outputLabel rendered="#{i.speciality.name ne null}"  value="#{i.speciality.name}"/> 
+                                                            <h:outputLabel  rendered="#{i.speciality.name ne null}" value=")"/> 
+                                                        </h:panelGroup>
+                                                        <h:panelGroup rendered="#{i.feeType eq 'OwnInstitution' or i.feeType eq 'OtherInstitution' }" >
+                                                            <h:outputLabel rendered="#{i.institution.name ne null}"  value="#{i.institution.name}"></h:outputLabel>
+                                                            <h:outputLabel  rendered="#{i.department.name ne null}" class="mr-4" value="("/> 
+                                                            <h:outputLabel rendered="#{i.department.name ne null}"  value=" #{i.department.name}"></h:outputLabel>
+                                                            <h:outputLabel  rendered="#{i.department.name ne null}" value=")"/> 
+                                                        </h:panelGroup>
+                                                    </p:column>
+
+                                                    <p:column headerText="Fee" rendered="#{!bookingControllerViewScopeMonth.foriegn}">
+                                                        <h:outputText value="#{i.fee}" >
+                                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                        </h:outputText>
+                                                    </p:column>
+
+                                                    <p:column headerText="Fee" rendered="#{bookingControllerViewScopeMonth.foriegn}">
+                                                        <h:outputText value="#{i.ffee}" >
+                                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                        </h:outputText>
+                                                    </p:column>
+
+                                                </p:dataTable>
+                                        </h:panelGroup>
 
 
                                     </div>

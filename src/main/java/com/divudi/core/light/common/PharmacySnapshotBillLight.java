@@ -1,5 +1,6 @@
 package com.divudi.core.light.common;
 
+import com.divudi.core.data.DepartmentType;
 import java.io.Serializable;
 import java.util.Date;
 
@@ -18,6 +19,7 @@ public class PharmacySnapshotBillLight implements Serializable {
     private Long itemsCount;
     private Double netTotal;
     private Boolean completed;
+    private DepartmentType departmentType;
 
     public PharmacySnapshotBillLight(Long id,
                                      String deptId,
@@ -55,6 +57,19 @@ public class PharmacySnapshotBillLight implements Serializable {
         this.itemsCount = itemsCount;
         this.netTotal = netTotal;
         this.completed = completed;
+    }
+
+    public PharmacySnapshotBillLight(Long id,
+                                     String deptId,
+                                     Date createdAt,
+                                     String institutionName,
+                                     String departmentName,
+                                     Long itemsCount,
+                                     Double netTotal,
+                                     Boolean completed,
+                                     DepartmentType departmentType) {
+        this(id, deptId, createdAt, institutionName, departmentName, itemsCount, netTotal, completed);
+        this.departmentType = departmentType;
     }
 
     /**
@@ -150,6 +165,14 @@ public class PharmacySnapshotBillLight implements Serializable {
 
     public void setCompleted(Boolean completed) {
         this.completed = completed;
+    }
+
+    public DepartmentType getDepartmentType() {
+        return departmentType;
+    }
+
+    public void setDepartmentType(DepartmentType departmentType) {
+        this.departmentType = departmentType;
     }
 
     /**

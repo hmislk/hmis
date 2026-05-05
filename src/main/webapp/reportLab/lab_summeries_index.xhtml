@@ -38,13 +38,18 @@
                                             <p:commandButton actionListener="#{investigationMonthSummeryOwnControllerSession.clearList}" ajax="false" value="By Reported Institution" action="report_lab_by_reported_institution?faces-redirect=true"/>
                                             <p:commandButton actionListener="#{investigationMonthSummeryOwnControllerSession.clearList}" ajax="false" value="By Reported Department" action="report_lab_by_reported_department?faces-redirect=true"/>
 
-                                            <p:commandButton 
-                                                actionListener="#{laborataryReportController.resetAllFiltersExceptDateRange()}" 
-                                                ajax="false" 
+                                            <p:commandButton
+                                                actionListener="#{laborataryReportController.resetAllFiltersExceptDateRange()}"
+                                                ajax="false"
                                                 class="w-100 ui-button-success mt-1"
-                                                value="OPD Bill Items For Credit Companies" 
+                                                value="OPD Bill Items For Credit Companies"
                                                 action="#{laborataryReportController.navigateToBillItemListForCreditCompany()}">
                                             </p:commandButton>
+
+                                            <p:commandButton ajax="false"
+                                                             class="w-100 ui-button-danger mt-1"
+                                                             value="List of Cancelled Lab Bills"
+                                                             action="#{laborataryReportController.navigateToLabCancelledBillListFromLabAnalytics()}"/>
                                         </div>
                                     </h:form>
                                 </p:tab>

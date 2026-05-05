@@ -280,8 +280,47 @@
                                 </f:facet>
                             </p:columns>
 
-                            <!-- ===== Grand total of charges ===== -->
-                            <p:column headerText="Total Charges"
+                            <!-- ===== Discount ===== -->
+                            <p:column headerText="Discount"
+                                      style="text-align:right; white-space:nowrap;">
+                                <h:outputText value="#{row.totalDiscount}">
+                                    <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{inwardInvoiceJournalController.grandTotalDiscount}">
+                                        <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
+
+                            <!-- ===== Service Charge (margin) ===== -->
+                            <p:column headerText="Service Charge"
+                                      style="text-align:right; white-space:nowrap;">
+                                <h:outputText value="#{row.totalServiceCharge}">
+                                    <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{inwardInvoiceJournalController.grandTotalServiceCharge}">
+                                        <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
+
+                            <!-- ===== Gross total of charges ===== -->
+                            <p:column headerText="Gross Total"
+                                      style="text-align:right; white-space:nowrap; font-weight:bold;">
+                                <h:outputText value="#{row.grossTotal}">
+                                    <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{inwardInvoiceJournalController.grandTotalGross}">
+                                        <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
+
+                            <!-- ===== Net total of charges (gross - discount + service charge) ===== -->
+                            <p:column headerText="Net Total"
                                       style="text-align:right; white-space:nowrap; font-weight:bold;">
                                 <h:outputText value="#{row.grandTotal}">
                                     <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
@@ -325,7 +364,22 @@
 
                             <f:facet name="footer">
                                 <div class="text-end">
-                                    <strong>Grand Total Charges: </strong>
+                                    <strong>Grand Total Gross: </strong>
+                                    <h:outputText value="#{inwardInvoiceJournalController.grandTotalGross}">
+                                        <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                    </h:outputText>
+                                    &#160;&#160;&#160;
+                                    <strong>Grand Total Discount: </strong>
+                                    <h:outputText value="#{inwardInvoiceJournalController.grandTotalDiscount}">
+                                        <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                    </h:outputText>
+                                    &#160;&#160;&#160;
+                                    <strong>Grand Total Service Charge: </strong>
+                                    <h:outputText value="#{inwardInvoiceJournalController.grandTotalServiceCharge}">
+                                        <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                    </h:outputText>
+                                    &#160;&#160;&#160;
+                                    <strong>Grand Total Net Charges: </strong>
                                     <h:outputText value="#{inwardInvoiceJournalController.grandTotalCharges}">
                                         <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
                                     </h:outputText>

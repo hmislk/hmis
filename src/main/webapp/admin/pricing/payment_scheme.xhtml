@@ -84,7 +84,7 @@
                                         class="ui-button-success"
                                         action="#{paymentSchemeController.saveSelected()}" 
                                         process="btnSave gpDetail"
-                                        update="lstSelect growl selectFocus"
+                                        update="lstSelect growl selectFocus gpDetail"
                                         >                                        
                                     </p:commandButton>
                                 </f:facet>
@@ -122,6 +122,8 @@
                                                 <p:selectBooleanCheckbox value="#{paymentSchemeController.current.validForBilledBills}" />
                                                 <h:outputLabel value="Valid for Channeling" />
                                                 <p:selectBooleanCheckbox value="#{paymentSchemeController.current.validForChanneling}" />
+                                                <h:outputLabel value="Valid for Inward" />
+                                                <p:selectBooleanCheckbox value="#{paymentSchemeController.current.validForInpatientBills}" />
                                                 <h:outputLabel value="Department" />
                                                 <p:autoComplete 
                                                     value="#{paymentSchemeController.current.department}"

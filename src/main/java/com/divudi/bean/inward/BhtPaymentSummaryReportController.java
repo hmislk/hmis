@@ -1,15 +1,18 @@
 package com.divudi.bean.inward;
 
+import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.dto.BhtPaymentSummaryDTO;
 import com.divudi.core.data.inward.AdmissionStatus;
+import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Payment;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.entity.inward.AdmissionType;
+import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.PatientEncounterFacade;
 import com.divudi.core.facade.PaymentFacade;
@@ -45,6 +48,8 @@ public class BhtPaymentSummaryReportController implements Serializable {
     private BillItemFacade billItemFacade;
     @EJB
     private PaymentFacade paymentFacade;
+    @EJB
+    private BillFacade billFacade;
 
     // -------------------------------------------------------------------------
     // Filter fields
@@ -74,6 +79,8 @@ public class BhtPaymentSummaryReportController implements Serializable {
     private Map<PaymentMethod, Double> columnTotals = new HashMap<>();
     private double grandTotalDeposits;
     private double grandTotalCreditSettlement;
+    private double grandTotalFinalBills;
+    private double grandTotalBalance;
 
     // -------------------------------------------------------------------------
     // Main generate method
@@ -84,6 +91,8 @@ public class BhtPaymentSummaryReportController implements Serializable {
         columnTotals = new HashMap<>();
         grandTotalDeposits = 0;
         grandTotalCreditSettlement = 0;
+        grandTotalFinalBills = 0;
+        grandTotalBalance = 0;
 
         List<PatientEncounter> encounters = fetchEncounters();
         if (encounters == null || encounters.isEmpty()) {
@@ -101,6 +110,8 @@ public class BhtPaymentSummaryReportController implements Serializable {
             }
             grandTotalDeposits += row.getTotalDeposits();
             grandTotalCreditSettlement += row.getCreditSettlementTotal();
+            grandTotalFinalBills += row.getFinalBillTotal();
+            grandTotalBalance += row.getBalance();
         }
 
         // only show columns where at least one BHT had a non-zero deposit
@@ -216,7 +227,30 @@ public class BhtPaymentSummaryReportController implements Serializable {
             row.addCreditSettlement(bi.getNetValue(), companyName);
         }
 
+        // --- final bill (latest non-cancelled InwardFinalBill for this encounter) ---
+        Bill finalBill = fetchFinalBill(enc);
+        if (finalBill != null) {
+            row.setFinalBillNumber(finalBill.getDeptId());
+            row.setFinalBillTotal(finalBill.getNetTotal());
+        }
+
         return row;
+    }
+
+    /**
+     * Fetch the latest non-cancelled InwardFinalBill for the given encounter.
+     */
+    private Bill fetchFinalBill(PatientEncounter enc) {
+        String jpql = "select b from BilledBill b"
+                + " where b.retired = false"
+                + " and b.cancelled = false"
+                + " and b.billType = :bt"
+                + " and b.patientEncounter = :enc"
+                + " order by b.id desc";
+        Map<String, Object> params = new HashMap<>();
+        params.put("bt", BillType.InwardFinalBill);
+        params.put("enc", enc);
+        return billFacade.findFirstByJpql(jpql, params);
     }
 
     /**
@@ -288,6 +322,8 @@ public class BhtPaymentSummaryReportController implements Serializable {
         columnTotals = new HashMap<>();
         grandTotalDeposits = 0;
         grandTotalCreditSettlement = 0;
+        grandTotalFinalBills = 0;
+        grandTotalBalance = 0;
         allPaymentMethods = new ArrayList<>();
     }
 
@@ -331,4 +367,8 @@ public class BhtPaymentSummaryReportController implements Serializable {
     public double getGrandTotalDeposits() { return grandTotalDeposits; }
 
     public double getGrandTotalCreditSettlement() { return grandTotalCreditSettlement; }
+
+    public double getGrandTotalFinalBills() { return grandTotalFinalBills; }
+
+    public double getGrandTotalBalance() { return grandTotalBalance; }
 }

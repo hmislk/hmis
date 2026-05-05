@@ -761,95 +761,100 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         }
     }
 
-        public void preProcessCollectionCenterWiseSummaryReportPDF(Object document) {
-        try {
-            com.lowagie.text.Document pdf = (com.lowagie.text.Document) document;
-            pdf.setMargins(36f, 36f, 20f, 36f);
+    public void exportCollectionCenterWiseSummaryReportToPDF() {
+        if (bundle == null || bundle.getReportTemplateRows() == null || bundle.getReportTemplateRows().isEmpty()) {
+            JsfUtil.addErrorMessage("No data to export. Please process the report first.");
+            return;
+        }
 
-            // ── BaseColor definitions ─────────────────────────────────────
-            java.awt.Color black      = new java.awt.Color(0,   0,   0);
-            java.awt.Color lightGray  = new java.awt.Color(245, 245, 245);
-            java.awt.Color borderGray = new java.awt.Color(180, 180, 180);
+        com.itextpdf.text.Font bodyFontSmall = com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA, 8);
+        FacesContext context = FacesContext.getCurrentInstance();
+        ExternalContext externalContext = context.getExternalContext();
+        HttpServletResponse response = (HttpServletResponse) externalContext.getResponse();
+        response.reset();
+        String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
 
-            // ── Font definitions ──────────────────────────────────────────
-            com.lowagie.text.Font hospitalFont = new com.lowagie.text.Font(com.lowagie.text.Font.HELVETICA, 16f, com.lowagie.text.Font.BOLD,   black);
-            com.lowagie.text.Font reportFont   = new com.lowagie.text.Font(com.lowagie.text.Font.HELVETICA, 13f, com.lowagie.text.Font.BOLD,   black);
-            com.lowagie.text.Font dateFont     = new com.lowagie.text.Font(com.lowagie.text.Font.HELVETICA, 10f, com.lowagie.text.Font.NORMAL, black);
-            com.lowagie.text.Font labelFont    = new com.lowagie.text.Font(com.lowagie.text.Font.HELVETICA,  9f, com.lowagie.text.Font.BOLD,   black);
-            com.lowagie.text.Font valueFont    = new com.lowagie.text.Font(com.lowagie.text.Font.HELVETICA,  9f, com.lowagie.text.Font.NORMAL, black);
+        response.setContentType("application/pdf");
+        if (dates != null && !dates.isEmpty()) {
+            response.setHeader("Content-Disposition", "attachment; filename=Cc_wise_summary_report_" + dates + ".pdf");
+        } else {
+            response.setHeader("Content-Disposition", "attachment; filename=Cc_wise_summary_report.pdf");
+        }
 
-            // ── Institution name ─────────────────────────────────────────────
-            String institutionName = sessionController.getInstitution() != null ? sessionController.getInstitution().getName() : "";
-            com.lowagie.text.Paragraph hospitalName = new com.lowagie.text.Paragraph(institutionName, hospitalFont);
-            hospitalName.setAlignment(com.lowagie.text.Element.ALIGN_LEFT);
-            hospitalName.setSpacingAfter(2f);
-            pdf.add(hospitalName);
+        SimpleDateFormat sdf = new SimpleDateFormat("dd MM yyyy hh:mm:ss a");
+        DecimalFormat df = new DecimalFormat("#,##0.##");
+        String institutionName = sessionController.getInstitution() != null ? sessionController.getInstitution().getName() : "";
 
-            // ── Report title ──────────────────────────────────────────────
-            com.lowagie.text.Paragraph reportTitle = new com.lowagie.text.Paragraph("CC Wise Summary Report", reportFont);
-            reportTitle.setAlignment(com.lowagie.text.Element.ALIGN_LEFT);
-            reportTitle.setSpacingAfter(2f);
-            pdf.add(reportTitle);
+        try (OutputStream out = response.getOutputStream()) {
+            com.itextpdf.text.Document document = new com.itextpdf.text.Document(com.itextpdf.text.PageSize.A4.rotate());
+            com.itextpdf.text.pdf.PdfWriter.getInstance(document, out);
+            document.open();
 
-            // ── Generated date ────────────────────────────────────────────
-            SimpleDateFormat sdf = new SimpleDateFormat(
-                    sessionController.getApplicationPreference().getLongDateTimeFormat());
-            com.lowagie.text.Paragraph dateLine = new com.lowagie.text.Paragraph("Date: " + sdf.format(new Date()), dateFont);
-            dateLine.setAlignment(com.lowagie.text.Element.ALIGN_LEFT);
-            dateLine.setSpacingAfter(10f);
-            pdf.add(dateLine);
+            if (institutionName != null && !institutionName.isEmpty()) {
+                document.add(new com.itextpdf.text.Paragraph(institutionName, com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA_BOLD, 18)));
+            }
+            document.add(new com.itextpdf.text.Paragraph("Collection Center Wise Summary Report", com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA_BOLD, 16)));
+            document.add(new com.itextpdf.text.Paragraph("Date: " + sdf.format(new Date()), com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA, 12)));
+            document.add(new com.itextpdf.text.Paragraph(" "));
 
-            // ── Filter summary table ──────────────────────────────────────
+            int columnCount =9;
+
             Map<String, Object> filters = getFiltersForCollectionCenterWiseSummaryReport();
-
-            com.lowagie.text.pdf.PdfPTable filterTable = new com.lowagie.text.pdf.PdfPTable(8);
-            filterTable.setWidthPercentage(100f);
-            filterTable.setWidths(new float[]{12f, 20f, 12f, 20f, 12f, 20f, 12f, 20f});
-            filterTable.setSpacingAfter(10f);
-
-            List<Map.Entry<String, Object>> entries = new ArrayList<>(filters.entrySet());
-            int totalEntries = entries.size();
-            int cols = 4;
-
-            for (Map.Entry<String, Object> entry : entries) {
-
-                // Label cell
-                com.lowagie.text.pdf.PdfPCell labelCell = new com.lowagie.text.pdf.PdfPCell(
-                        new com.lowagie.text.Phrase(entry.getKey(), labelFont));
-                labelCell.setBorderColor(borderGray);
-                labelCell.setBorderWidth(0.5f);
-                labelCell.setPadding(4f);
-                labelCell.setBackgroundColor(lightGray);
-                filterTable.addCell(labelCell);
-
-                // Value cell
-                String val = entry.getValue() != null ? entry.getValue().toString() : "";
-                com.lowagie.text.pdf.PdfPCell valueCell = new com.lowagie.text.pdf.PdfPCell(
-                        new com.lowagie.text.Phrase(val, valueFont));
-                valueCell.setBorderColor(borderGray);
-                valueCell.setBorderWidth(0.5f);
-                valueCell.setPadding(4f);
-                filterTable.addCell(valueCell);
+            com.itextpdf.text.pdf.PdfPTable infoTable = pharmacyController.createInfoTablePdfExport(sdf, filters);
+            if (infoTable != null) {
+                document.add(infoTable);
             }
 
-            // ── Pad last row with empty cells if needed ───────────────────
-            int remainder = totalEntries % cols;
-            if (remainder != 0) {
-                int emptyCells = (cols - remainder) * 2;
-                for (int i = 0; i < emptyCells; i++) {
-                    com.lowagie.text.pdf.PdfPCell empty = new com.lowagie.text.pdf.PdfPCell(
-                            new com.lowagie.text.Phrase(""));
-                    empty.setBorderColor(borderGray);
-                    empty.setBorderWidth(0.5f);
-                    empty.setPadding(4f);
-                    filterTable.addCell(empty);
-                }
+            com.itextpdf.text.pdf.PdfPTable table = new com.itextpdf.text.pdf.PdfPTable(columnCount);
+            table.setWidthPercentage(100);
+
+            float[] columnWidths;
+            String[] headers;
+
+            columnWidths = new float[]{0.5f, 1f, 3f, 2f, 1f, 2f, 2f, 2f, 2f};
+            headers = new String[]{"S. No.", "CC Code", "CC Name", "CC Route", "Count", "Hos. Fee", "CC Fee", "Staff Fee", "Net Total"};
+
+            table.setWidths(columnWidths);
+
+            for (String header : headers) {
+                com.itextpdf.text.pdf.PdfPCell cell = new com.itextpdf.text.pdf.PdfPCell(new com.itextpdf.text.Phrase(header, com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA_BOLD, 8)));
+                cell.setBackgroundColor(com.itextpdf.text.BaseColor.LIGHT_GRAY);
+                table.addCell(cell);
             }
+            int indexRow = 1;
+            for (ReportTemplateRow row : bundle.getReportTemplateRows()) {
+                table.addCell(textCell(String.valueOf(indexRow), bodyFontSmall));
+                Institution cc = row.getInstitution();
+                table.addCell(textCell(cc !=null ? cc.getCode(): "-", bodyFontSmall));
+                table.addCell(textCell(cc!=null ? cc.getName() : "-", bodyFontSmall));
+                table.addCell(textCell(cc!=null && cc.getRoute()!= null ? cc.getRoute().getName(): "-", bodyFontSmall));
+                
+                table.addCell(numCell(row.getItemCount(), bodyFontSmall));
+                table.addCell(numCell(row.getItemHospitalFee(), bodyFontSmall));
+                table.addCell(numCell(row.getItemCollectingCentreFee(), bodyFontSmall));
+                table.addCell(numCell(row.getItemProfessionalFee(), bodyFontSmall));
+                table.addCell(numCell(row.getItemNetTotal(), bodyFontSmall));
+                indexRow++;
 
-            pdf.add(filterTable);
+            }
+            com.itextpdf.text.pdf.PdfPCell footerCell = new com.itextpdf.text.pdf.PdfPCell(new com.itextpdf.text.Phrase("Total", com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA_BOLD, 10)));
+            footerCell.setColspan(4);
+            footerCell.setBackgroundColor(com.itextpdf.text.BaseColor.LIGHT_GRAY);
+            footerCell.setHorizontalAlignment(Element.ALIGN_CENTER);
+            table.addCell(footerCell);
+            table.addCell(numCell(bundle.getCount(), bodyFontSmall));
+            table.addCell(numCell(bundle.getHospitalTotal(), bodyFontSmall));
+            table.addCell(numCell(bundle.getCcTotal(), bodyFontSmall));
+            table.addCell(numCell(bundle.getStaffTotal(), bodyFontSmall));
+            table.addCell(numCell(bundle.getTotal(), bodyFontSmall));
 
-        } catch (com.lowagie.text.DocumentException e) {
-            e.printStackTrace();
+            document.add(table);
+            document.close();
+            context.responseComplete();
+
+        } catch (Exception e) {
+            Logger.getLogger(ReportController.class
+                    .getName()).log(Level.SEVERE, "Error exporting Test Wise Count Report to PDF", e);
         }
     }
 
@@ -1800,97 +1805,165 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         }
     }
     
-    public void preProcessCollectionCenterBalanceReportPDF(Object document) {
-    try {
-        com.lowagie.text.Document pdf = (com.lowagie.text.Document) document;
-        pdf.setMargins(36f, 36f, 20f, 36f);
-
-        // ── BaseColor definitions ─────────────────────────────────────
-        java.awt.Color black      = new java.awt.Color(0,   0,   0);
-        java.awt.Color lightGray  = new java.awt.Color(245, 245, 245);
-        java.awt.Color borderGray = new java.awt.Color(180, 180, 180);
-
-        // ── Font definitions ──────────────────────────────────────────
-        com.lowagie.text.Font hospitalFont = new com.lowagie.text.Font(com.lowagie.text.Font.HELVETICA, 16f, com.lowagie.text.Font.BOLD,   black);
-        com.lowagie.text.Font reportFont   = new com.lowagie.text.Font(com.lowagie.text.Font.HELVETICA, 13f, com.lowagie.text.Font.BOLD,   black);
-        com.lowagie.text.Font dateFont     = new com.lowagie.text.Font(com.lowagie.text.Font.HELVETICA, 10f, com.lowagie.text.Font.NORMAL, black);
-        com.lowagie.text.Font labelFont    = new com.lowagie.text.Font(com.lowagie.text.Font.HELVETICA,  9f, com.lowagie.text.Font.BOLD,   black);
-        com.lowagie.text.Font valueFont    = new com.lowagie.text.Font(com.lowagie.text.Font.HELVETICA,  9f, com.lowagie.text.Font.NORMAL, black);
-
-        // ── Institution name ─────────────────────────────────────────────
-        String institutionName = sessionController.getInstitution() != null ? sessionController.getInstitution().getName() : "";
-        com.lowagie.text.Paragraph hospitalName = new com.lowagie.text.Paragraph(institutionName, hospitalFont);
-        hospitalName.setAlignment(com.lowagie.text.Element.ALIGN_LEFT);
-        hospitalName.setSpacingAfter(2f);
-        pdf.add(hospitalName);
-
-        // ── Report title ──────────────────────────────────────────────
-        com.lowagie.text.Paragraph reportTitle = new com.lowagie.text.Paragraph("Collection Center Balance Report", reportFont);
-        reportTitle.setAlignment(com.lowagie.text.Element.ALIGN_LEFT);
-        reportTitle.setSpacingAfter(2f);
-        pdf.add(reportTitle);
-
-        // ── Generated date ────────────────────────────────────────────
-        SimpleDateFormat sdf = new SimpleDateFormat(
-                sessionController.getApplicationPreference().getLongDateTimeFormat());
-        com.lowagie.text.Paragraph dateLine = new com.lowagie.text.Paragraph("Date: " + sdf.format(new Date()), dateFont);
-        dateLine.setAlignment(com.lowagie.text.Element.ALIGN_LEFT);
-        dateLine.setSpacingAfter(10f);
-        pdf.add(dateLine);
-
-        // ── Filter summary table ──────────────────────────────────────
-        Map<String, Object> filters = getFiltersForCollectionCenterBalanceReport();
-
-        com.lowagie.text.pdf.PdfPTable filterTable = new com.lowagie.text.pdf.PdfPTable(8);
-        filterTable.setWidthPercentage(100f);
-        filterTable.setWidths(new float[]{12f, 20f, 12f, 20f, 12f, 20f, 12f, 20f});
-        filterTable.setSpacingAfter(10f);
-
-        List<Map.Entry<String, Object>> entries = new ArrayList<>(filters.entrySet());
-        int totalEntries = entries.size();
-        int cols = 4;
-
-        for (Map.Entry<String, Object> entry : entries) {
-
-            // Label cell
-            com.lowagie.text.pdf.PdfPCell labelCell = new com.lowagie.text.pdf.PdfPCell(
-                    new com.lowagie.text.Phrase(entry.getKey(), labelFont));
-            labelCell.setBorderColor(borderGray);
-            labelCell.setBorderWidth(0.5f);
-            labelCell.setPadding(4f);
-            labelCell.setBackgroundColor(lightGray);
-            filterTable.addCell(labelCell);
-
-            // Value cell
-            String val = entry.getValue() != null ? entry.getValue().toString() : "";
-            com.lowagie.text.pdf.PdfPCell valueCell = new com.lowagie.text.pdf.PdfPCell(
-                    new com.lowagie.text.Phrase(val, valueFont));
-            valueCell.setBorderColor(borderGray);
-            valueCell.setBorderWidth(0.5f);
-            valueCell.setPadding(4f);
-            filterTable.addCell(valueCell);
+    public void exportCollectionCenterBalanceReportToPDF() {
+        if (bundle == null || bundle.getReportTemplateRows() == null || bundle.getReportTemplateRows().isEmpty()) {
+            JsfUtil.addErrorMessage("No data to export. Please process the report first.");
+            return;
         }
 
-        // ── Pad last row with empty cells if needed ───────────────────
-        int remainder = totalEntries % cols;
-        if (remainder != 0) {
-            int emptyCells = (cols - remainder) * 2;
-            for (int i = 0; i < emptyCells; i++) {
-                com.lowagie.text.pdf.PdfPCell empty = new com.lowagie.text.pdf.PdfPCell(
-                        new com.lowagie.text.Phrase(""));
-                empty.setBorderColor(borderGray);
-                empty.setBorderWidth(0.5f);
-                empty.setPadding(4f);
-                filterTable.addCell(empty);
+        com.itextpdf.text.Font bodyFontSmall = com.itextpdf.text.FontFactory.getFont(
+                com.itextpdf.text.FontFactory.HELVETICA, 8);
+
+        FacesContext context = FacesContext.getCurrentInstance();
+        ExternalContext externalContext = context.getExternalContext();
+        HttpServletResponse response = (HttpServletResponse) externalContext.getResponse();
+        response.reset();
+
+        String dates = CommonFunctions.dateRangeForFileName(
+                fromDate, toDate,
+                sessionController.getApplicationPreference().getLongDateFormat());
+
+        response.setContentType("application/pdf");
+        if (dates != null && !dates.isEmpty()) {
+            response.setHeader("Content-Disposition",
+                    "attachment; filename=Collection_center_balance_report_" + dates + ".pdf");
+        } else {
+            response.setHeader("Content-Disposition",
+                    "attachment; filename=Collection_center_balance_report.pdf");
+        }
+
+        SimpleDateFormat sdf = new SimpleDateFormat("dd MM yyyy hh:mm:ss a");
+        String institutionName = sessionController.getInstitution() != null
+                ? sessionController.getInstitution().getName() : "";
+
+        try (OutputStream out = response.getOutputStream()) {
+
+            com.itextpdf.text.Document document = new com.itextpdf.text.Document(
+                    com.itextpdf.text.PageSize.A4.rotate());
+            com.itextpdf.text.pdf.PdfWriter.getInstance(document, out);
+            document.open(); // ✅ fixed from [document.open](http://document.open)()
+
+            if (!institutionName.isEmpty()) {
+                document.add(new com.itextpdf.text.Paragraph(institutionName,
+                        com.itextpdf.text.FontFactory.getFont(
+                                com.itextpdf.text.FontFactory.HELVETICA_BOLD, 18)));
             }
+            document.add(new com.itextpdf.text.Paragraph("Collection Center Balance Report",
+                    com.itextpdf.text.FontFactory.getFont(
+                            com.itextpdf.text.FontFactory.HELVETICA_BOLD, 16)));
+            document.add(new com.itextpdf.text.Paragraph("Date: " + sdf.format(new Date()),
+                    com.itextpdf.text.FontFactory.getFont(
+                            com.itextpdf.text.FontFactory.HELVETICA, 12)));
+            document.add(new com.itextpdf.text.Paragraph(" "));
+
+            // ✅ All colors now use iText BaseColor instead of java.awt.Color
+            com.itextpdf.text.BaseColor black      = new com.itextpdf.text.BaseColor(0,   0,   0);
+            com.itextpdf.text.BaseColor lightGray  = new com.itextpdf.text.BaseColor(245, 245, 245);
+            com.itextpdf.text.BaseColor borderGray = new com.itextpdf.text.BaseColor(180, 180, 180);
+
+            // ✅ Font now uses iText Font class with iText BaseColor
+            com.itextpdf.text.Font labelFont = new com.itextpdf.text.Font(
+                    com.itextpdf.text.Font.FontFamily.HELVETICA, 9f,
+                    com.itextpdf.text.Font.BOLD, black);
+            com.itextpdf.text.Font valueFont = new com.itextpdf.text.Font(
+                    com.itextpdf.text.Font.FontFamily.HELVETICA, 9f,
+                    com.itextpdf.text.Font.NORMAL, black);
+
+            // ── Filter Table ──────────────────────────────────────────────────
+            com.itextpdf.text.pdf.PdfPTable filterTable =
+                    new com.itextpdf.text.pdf.PdfPTable(4);
+            filterTable.setWidthPercentage(100f);
+            filterTable.setWidths(new float[]{18f, 32f, 18f, 32f});
+            filterTable.setSpacingAfter(10f);
+
+            Map<String, Object> filters = getFiltersForCollectionCenterBalanceReport();
+            List<Map.Entry<String, Object>> entries = new ArrayList<>(filters.entrySet());
+            int totalEntries = entries.size();
+            int cols = 2;
+
+            for (Map.Entry<String, Object> entry : entries) {
+
+                // ✅ Label cell — fully iText
+                com.itextpdf.text.pdf.PdfPCell labelCell = new com.itextpdf.text.pdf.PdfPCell(
+                        new com.itextpdf.text.Phrase(entry.getKey(), labelFont));
+                labelCell.setBorderColor(borderGray);
+                labelCell.setBorderWidth(0.5f);
+                labelCell.setPadding(4f);
+                labelCell.setBackgroundColor(lightGray);
+                filterTable.addCell(labelCell);
+
+                // ✅ Value cell — fully iText
+                String val = entry.getValue() != null ? entry.getValue().toString() : "";
+                com.itextpdf.text.pdf.PdfPCell valueCell = new com.itextpdf.text.pdf.PdfPCell(
+                        new com.itextpdf.text.Phrase(val, valueFont));
+                valueCell.setBorderColor(borderGray);
+                valueCell.setBorderWidth(0.5f);
+                valueCell.setPadding(4f);
+                filterTable.addCell(valueCell);
+            }
+
+            // ── Pad last row if needed ────────────────────────────────────────
+            int remainder = totalEntries % cols;
+            if (remainder != 0) {
+                int emptyCells = (cols - remainder) * 2;
+                for (int i = 0; i < emptyCells; i++) {
+                    // ✅ Empty cell — fully iText
+                    com.itextpdf.text.pdf.PdfPCell empty = new com.itextpdf.text.pdf.PdfPCell(
+                            new com.itextpdf.text.Phrase(""));
+                    empty.setBorderColor(borderGray);
+                    empty.setBorderWidth(0.5f);
+                    empty.setPadding(4f);
+                    filterTable.addCell(empty);
+                }
+            }
+            document.add(filterTable);
+
+            // ── Data Table ────────────────────────────────────────────────────
+            int columnCount = 8;
+            com.itextpdf.text.pdf.PdfPTable table =
+                    new com.itextpdf.text.pdf.PdfPTable(columnCount);
+            table.setWidthPercentage(100);
+            table.setWidths(new float[]{0.5f, 3f, 2f, 2f, 2f, 1f, 1f, 1f});
+
+            // ✅ Fixed [S.No](http://S.No) markdown artifact → plain "S.No"
+            String[] headers = {"S.No", "CC Name", "CC Route", "CC Code",
+                                 "CC Phone No.", "CC Credit Limit", "Max Credit Limit", "CC Balance"};
+
+            for (String header : headers) {
+                com.itextpdf.text.pdf.PdfPCell cell = new com.itextpdf.text.pdf.PdfPCell(
+                        new com.itextpdf.text.Phrase(header,
+                                com.itextpdf.text.FontFactory.getFont(
+                                        com.itextpdf.text.FontFactory.HELVETICA_BOLD, 7)));
+                cell.setBackgroundColor(com.itextpdf.text.BaseColor.LIGHT_GRAY);
+                table.addCell(cell);
+            }
+
+            List<ReportTemplateRow> rows = bundle.getReportTemplateRows();
+            int indexNumber = 1;
+            for (ReportTemplateRow row : rows) {
+                AgentHistory ac  = row.getAgentHistory();
+                Institution  acc = ac.getAgency();
+
+                table.addCell(textCell(String.valueOf(indexNumber), bodyFontSmall));
+                table.addCell(textCell(acc.getName(), bodyFontSmall));
+                table.addCell(textCell(acc.getRoute() != null ? acc.getRoute().getName() : "-", bodyFontSmall));
+                table.addCell(textCell(acc.getCode(), bodyFontSmall));
+                table.addCell(textCell(acc.getPhone(), bodyFontSmall));
+                table.addCell(numCell(acc.getAllowedCreditLimit(), bodyFontSmall));
+                table.addCell(numCell(acc.getMaxCreditLimit(), bodyFontSmall)); // ⚠️ duplicate — verify correct field
+                table.addCell(numCell(ac.getBalanceAfterTransaction(), bodyFontSmall));
+                indexNumber++;
+            }
+
+            document.add(table);
+            document.close();
+            context.responseComplete();
+
+        } catch (Exception e) {
+            Logger.getLogger(ReportController.class.getName())
+                    .log(Level.SEVERE, "Error exporting Collection Center Balance Report to PDF", e);
         }
-
-        pdf.add(filterTable);
-
-    } catch (com.lowagie.text.DocumentException e) {
-        e.printStackTrace();
     }
-}
 
     public void processCurrentCollectionCenterBalance() {
         bundle = new ReportTemplateRowBundle();
@@ -2571,8 +2644,21 @@ public class ReportController implements Serializable, ControllerWithReportFilte
             calculateTotalTestCount();
         }, LaboratoryReport.COLLECTION_CENTER_STATEMENT_REPORT, sessionController.getLoggedUser());
     }
+    public String returnSiteIdsString() {
+        if (siteIds == null || siteIds.isEmpty()) {
+            return "All";
+        }
+        StringBuilder sb = new StringBuilder();
+        for (Object element : (List<?>) siteIds) {
+            if (sb.length() > 0) {
+                sb.append(", ");
+            }
+            Institution siteName= institutionController.findInstitution(String.valueOf(element));
+            sb.append(siteName.getName());
+        }
+        return sb.toString();
+    }
 
-    
       // Filters for test count report
     public Map<String, Object> getFiltersForTestCountReport() {
         SimpleDateFormat sdf = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
@@ -2582,6 +2668,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         filters.put("To Date", sdf.format(getToDate()));
         filters.put("Analyzer", machine != null ? machine.getName() : "All");
         filters.put("Institution", institution != null ? institution.getName() : "All");
+        filters.put("Site",siteIds != null && !siteIds.isEmpty() ? returnSiteIdsString() : "All" );
         filters.put("Department", department != null ? department.getName() : "All");
         return filters;
     }
@@ -3045,7 +3132,20 @@ public class ReportController implements Serializable, ControllerWithReportFilte
                 table.addCell(textCell(row.getBillItem().getBill().getFromInstitution().getRoute()!= null ? row.getBillItem().getBill().getFromInstitution().getRoute().getName() : "-",bodyFontSmall));
                 table.addCell(textCell(row.getBillItem().getBill().getReferredInstituteOrDoctor()!=null ? row.getBillItem().getBill().getReferredInstituteOrDoctor().getName() : "-",bodyFontSmall));
                 table.addCell(textCell(row.getInvestigation()!= null ? row.getInvestigation().getName() : "-",bodyFontSmall));
-                table.addCell(textCell(row.getStatus()!= null ? row.getStatus().getLabel() : "-",bodyFontSmall));
+                StringBuilder statusBuilder = new StringBuilder();
+                statusBuilder.append(row.getStatus() != null ? row.getStatus().getLabel() : "-");
+
+                if (row.getBillItem() != null 
+                        && row.getBillItem().getBill() != null) {
+                    if (Boolean.TRUE.equals(row.getBillItem().getBill().isCancelled())) {
+                        statusBuilder.append(" [Cancelled]");
+                    }
+                    if (Boolean.TRUE.equals(row.getBillItem().getBill().isRefunded())) {
+                        statusBuilder.append(" [Refunded]");
+                    }
+                }
+                
+                table.addCell(textCell(statusBuilder.toString(),bodyFontSmall));
                 table.addCell(textCell(row.getPrintingUser()!= null ? row.getPrintingUser().getName() : "-",bodyFontSmall));
                 table.addCell(textCell(row.getPrintingAt() != null ? sdf.format(row.getPrintingAt()) : "-",bodyFontSmall));
                 indexNumber+=1;

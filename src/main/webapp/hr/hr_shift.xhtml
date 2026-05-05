@@ -317,6 +317,71 @@
                                                   styleClass="muted-value" />
                                 </h:panelGrid>
 
+                                <div class="subsection-title">Staff Requirement</div>
+                                <h:panelGrid columns="2" styleClass="detail-grid" columnClasses="labelCol,valueCol">
+
+                                    <p:outputLabel for="mondayCount" value="Monday" />
+                                    <p:spinner id="mondayCount"
+                                            value="#{shiftController.current.staffRequirement.mondayCount}"
+                                            min="0"
+                                            styleClass="full-width" />
+
+                                    <p:outputLabel for="tuesdayCount" value="Tuesday" />
+                                    <p:spinner id="tuesdayCount"
+                                            value="#{shiftController.current.staffRequirement.tuesdayCount}"
+                                            min="0"
+                                            styleClass="full-width" />
+
+                                    <p:outputLabel for="wednesdayCount" value="Wednesday" />
+                                    <p:spinner id="wednesdayCount"
+                                            value="#{shiftController.current.staffRequirement.wednesdayCount}"
+                                            min="0"
+                                            styleClass="full-width" />
+
+                                    <p:outputLabel for="thursdayCount" value="Thursday" />
+                                    <p:spinner id="thursdayCount"
+                                            value="#{shiftController.current.staffRequirement.thursdayCount}"
+                                            min="0"
+                                            styleClass="full-width" />
+
+                                    <p:outputLabel for="fridayCount" value="Friday" />
+                                    <p:spinner id="fridayCount"
+                                            value="#{shiftController.current.staffRequirement.fridayCount}"
+                                            min="0"
+                                            styleClass="full-width" />
+
+                                    <p:outputLabel for="saturdayCount" value="Saturday" />
+                                    <p:spinner id="saturdayCount"
+                                            value="#{shiftController.current.staffRequirement.saturdayCount}"
+                                            min="0"
+                                            styleClass="full-width" />
+
+                                    <p:outputLabel for="sundayCount" value="Sunday" />
+                                    <p:spinner id="sundayCount"
+                                            value="#{shiftController.current.staffRequirement.sundayCount}"
+                                            min="0"
+                                            styleClass="full-width" />
+
+                                    <p:outputLabel for="poyaDayCount" value="Poya Day" />
+                                    <p:spinner id="poyaDayCount"
+                                            value="#{shiftController.current.staffRequirement.poyaDayCount}"
+                                            min="0"
+                                            styleClass="full-width" />
+
+                                    <p:outputLabel for="publicHolidayCount" value="Public Holiday" />
+                                    <p:spinner id="publicHolidayCount"
+                                            value="#{shiftController.current.staffRequirement.publicHolidayCount}"
+                                            min="0"
+                                            styleClass="full-width" />
+
+                                    <p:outputLabel for="mercantileHolidayCount" value="Mercantile Holiday" />
+                                    <p:spinner id="mercantileHolidayCount"
+                                            value="#{shiftController.current.staffRequirement.mercantileHolidayCount}"
+                                            min="0"
+                                            styleClass="full-width" />
+
+                                </h:panelGrid>
+
                                 <div class="subsection-title">Flags</div>
                                 <div class="checkbox-grid">
                                     <div class="checkbox-item">

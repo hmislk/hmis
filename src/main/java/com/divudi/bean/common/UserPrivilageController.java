@@ -666,12 +666,15 @@ public class UserPrivilageController implements Serializable {
 
         TreeNode handoverAcceptAsCashier = new DefaultTreeNode(new PrivilegeHolder(Privileges.ShiftHandoverAcceptAsCashier, "Shift Handover Accept As A Cashier"), cashTransactionNode);
         TreeNode handoverAcceptAsMainCashier = new DefaultTreeNode(new PrivilegeHolder(Privileges.ShiftHandoverAcceptAsMainCashier, "Shift Handover Accept As Main Cashier"), cashTransactionNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.SettleHandoverProofMissing, "Settle Handover Proof Missing"), cashTransactionNode);
 
         TreeNode listToCashReceiveNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.CashTransactionListToCashRecieve, "List To Cash Receive"), cashTransactionNode);
 
         TreeNode PettyCashBillApprove = new DefaultTreeNode(new PrivilegeHolder(Privileges.PettyCashBillApprove, "Petty Cash Bill Approval"), cashTransactionNode);
         TreeNode PettyCashBillCancellationApprove = new DefaultTreeNode(new PrivilegeHolder(Privileges.PettyCashBillCancellationApprove, "Petty Cash Bill Cancellation Approval"), cashTransactionNode);
+        TreeNode PettyCashEditFinancialYear = new DefaultTreeNode(new PrivilegeHolder(Privileges.PettyCashEditFinancialYear, "Petty Cash Edit Financial Year"), cashTransactionNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.AllCashierSummery, "All Cashier Summary"), cashTransactionNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.CashierHandoverStatusReport, "Cashier Handover Status Report"), cashTransactionNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.IncomeReport, "Income Report"), cashTransactionNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.DuesAndAccess, "Dues and Access"), cashTransactionNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.CheckEnteredData, "Check Entered Data"), cashTransactionNode);

@@ -1,0 +1,447 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/reportLab/lab_summeries_index.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <ui:define name="subcontent">
+        <h:outputStylesheet library="css" name="printing.css"/>
+
+        <style>
+            .cancel-report-card {
+                border: 1px solid #e3e6ea;
+                border-radius: 6px;
+                padding: 12px 16px;
+                background: #ffffff;
+            }
+            .cancel-report-summary {
+                display: flex;
+                gap: 12px;
+                flex-wrap: wrap;
+                margin-bottom: 8px;
+            }
+            .cancel-summary-tile {
+                flex: 1 1 220px;
+                border-radius: 6px;
+                padding: 12px 16px;
+                color: #fff;
+                box-shadow: 0 1px 2px rgba(0,0,0,.08);
+            }
+            .cancel-summary-tile .tile-label {
+                font-size: 12px;
+                text-transform: uppercase;
+                letter-spacing: .5px;
+                opacity: .9;
+            }
+            .cancel-summary-tile .tile-value {
+                font-size: 22px;
+                font-weight: 600;
+                margin-top: 4px;
+            }
+            .tile-bills    {
+                background: linear-gradient(135deg, #6c757d, #495057);
+            }
+            .tile-amount   {
+                background: linear-gradient(135deg, #dc3545, #a71d2a);
+            }
+            .tile-range    {
+                background: linear-gradient(135deg, #0d6efd, #084298);
+            }
+            .filter-label  {
+                font-weight: 600;
+            }
+            .source-toggle-group {
+                display: inline-flex;
+                gap: 18px;
+                align-items: center;
+                padding: 6px 12px;
+                border: 1px dashed #ced4da;
+                border-radius: 4px;
+                background: #f8f9fa;
+            }
+            .source-toggle-group label {
+                margin: 0;
+            }
+            .amount-col   {
+                text-align: right;
+                padding-right: 12px;
+            }
+            .center-col   {
+                text-align: center;
+            }
+            .cancel-toolbar {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                margin: 8px 0 12px 0;
+            }
+            .bill-type-badge {
+                display: inline-block;
+                min-width: 32px;
+                padding: 2px 8px;
+                border-radius: 10px;
+                font-size: 11px;
+                font-weight: 700;
+                letter-spacing: .5px;
+                color: #fff;
+            }
+            .bill-type-OP { background: #0d6efd; }
+            .bill-type-IP { background: #6f42c1; }
+            .bill-type-CC { background: #198754; }
+        </style>
+
+        <h:form id="frmCancelledLabBills">
+
+            <p:panel>
+                <f:facet name="header">
+                    <span>
+                        <i class="fa-solid fa-ban me-2" style="color:#dc3545;"/>
+                        <h:outputLabel value="List of Cancelled Lab Bills"/>
+                    </span>
+                </f:facet>
+
+                <div class="cancel-report-summary">
+                    <div class="cancel-summary-tile tile-bills">
+                        <div class="tile-label">Total Cancelled Bills</div>
+                        <div class="tile-value">
+                            <h:outputText value="#{laborataryReportController.cancelledLabBillsCount}">
+                                <f:convertNumber pattern="#,##0"/>
+                            </h:outputText>
+                        </div>
+                    </div>
+                    <div class="cancel-summary-tile tile-amount">
+                        <div class="tile-label">Total Cancelled Amount</div>
+                        <div class="tile-value">
+                            <h:outputText value="#{laborataryReportController.cancelledLabBillsTotalAmount}">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputText>
+                        </div>
+                    </div>
+                    <div class="cancel-summary-tile tile-range">
+                        <div class="tile-label">Date Range</div>
+                        <div class="tile-value" style="font-size:14px;">
+                            <h:outputText value="#{laborataryReportController.fromDate}">
+                                <f:convertDateTime pattern="dd MMM yyyy"/>
+                            </h:outputText>
+                            <h:outputText value=" — "/>
+                            <h:outputText value="#{laborataryReportController.toDate}">
+                                <f:convertDateTime pattern="dd MMM yyyy"/>
+                            </h:outputText>
+                        </div>
+                    </div>
+                </div>
+
+                <h:panelGroup layout="block"
+                              styleClass="d-flex justify-content-end gap-4 mb-2"
+                              style="font-size:12px; color:#555;"
+                              rendered="#{laborataryReportController.cancelledLabBillsProcessedAt ne null}">
+                    <span>
+                        <span style="font-weight:600;">Last Processed By: </span>
+                        <h:outputText value="#{laborataryReportController.cancelledLabBillsProcessedBy}"/>
+                    </span>
+                    <span style="margin-left: 16px;">
+                        <span style="font-weight:600;">Last Processed At: </span>
+                        <h:outputText value="#{laborataryReportController.cancelledLabBillsProcessedAt}">
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                        </h:outputText>
+                    </span>
+                </h:panelGroup>
+
+                <h:panelGrid columns="8" styleClass="w-100 form-grid" columnClasses="label-icon-column, input-column">
+                    <h:panelGroup layout="block" styleClass="form-group">
+                        <h:outputText value="&#xf073;" styleClass="fa ml-5" /> <!-- FontAwesome calendar icon -->
+                        <h:outputLabel value="From" for="fromDate" class="mx-3"/>
+                    </h:panelGroup>
+                    <p:calendar 
+                        styleClass="w-100" 
+                        inputStyleClass="w-100 form-control" 
+                        id="fromDate" 
+                        value="#{laborataryReportController.fromDate}" 
+                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+
+                    <p:spacer width="50" ></p:spacer>
+
+                    <h:panelGroup layout="block" styleClass="form-group">
+                        <h:outputText value="&#xf073;" styleClass="fa mr-2" /> <!-- FontAwesome calendar icon -->
+                        <h:outputLabel value="To" for="toDate" class="mx-3"/>
+                    </h:panelGroup>
+                    <p:calendar 
+                        styleClass="w-100 dateTimePicker" 
+                        inputStyleClass="w-100 form-control" 
+                        id="toDate"
+                        value="#{laborataryReportController.toDate}" 
+                        navigator="false" 
+                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
+                    </p:calendar>
+
+                    <p:spacer width="50" ></p:spacer>
+                    <p:spacer width="50" ></p:spacer>
+                    <p:spacer width="50" ></p:spacer>
+
+                    <h:panelGroup layout="block" styleClass="form-group">
+                        <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> 
+                        <h:outputLabel value="Institution" for="cmbIns" class="mx-3"/>
+                    </h:panelGroup>
+                    <p:selectOneMenu
+                        id="cmbIns"
+                        styleClass="w-100 form-control" 
+                        value="#{laborataryReportController.institution}" 
+                        filter="true">
+                        <f:selectItem itemLabel="All Institutions" />
+                        <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
+                        <p:ajax process="cmbIns" update="cmbDept" />
+                    </p:selectOneMenu>
+
+                    <p:spacer ></p:spacer>
+
+                    <h:panelGroup layout="block" styleClass="form-group">
+                        <h:outputText value="&#xf3c5;" styleClass="fa mr-2" /> 
+                        <h:outputLabel value="Site" for="siteMenu" class="mx-3"/>
+                    </h:panelGroup>
+                    <p:selectOneMenu
+                        id="siteMenu"
+                        styleClass="w-100 form-control"  
+                        value="#{laborataryReportController.site}" 
+                        filter="true">
+                        <f:selectItem itemLabel="All Sites" />
+                        <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
+                        <p:ajax process="siteMenu" update="cmbDept" />
+                    </p:selectOneMenu>
+
+                    <p:spacer ></p:spacer>
+
+                    <h:panelGroup layout="block" styleClass="form-group">
+                        <h:outputText value="&#xf0e8;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
+                        <h:outputLabel value="Department" for="cmbDept" class="mx-3"/>
+                    </h:panelGroup>
+                    <h:panelGroup id="cmbDept">
+
+                        <!-- Component 1: Without Institution and Site -->
+                        <p:selectOneMenu
+                            rendered="#{laborataryReportController.institution eq null and laborataryReportController.site eq null}"
+                            styleClass="w-100 form-control"
+                            value="#{laborataryReportController.department}"
+                            filterMatchMode="contains"
+                            filter="true">
+                            <f:selectItem itemLabel="All Departments" />
+                            <f:selectItems 
+                                value="#{departmentController.getDepartmentsOfInstitutionAndSite()}"
+                                var="d"
+                                itemLabel="#{d.name}"
+                                itemValue="#{d}" />
+                        </p:selectOneMenu>
+
+                        <!-- Component 2: With Site Only -->
+                        <p:selectOneMenu
+                            rendered="#{laborataryReportController.institution eq null and laborataryReportController.site ne null}"
+                            styleClass="w-100 form-control"
+                            value="#{laborataryReportController.department}"
+                            filterMatchMode="contains"
+                            filter="true">
+                            <f:selectItem itemLabel="All Departments" />
+                            <f:selectItems 
+                                value="#{departmentController.getDepartmentsOfInstitutionAndSite(laborataryReportController.site)}"
+                                var="d"
+                                itemLabel="#{d.name}"
+                                itemValue="#{d}" />
+                        </p:selectOneMenu>
+
+                        <!-- Component 3: With Institution Only -->
+                        <p:selectOneMenu
+                            rendered="#{laborataryReportController.institution ne null and laborataryReportController.site eq null}"
+                            styleClass="w-100 form-control"
+                            value="#{laborataryReportController.department}"
+                            filterMatchMode="contains"
+                            filter="true">
+                            <f:selectItem itemLabel="All Departments" />
+                            <f:selectItems 
+                                value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(laborataryReportController.institution)}"
+                                var="d"
+                                itemLabel="#{d.name}"
+                                itemValue="#{d}" />
+                        </p:selectOneMenu>
+
+                        <!-- Component 4: With Both Institution and Site -->
+                        <p:selectOneMenu
+                            rendered="#{laborataryReportController.institution ne null and laborataryReportController.site ne null}"
+                            styleClass="w-100 form-control"
+                            value="#{laborataryReportController.department}"
+                            filterMatchMode="contains"
+                            filter="true">
+                            <f:selectItem itemLabel="All Departments" />
+                            <f:selectItems 
+                                value="#{departmentController.getDepartmentsOfInstitutionAndSite(laborataryReportController.institution, laborataryReportController.site)}"
+                                var="d"
+                                itemLabel="#{d.name}"
+                                itemValue="#{d}" />
+                        </p:selectOneMenu>
+
+                    </h:panelGroup>
+
+                </h:panelGrid>
+
+                <div class="col-12 my-3">
+                    <h:outputLabel value="Bill Sources" styleClass="filter-label" class="me-5"/>
+                    <span class="source-toggle-group">
+                        <p:selectBooleanCheckbox id="opdChk" value="#{laborataryReportController.opdLabBills}"/>
+                        <h:outputLabel for="opdChk" value=" Outpatient"/>
+                        <p:selectBooleanCheckbox id="ipChk" value="#{laborataryReportController.inpatientLabBills}"/>
+                        <h:outputLabel for="ipChk" value=" Inpatient"/>
+                        <p:selectBooleanCheckbox id="ccChk" value="#{laborataryReportController.ccLabBills}"/>
+                        <h:outputLabel for="ccChk" value=" Collecting Centre"/>
+                    </span>
+                </div>
+
+                <div class="cancel-toolbar">
+                    <p:commandButton 
+                        id="btnProcess"
+                        ajax="false"
+                        value="Process"
+                        icon="fa-solid fa-arrows-rotate"
+                        styleClass="ui-button-warning"
+                        action="#{laborataryReportController.processLabCancelledBillList}">
+                    </p:commandButton>
+                    <p:commandButton
+                        id="btnExcel"
+                        ajax="false"
+                        value="Excel"
+                        icon="fa-solid fa-file-excel"
+                        styleClass="ui-button-success"
+                        actionListener="#{laborataryReportController.downloadCancelledLabBillsExcel}"/>
+                    <p:commandButton
+                        id="btnPrint"
+                        ajax="false"
+                        value="To Print"
+                        icon="fa-solid fa-print"
+                        styleClass="ui-button-info"
+                        action="lab_cancelled_bill_list_print?faces-redirect=true"/>
+                </div>
+
+                <p:dataTable 
+                    id="tblCancelledLabBills"
+                    value="#{laborataryReportController.cancelledLabBills}"
+                    var="row"
+                    rowIndexVar="i"
+                    styleClass="w-100"
+                    rows="25"
+                    paginator="true"
+                    paginatorPosition="bottom"
+                    paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                    currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
+                    rowsPerPageTemplate="25,50,100,{ShowAll|'All'}"
+                    emptyMessage="No cancelled lab bills found for the selected filters.">
+
+                    <f:facet name="header">
+                        <div style="padding: 3px !important; margin: 0 !important;">
+                            <div class="d-flex justify-content-center" style="font-weight: 700; font-size: 24px;">
+                                <h:outputText value="#{sessionController.institution.name}"/>
+                            </div>
+                            <div class="d-flex justify-content-center mt-1" style="font-weight: 700; font-size: 18px;">
+                                <h:outputText value="List of Cancelled Lab Bills"/>
+                            </div>
+
+                            <div class="d-flex justify-content-center mt-2" style="font-size: 14px;">
+                                <div class="d-flex gap-3">
+                                    <h:outputText value="From" style="font-weight: 600;"/>
+                                    <h:outputText value="#{laborataryReportController.fromDate}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                    </h:outputText>
+                                </div>
+                                <p:spacer width="40"/>
+                                <div class="d-flex gap-3">
+                                    <h:outputText value="To" style="font-weight: 600;"/>
+                                    <h:outputText value="#{laborataryReportController.toDate}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                    </h:outputText>
+                                </div>
+                            </div>
+
+                            <div class="d-flex justify-content-center mt-2 gap-4" style="font-size: 14px; flex-wrap: wrap;">
+                                <h:panelGroup rendered="#{laborataryReportController.institution ne null}">
+                                    <span style="font-weight: 600;">Institution: </span>
+                                    <h:outputText value="#{laborataryReportController.institution.name}"/>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{laborataryReportController.site ne null}">
+                                    <span style="font-weight: 600;">Site: </span>
+                                    <h:outputText value="#{laborataryReportController.site.name}"/>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{laborataryReportController.department ne null}">
+                                    <span style="font-weight: 600;">Department: </span>
+                                    <h:outputText value="#{laborataryReportController.department.name}"/>
+                                </h:panelGroup>
+                            </div>
+
+                            <div class="d-flex justify-content-center mt-1" style="font-size: 13px;">
+                                <span style="font-weight: 600;">Bill Sources: </span>
+                                <h:outputText value=" Outpatient" rendered="#{laborataryReportController.opdLabBills}"/>
+                                <h:outputText value=" | Inpatient" rendered="#{laborataryReportController.inpatientLabBills}"/>
+                                <h:outputText value=" | Collecting Centre" rendered="#{laborataryReportController.ccLabBills}"/>
+                            </div>
+
+                            <div class="d-flex justify-content-end mt-2" style="font-size: 12px; color: #555;">
+                                <span style="font-weight: 600;">Printed By: </span>
+                                <h:outputText value=" #{sessionController.loggedUser.webUserPerson.nameWithTitle}"/>
+                            </div>
+                        </div>
+                    </f:facet>
+
+                    <p:column headerText="No" class="text-center" width="40" style="padding: 6px;">
+                        <h:outputLabel value="#{i + 1}" class="text-center"/>
+                    </p:column>
+
+                    <p:column headerText="Bill Type" width="6em;" class="text-center" style="padding: 6px;">
+                        <span class="bill-type-badge bill-type-#{row.billTypeLabel}">
+                            <h:outputText value="#{row.billTypeLabel}"/>
+                        </span>
+                    </p:column>
+
+                    <p:column headerText="Original Bill No" width="12em;" style="padding: 6px;">
+                        <h:outputLabel value="#{row.originalBillNumber}" style="font-weight:600;"/>
+                    </p:column>
+
+                    <p:column headerText="Cancel Bill No" width="12em;" style="padding: 6px;">
+                        <h:outputLabel value="#{row.cancelBillNumber}" style="color:#dc3545; font-weight:600;"/>
+                    </p:column>
+
+                    <p:column headerText="Bill At" width="12em;" style="padding: 6px;">
+                        <h:outputLabel value="#{row.billedAt}">
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                        </h:outputLabel>
+                    </p:column>
+
+                    <p:column headerText="Cancel At" width="12em;" style="padding: 6px;">
+                        <h:outputLabel value="#{row.cancelledAt}">
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                        </h:outputLabel>
+                    </p:column>
+
+                    <p:column headerText="Cancel By" style="padding: 6px;">
+                        <h:outputLabel value="#{row.cancelledByDisplay}"/>
+                    </p:column>
+
+                    <p:column headerText="Reason for Cancel" style="padding: 6px;">
+                        <h:outputLabel value="#{row.reasonForCancel}"/>
+                    </p:column>
+
+                    <p:column headerText="Payment Method" width="8em;" style="padding: 6px;">
+                        <h:outputLabel value="#{row.paymentMethod}"/>
+                    </p:column>
+
+                    <p:column headerText="Amount" class="text-end" width="8em;" style="padding: 6px;">
+                        <h:outputLabel value="#{row.absoluteAmount}" style="font-weight:600;">
+                            <f:convertNumber pattern="#,##0.00"/>
+                        </h:outputLabel>
+                        <f:facet name="footer">
+                            <h:outputText value="#{laborataryReportController.cancelledLabBillsTotalAmount}" style="font-weight: 700; font-size: 22px;">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputText>
+                        </f:facet>
+                    </p:column>
+                </p:dataTable>
+            </p:panel>
+
+        </h:form>
+    </ui:define>
+</ui:composition>

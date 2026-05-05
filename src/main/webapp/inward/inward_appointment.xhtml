@@ -373,15 +373,6 @@
                                                     </h:panelGroup>
 
                                                     <h:panelGroup
-                                                        id="multiplePaymentMethods"
-                                                        rendered="#{appointmentController.currentBill.paymentMethod eq 'MultiplePaymentMethods'}">
-                                                        <pa:multiple_payment_methods_inwardDeposit
-                                                            controller="#{appointmentController}"
-                                                            paymentMethods="#{enumController.getPaymentMethodsForMultiplePaymentMethod()}" >
-                                                        </pa:multiple_payment_methods_inwardDeposit>
-                                                    </h:panelGroup>
-
-                                                    <h:panelGroup
                                                         id="onlinePayment"
                                                         rendered="#{appointmentController.currentBill.paymentMethod eq 'OnlineSettlement'}" >
                                                         <pa:online_settlement paymentMethodData="#{appointmentController.paymentMethodData}"/>
