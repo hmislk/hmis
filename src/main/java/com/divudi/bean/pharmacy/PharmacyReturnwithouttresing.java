@@ -1041,14 +1041,12 @@ public class PharmacyReturnwithouttresing implements Serializable {
     }
 
     public void handleSelect(SelectEvent event) {
-        System.out.println("handleSelect method called!");
         if (event == null || event.getObject() == null) {
             return;
         }
 
         // Get the selected stock from the event
         stock = (Stock) event.getObject();
-        System.out.println("Selected stock: " + stock.getItemBatch().getItem().getName());
 
         // Set the stock and itemBatch for proper rate display
         getBillItem().getPharmaceuticalBillItem().setStock(stock);
