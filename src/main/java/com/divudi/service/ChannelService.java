@@ -2809,8 +2809,8 @@ public class ChannelService {
         bi.copy(bs.getBillItem());
         bi.setCreatedAt(new Date());
         bi.setBill(b);
-        getBillItemFacade().create(bi);
-        return getBillItemFacade().find(bi.getId());
+        getBillItemFacade().createAndFlush(bi);
+        return bi;
     }
 
     private void savePaidBillFee(Bill b, BillItem bi, BillSession bs) {
