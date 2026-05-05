@@ -2260,6 +2260,17 @@ public class ReportTemplateRowBundle implements Serializable {
         this.totalBalance = totalBalance;
     }
 
+    /**
+     * Returns true only for the synthetic fund-transfer float rows (FLOAT_OUT, FLOAT_IN)
+     * that are appended to the child bundle list in generatePaymentBundleForHandovers().
+     * These must be excluded from aggregateTotalsFromAllChildBundles() to avoid double-counting
+     * because their net effect is already captured directly on the parent bundle via
+     * cashFloatOutTotal / cashFloatInTotal.
+     *
+     * PaymentHandover.FLOATS is intentionally excluded from this check: those bundles hold
+     * real cashier float-movement payments (opening balance, increase, decrease, bank in/out)
+     * that are fetched from the DB and must be counted in normal aggregation.
+     */
     public boolean isFloatRow() {
         return paymentHandover == PaymentHandover.FLOAT_OUT || paymentHandover == PaymentHandover.FLOAT_IN;
     }
