@@ -1459,7 +1459,7 @@ public class ChannelApi {
 
         Bill completedBill = channelService.settleOnlineAgentInitialBooking(temporarySavedBill.getSingleBillSession(), clientsReferanceNo, agencyCharge);
 
-        OnlineBooking bookingDetails = channelService.findOnlineBookingFromRefNo(clientsReferanceNo, false, creditCompany);
+        OnlineBooking bookingDetails = bookingData;
         SessionInstance session = completedBill.getSingleBillSession().getSessionInstance();
 
         try {
@@ -1489,7 +1489,7 @@ public class ChannelApi {
 
         sessionDetails.put("hosId", completedBill.getToInstitution().getId());
         sessionDetails.put("docname", session.getStaff().getPerson().getNameWithTitle());
-        sessionDetails.put("amount", bookingDetails.getNetTotalForOnlineBooking());
+        sessionDetails.put("amount", completedBill.getNetTotal() + agencyCharge);
         sessionDetails.put("hosAmount", completedBill.getHospitalFee());
         sessionDetails.put("docAmount", completedBill.getStaffFee());
         sessionDetails.put("specialization", i.getStaff().getSpeciality().getName());
@@ -1512,7 +1512,7 @@ public class ChannelApi {
         patientDetails.put("nid", bookingDetails.getNic());
 
         Map<String, Object> priceDetails = new HashMap<>();
-        priceDetails.put("totalAmount", bookingDetails.getNetTotalForOnlineBooking());
+        priceDetails.put("totalAmount", completedBill.getNetTotal() + agencyCharge);
         priceDetails.put("docCharge", completedBill.getStaffFee());
         priceDetails.put("hosCharge", completedBill.getHospitalFee());
 
