@@ -3,6 +3,8 @@ package com.divudi.core.data.reports;
 import java.util.function.Function;
 
 import com.itextpdf.layout.properties.TextAlignment;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ReportColumn<T> {
 
@@ -11,6 +13,8 @@ public class ReportColumn<T> {
     String format;
     TextAlignment textAlignment;
     Float columnWidth;
+
+    private static final Logger logger = LoggerFactory.getLogger(ReportColumn.class.getName());
 
     public ReportColumn() {
     }
@@ -50,6 +54,7 @@ public class ReportColumn<T> {
         try {
             return dataExtractor.apply(row);
         } catch (Exception e) {
+            logger.error(( "ReportColumn [{0}]: dataExtractor threw an exception"), header);
             return null;
         }
     }
