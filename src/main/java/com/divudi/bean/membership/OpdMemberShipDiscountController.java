@@ -408,7 +408,7 @@ public class OpdMemberShipDiscountController implements Serializable {
         }
 
         if (item == null) {
-            JsfUtil.addErrorMessage("Please select a Category or Item");
+            JsfUtil.addErrorMessage("Please select a Item");
             return;
         }
 
