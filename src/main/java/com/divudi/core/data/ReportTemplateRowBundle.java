@@ -283,6 +283,9 @@ public class ReportTemplateRowBundle implements Serializable {
 
         if (bundles != null) {
             for (ReportTemplateRowBundle childBundle : bundles) {
+                if (childBundle.isFloatRow()) {
+                    continue;
+                }
                 grossTotal += nullSafeDouble(childBundle.grossTotal);
                 discount += nullSafeDouble(childBundle.discount);
                 total += nullSafeDouble(childBundle.total);
