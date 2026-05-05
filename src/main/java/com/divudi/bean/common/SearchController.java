@@ -20817,7 +20817,7 @@ public class SearchController implements Serializable {
                 + " COALESCE(pa.person.name, ''), pa.person.title, "
                 + " COALESCE(b.creater.name, ''), "
                 + " b.cancelled, b.refunded, "
-                + " b.hospitalFee, b.staffFee, b.total, b.netTotal, b.discount, "
+                + " COALESCE(b.hospitalFee, 0.0), COALESCE(b.staffFee, 0.0), COALESCE(b.total, 0.0), COALESCE(b.netTotal, 0.0), COALESCE(b.discount, 0.0), "
                 + " b.agentRefNo, cc.name, "
                 + " b.institution.name, b.department.name, ti.name, td.name "
                 + " ) "

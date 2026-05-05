@@ -54,8 +54,8 @@ public class ChannelIncomeDTO {
         }
 
          // constructor for channel agent bookings
-        public ChannelIncomeDTO(Long billId, Date createdAt, String billDeptId, BillTypeAtomic billTypeAtomic, String patientName, Title patientTitle, String cashierName, Boolean canceled,
-                        Boolean refunded, Double hospitalFee, Double staffFee, Double grossTotal, Double netTotal, Double discount, String paymentReference, String creditCompany, String institution, String department, String toInstitution, String toDepartment) {
+        public ChannelIncomeDTO(Long billId, Date createdAt, String billDeptId, BillTypeAtomic billTypeAtomic, String patientName, Title patientTitle, String cashierName, boolean canceled,
+                        boolean refunded, Double hospitalFee, Double staffFee, Double grossTotal, Double netTotal, Double discount, String paymentReference, String creditCompany, String institution, String department, String toInstitution, String toDepartment) {
             this.billId = billId;
             this.billedDate = createdAt;
             this.billDeptId = billDeptId;
@@ -251,7 +251,7 @@ public class ChannelIncomeDTO {
             return paymentFee;
         }
 
-        public void serPaymentFee(double fee) {
+        public void setPaymentFee(double fee) {
             this.paymentFee = fee;
         }
 
