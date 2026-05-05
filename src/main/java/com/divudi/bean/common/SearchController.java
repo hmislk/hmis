@@ -20886,7 +20886,6 @@ public class SearchController implements Serializable {
         m.put("toDate", getToDate());
 
         agentBookings = (List<ChannelIncomeDTO>) billFacade.findLightsByJpql(jpql, m, TemporalType.TIMESTAMP);
-        System.out.println("size: " + agentBookings.size());
 
         hosTotal = 0.0;
         staffTotal = 0.0;
@@ -20903,11 +20902,6 @@ public class SearchController implements Serializable {
                 amountTotal += b.getPaymentFee();
             }
         }
-    }
-
-    public void processAB() {
-        reportTimerController.trackReportExecution(() -> {listAgentChannelBookings();}, FinancialReport.DAILY_RETURN, "Old Agent Bookings", sessionController.getLoggedUser());
-        reportTimerController.trackReportExecution(() -> {processAgentChannelBookings();}, FinancialReport.DAILY_RETURN, "New Agent Bookings", sessionController.getLoggedUser());
     }
 
     public void listAgentChannelBookings() {
@@ -20990,7 +20984,6 @@ public class SearchController implements Serializable {
             }
         }
 
-        processAgentChannelBookings();
     }
 
     private String bookingType;
