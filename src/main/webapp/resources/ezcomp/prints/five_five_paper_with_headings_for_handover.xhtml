@@ -228,6 +228,11 @@
                             <h:outputText value="Handover To:" styleClass="handover-label" style="font-weight: normal"/>
                             <h:outputText value="#{cc.attrs.bundle.toUser.webUserPerson.nameWithTitle}" styleClass="handover-value" />
 
+                            <h:outputText value="Total Handover Value:" styleClass="handover-label" style="font-weight: normal"/>
+                            <h:outputText value="#{cc.attrs.bundle.totalOut}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
+
                         </h:panelGrid>
                     </div>
                     <div class="col-6" >

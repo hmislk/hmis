@@ -4256,7 +4256,8 @@ public class FinancialTransactionController implements Serializable {
         financialReportByPayments.getRefundedCash();
     }
 
-    public String navigateToViewIndividualShiftForHandover() {
+    public String navigateToViewIndividualShiftForHandover(ReportTemplateRowBundle childBundle) {
+        selectedBundle = childBundle;
         return null;
     }
 
