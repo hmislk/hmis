@@ -4458,7 +4458,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         jpql.append("LEFT JOIN bi.bill.patient pt ");
         jpql.append("LEFT JOIN pt.person pn ");
         jpql.append("WHERE bi.bill.billTypeAtomic IN :bTypes ");
-        jpql.append("AND bi.bill.billDate BETWEEN :fd AND :td ");
+        jpql.append("AND bi.bill.createdAt BETWEEN :fd AND :td ");
         jpql.append("AND bi.retired = :retired ");
 
         Map<String, Object> m = new HashMap<>();
