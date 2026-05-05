@@ -3890,6 +3890,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         return filters;
     }
     
+    // collection center receipt report pdf generation method
     public void exportCollectionCenterReciptReportToPDF(){
         if (bundle == null || bundle.getReportTemplateRows() == null || bundle.getReportTemplateRows().isEmpty()) {
             JsfUtil.addErrorMessage("No data to export. Please process the report first.");
@@ -3905,9 +3906,9 @@ public class ReportController implements Serializable, ControllerWithReportFilte
 
         response.setContentType("application/pdf");
         if (dates != null && !dates.isEmpty()) {
-            response.setHeader("Content-Disposition", "attachment; filename=Collection_center_recipt_report_" + dates + ".pdf");
+            response.setHeader("Content-Disposition", "attachment; filename=Collection_center_receipt_report_" + dates + ".pdf");
         } else {
-            response.setHeader("Content-Disposition", "attachment; filename=Collection_center_recipt_report.pdf");
+            response.setHeader("Content-Disposition", "attachment; filename=Collection_center_receipt_report.pdf");
         }
 
         SimpleDateFormat sdf = new SimpleDateFormat("dd MM yyyy hh:mm:ss a");
@@ -3922,7 +3923,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
             if (institutionName != null && !institutionName.isEmpty()) {
                 document.add(new com.itextpdf.text.Paragraph(institutionName, com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA_BOLD, 18)));
             }
-            document.add(new com.itextpdf.text.Paragraph("Collection Center Recipt Report", com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA_BOLD, 16)));
+            document.add(new com.itextpdf.text.Paragraph("Collection Center Receipt Report", com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA_BOLD, 16)));
             document.add(new com.itextpdf.text.Paragraph("Date: " + sdf.format(new Date()), com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA, 12)));
             document.add(new com.itextpdf.text.Paragraph(" "));
 
@@ -3980,7 +3981,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
 
         } catch (Exception e) {
             Logger.getLogger(ReportController.class
-                    .getName()).log(Level.SEVERE, "Error exporting Collection center recipt report to PDF", e);
+                    .getName()).log(Level.SEVERE, "Error exporting Collection center receipt report to PDF", e);
         }
     }
     
