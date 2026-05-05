@@ -163,11 +163,21 @@ public class NavigationController implements Serializable {
     }
     
     public String navigateToPaymentSchemeDiscountforCreditCompany() {
+        OpdMemberShipDiscountController.setItems(null);
         OpdMemberShipDiscountController.setPaymentScheme(null);
         OpdMemberShipDiscountController.clearCreditCompanyDiscountData();
         OpdMemberShipDiscountController.setCreditCompanyForSearch(null);
         OpdMemberShipDiscountController.setPaymentSchemeForSearch(null);
         return "/admin/pricing/payment_scheme_discount_credit_company?faces-redirect=true";
+    }
+    
+    public String navigateToPaymentSchemeDiscountforCreditCompanyItems() {
+        OpdMemberShipDiscountController.setItems(null);
+        OpdMemberShipDiscountController.setPaymentScheme(null);
+        OpdMemberShipDiscountController.clearCreditCompanyDiscountData();
+        OpdMemberShipDiscountController.setCreditCompanyForSearch(null);
+        OpdMemberShipDiscountController.setPaymentSchemeForSearch(null);
+        return "/admin/pricing/payment_scheme_discount_credit_company_items?faces-redirect=true";
     }
 
     public String navigateToPaymentSchemeDiscountOpdByItem() {
