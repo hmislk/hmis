@@ -6825,8 +6825,6 @@ public class FinancialTransactionController implements Serializable {
         params.put("fd", getFromDate());
         params.put("td", getToDate());
         params.put("user", sessionController.getLoggedUser());
-        System.out.println("jpql = " + jpql);
-        System.out.println("params = " + params);
         currentBills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
 
@@ -6849,8 +6847,6 @@ public class FinancialTransactionController implements Serializable {
 
         }
         jpql += "order by s.createdAt ";
-        System.out.println("jpql = " + jpql);
-        System.out.println("params = " + params);
         currentBills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
 
