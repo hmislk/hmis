@@ -374,7 +374,7 @@ public class ChannelService {
         hh.put("ss", session);
         List<BillSession> billSessionList = getBillSessionFacade().findByJpql(sql, hh, TemporalType.DATE);
 
-        List<Integer> reservedNumbersList = CommonFunctions.convertStringToIntegerList(session.getOriginatingSession().getReserveNumbers());
+        List<Integer> reservedNumbersList = CommonFunctions.convertStringToIntegerList(session.getReserveNumbers());
         if (reservedNumbersList == null) {
              reservedNumbersList = Collections.emptyList();
         }
@@ -1297,7 +1297,7 @@ public class ChannelService {
         bs.setSessionTime(session.getSessionTime());
         bs.setStaff(session.getStaff());
 
-        List<Integer> reservedNumbers = CommonFunctions.convertStringToIntegerList(session.getOriginatingSession().getReserveNumbers());
+        List<Integer> reservedNumbers = CommonFunctions.convertStringToIntegerList(session.getReserveNumbers());
         if (reservedNumbers == null) {
             reservedNumbers = Collections.emptyList();
         }
