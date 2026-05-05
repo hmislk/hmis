@@ -13,7 +13,7 @@
 
             <ui:define name="subcontent">
 
-                <p:panel header="Discount Scheme for Credit Company (Category)">
+                <p:panel header="Discount Scheme for Credit Company (Items)">
                     <h:form>
 
 
@@ -53,21 +53,27 @@
                                 </div>
 
                                 <div class="col-md-4 mb-3">
-                                    <p:outputLabel for="acCategory" value="Category/Subcategory" styleClass="d-block mb-1"/>
+                                    <p:outputLabel for="acItem" value="Item" styleClass="d-block mb-1"/>
                                     <p:autoComplete
-                                        id="acCategory"
-                                        value="#{opdMemberShipDiscountController.category}"
+                                        id="acItem"
+                                        value="#{opdMemberShipDiscountController.item}"
                                         forceSelection="true"
-                                        completeMethod="#{categoryController.completeCategoryServiceInvestigation}"
+                                        completeMethod="#{itemController.completeAllServicesAndInvestigations}"
                                         styleClass="w-100"
                                         inputStyleClass="w-100"
-                                        var="cat"
-                                        itemLabel="#{cat.name}"
-                                        itemValue="#{cat}"
-                                        placeholder="Search category or subcategory..."
-                                        title="Type to search a service or investigation category" >
-                                        <p:column headerText="Category" style="padding: 6px;">
-                                            <h:outputLabel value="#{cat.name}"/>
+                                        var="itm"
+                                        maxResults="20"
+                                        itemLabel="#{itm.name}"
+                                        itemValue="#{itm}"
+                                        placeholder="Search Item ...">
+                                        <p:column headerText="Code" style="padding: 6px; width: 7em;">
+                                            <h:outputLabel value="#{itm.code}"/>
+                                        </p:column>
+                                        <p:column headerText="Item" style="padding: 6px; width: 800px;">
+                                            <h:outputLabel value="#{itm.name}"/>
+                                        </p:column>
+                                        <p:column headerText="Category" style="padding: 6px; width: 12em;">
+                                            <h:outputLabel value="#{itm.category.name}"/>
                                         </p:column>
                                     </p:autoComplete>
                                 </div>
@@ -113,12 +119,12 @@
                                     <p:commandButton
                                         id="btnSave"
                                         value="Save"
-                                        process="@this acDiscountScheme acCreditCompany acCategory smPaymentMethod txtDiscount"
+                                        process="@this acDiscountScheme acCreditCompany acItem smPaymentMethod txtDiscount"
                                         update="addNewMatrixPanel inwd :growl"
                                         styleClass="ui-button-success fw-bold px-4"
                                         style="min-width: 160px; height: 42px; letter-spacing: 0.5px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"
                                         icon="fa fa-save"
-                                        action="#{opdMemberShipDiscountController.saveCategoryForSelectedCreditCompany()}">
+                                        action="#{opdMemberShipDiscountController.saveItemForSelectedCreditCompany()}">
                                     </p:commandButton>
                                 </div>
                             </div>
@@ -164,7 +170,7 @@
                                     icon="fas fa-sync"
                                     style="width: 8em;"
                                     title="Auto-fill matrix entries for the selected scheme"
-                                    action="#{opdMemberShipDiscountController.fillCreditCompanyPaymentSchemeForCategory()}" >
+                                    action="#{opdMemberShipDiscountController.fillCreditCompanyPaymentSchemeForItem()}" >
                                 </p:commandButton>
 
                             </div>
@@ -198,9 +204,6 @@
                                         inputStyleClass="w-100"
                                         itemLabel="#{mem.name}" 
                                         itemValue="#{mem}" >
-                                        <p:column headerText="Payment Scheme" style="padding: 6px;">
-                                            <h:outputLabel value="#{mem.name}"/>
-                                        </p:column>
                                     </p:autoComplete>
                                 </p:column>
 
@@ -214,20 +217,26 @@
 
                                 <p:column
                                     style="padding: 6px;"
-                                    headerText="Category Name"
-                                    filterBy="#{a.category.name}" 
+                                    headerText="Item Name"
+                                    filterBy="#{a.item.name}" 
                                     filterMatchMode="contains">
                                     <p:autoComplete 
                                         forceSelection="true" 
-                                        value="#{a.category}"
-                                        completeMethod="#{categoryController.completeCategoryInvestigation}"
-                                        var="cat" 
+                                        value="#{a.item}"
+                                        completeMethod="#{itemController.completeAllServicesAndInvestigations}"
+                                        var="itm" 
                                         class="w-100"
                                         inputStyleClass="w-100"
-                                        itemLabel="#{cat.name}" 
-                                        itemValue="#{cat}" >
-                                        <p:column headerText="Category" style="padding: 6px;">
-                                            <h:outputLabel value="#{cat.name}"/>
+                                        itemLabel="#{itm.name}" 
+                                        itemValue="#{itm}" >
+                                        <p:column headerText="Code" style="padding: 6px; width: 7em;">
+                                            <h:outputLabel value="#{itm.code}"/>
+                                        </p:column>
+                                        <p:column headerText="Item" style="padding: 6px; width: 800px;">
+                                            <h:outputLabel value="#{itm.name}"/>
+                                        </p:column>
+                                        <p:column headerText="Category" style="padding: 6px; width: 12em;">
+                                            <h:outputLabel value="#{itm.category.name}"/>
                                         </p:column>
                                     </p:autoComplete>
                                 </p:column>
@@ -253,7 +262,6 @@
                                             value="Update"
                                             icon="fas fa-edit"
                                             styleClass="ui-button-warning"
-                                            title="Save changes to this row"
                                             action="#{opdMemberShipDiscountController.onEditCreditCompanyDiscount(a)}">
                                         </p:commandButton>
                                         <p:commandButton 
@@ -261,9 +269,8 @@
                                             ajax="false" 
                                             icon="fas fa-trash" 
                                             styleClass="ui-button-danger"
-                                            title="Delete this discount entry"
                                             onclick="return confirm('Delete this discount entry? This cannot be undone.');"
-                                            action="#{opdMemberShipDiscountController.deleteCreditCompanyPaymentSchemeforCategory}">
+                                            action="#{opdMemberShipDiscountController.deleteCreditCompanyPaymentSchemeforItem}">
                                             <f:setPropertyActionListener value="#{a}" target="#{opdMemberShipDiscountController.current}"/>
                                         </p:commandButton>
                                     </div>
