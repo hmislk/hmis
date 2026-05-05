@@ -177,6 +177,8 @@ public enum BillType {
     ShiftShortage,
     ShiftShortageSettlement,
     ShiftExcess,
+    HandoverProofMissing,
+    HandoverProofMissingSettlement,
     PaymentTransfer,
     @Deprecated
     TransactionHandoverBill, // For handling the handover of all transaction types at the end of a cashier's shift

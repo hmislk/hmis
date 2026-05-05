@@ -4,6 +4,15 @@
  */
 package com.divudi.bean.channel;
 
+import com.divudi.bean.channel.ChannelReportTemplateController.AgentHistoryWithDate;
+import com.divudi.bean.channel.ChannelReportTemplateController.BookingCountSummryRow;
+import com.divudi.bean.channel.ChannelReportTemplateController.ChannelBillTotals;
+import com.divudi.bean.channel.ChannelReportTemplateController.ChannelReportColumnModel;
+import com.divudi.bean.channel.ChannelReportTemplateController.ChannelReportColumnModelBundle;
+import com.divudi.bean.channel.ChannelReportTemplateController.DepartmentBill;
+import com.divudi.bean.channel.ChannelReportTemplateController.DoctorPaymentSummeryRow;
+import com.divudi.bean.channel.ChannelReportTemplateController.DoctorPaymentSummeryRowSub;
+import com.divudi.bean.channel.ChannelReportTemplateController.FeetypeFee;
 import com.divudi.bean.channel.analytics.ReportTemplateController;
 import com.divudi.bean.common.ExcelController;
 import com.divudi.bean.common.InstitutionController;
@@ -18,6 +27,7 @@ import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.FeeType;
+import com.divudi.core.data.FinancialReport;
 import com.divudi.core.data.HistoryType;
 import com.divudi.core.data.InstitutionType;
 import com.divudi.core.data.MessageType;
@@ -29,6 +39,7 @@ import com.divudi.core.data.dataStructure.BillsTotals;
 import com.divudi.core.data.dataStructure.ChannelDoctor;
 import com.divudi.core.data.dataStructure.WebUserBillsTotal;
 import com.divudi.core.data.dto.ChannelServiceCategorywiseDetailsWrapperDTO;
+import com.divudi.core.data.dto.channel.ChannelAbsentPatientsDTO;
 import com.divudi.core.data.hr.ReportKeyWord;
 import com.divudi.core.data.reports.PharmacyReports;
 import com.divudi.core.data.table.String1Value1;
@@ -63,6 +74,7 @@ import com.divudi.core.facade.ServiceSessionFacade;
 import com.divudi.core.facade.SmsFacade;
 import com.divudi.core.facade.StaffFacade;
 import com.divudi.core.facade.WebUserFacade;
+import com.divudi.core.light.common.BillLight;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.entity.Speciality;
 import com.divudi.core.facade.SessionInstanceFacade;
@@ -165,6 +177,8 @@ public class ChannelReportController implements Serializable {
     List<Bill> channelBills;
     List<Bill> channelBillsCancelled;
     List<Bill> channelBillsRefunded;
+
+    List<ChannelAbsentPatientsDTO> absentPatientsDTO;
 
     /////
     @EJB
@@ -3374,7 +3388,7 @@ public class ChannelReportController implements Serializable {
 
     public void createAbsentPatientTable() {
         channelBills = new ArrayList<>();
-        channelBills.addAll(getChannelBillsAbsentPatient(staff, paymentMethods));
+        channelBills.addAll(getChannelBillsAbsentPatient(staff, paymentMethods));  
     }
 
     public List<Bill> getChannelBillsAbsentPatient(Staff stf) {
@@ -3399,6 +3413,125 @@ public class ChannelReportController implements Serializable {
         doctorFeeTotal = getStaffFeeTotal(b);
 
         return b;
+    }
+
+    private List<ChannelAbsentPatientsDTO> absentPatients;
+    private ChannelAbsentPatientsDTO summaryAbsentPatients;
+
+    // Patient Absent Report 
+    // Consider temporary bookings can not be makred absent
+    public void processPatientAbsentReport() {
+        absentPatients = new ArrayList<>();
+        summaryAbsentPatients = new ChannelAbsentPatientsDTO();
+        HashMap params = new HashMap();
+
+        String sql = " Select new com.divudi.core.data.dto.channel.ChannelAbsentPatientsDTO( "
+                + " b.id, "
+                + " coalesce(b.deptId, ''), "
+                + " b.billTypeAtomic, "
+                + " coalesce(bs.serviceSession.name, ''), "
+                + " bs.serialNo, "
+                + " coalesce(case when b.billTypeAtomic = :onlineCompletedPayment then ob.patientName "
+                + " when b.billTypeAtomic = :onlineCancellation then orbb.patientName "
+                + " else pe.name end, ''), "
+                + " coalesce(c.name, '-'), "
+                + " b.paymentMethod, "
+                + " coalesce(b.staff.person.name, ''), "
+                + " coalesce(b.staffFee, 0.0), "
+                + " coalesce(b.hospitalFee, 0.0), "
+                + " coalesce(b.netTotal, 0.0), "
+                + " b.cancelled, "
+                + " b.refunded, "
+                + " coalesce(cb.deptId, ''), "
+                + " coalesce(rfb.deptId, ''), "
+                + " rb.id, "
+                + " pb.id "
+                + " ) "
+                + " from Bill b"
+                + " join b.singleBillSession bs "
+                + " left join b.patient p "
+                + " left join p.person pe "
+                + " left join b.creater c "
+                + " left join b.cancelledBill cb "
+                + " left join b.refundedBill rfb "
+                + " left join b.referenceBill rb "
+                + " left join b.paidBill pb"
+                + " left join b.billedBill bb "
+                + " left join bb.referenceBill rbb "
+                + " left join rbb.onlineBooking orbb "
+                + " left join rb.onlineBooking ob"
+                + " left join rb.singleBillSession rbs "
+                + " where b.retired=false "
+                + " and bs.retired=false "
+                + " and ("
+                + "      (bs.absent=true and b.createdAt between :fd and :td) "
+                + "   or (rbs.absent=true and rb.paymentMethod=:pmo and rb.createdAt between :fd and :td) "
+                + " )";
+
+        params.put("onlineCompletedPayment", BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT);
+        params.put("onlineCancellation", BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING);
+        params.put("fd", fromDate);
+        params.put("td", toDate);
+        params.put("pmo", PaymentMethod.OnCall);
+
+        if (staff != null) {
+            sql += " and b.staff=:st ";
+            params.put("st", staff);
+        }
+        if (paymentMethods != null && !paymentMethods.isEmpty()) {
+            if (paymentMethods.contains(PaymentMethod.OnCall)) {
+                sql += " and ((b.paymentMethod in :pm) or (rb is not null and rb.billTypeAtomic in :onCallBTA)) ";
+                params.put("pm", paymentMethods);
+                params.put("onCallBTA", Arrays.asList(
+                    BillTypeAtomic.CHANNEL_BOOKING_WITHOUT_PAYMENT,
+                    BillTypeAtomic.CHANNEL_RESHEDULE_WITH_OUT_PAYMENT
+                ));
+            } else {
+                sql += " and b.paymentMethod in :pm and b.billTypeAtomic != :paymentBTA  ";
+                params.put("pm", paymentMethods);
+                params.put("paymentBTA", BillTypeAtomic.CHANNEL_PAYMENT_FOR_BOOKING_BILL);
+            }
+        }
+
+        sql += " order by b.createdAt desc ";
+
+        List<ChannelAbsentPatientsDTO> fetchedBills = (List<ChannelAbsentPatientsDTO>) billFacade.findLightsByJpqlWithoutCache(sql, params, TemporalType.TIMESTAMP);
+
+        if (fetchedBills == null || fetchedBills.isEmpty()) {
+            return;
+        }
+
+        double totalStaffFee = 0.0;
+        double totalHosFee = 0.0;
+        double totalNetTotal = 0.0;
+
+        for (ChannelAbsentPatientsDTO dto : fetchedBills) { 
+            if (dto.getPaymentMethod() == PaymentMethod.OnCall) {
+                if (dto.getPaidId() != null) {
+                    continue;
+                } else {
+                    absentPatients.add(dto);
+
+                    totalNetTotal += dto.getNetTotal();
+                    totalStaffFee += dto.getStaffFee();
+                    totalHosFee += dto.getHospitalFee();
+                }
+            } else {
+                if (dto.getReferenceId() != null && dto.getBillTypeAtomic() != BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT && dto.getBillTypeAtomic() != BillTypeAtomic.CHANNEL_PAYMENT_FOR_BOOKING_BILL) {
+                    continue;
+                } else {
+                    absentPatients.add(dto);
+
+                    totalNetTotal += dto.getNetTotal();
+                    totalStaffFee += dto.getStaffFee();
+                    totalHosFee += dto.getHospitalFee();
+                }
+            }
+        }
+
+        summaryAbsentPatients.setStaffFee(totalStaffFee);
+        summaryAbsentPatients.setHospitalFee(totalHosFee);
+        summaryAbsentPatients.setNetTotal(totalNetTotal);
     }
 
     public List<Bill> getChannelBillsAbsentPatient(Staff stf, List<PaymentMethod> pms) {
@@ -5118,6 +5251,22 @@ public class ChannelReportController implements Serializable {
         this.category = category;
     }
 
+    public List<ChannelAbsentPatientsDTO> getAbsentPatients() {
+        return absentPatients;
+    }
+
+    public void setAbsentPatients(List<ChannelAbsentPatientsDTO> absentPatients) {
+        this.absentPatients = absentPatients;
+    }
+
+    public ChannelAbsentPatientsDTO getSummaryAbsentPatients() {
+        return summaryAbsentPatients;
+    }
+
+    public void setSummaryAbsentPatients(ChannelAbsentPatientsDTO summaryAbsentPatients) {
+        this.summaryAbsentPatients = summaryAbsentPatients;
+    }
+
     // PDF Export: Channel Scanning Income Report
     public StreamedContent getChannelScanningIncomeReportAsPdf() {
         if (dataBundle == null || dataBundle.getReportTemplateRows() == null || dataBundle.getReportTemplateRows().isEmpty()) {
@@ -5403,6 +5552,14 @@ public class ChannelReportController implements Serializable {
         params.put("Category", getCategoryListAsString());
 
         return params;
+    }
+
+    public List<ChannelAbsentPatientsDTO> getAbsentPatientsDTO() {
+        return absentPatientsDTO;
+    }
+
+    public void setAbsentPatientsDTO(List<ChannelAbsentPatientsDTO> absentPatientsDTO) {
+        this.absentPatientsDTO = absentPatientsDTO;
     }
 
     public class ChannelReportColumnModelBundle implements Serializable {

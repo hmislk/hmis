@@ -4256,7 +4256,8 @@ public class FinancialTransactionController implements Serializable {
         financialReportByPayments.getRefundedCash();
     }
 
-    public String navigateToViewIndividualShiftForHandover() {
+    public String navigateToViewIndividualShiftForHandover(ReportTemplateRowBundle childBundle) {
+        selectedBundle = childBundle;
         return null;
     }
 
@@ -4817,8 +4818,30 @@ public class FinancialTransactionController implements Serializable {
             }
         }
 
+        List<ReportTemplateRowBundle> childList = new ArrayList<>(groupedBundles.values());
+
+        if (cashFloatOutAcc > 0) {
+            ReportTemplateRowBundle floatOutBundle = new ReportTemplateRowBundle();
+            floatOutBundle.setPaymentHandover(PaymentHandover.FLOAT_OUT);
+            floatOutBundle.setCashValue(-cashFloatOutAcc);
+            floatOutBundle.setCashHandoverValue(-cashFloatOutAcc);
+            floatOutBundle.setHasCashTransaction(true);
+            floatOutBundle.setSelected(true);
+            childList.add(floatOutBundle);
+        }
+
+        if (cashFloatInAcc > 0) {
+            ReportTemplateRowBundle floatInBundle = new ReportTemplateRowBundle();
+            floatInBundle.setPaymentHandover(PaymentHandover.FLOAT_IN);
+            floatInBundle.setCashValue(cashFloatInAcc);
+            floatInBundle.setCashHandoverValue(cashFloatInAcc);
+            floatInBundle.setHasCashTransaction(true);
+            floatInBundle.setSelected(true);
+            childList.add(floatInBundle);
+        }
+
         ReportTemplateRowBundle bundleToHoldDeptUserDayBundle = new ReportTemplateRowBundle();
-        bundleToHoldDeptUserDayBundle.setBundles(new ArrayList<>(groupedBundles.values()));
+        bundleToHoldDeptUserDayBundle.setBundles(childList);
         bundleToHoldDeptUserDayBundle.setStartBill(startBill);
         bundleToHoldDeptUserDayBundle.setEndBill(endBill);
         bundleToHoldDeptUserDayBundle.setFloatOutTotal(floatOutAcc);
@@ -5892,7 +5915,177 @@ public class FinancialTransactionController implements Serializable {
             }
         }
 
+        createHandoverProofMissingBillIfNeeded(currentBill);
+
         return "/cashier/handover_creation_bill_print?faces-redirect=true";
+    }
+
+    private void createHandoverProofMissingBillIfNeeded(Bill handoverCreateBill) {
+        List<Payment> proofMissingPayments = new ArrayList<>();
+        if (bundle != null && bundle.getBundles() != null) {
+            for (ReportTemplateRowBundle cb : bundle.getBundles()) {
+                if (cb == null || cb.getReportTemplateRows() == null) {
+                    continue;
+                }
+                for (ReportTemplateRow r : cb.getReportTemplateRows()) {
+                    if (r != null && r.getPayment() != null && r.getPayment().isHandoverProofMissing()) {
+                        proofMissingPayments.add(r.getPayment());
+                    }
+                }
+            }
+        }
+        if (proofMissingPayments.isEmpty()) {
+            return;
+        }
+        Bill proofMissingBill = new Bill();
+        String pmBillNo = billNumberGenerator.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.HANDOVER_PROOF_MISSING_BILL);
+        proofMissingBill.setDeptId(pmBillNo);
+        proofMissingBill.setBillType(BillType.HandoverProofMissing);
+        proofMissingBill.setBillTypeAtomic(BillTypeAtomic.HANDOVER_PROOF_MISSING_BILL);
+        proofMissingBill.setBillDate(new Date());
+        proofMissingBill.setBillTime(new Date());
+        proofMissingBill.setCreatedAt(new Date());
+        proofMissingBill.setCreater(sessionController.getLoggedUser());
+        proofMissingBill.setDepartment(sessionController.getDepartment());
+        proofMissingBill.setInstitution(sessionController.getInstitution());
+        proofMissingBill.setFromWebUser(sessionController.getLoggedUser());
+        proofMissingBill.setToWebUser(user);
+        proofMissingBill.setReferenceBill(handoverCreateBill);
+        double proofMissingTotal = 0.0;
+        for (Payment orig : proofMissingPayments) {
+            proofMissingTotal += Math.abs(orig.getPaidValue());
+        }
+        proofMissingBill.setTotal(proofMissingTotal);
+        proofMissingBill.setNetTotal(proofMissingTotal);
+        billController.save(proofMissingBill);
+        for (Payment orig : proofMissingPayments) {
+            Payment clone = orig.clonePaymentForNewBill();
+            clone.setBill(proofMissingBill);
+            clone.setHandoverProofMissing(true);
+            clone.setCreatedAt(new Date());
+            paymentController.save(clone);
+            Map<String, Object> phiParams = new HashMap<>();
+            String phiJpql = "SELECT phi FROM PaymentHandoverItem phi WHERE phi.payment = :p AND phi.handoverCreatedBill = :b";
+            phiParams.put("p", orig);
+            phiParams.put("b", handoverCreateBill);
+            List<PaymentHandoverItem> phis = paymentHandoverItemFacade.findByJpql(phiJpql, phiParams);
+            if (!phis.isEmpty()) {
+                PaymentHandoverItem phi = phis.get(0);
+                phi.setHandoverProofMissing(true);
+                phi.setProofMissingBill(proofMissingBill);
+                paymentHandoverItemFacade.edit(phi);
+            }
+        }
+    }
+
+    public String navigateToSettleHandoverProofMissingBill() {
+        if (!webUserController.hasPrivilege("SettleHandoverProofMissing")) {
+            JsfUtil.addErrorMessage("You do not have the required privilege to settle a proof missing bill.");
+            return null;
+        }
+        if (selectedBill == null || selectedBill.getId() == null) {
+            JsfUtil.addErrorMessage("No proof missing bill selected.");
+            return null;
+        }
+        Bill fresh = billFacade.find(selectedBill.getId());
+        if (fresh == null || fresh.getBillType() != BillType.HandoverProofMissing) {
+            JsfUtil.addErrorMessage("Selected bill is not a proof missing bill.");
+            return null;
+        }
+        if (fresh.isCancelled()) {
+            JsfUtil.addErrorMessage("Cannot settle a cancelled bill.");
+            return null;
+        }
+        if (fresh.isPaid()) {
+            JsfUtil.addErrorMessage("This proof missing bill has already been fully settled.");
+            return null;
+        }
+        selectedBill = fresh;
+        currentBill = new Bill();
+        currentPayment = new Payment();
+        currentPayment.setPaidValue(fresh.getNetTotal());
+        return "/cashier/settle_handover_proof_missing?faces-redirect=true";
+    }
+
+    public String settleHandoverProofMissingBill() {
+        if (!webUserController.hasPrivilege("SettleHandoverProofMissing")) {
+            JsfUtil.addErrorMessage("You do not have the required privilege to settle a proof missing bill.");
+            return "";
+        }
+        if (currentPayment == null || currentPayment.getPaidValue() <= 0) {
+            JsfUtil.addErrorMessage("Please enter a valid settlement amount greater than zero.");
+            return "";
+        }
+        if (currentBill == null) {
+            JsfUtil.addErrorMessage("No settlement context found.");
+            return "";
+        }
+        if (selectedBill == null || selectedBill.getId() == null) {
+            JsfUtil.addErrorMessage("No proof missing bill selected.");
+            return "";
+        }
+        Bill fresh = billFacade.find(selectedBill.getId());
+        if (fresh == null || fresh.getBillType() != BillType.HandoverProofMissing) {
+            JsfUtil.addErrorMessage("Selected bill is not a proof missing bill.");
+            return "";
+        }
+        if (fresh.isCancelled()) {
+            JsfUtil.addErrorMessage("Cannot settle a cancelled bill.");
+            return "";
+        }
+        if (fresh.isPaid()) {
+            JsfUtil.addErrorMessage("This proof missing bill has already been fully settled.");
+            return "";
+        }
+        selectedBill = fresh;
+        try {
+            currentBill.setBillType(BillType.HandoverProofMissingSettlement);
+            currentBill.setBillTypeAtomic(BillTypeAtomic.HANDOVER_PROOF_MISSING_SETTLEMENT_BILL);
+            currentBill.setBillDate(new Date());
+            currentBill.setBillTime(new Date());
+            currentBill.setCreatedAt(new Date());
+            currentBill.setTotal(currentPayment.getPaidValue());
+            currentBill.setNetTotal(currentPayment.getPaidValue());
+            currentBill.setReferenceBill(selectedBill);
+            currentBill.setFromDepartment(sessionController.getDepartment());
+            currentBill.setFromInstitution(sessionController.getInstitution());
+            currentBill.setFromStaff(sessionController.getLoggedUser().getStaff());
+            currentBill.setFromWebUser(sessionController.getLoggedUser());
+            currentBill.setCreater(sessionController.getLoggedUser());
+            billController.save(currentBill);
+
+            currentPayment.setCreatedAt(new Date());
+            currentPayment.setBill(currentBill);
+            currentPayment.setCurrentHolder(sessionController.getLoggedUser());
+            paymentController.save(currentPayment);
+
+            selectedBill.setPaid(true);
+            selectedBill.setEditedAt(new Date());
+            selectedBill.setEditor(sessionController.getLoggedUser());
+            billController.save(selectedBill);
+
+            Map<String, Object> phiParams = new HashMap<>();
+            String phiJpql = "SELECT phi FROM PaymentHandoverItem phi WHERE phi.proofMissingBill = :b";
+            phiParams.put("b", selectedBill);
+            List<PaymentHandoverItem> phis = paymentHandoverItemFacade.findByJpql(phiJpql, phiParams);
+            for (PaymentHandoverItem phi : phis) {
+                phi.setProofMissingSettlement(currentBill);
+                paymentHandoverItemFacade.edit(phi);
+            }
+
+            JsfUtil.addSuccessMessage("Proof missing settlement recorded successfully.");
+            return "/cashier/settle_handover_proof_missing_print?faces-redirect=true";
+        } catch (Exception e) {
+            if (currentBill != null && currentBill.getId() != null) {
+                try {
+                    currentBill.setCancelled(true);
+                    billController.save(currentBill);
+                } catch (Exception ignore) {
+                }
+            }
+            JsfUtil.addErrorMessage("Failed to record settlement: " + e.getMessage());
+            return "";
+        }
     }
 
     public String navigateToViewShiftEndCashInHandBill(Bill cashInHandBillToView) {
@@ -6803,8 +6996,6 @@ public class FinancialTransactionController implements Serializable {
         params.put("fd", getFromDate());
         params.put("td", getToDate());
         params.put("user", sessionController.getLoggedUser());
-        System.out.println("jpql = " + jpql);
-        System.out.println("params = " + params);
         currentBills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
 
@@ -6827,8 +7018,6 @@ public class FinancialTransactionController implements Serializable {
 
         }
         jpql += "order by s.createdAt ";
-        System.out.println("jpql = " + jpql);
-        System.out.println("params = " + params);
         currentBills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
 
