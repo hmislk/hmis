@@ -1,0 +1,27 @@
+{
+    "version": "v2.3.0",
+    "description": "Backfill per-unit rate fields in BillFee (feeUnitGrossValue, feeUnitValue, feeUnitMargin, feeUnitDiscount)",
+    "author": "Dr M H B Ariyaratne",
+    "estimatedDurationMinutes": 10,
+    "requiresDowntime": false,
+    "affectedTables": ["billfee"],
+    "affectedModules": ["Inward", "Billing"],
+    "preRequisites": [
+        "Run missing_database_fields.xhtml first to ensure the four feeUnit* columns exist in BILLFEE",
+        "Database backup completed"
+    ],
+    "migrationSteps": [
+        {
+            "description": "Detect actual BILLFEE and BILLITEM table names (handles MySQL case sensitivity)"
+        },
+        {
+            "description": "Detect actual column names for feeGrossValue, feeValue, feeMargin, feeDiscount and the four new feeUnit* columns"
+        },
+        {
+            "description": "Backfill feeUnitGrossValue = feeGrossValue / qty for all existing rows where feeUnitGrossValue IS NULL"
+        },
+        {
+            "description": "Backfill feeUnitValue, feeUnitMargin, feeUnitDiscount the same way"
+        }
+    ]
+}

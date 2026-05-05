@@ -119,6 +119,28 @@
 
                         <p:divider />
 
+                        <!-- Department Type Filter Section -->
+                        <div class="mb-4">
+                            <h:outputText value="Department Type" styleClass="fw-bold d-block mb-3" />
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <p:outputLabel for="deptType" value="Department Type" styleClass="d-block mb-2"/>
+                                    <p:selectOneMenu id="deptType"
+                                                     styleClass="w-100"
+                                                     value="#{pharmacyStockTakeController.selectedDepartmentType}"
+                                                     title="Select the department type to include in this stock count (required)">
+                                        <f:selectItem itemLabel="-- Select Department Type --" itemValue="#{null}"/>
+                                        <f:selectItems value="#{pharmacyStockTakeController.availableDepartmentTypes}"
+                                                      var="dt"
+                                                      itemLabel="#{dt.name()}"
+                                                      itemValue="#{dt}"/>
+                                    </p:selectOneMenu>
+                                </div>
+                            </div>
+                        </div>
+
+                        <p:divider />
+
                         <!-- Stock Configuration Section -->
                         <div class="mb-4">
                             <h:outputText value="Stock Configuration" styleClass="fw-bold d-block mb-3" />

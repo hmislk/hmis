@@ -5875,7 +5875,7 @@ public class SearchController implements Serializable {
         m.put("toDate", toDate);
         m.put("bTA", BillTypeAtomic.FUND_SHIFT_SHORTAGE_BILL);
         m.put("bT", BillType.ShiftShortage);
-        bills = getBillFacade().findByJpql(sql, m);
+        bills = getBillFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
         if (bills == null || bills.isEmpty()) {
         } else {

@@ -62,7 +62,7 @@ public class ProcedureController implements Serializable {
         try {
             // Create a new Excel workbook
             Workbook workbook = new XSSFWorkbook();
-            Sheet sheet = workbook.createSheet("Proecdures");
+            Sheet sheet = workbook.createSheet("Proecedures");
 
             // Create a header row
             Row headerRow = sheet.createRow(0);
@@ -74,7 +74,7 @@ public class ProcedureController implements Serializable {
             int rowNum = 1;
             for (ClinicalEntity sym : items) {
                 Row row = sheet.createRow(rowNum++);
-                row.createCell(0).setCellValue(rowNum);
+                row.createCell(0).setCellValue(rowNum-1);
                 row.createCell(1).setCellValue(sym.getName());
             }
 

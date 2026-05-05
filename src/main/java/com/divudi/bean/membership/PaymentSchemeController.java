@@ -275,6 +275,9 @@ public class PaymentSchemeController implements Serializable {
             getFacade().create(paymentScheme);
             JsfUtil.addSuccessMessage("Saved Successfully");
         }
+        
+        createPaymentSchemes();
+        prepareAdd();
 
     }
 

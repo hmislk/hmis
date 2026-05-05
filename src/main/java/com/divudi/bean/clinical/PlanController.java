@@ -67,7 +67,7 @@ public class PlanController implements Serializable {
         try {
             // Create a new Excel workbook
             Workbook workbook = new XSSFWorkbook();
-            Sheet sheet = workbook.createSheet("Proecdures");
+            Sheet sheet = workbook.createSheet("Manage Plans");
 
             // Create a header row
             Row headerRow = sheet.createRow(0);
@@ -79,7 +79,7 @@ public class PlanController implements Serializable {
             int rowNum = 1;
             for (ClinicalEntity sym : items) {
                 Row row = sheet.createRow(rowNum++);
-                row.createCell(0).setCellValue(rowNum);
+                row.createCell(0).setCellValue(rowNum-1);
                 row.createCell(1).setCellValue(sym.getName());
             }
 
@@ -87,7 +87,7 @@ public class PlanController implements Serializable {
             FacesContext context = FacesContext.getCurrentInstance();
             HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
             response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-            response.setHeader("Content-Disposition", "attachment; filename=\"procedures.xlsx\"");
+            response.setHeader("Content-Disposition", "attachment; filename=\"manage_plans.xlsx\"");
 
             // Write the workbook to the response output stream
             workbook.write(response.getOutputStream());

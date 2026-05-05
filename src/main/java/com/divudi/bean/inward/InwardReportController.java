@@ -124,6 +124,20 @@ import javax.faces.context.FacesContext;
 import javax.persistence.TemporalType;
 import javax.servlet.http.HttpServletResponse;
 
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.plot.CategoryPlot;
+import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.renderer.category.BarRenderer;
+import org.jfree.chart.renderer.category.LineAndShapeRenderer;
+import org.jfree.data.category.DefaultCategoryDataset;
+
+import com.lowagie.text.Image;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
+import javax.imageio.ImageIO;
+
 /**
  *
  * @author pdhs
@@ -425,7 +439,7 @@ public class InwardReportController implements Serializable {
         createChartModels();
     }
 
-    public void downloadSurgeryCountDoctorWisePdf() {
+    public void downloadSurgeryCountDoctorWisePdf() throws Exception {
         if (billList == null || billList.isEmpty()) {
             JsfUtil.addErrorMessage("No data to export. Please process the report first.");
             return;
@@ -612,6 +626,13 @@ public class InwardReportController implements Serializable {
             }
 
             document.add(table);
+            // ── Doctor-wise charts ─────────────────────────────────────────────────
+            document.add(buildDoctorLineChart(reportYear));
+            document.add(buildDoctorBarChart(reportYear));
+
+            // ── Specialty-wise charts ──────────────────────────────────────────────
+            document.add(buildSpecialtyLineChart(reportYear));
+            document.add(buildSpecialtyBarChart(reportYear));
 
             // ── Footer ─────────────────────────────────────────────────────────────
             Paragraph footer = new Paragraph(
@@ -649,6 +670,188 @@ public class InwardReportController implements Serializable {
             cell.setBorderWidthTop(2f);
         }
         table.addCell(cell);
+    }
+
+    private Image buildChartImage(JFreeChart chart, int width, int height)
+            throws Exception {
+        BufferedImage bi = chart.createBufferedImage(width, height);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ImageIO.write(bi, "png", baos);
+        Image img = Image.getInstance(baos.toByteArray());
+        img.setWidthPercentage(100);
+        return img;
+    }
+    private static final String[] MONTH_LABELS
+            = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
+
+    private static final java.awt.Color[] DOCTOR_COLORS = {
+        new java.awt.Color(75, 192, 192), new java.awt.Color(255, 99, 132),
+        new java.awt.Color(54, 162, 235), new java.awt.Color(255, 206, 86),
+        new java.awt.Color(153, 102, 255), new java.awt.Color(255, 159, 64),
+        new java.awt.Color(199, 199, 199), new java.awt.Color(83, 102, 255),
+        new java.awt.Color(255, 99, 255), new java.awt.Color(99, 255, 132)
+    };
+
+    private static final java.awt.Color[] SPECIALTY_COLORS = {
+        new java.awt.Color(220, 20, 60), new java.awt.Color(65, 105, 225),
+        new java.awt.Color(255, 140, 0), new java.awt.Color(34, 139, 34),
+        new java.awt.Color(138, 43, 226), new java.awt.Color(255, 215, 0)
+    };
+
+    /**
+     * Fills a DefaultCategoryDataset from billList for doctor rows
+     * (non-subtotal, non-grand).
+     */
+    private DefaultCategoryDataset buildDoctorDataset() {
+        DefaultCategoryDataset ds = new DefaultCategoryDataset();
+        for (SurgeryCountDoctorWiseDTO dto : billList) {
+            if (dto.isSubtotal() || dto.isGrandTotal()) {
+                continue;
+            }
+            int[] vals = {dto.getJanuary(), dto.getFebruary(), dto.getMarch(),
+                dto.getApril(), dto.getMay(), dto.getJune(),
+                dto.getJuly(), dto.getAugust(), dto.getSeptember(),
+                dto.getOctober(), dto.getNovember(), dto.getDecember()};
+            for (int i = 0; i < 12; i++) {
+                ds.addValue(vals[i], dto.getDoctorName(), MONTH_LABELS[i]);
+            }
+        }
+        return ds;
+    }
+
+    /**
+     * Fills a DefaultCategoryDataset from billList for specialty subtotal rows.
+     */
+    private DefaultCategoryDataset buildSpecialtyDataset() {
+        DefaultCategoryDataset ds = new DefaultCategoryDataset();
+        for (SurgeryCountDoctorWiseDTO dto : billList) {
+            if (!dto.isSubtotal()) {
+                continue;
+            }
+            int[] vals = {dto.getJanuary(), dto.getFebruary(), dto.getMarch(),
+                dto.getApril(), dto.getMay(), dto.getJune(),
+                dto.getJuly(), dto.getAugust(), dto.getSeptember(),
+                dto.getOctober(), dto.getNovember(), dto.getDecember()};
+            for (int i = 0; i < 12; i++) {
+                ds.addValue(vals[i], dto.getSpecialityName(), MONTH_LABELS[i]);
+            }
+        }
+        return ds;
+    }
+
+    /**
+     * Applies a color array to every series in a CategoryPlot renderer.
+     */
+    private void applyColors(CategoryPlot plot, java.awt.Color[] palette) {
+        for (int i = 0; i < plot.getDataset().getRowCount(); i++) {
+            plot.getRenderer().setSeriesPaint(i, palette[i % palette.length]);
+        }
+    }
+
+// ── Doctor line chart ──────────────────────────────────────────────────────
+    private Image buildDoctorLineChart(int year) throws Exception {
+        DefaultCategoryDataset ds = buildDoctorDataset();
+        JFreeChart chart = ChartFactory.createLineChart(
+                "Doctor Wise Surgery Count – Year " + year,
+                "Month", "Surgery Count",
+                ds, PlotOrientation.VERTICAL, true, false, false);
+
+        CategoryPlot plot = chart.getCategoryPlot();
+        ((NumberAxis) plot.getRangeAxis()).setStandardTickUnits(
+                NumberAxis.createIntegerTickUnits());
+        plot.getRangeAxis().setLowerBound(0);
+
+        LineAndShapeRenderer renderer = new LineAndShapeRenderer(true, true);
+        renderer.setDefaultStroke(new java.awt.BasicStroke(2f));
+        plot.setRenderer(renderer);
+        applyColors(plot, DOCTOR_COLORS);
+
+        chart.getLegend().setPosition(
+                org.jfree.chart.ui.RectangleEdge.RIGHT);
+
+        Image img = buildChartImage(chart, 1100, 400);
+        img.setSpacingBefore(20);
+        img.setSpacingAfter(10);
+        return img;
+    }
+
+// ── Doctor bar chart ───────────────────────────────────────────────────────
+    private Image buildDoctorBarChart(int year) throws Exception {
+        DefaultCategoryDataset ds = buildDoctorDataset();
+        JFreeChart chart = ChartFactory.createBarChart(
+                "Doctor Wise Surgery Count – Year " + year,
+                "Month", "Surgery Count",
+                ds, PlotOrientation.VERTICAL, true, false, false);
+
+        CategoryPlot plot = chart.getCategoryPlot();
+        ((NumberAxis) plot.getRangeAxis()).setStandardTickUnits(
+                NumberAxis.createIntegerTickUnits());
+        plot.getRangeAxis().setLowerBound(0);
+
+        BarRenderer renderer = (BarRenderer) plot.getRenderer();
+        renderer.setDrawBarOutline(true);
+        applyColors(plot, DOCTOR_COLORS);
+
+        chart.getLegend().setPosition(
+                org.jfree.chart.ui.RectangleEdge.TOP);
+
+        Image img = buildChartImage(chart, 1100, 400);
+        img.setSpacingBefore(10);
+        img.setSpacingAfter(20);
+        return img;
+    }
+
+// ── Specialty line chart ───────────────────────────────────────────────────
+    private Image buildSpecialtyLineChart(int year) throws Exception {
+        DefaultCategoryDataset ds = buildSpecialtyDataset();
+        JFreeChart chart = ChartFactory.createLineChart(
+                "Specialty Wise Surgery Count – Year " + year,
+                "Month", "Surgery Count",
+                ds, PlotOrientation.VERTICAL, true, false, false);
+
+        CategoryPlot plot = chart.getCategoryPlot();
+        ((NumberAxis) plot.getRangeAxis()).setStandardTickUnits(
+                NumberAxis.createIntegerTickUnits());
+        plot.getRangeAxis().setLowerBound(0);
+
+        LineAndShapeRenderer renderer = new LineAndShapeRenderer(true, true);
+        renderer.setDefaultStroke(new java.awt.BasicStroke(3f));
+        plot.setRenderer(renderer);
+        applyColors(plot, SPECIALTY_COLORS);
+
+        chart.getLegend().setPosition(
+                org.jfree.chart.ui.RectangleEdge.RIGHT);
+
+        Image img = buildChartImage(chart, 1100, 400);
+        img.setSpacingBefore(20);
+        img.setSpacingAfter(10);
+        return img;
+    }
+
+// ── Specialty bar chart ────────────────────────────────────────────────────
+    private Image buildSpecialtyBarChart(int year) throws Exception {
+        DefaultCategoryDataset ds = buildSpecialtyDataset();
+        JFreeChart chart = ChartFactory.createBarChart(
+                "Specialty Wise Surgery Count – Year " + year,
+                "Month", "Surgery Count",
+                ds, PlotOrientation.VERTICAL, true, false, false);
+
+        CategoryPlot plot = chart.getCategoryPlot();
+        ((NumberAxis) plot.getRangeAxis()).setStandardTickUnits(
+                NumberAxis.createIntegerTickUnits());
+        plot.getRangeAxis().setLowerBound(0);
+
+        BarRenderer renderer = (BarRenderer) plot.getRenderer();
+        renderer.setDrawBarOutline(true);
+        applyColors(plot, SPECIALTY_COLORS);
+
+        chart.getLegend().setPosition(
+                org.jfree.chart.ui.RectangleEdge.TOP);
+
+        Image img = buildChartImage(chart, 1100, 400);
+        img.setSpacingBefore(10);
+        img.setSpacingAfter(20);
+        return img;
     }
 
     public void downloadSurgeryCountDoctorWiseExcel() {
