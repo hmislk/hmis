@@ -2311,6 +2311,10 @@ public class ReportTemplateRowBundle implements Serializable {
         this.totalBalance = totalBalance;
     }
 
+    public boolean isFloatRow() {
+        return paymentHandover == PaymentHandover.FLOAT_OUT || paymentHandover == PaymentHandover.FLOAT_IN;
+    }
+
     public double getFloatOutTotal() {
         return floatOutTotal;
     }

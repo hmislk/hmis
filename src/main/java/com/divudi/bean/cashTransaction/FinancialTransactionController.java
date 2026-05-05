@@ -4817,8 +4817,30 @@ public class FinancialTransactionController implements Serializable {
             }
         }
 
+        List<ReportTemplateRowBundle> childList = new ArrayList<>(groupedBundles.values());
+
+        if (cashFloatOutAcc > 0) {
+            ReportTemplateRowBundle floatOutBundle = new ReportTemplateRowBundle();
+            floatOutBundle.setPaymentHandover(PaymentHandover.FLOAT_OUT);
+            floatOutBundle.setCashValue(-cashFloatOutAcc);
+            floatOutBundle.setCashHandoverValue(-cashFloatOutAcc);
+            floatOutBundle.setHasCashTransaction(true);
+            floatOutBundle.setSelected(true);
+            childList.add(floatOutBundle);
+        }
+
+        if (cashFloatInAcc > 0) {
+            ReportTemplateRowBundle floatInBundle = new ReportTemplateRowBundle();
+            floatInBundle.setPaymentHandover(PaymentHandover.FLOAT_IN);
+            floatInBundle.setCashValue(cashFloatInAcc);
+            floatInBundle.setCashHandoverValue(cashFloatInAcc);
+            floatInBundle.setHasCashTransaction(true);
+            floatInBundle.setSelected(true);
+            childList.add(floatInBundle);
+        }
+
         ReportTemplateRowBundle bundleToHoldDeptUserDayBundle = new ReportTemplateRowBundle();
-        bundleToHoldDeptUserDayBundle.setBundles(new ArrayList<>(groupedBundles.values()));
+        bundleToHoldDeptUserDayBundle.setBundles(childList);
         bundleToHoldDeptUserDayBundle.setStartBill(startBill);
         bundleToHoldDeptUserDayBundle.setEndBill(endBill);
         bundleToHoldDeptUserDayBundle.setFloatOutTotal(floatOutAcc);
