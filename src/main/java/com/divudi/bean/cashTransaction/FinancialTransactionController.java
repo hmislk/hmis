@@ -4818,8 +4818,30 @@ public class FinancialTransactionController implements Serializable {
             }
         }
 
+        List<ReportTemplateRowBundle> childList = new ArrayList<>(groupedBundles.values());
+
+        if (cashFloatOutAcc > 0) {
+            ReportTemplateRowBundle floatOutBundle = new ReportTemplateRowBundle();
+            floatOutBundle.setPaymentHandover(PaymentHandover.FLOAT_OUT);
+            floatOutBundle.setCashValue(-cashFloatOutAcc);
+            floatOutBundle.setCashHandoverValue(-cashFloatOutAcc);
+            floatOutBundle.setHasCashTransaction(true);
+            floatOutBundle.setSelected(true);
+            childList.add(floatOutBundle);
+        }
+
+        if (cashFloatInAcc > 0) {
+            ReportTemplateRowBundle floatInBundle = new ReportTemplateRowBundle();
+            floatInBundle.setPaymentHandover(PaymentHandover.FLOAT_IN);
+            floatInBundle.setCashValue(cashFloatInAcc);
+            floatInBundle.setCashHandoverValue(cashFloatInAcc);
+            floatInBundle.setHasCashTransaction(true);
+            floatInBundle.setSelected(true);
+            childList.add(floatInBundle);
+        }
+
         ReportTemplateRowBundle bundleToHoldDeptUserDayBundle = new ReportTemplateRowBundle();
-        bundleToHoldDeptUserDayBundle.setBundles(new ArrayList<>(groupedBundles.values()));
+        bundleToHoldDeptUserDayBundle.setBundles(childList);
         bundleToHoldDeptUserDayBundle.setStartBill(startBill);
         bundleToHoldDeptUserDayBundle.setEndBill(endBill);
         bundleToHoldDeptUserDayBundle.setFloatOutTotal(floatOutAcc);
@@ -5957,6 +5979,10 @@ public class FinancialTransactionController implements Serializable {
     }
 
     public String navigateToSettleHandoverProofMissingBill() {
+        if (!webUserController.hasPrivilege("SettleHandoverProofMissing")) {
+            JsfUtil.addErrorMessage("You do not have the required privilege to settle a proof missing bill.");
+            return null;
+        }
         if (selectedBill == null || selectedBill.getId() == null) {
             JsfUtil.addErrorMessage("No proof missing bill selected.");
             return null;
@@ -5982,6 +6008,10 @@ public class FinancialTransactionController implements Serializable {
     }
 
     public String settleHandoverProofMissingBill() {
+        if (!webUserController.hasPrivilege("SettleHandoverProofMissing")) {
+            JsfUtil.addErrorMessage("You do not have the required privilege to settle a proof missing bill.");
+            return "";
+        }
         if (currentPayment == null || currentPayment.getPaidValue() <= 0) {
             JsfUtil.addErrorMessage("Please enter a valid settlement amount greater than zero.");
             return "";
@@ -6966,8 +6996,6 @@ public class FinancialTransactionController implements Serializable {
         params.put("fd", getFromDate());
         params.put("td", getToDate());
         params.put("user", sessionController.getLoggedUser());
-        System.out.println("jpql = " + jpql);
-        System.out.println("params = " + params);
         currentBills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
 
@@ -6990,8 +7018,6 @@ public class FinancialTransactionController implements Serializable {
 
         }
         jpql += "order by s.createdAt ";
-        System.out.println("jpql = " + jpql);
-        System.out.println("params = " + params);
         currentBills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
 

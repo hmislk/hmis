@@ -93,12 +93,13 @@
                                 <div class="d-flex justify-content-between">
                                     <p:outputLabel value="Bill Preview" class="m-2"></p:outputLabel>
                                     <div class="d-flex gap-3">
-                                        <p:outputLabel value="Paper Type" class="m-2"></p:outputLabel>
-                                        <p:selectOneMenu value="#{sessionController.departmentPreference.inwardDepositPaymentBillPaper}" class="m-1" style="width: 18em;">
-                                            <f:selectItem itemLabel="Please Select Paper Type" />
-                                            <f:selectItems value="#{enumController.paperTypes}" />
-                                        </p:selectOneMenu>
-                                        <p:commandButton ajax="false" icon="fa fa-sync-alt" class="ui-button m-1" title="Redraw Bill"></p:commandButton>
+                                        <p:commandButton
+                                            rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
+                                            value="Settings"
+                                            icon="fas fa-cog"
+                                            class="ui-button-secondary"
+                                            type="button"
+                                            onclick="PF('inwardPaymentConfigDialog').show();"/>
                                     </div>
                                 </div>
                             </f:facet>
@@ -106,19 +107,19 @@
                             <div class="d-flex justify-content-center">
                                 <h:panelGroup id="gpBillPreview" >
 
-                                    <h:panelGroup rendered="#{sessionController.departmentPreference.inwardDepositPaymentBillPaper eq 'A4Paper'}" >
+                                    <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Inward Payment Bill A4 Paper', false)}" >
                                         <bill:A4PaperPaymentBill bill="#{inwardSearch.bill}" duplicate="true"/>                        
                                     </h:panelGroup>
 
-                                    <h:panelGroup rendered="#{sessionController.departmentPreference.inwardDepositPaymentBillPaper eq 'FiveFivePaper'}" >
+                                    <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Inward Payment Bill Five Five Paper', false)}" >
                                         <bill:FiveFivePaymentBill bill="#{inwardSearch.bill}" duplicate="true" />    
                                     </h:panelGroup> 
 
-                                    <h:panelGroup rendered="#{sessionController.departmentPreference.inwardDepositPaymentBillPaper eq 'PosPaper'}" style="align-items: center;">
+                                    <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Inward Payment Bill POS Paper', true)}" style="align-items: center;">
                                         <bill:posPaperPaymentBill bill="#{inwardSearch.bill}"/> 
                                     </h:panelGroup>
                                     
-                                     <h:panelGroup rendered="#{sessionController.departmentPreference.inwardDepositPaymentBillPaper eq 'FiveFiveCustom3'}" >
+                                     <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Inward Payment Bill Five Five Custom 3 Paper', false)}" >
                                          <prints:five_five_custom_3_inward_payments bill="#{inwardSearch.bill}" duplicate="true" />
                                 </h:panelGroup>
 
@@ -127,6 +128,54 @@
                         </p:panel>
                     </p:panel>
                 </h:form>
+
+        <p:dialog id="inwardPaymentConfigDialog"
+                  header="Inward Payment Bill Printer Configuration"
+                  widgetVar="inwardPaymentConfigDialog"
+                  modal="true"
+                  width="560"
+                  resizable="false"
+                  closeOnEscape="true">
+            <p:ajax event="open" listener="#{pharmacyConfigController.loadCurrentConfig}" update="inwardPaymentConfigForm"/>
+            <h:form id="inwardPaymentConfigForm">
+                <div class="card config-section">
+                    <div class="card-header">
+                        <i class="fas fa-file-alt me-2"/>
+                        <h:outputText value="Paper Format Settings"/>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <h:selectBooleanCheckbox id="inwardPaymentPOS" value="#{pharmacyConfigController.inwardPaymentPosPaper}"/>
+                            <h:outputLabel for="inwardPaymentPOS" value="POS Paper" class="ms-2"/>
+                        </div>
+                        <div class="mb-3">
+                            <h:selectBooleanCheckbox id="inwardPaymentFiveFive" value="#{pharmacyConfigController.inwardPaymentFiveFivePaper}"/>
+                            <h:outputLabel for="inwardPaymentFiveFive" value="5×5 Paper" class="ms-2"/>
+                        </div>
+                        <div class="mb-3">
+                            <h:selectBooleanCheckbox id="inwardPaymentFiveFiveCustom3" value="#{pharmacyConfigController.inwardPaymentFiveFiveCustom3Paper}"/>
+                            <h:outputLabel for="inwardPaymentFiveFiveCustom3" value="5×5 Custom 3 Paper" class="ms-2"/>
+                        </div>
+                        <div class="mb-3">
+                            <h:selectBooleanCheckbox id="inwardPaymentA4" value="#{pharmacyConfigController.inwardPaymentA4Paper}"/>
+                            <h:outputLabel for="inwardPaymentA4" value="A4 Paper" class="ms-2"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="d-flex gap-2 mt-3">
+                    <p:commandButton value="Apply &amp; Close"
+                                     icon="fas fa-save"
+                                     class="ui-button-success"
+                                     ajax="false"
+                                     action="#{pharmacyConfigController.saveInwardPaymentConfig}"/>
+                    <p:commandButton value="Cancel"
+                                     icon="fas fa-times"
+                                     class="ui-button-secondary"
+                                     type="button"
+                                     onclick="PF('inwardPaymentConfigDialog').hide(); return false;"/>
+                </div>
+            </h:form>
+        </p:dialog>
             </ui:define>
         </ui:composition>
     </h:body>
