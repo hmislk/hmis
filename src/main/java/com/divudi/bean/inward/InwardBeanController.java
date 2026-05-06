@@ -2445,8 +2445,9 @@ public class InwardBeanController implements Serializable {
         }
         if (billFee.getFee() == null
                 || billFee.getFee().getFeeType() == FeeType.Staff
-                || Boolean.FALSE.equals(item.isDiscountAllowed())
+                || !Boolean.TRUE.equals(item.isDiscountAllowed())
                 || !billFee.getFee().isDiscountAllowed()) {
+            billFee.setFeeUnitDiscount(0.0);
             billFee.setFeeDiscount(0.0);
             return;
         }
