@@ -1875,6 +1875,25 @@ public class FinancialTransactionController implements Serializable {
         }
         bundle.setTotalOut(selectedBill.getNetTotal());
 
+        // Append synthetic FLOAT_OUT/FLOAT_IN child bundles so the accept page
+        // drill-down table shows float rows alongside department rows.
+        if (bundle.getCashFloatOutTotal() > 0.001) {
+            ReportTemplateRowBundle floatOutBundle = new ReportTemplateRowBundle();
+            floatOutBundle.setPaymentHandover(PaymentHandover.FLOAT_OUT);
+            floatOutBundle.setCashValue(-bundle.getCashFloatOutTotal());
+            floatOutBundle.setHasCashTransaction(true);
+            floatOutBundle.setSelected(true);
+            bundle.getBundles().add(floatOutBundle);
+        }
+        if (bundle.getCashFloatInTotal() > 0.001) {
+            ReportTemplateRowBundle floatInBundle = new ReportTemplateRowBundle();
+            floatInBundle.setPaymentHandover(PaymentHandover.FLOAT_IN);
+            floatInBundle.setCashValue(bundle.getCashFloatInTotal());
+            floatInBundle.setHasCashTransaction(true);
+            floatInBundle.setSelected(true);
+            bundle.getBundles().add(floatInBundle);
+        }
+
         // Fetch float transfer payments for this shift so the accept page can
         // display them. Same query as navigateToViewHandoverBill.
         Bill shiftStartBill = selectedBill.getReferenceBill();

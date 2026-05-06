@@ -345,17 +345,17 @@
                                         <tr style="font-weight: bold; background-color: #f0f0f0;">
                                             <td>Total</td>
                                             <td class="text-end">
-                                                <h:outputText value="#{cc.attrs.bundle.cashValue + cc.attrs.bundle.cardValue + cc.attrs.bundle.chequeValue + cc.attrs.bundle.slipValue + cc.attrs.bundle.ewalletValue + cc.attrs.bundle.patientDepositValue + cc.attrs.bundle.multiplePaymentMethodsValue + cc.attrs.bundle.staffValue + cc.attrs.bundle.creditValue + cc.attrs.bundle.staffWelfareValue + cc.attrs.bundle.voucherValue + cc.attrs.bundle.iouValue + cc.attrs.bundle.agentValue + cc.attrs.bundle.patientPointsValue + cc.attrs.bundle.onlineSettlementValue + cc.attrs.bundle.onCallValue}">
+                                                <h:outputText value="#{cc.attrs.bundle.cashValue + cc.attrs.bundle.cashFloatNetTotal + cc.attrs.bundle.cardValue + cc.attrs.bundle.chequeValue + cc.attrs.bundle.slipValue + cc.attrs.bundle.ewalletValue + cc.attrs.bundle.staffValue + cc.attrs.bundle.creditValue + cc.attrs.bundle.staffWelfareValue + cc.attrs.bundle.voucherValue + cc.attrs.bundle.iouValue + cc.attrs.bundle.agentValue + cc.attrs.bundle.patientPointsValue + cc.attrs.bundle.onlineSettlementValue + cc.attrs.bundle.onCallValue}">
                                                     <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputText>
                                             </td>
                                             <td class="text-end">
-                                                <h:outputText value="#{cc.attrs.bundle.cashHandoverValue + cc.attrs.bundle.cardHandoverValue + cc.attrs.bundle.chequeHandoverValue + cc.attrs.bundle.slipHandoverValue + cc.attrs.bundle.ewalletHandoverValue + cc.attrs.bundle.patientDepositHandoverValue + cc.attrs.bundle.multiplePaymentMethodsHandoverValue + cc.attrs.bundle.staffHandoverValue + cc.attrs.bundle.creditHandoverValue + cc.attrs.bundle.staffWelfareHandoverValue + cc.attrs.bundle.voucherHandoverValue + cc.attrs.bundle.iouHandoverValue + cc.attrs.bundle.agentHandoverValue + cc.attrs.bundle.patientPointsHandoverValue + cc.attrs.bundle.onlineSettlementHandoverValue + cc.attrs.bundle.onCallHandoverValue}">
+                                                <h:outputText value="#{cc.attrs.bundle.cashHandoverValue + cc.attrs.bundle.cardHandoverValue + cc.attrs.bundle.chequeHandoverValue + cc.attrs.bundle.slipHandoverValue + cc.attrs.bundle.ewalletHandoverValue + cc.attrs.bundle.staffHandoverValue + cc.attrs.bundle.creditHandoverValue + cc.attrs.bundle.staffWelfareHandoverValue + cc.attrs.bundle.voucherHandoverValue + cc.attrs.bundle.iouHandoverValue + cc.attrs.bundle.agentHandoverValue + cc.attrs.bundle.patientPointsHandoverValue + cc.attrs.bundle.onlineSettlementHandoverValue + cc.attrs.bundle.onCallHandoverValue}">
                                                     <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputText>
                                             </td>
                                             <td class="text-end">
-                                                <h:outputText value="#{(cc.attrs.bundle.cashValue + cc.attrs.bundle.cardValue + cc.attrs.bundle.chequeValue + cc.attrs.bundle.slipValue + cc.attrs.bundle.ewalletValue + cc.attrs.bundle.patientDepositValue + cc.attrs.bundle.multiplePaymentMethodsValue + cc.attrs.bundle.staffValue + cc.attrs.bundle.creditValue + cc.attrs.bundle.staffWelfareValue + cc.attrs.bundle.voucherValue + cc.attrs.bundle.iouValue + cc.attrs.bundle.agentValue + cc.attrs.bundle.patientPointsValue + cc.attrs.bundle.onlineSettlementValue + cc.attrs.bundle.onCallValue) - (cc.attrs.bundle.cashHandoverValue + cc.attrs.bundle.cardHandoverValue + cc.attrs.bundle.chequeHandoverValue + cc.attrs.bundle.slipHandoverValue + cc.attrs.bundle.ewalletHandoverValue + cc.attrs.bundle.patientDepositHandoverValue + cc.attrs.bundle.multiplePaymentMethodsHandoverValue + cc.attrs.bundle.staffHandoverValue + cc.attrs.bundle.creditHandoverValue + cc.attrs.bundle.staffWelfareHandoverValue + cc.attrs.bundle.voucherHandoverValue + cc.attrs.bundle.iouHandoverValue + cc.attrs.bundle.agentHandoverValue + cc.attrs.bundle.patientPointsHandoverValue + cc.attrs.bundle.onlineSettlementHandoverValue + cc.attrs.bundle.onCallHandoverValue)}">
+                                                <h:outputText value="#{(cc.attrs.bundle.cashValue + cc.attrs.bundle.cashFloatNetTotal + cc.attrs.bundle.cardValue + cc.attrs.bundle.chequeValue + cc.attrs.bundle.slipValue + cc.attrs.bundle.ewalletValue + cc.attrs.bundle.staffValue + cc.attrs.bundle.creditValue + cc.attrs.bundle.staffWelfareValue + cc.attrs.bundle.voucherValue + cc.attrs.bundle.iouValue + cc.attrs.bundle.agentValue + cc.attrs.bundle.patientPointsValue + cc.attrs.bundle.onlineSettlementValue + cc.attrs.bundle.onCallValue) - (cc.attrs.bundle.cashHandoverValue + cc.attrs.bundle.cardHandoverValue + cc.attrs.bundle.chequeHandoverValue + cc.attrs.bundle.slipHandoverValue + cc.attrs.bundle.ewalletHandoverValue + cc.attrs.bundle.staffHandoverValue + cc.attrs.bundle.creditHandoverValue + cc.attrs.bundle.staffWelfareHandoverValue + cc.attrs.bundle.voucherHandoverValue + cc.attrs.bundle.iouHandoverValue + cc.attrs.bundle.agentHandoverValue + cc.attrs.bundle.patientPointsHandoverValue + cc.attrs.bundle.onlineSettlementHandoverValue + cc.attrs.bundle.onCallHandoverValue)}">
                                                     <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputText>
                                             </td>
@@ -396,8 +396,8 @@
 
                     <p:column headerText="Institution / Type" style="font-weight: normal">
                         <h:outputText value="#{summary.department.institution.name}" rendered="#{!summary.floatRow}" />
-                        <h:outputText value="Float Sent (Cash)"     rendered="#{summary.paymentHandover.name() eq 'FLOAT_OUT'}" style="color: red; font-weight: bold;" />
-                        <h:outputText value="Float Received (Cash)" rendered="#{summary.paymentHandover.name() eq 'FLOAT_IN'}"  style="color: green; font-weight: bold;" />
+                        <h:outputText value="Float Sent (Cash)"     rendered="#{summary.floatRow and summary.paymentHandover ne null and summary.paymentHandover.name() eq 'FLOAT_OUT'}" style="color: red; font-weight: bold;" />
+                        <h:outputText value="Float Received (Cash)" rendered="#{summary.floatRow and summary.paymentHandover ne null and summary.paymentHandover.name() eq 'FLOAT_IN'}"  style="color: green; font-weight: bold;" />
                     </p:column>
 
                     <p:column headerText="Site" rendered="#{configOptionApplicationController.getBooleanValueByKey('Sites are Managed',true)}">
@@ -423,8 +423,8 @@
                         <f:facet name="footer"><h:outputText value="#{cc.attrs.bundle.cashValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></f:facet>
                     </p:column>
                     <p:column class="text-end" headerText="Cash Handover" rendered="#{cc.attrs.bundle.hasCashTransaction}">
-                        <h:outputText value="#{summary.cashValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
-                        <f:facet name="footer"><h:outputText value="#{cc.attrs.bundle.cashValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></f:facet>
+                        <h:outputText value="#{summary.cashHandoverValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                        <f:facet name="footer"><h:outputText value="#{cc.attrs.bundle.cashHandoverValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></f:facet>
                     </p:column>
                     <p:column class="text-end" headerText="Card" rendered="#{cc.attrs.bundle.hasCardTransaction}">
                         <h:outputText value="#{summary.cardValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText>

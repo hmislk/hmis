@@ -655,7 +655,7 @@
 
                                     <p:column class="text-end" headerText="Cash Collected" rendered="#{financialTransactionController.bundle.hasCashTransaction}">
                                         <h:outputText value="#{summary.cashValue}"
-                                            style="color: #{summary.floatRow ? (summary.paymentHandover.name() == 'FLOAT_OUT' ? '#dc3545' : '#198754') : ''}">
+                                            style="color: #{summary.floatRow and summary.paymentHandover ne null ? (summary.paymentHandover.name() == 'FLOAT_OUT' ? '#dc3545' : '#198754') : ''}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputText>
 
@@ -692,12 +692,12 @@
                                         <h:outputText
                                             rendered="#{summary.floatRow}"
                                             value="#{summary.cashHandoverValue}"
-                                            style="color: #{summary.paymentHandover.name() == 'FLOAT_OUT' ? '#dc3545' : '#198754'}">
+                                            style="color: #{summary.paymentHandover ne null and summary.paymentHandover.name() == 'FLOAT_OUT' ? '#dc3545' : '#198754'}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputText>
 
                                         <f:facet name="footer">
-                                            <h:outputText value="#{financialTransactionController.bundle.cashValue}">
+                                            <h:outputText value="#{financialTransactionController.bundle.denominatorValue}">
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </h:outputText>
                                         </f:facet>
