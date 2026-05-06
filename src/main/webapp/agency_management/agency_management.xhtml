@@ -160,7 +160,7 @@
                                         disabled="#{not empty institutionController.current.id}"
                                         action="#{institutionController.saveSelected()}" 
                                         process="btnSave gpDetail" 
-                                        update="lstSelect msg" 
+                                        update="lstSelect gpDetail msg" 
                                         class=" m-1 ui-button-warning w-25"
                                         icon="fas fa-save">
                                     </p:commandButton>
@@ -171,7 +171,7 @@
                                         disabled="#{!(not empty institutionController.current.id)}"
                                         action="#{institutionController.saveSelected()}" 
                                         process="btnUpdate gpDetail" 
-                                        update="lstSelect msg" 
+                                        update="lstSelect gpDetail msg" 
                                         class=" m-1 ui-button-warning w-25"
                                         icon="fas fa-save">
                                     </p:commandButton>
