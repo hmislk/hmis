@@ -1875,6 +1875,25 @@ public class FinancialTransactionController implements Serializable {
         }
         bundle.setTotalOut(selectedBill.getNetTotal());
 
+        // Append synthetic FLOAT_OUT/FLOAT_IN child bundles so the accept page
+        // drill-down table shows float rows alongside department rows.
+        if (bundle.getCashFloatOutTotal() > 0.001) {
+            ReportTemplateRowBundle floatOutBundle = new ReportTemplateRowBundle();
+            floatOutBundle.setPaymentHandover(PaymentHandover.FLOAT_OUT);
+            floatOutBundle.setCashValue(-bundle.getCashFloatOutTotal());
+            floatOutBundle.setHasCashTransaction(true);
+            floatOutBundle.setSelected(true);
+            bundle.getBundles().add(floatOutBundle);
+        }
+        if (bundle.getCashFloatInTotal() > 0.001) {
+            ReportTemplateRowBundle floatInBundle = new ReportTemplateRowBundle();
+            floatInBundle.setPaymentHandover(PaymentHandover.FLOAT_IN);
+            floatInBundle.setCashValue(bundle.getCashFloatInTotal());
+            floatInBundle.setHasCashTransaction(true);
+            floatInBundle.setSelected(true);
+            bundle.getBundles().add(floatInBundle);
+        }
+
         // Fetch float transfer payments for this shift so the accept page can
         // display them. Same query as navigateToViewHandoverBill.
         Bill shiftStartBill = selectedBill.getReferenceBill();
@@ -3524,6 +3543,13 @@ public class FinancialTransactionController implements Serializable {
                     .forEach(p -> p.setTransientPaymentHandover(PaymentHandover.OTHER_USERS_COLLECTED_AND_HANDED_OVER));
         }
 
+        // Fund transfer payments (float-out / float-in between users):
+        // FUND_TRANSFER_BILL payments have currentHolder=NULL (cash left the sender's drawer),
+        // so fetchAllPaymentInMyHold() never returns them. Fetch them separately by creater.
+        // FUND_TRANSFER_RECEIVED_BILL payments are already in othersPayments via currentHolder,
+        // but including them here too is safe — the Set deduplicates.
+        List<Payment> fundTransferPayments = fetchFundTransferPaymentsForShift(startBill, startBill.getReferenceBill(), sessionController.getLoggedUser());
+
         Set<Payment> uniquePaymentSet = new HashSet<>();
 
         if (shiftPayments != null) {
@@ -3535,21 +3561,12 @@ public class FinancialTransactionController implements Serializable {
         if (othersPayments != null) {
             uniquePaymentSet.addAll(othersPayments);
         }
+        if (fundTransferPayments != null) {
+            uniquePaymentSet.addAll(fundTransferPayments);
+        }
 
         List<Payment> allUniquePayments = new ArrayList<>(uniquePaymentSet);
         boolean selectAllHandoverPayments = configOptionApplicationController.getBooleanValueByKey("Select all payments by default for Handing over of the shift.", false);
-
-        if (shiftPayments != null) {
-            uniquePaymentSet.addAll(shiftPayments);
-        }
-        if (shiftFloats != null) {
-            uniquePaymentSet.addAll(shiftFloats);
-        }
-        if (othersPayments != null) {
-            uniquePaymentSet.addAll(othersPayments);
-        }
-
-        allUniquePayments = new ArrayList<>(uniquePaymentSet);
 
         if (selectAllHandoverPayments) {
             bundle = generatePaymentBundleForHandovers(nonClosedShiftStartFundBill,
@@ -4540,6 +4557,41 @@ public class FinancialTransactionController implements Serializable {
             }
         }
         return myFloats;
+    }
+
+    public List<Payment> fetchFundTransferPaymentsForShift(Bill startBill, Bill endBill, WebUser wu) {
+        if (startBill == null || startBill.getId() == null || startBill.getCreater() == null) {
+            return null;
+        }
+        WebUser paymentUser = startBill.getCreater();
+
+        // FUND_TRANSFER_BILL: fetch by creater (the sender — currentHolder is always NULL on these).
+        // FUND_TRANSFER_RECEIVED_BILL: fetch by floatRecipient only (the actual receiver).
+        // Using creater for FUND_TRANSFER_RECEIVED_BILL would pull in receipts that this user
+        // created on behalf of another user (the accept flow), inflating cashFloatInAcc.
+        Map<String, Object> m = new HashMap<>();
+        StringBuilder jpql = new StringBuilder("SELECT p FROM Payment p JOIN p.bill b ")
+                .append("WHERE p.retired=:pr AND b.retired=:br ")
+                .append("AND p.cancelled=:can ")
+                .append("AND p.handingOverStarted=:hos ")
+                .append("AND b.createdAt >= :startTime ")
+                .append("AND ((b.billTypeAtomic=:ftBill AND p.creater=:cu) ")
+                .append("  OR (b.billTypeAtomic=:ftRecv AND p.floatRecipient=:cu)) ");
+        m.put("pr", false);
+        m.put("br", false);
+        m.put("ftBill", BillTypeAtomic.FUND_TRANSFER_BILL);
+        m.put("ftRecv", BillTypeAtomic.FUND_TRANSFER_RECEIVED_BILL);
+        m.put("cu", paymentUser);
+        m.put("can", false);
+        m.put("hos", false);
+        m.put("startTime", startBill.getCreatedAt());
+
+        if (endBill != null && endBill.getCreatedAt() != null) {
+            jpql.append("AND b.createdAt <= :endTime ");
+            m.put("endTime", endBill.getCreatedAt());
+        }
+        jpql.append("ORDER BY b.createdAt");
+        return paymentFacade.findByJpql(jpql.toString(), m, TemporalType.TIMESTAMP);
     }
 
     public List<Payment> fetchBankPayments(
@@ -5706,7 +5758,7 @@ public class FinancialTransactionController implements Serializable {
         boolean skipCashDiffValidation = configOptionApplicationController.getBooleanValueByKey("Skip Cash Difference Validation for Handover", false);
         if (!skipCashDiffValidation) {
             Double maximumAllowedCashDifferenceForHandover = configOptionApplicationController.getDoubleValueByKey("Maximum Allowed Cash Difference for Handover", 1.0);
-            double expectedCashHandover = bundle.getCashValue() + bundle.getCashFloatNetTotal();
+            double expectedCashHandover = bundle.getCashValue();
             if (Math.abs(bundle.getDenominatorValue() - expectedCashHandover) > maximumAllowedCashDifferenceForHandover) {
                 JsfUtil.addErrorMessage("Cash Value Collected and the cash value Handing over are different. Cannot handover.");
                 return null;
@@ -5813,7 +5865,7 @@ public class FinancialTransactionController implements Serializable {
         drawerController.updateDrawerForOuts(currentBill, PaymentMethod.Cash, cashHandover, sessionController.getLoggedUser());
 
         for (ReportTemplateRowBundle shiftBundle : bundle.getBundles()) {
-            if (shiftBundle.isSelected()) {
+            if (shiftBundle.isSelected() && !shiftBundle.isFloatRow()) {
                 String id = billNumberGenerator.departmentBillNumberGeneratorYearly(department, BillTypeAtomic.FUND_SHIFT_COMPONANT_HANDOVER_CREATE);
                 Bill shiftHandoverComponantBill = new Bill();
                 shiftHandoverComponantBill.setReferenceNumber(shiftBundle.getBundleType());
