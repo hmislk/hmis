@@ -436,7 +436,7 @@ public class Fee implements Serializable {
         this.discountAllowed = discountAllowed;
     }
 
-    public Boolean isMarginAllowed() {
+    public Boolean getMarginAllowed() {
         return marginAllowed;
     }
 
