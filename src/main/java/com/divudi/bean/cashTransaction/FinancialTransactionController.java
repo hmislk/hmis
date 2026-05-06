@@ -1852,6 +1852,11 @@ public class FinancialTransactionController implements Serializable {
             }
 
             childBundle.calculateTotalsByPaymentsAndDenominations();
+            // Shortage component bills have negative cash — mark them so the accept page
+            // can display the "Shift Shortage" label in the Institution/Type column.
+            if (childBundle.getCashValue() < -0.001) {
+                childBundle.setPaymentHandover(PaymentHandover.FLOATS);
+            }
             bundle.getBundles().add(childBundle);
         }
 
@@ -1981,6 +1986,11 @@ public class FinancialTransactionController implements Serializable {
             }
 
             childBundle.calculateTotalsByPaymentsAndDenominations();
+            // Shortage component bills have negative cash — mark them so the reprint
+            // composite can display the "Shift Shortage" label in Institution/Type column.
+            if (childBundle.getCashValue() < -0.001) {
+                childBundle.setPaymentHandover(PaymentHandover.FLOATS);
+            }
             bundle.getBundles().add(childBundle);
         }
 
@@ -2006,6 +2016,29 @@ public class FinancialTransactionController implements Serializable {
         }
         // Restore totalOut so "Handingover Value" is correct on the print.
         bundle.setTotalOut(selectedBill.getNetTotal());
+
+        // Append synthetic FLOAT_OUT / FLOAT_IN child bundles so they appear in the
+        // drill-down table (selectedBundles). These mirror the bundles produced by
+        // generatePaymentBundleForHandovers() during creation, but are rebuilt here
+        // from the already-computed cashFloat totals since the transient value is not persisted.
+        if (bundle.getCashFloatOutTotal() > 0.001) {
+            ReportTemplateRowBundle floatOutBundle = new ReportTemplateRowBundle();
+            floatOutBundle.setPaymentHandover(PaymentHandover.FLOAT_OUT);
+            floatOutBundle.setCashValue(-bundle.getCashFloatOutTotal());
+            floatOutBundle.setCashHandoverValue(-bundle.getCashFloatOutTotal());
+            floatOutBundle.setHasCashTransaction(true);
+            floatOutBundle.setSelected(true);
+            bundle.getBundles().add(floatOutBundle);
+        }
+        if (bundle.getCashFloatInTotal() > 0.001) {
+            ReportTemplateRowBundle floatInBundle = new ReportTemplateRowBundle();
+            floatInBundle.setPaymentHandover(PaymentHandover.FLOAT_IN);
+            floatInBundle.setCashValue(bundle.getCashFloatInTotal());
+            floatInBundle.setCashHandoverValue(bundle.getCashFloatInTotal());
+            floatInBundle.setHasCashTransaction(true);
+            floatInBundle.setSelected(true);
+            bundle.getBundles().add(floatInBundle);
+        }
 
         // Fetch individual float transfer payments for this shift so the preview can
         // display them as detail rows. Float payments were marked handingOverStarted=true
@@ -5679,38 +5712,6 @@ public class FinancialTransactionController implements Serializable {
         return "/cashier/shift_end_summery_bill_print?faces-redirect=true";
     }
 
-    public String completeHandover() {
-        if (bundle == null) {
-            JsfUtil.addErrorMessage("Error - Null Bundle");
-            return null;
-        }
-        if (bundle.getStartBill() == null) {
-            JsfUtil.addErrorMessage("No Start");
-            return null;
-        }
-        if (bundle.getStartBill().getReferenceBill() == null) {
-            JsfUtil.addErrorMessage("Shift NOT ended. Can not complete Handover");
-            return null;
-        }
-        if (bundle.getEndBill() == null) {
-            JsfUtil.addErrorMessage("Shift NOT ended. Can not complete Handover");
-            return null;
-        }
-
-        bundle.getStartBill().setCompleted(true);
-        bundle.getStartBill().setCompletedAt(new Date());
-        bundle.getStartBill().setCompletedBy(sessionController.getLoggedUser());
-
-        bundle.getEndBill().setCompleted(true);
-        bundle.getEndBill().setCompletedAt(new Date());
-        bundle.getEndBill().setCompletedBy(sessionController.getLoggedUser());
-
-        billController.save(bundle.getStartBill());
-        billController.save(bundle.getEndBill());
-
-        return navigateToMyShifts();
-    }
-
     public String settleHandoverStartBill() {
         if (user == null) {
             JsfUtil.addErrorMessage("Please select a user to handover the shift.");
@@ -7386,6 +7387,10 @@ public class FinancialTransactionController implements Serializable {
         WebUser reciver = sessionController.getLoggedUser();
 
         for (ReportTemplateRowBundle shiftBundle : bundle.getBundles()) {
+
+            if (shiftBundle.isFloatRow() || shiftBundle.getDepartment() == null) {
+                continue;
+            }
 
             CashBook bundleCb = cashBookController.findAndSaveCashBookBySite(shiftBundle.getDepartment().getSite(), shiftBundle.getDepartment().getInstitution(), shiftBundle.getDepartment());
             String id = billNumberGenerator.departmentBillNumberGeneratorYearly(department, BillTypeAtomic.FUND_SHIFT_COMPONANT_HANDOVER_CREATE);
