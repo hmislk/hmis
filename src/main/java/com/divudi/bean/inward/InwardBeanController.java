@@ -2382,7 +2382,9 @@ public class InwardBeanController implements Serializable {
     public void setBillFeeMargin(BillFee billFee, Item item, PriceMatrix priceMatrix) {
         double margin = 0;
 
-        if (billFee == null || item.isMarginNotAllowed()) {
+        if (billFee == null || item.isMarginNotAllowed()
+                || billFee.getFee() == null
+                || !billFee.getFee().isMarginAllowed()) {
             return;
         }
 
@@ -2398,7 +2400,9 @@ public class InwardBeanController implements Serializable {
     }
 
     public void setBillFeeMargin(BillFee billFee, Item item, PriceMatrix priceMatrix, PatientEncounter patientEncounter) {
-        if (billFee == null || item.isMarginNotAllowed()) {
+        if (billFee == null || item.isMarginNotAllowed()
+                || billFee.getFee() == null
+                || !billFee.getFee().isMarginAllowed()) {
             return;
         }
         if (patientEncounter == null || patientEncounter.getAdmissionType() == null) {

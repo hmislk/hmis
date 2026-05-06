@@ -107,6 +107,7 @@ public class Fee implements Serializable {
     private boolean primaryFee;
     
     private boolean discountAllowed;
+    private boolean marginAllowed = true;
 
     public Fee() {
     }
@@ -433,6 +434,14 @@ public class Fee implements Serializable {
 
     public void setDiscountAllowed(boolean discountAllowed) {
         this.discountAllowed = discountAllowed;
+    }
+
+    public boolean isMarginAllowed() {
+        return marginAllowed;
+    }
+
+    public void setMarginAllowed(boolean marginAllowed) {
+        this.marginAllowed = marginAllowed;
     }
 
     public double getCcFee() {
