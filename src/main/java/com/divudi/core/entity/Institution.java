@@ -37,8 +37,11 @@ public class Institution implements Serializable, IdentifiableWithNameOrCode {
 
     static final long serialVersionUID = 1L;
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
+    // NOTE: No UNIQUE constraint on institutionCode - different institution types
+    // (suppliers, labs, hospitals) can legitimately have the same codes (e.g., RH2003)
+    // since they serve different purposes and contexts
     String institutionCode;
     @ManyToOne(fetch = FetchType.LAZY)
     Institution institution;
@@ -55,6 +58,12 @@ public class Institution implements Serializable, IdentifiableWithNameOrCode {
     String mobile;
     String web;
     String chequePrintingName;
+    private String qbSupplierName;
+    private String contactPersonName;
+    private String paymentCompanyName;
+    private String bankName;
+    private String branchName;
+    private String legalCompany;
     private String ownerName;
 
     @ManyToOne
@@ -101,7 +110,12 @@ public class Institution implements Serializable, IdentifiableWithNameOrCode {
     double opdBillDiscount;
     double inwardDiscount;
     double pharmacyDiscount;
-
+    
+    /**
+     * Spelling mistake. Should be balance. This field is kept for
+     * backward compatibility with existing MySQL databases. Use carefully.
+     * Planned for correction in a future major version.
+     */
     double ballance;
 
     private double companyBalance;
@@ -140,11 +154,16 @@ public class Institution implements Serializable, IdentifiableWithNameOrCode {
     @ManyToOne
     Institution bankBranch;
 
+    @Deprecated // Use Application Configuration Options
     String emailSendingUsername;
+    @Deprecated // Use Application Configuration Options
     String emailSendingPassword;
 
+    @Deprecated // Use Application Configuration Options
     private String smsSendingUsername;
+    @Deprecated // Use Application Configuration Options
     private String smsSendingPassword;
+    @Deprecated // Use Application Configuration Options
     private String smsSendingAlias;
 
     //Inactive Status
@@ -567,6 +586,54 @@ public class Institution implements Serializable, IdentifiableWithNameOrCode {
 
     public void setAccountNo(String accountNo) {
         this.accountNo = accountNo;
+    }
+
+    public String getQbSupplierName() {
+        return qbSupplierName;
+    }
+
+    public void setQbSupplierName(String qbSupplierName) {
+        this.qbSupplierName = qbSupplierName;
+    }
+
+    public String getContactPersonName() {
+        return contactPersonName;
+    }
+
+    public void setContactPersonName(String contactPersonName) {
+        this.contactPersonName = contactPersonName;
+    }
+
+    public String getPaymentCompanyName() {
+        return paymentCompanyName;
+    }
+
+    public void setPaymentCompanyName(String paymentCompanyName) {
+        this.paymentCompanyName = paymentCompanyName;
+    }
+
+    public String getBankName() {
+        return bankName;
+    }
+
+    public void setBankName(String bankName) {
+        this.bankName = bankName;
+    }
+
+    public String getBranchName() {
+        return branchName;
+    }
+
+    public void setBranchName(String branchName) {
+        this.branchName = branchName;
+    }
+
+    public String getLegalCompany() {
+        return legalCompany;
+    }
+
+    public void setLegalCompany(String legalCompany) {
+        this.legalCompany = legalCompany;
     }
 
     public Institution getBankBranch() {

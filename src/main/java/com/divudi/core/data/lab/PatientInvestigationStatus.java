@@ -8,7 +8,7 @@ package com.divudi.core.data.lab;
 public enum PatientInvestigationStatus {
 
     ORDERED("Ordered"),
-    SAMPLE_GENERATED("Sample Generated (Barcode generated)"),
+    SAMPLE_GENERATED("Barcode Generated"),
     SAMPLE_COLLECTED("Sample Collected"),
     SAMPLE_SENT("Sample Sent"),
     SAMPLE_ACCEPTED("Sample Accepted"),
@@ -25,8 +25,16 @@ public enum PatientInvestigationStatus {
     REPORT_REACHED_COLLECTING_CENTRE("Report Reached Collecting Centre"),
     REPORT_HANDED_OVER("Report Handed Over"),
     REPORT_CREATED("Report Created"),
-    REPORT_APPROVED("Report Approved");
-
+    REPORT_APPROVED("Report Approved"),
+    SAMPLE_SENT_TO_OUTLAB("Sample Sent to OutLab"),
+    SAMPLE_RECOLLECTION_REQUESTED("Sample Recollection Requested"),
+    SAMPLE_RECOLLECTION_PENDING("Sample Recollection Pending"),
+    SAMPLE_RECOLLECTION_COMPLETE("Sample Recollection Completed"),
+    SAMPLE_REGENERATED("Barcode Regenerated"),
+    SEPARATE_AND_SAMPLE_GENERATED("Separate and Barcode Generated"),
+    SENT_SAMPLE_RETRIEVING("Retrieving the sent sample"),
+    SAMPLE_SENT_TO_INTERNAL_LAB("Sample Sent to Internal Lab"),;
+    
     private final String label;
 
     PatientInvestigationStatus(String label) {

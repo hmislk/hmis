@@ -37,6 +37,17 @@ import java.util.UUID;
  */
 public class CommonFunctions {
 
+    public static double abs(double value) {
+        return Math.abs(value);
+    }
+
+    public static Double reverseSign(Double value) {
+        if (value == null) {
+            return null;
+        }
+        return -value;
+    }
+
     public static String changeTextCases(String nm, String tc) {
         if (tc == null) {
             return nm;
@@ -91,7 +102,28 @@ public class CommonFunctions {
         }
     }
 
+    // ChatGPT Contribution: Safe rounding method for financial calculations
+    public static double roundToTwoDecimals(double value) {
+        if (Double.isNaN(value) || Double.isInfinite(value)) {
+            return 0.0;
+        }
+        return Math.round(value * 100.0) / 100.0;
+    }
+
+    // ChatGPT Contribution
+    public static double roundToTwoDecimalsBigDecimal(double value) {
+        if (Double.isNaN(value) || Double.isInfinite(value)) {
+            return 0.0;
+        }
+        return new java.math.BigDecimal(value)
+                .setScale(2, java.math.RoundingMode.HALF_UP)
+                .doubleValue();
+    }
+
     public static boolean checkOnlyNumeric(String text) {
+        if (text == null) {
+            return false;
+        }
         String cleandtext = text.replaceAll("[\\s+\\-()]", "");
         String regex = "^[0-9]+$";
         // Check if the text matches the pattern
@@ -144,7 +176,9 @@ public class CommonFunctions {
         }
 
         int intPart = (int) number;
-        int decimalPart = (int) (Double.parseDouble(String.format("%.2f", number % 1)) * 100);
+
+        // Correctly round to two decimal places and extract the cents
+        int decimalPart = (int) Math.round((number - intPart) * 100);
 
         StringBuilder result = new StringBuilder();
 
@@ -229,6 +263,29 @@ public class CommonFunctions {
 
     }
 
+    /**
+     * Escape HTML special characters to safely render dynamic text.
+     * <p>
+     * This method should be used when outputting user-provided content in JSF
+     * components with <code>escape="false"</code> to avoid XSS issues. It will
+     * convert characters such as <code>&lt;</code> and <code>&gt;</code> to
+     * their HTML entity equivalents.
+     *
+     * @param input Raw string
+     * @return Sanitised string safe for HTML output
+     */
+    public static String escapeHtml(String input) {
+        if (input == null) {
+            return "";
+        }
+        return input
+                .replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("\"", "&quot;")
+                .replace("'", "&#39;");
+    }
+
     public static Long convertStringToLongByRemoveSpecialChars(String phonenumber) {
         if (phonenumber == null || phonenumber.trim().isEmpty()) {
             return null;
@@ -271,6 +328,18 @@ public class CommonFunctions {
 
     public static double round(double numberToRound) {
         return round(numberToRound, 2);
+    }
+
+// ChatGPT contributed - 2025-05
+    public static long stringToLong(String string) {
+        if (string == null || string.trim().isEmpty()) {
+            return 0l;
+        }
+        try {
+            return Long.parseLong(string.trim());
+        } catch (NumberFormatException e) {
+            return 0l;
+        }
     }
 
     public static long calTimePeriod(Date frDate, Date tDate) {
@@ -397,6 +466,15 @@ public class CommonFunctions {
 
     public static Date getEndOfDay() {
         return getEndOfDay(new Date());
+    }
+    
+    public static Date getPreviousDate(int yearsBack) {
+        if (yearsBack < 0) {
+            throw new IllegalArgumentException("yearsBack must be non-negative");
+        }
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.YEAR, -yearsBack);
+        return getStartOfDay(calendar.getTime());
     }
 
     public static Date getEndOfDay(Date d) {
@@ -627,6 +705,16 @@ public class CommonFunctions {
         return calendar.getTime();
     }
 
+    public static Date addDaysToDate(Date date, Long days) {
+        if (date == null) {
+            return null;
+        }
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        calendar.add(Calendar.DAY_OF_MONTH, days.intValue());
+        return calendar.getTime();
+    }
+
     public static Date retiermentDate(Date dob) {
         if (dob == null) {
             dob = new Date();
@@ -658,6 +746,12 @@ public class CommonFunctions {
         cal.set(Calendar.DATE, 1);
         //////// // System.out.println("First : " + cal.getTime());
         return cal.getTime();
+    }
+
+    public static Date getDateMonthsAgo(int months) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.MONTH, -months);
+        return calendar.getTime();
     }
 
     public static Date getLastDayOfYear(Date date) {
@@ -1072,5 +1166,24 @@ public class CommonFunctions {
 
         // Convert Double to String
         return String.valueOf(value);
+    }
+
+    // Date range as string for file name
+    public static String dateRangeForFileName(Date from, Date to, String dateFormat) {
+        return dateRangeForFileName(from, to, dateFormat, false);
+    }
+
+    public static String dateRangeForFileName(Date from, Date to, String dateFormat, boolean singleDate) {
+        if (dateFormat == null || dateFormat.trim().isEmpty()) {
+            dateFormat = "dd-MM-yyyy";
+        }
+        SimpleDateFormat sdf = new SimpleDateFormat(dateFormat);
+        if (from != null && to != null) {
+            return sanitizeStringForDatabase(sdf.format(from) + "_to_" + sdf.format(to));
+        } else if (from != null && singleDate) {
+            return sanitizeStringForDatabase(sdf.format(from));
+        } else {
+            return "";
+        }
     }
 }

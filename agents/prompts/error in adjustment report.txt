@@ -1,0 +1,43 @@
+This is the report where we list Adjustments - 
+http://localhost:8080/rh/faces/pharmacy/00:49 22/09/2025.xhtml
+
+This is one place we create stock adjustments - 
+BillTypeAtomic is PHARMACY_STOCK_ADJUSTMENT_BILL - http://localhost:8080/rh/faces/pharmacy/pharmacy_stock_take_review.xhtml 
+
+This is another place we create stock adjustments - 
+BillTypeAtomic - PHARMACY_STOCK_ADJUSTMENT
+Page - http://localhost:8080/rh/faces/pharmacy/adjustments/pharmacy_adjustment_department.xhtml
+
+The issue is that in these methods, as listed in the report, have different before and after adjustment values
+Date/Time Type of Adjustment	Before Adjustment	After Adjustment	Adjustment Difference
+22/09/25 12:40 am	Zaart 25Mg		M H B Ariyaratne	Pharmacy Stock Adjustment Bill	1,234.00	-1,816.00	-3,050.00
+22/09/25 12:40 am	Zaart 25Mg		M H B Ariyaratne	Pharmacy Stock Adjustment Bill	5,678.00	4,578.00	-1,100.00
+22/09/25 12:41 am	Zaart 25Mg	dfg	M H B Ariyaratne	Pharmacy Stock Adjustment	1,000.00	-650.00	-1,650.00
+
+1234 is after adjustment in first row
+5678 is after adjustment in second row
+but in
+
+
+
+under the page pharmacy_adjustment_index
+there are different types of adjustments
+each have a separate page.
+each page has a print preview section where printPreview = true
+in each print preview section, has a unique composite component to print the receipt
+the buttons include 
+id="btnNavigateToStockAdjustment"
+id="btnNavigateToStaffStockAdjustment"
+id="btnNavigateToPurchaseRateAdjustment"
+id="btnNavigateToCostRateAdjustment"
+id="btnNavigateToRetailRateAdjustment"
+id="btnNavigateToWholesaleAdjustment"
+id="btnNavigateToExpiaryAdjustment"
+
+for each button there is a seperate the BillTypeAtomic and composite component used for printing
+
+Each have to have a reprint page for all above pages with the same composite components
+
+in the same way, we have to have a print page and a composite component for the bill type atomic PHARMACY_STOCK_ADJUSTMENT_BILL as well
+it should be called in action="#{billSearch.navigateToViewBillByAtomicBillTypeByBillId(pi.bill.id)}" 
+

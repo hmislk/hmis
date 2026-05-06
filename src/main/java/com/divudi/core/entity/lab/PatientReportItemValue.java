@@ -29,26 +29,29 @@ public class PatientReportItemValue implements Serializable, RetirableEntity {
 
     private static final long serialVersionUID = 1L;
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @ManyToOne
-    Patient patient;
+    private Patient patient;
     @ManyToOne
-    PatientEncounter patientEncounter;
+    private PatientEncounter patientEncounter;
     @ManyToOne
-    InvestigationItem investigationItem;
+    private InvestigationItem investigationItem;
     @ManyToOne
-    PatientReport patientReport;
+    private PatientReport patientReport;
     private String codeSystem;
     private String codeSystemCode;
-    String strValue;
+    private String strValue;
     @Lob
     private String lobValue;
     @Lob
-    byte[] baImage;
-    String fileName;
-    String fileType;
-    Double doubleValue;
+    private byte[] baImage;
+    private String fileName;
+    private String fileType;
+    private Double doubleValue;
+
+    @ManyToOne
+    private PatientReportGroup patientReportGroup;
 
     @Transient
     private String value;
@@ -62,6 +65,7 @@ public class PatientReportItemValue implements Serializable, RetirableEntity {
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date retiredAt;
     private String retireComments;
+    private boolean allowToExportChart;
 
     public String getStrValue() {
         return strValue;
@@ -189,47 +193,35 @@ public class PatientReportItemValue implements Serializable, RetirableEntity {
 
     public String getValue() {
         if (this.investigationItem == null || this.investigationItem.ixItemValueType == null) {
-            System.out.println("Investigation item or item value type is null");
             return "";
         }
 
         String value = "";
         String formatString = this.investigationItem.formatString;
-        System.out.println("Format string: " + formatString);
-
-        System.out.println("this.investigationItem.ixItemValueType = " + this.investigationItem.ixItemValueType);
 
         switch (this.investigationItem.ixItemValueType) {
             case Double:
             case Long:
                 if (this.doubleValue != null) {
-                    System.out.println("Double value before formatting: " + this.doubleValue);
                     if (formatString != null) {
                         DecimalFormat decimalFormat = new DecimalFormat(formatString);
                         value = decimalFormat.format(this.doubleValue);
                     } else {
                         value = Double.toString(this.doubleValue);
                     }
-                    System.out.println("Double value after formatting: " + value);
-                } else {
-                    System.out.println("Double value is null");
                 }
                 break;
             case Varchar:
                 value = this.strValue;
-                System.out.println("Varchar value: " + value);
                 break;
             case Memo:
                 value = this.lobValue;
-                System.out.println("Memo value: " + value);
                 break;
             default:
                 value = this.investigationItem.ixItemValueType.toString();
-                System.out.println("Default value: " + value);
                 break;
         }
 
-        System.out.println("Final value: " + value);
         return value;
     }
 
@@ -289,6 +281,62 @@ public class PatientReportItemValue implements Serializable, RetirableEntity {
 
     public void setRetireComments(String retireComments) {
         this.retireComments = retireComments;
+    }
+
+    public PatientReportGroup getPatientReportGroup() {
+        return patientReportGroup;
+    }
+
+    public void setPatientReportGroup(PatientReportGroup patientReportGroup) {
+        this.patientReportGroup = patientReportGroup;
+    }
+
+    @Override
+    public PatientReportItemValue clone() {
+        PatientReportItemValue clone = new PatientReportItemValue();
+
+        clone.setPatient(this.getPatient());
+        clone.setPatientEncounter(this.getPatientEncounter());
+        clone.setInvestigationItem(this.getInvestigationItem());
+        clone.setPatientReport(this.getPatientReport());
+        clone.setCodeSystem(this.getCodeSystem());
+        clone.setCodeSystemCode(this.getCodeSystemCode());
+        clone.setStrValue(this.getStrValue());
+        clone.setLobValue(this.getLobValue());
+
+        if (this.baImage != null) {
+            clone.setBaImage(this.baImage.clone());
+        }
+
+        clone.setFileName(this.getFileName());
+        clone.setFileType(this.getFileType());
+        clone.setDoubleValue(this.getDoubleValue());
+        clone.setPatientReportGroup(this.getPatientReportGroup());
+        clone.setValue(this.getValue());
+        clone.setDisplayValue(this.getDisplayValue());
+
+        clone.setRetired(this.isRetired());
+        clone.setRetirer(this.getRetirer());
+        clone.setRetiredAt(this.getRetiredAt());
+        clone.setRetireComments(this.getRetireComments());
+
+        return clone;
+    }
+
+    public void setValue(String value) {
+        this.value = value;
+    }
+
+    public void setDisplayValue(String displayValue) {
+        this.displayValue = displayValue;
+    }
+
+    public boolean isAllowToExportChart() {
+        return allowToExportChart;
+    }
+
+    public void setAllowToExportChart(boolean allowToExportChart) {
+        this.allowToExportChart = allowToExportChart;
     }
 
 }

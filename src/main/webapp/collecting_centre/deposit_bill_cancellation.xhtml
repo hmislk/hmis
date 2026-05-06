@@ -12,26 +12,35 @@
         <ui:composition template="/collecting_centre/index.xhtml">
             <ui:define name="subcontent">
                 <h:form>
-                    <p:panel header="CC Payment Bill" rendered="#{!agentPaymentReceiveSearchController.printPreview}" style="vertical-align: top;">
-                        <p:panelGrid layout="tabular" columns="2" class="w-100" style="vertical-align: top;">
-                            <p:panel header="Bill Detail">
-                                <p:panelGrid columns="2">
-                                    <h:outputLabel value="Collelcting Centre:" ></h:outputLabel>
-                                    <h:outputLabel value="#{agentPaymentReceiveSearchController.bill.fromInstitution.name }" ></h:outputLabel>                                        
-                                    <h:outputLabel value="Bill No :" ></h:outputLabel>
-                                    <h:outputLabel value="#{agentPaymentReceiveSearchController.bill.deptId}" ></h:outputLabel>                                  
-                                    <h:outputLabel value="Net Total :" ></h:outputLabel>
-                                    <h:outputLabel value="#{agentPaymentReceiveSearchController.bill.netTotal}" ></h:outputLabel>
-                                </p:panelGrid>
-                            </p:panel>
-                            <p:panel  >
-                                <f:facet name="header" >
-                                    <p:outputLabel value="Cancellation" ></p:outputLabel>
-                                </f:facet>
-                                <f:facet name="footer" >
-                                    <p:messages ></p:messages>
-                                </f:facet>
-                                <p:panelGrid columns="2" >
+                    <p:panel header="Collection Centre Payment Cancellation" rendered="#{!agentPaymentReceiveSearchController.printPreview}" style="vertical-align: top;">
+                        <div class="row" >
+                            <div class="col-5" >
+                                <p:panel header="Bill Detail">
+                                    <p:panelGrid columns="2">
+                                        <h:outputLabel value="Collelcting Centre:" ></h:outputLabel>
+                                        <h:outputLabel value="#{agentPaymentReceiveSearchController.bill.fromInstitution.name }" ></h:outputLabel>                                        
+                                        <h:outputLabel value="Bill No :" ></h:outputLabel>
+                                        <h:outputLabel value="#{agentPaymentReceiveSearchController.bill.deptId}" ></h:outputLabel>                                  
+                                        <h:outputLabel value="Net Total :" ></h:outputLabel>
+                                        <h:outputLabel value="#{agentPaymentReceiveSearchController.bill.netTotal}" ></h:outputLabel>
+                                    </p:panelGrid>
+                                </p:panel>
+                            </div>
+                            <div class="col-7" >
+
+
+                                <p:panelGrid
+                                    class="w-100"
+                                    layout="tabular"
+                                    columns="2" >
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Cancellation" ></p:outputLabel>
+                                    </f:facet>
+                                    <f:facet name="footer" >
+                                        <p:messages ></p:messages>
+                                    </f:facet>
+
+
                                     <p:outputLabel value="Cancellation" ></p:outputLabel>
                                     <p:selectOneMenu   id="cmbPs" 
                                                        class="w-100"
@@ -41,24 +50,24 @@
                                         <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"/>
                                         <p:ajax event="change" process="cmbPs" update="paymentDetails" ></p:ajax>
                                     </p:selectOneMenu>
-                                    
-                                     <p:outputLabel value="Repayment Details" ></p:outputLabel>
-                                     <h:panelGroup id="paymentDetails">
+
+                                    <p:outputLabel value="Repayment Details" ></p:outputLabel>
+                                    <h:panelGroup id="paymentDetails">
                                         <h:panelGroup id="creditCard"  rendered="#{agentPaymentReceiveSearchController.paymentMethod eq 'Card'}">
-                                            <pa:creditCard paymentMethodData="#{agentPaymentReceiveSearchController.paymentMethodData}"/>
+                                            <pa:creditCardDetailsAsOnlyPayment paymentMethodData="#{agentPaymentReceiveSearchController.paymentMethodData}"/>
                                         </h:panelGroup>
 
                                         <h:panelGroup id="cheque"  rendered="#{agentPaymentReceiveSearchController.paymentMethod eq 'Cheque'}">
-                                            <pa:cheque paymentMethodData="#{agentPaymentReceiveSearchController.paymentMethodData}"/>
+                                            <pa:chequeDetailsAsOnlyPayment paymentMethodData="#{agentPaymentReceiveSearchController.paymentMethodData}"/>
                                         </h:panelGroup>
 
                                         <h:panelGroup id="slip" rendered="#{agentPaymentReceiveSearchController.paymentMethod eq 'Slip'}">
                                             <pa:slipDetailsAsOnlyPayment paymentMethodData="#{agentPaymentReceiveSearchController.paymentMethodData}"/>
                                         </h:panelGroup>
 
-                                       
+
                                     </h:panelGroup>
-                                    
+
                                     <p:outputLabel value="Comments" ></p:outputLabel>
                                     <p:inputTextarea class="w-100" value="#{agentPaymentReceiveSearchController.comment}"/>  
                                     <p:spacer ></p:spacer>
@@ -72,9 +81,9 @@
                                         onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
                                                     return false;"/>
                                 </p:panelGrid>
-                            </p:panel>
-                        </p:panelGrid>
 
+                            </div>
+                        </div>
                     </p:panel>
 
                     <p:panel rendered="#{agentPaymentReceiveSearchController.printPreview}" >

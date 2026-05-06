@@ -329,11 +329,13 @@ public class ServiceSessionBean {
         String jpql = "SELECT bs.serialNo "
                 + "FROM BillSession bs "
                 + "WHERE bs.sessionInstance = :si "
+                + "and bs.retired = :ret "
                 + "AND bs.bill.billType IN :bt "
                 + "AND TYPE(bs.bill) = :class";
 
         HashMap<String, Object> params = new HashMap<>();
         params.put("si", si);
+        params.put("ret", false);
         params.put("bt", bts);
         params.put("class", BilledBill.class);
 

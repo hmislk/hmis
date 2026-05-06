@@ -30,7 +30,7 @@
             </f:facet>
             
             <p:column headerText="Req No" >
-                <h:commandLink action="pharmacy_reprint_order_request" value="#{bill.insId}">
+                <h:commandLink action="pharmacy_reprint_order_request?faces-redirect=true" value="#{bill.insId}">
                     <h:outputLabel  ></h:outputLabel>
                     <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
                 </h:commandLink>
@@ -38,19 +38,19 @@
 
             
             <p:column headerText="Requested From"  >
-                <h:commandLink action="pharmacy_reprint_order_request" value="#{bill.department.name}">
+                <h:commandLink action="pharmacy_reprint_order_request?faces-redirect=true" value="#{bill.department.name}">
                     <h:outputLabel  ></h:outputLabel>
                     <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
                 </h:commandLink>
             </p:column>                 
             <p:column headerText="Delaor Name"  >
-                <h:commandLink action="pharmacy_reprint_order_request" value="#{bill.toInstitution.name}">
+                <h:commandLink action="pharmacy_reprint_order_request?faces-redirect=true" value="#{bill.toInstitution.name}">
                     <h:outputLabel  ></h:outputLabel>
                     <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
                 </h:commandLink>
             </p:column>
             <p:column headerText="Billed At"  >
-                <h:commandLink action="pharmacy_reprint_order_request" >
+                <h:commandLink action="pharmacy_reprint_order_request?faces-redirect=true" >
                     <h:outputLabel value="#{bill.createdAt}" >
                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                     </h:outputLabel>
@@ -71,7 +71,7 @@
                 </h:panelGroup>
             </p:column>                 
             <p:column headerText="Requested By" >
-                <h:commandLink action="pharmacy_reprint_order_request" >
+                <h:commandLink action="pharmacy_reprint_order_request?faces-redirect=true" >
                     <h:outputLabel value="#{bill.creater.webUserPerson.name}" >                                      
                     </h:outputLabel>
                     <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
@@ -91,13 +91,13 @@
             </p:column>                       
 
             <p:column headerText="Payment Method">
-                <h:commandLink action="pharmacy_reprint_order_request" >
+                <h:commandLink action="pharmacy_reprint_order_request?faces-redirect=true" >
                     <h:outputLabel value="#{bill.paymentMethod}" ></h:outputLabel>
                     <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
                 </h:commandLink>
             </p:column>                               
             <p:column headerText="Net Value" filterBy="#{bill.netTotal}" style="text-align: right;"  >
-                <h:commandLink action="pharmacy_reprint_order_request" >
+                <h:commandLink action="pharmacy_reprint_order_request?faces-redirect=true" >
                     <h:outputLabel value="#{bill.netTotal}" >
                         <f:convertNumber pattern="#,##0.00"/>
                     </h:outputLabel>

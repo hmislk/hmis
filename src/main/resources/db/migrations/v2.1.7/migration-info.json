@@ -1,0 +1,100 @@
+{
+    "version": "v2.1.7",
+    "description": "Fix TOTALCOSTVALUE decimal precision in BILLFINANCEDETAILS table to display decimal places in Stock Transfer Report Summary",
+    "author": "Claude Code Assistant",
+    "date": "2025-12-22",
+    "githubIssue": "17452",
+    "branch": "17452-decimal-places-are-not-displayed",
+    "estimatedDurationMinutes": 1,
+    "requiresDowntime": false,
+    "affectedTables": ["BILLFINANCEDETAILS"],
+    "affectedModules": ["Pharmacy", "Stock Transfer Reports", "Financial Reports"],
+    "dependencies": [],
+    "preRequisites": [
+        "Database backup of main database (rh) completed and verified",
+        "Ensure connection to main database (rh) is active",
+        "Verify main database has sufficient storage space",
+        "No active financial data entry recommended during migration"
+    ],
+    "migrationSteps": [
+        {
+            "step": 1,
+            "description": "Verify current database connection",
+            "sql": "SELECT DATABASE() AS current_database"
+        },
+        {
+            "step": 2,
+            "description": "Check current TOTALCOSTVALUE column definition",
+            "sql": "SELECT COLUMN_NAME, COLUMN_TYPE, IS_NULLABLE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'BILLFINANCEDETAILS' AND COLUMN_NAME = 'TOTALCOSTVALUE'"
+        },
+        {
+            "step": 3,
+            "description": "Show sample TOTALCOSTVALUE data before migration",
+            "sql": "SELECT TOTALCOSTVALUE FROM BILLFINANCEDETAILS WHERE TOTALCOSTVALUE IS NOT NULL AND TOTALCOSTVALUE > 0 LIMIT 5"
+        },
+        {
+            "step": 4,
+            "description": "Modify TOTALCOSTVALUE column to support 4 decimal places",
+            "sql": "ALTER TABLE BILLFINANCEDETAILS MODIFY COLUMN TOTALCOSTVALUE decimal(38,4)"
+        },
+        {
+            "step": 5,
+            "description": "Verify column modification successful",
+            "sql": "SELECT COLUMN_NAME, COLUMN_TYPE, IS_NULLABLE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'BILLFINANCEDETAILS' AND COLUMN_NAME = 'TOTALCOSTVALUE'"
+        },
+        {
+            "step": 6,
+            "description": "Show sample TOTALCOSTVALUE data after migration",
+            "sql": "SELECT TOTALCOSTVALUE FROM BILLFINANCEDETAILS WHERE TOTALCOSTVALUE IS NOT NULL AND TOTALCOSTVALUE > 0 LIMIT 5"
+        },
+        {
+            "step": 7,
+            "description": "Verify data integrity - check for any NULL values introduced",
+            "sql": "SELECT COUNT(*) as total_rows, COUNT(TOTALCOSTVALUE) as non_null_totalcostvalue FROM BILLFINANCEDETAILS"
+        }
+    ],
+    "verificationQueries": [
+        "SELECT COLUMN_NAME, COLUMN_TYPE, IS_NULLABLE, COLUMN_DEFAULT FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'BILLFINANCEDETAILS' AND COLUMN_NAME = 'TOTALCOSTVALUE'",
+        "SELECT COUNT(*) AS records_with_totalcostvalue FROM BILLFINANCEDETAILS WHERE TOTALCOSTVALUE IS NOT NULL AND TOTALCOSTVALUE > 0",
+        "SELECT MIN(TOTALCOSTVALUE) as min_value, MAX(TOTALCOSTVALUE) as max_value, AVG(TOTALCOSTVALUE) as avg_value FROM BILLFINANCEDETAILS WHERE TOTALCOSTVALUE > 0",
+        "SELECT TOTALCOSTVALUE FROM BILLFINANCEDETAILS WHERE TOTALCOSTVALUE IS NOT NULL AND TOTALCOSTVALUE > 0 AND TOTALCOSTVALUE != ROUND(TOTALCOSTVALUE, 0) LIMIT 3"
+    ],
+    "rollbackNotes": [
+        "Rollback will revert TOTALCOSTVALUE column back to decimal(38,0)",
+        "WARNING: Rollback will truncate decimal precision in any existing data",
+        "Values like 150.7500 will become 150 after rollback",
+        "Stock Transfer Summary reports will show whole numbers again",
+        "Test rollback carefully in development environment first"
+    ],
+    "postMigrationVerification": [
+        "Generate Stock Transfer Report with Report Type = 'Summary'",
+        "Verify Cost Value column displays decimal places (e.g., 150.0000 instead of 150)",
+        "Compare Summary vs Breakdown Summary - both should show decimal consistency",
+        "Test with bills that have fractional cost values",
+        "Ensure no application errors in stock transfer report generation",
+        "Check server logs for any SQL exceptions related to BILLFINANCEDETAILS",
+        "Verify existing financial reports still function correctly"
+    ],
+    "technicalNotes": [
+        "Column change: TOTALCOSTVALUE from decimal(38,0) to decimal(38,4)",
+        "Precision increased from 0 to 4 decimal places",
+        "Scale matches BILLITEMFINANCEDETAILS.VALUEATCOSTRATE (also decimal with 4 decimals)",
+        "No data loss during migration - integers become .0000 format",
+        "JSF will now display decimal places naturally without formatters",
+        "BigDecimal handling in Java remains unchanged",
+        "Compatible with existing application code",
+        "Storage overhead: None - precision (38) unchanged, only scale increased"
+    ],
+    "performanceMetrics": {
+        "expectedQueryTimeReduction": "No impact - same query patterns",
+        "expectedUserExperienceImprovement": "Stock Transfer Reports now show consistent decimal precision",
+        "indexSizeImpact": "Minimal - same data, different precision",
+        "maintenanceOverhead": "None"
+    },
+    "errorFixed": {
+        "issue": "Decimal places are not displayed under Cost Rate and Cost Value when report type is Summary in stock_transfer_report.xhtml",
+        "rootCause": "BILLFINANCEDETAILS.TOTALCOSTVALUE defined as decimal(38,0) truncates decimals from individual BILLITEMFINANCEDETAILS.VALUEATCOSTRATE values",
+        "symptom": "Summary report shows cost values as whole numbers (150) while Breakdown Summary shows decimals (150.0000)",
+        "resolution": "Changed TOTALCOSTVALUE to decimal(38,4) to preserve decimal precision during aggregation"
+    }
+}

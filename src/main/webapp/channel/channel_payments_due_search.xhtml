@@ -59,7 +59,8 @@
 
                                     <p:column headerText="Patient" filterBy="#{bf.bill.patient.person.nameWithTitle}" filterMatchMode="contains">
 
-                                        <h:outputLabel value="#{bf.bill.patient.person.nameWithTitle}"/>                                    
+                                        <h:outputLabel value="#{bf.bill.patient.person.nameWithTitle}" rendered="#{bf.bill.billTypeAtomic ne 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}"/> 
+                                        <h:outputLabel value="#{bf.bill.referenceBill.onlineBooking.title}. #{bf.bill.referenceBill.onlineBooking.patientName}" rendered="#{bf.bill.billTypeAtomic eq 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}"/>
 
                                     </p:column>
 

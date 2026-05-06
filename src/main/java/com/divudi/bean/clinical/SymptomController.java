@@ -53,7 +53,7 @@ public class SymptomController implements Serializable {
     String selectText = "";
 
     public String navigateToManageSymptoms(){
-        return "/emr/admin/symptoms";
+        return "/emr/admin/symptoms?faces-redirect=true";
     }
 
 
@@ -99,7 +99,7 @@ public class SymptomController implements Serializable {
             int rowNum = 1;
             for (ClinicalEntity sym : items) {
                 Row row = sheet.createRow(rowNum++);
-                row.createCell(0).setCellValue(rowNum);
+                row.createCell(0).setCellValue(rowNum-1);
                 row.createCell(1).setCellValue(sym.getName());
             }
 
@@ -140,14 +140,22 @@ public class SymptomController implements Serializable {
 
     public void saveSelected() {
         current.setSymanticType(SymanticType.Symptom);
+        if (getCurrent().getName() == null || getCurrent().getName().trim().isEmpty()){
+            JsfUtil.addErrorMessage("Please enter a Symptom Name before saving.");
+            return;
+        }
+        if (getCurrent().getCode() == null || getCurrent().getCode().trim().isEmpty()){
+            JsfUtil.addErrorMessage("Please enter a Symptom Code before saving.");
+            return;
+        }
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
-            JsfUtil.addSuccessMessage("Saved");
+            JsfUtil.addSuccessMessage("Updated");
         } else {
             current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
-            JsfUtil.addSuccessMessage("Updated");
+            JsfUtil.addSuccessMessage("Saved");
         }
         recreateModel();
         getItems();
@@ -196,7 +204,7 @@ public class SymptomController implements Serializable {
             getFacade().edit(current);
             JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            JsfUtil.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addErrorMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();
@@ -217,6 +225,21 @@ public class SymptomController implements Serializable {
             items = getFacade().findByJpql(sql, m);
         }
         return items;
+    }
+
+    public List<ClinicalEntity> completeSymptom(String query) {
+        List<ClinicalEntity> suggestions;
+        String sql;
+        HashMap hm = new HashMap();
+        if (query == null) {
+            suggestions = new ArrayList<>();
+        } else {
+            sql = "select c from ClinicalEntity c where c.retired=false and c.symanticType=:t  and c.name like :q";
+            hm.put("q", "%" + query.toUpperCase() + "%");
+            hm.put("t", SymanticType.Symptom);
+            suggestions = getFacade().findByJpql(sql, hm, 20);
+        }
+        return suggestions;
     }
 
     /**

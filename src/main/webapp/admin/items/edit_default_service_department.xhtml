@@ -1,0 +1,86 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/admin/items/index.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui">
+
+    <ui:define name="item">
+
+        <h:form>
+            <p:growl />
+
+            <p:panel header="Edit Default Service Department">
+
+                <p:panelGrid columns="2" columnClasses="label, value">
+
+                    <p:outputLabel value="Ordering Department" />
+                    <p:autoComplete 
+                        value="#{defaultServiceDepartmentController.current.billingDepartment}" 
+                        completeMethod="#{departmentController.completeDept}"
+                        var="d"
+                        itemLabel="#{d.name}"
+                        itemValue="#{d}"
+                        forceSelection="true">
+                        <p:column>
+                            <h:outputText value="#{d.institution.name}" />
+                        </p:column>
+                        <p:column>
+                            <h:outputText value="#{d.name}" />
+                        </p:column>
+                    </p:autoComplete>
+
+                    <p:outputLabel value="Service Department" />
+                    <p:autoComplete 
+                        value="#{defaultServiceDepartmentController.current.performingDepartment}" 
+                        completeMethod="#{departmentController.completeDept}"
+                        var="d"
+                        itemLabel="#{d.name}"
+                        itemValue="#{d}"
+                        forceSelection="true">
+                        <p:column>
+                            <h:outputText value="#{d.institution.name}" />
+                        </p:column>
+                        <p:column>
+                            <h:outputText value="#{d.name}" />
+                        </p:column>
+                    </p:autoComplete>
+
+                    <p:outputLabel value="Category" />
+                    <p:autoComplete 
+                        value="#{defaultServiceDepartmentController.current.category}" 
+                        completeMethod="#{categoryController.completeCategory}"
+                        var="c"
+                        itemLabel="#{c.name}"
+                        itemValue="#{c}"
+                        forceSelection="true" />
+
+                    <p:outputLabel value="Item" />
+                    <p:autoComplete 
+                        value="#{defaultServiceDepartmentController.current.item}" 
+                        completeMethod="#{itemController.completeServicesPlusInvestigationsAll}"
+                        var="i"
+                        itemLabel="#{i.name}"
+                        itemValue="#{i}"
+                        forceSelection="true" />
+
+                </p:panelGrid>
+
+                <p:separator />
+
+                <p:commandButton 
+                    value="Save" 
+                    ajax="false"
+                    class="ui-button-success"
+                    icon="fas fa-save"
+                    action="#{defaultServiceDepartmentController.saveExistingDefaultServiceDepartment}" />
+
+            </p:panel>
+
+        </h:form>
+
+    </ui:define>
+
+</ui:composition>

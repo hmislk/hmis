@@ -3,19 +3,21 @@
               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
               xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-facesconfig_2_0.xsd"
               version="2.0">
+
     <application>
         <resource-bundle>
             <base-name>/Bundle</base-name>
             <var>bundle</var>
         </resource-bundle>
-        <application>
-            <resource-bundle>
-                <base-name>placeholders</base-name>
-                <var>msg</var>
-            </resource-bundle>
-        </application>
-
+        <resource-bundle>
+            <base-name>placeholders</base-name>
+            <var>msg</var>
+        </resource-bundle>
     </application>
+
+    <lifecycle>
+        <phase-listener>com.divudi.core.listener.GlobalExceptionPhaseListener</phase-listener>
+    </lifecycle>
 
     <navigation-rule>
         <from-view-id>*</from-view-id>

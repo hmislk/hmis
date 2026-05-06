@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <p:dialog
+        header="Search Any Medicine..."
+        widgetVar="findAMP"
+        minHeight="300"
+        width="1100"
+        position="top"
+        modal="true"
+        closeOnEscape="true">
+        <p:autoComplete
+            id="exItem"
+            forceSelection="true"
+            class="w-100 formgrid grid"
+            placeholder="Search Any Medicine..."
+            maxResults="20"
+            minQueryLength="3"
+            inputStyleClass="w-100"
+            completeMethod="#{itemController.completeAmpItem}"
+            var="vt"
+            onfocus="this.select()"
+            itemLabel="#{vt.name}"
+            itemValue="#{vt}">
+            <p:column headerText="Code" style="padding:6px;width: 4em;">
+                <h:outputLabel value="#{vt.code}" />
+            </p:column>
+            <p:column headerText="Item" style="width: 350px; padding: 6px;">
+                <h:outputLabel value="#{vt.name}" />
+            </p:column>
+            <p:column headerText="Dept. Stock" style="padding: 6px; text-align: center;width: 5em;">
+                <p:outputLabel value="#{stockController.departmentItemStock(sessionController.department , vt)}">
+                    <f:convertNumber pattern="#,###" />
+                </p:outputLabel>
+            </p:column>
+            <p:column headerText="Price" style="padding: 6px; text-align: right;width: 6em;">
+                <p:outputLabel value="#{pharmacyPurchaseController.findLastRetailRate(vt)}">
+                    <f:convertNumber pattern="#,##0.00" />
+                </p:outputLabel>
+            </p:column>
+        </p:autoComplete>
+    </p:dialog>
+</ui:composition>

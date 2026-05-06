@@ -267,7 +267,7 @@ public class PurchaseReturnController implements Serializable {
     }
 
     private boolean checkStock(PharmaceuticalBillItem pharmaceuticalBillItem) {
-        double stockQty = getPharmacyBean().getStockQty(pharmaceuticalBillItem.getItemBatch(), getBill().getDepartment());
+        double stockQty = getPharmacyBean().getBatchStockQty(pharmaceuticalBillItem.getItemBatch(), getBill().getDepartment());
 
         if (pharmaceuticalBillItem.getQtyInUnit() > stockQty) {
             return true;
@@ -300,6 +300,7 @@ public class PurchaseReturnController implements Serializable {
         pharmacyCalculation.calculateRetailSaleValueAndFreeValueAtPurchaseRate(getBill());
         returnBill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
         getBillFacade().edit(getReturnBill());
+        getBillFacade().edit(getBill());
 
         printPreview = true;
         JsfUtil.addSuccessMessage("Successfully Returned");
@@ -416,15 +417,7 @@ public class PurchaseReturnController implements Serializable {
     }
 
     public void createBillFeePaymentAndPayment(BillFee bf, Payment p) {
-        BillFeePayment bfp = new BillFeePayment();
-        bfp.setBillFee(bf);
-        bfp.setAmount(bf.getSettleValue());
-        bfp.setInstitution(getSessionController().getInstitution());
-        bfp.setDepartment(getSessionController().getDepartment());
-        bfp.setCreater(getSessionController().getLoggedUser());
-        bfp.setCreatedAt(new Date());
-        bfp.setPayment(p);
-        getBillFeePaymentFacade().create(bfp);
+        // BillFeePayment is deprecated and no longer used
     }
 
     public PharmaceuticalBillItemFacade getPharmaceuticalBillItemFacade() {

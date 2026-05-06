@@ -34,7 +34,7 @@
                             </p:autoComplete>
                         </h:panelGrid>
                         <h:panelGrid columns="6" class="my-2">
-                            <p:commandButton class="ui-button-warning" icon="fas fa-cogs" ajax="false" value="Process Due" action="#{creditCompanyDueController.createOpdCreditDueBillItem}" />
+                            <p:commandButton class="ui-button-warning" icon="fas fa-cogs" ajax="false" value="Process Due" action="#{creditCompanyDueController.createOpdCreditDueByBillTypeAtomic()}" />
                             <p:commandButton ajax="false" value="Print" class="ui-button-info mx-2" icon="fas fa-print" >
                             <p:printer target="lst" />
                         </p:commandButton> 

@@ -1,0 +1,92 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="/payments/credit_company_pay_index.xhtml">
+            <ui:define name="admin">
+                <h:form>
+                    <p:panel class="my-2">
+                        <f:facet name="header">
+                            <h:outputLabel value="INWARD OUTSTANDING SUMMARY"/>
+                        </f:facet>
+                        <p:outputPanel styleClass="mb-2">
+                            <h:outputText value="Management view: CC receivables vs patient co-payment receivables by age bucket, with overlap row showing accounts where both are outstanding."/>
+                        </p:outputPanel>
+                        <h:panelGrid columns="2" class="my-2">
+                            <h:outputLabel value="From"/>
+                            <p:calendar value="#{creditCompanyDueController.fromDate}"
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                            <h:outputLabel value="To"/>
+                            <p:calendar value="#{creditCompanyDueController.toDate}"
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                            <h:outputLabel value="Date Basis"/>
+                            <p:selectOneMenu value="#{creditCompanyDueController.dateBasis}">
+                                <f:selectItem itemValue="dischargeDate" itemLabel="Discharge Date"/>
+                                <f:selectItem itemValue="admissionDate" itemLabel="Admission Date"/>
+                            </p:selectOneMenu>
+                            <h:outputLabel value="Admission Type"/>
+                            <p:selectOneMenu value="#{creditCompanyDueController.admissionType}">
+                                <f:selectItem itemLabel="All Admission Types" itemValue="#{null}"/>
+                                <f:selectItems value="#{admissionTypeController.items}" var="at" itemValue="#{at}" itemLabel="#{at.name}"/>
+                            </p:selectOneMenu>
+                            <h:outputLabel value="Site"/>
+                            <p:selectOneMenu value="#{creditCompanyDueController.site}" filter="true">
+                                <f:selectItem itemLabel="All Sites" itemValue="#{null}"/>
+                                <f:selectItems value="#{institutionController.sites}" var="dueSite" itemLabel="#{dueSite.name}" itemValue="#{dueSite}"/>
+                            </p:selectOneMenu>
+                            <h:outputLabel value="Department"/>
+                            <p:selectOneMenu value="#{creditCompanyDueController.department}" filter="true" filterMatchMode="contains">
+                                <f:selectItem itemLabel="All Departments" itemValue="#{null}"/>
+                                <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite()}" var="d" itemLabel="#{d.name}" itemValue="#{d}"/>
+                            </p:selectOneMenu>
+                        </h:panelGrid>
+                        <p:commandButton id="btnSearch" class="ui-button-warning" icon="fas fa-cogs" ajax="false"
+                                         value="Process Summary"
+                                         action="#{creditCompanyDueController.createInwardOutstandingSummary()}"/>
+                        <p:defaultCommand target="btnSearch"/>
+
+                        <p:dataTable id="lst" value="#{creditCompanyDueController.creditCompanyAge}" var="row"
+                                     emptyMessage="No records found" class="mt-3">
+                            <f:facet name="header">
+                                <h:outputLabel value="Inward Outstanding Summary (aged from discharge date)"/>
+                            </f:facet>
+                            <p:column headerText="Category">
+                                <h:outputLabel value="#{row.string}" style="font-weight:bold"/>
+                            </p:column>
+                            <p:column headerText="0–30 Days" style="text-align:right">
+                                <h:outputLabel value="#{row.value1}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                            </p:column>
+                            <p:column headerText="31–60 Days" style="text-align:right">
+                                <h:outputLabel value="#{row.value2}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                            </p:column>
+                            <p:column headerText="61–90 Days" style="text-align:right">
+                                <h:outputLabel value="#{row.value3}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                            </p:column>
+                            <p:column headerText="91+ Days" style="text-align:right">
+                                <h:outputLabel value="#{row.value4}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                            </p:column>
+                            <p:columnGroup type="footer">
+                                <p:row>
+                                    <p:column colspan="5" footerText="Note: 'Both Outstanding' row shows accounts where CC and patient amounts are simultaneously due. It is not additive with the rows above."/>
+                                </p:row>
+                            </p:columnGroup>
+                        </p:dataTable>
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

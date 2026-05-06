@@ -6,6 +6,7 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
+      
       xmlns:autocomplete="http://xmlns.jcp.org/jsf/composite/autocomplete">
 
     <h:body>
@@ -191,7 +192,7 @@
                             </p:selectOneMenu>
 
                         </p:panelGrid>
-                        <h:panelGrid columns="6">
+                        <div class="d-flex gap-3">
                             <p:commandButton
                                 ajax="false"
                                 value="Process"
@@ -199,9 +200,7 @@
                                 style="width: 150px"
                                 icon="fas fa-cogs"
                                 class="m-2 ui-button-warning">
-
                             </p:commandButton>
-
 
                             <p:commandButton
                                 ajax="false"
@@ -212,15 +211,24 @@
                                 onclick="return confirm('Are you sure you want to fix the billing department?');">
                             </p:commandButton>
 
-
-
                             <p:commandButton
                                 icon="fa-solid fa-print"
                                 class="m-2 ui-button-info"
                                 style="width: 150px"
                                 ajax="false"
+                                rendered="#{reportsController.reportType eq 'Report'}"
                                 value="Print">
                                 <p:printer target="printPanel"/>
+                            </p:commandButton>
+                            
+                            <p:commandButton
+                                icon="fa-solid fa-print"
+                                class="m-2 ui-button-info"
+                                style="width: 150px"
+                                ajax="false"
+                                action="collection_center_bill_wise_detail_report_print?faces-redirect=true"
+                                rendered="#{reportsController.reportType ne 'Report'}"
+                                value="Print">
                             </p:commandButton>
 
                             <p:commandButton
@@ -268,7 +276,7 @@
                                                 fileName="collection_center_bill_wise_detail_report.pdf"/>
                             </p:commandButton>
 
-                        </h:panelGrid>
+                        </div>
 
                         <h:panelGroup id="printPanel">
                             <h:panelGrid columns="2" class="my-3" rendered="#{reportsController.reportType eq 'Report'}">
@@ -444,17 +452,17 @@
                                                   style="text-align: left; display: block;"/>
                                     <h:outputText value="SETTLEMENT OF INVESTIGATION BILL"
                                                   style="font-size: 18px; font-weight: bold; text-align: center; display: block;"/>
-                                    <h:outputLabel value="From  :  "/>
-                                    <h:outputLabel value="#{reportsController.fromDate}">
-                                        <f:convertDateTime
-                                            pattern="#{sessionController.applicationPreference.longDateFormat}"/>
-                                    </h:outputLabel>
-                                    <br/>
-                                    <h:outputLabel value="To :  "/>
-                                    <h:outputLabel value="#{reportsController.toDate}">
-                                        <f:convertDateTime
-                                            pattern="#{sessionController.applicationPreference.longDateFormat}"/>
-                                    </h:outputLabel>
+
+                                    <div class="d-flex data mb-2">
+                                        <h:outputText value="Period : " style="width: 4em!important;"/>
+                                        <h:outputText value="#{reportsController.fromDate}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                        </h:outputText>
+                                        <h:outputText value="to" style="width: 2em!important; text-align: center;"/>
+                                        <h:outputText value="#{reportsController.toDate}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                        </h:outputText>
+                                    </div>
                                 </f:facet>
 
                                 <p:column headerText="S.No" width="3rem">
@@ -508,14 +516,49 @@
                                 </p:column>
 
                                 <f:facet name="footer">
-                                    <h:outputText 
-                                        value="#{configOptionApplicationController.getLongTextValueByKey('Footer Text for Collection Centre Bill Wise Detail Report')}" 
-                                        escape="false" ></h:outputText>
-                                    <h:outputLabel value="#{reportsController.currentDate}"
-                                                   style="text-align: right; display: block;">
-                                        <f:convertDateTime
-                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
-                                    </h:outputLabel>
+                                    <div id="report-end">
+                                        <div>
+                                            <h:outputLabel
+                                                class="data mt-2"
+                                                value="#{configOptionApplicationController.getLongTextValueByKey('Footer Text for Collection Centre Bill Wise Detail Report - Summary With Letter')}" 
+                                                escape="false" >
+                                            </h:outputLabel>
+                                            <h:panelGroup 
+                                                rendered="#{configOptionApplicationController.getLongTextValueByKey('Footer Text for Collection Centre Bill Wise Detail Report Contact - Summary With Letter').length() ne 0.0}" 
+                                                class="d-flex gap-2">
+                                                <h:outputLabel
+                                                    class="data"
+                                                    value="#{configOptionApplicationController.getLongTextValueByKey('Footer Text for Collection Centre Bill Wise Detail Report Contact - Summary With Letter')}" 
+                                                    escape="false" >
+                                                </h:outputLabel>
+                                                <h:outputLabel
+                                                    class="data"
+                                                    style="font-weight: 700;"
+                                                    value="#{sessionController.loggedUser.webUserPerson.nameWithTitle}"  >
+                                                </h:outputLabel>
+                                                <h:outputLabel
+                                                    class="data"
+                                                    value=" (Tel : #{sessionController.loggedUser.webUserPerson.mobile})">
+                                                </h:outputLabel>
+                                            </h:panelGroup>
+                                        </div>
+
+                                        <h:outputLabel
+                                            class="data"
+                                            value="#{configOptionApplicationController.getLongTextValueByKey('Footer Text for Collection Centre Bill Wise Detail Report Address - Summary With Letter')}" 
+                                            escape="false" >
+                                        </h:outputLabel>
+
+                                        <div class="data mt-2">
+                                            <h:outputLabel 
+                                                value="#{reportsController.currentDate}"
+                                                style="text-align: right; display: block;">
+                                                <f:convertDateTime
+                                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                            </h:outputLabel>
+                                        </div>
+
+                                    </div>
                                 </f:facet>
                             </p:dataTable>
 
@@ -542,17 +585,16 @@
                                                   style="text-align: left; display: block;"/>
                                     <h:outputText value="SETTLEMENT OF INVESTIGATION BILL"
                                                   style="font-size: 18px; font-weight: bold; text-align: center; display: block;"/>
-                                    <h:outputLabel value="From  :  "/>
-                                    <h:outputLabel value="#{reportsController.fromDate}">
-                                        <f:convertDateTime
-                                            pattern="#{sessionController.applicationPreference.longDateFormat}"/>
-                                    </h:outputLabel>
-                                    <br/>
-                                    <h:outputLabel value="To :  "/>
-                                    <h:outputLabel value="#{reportsController.toDate}">
-                                        <f:convertDateTime
-                                            pattern="#{sessionController.applicationPreference.longDateFormat}"/>
-                                    </h:outputLabel>
+                                    <div class="d-flex data mb-2">
+                                        <h:outputText value="Period : " style="width: 4em!important;"/>
+                                        <h:outputText value="#{reportsController.fromDate}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                        </h:outputText>
+                                        <h:outputText value="to" style="width: 2em!important; text-align: center;"/>
+                                        <h:outputText value="#{reportsController.toDate}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                        </h:outputText>
+                                    </div>
                                 </f:facet>
 
                                 <p:column headerText="S.No" width="3rem">
@@ -608,18 +650,55 @@
                                     </f:facet>
                                 </p:column>
                                 <f:facet name="footer">
-                                    <h:outputText 
-                                        value="#{configOptionApplicationController.getLongTextValueByKey('Footer Text for Collection Centre Bill Wise Detail Report')}" 
-                                        escape="false" ></h:outputText>
-                                    <h:outputLabel value="#{reportsController.currentDate}"
-                                                   style="text-align: right; display: block;">
-                                        <f:convertDateTime
-                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
-                                    </h:outputLabel>
+                                    <div id="report-end">
+                                        <div>
+                                            <h:outputLabel
+                                                class="data mt-2"
+                                                value="#{configOptionApplicationController.getLongTextValueByKey('Footer Text for Collection Centre Bill Wise Detail Report - Summary With Letter and Test Name')}" 
+                                                escape="false" >
+                                            </h:outputLabel>
+                                            <h:panelGroup 
+                                                rendered="#{configOptionApplicationController.getLongTextValueByKey('Footer Text for Collection Centre Bill Wise Detail Report Contact - Summary With Letter and Test Name').length() ne 0.0}" 
+                                                class="d-flex gap-2">
+                                                <h:outputLabel
+                                                    class="data"
+                                                    value="#{configOptionApplicationController.getLongTextValueByKey('Footer Text for Collection Centre Bill Wise Detail Report Contact - Summary With Letter and Test Name')}" 
+                                                    escape="false" >
+                                                </h:outputLabel>
+                                                <h:outputLabel
+                                                    class="data"
+                                                    style="font-weight: 700;"
+                                                    value="#{sessionController.loggedUser.webUserPerson.nameWithTitle}"  >
+                                                </h:outputLabel>
+                                                <h:outputLabel
+                                                    class="data"
+                                                    value=" (Tel : #{sessionController.loggedUser.webUserPerson.mobile})">
+                                                </h:outputLabel>
+                                            </h:panelGroup>
+                                        </div>
+
+                                        <h:outputLabel
+                                            class="data"
+                                            value="#{configOptionApplicationController.getLongTextValueByKey('Footer Text for Collection Centre Bill Wise Detail Report Address - Summary With Letter and Test Name')}" 
+                                            escape="false" >
+                                        </h:outputLabel>
+
+                                        <div class="data mt-2">
+                                            <h:outputLabel 
+                                                value="#{reportsController.currentDate}"
+                                                style="text-align: right; display: block;">
+                                                <f:convertDateTime
+                                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                            </h:outputLabel>
+                                        </div>
+
+                                    </div>
                                 </f:facet>
                             </p:dataTable>
                         </h:panelGroup>
                     </p:panel>
+
+
                 </h:form>
             </ui:define>
         </ui:composition>

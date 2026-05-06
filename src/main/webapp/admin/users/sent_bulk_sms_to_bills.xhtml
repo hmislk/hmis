@@ -1,0 +1,117 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/admin/users/index.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui">
+
+
+    <ui:define name="subcontent">
+
+        <h:panelGroup >
+            <h:form id="form"  >
+                <p:panel header="Contact numbers" >
+                    <f:facet name="header">
+                        <h:outputLabel value="Send Bulk SMS" ></h:outputLabel>
+                    </f:facet>
+                </p:panel>
+
+                <p:panelGrid columns="2" id="panGrup1" layout="tabular">
+                    <h:outputLabel value="From Date"/>
+                    <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" 
+                                navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >      
+                    </p:calendar>
+                    <h:outputLabel value="To Date"/>
+                    <p:calendar styleClass="dateTimePicker" id="toDate" value="#{searchController.toDate}" 
+                                navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
+                    </p:calendar>
+                    <p:outputLabel value="Bill Type" />
+                    <p:selectOneRadio id="console" value="#{searchController.reportKeyWord.string}" >
+                        <f:selectItem itemLabel="All" itemValue="0" />
+                        <f:selectItem itemLabel="Channel Only" itemValue="1" />
+                        <f:selectItem itemLabel="OPD Only" itemValue="2" />
+                        <f:selectItem itemLabel="Pharmacy Only" itemValue="3" />
+                        <f:ajax event="change" execute="@this" render="acnp" listener="#{searchController.listnerBillTypeChange()}" />
+                    </p:selectOneRadio>
+                    <p:outputLabel value="Area" />
+                    <p:autoComplete styleClass="mediuminput" widgetVar="np" id="acnp" forceSelection="true" 
+                                    value="#{searchController.reportKeyWord.area}" 
+                                    completeMethod="#{areaController.completeArea}" 
+                                    var="npt" itemLabel="#{npt.name}"
+                                    disabled="#{searchController.reportKeyWord.string ne '1'}"
+                                    itemValue="#{npt}" size="30"  style="width: 40px;"></p:autoComplete>
+                    <p:outputLabel value="Age Range" />
+                    <p:selectOneRadio id="console2" value="#{searchController.reportKeyWord.string1}" >
+                        <f:selectItem itemLabel="All" itemValue="0" />
+                        <f:selectItem itemLabel="Less Than" itemValue="1" />
+                        <f:selectItem itemLabel="Grater Than" itemValue="2" />
+                        <f:selectItem itemLabel="Between" itemValue="3" />
+                        <f:ajax event="change" execute="@this" render="panGrup1" />
+                    </p:selectOneRadio>
+                    <h:outputLabel value="From Age"/>
+                    <p:inputText value="#{searchController.reportKeyWord.from}" 
+                                 disabled="#{searchController.reportKeyWord.string1 eq '0' 
+                                             or searchController.reportKeyWord.string1 eq '2'}" />
+                    <h:outputLabel value="To Age"/>
+                    <p:inputText value="#{searchController.reportKeyWord.to}"
+                                 disabled="#{searchController.reportKeyWord.string1 eq '0' 
+                                             or searchController.reportKeyWord.string1 eq '1'}"/>
+                    <p:commandButton id="btnSearch" ajax="false" value="Search" 
+                                     action="#{searchController.createAllBillContacts()}" />
+                    <p:commandButton ajax="false" value="Export Excel" styleClass="noPrintButton" >
+                        <p:dataExporter target="tb1" type="xlsx" fileName="Contacts" />
+                    </p:commandButton>
+                    <p:outputLabel value="Message" />
+                    <p:inputText maxlength="160" style="height: 50px;" value="#{searchController.smsText}"></p:inputText>
+
+                    <p:outputLabel value="Test Send" />
+                    <p:inputText  maxlength="11" style="height: 20px;" value="#{searchController.uniqueSmsText}"></p:inputText>
+
+                    <p:commandButton id="btnSend" ajax="false" value="Send Single" action="#{searchController.sendSms()}"  />
+                    <p:commandButton id="btnSend2" ajax="false" value="Send All" action="#{searchController.sendSmsAll()}"  />
+                </p:panelGrid>
+
+                <p:dataTable value="#{searchController.telephoneNumbers}" var="b" id="tb1" rowIndexVar="i"
+                             rowKey="#{b}" 
+                             rows="#{searchController.rows}"
+                             selection="#{searchController.selectedTelephoneNumbers}"
+                             paginator="true"
+                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                             rowsPerPageTemplate="20, 50, 100, 1000, 1500">
+
+                    <f:facet name="header" >
+                        <p:outputLabel value="Contact Numbers - #{searchController.telephoneNumbers.size()}" />                                
+                    </f:facet>
+
+                    <p:column selectionBox="true" ></p:column>
+
+                    <p:column style="text-align: left;" >
+                        <f:facet name="header" >
+                            <p:outputLabel value="No" >
+                            </p:outputLabel>
+                        </f:facet>
+                        <p:outputLabel value="#{i+1}"> 
+                        </p:outputLabel>
+                    </p:column>
+                    <p:column style="text-align: left;" >
+                        <f:facet name="header" >
+                            <p:outputLabel value="Phone number" >
+                            </p:outputLabel>
+                        </f:facet>
+                        <p:outputLabel value="#{b}"> 
+                        </p:outputLabel>
+                    </p:column>
+
+                </p:dataTable>
+
+            </h:form>
+
+        </h:panelGroup>
+
+        <h:form>
+        </h:form>
+    </ui:define>
+
+</ui:composition>

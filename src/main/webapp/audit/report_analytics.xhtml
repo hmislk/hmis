@@ -1,0 +1,189 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="/dataAdmin/admin_data_administration.xhtml">
+            <ui:define name="subcontent">
+                <h:form>
+                    <p:panel>
+                        <f:facet name="header">
+                            <h:outputText value="Report Analytics Dashboard" />
+                        </f:facet>
+
+                        <h:panelGrid columns="2" class="my-2">
+                            <h:outputLabel value="From Date" />
+                            <p:datePicker class="w-100 mx-4" inputStyleClass="w-100"
+                                          id="fromDate"
+                                          value="#{reportLogController.fromDate}"
+                                          showTime="true"
+                                          pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                            <h:outputLabel value="To Date" />
+                            <p:datePicker class="w-100 mx-4" inputStyleClass="w-100"
+                                          id="toDate"
+                                          value="#{reportLogController.toDate}"
+                                          showTime="true"
+                                          pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                        </h:panelGrid>
+
+                        <h:panelGrid columns="2" class="my-2">
+                            <p:commandButton id="btnAnalyze"
+                                             class="ui-button-success"
+                                             icon="pi pi-chart-bar"
+                                             ajax="false"
+                                             value="Generate Analytics"
+                                             action="#{reportLogController.fillAllAnalytics}" />
+                            <p:commandButton id="btnDownload"
+                                             class="ui-button-warning"
+                                             icon="fa fa-download"
+                                             ajax="false"
+                                             value="Download Analytics">
+                                <p:dataExporter fileName="Report_Analytics" target="tblMostUsed" type="xlsx" />
+                            </p:commandButton>
+                        </h:panelGrid>
+
+                        <!-- Usage Summary Statistics -->
+                        <p:panel header="Usage Summary" class="my-3" rendered="#{not empty reportLogController.usageSummary}">
+                            <h:panelGrid columns="6" class="usage-summary-grid">
+                                <h:outputText value="Total Executions:" styleClass="font-weight-bold" />
+                                <h:outputText value="#{reportLogController.usageSummary[0][0]}" styleClass="text-primary" />
+                                
+                                <h:outputText value="Unique Reports:" styleClass="font-weight-bold" />
+                                <h:outputText value="#{reportLogController.usageSummary[0][1]}" styleClass="text-info" />
+                                
+                                <h:outputText value="Avg Execution Time:" styleClass="font-weight-bold" />
+                                <h:outputText value="#{reportLogController.usageSummary[0][2]} ms" styleClass="text-success" />
+                                
+                                <h:outputText value="Total Time Consumed:" styleClass="font-weight-bold" />
+                                <h:outputText value="#{reportLogController.usageSummary[0][3]} ms" styleClass="text-warning" />
+                                
+                                <h:outputText value="Max Execution Time:" styleClass="font-weight-bold" />
+                                <h:outputText value="#{reportLogController.usageSummary[0][4]} ms" styleClass="text-danger" />
+                                
+                                <h:outputText value="Min Execution Time:" styleClass="font-weight-bold" />
+                                <h:outputText value="#{reportLogController.usageSummary[0][5]} ms" styleClass="text-muted" />
+                            </h:panelGrid>
+                        </p:panel>
+
+                        <!-- Most Used Reports -->
+                        <p:panel header="Most Frequently Used Reports" class="my-3">
+                            <p:dataTable
+                                id="tblMostUsed" 
+                                value="#{reportLogController.mostUsedReports}"
+                                var="report" rowIndexVar="i" style="min-width:100%;"
+                                paginator="true" paginatorPosition="bottom"
+                                rows="10"
+                                paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                rowsPerPageTemplate="5,10,15"
+                                emptyMessage="No data available. Please click 'Generate Analytics' to load data.">
+
+                                <p:column headerText="Rank" width="4em" class="text-center">
+                                    <h:outputText value="#{i + 1}" />
+                                </p:column>
+
+                                <p:column headerText="Report Name" sortBy="#{report[0]}">
+                                    <h:outputText value="#{report[0]}" />
+                                </p:column>
+
+                                <p:column headerText="Execution Count" width="8em" class="text-end" sortBy="#{report[1]}">
+                                    <h:outputText value="#{report[1]}" styleClass="font-weight-bold text-primary" />
+                                </p:column>
+
+                                <p:column headerText="Avg Time (ms)" width="8em" class="text-end" sortBy="#{report[2]}">
+                                    <h:outputText value="#{report[2]}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </p:column>
+
+                                <p:column headerText="Last Executed" width="10em" class="text-end">
+                                    <h:outputText value="#{report[3]}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                    </h:outputText>
+                                </p:column>
+                            </p:dataTable>
+                        </p:panel>
+
+                        <!-- Heaviest Reports -->
+                        <p:panel header="Heaviest Reports (by Average Execution Time)" class="my-3">
+                            <p:dataTable
+                                id="tblHeaviest" 
+                                value="#{reportLogController.heaviestReports}"
+                                var="report" rowIndexVar="i" style="min-width:100%;"
+                                paginator="true" paginatorPosition="bottom"
+                                rows="10"
+                                paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                rowsPerPageTemplate="5,10,15"
+                                emptyMessage="No data available. Please click 'Generate Analytics' to load data.">
+
+                                <p:column headerText="Rank" width="4em" class="text-center">
+                                    <h:outputText value="#{i + 1}" />
+                                </p:column>
+
+                                <p:column headerText="Report Name" sortBy="#{report[0]}">
+                                    <h:outputText value="#{report[0]}" />
+                                </p:column>
+
+                                <p:column headerText="Avg Time (ms)" width="8em" class="text-end" sortBy="#{report[1]}">
+                                    <h:outputText value="#{report[1]}" styleClass="font-weight-bold text-danger">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </p:column>
+
+                                <p:column headerText="Execution Count" width="8em" class="text-end" sortBy="#{report[2]}">
+                                    <h:outputText value="#{report[2]}" />
+                                </p:column>
+
+                                <p:column headerText="Max Time (ms)" width="8em" class="text-end" sortBy="#{report[3]}">
+                                    <h:outputText value="#{report[3]}" styleClass="text-warning">
+                                        <f:convertNumber pattern="#,##0" />
+                                    </h:outputText>
+                                </p:column>
+                            </p:dataTable>
+                        </p:panel>
+
+                        <!-- Failed Reports -->
+                        <p:panel header="Failed Reports" class="my-3">
+                            <p:dataTable
+                                    id="tblFailed"
+                                    value="#{reportLogController.failedReports}"
+                                    var="report" rowIndexVar="i" style="min-width:100%;"
+                                    paginator="true" paginatorPosition="bottom"
+                                    rows="10"
+                                    paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                    rowsPerPageTemplate="5,10,15"
+                                    emptyMessage="No data available. Please click 'Generate Analytics' to load data.">
+
+                                <p:column headerText="Rank" width="4em" class="text-center">
+                                    <h:outputText value="#{i + 1}" />
+                                </p:column>
+
+                                <p:column headerText="Report Name" sortBy="#{report[0]}">
+                                    <h:outputText value="#{report[0]}" />
+                                </p:column>
+
+                                <p:column headerText="Execution Count" width="8em" class="text-end" sortBy="#{report[1]}">
+                                    <h:outputText value="#{report[1]}" styleClass="font-weight-bold text-primary" />
+                                </p:column>
+
+                                <p:column headerText="Failed Count" width="8em" class="text-end" sortBy="#{report[2]}">
+                                    <h:outputText value="#{report[2]}" styleClass="font-weight-bold text-danger" />
+                                </p:column>
+
+                                <p:column headerText="Last Executed" width="10em" class="text-end">
+                                    <h:outputText value="#{report[3]}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                    </h:outputText>
+                                </p:column>
+                            </p:dataTable>
+                        </p:panel>
+
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

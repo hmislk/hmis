@@ -1,5 +1,7 @@
 package com.divudi.core.data.pharmacy;
 
+import com.divudi.core.data.PharmacyBundle;
+import com.divudi.core.data.PharmacyRow;
 import com.divudi.core.entity.Department;
 import java.util.Date;
 import java.util.List;
@@ -13,10 +15,26 @@ public class DailyStockBalanceReport {
     private Date date;
     private Department department;
 
-    private double openingStock;
+    private double openingStockValue;
     private double stockTransactionValue;
-    private double closingStock;
+    private double closingStockValue;
 
+    private double openingStockValueAtCostRate;
+    private double closingStockValueAtCostRate;
+
+    private double openingStockValueAtPurchaseRate;
+    private double closingStockValueAtPurchaseRate;
+
+    private PharmacyBundle pharmacySalesByAdmissionTypeAndDiscountSchemeBundle;
+    private PharmacyBundle pharmacyPurchaseByBillTypeBundle;
+    private PharmacyBundle pharmacyTransferByBillTypeBundle;
+    private PharmacyBundle pharmacyAdjustmentsByBillTypeBundle;
+    /** Pre-bill retail sales and their cancellations (informational section).
+     *  Covers PRE_TO_SETTLE_AT_CASHIER and CANCELLED_PRE — stock that moved
+     *  within the report period but whose financial settlement is not yet
+     *  recorded. Use this to explain any closing-stock discrepancy. */
+    private PharmacyBundle preBillStockMovementsBundle;
+    
     private double purchasesOfDrugsPrevious;
     private double purchasesOfDrugsTransaction;
     private double purchasesOfDrugsClosing;
@@ -116,12 +134,12 @@ public class DailyStockBalanceReport {
         this.department = department;
     }
 
-    public double getOpeningStock() {
-        return openingStock;
+    public double getOpeningStockValue() {
+        return openingStockValue;
     }
 
-    public void setOpeningStock(double openingStock) {
-        this.openingStock = openingStock;
+    public void setOpeningStockValue(double openingStockValue) {
+        this.openingStockValue = openingStockValue;
     }
 
     public double getStockTransactionValue() {
@@ -132,12 +150,44 @@ public class DailyStockBalanceReport {
         this.stockTransactionValue = stockTransactionValue;
     }
 
-    public double getClosingStock() {
-        return closingStock;
+    public double getClosingStockValue() {
+        return closingStockValue;
     }
 
-    public void setClosingStock(double closingStock) {
-        this.closingStock = closingStock;
+    public void setClosingStockValue(double closingStockValue) {
+        this.closingStockValue = closingStockValue;
+    }
+
+    public double getOpeningStockValueAtCostRate() {
+        return openingStockValueAtCostRate;
+    }
+
+    public void setOpeningStockValueAtCostRate(double openingStockValueAtCostRate) {
+        this.openingStockValueAtCostRate = openingStockValueAtCostRate;
+    }
+
+    public double getClosingStockValueAtCostRate() {
+        return closingStockValueAtCostRate;
+    }
+
+    public void setClosingStockValueAtCostRate(double closingStockValueAtCostRate) {
+        this.closingStockValueAtCostRate = closingStockValueAtCostRate;
+    }
+
+    public double getOpeningStockValueAtPurchaseRate() {
+        return openingStockValueAtPurchaseRate;
+    }
+
+    public void setOpeningStockValueAtPurchaseRate(double openingStockValueAtPurchaseRate) {
+        this.openingStockValueAtPurchaseRate = openingStockValueAtPurchaseRate;
+    }
+
+    public double getClosingStockValueAtPurchaseRate() {
+        return closingStockValueAtPurchaseRate;
+    }
+
+    public void setClosingStockValueAtPurchaseRate(double closingStockValueAtPurchaseRate) {
+        this.closingStockValueAtPurchaseRate = closingStockValueAtPurchaseRate;
     }
 
     public double getPurchasesOfDrugsPrevious() {
@@ -636,7 +686,89 @@ public class DailyStockBalanceReport {
         this.internalTransfersList = internalTransfersList;
     }
 
+    public PharmacyBundle getPharmacySalesByAdmissionTypeAndDiscountSchemeBundle() {
+        return pharmacySalesByAdmissionTypeAndDiscountSchemeBundle;
+    }
 
+    public void setPharmacySalesByAdmissionTypeAndDiscountSchemeBundle(PharmacyBundle pharmacySalesByAdmissionTypeAndDiscountSchemeBundle) {
+        this.pharmacySalesByAdmissionTypeAndDiscountSchemeBundle = pharmacySalesByAdmissionTypeAndDiscountSchemeBundle;
+    }
 
+    public PharmacyBundle getPharmacyPurchaseByBillTypeBundle() {
+        return pharmacyPurchaseByBillTypeBundle;
+    }
+
+    public void setPharmacyPurchaseByBillTypeBundle(PharmacyBundle pharmacyPurchaseByBillTypeBundle) {
+        this.pharmacyPurchaseByBillTypeBundle = pharmacyPurchaseByBillTypeBundle;
+    }
+
+    public PharmacyBundle getPharmacyTransferByBillTypeBundle() {
+        return pharmacyTransferByBillTypeBundle;
+    }
+
+    public void setPharmacyTransferByBillTypeBundle(PharmacyBundle pharmacyTransferByBillTypeBundle) {
+        this.pharmacyTransferByBillTypeBundle = pharmacyTransferByBillTypeBundle;
+    }
+
+    public PharmacyBundle getPharmacyAdjustmentsByBillTypeBundle() {
+        return pharmacyAdjustmentsByBillTypeBundle;
+    }
+
+    public void setPharmacyAdjustmentsByBillTypeBundle(PharmacyBundle pharmacyAdjustmentsByBillTypeBundle) {
+        this.pharmacyAdjustmentsByBillTypeBundle = pharmacyAdjustmentsByBillTypeBundle;
+    }
+
+    public PharmacyBundle getPreBillStockMovementsBundle() {
+        return preBillStockMovementsBundle;
+    }
+
+    public void setPreBillStockMovementsBundle(PharmacyBundle preBillStockMovementsBundle) {
+        this.preBillStockMovementsBundle = preBillStockMovementsBundle;
+    }
+
+    // ── Closing-stock reconciliation helpers ──────────────────────────────────
+    //
+    // Expected closing = opening
+    //                  + purchases  (always positive — stock in)
+    //                  - sales      (always positive in bundle — stock out, so subtract)
+    //                  + transfers  (net-signed: receives +, issues −)
+    //                  + adjustments (net-signed)
+    //
+    // A mismatch > 1.0 (tolerance to absorb rounding) flags a discrepancy.
+
+    private double bundleValue(PharmacyBundle bundle, java.util.function.Function<com.divudi.core.data.PharmacyRow, java.math.BigDecimal> extractor) {
+        if (bundle == null || bundle.getSummaryRow() == null) {
+            return 0.0;
+        }
+        java.math.BigDecimal v = extractor.apply(bundle.getSummaryRow());
+        return v == null ? 0.0 : v.doubleValue();
+    }
+
+    public boolean isClosingStockCostRateMismatch() {
+        double expected = openingStockValueAtCostRate
+                + bundleValue(pharmacyPurchaseByBillTypeBundle,    com.divudi.core.data.PharmacyRow::getValueOfStocksAtCostRate)
+                - bundleValue(pharmacySalesByAdmissionTypeAndDiscountSchemeBundle, com.divudi.core.data.PharmacyRow::getValueOfStocksAtCostRate)
+                + bundleValue(pharmacyTransferByBillTypeBundle,    com.divudi.core.data.PharmacyRow::getValueOfStocksAtCostRate)
+                + bundleValue(pharmacyAdjustmentsByBillTypeBundle, com.divudi.core.data.PharmacyRow::getValueOfStocksAtCostRate);
+        return Math.abs(closingStockValueAtCostRate - expected) > 1.0;
+    }
+
+    public boolean isClosingStockPurchaseRateMismatch() {
+        double expected = openingStockValueAtPurchaseRate
+                + bundleValue(pharmacyPurchaseByBillTypeBundle,    com.divudi.core.data.PharmacyRow::getValueOfStocksAtPurchaseRate)
+                - bundleValue(pharmacySalesByAdmissionTypeAndDiscountSchemeBundle, com.divudi.core.data.PharmacyRow::getValueOfStocksAtPurchaseRate)
+                + bundleValue(pharmacyTransferByBillTypeBundle,    com.divudi.core.data.PharmacyRow::getValueOfStocksAtPurchaseRate)
+                + bundleValue(pharmacyAdjustmentsByBillTypeBundle, com.divudi.core.data.PharmacyRow::getValueOfStocksAtPurchaseRate);
+        return Math.abs(closingStockValueAtPurchaseRate - expected) > 1.0;
+    }
+
+    public boolean isClosingStockRetailRateMismatch() {
+        double expected = openingStockValue
+                + bundleValue(pharmacyPurchaseByBillTypeBundle,    com.divudi.core.data.PharmacyRow::getValueOfStocksAtRetailSaleRate)
+                - bundleValue(pharmacySalesByAdmissionTypeAndDiscountSchemeBundle, com.divudi.core.data.PharmacyRow::getValueOfStocksAtRetailSaleRate)
+                + bundleValue(pharmacyTransferByBillTypeBundle,    com.divudi.core.data.PharmacyRow::getValueOfStocksAtRetailSaleRate)
+                + bundleValue(pharmacyAdjustmentsByBillTypeBundle, com.divudi.core.data.PharmacyRow::getValueOfStocksAtRetailSaleRate);
+        return Math.abs(closingStockValue - expected) > 1.0;
+    }
 
 }

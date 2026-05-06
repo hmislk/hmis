@@ -1,0 +1,1208 @@
+package com.divudi.bean.common;
+
+import com.divudi.bean.cashTransaction.DrawerController;
+import static com.divudi.core.data.BillTypeAtomic.OPD_BILL_WITH_PAYMENT;
+import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.PettyCashType;
+import com.divudi.core.data.RequestStatus;
+import com.divudi.core.data.RequestType;
+import static com.divudi.core.data.RequestType.PETTYCASH_APROVEL;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.Patient;
+import com.divudi.core.entity.PatientEncounter;
+import com.divudi.core.entity.Request;
+import com.divudi.core.entity.WebUser;
+import com.divudi.core.entity.cashTransaction.Drawer;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.RequestFacade;
+import com.divudi.core.util.CommonFunctions;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.ejb.BillNumberGenerator;
+import com.divudi.service.DrawerService;
+import com.divudi.service.RequestService;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import javax.ejb.EJB;
+import javax.enterprise.context.SessionScoped;
+import javax.faces.component.UIComponent;
+import javax.faces.context.FacesContext;
+import javax.faces.convert.Converter;
+import javax.faces.convert.FacesConverter;
+import javax.inject.Inject;
+import javax.inject.Named;
+
+/**
+ * @author H.K. Damith Deshan | hkddrajapaksha@gmail.com
+ */
+@Named
+@SessionScoped
+public class RequestController implements Serializable {
+
+    public RequestController() {
+    }
+
+    // <editor-fold defaultstate="collapsed" desc="EJBs">
+    @EJB
+    private RequestFacade requestFacade;
+    @EJB
+    BillFacade billFacade;
+    @EJB
+    BillNumberGenerator billNumberGenerator;
+    @EJB
+    DrawerService drawerService;
+    // </editor-fold>
+
+    // <editor-fold defaultstate="collapsed" desc="Controllers">
+    @Inject
+    SessionController sessionController;
+    @Inject
+    BillController billController;
+    @Inject
+    RequestService requestService;
+    @Inject
+    WebUserController webUserController;
+    // </editor-fold>
+
+    // <editor-fold defaultstate="collapsed" desc="Variables">
+    private static final long serialVersionUID = 1L;
+
+    private Patient patient;
+    private Bill batchBill;
+    private List<Bill> bills;
+    private String comment;
+    private boolean printPreview;
+
+    private Date fromDate;
+    private Date toDate;
+    private List<Request> requests;
+    private Request currentRequest;
+
+    private String billNo;
+    private String bhtNo;
+    private String requestNo;
+    private RequestType requestType;
+    private RequestStatus status;
+
+    private PatientEncounter patientEncounter;
+    private PettyCashType pettyCashPayeeType;
+    private String pettyCashFinancialYear;
+    private String pettyCashReceiptNo;
+    // </editor-fold>
+
+    // <editor-fold defaultstate="collapsed" desc="Navigation Method">
+    public String navigateToSearchRequest() {
+        requests = new ArrayList<>();
+        return "/common/request/view_request?faces-redirect=true";
+    }
+
+    public String navigateToPendingPettyCashRequests() {
+        requestType = null;
+        List<RequestType> types = new ArrayList<>();
+        types.add(RequestType.PETTYCASH_APROVEL);
+        types.add(RequestType.PETTYCASH_CANCELLATION);
+        
+        status = null;
+        List<RequestStatus> sts = new ArrayList<>();
+        sts.add(RequestStatus.PENDING);
+        sts.add(RequestStatus.UNDER_REVIEW);
+        
+        fromDate = null;
+        toDate = null;
+        
+        requests = new ArrayList<>();
+        requests = requestService.fillAllRequest(fromDate, toDate, billNo, bhtNo, requestNo, types, sts, null);
+        return "/common/request/view_request?faces-redirect=true";
+    }
+
+    public long getPendingPettyCashApprovalCount() {
+        String jpql = "SELECT COUNT(r) FROM Request r"
+                + " WHERE r.retired = :ret"
+                + " AND r.requestType = :type"
+                + " AND r.status IN :statuses";
+        java.util.Map<String, Object> params = new java.util.HashMap<>();
+        params.put("ret", false);
+        params.put("type", RequestType.PETTYCASH_APROVEL);
+        params.put("statuses", java.util.Arrays.asList(RequestStatus.PENDING, RequestStatus.UNDER_REVIEW));
+        return requestFacade.findLongByJpql(jpql, params);
+    }
+
+    public String navigateToBackSearchBillList() {
+
+        switch (currentRequest.getBill().getBillTypeAtomic()) {
+            case OPD_BATCH_BILL_WITH_PAYMENT:
+                return "/opd/opd_batch_bill_print?faces-redirect=true";
+            case INWARD_SERVICE_BILL:
+                return "/lab/inward_search_service?faces-redirect=true";
+            case PETTY_CASH_ISSUE:
+                return "/petty_cash_bill_search_own?faces-redirect=true";
+            default:
+                return "";
+        }
+    }
+
+    public String navigateToBackSearchRequest() {
+        return "/common/request/view_request?faces-redirect=true";
+    }
+
+    public String navigateToDrawerAdjustmentApproveByBill(Bill billParam) {
+        if (billParam == null) {
+            JsfUtil.addErrorMessage("No bill selected.");
+            return null;
+        }
+        if (!webUserController.hasPrivilege("DrawerAdjustmentRequestApproval")) {
+            JsfUtil.addErrorMessage("You are not authorized to approve drawer adjustment requests.");
+            return null;
+        }
+        Map<String, Object> params = new java.util.HashMap<>();
+        params.put("bill", billParam);
+        params.put("type", RequestType.DRAWER_ADJUSTMENT);
+        String jpql = "SELECT r FROM Request r WHERE r.bill = :bill AND r.requestType = :type ORDER BY r.id DESC";
+        List<Request> found = requestFacade.findByJpql(jpql, params);
+        if (found == null || found.isEmpty()) {
+            JsfUtil.addErrorMessage("No drawer adjustment request found for this bill.");
+            return null;
+        }
+        currentRequest = found.get(0);
+        return "/cashier/drawer_adjustment_approve?faces-redirect=true";
+    }
+
+    public String navigateToCreateRequest(Bill bill) {
+        if (bill == null || bill.getId() == null) {
+            JsfUtil.addErrorMessage("Bill not found for request Cancel");
+            return "";
+        }
+
+        if (bill.getDepartment() == null || bill.getDepartment().getId() == null || sessionController.getDepartment() == null || sessionController.getDepartment().getId() == null) {
+            JsfUtil.addErrorMessage("Department information missing.");
+            return "";
+        }
+
+        if (!bill.getDepartment().getId().equals(sessionController.getDepartment().getId())) {
+            JsfUtil.addErrorMessage("You must log in to " + bill.getDepartment().getName() + " to cancel this bill.");
+            return "";
+        }
+
+        String navigation = "";
+        Bill originalBill = billFacade.find(bill.getId());
+
+        Request req = requestService.findRequest(originalBill);
+
+        if (req != null) {
+            JsfUtil.addErrorMessage("There is already a " + req.getRequestType().getDisplayName() + " requesr for this bill.");
+            return "";
+        } else {
+            printPreview = false;
+            bills = new ArrayList<>();
+
+            switch (originalBill.getBillTypeAtomic()) {
+                case OPD_BATCH_BILL_WITH_PAYMENT:
+                    setBatchBill(originalBill);
+                    bills = billController.billsOfBatchBill(batchBill);
+                    patient = batchBill.getPatient();
+                    comment = null;
+
+                    navigation = "/common/request/opd_bill_cancel_request?faces-redirect=true";
+                    break;
+                case OPD_BILL_WITH_PAYMENT:
+                    navigation = "";
+                    break;
+                case INWARD_SERVICE_BILL:
+                    setBatchBill(originalBill);
+                    bills.add(originalBill);
+                    patient = originalBill.getPatient();
+                    patientEncounter = originalBill.getPatientEncounter();
+                    comment = null;
+                    navigation = "/common/request/inward_bill_cancel_request?faces-redirect=true";
+                    break;
+                default:
+                    navigation = "";
+            }
+        }
+        return navigation;
+    }
+
+    @Inject
+    PettyCashBillController pettyCashBillController;
+
+    public String navigateToApproveRequest() {
+        if (currentRequest == null) {
+            JsfUtil.addErrorMessage("Not found for a request for Approvel");
+            return "";
+        }
+        if (currentRequest.getBill() == null) {
+            JsfUtil.addErrorMessage("Bill not found for request Cancel");
+            return "";
+        }
+
+        // Centralised privilege check per request type.
+        // Add a new case here whenever a new RequestType requiring approval is introduced.
+        switch (currentRequest.getRequestType()) {
+            case BILL_CANCELLATION:
+                if (!webUserController.hasPrivilege("BillCancelRequestApproval")) {
+                    JsfUtil.addErrorMessage("You are not authorized to approve bill cancellation requests.");
+                    return "";
+                }
+                break;
+            case DRAWER_ADJUSTMENT:
+                if (!webUserController.hasPrivilege("DrawerAdjustmentRequestApproval")) {
+                    JsfUtil.addErrorMessage("You are not authorized to review drawer adjustment requests.");
+                    return "";
+                }
+                break;
+            case PETTYCASH_CANCELLATION:
+                if (!webUserController.hasPrivilege("PettyCashCancellationApproval")) {
+                    JsfUtil.addErrorMessage("You are not authorized to review Petty Cash Cancellation requests.");
+                    return "";
+                }
+                break;
+            case PETTYCASH_APROVEL:
+                pettyCashBillController.setCurrentRequest(currentRequest);
+                break;
+            default:
+                JsfUtil.addErrorMessage("Approval is not supported for this request type.");
+                return "";
+        }
+
+        //Update Review Status
+        if (currentRequest.getStatus() == RequestStatus.PENDING) {
+            currentRequest.setReviewedBy(sessionController.getLoggedUser());
+            currentRequest.setReviewedAt(new Date());
+            currentRequest.setReviewed(true);
+            currentRequest.setStatus(RequestStatus.UNDER_REVIEW);
+            requestService.save(currentRequest, sessionController.getLoggedUser());
+        }
+
+        if (currentRequest.getRequestType() == RequestType.DRAWER_ADJUSTMENT) {
+            bills = new ArrayList<>();
+            comment = null;
+            return "/cashier/drawer_adjustment_approve?faces-redirect=true";
+        }
+
+        bills = new ArrayList<>();
+        String navigation = "";
+
+        switch (currentRequest.getBill().getBillTypeAtomic()) {
+            case OPD_BATCH_BILL_WITH_PAYMENT:
+                bills = billController.billsOfBatchBill(currentRequest.getBill());
+                patient = currentRequest.getBill().getPatient();
+                patientEncounter = null;
+                comment = null;
+
+                navigation = "/common/request/bill_cancel_request_approvel?faces-redirect=true";
+                break;
+
+            case INWARD_SERVICE_BILL:
+                patient = currentRequest.getBill().getPatient();
+                patientEncounter = currentRequest.getBill().getPatientEncounter();
+                bills.add(currentRequest.getBill());
+                comment = null;
+
+                navigation = "/common/request/bill_cancel_request_approvel?faces-redirect=true";
+                break;
+            case OPD_BILL_WITH_PAYMENT:
+                navigation = "";
+                break;
+            case PETTY_CASH_PRE:
+                bills.add(currentRequest.getBill());
+                pettyCashPayeeType = resolvePettyCashPayeeType(currentRequest.getBill());
+                splitPettyCashInvoiceNumber(currentRequest.getBill().getInvoiceNumber());
+                comment = null;
+                navigation = "/common/request/petty_cash_bill_cancel_request_approvel?faces-redirect=true";
+                break;
+            case PETTY_CASH_ISSUE:
+                bills.add(currentRequest.getBill());
+                pettyCashPayeeType = resolvePettyCashPayeeType(currentRequest.getBill());
+                comment = null;
+                navigation = "/common/request/petty_cash_bill_cancellation_request?faces-redirect=true";
+                break;
+            default:
+                navigation = "";
+        }
+        return navigation;
+    }
+
+    public String navigateToCancelRequest() {
+        if (currentRequest == null) {
+            JsfUtil.addErrorMessage("Not found for a request for Approvel");
+            return "";
+        }
+        if (currentRequest.getBill() == null) {
+            JsfUtil.addErrorMessage("Bill not found for request Cancel");
+            return "";
+        }
+
+        String navigation = "";
+        bills = new ArrayList<>();
+
+        switch (currentRequest.getBill().getBillTypeAtomic()) {
+
+            case OPD_BATCH_BILL_WITH_PAYMENT:
+                bills = billController.billsOfBatchBill(currentRequest.getBill());
+                patient = currentRequest.getBill().getPatient();
+                comment = null;
+
+                navigation = "/common/request/bill_cancel_request_cancel?faces-redirect=true";
+                break;
+            case INWARD_SERVICE_BILL:
+                bills.add(currentRequest.getBill());
+                patient = currentRequest.getBill().getPatient();
+                patientEncounter = currentRequest.getBill().getPatientEncounter();
+                comment = null;
+
+                navigation = "/common/request/bill_cancel_request_cancel?faces-redirect=true";
+                break;
+            case OPD_BILL_WITH_PAYMENT:
+                navigation = "";
+                break;
+            case PETTY_CASH_PRE:
+                bills.add(currentRequest.getBill());
+                comment = null;
+                navigation = "/common/request/petty_cash_bill_request_cancel?faces-redirect=true";
+                break;
+            default:
+                navigation = "";
+        }
+        return navigation;
+    }
+    // </editor-fold>
+
+    // <editor-fold defaultstate="collapsed" desc="Function">
+    public void makeNull() {
+        patient = null;
+        batchBill = null;
+        bills = null;
+        comment = null;
+        printPreview = false;
+
+        requests = null;
+
+        billNo = null;
+        bhtNo = null;
+        requestNo = null;
+        requestType = null;
+        status = null;
+        patientEncounter = null;
+    }
+
+    public void createRequestforOPDBatchBill() {
+        if (batchBill == null) {
+            JsfUtil.addErrorMessage("Bill not found for Create Request ");
+            return;
+        }
+        if (comment == null || comment.trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Comment is mandatory.");
+            return;
+        }
+
+        if (batchBill.getDepartment() == null || batchBill.getDepartment().getId() == null || sessionController.getDepartment() == null || sessionController.getDepartment().getId() == null) {
+            JsfUtil.addErrorMessage("Department information missing.");
+            return;
+        }
+
+        if (!batchBill.getDepartment().getId().equals(sessionController.getDepartment().getId())) {
+            JsfUtil.addErrorMessage("You must log in to " + batchBill.getDepartment().getName() + " to cancel this bill.");
+            return;
+        }
+
+        Request req = requestService.findRequest(batchBill);
+
+        if (req != null) {
+            JsfUtil.addErrorMessage("There is already a " + req.getRequestType().getDisplayName() + " requesr for this bill.");
+            return;
+        } else {
+            for (Bill b : bills) {
+                if (b.getCurrentRequest() != null) {
+                    JsfUtil.addErrorMessage("There is already a " + b.getCurrentRequest().getRequestType().getDisplayName() + " requesr for this bill.");
+                    return;
+                }
+            }
+
+            Request newlyRequest = new Request();
+
+            newlyRequest.setBill(batchBill);
+            newlyRequest.setRequester(sessionController.getLoggedUser());
+            newlyRequest.setRequestAt(new Date());
+            newlyRequest.setRequestReason(comment);
+            newlyRequest.setRequestType(RequestType.BILL_CANCELLATION);
+            newlyRequest.setStatus(RequestStatus.PENDING);
+
+            newlyRequest.setInstitution(sessionController.getInstitution());
+            newlyRequest.setDepartment(sessionController.getDepartment());
+
+            String reqNo = billNumberGenerator.departmentRequestNumberGeneratorYearly(sessionController.getDepartment(), RequestType.BILL_CANCELLATION);
+            newlyRequest.setRequestNo(reqNo);
+
+            requestService.save(newlyRequest, sessionController.getLoggedUser());
+
+            //Update Batch Bill
+            batchBill.setCurrentRequest(newlyRequest);
+            billFacade.edit(batchBill);
+
+            //Update Induvidual Bills of Batch Bil
+            for (Bill b : bills) {
+                b.setCurrentRequest(newlyRequest);
+                billFacade.edit(b);
+            }
+
+            setCurrentRequest(newlyRequest);
+        }
+
+        printPreview = true;
+    }
+
+    public void createRequestforPettyCashBillCancellation(Bill pettyCashBill) {
+        System.out.println("pettyCashBill = " + pettyCashBill);
+
+        if (pettyCashBill == null) {
+            JsfUtil.addErrorMessage("Bill not found for Create Request ");
+            return;
+        }
+        if (comment == null || comment.trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Comment is mandatory.");
+            return;
+        }
+
+        if (!pettyCashBill.getDepartment().getId().equals(sessionController.getDepartment().getId())) {
+            JsfUtil.addErrorMessage("You must log in to " + pettyCashBill.getDepartment().getName() + " to cancel this bill.");
+            return;
+        }
+
+        Request req = requestService.findRequest(pettyCashBill);
+
+        if (req != null) {
+            JsfUtil.addErrorMessage("There is already a " + req.getRequestType().getDisplayName() + " requesr for this bill.");
+            return;
+        } else {
+
+            Request newlyRequest = new Request();
+
+            newlyRequest.setBill(pettyCashBill);
+            newlyRequest.setRequester(sessionController.getLoggedUser());
+            newlyRequest.setRequestAt(new Date());
+            newlyRequest.setRequestReason(comment);
+            newlyRequest.setRequestType(RequestType.PETTYCASH_CANCELLATION);
+            newlyRequest.setStatus(RequestStatus.PENDING);
+
+            newlyRequest.setInstitution(sessionController.getInstitution());
+            newlyRequest.setDepartment(sessionController.getDepartment());
+
+            String reqNo = billNumberGenerator.departmentRequestNumberGeneratorYearly(sessionController.getDepartment(), RequestType.PETTYCASH_CANCELLATION);
+            newlyRequest.setRequestNo(reqNo);
+
+            requestService.save(newlyRequest, sessionController.getLoggedUser());
+
+            //Update PettyCash Bill
+            pettyCashBill.setCurrentRequest(newlyRequest);
+            billFacade.edit(pettyCashBill);
+
+            setCurrentRequest(newlyRequest);
+        }
+
+        printPreview = true;
+    }
+
+    public void createRequestforInpatientServiceBill() {
+        if (batchBill == null) {
+            JsfUtil.addErrorMessage("Bill not found for Create Request ");
+            return;
+        }
+        if (comment == null || comment.trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Comment is mandatory.");
+            return;
+        }
+
+        if (batchBill.getDepartment() == null || batchBill.getDepartment().getId() == null || sessionController.getDepartment() == null || sessionController.getDepartment().getId() == null) {
+            JsfUtil.addErrorMessage("Department information missing.");
+            return;
+        }
+
+        if (!batchBill.getDepartment().getId().equals(sessionController.getDepartment().getId())) {
+            JsfUtil.addErrorMessage("You must log in to " + batchBill.getDepartment().getName() + " to cancel this bill.");
+            return;
+        }
+
+        Request req = requestService.findRequest(batchBill);
+
+        if (req != null) {
+            JsfUtil.addErrorMessage("There is already a " + req.getRequestType().getDisplayName() + " requesr for this bill.");
+            return;
+        } else {
+
+            Request newlyRequest = new Request();
+
+            newlyRequest.setBill(batchBill);
+            newlyRequest.setRequester(sessionController.getLoggedUser());
+            newlyRequest.setRequestAt(new Date());
+            newlyRequest.setRequestReason(comment);
+            newlyRequest.setRequestType(RequestType.BILL_CANCELLATION);
+            newlyRequest.setStatus(RequestStatus.PENDING);
+
+            newlyRequest.setInstitution(sessionController.getInstitution());
+            newlyRequest.setDepartment(sessionController.getDepartment());
+
+            String reqNo = billNumberGenerator.departmentRequestNumberGeneratorYearly(sessionController.getDepartment(), RequestType.BILL_CANCELLATION);
+            newlyRequest.setRequestNo(reqNo);
+
+            requestService.save(newlyRequest, sessionController.getLoggedUser());
+
+            //Update Batch Bill
+            batchBill.setCurrentRequest(newlyRequest);
+            billFacade.edit(batchBill);
+
+            setCurrentRequest(newlyRequest);
+        }
+
+        printPreview = true;
+    }
+
+    public void searchRequest() {
+        requests = new ArrayList<>();
+        requests = requestService.fillAllRequest(fromDate, toDate, billNo, bhtNo, requestNo, requestType, status, null);
+    }
+
+    public void approveRequest() {
+        if (currentRequest == null) {
+            JsfUtil.addErrorMessage("Request not found for approval");
+            return;
+        }
+
+        if (!webUserController.hasPrivilege("BillCancelRequestApproval")) {
+            JsfUtil.addErrorMessage("You have not authorize to Approval this.");
+            return;
+        }
+
+        if (currentRequest.getBill() == null) {
+            JsfUtil.addErrorMessage("Bill not found for request Cancel");
+            return;
+        }
+
+        currentRequest.setApproved(true);
+        currentRequest.setApprovedAt(new Date());
+        currentRequest.setApprovedBy(sessionController.getLoggedUser());
+        currentRequest.setStatus(RequestStatus.APPROVED);
+        requestService.save(currentRequest, sessionController.getLoggedUser());
+
+        JsfUtil.addSuccessMessage("Successfully Approve");
+
+    }
+
+    @Inject
+    DrawerController drawerController;
+
+    public String approvePettyCashRequest() {
+        if (currentRequest == null) {
+            JsfUtil.addErrorMessage("Request not found for approval");
+            return "";
+        }
+
+        if (currentRequest.getStatus() == RequestStatus.APPROVED) {
+            JsfUtil.addErrorMessage("This Request is Already Approval");
+            return "";
+        }
+
+        if (currentRequest.getStatus() == RequestStatus.REJECTED) {
+            JsfUtil.addErrorMessage("This Request is Already Rejected");
+            return "";
+        }
+
+        if (currentRequest.getBill() == null) {
+            JsfUtil.addErrorMessage("Bill not found for request Cancel");
+            return "";
+        }
+
+        if (currentRequest.getBill().getBillTypeAtomic() == BillTypeAtomic.PETTY_CASH_PRE) {
+            if (!isPettyCashFinancialYearValid()) {
+                return "";
+            }
+            currentRequest.getBill().setInvoiceNumber(joinPettyCashInvoiceNumber());
+        }
+
+        if (currentRequest.getBill().getPaymentMethod() == null) {
+            JsfUtil.addErrorMessage("Select the PaymentMethod");
+            return "";
+        }
+
+        if (currentRequest.getBill().getNetTotal() < 1) {
+            JsfUtil.addErrorMessage("Type Amount");
+            return "";
+        }
+
+        if (currentRequest.getBill().getInvoiceNumber() == null || currentRequest.getBill().getInvoiceNumber().trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Invoice No is Missing.");
+            return "";
+        }
+
+        if (pettyCashBillController.checkValidInvoiceNumber(BillTypeAtomic.PETTY_CASH_ISSUE, currentRequest.getBill().getInvoiceNumber())) {
+            JsfUtil.addErrorMessage("Invoice Number Already Exist");
+            return "";
+        }
+
+        Drawer loggedUserDrawer = drawerController.getUsersDrawer(sessionController.getLoggedUser());
+
+        System.out.println("loggedUserDrawer = " + loggedUserDrawer);
+
+        if (loggedUserDrawer == null) {
+            JsfUtil.addErrorMessage("Your Drawer have a Error.");
+            return "";
+        }
+        System.out.println("loggedUserDrawer.getCashInHandValue() = " + loggedUserDrawer.getCashInHandValue());
+
+        if (loggedUserDrawer != null && (loggedUserDrawer.getCashInHandValue() == null || loggedUserDrawer.getCashInHandValue() == 0)) {
+            JsfUtil.addErrorMessage("There is no cash in your drawer.");
+            return "";
+        }
+
+        if (loggedUserDrawer.getCashInHandValue() < currentRequest.getBill().getNetTotal()) {
+            JsfUtil.addErrorMessage("There is not enough cash in your drawer.");
+            return "";
+        }
+
+        pettyCashBillController.settleBill(currentRequest.getBill());
+
+        currentRequest.setApproved(true);
+        currentRequest.setApprovedAt(new Date());
+        currentRequest.setApprovedBy(sessionController.getLoggedUser());
+        currentRequest.setStatus(RequestStatus.APPROVED);
+        requestService.save(currentRequest, sessionController.getLoggedUser());
+
+        pettyCashBillController.setCurrent(currentRequest.getBill().getReferenceBill());
+
+        pettyCashBillController.setPrintPreview(true);
+        pettyCashBillController.setDuplicate(false);
+        pettyCashBillController.setPreBill(false);
+
+        JsfUtil.addSuccessMessage("Successfully Approve");
+
+        return "/petty_cash_bill_reprint?faces-redirect=true";
+
+    }
+
+    public void approvePettyCashCancellationRequest() {
+        if (currentRequest == null) {
+            JsfUtil.addErrorMessage("Request not found for approval");
+            return;
+        }
+
+        if (currentRequest.getStatus() == RequestStatus.APPROVED) {
+            JsfUtil.addErrorMessage("This Request is Already Approval");
+            return;
+        }
+
+        if (currentRequest.getStatus() == RequestStatus.REJECTED) {
+            JsfUtil.addErrorMessage("This Request is Already Rejected");
+            return;
+        }
+
+        if (currentRequest.getBill() == null) {
+            JsfUtil.addErrorMessage("Bill not found for request Cancel");
+            return;
+        }
+
+        if (currentRequest.getBill().getPaymentMethod() == null) {
+            JsfUtil.addErrorMessage("Select the PaymentMethod");
+            return;
+        }
+
+        currentRequest.setApproved(true);
+        currentRequest.setApprovedAt(new Date());
+        currentRequest.setApprovedBy(sessionController.getLoggedUser());
+        currentRequest.setStatus(RequestStatus.APPROVED);
+        requestService.save(currentRequest, sessionController.getLoggedUser());
+
+        JsfUtil.addSuccessMessage("Successfully Approve");
+
+    }
+
+    public void approveDrawerAdjustmentRequest() {
+        if (currentRequest == null) {
+            JsfUtil.addErrorMessage("Request not found for approval");
+            return;
+        }
+
+        if (currentRequest.getRequestType() != RequestType.DRAWER_ADJUSTMENT) {
+            JsfUtil.addErrorMessage("Invalid request type for drawer adjustment approval.");
+            return;
+        }
+
+        if (!webUserController.hasPrivilege("DrawerAdjustmentRequestApproval")) {
+            JsfUtil.addErrorMessage("You are not authorized to approve drawer adjustment requests.");
+            return;
+        }
+
+        if (currentRequest.getBill() == null) {
+            JsfUtil.addErrorMessage("Bill not found for request.");
+            return;
+        }
+
+        if (currentRequest.getStatus() == RequestStatus.COMPLETED) {
+            JsfUtil.addErrorMessage("This request is already completed.");
+            return;
+        }
+        if (currentRequest.getStatus() != RequestStatus.PENDING
+                && currentRequest.getStatus() != RequestStatus.UNDER_REVIEW) {
+            JsfUtil.addErrorMessage("Only pending or under-review requests can be approved.");
+            return;
+        }
+
+        WebUser targetUser = currentRequest.getTargetWebUser();
+        if (targetUser == null) {
+            JsfUtil.addErrorMessage("Target user not found on request.");
+            return;
+        }
+
+        Drawer drawer = drawerService.getUsersDrawer(targetUser);
+        if (drawer == null) {
+            JsfUtil.addErrorMessage("Drawer not found for target user.");
+            return;
+        }
+
+        if (currentRequest.getPaymentMethod() == null || currentRequest.getBill() == null) {
+            JsfUtil.addErrorMessage("Request is missing required adjustment details (payment method or amount).");
+            return;
+        }
+
+        drawerService.applyDrawerAdjustment(
+                drawer,
+                currentRequest.getPaymentMethod(),
+                currentRequest.getBill().getNetTotal(),
+                currentRequest.getBill(),
+                sessionController.getLoggedUser());
+
+        currentRequest.setApproved(true);
+        currentRequest.setApprovedAt(new Date());
+        currentRequest.setApprovedBy(sessionController.getLoggedUser());
+        currentRequest.setStatus(RequestStatus.COMPLETED);
+        requestService.save(currentRequest, sessionController.getLoggedUser());
+
+        JsfUtil.addSuccessMessage("Drawer adjustment approved and applied successfully.");
+    }
+
+    public void cancelApprovel() {
+        if (currentRequest == null) {
+            JsfUtil.addErrorMessage("Not found for a request for Approvel");
+            return;
+        }
+
+        if (currentRequest.getBill() == null) {
+            JsfUtil.addErrorMessage("Bill not found for request Cancel");
+            return;
+        }
+
+        if (currentRequest.getStatus() != RequestStatus.APPROVED) {
+            JsfUtil.addErrorMessage("Can't Cancel Approvel");
+            return;
+        }
+
+        if (currentRequest.getRequestType() == RequestType.BILL_CANCELLATION) {
+            if (!webUserController.hasPrivilege("BillCancelRequestApproval")) {
+                JsfUtil.addErrorMessage("You have not authorize to Approval this.");
+                return;
+            }
+        } else if (currentRequest.getRequestType() == RequestType.PETTYCASH_CANCELLATION) {
+            if (!webUserController.hasPrivilege("PettyCashCancellationApproval")) {
+                JsfUtil.addErrorMessage("You have not authorize to Approval this.");
+                return;
+            }
+        }
+        
+        
+        currentRequest.setApproved(false);
+        currentRequest.setApprovedAt(null);
+        currentRequest.setApprovedBy(null);
+        currentRequest.setStatus(RequestStatus.UNDER_REVIEW);
+        requestService.save(currentRequest, sessionController.getLoggedUser());
+
+        JsfUtil.addSuccessMessage("Approval cancelled");
+
+    }
+
+    public void rejectRequest() {
+        if (currentRequest == null) {
+            JsfUtil.addErrorMessage("Not found for a request for Approvel");
+            return;
+        }
+        if (currentRequest.getBill() == null) {
+            JsfUtil.addErrorMessage("Bill not found for request Cancel");
+            return;
+        }
+        
+        if(comment == null || comment.trim().isEmpty()){
+            JsfUtil.addErrorMessage("Comment is Missing");
+            return;
+        }
+
+        boolean canReject;
+        if (currentRequest.getRequestType() == RequestType.DRAWER_ADJUSTMENT) {
+            canReject = webUserController.hasPrivilege("DrawerAdjustmentRequestApproval");
+        } else if (currentRequest.getRequestType() == RequestType.PETTYCASH_APROVEL) {
+            canReject = true;
+        } else if (currentRequest.getRequestType() == RequestType.PETTYCASH_CANCELLATION) {
+            canReject = webUserController.hasPrivilege("PettyCashCancellationApproval");
+        } else {
+            canReject = webUserController.hasPrivilege("BillCancelRequestApproval");
+        }
+        if (!canReject) {
+            JsfUtil.addErrorMessage("You have not authorize to Cancel this.");
+            return;
+        }
+
+        currentRequest.setRejected(true);
+        currentRequest.setRejectedAt(new Date());
+        currentRequest.setRejectedBy(sessionController.getLoggedUser());
+        currentRequest.setRejectionReason(comment);
+        currentRequest.setStatus(RequestStatus.REJECTED);
+        requestService.save(currentRequest, sessionController.getLoggedUser());
+
+        if (currentRequest.getRequestType() != RequestType.PETTYCASH_APROVEL) {
+            // Only update currentRequest on the bill if it has one set
+            if (currentRequest.getBill().getCurrentRequest() != null) {
+                currentRequest.getBill().setCurrentRequest(null);
+                billFacade.edit(currentRequest.getBill());
+            }
+
+            //Update Individual Bills of Batch Bill
+            if (bills != null) {
+                for (Bill b : bills) {
+                    b.setCurrentRequest(null);
+                    billFacade.edit(b);
+                }
+            }
+        }
+
+        JsfUtil.addSuccessMessage("Rejected successfully");
+
+    }
+
+    public void complteRequest(Request req) {
+
+        req.setCompletedBy(sessionController.getLoggedUser());
+        req.setCompletedAt(new Date());
+        req.setStatus(RequestStatus.COMPLETED);
+
+        requestService.save(req, sessionController.getLoggedUser());
+
+        //Update Batch Bill
+        req.getBill().setCurrentRequest(null);
+        billFacade.edit(req.getBill());
+
+        //Update Induvidual Bills of Batch Bil
+        if (bills != null) {
+            for (Bill b : bills) {
+                b.setCurrentRequest(null);
+                billFacade.edit(b);
+            }
+        }
+
+        JsfUtil.addSuccessMessage("Successfully Reject");
+    }
+
+    public void cancelRequestbyUser() {
+        if (currentRequest == null) {
+            JsfUtil.addErrorMessage("Not found for a request for Approvel");
+            return;
+        }
+        if (currentRequest.getBill() == null) {
+            JsfUtil.addErrorMessage("Bill not found for request Cancel");
+            return;
+        }
+
+        currentRequest.setCancelled(true);
+        currentRequest.setCancelledAt(new Date());
+        currentRequest.setCancelledBy(sessionController.getLoggedUser());
+        currentRequest.setCancellationReason(comment);
+        currentRequest.setStatus(RequestStatus.CANCELLED);
+        requestService.save(currentRequest, sessionController.getLoggedUser());
+
+        if (currentRequest.getRequestType() != PETTYCASH_APROVEL) {
+            //Update Batch Bill
+            currentRequest.getBill().setCurrentRequest(null);
+            billFacade.edit(currentRequest.getBill());
+
+            //Update Induvidual Bills of Batch Bil
+            if (bills != null) {
+                for (Bill b : bills) {
+                    b.setCurrentRequest(null);
+                    billFacade.edit(b);
+                }
+            }
+        }
+
+        JsfUtil.addSuccessMessage("Cancelled successfully");
+    }
+
+    public String getBillNo() {
+        return billNo;
+    }
+
+    public void setBillNo(String billNo) {
+        this.billNo = billNo;
+    }
+
+    public String getBhtNo() {
+        return bhtNo;
+    }
+
+    public void setBhtNo(String bhtNo) {
+        this.bhtNo = bhtNo;
+    }
+
+    public String getRequestNo() {
+        return requestNo;
+    }
+
+    public void setRequestNo(String requestNo) {
+        this.requestNo = requestNo;
+    }
+
+    public PatientEncounter getPatientEncounter() {
+        return patientEncounter;
+    }
+
+    public void setPatientEncounter(PatientEncounter patientEncounter) {
+        this.patientEncounter = patientEncounter;
+    }
+
+    public PettyCashType getPettyCashPayeeType() {
+        return pettyCashPayeeType;
+    }
+
+    public void setPettyCashPayeeType(PettyCashType pettyCashPayeeType) {
+        this.pettyCashPayeeType = pettyCashPayeeType;
+    }
+
+    public String getPettyCashFinancialYear() {
+        return pettyCashFinancialYear;
+    }
+
+    public void setPettyCashFinancialYear(String pettyCashFinancialYear) {
+        this.pettyCashFinancialYear = pettyCashFinancialYear;
+    }
+
+    public String getPettyCashReceiptNo() {
+        return pettyCashReceiptNo;
+    }
+
+    public void setPettyCashReceiptNo(String pettyCashReceiptNo) {
+        this.pettyCashReceiptNo = pettyCashReceiptNo;
+    }
+
+    private void splitPettyCashInvoiceNumber(String invoiceNumber) {
+        pettyCashFinancialYear = null;
+        pettyCashReceiptNo = null;
+        if (invoiceNumber == null) {
+            return;
+        }
+        int dashIndex = invoiceNumber.indexOf('-');
+        if (dashIndex < 0) {
+            pettyCashReceiptNo = invoiceNumber;
+            return;
+        }
+        pettyCashFinancialYear = invoiceNumber.substring(0, dashIndex);
+        pettyCashReceiptNo = invoiceNumber.substring(dashIndex + 1);
+    }
+
+    private String joinPettyCashInvoiceNumber() {
+        String year = pettyCashFinancialYear == null ? "" : pettyCashFinancialYear.trim();
+        String receipt = pettyCashReceiptNo == null ? "" : pettyCashReceiptNo.trim();
+        if (year.isEmpty() && receipt.isEmpty()) {
+            return null;
+        }
+        if (year.isEmpty()) {
+            return receipt;
+        }
+        return year + "-" + receipt;
+    }
+
+    private boolean isPettyCashFinancialYearValid() {
+        if (pettyCashFinancialYear == null || pettyCashFinancialYear.trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Financial Year is Missing");
+            return false;
+        }
+        String year = pettyCashFinancialYear.trim();
+        if (!year.matches("\\d{4}")) {
+            JsfUtil.addErrorMessage("Financial Year must be 4 digits.");
+            return false;
+        }
+        int firstYear = Integer.parseInt(year.substring(0, 2));
+        int secondYear = Integer.parseInt(year.substring(2, 4));
+        if (secondYear != (firstYear + 1) % 100) {
+            JsfUtil.addErrorMessage("Invalid Financial Year. The two halves must be consecutive years.");
+            return false;
+        }
+        pettyCashFinancialYear = year;
+        return true;
+    }
+
+    private PettyCashType resolvePettyCashPayeeType(Bill bill) {
+        if (bill.getStaff() != null) {
+            return PettyCashType.STAFF;
+        }
+        if (bill.getToDepartment() != null) {
+            return PettyCashType.DEPARTMENT;
+        }
+        if (bill.getPerson() != null) {
+            return PettyCashType.PERSON;
+        }
+        return PettyCashType.NEWPERSON;
+    }
+
+    public void savePettyCashBillDetails() {
+        if (currentRequest == null || currentRequest.getBill() == null) {
+            JsfUtil.addErrorMessage("Bill not found.");
+            return;
+        }
+        billFacade.edit(currentRequest.getBill());
+        JsfUtil.addSuccessMessage("Bill details saved successfully.");
+    }
+
+    @FacesConverter(forClass = Request.class)
+    public static class RequestConverter implements Converter {
+
+        @Override
+        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
+            if (value == null || value.length() == 0) {
+                return null;
+            }
+            RequestController controller = (RequestController) facesContext.getApplication().getELResolver().
+                    getValue(facesContext.getELContext(), null, "requestController");
+            return controller.getRequestFacade().find(getKey(value));
+        }
+
+        java.lang.Long getKey(String value) {
+            java.lang.Long key;
+            key = Long.valueOf(value);
+            return key;
+        }
+
+        String getStringKey(java.lang.Long value) {
+            StringBuilder sb = new StringBuilder();
+            sb.append(value);
+            return sb.toString();
+        }
+
+        @Override
+        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
+            if (object == null) {
+                return null;
+            }
+            if (object instanceof Request) {
+                Request o = (Request) object;
+                return getStringKey(o.getId());
+            } else {
+                throw new IllegalArgumentException("object " + object + " is of type "
+                        + object.getClass().getName() + "; expected type: " + Request.class.getName());
+            }
+        }
+    }
+    // </editor-fold>
+
+    // <editor-fold defaultstate="collapsed" desc="Getter & Setter">
+    public boolean isPrintPreview() {
+        return printPreview;
+    }
+
+    public Request getCurrentRequest() {
+        return currentRequest;
+    }
+
+    public void setCurrentRequest(Request currentRequest) {
+        this.currentRequest = currentRequest;
+    }
+
+    public RequestFacade getRequestFacade() {
+        return requestFacade;
+    }
+
+    public Patient getPatient() {
+        return patient;
+    }
+
+    public void setPatient(Patient patient) {
+        this.patient = patient;
+    }
+
+    public Bill getBatchBill() {
+        return batchBill;
+    }
+
+    public void setBatchBill(Bill batchBill) {
+        this.batchBill = batchBill;
+    }
+
+    public List<Bill> getBills() {
+        if (bills == null) {
+            bills = new ArrayList<>();
+        }
+        return bills;
+    }
+
+    public void setBills(List<Bill> bills) {
+        this.bills = bills;
+    }
+
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
+    }
+
+    public void setPrintPreview(boolean printPreview) {
+        this.printPreview = printPreview;
+    }
+
+    public Date getFromDate() {
+        if (fromDate == null) {
+            fromDate = CommonFunctions.getStartOfDay(new Date());
+        }
+        return fromDate;
+    }
+
+    public void setFromDate(Date fromDate) {
+        this.fromDate = fromDate;
+    }
+
+    public Date getToDate() {
+        if (toDate == null) {
+            toDate = CommonFunctions.getEndOfDay(new Date());
+        }
+        return toDate;
+    }
+
+    public void setToDate(Date toDate) {
+        this.toDate = toDate;
+    }
+
+    public List<Request> getRequests() {
+        if (requests == null) {
+            requests = new ArrayList<>();
+        }
+        return requests;
+    }
+
+    public void setRequests(List<Request> requests) {
+        this.requests = requests;
+    }
+
+    public RequestType getRequestType() {
+        return requestType;
+    }
+
+    public void setRequestType(RequestType requestType) {
+        this.requestType = requestType;
+    }
+
+    public RequestStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(RequestStatus status) {
+        this.status = status;
+    }
+
+    // </editor-fold>
+}

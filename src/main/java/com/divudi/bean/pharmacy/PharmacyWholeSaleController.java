@@ -1199,6 +1199,8 @@ public class PharmacyWholeSaleController implements Serializable, ControllerWith
                 tbi.setTmpQty(0);
                 getPharmaceuticalBillItemFacade().edit(tbi.getPharmaceuticalBillItem());
                 getBillItemFacade().edit(tbi);
+                JsfUtil.addErrorMessage(tbi.getItem().getName()
+                        + " - Could not deduct stock. Quantity set to zero. Another user may have already consumed this stock.");
             }
 
             getPreBill().getBillItems().add(tbi);
@@ -1276,6 +1278,29 @@ public class PharmacyWholeSaleController implements Serializable, ControllerWith
 
     }
 
+    private boolean checkAllBillItemStockAvailability() {
+        boolean hasIssue = false;
+        for (BillItem b : getPreBill().getBillItems()) {
+            if (b.getPharmaceuticalBillItem() == null || b.getPharmaceuticalBillItem().getStock() == null) {
+                continue;
+            }
+            Stock freshStock = getStockFacade().findWithoutCache(b.getPharmaceuticalBillItem().getStock().getId());
+            if (freshStock == null) {
+                JsfUtil.addErrorMessage(b.getItem().getName() + " - Stock record not found.");
+                hasIssue = true;
+                continue;
+            }
+            double requiredQty = Math.abs(b.getPharmaceuticalBillItem().getQtyInUnit()) + b.getPharmaceuticalBillItem().getFreeQtyInUnit();
+            if (freshStock.getStock() < requiredQty) {
+                JsfUtil.addErrorMessage(b.getItem().getName() + " - Insufficient stock. Available: "
+                        + freshStock.getStock().intValue() + ", Required: " + (int) requiredQty
+                        + ". Another user may have already sold this stock.");
+                hasIssue = true;
+            }
+        }
+        return hasIssue;
+    }
+
     public void settlePreBill() {
         editingQty = null;
 
@@ -1283,10 +1308,9 @@ public class PharmacyWholeSaleController implements Serializable, ControllerWith
             return;
         }
 
-//        if (checkAllBillItem()) {
-//            //   Before Settle Bill Current Bills Item Check Agian There is any otheruser change his qty
-//            return;
-//        }
+        if (checkAllBillItemStockAvailability()) {
+            return;
+        }
         if (errorCheckForPreBill()) {
             return;
         }
@@ -1294,6 +1318,16 @@ public class PharmacyWholeSaleController implements Serializable, ControllerWith
         calculateAllRates();
 
         Patient pt = savePatient();
+
+        if (pt != null) {
+            if (configOptionApplicationController.getBooleanValueByKey("Enable blacklist patient management in the system", false)
+                    && configOptionApplicationController.getBooleanValueByKey("Enable blacklist patient management for Pharmacy from the system", false)) {
+                if (pt.isBlacklisted()) {
+                    JsfUtil.addErrorMessage("This patient is blacklisted from the system. Can't Bill.");
+                    return;
+                }
+            }
+        }
 
         List<BillItem> tmpBillItems = getPreBill().getBillItems();
         getPreBill().setBillItems(null);
@@ -1347,9 +1381,90 @@ public class PharmacyWholeSaleController implements Serializable, ControllerWith
             }
         }
 
-//        if (checkAllBillItem()) {
-//            return;
-//        }
+        // Pharmacy Sale Validation - Patient and Patient Details
+        boolean patientRequired = configOptionApplicationController.getBooleanValueByKey("Patient is required in Pharmacy Retail Sale", false);
+
+        if (patientRequired) {
+            if (getPatient() == null || getPatient().getPerson() == null) {
+                JsfUtil.addErrorMessage("Patient is required.");
+                return;
+            }
+        }
+
+        // Only validate patient details if patient is required OR if patient exists
+        boolean hasPatient = getPatient() != null && getPatient().getPerson() != null;
+
+        if (hasPatient || patientRequired) {
+            if (configOptionApplicationController.getBooleanValueByKey("Patient Name is required in Pharmacy Retail Sale", false)) {
+                if (getPatient() == null || getPatient().getPerson() == null
+                        || getPatient().getPerson().getName() == null
+                        || getPatient().getPerson().getName().trim().isEmpty()) {
+                    JsfUtil.addErrorMessage("Patient name is required.");
+                    return;
+                }
+            }
+
+            if (configOptionApplicationController.getBooleanValueByKey("Patient Phone is required in Pharmacy Retail Sale", false)) {
+                if (getPatient() == null || getPatient().getPerson() == null) {
+                    JsfUtil.addErrorMessage("Patient is required.");
+                    return;
+                }
+                // Check both phone and mobile - at least one should be present
+                boolean hasPhone = getPatient().getPerson().getPhone() != null
+                        && !getPatient().getPerson().getPhone().trim().isEmpty();
+                boolean hasMobile = getPatient().getPerson().getMobile() != null
+                        && !getPatient().getPerson().getMobile().trim().isEmpty();
+
+                if (!hasPhone && !hasMobile) {
+                    JsfUtil.addErrorMessage("Patient phone number is required.");
+                    return;
+                }
+            }
+
+            if (configOptionApplicationController.getBooleanValueByKey("Patient Gender is required in Pharmacy Retail Sale", false)) {
+                if (getPatient() == null || getPatient().getPerson() == null
+                        || getPatient().getPerson().getSex() == null) {
+                    JsfUtil.addErrorMessage("Patient gender is required.");
+                    return;
+                }
+            }
+
+            if (configOptionApplicationController.getBooleanValueByKey("Patient Address is required in Pharmacy Retail Sale", false)) {
+                if (getPatient() == null || getPatient().getPerson() == null
+                        || getPatient().getPerson().getAddress() == null
+                        || getPatient().getPerson().getAddress().trim().isEmpty()) {
+                    JsfUtil.addErrorMessage("Patient address is required.");
+                    return;
+                }
+            }
+
+            if (configOptionApplicationController.getBooleanValueByKey("Patient Area is required in Pharmacy Retail Sale", false)) {
+                if (getPatient() == null || getPatient().getPerson() == null
+                        || getPatient().getPerson().getArea() == null) {
+                    JsfUtil.addErrorMessage("Patient area is required.");
+                    return;
+                }
+            }
+        }
+
+        if (configOptionApplicationController.getBooleanValueByKey("Enable blacklist patient management in the system", false)
+                && configOptionApplicationController.getBooleanValueByKey("Enable blacklist patient management for Pharmacy from the system", false)) {
+            if (getPatient() != null && getPatient().isBlacklisted()) {
+                JsfUtil.addErrorMessage("This patient is blacklisted from the system. Can't Bill.");
+                return;
+            }
+        }
+
+        if (configOptionApplicationController.getBooleanValueByKey("Referring Doctor is required in Pharmacy Retail Sale", false)) {
+            if (getPreBill() == null || getPreBill().getReferredBy() == null) {
+                JsfUtil.addErrorMessage("Referring doctor is required.");
+                return;
+            }
+        }
+
+        if (checkAllBillItemStockAvailability()) {
+            return;
+        }
         if (errorCheckForSaleBill()) {
             return;
         }
@@ -1672,7 +1787,6 @@ public class PharmacyWholeSaleController implements Serializable, ControllerWith
 //                return (tr * priceMatrix.getDiscountPercent()) / 100;
 //            }
 //        }
-
         //PAYMENTSCHEME DISCOUNT
         if (getPaymentScheme() != null && discountAllowed) {
             PriceMatrix priceMatrix = getPriceMatrixController().getPaymentSchemeDiscount(getPaymentMethod(), getPaymentScheme(), getSessionController().getDepartment(), bi.getItem());

@@ -20,6 +20,8 @@ import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillFee;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Item;
 import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.entity.PatientItem;
@@ -92,6 +94,9 @@ public class InwardTimedItemController implements Serializable {
     Date toDate;
     double total;
     double totalMins;
+    private Institution institution;
+    private Institution site;
+    private Department department;
 
     public BillNumberGenerator getBillNumberBean() {
         return billNumberBean;
@@ -178,9 +183,23 @@ public class InwardTimedItemController implements Serializable {
                 + " and i.retired=false ";
 
         if (getCurrent().getItem() != null) {
-
             sql += " and i.item=:item";
             m.put("item", getCurrent().getItem());
+        }
+
+        if (institution != null) {
+            sql += " and i.patientEncounter.institution=:ins";
+            m.put("ins", institution);
+        }
+
+        if (site != null) {
+            sql += " and i.patientEncounter.department.site=:site";
+            m.put("site", site);
+        }
+
+        if (department != null) {
+            sql += " and i.patientEncounter.department=:dept";
+            m.put("dept", department);
         }
 
         m.put("fd", frmDate);
@@ -560,7 +579,6 @@ public class InwardTimedItemController implements Serializable {
         }
         double count = getInwardBean().calCount(timedItemFee, getCurrent().getPatientEncounter().getDateOfAdmission(), getCurrent().getToTime());
 
-        System.out.println("getCurrent().getPatientEncounter().isForiegner() = " + getCurrent().getPatientEncounter().isForiegner());
 
         if (getCurrent().getPatientEncounter().isForiegner()) {
             getCurrent().setServiceValue(count * timedItemFee.getFfee());
@@ -618,13 +636,10 @@ public class InwardTimedItemController implements Serializable {
         System.out.println("pic.getPatientEncounter().isForiegner() = " + pic.getPatientEncounter().isForiegner());
 
         if (pic.getPatientEncounter().isForiegner()) {
-            System.out.println("timedItemFee.getFfee() = " + timedItemFee.getFfee());
             pic.setServiceValue(count * timedItemFee.getFfee());
         } else {
-            System.out.println("timedItemFee.getFee() = " + timedItemFee.getFee());
             pic.setServiceValue(count * timedItemFee.getFee());
         }
-        System.out.println("pic.getServiceValue() = " + pic.getServiceValue());
 
         getPatientItemFacade().edit(pic);
 
@@ -742,6 +757,34 @@ public class InwardTimedItemController implements Serializable {
 
     public void setTotalMins(double totalMins) {
         this.totalMins = totalMins;
+    }
+
+    public Institution getInstitution() {
+        return institution;
+    }
+
+    public void setInstitution(Institution institution) {
+        this.institution = institution;
+    }
+
+    public Institution getSite() {
+        return site;
+    }
+
+    public void setSite(Institution site) {
+        this.site = site;
+    }
+
+    public Department getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(Department department) {
+        this.department = department;
+    }
+
+    public void clearDepartment() {
+        department = null;
     }
 
 }

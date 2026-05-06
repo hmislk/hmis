@@ -16,7 +16,9 @@
     <cc:implementation>
         <div class="d-flex gap-2 mt-2" >
             <h:panelGroup rendered="#{cc.attrs.valueRequired}" class="" layout="block"  >
-                <p:inputText autocomplete="off"   value="#{cc.attrs.paymentMethodData.creditCard.totalValue}" style="width: 7em!important;" class="w-100" id="txtVal" >
+                <p:inputText autocomplete="off"   value="#{cc.attrs.paymentMethodData.creditCard.totalValue}" style="width: 7em!important;" class="w-100" id="txtVal"
+                             required="true"
+                             requiredMessage="Value is required" >
                     <p:ajax process="@this" ></p:ajax>
                     <f:convertNumber pattern="#,##0.00" />
                 </p:inputText>
@@ -28,15 +30,21 @@
                 style="width: 100px"
                 value="#{cc.attrs.paymentMethodData.creditCard.no}"
                 id="refno"
-                placeholder="Card Last 4 Digits">
+                placeholder="Card Last 4 Digits"
+                required="true"
+                requiredMessage="Card Last 4 Digits is required">
                 <p:ajax process="@this" ></p:ajax>
             </p:inputText>
-            <p:selectOneMenu style="width: 150px" value="#{cc.attrs.paymentMethodData.creditCard.institution}" filter="true" filterMatchMode="contains"  >
+            <p:selectOneMenu style="width: 150px" value="#{cc.attrs.paymentMethodData.creditCard.institution}" filter="true" filterMatchMode="contains"
+                             required="true"
+                             requiredMessage="Bank is required"  >
                 <f:selectItem itemLabel="Select Bank"/>
                 <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
                 <p:ajax process="@this" ></p:ajax>
             </p:selectOneMenu>
-            <p:inputText value="#{cc.attrs.paymentMethodData.creditCard.comment}" placeholder="Enter Credit Card Comments" ></p:inputText>
+            <p:inputText value="#{cc.attrs.paymentMethodData.creditCard.comment}" placeholder="Enter Credit Card Comments"
+                         required="true"
+                         requiredMessage="Comments are required" ></p:inputText>
         </div>
 
     </cc:implementation>

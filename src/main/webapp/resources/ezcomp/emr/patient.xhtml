@@ -16,9 +16,25 @@
         <div class="row">
             <div class="col-md-12">
                 <div class="row">
-                    <div class="col-md-2"><p:outputLabel value="Name"  /></div>
-                    <div class="col-md-2 justify-content-end d-flex"><p:outputLabel value=":"/></div>
-                    <div class="col-md-8"><p:outputLabel value="#{cc.attrs.patient.person.nameWithTitle}"/></div>
+
+                    <div class="col-md-2"><p:outputLabel value="Name" rendered="#{not empty cc.attrs.patient.person.nameWithTitle}" /></div>
+                    <div class="col-md-2 justify-content-end d-flex"><h:outputLabel value=" : " class="mx-3"/></div>
+                    <div class="col-md-8">
+                    <h:panelGroup class="d-flex">
+
+                        <p:outputLabel class="ml-4" value="#{cc.attrs.patient.person.nameWithTitle}" rendered="#{not empty cc.attrs.patient.person.nameWithTitle and !configOptionApplicationController.getBooleanValueByKey('Enable patient specific status management in the system')}" />
+
+                        <p:badge rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable patient specific status management in the system')}" style="transform: translate(110%, -40%);background-color: #{empty cc.attrs.patient.specificStatus ? 'white' : '#FF401F'} ; font-style: italic;" value="#{cc.attrs.patient.specificStatus}" severity="danger">
+                            <p:outputLabel value="#{cc.attrs.patient.person.nameWithTitle}" rendered="#{not empty cc.attrs.patient.person.nameWithTitle}" />
+                        </p:badge> 
+
+                        <p:badge rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable blacklist patient management in the system') and configOptionApplicationController.getBooleanValueByKey('Enable blacklist patient management for OPD from the system', false)}" style="transform: translate(110%, -40%);background-color: #{cc.attrs.patient.blacklisted ? 'black' : 'white'} ; font-style: italic; font-size: 15px" value="X #{cc.attrs.patient.blacklisted ? 'Blacklisted' : 'Active'}" severity="danger">
+
+                        </p:badge>
+
+                    </h:panelGroup>
+                        </div>
+
                 </div>
 
                 <div class="row">

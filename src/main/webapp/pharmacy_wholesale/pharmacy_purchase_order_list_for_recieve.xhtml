@@ -103,13 +103,13 @@
                 <p:column headerText="GRNS">                   
                     <p:dataTable var="b" value="#{p.listOfBill}">                        
                         <p:column  >
-                            <h:commandLink action="pharmacy_reprint_grn"  >                                
+                            <h:commandLink action="#{pharmacyBillSearch.navigateToPharmacyGrnReprint()}"  >                                
                                 <h:outputLabel  value="#{b.deptId}"/>
                                 <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{b}"/>
                             </h:commandLink>
                         </p:column>
                         <p:column >
-                            <h:commandLink action="pharmacy_reprint_grn" >
+                            <h:commandLink action="#{pharmacyBillSearch.navigateToPharmacyGrnReprint()}" >
                                 <h:outputLabel value="#{b.createdAt}" >
                                     <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
@@ -133,7 +133,7 @@
                         </p:column> 
 
                         <p:column >
-                            <h:commandLink action="pharmacy_reprint_grn" >
+                            <h:commandLink action="#{pharmacyBillSearch.navigateToPharmacyGrnReprint()}" >
                                 <h:outputLabel value="#{b.creater.webUserPerson.name}" >                                      
                                 </h:outputLabel>
                                 <f:setPropertyActionListener value="#{b}" target="#{pharmacyBillSearch.bill}"/>
@@ -153,13 +153,13 @@
                             </h:panelGroup>
                         </p:column> 
                         <p:column >
-                            <h:commandLink action="pharmacy_reprint_grn"  >   
+                            <h:commandLink action="#{pharmacyBillSearch.navigateToPharmacyGrnReprint()}"  >   
                                 <h:outputLabel  value="#{b.invoiceNumber}"/>
                                 <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{b}"/>
                             </h:commandLink>
                         </p:column>
                         <p:column >
-                            <h:commandLink action="pharmacy_reprint_grn"  >   
+                            <h:commandLink action="#{pharmacyBillSearch.navigateToPharmacyGrnReprint()}"  >   
                                 <h:outputLabel value="#{b.netTotal}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>

@@ -1,7 +1,13 @@
 package com.divudi.bean.common;
 
 import com.divudi.bean.cashTransaction.DrawerController;
+import com.divudi.bean.common.PageMetadataRegistry;
 import com.divudi.core.data.BillClassType;
+import com.divudi.core.data.OptionScope;
+import com.divudi.core.data.admin.ConfigOptionInfo;
+import com.divudi.core.data.admin.PageMetadata;
+import com.divudi.core.data.admin.PrivilegeInfo;
+import javax.annotation.PostConstruct;
 import com.divudi.core.data.BillNumberSuffix;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.PaymentMethod;
@@ -96,6 +102,8 @@ public class StaffPaymentBillController implements Serializable {
     private BillBeanController billBean;
     @Inject
     DrawerController drawerController;
+    @Inject
+    PageMetadataRegistry pageMetadataRegistry;
 
     private List<BillComponent> billComponents;
     private List<BillItem> billItems;
@@ -130,6 +138,70 @@ public class StaffPaymentBillController implements Serializable {
     private List<BillFee> tblBillFees;
     private LazyDataModel<BillFee> dueBillFee;
     private boolean allowUserToSelectPayWithholdingTaxDuringProfessionalPayments;
+
+    @PostConstruct
+    public void init() {
+        registerPageMetadata();
+    }
+
+    private void registerPageMetadata() {
+        if (pageMetadataRegistry == null) {
+            return;
+        }
+
+        PageMetadata metadata = new PageMetadata();
+        metadata.setPagePath("opd/professional_payments/payment_staff_bill");
+        metadata.setPageName("OPD Doctor Payment Voucher");
+        metadata.setDescription("OPD professional payment settlement and voucher printing with detailed, summarised, and summary formats");
+        metadata.setControllerClass("StaffPaymentBillController");
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "OPD Doctor payment bill is A4 paper",
+            "Uses A4 paper format for OPD Doctor Payment voucher (default enabled)",
+            "opd/professional_payments/payment_staff_bill",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "OPD Doctor payment bill is five five paper.",
+            "Uses 5x5 inch paper format with headings for OPD Doctor Payment voucher",
+            "opd/professional_payments/payment_staff_bill",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "OPD Doctor payment bill is POS paper",
+            "Uses POS receipt format for OPD Doctor Payment voucher",
+            "opd/professional_payments/payment_staff_bill",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Hide the details on the OPD Doctor Payment Bill",
+            "Hides detailed line items on the OPD Doctor Payment Bill",
+            "opd/professional_payments/payment_staff_bill",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Hide the Header Details on the OPD Doctor Payment 5x5 Bill",
+            "Hides the header details on the OPD Doctor Payment 5x5 paper format",
+            "opd/professional_payments/payment_staff_bill",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addPrivilege(new PrivilegeInfo(
+            "Admin",
+            "Administrative access to page configuration management - displays the Config button"
+        ));
+
+        metadata.addPrivilege(new PrivilegeInfo(
+            "ChangeReceiptPrintingPaperTypes",
+            "Permission to access printer configuration settings dialog for changing OPD Doctor Payment receipt paper formats"
+        ));
+
+        pageMetadataRegistry.registerPage(metadata);
+    }
 
     public Title[] getTitle() {
         return Title.values();
@@ -280,6 +352,7 @@ public class StaffPaymentBillController implements Serializable {
         btcs.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
         btcs.add(BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT);
         btcs.add(BillTypeAtomic.CC_BILL);
+        btcs.add(BillTypeAtomic.MISCELLANEOUS_STAFF_FEE_BILL);
         String jpql;
         HashMap params = new HashMap();
         jpql = "select bf "
@@ -350,6 +423,7 @@ public class StaffPaymentBillController implements Serializable {
             btcs.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
             btcs.add(BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT);
             btcs.add(BillTypeAtomic.CC_BILL);
+            btcs.add(BillTypeAtomic.MISCELLANEOUS_STAFF_FEE_BILL);
             String sql;
             HashMap h = new HashMap();
             sql = "select b from BillFee b where "
@@ -395,6 +469,7 @@ public class StaffPaymentBillController implements Serializable {
             btcs.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
             btcs.add(BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT);
             btcs.add(BillTypeAtomic.CC_BILL);
+            btcs.add(BillTypeAtomic.MISCELLANEOUS_STAFF_FEE_BILL);
             String jpql;
             HashMap params = new HashMap();
             jpql = "select bf from BillFee bf where "
@@ -790,7 +865,7 @@ public class StaffPaymentBillController implements Serializable {
             getFacade().edit(current);
             JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            JsfUtil.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addErrorMessage("Nothing to Delete");
         }
         recreateModel();
 //        getItems();
@@ -823,15 +898,7 @@ public class StaffPaymentBillController implements Serializable {
     }
 
     public void createBillFeePaymentAndPayment(BillFee bf, Payment p) {
-        BillFeePayment bfp = new BillFeePayment();
-        bfp.setBillFee(bf);
-        bfp.setAmount(bf.getSettleValue());
-        bfp.setInstitution(getSessionController().getInstitution());
-        bfp.setDepartment(getSessionController().getDepartment());
-        bfp.setCreater(getSessionController().getLoggedUser());
-        bfp.setCreatedAt(new Date());
-        bfp.setPayment(p);
-        getBillFeePaymentFacade().create(bfp);
+        // BillFeePayment is deprecated and no longer used
     }
 
     public BillFee saveBillFee(BillItem bi, Payment p) {

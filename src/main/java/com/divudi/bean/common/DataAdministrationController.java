@@ -6,7 +6,12 @@
 package com.divudi.bean.common;
 
 import com.divudi.bean.lab.InvestigationController;
+import com.divudi.core.data.BillClassType;
+import com.divudi.core.data.BillNumberSuffix;
 import com.divudi.core.data.BillType;
+import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.entity.BilledBill;
 import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.dataStructure.BillListWithTotals;
 import com.divudi.core.data.dataStructure.SearchKeyword;
@@ -18,6 +23,7 @@ import com.divudi.core.entity.lab.PatientInvestigation;
 import com.divudi.core.entity.lab.PatientReport;
 import com.divudi.core.entity.lab.PatientReportItemValue;
 import com.divudi.core.entity.pharmacy.Amp;
+import com.divudi.core.entity.pharmacy.Ampp;
 import com.divudi.core.entity.pharmacy.ItemBatch;
 import com.divudi.core.entity.pharmacy.PharmaceuticalItemCategory;
 import com.divudi.core.facade.BillComponentFacade;
@@ -26,7 +32,9 @@ import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillFeeFacade;
 import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.BillNumberFacade;
+import com.divudi.core.facade.AuditDatabaseFacade;
 import com.divudi.core.facade.CategoryFacade;
+import com.divudi.core.facade.DatabaseMigrationFacade;
 import com.divudi.core.facade.DepartmentFacade;
 import com.divudi.core.facade.InstitutionFacade;
 import com.divudi.core.facade.ItemBatchFacade;
@@ -85,9 +93,14 @@ import com.divudi.core.facade.StockVarientBillItemFacade;
 import com.divudi.core.facade.UserStockContainerFacade;
 import com.divudi.core.facade.UserStockFacade;
 import com.divudi.core.util.CommonFunctions;
-import java.io.Serializable;
+import com.divudi.service.DatabaseMigrationService;
+import com.divudi.service.LogFileService;
+import com.divudi.service.BillService;
 import java.sql.SQLSyntaxErrorException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -99,11 +112,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.context.FacesContext;
 import javax.inject.Inject;
-import javax.inject.Named;
 import javax.persistence.Entity;
 import javax.persistence.PersistenceException;
 import javax.persistence.TemporalType;
@@ -113,6 +124,16 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.reflections.Reflections;
+
+import java.io.IOException;
+import java.io.Serializable;
+import java.nio.file.*;
+import java.time.*;
+import java.util.*;
+import java.util.stream.Collectors;
+import javax.ejb.EJB;
+import javax.inject.Named;
+import org.primefaces.model.StreamedContent;
 
 /**
  *
@@ -205,9 +226,17 @@ public class DataAdministrationController implements Serializable {
     BillSearch billSearch;
     @Inject
     InstitutionController institutionController;
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    com.divudi.service.CacheAdminService cacheAdminService;
+    @Inject
+    com.divudi.service.pharmacy.PharmacyCostingService pharmacyCostingService;
 
     @EJB
     ItemFacade itemFacade;
+    @EJB
+    AuditDatabaseFacade auditDatabaseFacade;
     @EJB
     CategoryFacade categoryFacade;
     @EJB
@@ -243,6 +272,22 @@ public class DataAdministrationController implements Serializable {
 
     @EJB
     BillEjb billEjb;
+
+    @EJB
+    private LogFileService logService;
+    @EJB
+    private BillService billService;
+    @EJB
+    private DatabaseMigrationService databaseMigrationService;
+    @EJB
+    private DatabaseMigrationFacade databaseMigrationFacade;
+    @EJB
+    private com.divudi.core.facade.BillFinanceDetailsFacade billFinanceDetailsFacade;
+    @EJB
+    private com.divudi.core.facade.BillItemFinanceDetailsFacade billItemFinanceDetailsFacade;
+
+    @Inject
+    WebUserController webUserController;
 
     List<Bill> bills;
     List<Bill> selectedBills;
@@ -282,6 +327,21 @@ public class DataAdministrationController implements Serializable {
     private String alterSql;
     private String executionFeedback;
 
+    // Database selection and results for both databases
+    private boolean runOnMainDatabase = true;
+    private boolean runOnAuditDatabase = true;
+    private String mainDatabaseErrors;
+    private String auditDatabaseErrors;
+    private String mainDatabaseSuggestedSql;
+    private String auditDatabaseSuggestedSql;
+    private String mainDatabaseExecutionFeedback;
+    private String auditDatabaseExecutionFeedback;
+
+    // Wiki DDL version tracking
+    private static final String WIKI_DDL_URL = "https://github.com/hmislk/hmis/wiki/Database-Schema-DDL-Generation-Guide";
+    private static final String CONFIG_KEY_DDL_VERSION = "DATABASE_DDL_VERSION";
+    private String wikiDdlVersion;
+
     Date fromDate;
     Date toDate;
 
@@ -295,6 +355,51 @@ public class DataAdministrationController implements Serializable {
     private String progressMessage;
     int processedRecords = 0;
     int totalRecords = 0;
+
+    private List<Path> logs;
+    private Path selected;
+    private Path logDir;
+
+    private Path findLogDir(String p) {
+        return Paths.get(p.trim()).normalize();
+    }
+
+    private String getExceptionMessage(Throwable throwable) {
+        if (throwable == null) {
+            return "Unknown exception";
+        }
+        return throwable.getMessage() != null ? throwable.getMessage() : throwable.getClass().getName();
+    }
+
+    public void refresh() {
+        try {
+            String configuredPath = getPayaraLogLocation();
+            if (configuredPath == null || configuredPath.trim().isEmpty()) {
+                logs = Collections.emptyList();
+                JsfUtil.addErrorMessage("Payara log location is not configured.");
+                return;
+            }
+            logDir = findLogDir(configuredPath);
+
+            if (Files.isDirectory(logDir)) {
+                logs = logService.list(logDir, fromDate, toDate);
+            } else {
+                logs = Collections.emptyList();
+                JsfUtil.addErrorMessage("Log directory not found. Please set the configuration option for Payara Log File Path");
+            }
+        } catch (IOException e) {
+            logs = Collections.emptyList();
+            JsfUtil.addErrorMessage("Error accessing log directory: " + getExceptionMessage(e));
+        }
+    }
+
+    public StreamedContent downloadFile(Path file) throws IOException {
+        return logService.download(file);
+    }
+
+    private static LocalDate toLocalDate(Date d) {
+        return d.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+    }
 
     public void convertNameToCode() {
         code = CommonFunctions.nameToCode(name);
@@ -352,6 +457,8 @@ public class DataAdministrationController implements Serializable {
 
     @Inject
     InvestigationController investigationController;
+    @Inject
+    BillController billController;
 
     public void addInstitutionToInvestigationsWithoutInstitution() {
         List<Investigation> lst = investigationController.getItems();
@@ -363,10 +470,1364 @@ public class DataAdministrationController implements Serializable {
         }
     }
 
+    public void assignPharmacyDepartmentTypeToPharmaceuticalItems() {
+        billController.setOutput(""); // Reset output
+
+        try {
+            Map<String, Object> params = new HashMap<>();
+            String jpql = "SELECT p FROM PharmaceuticalItem p WHERE p.departmentType IS NULL AND p.retired = false";
+            List<PharmaceuticalItem> items = pharmaceuticalItemFacade.findByJpql(jpql, params);
+
+            billController.setOutput("Found " + items.size() + " PharmaceuticalItem(s) without department type.\n");
+
+            int updatedCount = 0;
+            for (PharmaceuticalItem item : items) {
+                item.setDepartmentType(DepartmentType.Pharmacy);
+                pharmaceuticalItemFacade.edit(item);
+                updatedCount++;
+            }
+
+            billController.setOutput(billController.getOutput() + "Successfully updated " + updatedCount + " PharmaceuticalItem(s) with Pharmacy department type.");
+        } catch (Exception e) {
+            billController.setOutput("Error updating PharmaceuticalItems: " + getExceptionMessage(e));
+            e.printStackTrace();
+        }
+    }
+
+    public void fillBillDepartmentTypeFromBillItems() {
+        billController.setOutput("");
+        try {
+            String jpql = "SELECT b FROM Bill b WHERE b.departmentType IS NULL AND b.retired = false";
+            List<Bill> bills = billFacade.findByJpql(jpql, new HashMap<>());
+            billController.setOutput("Found " + bills.size() + " bill(s) with null department type.\n");
+
+            int updated = 0;
+            int skipped = 0;
+            for (Bill bill : bills) {
+                Map<String, Object> params = new HashMap<>();
+                params.put("bill", bill);
+                String biJpql = "SELECT bi FROM BillItem bi WHERE bi.bill = :bill AND bi.retired = false ORDER BY bi.id ASC";
+                List<BillItem> items = billItemFacade.findByJpql(biJpql, params);
+                DepartmentType dt = null;
+                for (BillItem bi : items) {
+                    if (bi.getItem() != null && bi.getItem().getDepartmentType() != null) {
+                        dt = bi.getItem().getDepartmentType();
+                        break;
+                    }
+                }
+                if (dt != null) {
+                    bill.setDepartmentType(dt);
+                    billFacade.edit(bill);
+                    updated++;
+                } else {
+                    skipped++;
+                }
+            }
+            billController.setOutput(billController.getOutput()
+                    + "Updated: " + updated + " bill(s). Skipped (no item dept type found): " + skipped + " bill(s).");
+        } catch (Exception e) {
+            billController.setOutput("Error: " + getExceptionMessage(e));
+            e.printStackTrace();
+        }
+    }
+
+    public void correctCancellationAndRefundPaymentValues() {
+        billController.setOutput("");
+
+        StringBuilder output = new StringBuilder();
+        try {
+            Map<String, Object> params = new HashMap<>();
+            params.put("ret", false);
+            params.put("types", Arrays.asList(BillClassType.CancelledBill, BillClassType.RefundBill));
+
+            StringBuilder jpql = new StringBuilder("SELECT b FROM Bill b WHERE b.retired = :ret AND b.billClassType IN :types");
+            if (fromDate != null) {
+                jpql.append(" AND b.createdAt >= :fromDate");
+                params.put("fromDate", fromDate);
+            }
+            if (toDate != null) {
+                jpql.append(" AND b.createdAt <= :toDate");
+                params.put("toDate", toDate);
+            }
+
+            List<Bill> billsToProcess = billFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+
+            if (billsToProcess == null || billsToProcess.isEmpty()) {
+                billController.setOutput("No cancellation or refund bills found for payment correction.");
+                return;
+            }
+
+            int billsUpdated = 0;
+            int paymentsCorrected = 0;
+
+            for (Bill candidate : billsToProcess) {
+                Bill bill = billService.reloadBill(candidate);
+                if (bill == null) {
+                    continue;
+                }
+
+                List<Payment> payments = billService.fetchBillPayments(bill);
+                if (payments == null || payments.isEmpty()) {
+                    continue;
+                }
+
+                boolean billHadCorrections = false;
+                for (Payment payment : payments) {
+                    if (payment == null || payment.isRetired()) {
+                        continue;
+                    }
+
+                    double paidValue = payment.getPaidValue();
+                    if (paidValue > 0d) {
+                        payment.setPaidValue(-Math.abs(paidValue));
+                        paymentFacade.edit(payment);
+                        paymentsCorrected++;
+                        billHadCorrections = true;
+                    }
+                }
+
+                if (billHadCorrections) {
+                    billsUpdated++;
+                }
+            }
+
+            output.append("Processed ").append(billsToProcess.size()).append(" cancellation/refund bills.\n");
+            if (fromDate != null || toDate != null) {
+                output.append("Filtered by createdAt ");
+                if (fromDate != null) {
+                    output.append("from ").append(fromDate);
+                }
+                if (fromDate != null && toDate != null) {
+                    output.append(" to ");
+                }
+                if (toDate != null) {
+                    if (fromDate == null) {
+                        output.append("up to ");
+                    }
+                    output.append(toDate);
+                }
+                output.append(".\n");
+            }
+            output.append("Updated ").append(billsUpdated).append(" bills and corrected ")
+                    .append(paymentsCorrected).append(" payment value(s).");
+            billController.setOutput(output.toString());
+        } catch (Exception e) {
+            billController.setOutput("Error correcting payment values: " + getExceptionMessage(e));
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Corrects the sign of BillFinanceDetails totals (totalPurchaseValue, totalCostValue, totalRetailSaleValue)
+     * for specific bill types. This method applies sign corrections based on bill type logic:
+     * - PHARMACY_GRN_RETURN: Values should be negative (stock moving out/returning to supplier)
+     *
+     * Future bill types can be added with their specific sign correction logic.
+     */
+    public void correctBillFinanceDetailsSigns() {
+        executionFeedback = "";
+        StringBuilder output = new StringBuilder();
+
+        try {
+            Map<String, Object> params = new HashMap<>();
+            params.put("ret", false);
+
+            // Start with PHARMACY_GRN_RETURN, can add more types later
+            List<BillTypeAtomic> billTypesToCorrect = Arrays.asList(
+                BillTypeAtomic.PHARMACY_GRN_RETURN
+            );
+
+            params.put("types", billTypesToCorrect);
+
+            StringBuilder jpql = new StringBuilder("SELECT b FROM Bill b WHERE b.retired = :ret AND b.billTypeAtomic IN :types");
+            if (fromDate != null) {
+                jpql.append(" AND b.createdAt >= :fromDate");
+                params.put("fromDate", fromDate);
+            }
+            if (toDate != null) {
+                jpql.append(" AND b.createdAt <= :toDate");
+                params.put("toDate", toDate);
+            }
+
+            List<Bill> billsToProcess = billFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+
+            if (billsToProcess == null || billsToProcess.isEmpty()) {
+                executionFeedback = "No bills found for the selected bill types and date range.";
+                return;
+            }
+
+            int billsProcessed = 0;
+            int billsCorrected = 0;
+
+            for (Bill bill : billsToProcess) {
+                if (bill == null || bill.getBillFinanceDetails() == null) {
+                    continue;
+                }
+
+                billsProcessed++;
+                boolean billWasCorrected = false;
+
+                BillFinanceDetails bfd = bill.getBillFinanceDetails();
+
+                // Apply sign correction based on bill type
+                if (bill.getBillTypeAtomic() == BillTypeAtomic.PHARMACY_GRN_RETURN) {
+                    // GRN Returns: Values should be NEGATIVE (stock moving out)
+                    billWasCorrected = correctToNegative(bfd);
+                }
+                // Future: Add more bill types here with different correction logic
+                // Example:
+                // else if (bill.getBillTypeAtomic() == BillTypeAtomic.PHARMACY_GRN) {
+                //     // GRN: Values should be POSITIVE (stock moving in)
+                //     billWasCorrected = correctToPositive(bfd);
+                // }
+
+                if (billWasCorrected) {
+                    billFacade.edit(bill);
+                    billsCorrected++;
+                }
+            }
+
+            output.append("Processed ").append(billsProcessed).append(" bills.\n");
+            if (fromDate != null || toDate != null) {
+                output.append("Date range: ");
+                if (fromDate != null) {
+                    output.append("from ").append(fromDate);
+                }
+                if (fromDate != null && toDate != null) {
+                    output.append(" to ");
+                }
+                if (toDate != null) {
+                    if (fromDate == null) {
+                        output.append("up to ");
+                    }
+                    output.append(toDate);
+                }
+                output.append(".\n");
+            }
+            output.append("Corrected ").append(billsCorrected).append(" bills with incorrect signs in BillFinanceDetails.");
+            executionFeedback = output.toString();
+
+        } catch (Exception e) {
+            executionFeedback = "Error correcting bill finance details signs: " + getExceptionMessage(e);
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Updates historical StockHistory records with missing rate and value data
+     * from their associated ItemBatch records.
+     *
+     * Fills in:
+     * - purchaseRate, retailRate, costRate from ItemBatch
+     * - stockPurchaseValue, stockSaleValue, stockCostValue (calculated from rates * stockQty)
+     *
+     * Only updates fields when existing values are null or zero (does not overwrite curated data).
+     * Only persists to database when changes are actually made.
+     * Uses the date range filter (fromDate/toDate) based on record creation timestamp.
+     */
+    public void updateHistoricalStockData() {
+        executionFeedback = "";
+        StringBuilder output = new StringBuilder();
+
+        try {
+            // Build JPQL query with JOIN FETCH to prevent N+1 queries
+            // Filter on createdAt (audit timestamp)
+            // Pre-filter to only records with missing data
+            Map<String, Object> params = new HashMap<>();
+            params.put("ret", false);
+
+            StringBuilder jpql = new StringBuilder(
+                "SELECT sh FROM StockHistory sh JOIN FETCH sh.itemBatch ib WHERE sh.retired = :ret"
+            );
+
+            if (fromDate != null) {
+                jpql.append(" AND sh.createdAt >= :fromDate");
+                params.put("fromDate", fromDate);
+            }
+            if (toDate != null) {
+                jpql.append(" AND sh.createdAt <= :toDate");
+                params.put("toDate", toDate);
+            }
+
+            // Only fetch records where at least one target field needs updating
+            jpql.append(" AND (sh.purchaseRate IS NULL OR sh.purchaseRate <= 0")
+                .append(" OR sh.retailRate IS NULL OR sh.retailRate <= 0")
+                .append(" OR sh.costRate IS NULL OR sh.costRate <= 0")
+                .append(" OR sh.stockPurchaseValue IS NULL OR sh.stockPurchaseValue <= 0")
+                .append(" OR sh.stockSaleValue IS NULL OR sh.stockSaleValue <= 0")
+                .append(" OR sh.stockCostValue IS NULL OR sh.stockCostValue <= 0)");
+
+            List<StockHistory> stockHistories = stockHistoryFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+
+            if (stockHistories == null || stockHistories.isEmpty()) {
+                executionFeedback = "No stock history records found for the selected date range.";
+                return;
+            }
+
+            int recordsProcessed = 0;
+            int recordsUpdated = 0;
+            int recordsSkipped = 0;
+
+            for (StockHistory sh : stockHistories) {
+                if (sh == null) {
+                    continue;
+                }
+
+                recordsProcessed++;
+
+                // Get the referenced ItemBatch
+                ItemBatch ib = sh.getItemBatch();
+                if (ib == null) {
+                    recordsSkipped++;
+                    continue;
+                }
+
+                // Check if any fields need updating and apply changes
+                boolean changed = markIfChanged(sh, ib);
+
+                // Only persist if changes were made
+                if (changed) {
+                    stockHistoryFacade.edit(sh);
+                    recordsUpdated++;
+                }
+            }
+
+            output.append("Historical Stock Data Update Results:\n");
+            output.append("Total records processed: ").append(recordsProcessed).append("\n");
+            output.append("Records updated: ").append(recordsUpdated).append("\n");
+            output.append("Records skipped (no ItemBatch): ").append(recordsSkipped).append("\n");
+
+            if (fromDate != null || toDate != null) {
+                output.append("\nDate range: ");
+                if (fromDate != null) {
+                    output.append("from ").append(fromDate);
+                }
+                if (fromDate != null && toDate != null) {
+                    output.append(" to ");
+                }
+                if (toDate != null) {
+                    if (fromDate == null) {
+                        output.append("up to ");
+                    }
+                    output.append(toDate);
+                }
+            }
+
+            executionFeedback = output.toString();
+
+        } catch (Exception e) {
+            executionFeedback = "Error updating historical stock data: " + getExceptionMessage(e);
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Helper method to check if a numeric field should be updated.
+     * Returns true if the existing value is null or <= 0.
+     *
+     * @param existing The current value in the database
+     * @param candidate The new value from ItemBatch (not used in check, but kept for API clarity)
+     * @return true if the field needs updating
+     */
+    private boolean shouldUpdate(Number existing, Number candidate) {
+        if (existing == null) {
+            return true;
+        }
+        double value = existing.doubleValue();
+        return value <= 0.0;
+    }
+
+    /**
+     * Applies selective updates to StockHistory from ItemBatch.
+     * Only updates fields when existing values are null or zero.
+     * Recomputes stock values only when underlying rates or stockQty changed.
+     *
+     * @param sh The StockHistory record to potentially update
+     * @param ib The ItemBatch containing source data
+     * @return true if any changes were made, false otherwise
+     */
+    private boolean markIfChanged(StockHistory sh, ItemBatch ib) {
+        boolean changed = false;
+
+        // Track if rates were updated (will trigger value recalculation)
+        boolean ratesUpdated = false;
+
+        // Update purchaseRate if missing
+        if (shouldUpdate(sh.getPurchaseRate(), ib.getPurcahseRate())) {
+            sh.setPurchaseRate(ib.getPurcahseRate());  // Note: typo in ItemBatch field name
+            changed = true;
+            ratesUpdated = true;
+        }
+
+        // Update retailRate if missing
+        if (shouldUpdate(sh.getRetailRate(), ib.getRetailsaleRate())) {
+            sh.setRetailRate(ib.getRetailsaleRate());
+            changed = true;
+            ratesUpdated = true;
+        }
+
+        // Update costRate if missing (handle null properly)
+        if (shouldUpdate(sh.getCostRate(), null)) {
+            Double costRate = ib.getCostRate();
+            sh.setCostRate(costRate != null ? costRate : 0.0);
+            changed = true;
+            ratesUpdated = true;
+        }
+
+        // Recalculate stock values only if rates were updated or values are missing
+        double stockQty = sh.getStockQty();
+
+        if (ratesUpdated || shouldUpdate(sh.getStockPurchaseValue(), null)) {
+            sh.setStockPurchaseValue(sh.getPurchaseRate() * stockQty);
+            changed = true;
+        }
+
+        if (ratesUpdated || shouldUpdate(sh.getStockSaleValue(), null)) {
+            sh.setStockSaleValue(sh.getRetailRate() * stockQty);
+            changed = true;
+        }
+
+        if (ratesUpdated || shouldUpdate(sh.getStockCostValue(), null)) {
+            sh.setStockCostValue(sh.getCostRate() * stockQty);
+            changed = true;
+        }
+
+        return changed;
+    }
+
+    public void addCompletedStateToBills() {
+        billController.setOutput("");
+
+        StringBuilder output = new StringBuilder();
+        try {
+            List<BillTypeAtomic> pharmacyBillTypes = Arrays.asList(
+                    BillTypeAtomic.PHARMACY_RETAIL_SALE,
+                    BillTypeAtomic.PHARMACY_RETAIL_SALE_WITHOUT_STOCKS,
+                    BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE,
+                    BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_WITHOUT_STOCKS,
+                    BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER,
+                    BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER,
+                    BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED,
+                    BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED_PRE,
+                    BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND,
+                    BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY,
+                    BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEM_PAYMENTS,
+                    BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS,
+                    BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS_PREBILL,
+                    BillTypeAtomic.PHARMACY_SALE_WITHOUT_STOCK,
+                    BillTypeAtomic.PHARMACY_SALE_WITHOUT_STOCK_PRE,
+                    BillTypeAtomic.PHARMACY_SALE_WITHOUT_STOCK_CANCELLED,
+                    BillTypeAtomic.PHARMACY_SALE_WITHOUT_STOCK_REFUND,
+                    BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_ADD_TO_STOCK_BATCH_BILL,
+                    BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_ADD_TO_STOCK,
+                    BillTypeAtomic.PHARMACY_WHOLESALE,
+                    BillTypeAtomic.PHARMACY_WHOLESALE_PRE,
+                    BillTypeAtomic.PHARMACY_WHOLESALE_CANCELLED,
+                    BillTypeAtomic.PHARMACY_WHOLESALE_REFUND,
+                    BillTypeAtomic.PHARMACY_ORDER,
+                    BillTypeAtomic.PHARMACY_ORDER_PRE,
+                    BillTypeAtomic.PHARMACY_ORDER_CANCELLED,
+                    BillTypeAtomic.PHARMACY_ORDER_APPROVAL,
+                    BillTypeAtomic.PHARMACY_ORDER_APPROVAL_CANCELLED,
+                    BillTypeAtomic.PHARMACY_DIRECT_PURCHASE,
+                    BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED,
+                    BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND,
+                    BillTypeAtomic.PHARMACY_GRN_PAYMENT,
+                    BillTypeAtomic.PHARMACY_GRN_PAYMENT_CANCELLED,
+                    BillTypeAtomic.PHARMACY_ADJUSTMENT,
+                    BillTypeAtomic.PHARMACY_ADJUSTMENT_CANCELLED,
+                    BillTypeAtomic.PHARMACY_PURCHASE_RATE_ADJUSTMENT,
+                    BillTypeAtomic.PHARMACY_RETAIL_RATE_ADJUSTMENT,
+                    BillTypeAtomic.PHARMACY_COST_RATE_ADJUSTMENT,
+                    BillTypeAtomic.PHARMACY_WHOLESALE_RATE_ADJUSTMENT,
+                    BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT,
+                    BillTypeAtomic.PHARMACY_STAFF_STOCK_ADJUSTMENT,
+                    BillTypeAtomic.PHARMACY_TRANSFER_REQUEST,
+                    BillTypeAtomic.PHARMACY_TRANSFER_REQUEST_PRE,
+                    BillTypeAtomic.PHARMACY_TRANSFER_REQUEST_CANCELLED,
+                    BillTypeAtomic.PHARMACY_ISSUE,
+                    BillTypeAtomic.PHARMACY_ISSUE_CANCELLED,
+                    BillTypeAtomic.PHARMACY_ISSUE_RETURN,
+                    BillTypeAtomic.PHARMACY_DIRECT_ISSUE,
+                    BillTypeAtomic.PHARMACY_DIRECT_ISSUE_CANCELLED,
+                    BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE,
+                    BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_CANCELLED,
+                    BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_RETURN,
+                    BillTypeAtomic.PHARMACY_RECEIVE,
+                    BillTypeAtomic.PHARMACY_RECEIVE_PRE,
+                    BillTypeAtomic.PHARMACY_RECEIVE_CANCELLED,
+                    BillTypeAtomic.MULTIPLE_PHARMACY_ORDER_CANCELLED_BILL,
+                    BillTypeAtomic.PHARMACY_RETURN_ITEMS_AND_PAYMENTS_CANCELLATION,
+                    BillTypeAtomic.PHARMACY_STOCK_EXPIRY_DATE_AJUSTMENT,
+                    BillTypeAtomic.PHARMACY_SNAPSHOT_GENERATION,
+                    BillTypeAtomic.PHARMACY_PHYSICAL_COUNT_ENTRY,
+                    BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT_BILL,
+                    BillTypeAtomic.PHARMACY_RETURN_WITHOUT_TREASING
+            );
+
+            Map<String, Object> params = new HashMap<>();
+            params.put("ret", false);
+            params.put("completed", false);
+            params.put("types", pharmacyBillTypes);
+
+            StringBuilder jpql = new StringBuilder("SELECT b FROM Bill b WHERE b.retired = :ret AND b.completed = :completed AND b.billTypeAtomic IN :types");
+            if (fromDate != null) {
+                jpql.append(" AND b.createdAt >= :fromDate");
+                params.put("fromDate", fromDate);
+            }
+            if (toDate != null) {
+                jpql.append(" AND b.createdAt <= :toDate");
+                params.put("toDate", toDate);
+            }
+
+            List<Bill> billsToProcess = billFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+
+            if (billsToProcess == null || billsToProcess.isEmpty()) {
+                billController.setOutput("No pharmacy bills found with completed=false for the given date range.");
+                return;
+            }
+
+            int billsUpdated = 0;
+            Date now = new Date();
+            WebUser currentUser = sessionController.getLoggedUser();
+
+            for (Bill candidate : billsToProcess) {
+                Bill bill = billService.reloadBill(candidate);
+                if (bill == null) {
+                    continue;
+                }
+
+                bill.setCompleted(true);
+                bill.setCompletedAt(now);
+                bill.setCompletedBy(currentUser);
+                billFacade.edit(bill);
+                billsUpdated++;
+            }
+
+            output.append("Processed ").append(billsToProcess.size()).append(" pharmacy bills.\n");
+            if (fromDate != null || toDate != null) {
+                output.append("Filtered by createdAt ");
+                if (fromDate != null) {
+                    output.append("from ").append(fromDate);
+                }
+                if (fromDate != null && toDate != null) {
+                    output.append(" to ");
+                }
+                if (toDate != null) {
+                    if (fromDate == null) {
+                        output.append("up to ");
+                    }
+                    output.append(toDate);
+                }
+                output.append(".\n");
+            }
+            output.append("Updated ").append(billsUpdated).append(" bills to completed=true.");
+            billController.setOutput(output.toString());
+        } catch (Exception e) {
+            billController.setOutput("Error adding completed state to bills: " + getExceptionMessage(e));
+            e.printStackTrace();
+        }
+    }
+
+    public void markStaleHandoverCreateBillsAsCompleted() {
+        executionFeedback = "";
+        try {
+            String jpql = "SELECT b FROM Bill b "
+                    + "WHERE b.retired = false "
+                    + "AND b.billTypeAtomic = :btype "
+                    + "AND (b.completed = false OR b.completed IS NULL) "
+                    + "AND (b.cancelled = false OR b.cancelled IS NULL) "
+                    + "AND b.referenceBill IS NOT NULL "
+                    + "AND b.referenceBill.completed = true";
+            Map<String, Object> params = new HashMap<>();
+            params.put("btype", BillTypeAtomic.FUND_SHIFT_HANDOVER_CREATE);
+            List<Bill> staleBills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+            if (staleBills == null || staleBills.isEmpty()) {
+                executionFeedback = "No stale handover create bills found. Nothing to update.";
+                return;
+            }
+            Date now = new Date();
+            WebUser currentUser = sessionController.getLoggedUser();
+            int updatedCount = 0;
+            for (Bill stale : staleBills) {
+                Bill bill = billFacade.find(stale.getId());
+                if (bill == null) {
+                    continue;
+                }
+                if (bill.isCompleted() || bill.isCancelled()) {
+                    continue;
+                }
+                if (bill.getReferenceBill() == null || !bill.getReferenceBill().isCompleted()) {
+                    continue;
+                }
+                bill.setCompleted(true);
+                bill.setCompletedAt(now);
+                bill.setCompletedBy(currentUser);
+                billFacade.edit(bill);
+                updatedCount++;
+            }
+            executionFeedback = "Marked " + updatedCount + " stale handover create bill(s) as completed.";
+        } catch (Exception e) {
+            executionFeedback = "Error: " + getExceptionMessage(e);
+        }
+    }
+
+    /**
+     * Helper method to correct BillFinanceDetails values to NEGATIVE
+     * Returns true if any correction was made
+     */
+    private boolean correctToNegative(BillFinanceDetails bfd) {
+        boolean corrected = false;
+
+        if (bfd.getTotalPurchaseValue() != null && bfd.getTotalPurchaseValue().compareTo(BigDecimal.ZERO) > 0) {
+            bfd.setTotalPurchaseValue(bfd.getTotalPurchaseValue().abs().negate());
+            corrected = true;
+        }
+
+        if (bfd.getTotalCostValue() != null && bfd.getTotalCostValue().compareTo(BigDecimal.ZERO) > 0) {
+            bfd.setTotalCostValue(bfd.getTotalCostValue().abs().negate());
+            corrected = true;
+        }
+
+        if (bfd.getTotalRetailSaleValue() != null && bfd.getTotalRetailSaleValue().compareTo(BigDecimal.ZERO) > 0) {
+            bfd.setTotalRetailSaleValue(bfd.getTotalRetailSaleValue().abs().negate());
+            corrected = true;
+        }
+
+        return corrected;
+    }
+
+    /**
+     * Helper method to correct BillFinanceDetails values to POSITIVE
+     * Returns true if any correction was made
+     * (Reserved for future use - e.g., for GRN bills)
+     */
+    private boolean correctToPositive(BillFinanceDetails bfd) {
+        boolean corrected = false;
+
+        if (bfd.getTotalPurchaseValue() != null && bfd.getTotalPurchaseValue().compareTo(BigDecimal.ZERO) < 0) {
+            bfd.setTotalPurchaseValue(bfd.getTotalPurchaseValue().abs());
+            corrected = true;
+        }
+
+        if (bfd.getTotalCostValue() != null && bfd.getTotalCostValue().compareTo(BigDecimal.ZERO) < 0) {
+            bfd.setTotalCostValue(bfd.getTotalCostValue().abs());
+            corrected = true;
+        }
+
+        if (bfd.getTotalRetailSaleValue() != null && bfd.getTotalRetailSaleValue().compareTo(BigDecimal.ZERO) < 0) {
+            bfd.setTotalRetailSaleValue(bfd.getTotalRetailSaleValue().abs());
+            corrected = true;
+        }
+
+        return corrected;
+    }
+
+    public void correctPharmacyDisbursementSigns() {
+        executionFeedback = "";
+        StringBuilder out = new StringBuilder();
+        try {
+            List<BillTypeAtomic> targetTypes = Arrays.asList(
+                    BillTypeAtomic.PHARMACY_ISSUE,
+                    BillTypeAtomic.PHARMACY_ISSUE_CANCELLED,
+                    BillTypeAtomic.PHARMACY_ISSUE_RETURN,
+                    BillTypeAtomic.PHARMACY_DIRECT_ISSUE,
+                    BillTypeAtomic.PHARMACY_DIRECT_ISSUE_CANCELLED,
+                    BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE,
+                    BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_CANCELLED,
+                    BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_RETURN,
+                    BillTypeAtomic.PHARMACY_RECEIVE,
+                    BillTypeAtomic.PHARMACY_RECEIVE_PRE,
+                    BillTypeAtomic.PHARMACY_RECEIVE_CANCELLED
+            );
+
+            Map<String, Object> params = new HashMap<>();
+            params.put("types", targetTypes);
+            StringBuilder jpql = new StringBuilder();
+            jpql.append("SELECT b FROM Bill b WHERE b.retired = false AND b.billTypeAtomic IN :types");
+            if (fromDate != null) {
+                jpql.append(" AND b.createdAt >= :fd");
+                params.put("fd", fromDate);
+            }
+            if (toDate != null) {
+                jpql.append(" AND b.createdAt <= :td");
+                params.put("td", toDate);
+            }
+
+            List<Bill> billsToFix = billFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+            int updatedBills = 0;
+            int updatedItems = 0;
+
+            for (Bill b : billsToFix) {
+                Bill bill = billService.reloadBill(b);
+                if (bill == null) {
+                    continue;
+                }
+                BillTypeAtomic bta = bill.getBillTypeAtomic();
+                if (bta == null) {
+                    continue;
+                }
+
+                // Fix BillFinanceDetails totals for purchase/retail/wholesale values
+                BillFinanceDetails bfd = bill.getBillFinanceDetails();
+                if (bfd != null) {
+                    boolean financeValueShouldBeNegative = isFinanceValueNegative(bta);
+                    // Purchase values
+                    bfd.setTotalPurchaseValue(applySign(bfd.getTotalPurchaseValue(), financeValueShouldBeNegative));
+                    bfd.setTotalPurchaseValueFree(applySign(bfd.getTotalPurchaseValueFree(), financeValueShouldBeNegative));
+                    bfd.setTotalPurchaseValueNonFree(applySign(bfd.getTotalPurchaseValueNonFree(), financeValueShouldBeNegative));
+                    // Free item values
+                    bfd.setTotalOfFreeItemValues(applySign(bfd.getTotalOfFreeItemValues(), financeValueShouldBeNegative));
+                    bfd.setTotalOfFreeItemValuesFree(applySign(bfd.getTotalOfFreeItemValuesFree(), financeValueShouldBeNegative));
+                    bfd.setTotalOfFreeItemValuesNonFree(applySign(bfd.getTotalOfFreeItemValuesNonFree(), financeValueShouldBeNegative));
+                    // Retail values
+                    bfd.setTotalRetailSaleValue(applySign(bfd.getTotalRetailSaleValue(), financeValueShouldBeNegative));
+                    bfd.setTotalRetailSaleValueFree(applySign(bfd.getTotalRetailSaleValueFree(), financeValueShouldBeNegative));
+                    bfd.setTotalRetailSaleValueNonFree(applySign(bfd.getTotalRetailSaleValueNonFree(), financeValueShouldBeNegative));
+                    // Wholesale values
+                    bfd.setTotalWholesaleValue(applySign(bfd.getTotalWholesaleValue(), financeValueShouldBeNegative));
+                    bfd.setTotalWholesaleValueFree(applySign(bfd.getTotalWholesaleValueFree(), financeValueShouldBeNegative));
+                    bfd.setTotalWholesaleValueNonFree(applySign(bfd.getTotalWholesaleValueNonFree(), financeValueShouldBeNegative));
+
+                    // Financial fields (gross/net totals) - opposite sign to qty
+                    // For ISSUE: positive (money comes in), for RECEIVE: negative (money goes out)
+                    boolean bfdFinancialNegative = !isBillAndItemTotalsPositive(bta);
+                    bfd.setLineGrossTotal(applySign(bfd.getLineGrossTotal(), bfdFinancialNegative));
+                    bfd.setBillGrossTotal(applySign(bfd.getBillGrossTotal(), bfdFinancialNegative));
+                    bfd.setGrossTotal(applySign(bfd.getGrossTotal(), bfdFinancialNegative));
+                    bfd.setLineNetTotal(applySign(bfd.getLineNetTotal(), bfdFinancialNegative));
+                    bfd.setBillNetTotal(applySign(bfd.getBillNetTotal(), bfdFinancialNegative));
+                    bfd.setNetTotal(applySign(bfd.getNetTotal(), bfdFinancialNegative));
+
+                    // Cost value fields - same sign as qty (stock valuation)
+                    bfd.setTotalCostValue(applySign(bfd.getTotalCostValue(), financeValueShouldBeNegative));
+                    bfd.setTotalCostValueFree(applySign(bfd.getTotalCostValueFree(), financeValueShouldBeNegative));
+                    bfd.setTotalCostValueNonFree(applySign(bfd.getTotalCostValueNonFree(), financeValueShouldBeNegative));
+                }
+
+                // Fix Bill totals
+                boolean billTotalsPositive = isBillAndItemTotalsPositive(bta);
+                bill.setTotal(applySign(bill.getTotal(), !billTotalsPositive));
+                bill.setNetTotal(applySign(bill.getNetTotal(), !billTotalsPositive));
+                bill.setBillTotal(applySign(bill.getBillTotal(), !billTotalsPositive));
+                bill.setGrantTotal(applySign(bill.getGrantTotal(), !billTotalsPositive));
+                bill.setGrnNetTotal(applySign(bill.getGrnNetTotal(), !billTotalsPositive));
+
+                // Fix items and related finance details/pharmaceutical values
+                List<BillItem> items = billService.fetchBillItems(bill);
+                if (items != null) {
+                    for (BillItem bi : items) {
+                        // BillItem values
+                        boolean itemTotalsPositive = isBillAndItemTotalsPositive(bta);
+                        bi.setNetRate(applySign(bi.getNetRate(), !itemTotalsPositive));
+                        bi.setGrossValue(applySign(bi.getGrossValue(), !itemTotalsPositive));
+                        bi.setNetValue(applySign(bi.getNetValue(), !itemTotalsPositive));
+
+                        // BillItemFinanceDetails - financial totals (opposite sign to qty)
+                        BillItemFinanceDetails bifd = bi.getBillItemFinanceDetails();
+                        if (bifd != null) {
+                            bifd.setLineGrossTotal(applySign(bifd.getLineGrossTotal(), !itemTotalsPositive));
+                            bifd.setBillGrossTotal(applySign(bifd.getBillGrossTotal(), !itemTotalsPositive));
+                            bifd.setGrossTotal(applySign(bifd.getGrossTotal(), !itemTotalsPositive));
+                            bifd.setLineNetTotal(applySign(bifd.getLineNetTotal(), !itemTotalsPositive));
+                            bifd.setBillNetTotal(applySign(bifd.getBillNetTotal(), !itemTotalsPositive));
+                            bifd.setNetTotal(applySign(bifd.getNetTotal(), !itemTotalsPositive));
+
+                            // BillItemFinanceDetails - stock valuation fields (same sign as qty)
+                            boolean stockValueNegative = isFinanceValueNegative(bta);
+                            bifd.setValueAtCostRate(applySign(bifd.getValueAtCostRate(), stockValueNegative));
+                            bifd.setValueAtPurchaseRate(applySign(bifd.getValueAtPurchaseRate(), stockValueNegative));
+                            bifd.setValueAtRetailRate(applySign(bifd.getValueAtRetailRate(), stockValueNegative));
+                            bifd.setLineCost(applySign(bifd.getLineCost(), stockValueNegative));
+                            bifd.setTotalCost(applySign(bifd.getTotalCost(), stockValueNegative));
+                        }
+
+                        // Pharmaceutical Bill Item values
+                        com.divudi.core.entity.pharmacy.PharmaceuticalBillItem pbi = bi.getPharmaceuticalBillItem();
+                        if (pbi != null) {
+                            boolean financeValueNegative = isFinanceValueNegative(bta);
+                            pbi.setPurchaseValue(applySign(pbi.getPurchaseValue(), financeValueNegative));
+                            pbi.setRetailValue(applySign(pbi.getRetailValue(), financeValueNegative));
+                            pbi.setCostValue(applySign(pbi.getCostValue(), financeValueNegative));
+                            pharmaceuticalBillItemFacade.edit(pbi);
+                        }
+
+                        billItemFacade.edit(bi);
+                        updatedItems++;
+                    }
+                }
+
+                billFacade.edit(bill);
+                updatedBills++;
+            }
+
+            out.append("Processed Bills: ").append(billsToFix.size()).append("\n");
+            out.append("Updated Bills: ").append(updatedBills).append("\n");
+            out.append("Updated Bill Items: ").append(updatedItems).append("\n");
+        } catch (Exception e) {
+            out.append("Error: ").append(getExceptionMessage(e));
+        }
+        executionFeedback = out.toString();
+    }
+
+    /**
+     * Fast native SQL version of correctPharmacyDisbursementSigns().
+     * Uses bulk UPDATE statements instead of loading each entity individually.
+     * Supports date range filtering via fromDate and toDate.
+     */
+    public void correctPharmacyDisbursementSignsNative() {
+        executionFeedback = "";
+        try {
+            String result = billFacade.correctPharmacyDisbursementSignsNative(fromDate, toDate, false);
+            executionFeedback = result;
+            JsfUtil.addSuccessMessage("Sign correction completed. Check feedback for details.");
+        } catch (Exception e) {
+            executionFeedback = "Error: " + getExceptionMessage(e);
+            JsfUtil.addErrorMessage("Error correcting signs: " + getExceptionMessage(e));
+        }
+    }
+
+    /**
+     * Dry-run version to preview what would be corrected without making changes.
+     */
+    public void previewPharmacyDisbursementSignsCorrection() {
+        executionFeedback = "";
+        try {
+            String result = billFacade.correctPharmacyDisbursementSignsNative(fromDate, toDate, true);
+            executionFeedback = result;
+            JsfUtil.addSuccessMessage("Preview complete. Check feedback for details.");
+        } catch (Exception e) {
+            executionFeedback = "Error: " + getExceptionMessage(e);
+            JsfUtil.addErrorMessage("Error previewing: " + getExceptionMessage(e));
+        }
+    }
+
+    public void correctDirectIssueInwardMedicineCancellationStockValues() {
+        executionFeedback = "";
+        StringBuilder output = new StringBuilder();
+
+        try {
+            Map<String, Object> params = new HashMap<>();
+            params.put("ret", false);
+
+            List<BillTypeAtomic> billTypesToCorrect = Arrays.asList(
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION
+            );
+
+            params.put("types", billTypesToCorrect);
+
+            StringBuilder jpql = new StringBuilder(
+                "SELECT b FROM Bill b WHERE b.retired = :ret AND b.billTypeAtomic IN :types"
+            );
+
+            if (fromDate != null) {
+                jpql.append(" AND b.createdAt >= :fromDate");
+                params.put("fromDate", fromDate);
+            }
+            if (toDate != null) {
+                jpql.append(" AND b.createdAt <= :toDate");
+                params.put("toDate", toDate);
+            }
+
+            List<Bill> billsToProcess = billFacade.findByJpql(
+                jpql.toString(),
+                params,
+                TemporalType.TIMESTAMP
+            );
+
+            if (billsToProcess == null || billsToProcess.isEmpty()) {
+                executionFeedback = "No Direct Issue Inward Medicine Cancellation bills found in the specified date range.";
+                return;
+            }
+
+            int billsProcessed = 0;
+            int billsCorrected = 0;
+
+            for (Bill bill : billsToProcess) {
+                if (bill == null || bill.getBillFinanceDetails() == null) {
+                    continue;
+                }
+
+                billsProcessed++;
+                boolean billWasCorrected = false;
+
+                BillFinanceDetails bfd = bill.getBillFinanceDetails();
+
+                // For cancellations, stock comes back IN = POSITIVE values
+                billWasCorrected = correctToPositive(bfd);
+
+                if (billWasCorrected) {
+                    billFacade.edit(bill);
+                    billsCorrected++;
+                }
+            }
+
+            output.append("Processed: ").append(billsProcessed).append(" bills\n");
+            output.append("Corrected: ").append(billsCorrected).append(" bills with incorrect signs\n");
+
+            if (fromDate != null || toDate != null) {
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+                String fromStr = fromDate != null ? sdf.format(fromDate) : "beginning";
+                String toStr = toDate != null ? sdf.format(toDate) : "now";
+                output.append("Date range: ").append(fromStr).append(" to ").append(toStr);
+            }
+
+            executionFeedback = output.toString();
+
+            JsfUtil.addSuccessMessage("Correction completed: " + billsCorrected + " bills corrected");
+
+        } catch (Exception e) {
+            executionFeedback = "Error correcting Direct Issue Inward Medicine Cancellation stock values: " + getExceptionMessage(e);
+            JsfUtil.addErrorMessage("Error: " + getExceptionMessage(e));
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Backfills missing BillFinanceDetails and BillItemFinanceDetails for
+     * PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER bills that have no finance
+     * data. These bills represent stock-movement events in the F15 report; without
+     * BFD the totalRetailSaleValue is treated as 0 causing F15 discrepancies.
+     *
+     * Safe to re-run: skips bills whose BFD already has a non-zero totalRetailSaleValue.
+     * Uses the date range selected at the top of the admin page.
+     */
+    public void backfillBfdForPreToSettleAtCashierBills() {
+        executionFeedback = "";
+        StringBuilder out = new StringBuilder();
+        int processedBills = 0;
+        int skippedBills = 0;
+        int updatedBills = 0;
+        int updatedItems = 0;
+
+        try {
+            List<BillTypeAtomic> targetTypes = Arrays.asList(
+                    BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER
+            );
+
+            Map<String, Object> params = new HashMap<>();
+            params.put("types", targetTypes);
+            StringBuilder jpql = new StringBuilder();
+            jpql.append("SELECT b FROM Bill b WHERE b.retired = false AND b.billTypeAtomic IN :types");
+            if (fromDate != null) {
+                jpql.append(" AND b.createdAt >= :fd");
+                params.put("fd", fromDate);
+            }
+            if (toDate != null) {
+                jpql.append(" AND b.createdAt <= :td");
+                params.put("td", toDate);
+            }
+
+            List<Bill> candidates = billFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+            out.append("Found ").append(candidates.size()).append(" PRE_TO_SETTLE_AT_CASHIER bills in range.\n\n");
+
+            for (Bill candidate : candidates) {
+                processedBills++;
+                Bill bill = billService.reloadBill(candidate);
+                if (bill == null) {
+                    continue;
+                }
+
+                // Skip if BFD already has a non-zero retail value (already processed)
+                BillFinanceDetails bfd = bill.getBillFinanceDetails();
+                if (bfd != null && bfd.getId() != null
+                        && bfd.getTotalRetailSaleValue() != null
+                        && bfd.getTotalRetailSaleValue().compareTo(BigDecimal.ZERO) != 0) {
+                    skippedBills++;
+                    continue;
+                }
+
+                if (bill.getBillItems() == null || bill.getBillItems().isEmpty()) {
+                    skippedBills++;
+                    continue;
+                }
+
+                // Ensure BFD exists
+                if (bfd == null || bfd.getId() == null) {
+                    bfd = new BillFinanceDetails();
+                    bfd.setBill(bill);
+                    bill.setBillFinanceDetails(bfd);
+                }
+
+                BigDecimal totalCostValue = BigDecimal.ZERO;
+                BigDecimal totalPurchaseValue = BigDecimal.ZERO;
+                BigDecimal totalRetailSaleValue = BigDecimal.ZERO;
+
+                for (BillItem bi : bill.getBillItems()) {
+                    if (bi == null || !bi.isConsideredForCosting()) {
+                        continue;
+                    }
+                    PharmaceuticalBillItem pharmaItem = bi.getPharmaceuticalBillItem();
+                    if (pharmaItem == null) {
+                        continue;
+                    }
+
+                    BigDecimal qty = bi.getQty() != null
+                            ? BigDecimal.valueOf(bi.getQty()) : BigDecimal.ZERO;
+
+                    // Ensure BIFD exists on the item
+                    BillItemFinanceDetails bifd = bi.getBillItemFinanceDetails();
+                    if (bifd == null || bifd.getId() == null) {
+                        bifd = new BillItemFinanceDetails();
+                        bifd.setBillItem(bi);
+                        bi.setBillItemFinanceDetails(bifd);
+                    }
+
+                    // Only populate if not already set
+                    if (bifd.getValueAtRetailRate() == null
+                            || bifd.getValueAtRetailRate().compareTo(BigDecimal.ZERO) == 0) {
+
+                        bifd.setQuantity(qty);
+                        bifd.setTotalQuantity(qty);
+
+                        // Cost rate: prefer ItemBatch.costRate, fall back to purchaseRate
+                        Double costRateValue = null;
+                        if (pharmaItem.getItemBatch() != null) {
+                            costRateValue = pharmaItem.getItemBatch().getCostRate();
+                        }
+                        if (costRateValue == null || costRateValue <= 0) {
+                            costRateValue = pharmaItem.getPurchaseRate();
+                        }
+                        if (costRateValue != null && costRateValue > 0) {
+                            BigDecimal costRate = BigDecimal.valueOf(costRateValue);
+                            BigDecimal valueAtCost = qty.multiply(costRate).negate();
+                            bifd.setCostRate(costRate);
+                            bifd.setValueAtCostRate(valueAtCost);
+                            totalCostValue = totalCostValue.add(valueAtCost);
+                        }
+
+                        // Purchase rate
+                        if (pharmaItem.getPurchaseRate() > 0) {
+                            BigDecimal purchaseRate = BigDecimal.valueOf(pharmaItem.getPurchaseRate());
+                            BigDecimal valueAtPurchase = qty.multiply(purchaseRate).negate();
+                            bifd.setPurchaseRate(purchaseRate);
+                            bifd.setValueAtPurchaseRate(valueAtPurchase);
+                            totalPurchaseValue = totalPurchaseValue.add(valueAtPurchase);
+                        }
+
+                        // Retail rate
+                        if (pharmaItem.getRetailRate() > 0) {
+                            BigDecimal retailRate = BigDecimal.valueOf(pharmaItem.getRetailRate());
+                            BigDecimal valueAtRetail = qty.multiply(retailRate).negate();
+                            bifd.setRetailSaleRate(retailRate);
+                            bifd.setValueAtRetailRate(valueAtRetail);
+                            totalRetailSaleValue = totalRetailSaleValue.add(valueAtRetail);
+                        }
+
+                        billItemFacade.edit(bi);
+                        updatedItems++;
+                    } else {
+                        // Already populated — still include in bill-level totals
+                        if (bifd.getValueAtCostRate() != null) {
+                            totalCostValue = totalCostValue.add(bifd.getValueAtCostRate());
+                        }
+                        if (bifd.getValueAtPurchaseRate() != null) {
+                            totalPurchaseValue = totalPurchaseValue.add(bifd.getValueAtPurchaseRate());
+                        }
+                        if (bifd.getValueAtRetailRate() != null) {
+                            totalRetailSaleValue = totalRetailSaleValue.add(bifd.getValueAtRetailRate());
+                        }
+                    }
+                }
+
+                bfd.setTotalCostValue(totalCostValue);
+                bfd.setTotalPurchaseValue(totalPurchaseValue);
+                bfd.setTotalRetailSaleValue(totalRetailSaleValue);
+                billFacade.edit(bill);
+                updatedBills++;
+            }
+
+            out.append("=== Backfill Summary ===\n");
+            out.append("Processed: ").append(processedBills).append(" bills\n");
+            out.append("Updated:   ").append(updatedBills).append(" bills (").append(updatedItems).append(" items)\n");
+            out.append("Skipped:   ").append(skippedBills).append(" bills (already had BFD or no items)\n");
+
+        } catch (Exception e) {
+            out.append("Error: ").append(getExceptionMessage(e));
+            JsfUtil.addErrorMessage("Error during BFD backfill: " + getExceptionMessage(e));
+            e.printStackTrace();
+        }
+
+        executionFeedback = out.toString();
+    }
+
+    private boolean isFinanceValueNegative(BillTypeAtomic bta) {
+        switch (bta) {
+            case PHARMACY_ISSUE:
+            case PHARMACY_DIRECT_ISSUE:
+            case PHARMACY_DISPOSAL_ISSUE:
+                return true; // Stock out flows negative for finance values
+            case PHARMACY_ISSUE_CANCELLED:
+            case PHARMACY_ISSUE_RETURN:
+            case PHARMACY_DIRECT_ISSUE_CANCELLED:
+            case PHARMACY_DISPOSAL_ISSUE_CANCELLED:
+            case PHARMACY_DISPOSAL_ISSUE_RETURN:
+            case PHARMACY_RECEIVE:
+            case PHARMACY_RECEIVE_PRE:
+                return false; // Positive
+            case PHARMACY_RECEIVE_CANCELLED:
+                return true; // Cancel receive => negative
+            default:
+                return false;
+        }
+    }
+
+    private boolean isBillAndItemTotalsPositive(BillTypeAtomic bta) {
+        switch (bta) {
+            case PHARMACY_ISSUE:
+            case PHARMACY_DIRECT_ISSUE:
+            case PHARMACY_DISPOSAL_ISSUE:
+                return true; // Positive totals on issues
+            case PHARMACY_ISSUE_CANCELLED:
+            case PHARMACY_ISSUE_RETURN:
+            case PHARMACY_DIRECT_ISSUE_CANCELLED:
+            case PHARMACY_DISPOSAL_ISSUE_CANCELLED:
+            case PHARMACY_DISPOSAL_ISSUE_RETURN:
+            case PHARMACY_RECEIVE:
+            case PHARMACY_RECEIVE_PRE:
+                return false; // Negative for returns/receives
+            case PHARMACY_RECEIVE_CANCELLED:
+                return true; // Positive on cancel receive
+            default:
+                return true;
+        }
+    }
+
+    private BigDecimal applySign(BigDecimal v, boolean negative) {
+        if (v == null) {
+            return null;
+        }
+        BigDecimal abs = v.abs();
+        return negative ? abs.negate() : abs;
+    }
+
+    private double applySign(double v, boolean negative) {
+        double abs = Math.abs(v);
+        return negative ? -abs : abs;
+    }
+
+    /**
+     * Migrates existing pharmacy transfer bills to populate
+     * BillItemFinanceDetails.lineNetTotal from BillItem.netValue for proper
+     * reporting when transfer rate configurations are used.
+     *
+     * This addresses issue #13419 where disbursement reports show incorrect
+     * purchase rates when "Pharmacy Transfer is by Retail Rate" option is
+     * enabled.
+     */
+    public void migrateTransferBillItemFinanceDetails() {
+        executionFeedback = ""; // Reset output
+
+        try {
+            StringBuilder result = new StringBuilder();
+            int processedCount = 0;
+            int updatedCount = 0;
+
+            // Process PharmacyTransferIssue and PharmacyTransferReceive bills
+            Map<String, Object> params = new HashMap<>();
+            List<BillType> billTypes = Arrays.asList(BillType.PharmacyTransferIssue, BillType.PharmacyTransferReceive);
+            params.put("billTypes", billTypes);
+
+            StringBuilder jpqlBuilder = new StringBuilder();
+            jpqlBuilder.append("SELECT DISTINCT bi.bill FROM BillItem bi WHERE ");
+            jpqlBuilder.append("bi.bill.billType IN :billTypes AND bi.retired = false ");
+
+            // Add date filtering if fromDate and toDate are provided
+            if (fromDate != null && toDate != null) {
+                jpqlBuilder.append(" AND bi.bill.createdAt >= :fromDate AND bi.bill.createdAt <= :toDate");
+                params.put("fromDate", fromDate);
+                params.put("toDate", toDate);
+                result.append("Filtering by date range: ").append(fromDate).append(" to ").append(toDate).append("\n\n");
+            } else if (fromDate != null) {
+                jpqlBuilder.append(" AND bi.bill.createdAt >= :fromDate");
+                params.put("fromDate", fromDate);
+                result.append("Filtering from date: ").append(fromDate).append("\n\n");
+            } else if (toDate != null) {
+                jpqlBuilder.append(" AND bi.bill.createdAt <= :toDate");
+                params.put("toDate", toDate);
+                result.append("Filtering to date: ").append(toDate).append("\n\n");
+            }
+
+            String jpql = jpqlBuilder.toString();
+
+            List<Bill> fixingBills = billItemFacade.findObjects(jpql, params, TemporalType.TIMESTAMP)
+                    .stream()
+                    .map(o -> (Bill) o)
+                    .collect(Collectors.toList());
+
+            result.append("Found ").append(fixingBills.size()).append(" transfer bills to migrate.\n\n");
+
+            // Process in batches of 100 to avoid memory issues
+            int batchSize = 100;
+            for (int i = 0; i < fixingBills.size(); i += batchSize) {
+                int endIndex = Math.min(i + batchSize, fixingBills.size());
+                List<Bill> fixingBillBatch = fixingBills.subList(i, endIndex);
+
+                for (Bill fixingBill : fixingBillBatch) {
+                    try {
+
+                        // A new BillFinanceDetails is created if it is null
+                        BigDecimal totalNetValue = BigDecimal.ZERO;
+                        BigDecimal totalGrossValue = BigDecimal.ZERO;
+                        BigDecimal totalCostValue = BigDecimal.ZERO;
+                        BigDecimal totalPurchaseValue = BigDecimal.ZERO;
+                        BigDecimal totalRetailValue = BigDecimal.ZERO;
+
+                        for (BillItem bi : fixingBill.getBillItems()) {
+                            processedCount++;
+                            if (bi.getBillItemFinanceDetails() == null) {
+                                bi.setBillItemFinanceDetails(new BillItemFinanceDetails());
+                                bi.getBillItemFinanceDetails().setBillItem(bi);
+                            }
+
+                            
+
+                            if ((bi.getBillItemFinanceDetails().getLineNetTotal() == null || bi.getBillItemFinanceDetails().getLineNetTotal().doubleValue() == 0)
+                                    && bi.getPharmaceuticalBillItem() != null
+                                    && bi.getPharmaceuticalBillItem().getItemBatch() != null) {
+
+                                ItemBatch itemBatch = bi.getPharmaceuticalBillItem().getItemBatch();
+                                double qty = bi.getPharmaceuticalBillItem().getQty();
+                                BigDecimal qtyBD = BigDecimal.valueOf(qty);
+
+                                BigDecimal purchaseRate = BigDecimal.valueOf(itemBatch.getPurcahseRate());
+                                BigDecimal retailRate = BigDecimal.valueOf(itemBatch.getRetailsaleRate());
+                                BigDecimal costRate = BigDecimal.valueOf(itemBatch.getCostRate());
+                                BigDecimal transferValue = BigDecimal.valueOf(bi.getNetValue());
+                                BigDecimal grossValue = BigDecimal.valueOf(bi.getGrossValue());
+                                
+                                if(bi.getPharmaceuticalBillItem().getRetailValue()==0.0){
+                                    bi.getPharmaceuticalBillItem().setRetailValue(bi.getPharmaceuticalBillItem().getRetailRate() * bi.getQty() * bi.getBillItemFinanceDetails().getUnitsPerPack().doubleValue());
+                                }
+
+                                if(bi.getNetRate()==0.0){
+                                    bi.setNetRate(bi.getRate());
+                                }
+                                if(bi.getGrossValue()==0.0){
+                                    bi.setGrossValue(bi.getNetValue());
+                                }
+                                
+                                // Populate BillItemFinanceDetails
+                                if (bi.getBillItemFinanceDetails().getQuantity() == null || bi.getBillItemFinanceDetails().getQuantity().compareTo(BigDecimal.ZERO) == 0) {
+                                    bi.getBillItemFinanceDetails().setQuantity(qtyBD);
+                                }
+                                if (bi.getBillItemFinanceDetails().getQuantityByUnits() == null || bi.getBillItemFinanceDetails().getQuantityByUnits().compareTo(BigDecimal.ZERO) == 0) {
+                                    bi.getBillItemFinanceDetails().setQuantityByUnits(qtyBD); // if no pack-unit conversion available
+                                }
+                                if (bi.getBillItemFinanceDetails().getLineNetRate() == null || bi.getBillItemFinanceDetails().getLineNetRate().compareTo(BigDecimal.ZERO) == 0) {
+                                    bi.getBillItemFinanceDetails().setLineNetRate(BigDecimal.valueOf(bi.getNetRate()));
+                                }
+                                if (bi.getBillItemFinanceDetails().getLineGrossRate() == null || bi.getBillItemFinanceDetails().getLineGrossRate().compareTo(BigDecimal.ZERO) == 0) {
+                                    bi.getBillItemFinanceDetails().setLineGrossRate(BigDecimal.valueOf(bi.getRate()));
+                                }
+                                if (bi.getBillItemFinanceDetails().getGrossRate() == null || bi.getBillItemFinanceDetails().getGrossRate().compareTo(BigDecimal.ZERO) == 0) {
+                                    bi.getBillItemFinanceDetails().setGrossRate(BigDecimal.valueOf(bi.getRate()));
+                                }
+                                if (bi.getBillItemFinanceDetails().getLineNetTotal() == null || bi.getBillItemFinanceDetails().getLineNetTotal().compareTo(BigDecimal.ZERO) == 0) {
+                                    bi.getBillItemFinanceDetails().setLineNetTotal(transferValue);
+                                }
+                                if (bi.getBillItemFinanceDetails().getNetTotal() == null || bi.getBillItemFinanceDetails().getNetTotal().compareTo(BigDecimal.ZERO) == 0) {
+                                    bi.getBillItemFinanceDetails().setNetTotal(transferValue);
+                                }
+                                if (bi.getBillItemFinanceDetails().getLineGrossTotal() == null || bi.getBillItemFinanceDetails().getLineGrossTotal().compareTo(BigDecimal.ZERO) == 0) {
+                                    bi.getBillItemFinanceDetails().setLineGrossTotal(grossValue);
+                                }
+                                if (bi.getBillItemFinanceDetails().getGrossTotal() == null || bi.getBillItemFinanceDetails().getGrossTotal().compareTo(BigDecimal.ZERO) == 0) {
+                                    bi.getBillItemFinanceDetails().setGrossTotal(grossValue);
+                                }
+                                if (bi.getBillItemFinanceDetails().getLineCostRate() == null || bi.getBillItemFinanceDetails().getLineCostRate().compareTo(BigDecimal.ZERO) == 0) {
+                                    bi.getBillItemFinanceDetails().setLineCostRate(costRate);
+                                }
+                                if (bi.getBillItemFinanceDetails().getLineCost() == null || bi.getBillItemFinanceDetails().getLineCost().compareTo(BigDecimal.ZERO) == 0) {
+                                    bi.getBillItemFinanceDetails().setLineCost(costRate.multiply(qtyBD));
+                                }
+                                if (bi.getBillItemFinanceDetails().getValueAtCostRate() == null || bi.getBillItemFinanceDetails().getValueAtCostRate().compareTo(BigDecimal.ZERO) == 0) {
+                                    bi.getBillItemFinanceDetails().setValueAtCostRate(costRate.multiply(qtyBD));
+                                }
+                                if (bi.getBillItemFinanceDetails().getValueAtPurchaseRate() == null || bi.getBillItemFinanceDetails().getValueAtPurchaseRate().compareTo(BigDecimal.ZERO) == 0) {
+                                    bi.getBillItemFinanceDetails().setValueAtPurchaseRate(purchaseRate.multiply(qtyBD));
+                                }
+                                if (bi.getBillItemFinanceDetails().getValueAtRetailRate() == null || bi.getBillItemFinanceDetails().getValueAtRetailRate().compareTo(BigDecimal.ZERO) == 0) {
+                                    bi.getBillItemFinanceDetails().setValueAtRetailRate(retailRate.multiply(qtyBD));
+                                }
+                                if (bi.getBillItemFinanceDetails().getRetailSaleRate() == null || bi.getBillItemFinanceDetails().getRetailSaleRate().compareTo(BigDecimal.ZERO) == 0) {
+                                    bi.getBillItemFinanceDetails().setRetailSaleRate(retailRate);
+                                }
+
+                                billItemFacade.edit(bi);
+
+                                // Aggregate totals for BillFinanceDetails
+                                totalNetValue = totalNetValue.add(transferValue);
+                                totalGrossValue = totalGrossValue.add(grossValue);
+                                totalCostValue = totalCostValue.add(costRate.multiply(qtyBD));
+                                totalPurchaseValue = totalPurchaseValue.add(purchaseRate.multiply(qtyBD));
+                                totalRetailValue = totalRetailValue.add(retailRate.multiply(qtyBD));
+
+                                updatedCount++;
+
+                                if (updatedCount % 50 == 0) {
+                                    result.append("Updated ").append(updatedCount).append(" items so far...\n");
+                                }
+                            }
+                        }
+
+                        if (fixingBill.getBillFinanceDetails().getNetTotal() == null || fixingBill.getBillFinanceDetails().getNetTotal().compareTo(BigDecimal.ZERO) == 0) {
+                            fixingBill.getBillFinanceDetails().setNetTotal(totalNetValue);
+                        }
+                        if (fixingBill.getBillFinanceDetails().getGrossTotal() == null || fixingBill.getBillFinanceDetails().getGrossTotal().compareTo(BigDecimal.ZERO) == 0) {
+                            fixingBill.getBillFinanceDetails().setGrossTotal(totalGrossValue);
+                        }
+                        if (fixingBill.getBillFinanceDetails().getTotalCostValue() == null || fixingBill.getBillFinanceDetails().getTotalCostValue().compareTo(BigDecimal.ZERO) == 0) {
+                            fixingBill.getBillFinanceDetails().setTotalCostValue(totalCostValue);
+                        }
+                        if (fixingBill.getBillFinanceDetails().getTotalPurchaseValue() == null || fixingBill.getBillFinanceDetails().getTotalPurchaseValue().compareTo(BigDecimal.ZERO) == 0) {
+                            fixingBill.getBillFinanceDetails().setTotalPurchaseValue(totalPurchaseValue);
+                        }
+                        if (fixingBill.getBillFinanceDetails().getTotalRetailSaleValue() == null || fixingBill.getBillFinanceDetails().getTotalRetailSaleValue().compareTo(BigDecimal.ZERO) == 0) {
+                            fixingBill.getBillFinanceDetails().setTotalRetailSaleValue(totalRetailValue);
+                        }
+
+                        billFacade.edit(fixingBill);
+
+                    } catch (Exception itemEx) {
+                        result.append("Error processing bill ID ").append(fixingBill.getId())
+                                .append(": ").append(getExceptionMessage(itemEx)).append("\n");
+                    }
+                }
+
+                // Log batch progress
+                result.append("Processed batch ").append((i / batchSize) + 1)
+                        .append(" of ").append((fixingBills.size() + batchSize - 1) / batchSize).append("\n");
+            }
+
+            result.append("\n=== Migration Summary ===\n");
+            result.append("Total bills processed: ").append(processedCount).append("\n");
+            result.append("Items updated: ").append(updatedCount).append("\n");
+            result.append("Items skipped (already had valid data): ").append(processedCount - updatedCount).append("\n");
+
+            if (updatedCount > 0) {
+                result.append("\nMigration completed successfully! ")
+                        .append("Transfer disbursement reports should now show correct rates.\n");
+            } else {
+                result.append("\nNo items needed migration. All transfer bill items already have proper financial details.\n");
+            }
+
+            executionFeedback = result.toString();
+
+        } catch (Exception e) {
+            String errorMsg = "Error during transfer bill finance details migration: " + getExceptionMessage(e);
+            executionFeedback = errorMsg;
+            e.printStackTrace();
+        }
+    }
+
+    public String getPayaraLogLocation() {
+        return configOptionApplicationController.getLongTextValueByKey("Location of the Payara Log", "/opt/payara/logs/app/");
+    }
+
     public void retireAllPharmacyRelatedData() {
         progress = 0;
         progressMessage = "Starting retirement process for pharmacy-related data...";
-        System.out.println(progressMessage);
 
         Date retiredAt = new Date(); // Common timestamp for all retire operations
         WebUser retirer = sessionController.getLoggedUser(); // The user performing the operation
@@ -388,7 +1849,6 @@ public class DataAdministrationController implements Serializable {
         if (totalRecords == 0) {
             progress = 100;
             progressMessage = "No pharmacy-related records to retire.";
-            System.out.println(progressMessage);
             return;
         }
 
@@ -404,13 +1864,11 @@ public class DataAdministrationController implements Serializable {
         // Completion message
         progress = 100;
         progressMessage = "Retirement process for pharmacy-related data completed.";
-        System.out.println(progressMessage);
     }
 
     public void retireAllBillRelatedData() {
         progress = 0;
         progressMessage = "Starting retirement process for bill-related data...";
-        System.out.println(progressMessage);
 
         Date retiredAt = new Date(); // Common timestamp for all retire operations
         WebUser retirer = sessionController.getLoggedUser(); // The user performing the operation
@@ -444,7 +1902,6 @@ public class DataAdministrationController implements Serializable {
         if (totalRecords == 0) {
             progress = 100;
             progressMessage = "No bill-related records to retire.";
-            System.out.println(progressMessage);
             return;
         }
 
@@ -470,13 +1927,11 @@ public class DataAdministrationController implements Serializable {
         // Completion message
         progress = 100;
         progressMessage = "Retirement process for bill-related data completed.";
-        System.out.println(progressMessage);
     }
 
     public void retireAllMembershipData() {
         progress = 0;
         progressMessage = "Starting retirement process...";
-        System.out.println(progressMessage);
         String jpql = "Select f from Family f where f.retired=:ret";
         Map params = new HashMap();
         params.put("ret", false);
@@ -531,7 +1986,6 @@ public class DataAdministrationController implements Serializable {
     public void retireAllPatientInvestigationRelatedData() {
         progress = 0;
         progressMessage = "Starting retirement process...";
-        System.out.println(progressMessage);
 
         Date retiredAt = new Date(); // Common timestamp for all retire operations
         WebUser retirer = sessionController.getLoggedUser(); // The user performing the operation
@@ -565,7 +2019,6 @@ public class DataAdministrationController implements Serializable {
         if (totalRecords == 0) {
             progress = 100;
             progressMessage = "No records to retire.";
-            System.out.println(progressMessage);
             return;
         }
 
@@ -587,7 +2040,6 @@ public class DataAdministrationController implements Serializable {
         // Completion message
         progress = 100;
         progressMessage = "Retirement process completed.";
-        System.out.println(progressMessage);
     }
 
     private <T> int retireEntities(List<T> entities, Date retiredAt, WebUser retirer, String uuid, AbstractFacade<T> facade) {
@@ -604,8 +2056,6 @@ public class DataAdministrationController implements Serializable {
                 retirable.setRetireComments(uuid);
                 facade.edit(entity); // Use the specific facade passed as a parameter
             } else {
-                System.out.println("Entity that does not implement retirable");
-                System.out.println("entity = " + entity);
             }
             processedRecords++;
             updateProgress();
@@ -619,7 +2069,6 @@ public class DataAdministrationController implements Serializable {
 
     private void updateProgress() {
         progress = (processedRecords * 100) / totalRecords;
-        System.out.println("Progress: " + progress + "%");
     }
 
     public void detectWholeSaleBills() {
@@ -647,17 +2096,164 @@ public class DataAdministrationController implements Serializable {
 
     }
 
+    // OPD Billing Fee Aggregation Correction Methods (Issue: April 2025 - January 2026)
+
+    /**
+     * Corrects historical bill-level fee aggregation data affected by the
+     * April 2025 OPD billing bug (when fee aggregation method was commented out).
+     *
+     * This method calls the BillFacade to perform bulk data correction using native SQL.
+     * Covers the period from April 18, 2025 to January 22, 2026.
+     */
+    public void correctHistoricalOpdBillingFees() {
+        try {
+            // First do a dry run to see how many bills would be affected
+            int billsToCorrect = billFacade.correctOpdBillingBugData(true);
+
+            if (billsToCorrect == 0) {
+                JsfUtil.addSuccessMessage("No bills found that need fee aggregation correction.");
+                return;
+            }
+
+            // Show confirmation message
+            JsfUtil.addSuccessMessage("Found " + billsToCorrect + " bills that need correction. Click 'Execute Correction' to proceed.");
+
+        } catch (Exception e) {
+            String exceptionMessage = getExceptionMessage(e);
+            String errorMsg = buildBillingFeeCorrectionErrorMessage(
+                    exceptionMessage,
+                    "Error checking bills for correction: ",
+                    ". This appears to be a database schema issue. Please check if the BILL and BILLITEM tables exist in your database.");
+
+            JsfUtil.addErrorMessage(errorMsg);
+            System.err.println("OPD Billing Fee Correction Error: " + errorMsg);
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Executes the actual correction of historical bill fee aggregation data.
+     * Should be called after correctHistoricalOpdBillingFees() to perform the actual update.
+     */
+    public void executeHistoricalOpdBillingFeesCorrection() {
+        try {
+            // Execute the actual correction
+            int correctedCount = billFacade.correctOpdBillingBugData(false);
+
+            if (correctedCount > 0) {
+                JsfUtil.addSuccessMessage("Successfully corrected fee aggregation for " + correctedCount + " bills.");
+                System.out.println("Historical OPD billing fee correction completed. Bills corrected: " + correctedCount);
+            } else {
+                JsfUtil.addSuccessMessage("No bills required correction.");
+            }
+
+        } catch (Exception e) {
+            String exceptionMessage = getExceptionMessage(e);
+            String errorMsg = buildBillingFeeCorrectionErrorMessage(
+                    exceptionMessage,
+                    "Error correcting historical bill fees: ",
+                    ". This appears to be a database schema issue. The correction failed due to table name case sensitivity or missing tables.");
+
+            JsfUtil.addErrorMessage(errorMsg);
+            System.err.println("OPD Billing Fee Correction Execution Error: " + errorMsg);
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Custom date range correction for bill fee aggregation.
+     * Uses the fromDate and toDate from the admin page date controls.
+     */
+    public void correctCustomDateRangeBillingFees() {
+        if (fromDate == null || toDate == null) {
+            JsfUtil.addErrorMessage("Please select both from date and to date.");
+            return;
+        }
+
+        try {
+            // First show what would be corrected (dry run)
+            int result = billFacade.correctHistoricalBillFeeAggregation(fromDate, toDate, true);
+
+            if (result > 0) {
+                JsfUtil.addSuccessMessage("Found " + result + " bills that would be corrected in the date range " +
+                    fromDate + " to " + toDate + ". Click 'Execute Custom Range Correction' to proceed.");
+            } else {
+                JsfUtil.addSuccessMessage("No bills found that need fee aggregation correction in the selected date range.");
+            }
+
+        } catch (Exception e) {
+            String exceptionMessage = getExceptionMessage(e);
+            String errorMsg = buildBillingFeeCorrectionErrorMessage(
+                    exceptionMessage,
+                    "Error checking bills in custom date range: ",
+                    ". Database schema issue detected. Check table names and database connectivity.");
+
+            JsfUtil.addErrorMessage(errorMsg);
+            System.err.println("Custom Date Range Check Error: " + errorMsg);
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Executes the custom date range correction for bill fee aggregation.
+     */
+    public void executeCustomDateRangeBillingFeesCorrection() {
+        if (fromDate == null || toDate == null) {
+            JsfUtil.addErrorMessage("Please select both from date and to date.");
+            return;
+        }
+
+        try {
+            int result = billFacade.correctHistoricalBillFeeAggregation(fromDate, toDate, false);
+
+            if (result > 0) {
+                JsfUtil.addSuccessMessage("Successfully corrected fee aggregation for " + result + " bills in the date range " +
+                    fromDate + " to " + toDate + ".");
+            } else {
+                JsfUtil.addSuccessMessage("No bills required correction in the selected date range.");
+            }
+
+        } catch (Exception e) {
+            String exceptionMessage = getExceptionMessage(e);
+            String errorMsg = buildBillingFeeCorrectionErrorMessage(
+                    exceptionMessage,
+                    "Error correcting bills in custom date range: ",
+                    ". Database execution failed due to schema issues. Verify table structure and permissions.");
+
+            JsfUtil.addErrorMessage(errorMsg);
+            System.err.println("Custom Date Range Correction Error: " + errorMsg);
+            e.printStackTrace();
+        }
+    }
+
+    private String buildBillingFeeCorrectionErrorMessage(String exceptionMessage, String prefix, String schemaGuidance) {
+        String errorMsg = prefix + exceptionMessage;
+        if (exceptionMessage.contains("doesn't exist") || exceptionMessage.contains("Table") || exceptionMessage.contains("SQLSyntaxErrorException")) {
+            errorMsg += schemaGuidance;
+        }
+
+        return errorMsg;
+    }
+
     public String navigateToCheckMissingFields() {
-        allCreateStetements ="";
-        executionFeedback="";
-        errors="";
-        createdSql="";
-        suggestedSql="";
+        allCreateStetements = "";
+        executionFeedback = "";
+        errors = "";
+        createdSql = "";
+        suggestedSql = "";
         return "/dataAdmin/missing_database_fields?faces-redirect=true";
+    }
+
+    public String navigateToDownloadLogFiles() {
+        return "/dataAdmin/download_log_files?faces-redirect=true";
     }
 
     public String navigateToNameToCode() {
         return "/dataAdmin/name_to_code?faces-redirect=true";
+    }
+
+    public String navigateToReportExecutionLogs() {
+        return "/dataAdmin/report_execution_logs?faces-redirect=true";
     }
 
     public String navigateToListOpdBillsAndBillItemsFields() {
@@ -684,70 +2280,253 @@ public class DataAdministrationController implements Serializable {
         JsfUtil.addSuccessMessage("Added Dept Bill Number");
     }
 
-    public void checkMissingFields1() {
-        suggestedSql = "";
-        errors = "";
-        StringBuilder allErrors = new StringBuilder();
+    public boolean canAccessMigrationPage() {
+        if (databaseMigrationService.isMigrationPending()) {
+            return true;
+        }
+        return webUserController.hasPrivilege("Admin");
+    }
 
-        for (Class<?> entityClass : findEntityClassNames()) {
-            String entityName = entityClass.getSimpleName();
-            try {
-                itemFacade.executeQueryFirstResult(entityClass, "SELECT e FROM " + entityName + " e");
-            } catch (PersistenceException pe) {
-                Throwable cause = pe.getCause();
-                while (cause != null && !(cause instanceof SQLSyntaxErrorException)) {
-                    cause = cause.getCause();
-                }
-                if (cause != null) {
-                    Matcher matcher = Pattern.compile("Unknown column '([^']+)' in 'field list'").matcher(cause.getMessage());
-                    if (matcher.find()) {
-                        String missingColumn = matcher.group(1);
-                        errors += String.format("Entity: %s, Missing Column: %s\n", entityName, missingColumn);
-                    }
-                }
-            } catch (Exception e) {
-                // Handle other exceptions as needed
-            }
+    public boolean isMigrationPageAccessDenied() {
+        return !canAccessMigrationPage();
+    }
+
+    public boolean isMigrationPending() {
+        return databaseMigrationService.isMigrationPending();
+    }
+
+    public void markMigrationComplete() {
+        String version = fetchWikiDdlVersion();
+        if (version != null) {
+            configOptionApplicationController.saveShortTextOption(CONFIG_KEY_DDL_VERSION, version);
+            wikiDdlVersion = version;
+        } else {
+            configOptionApplicationController.saveShortTextOption(CONFIG_KEY_DDL_VERSION, "CONFIRMED");
+            JsfUtil.addInfoMessage("Wiki unreachable. Schema confirmation saved locally — banner will not return after restart.");
+        }
+        databaseMigrationService.markMigrationComplete();
+        JsfUtil.addSuccessMessage("Migration marked as complete. The migration page is now restricted to administrators.");
+    }
+
+    public void markMigrationNotNecessary() {
+        String version = fetchWikiDdlVersion();
+        if (version != null) {
+            configOptionApplicationController.saveShortTextOption(CONFIG_KEY_DDL_VERSION, version);
+            wikiDdlVersion = version;
+        } else {
+            configOptionApplicationController.saveShortTextOption(CONFIG_KEY_DDL_VERSION, "CONFIRMED");
+            JsfUtil.addInfoMessage("Wiki unreachable. Schema confirmation saved locally — banner will not return after restart.");
+        }
+        databaseMigrationService.markMigrationNotNecessary();
+        JsfUtil.addSuccessMessage("Migration marked as not necessary. The migration page is now restricted to administrators.");
+    }
+
+    public void checkMissingFieldsForced() {
+        suggestedSql = "";
+        mainDatabaseSuggestedSql = "";
+        auditDatabaseSuggestedSql = "";
+        mainDatabaseErrors = "";
+        auditDatabaseErrors = "";
+        errors = "";
+        if (runOnMainDatabase) {
+            checkMissingFieldsForDatabase(itemFacade, "Main Database");
+        }
+        if (runOnAuditDatabase) {
+            checkMissingFieldsForDatabase(auditDatabaseFacade, "Audit Database");
         }
     }
 
+    public String fetchWikiDdlVersion() {
+        java.net.HttpURLConnection conn = null;
+        try {
+            java.net.URL url = new java.net.URL(WIKI_DDL_URL);
+            conn = (java.net.HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            conn.setConnectTimeout(5000);
+            conn.setReadTimeout(10000);
+            conn.setRequestProperty("User-Agent", "HMIS-Schema-Checker/1.0");
+            int status = conn.getResponseCode();
+            if (status == 200) {
+                try (java.io.BufferedReader reader = new java.io.BufferedReader(
+                        new java.io.InputStreamReader(conn.getInputStream(), java.nio.charset.StandardCharsets.UTF_8))) {
+                    String line;
+                    Pattern versionPattern = Pattern.compile("Last Update\\s*-\\s*(\\d{4}\\.\\d{2}\\.\\d{2}\\s+\\d{2}:\\d{2})");
+                    while ((line = reader.readLine()) != null) {
+                        Matcher m = versionPattern.matcher(line);
+                        if (m.find()) {
+                            return m.group(1).trim();
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            // Network or parse failure — return null so caller falls back to legacy
+        } finally {
+            if (conn != null) {
+                conn.disconnect();
+            }
+        }
+        return null;
+    }
+
     public void checkMissingFields() {
+        // Clear all previous results
         suggestedSql = "";
-        List<EntityFieldError> entityFieldErrors = new ArrayList<>();
+        mainDatabaseSuggestedSql = "";
+        auditDatabaseSuggestedSql = "";
+        mainDatabaseErrors = "";
+        auditDatabaseErrors = "";
+        errors = "";
+
+        // Check wiki DDL version first
+        wikiDdlVersion = fetchWikiDdlVersion();
+        if (wikiDdlVersion != null) {
+            String storedVersion = configOptionApplicationController.getShortTextValueByKey(CONFIG_KEY_DDL_VERSION);
+            if (wikiDdlVersion.equals(storedVersion) && !"UNCHECKED".equals(storedVersion)) {
+                databaseMigrationService.markMigrationComplete();
+                errors = "Schema is up to date (Wiki DDL version: " + wikiDdlVersion + "). No missing fields expected.";
+                return;
+            }
+        }
+
+        // Version mismatch or wiki unreachable — run legacy check
+        if (runOnMainDatabase) {
+            checkMissingFieldsForDatabase(itemFacade, "Main Database");
+        }
+        if (runOnAuditDatabase) {
+            checkMissingFieldsForDatabase(auditDatabaseFacade, "Audit Database");
+        }
+    }
+
+    public void markSchemaAsCurrent() {
+        if (wikiDdlVersion == null) {
+            wikiDdlVersion = fetchWikiDdlVersion();
+        }
+        if (wikiDdlVersion == null) {
+            JsfUtil.addErrorMessage("Could not reach wiki to determine current DDL version.");
+            return;
+        }
+        configOptionApplicationController.saveShortTextOption(CONFIG_KEY_DDL_VERSION, wikiDdlVersion);
+        databaseMigrationService.markMigrationComplete();
+        JsfUtil.addSuccessMessage("Schema version " + wikiDdlVersion + " saved. Migration banner cleared.");
+    }
+
+    private void markSchemaAsCurrentSilently(boolean executionPerformed) {
+        if (!executionPerformed) {
+            return;
+        }
+        try {
+            String version = fetchWikiDdlVersion();
+            if (version != null) {
+                configOptionApplicationController.saveShortTextOption(CONFIG_KEY_DDL_VERSION, version);
+                databaseMigrationService.markMigrationComplete();
+                wikiDdlVersion = version;
+            }
+        } catch (Exception e) {
+            // Schema operations succeeded; version tracking is secondary — swallow silently
+        }
+    }
+
+    public String getStoredDdlVersion() {
+        return configOptionApplicationController.getShortTextValueByKey(CONFIG_KEY_DDL_VERSION);
+    }
+
+    public String getWikiDdlVersion() {
+        return wikiDdlVersion;
+    }
+
+    private void checkMissingFieldsForDatabase(AbstractFacade<?> facade, String databaseName) {
+        List<EntityFieldError> missingFieldErrors = new ArrayList<>();
+        List<EntityFieldError> missingTableErrors = new ArrayList<>();
+        String databaseErrors = "";
 
         for (Class<?> entityClass : findEntityClassNames()) {
+            // Get root entity class name (skip base classes like Item if needed)
+            Class<?> rootEntityClass = entityClass;
+            while (rootEntityClass.getSuperclass() != null
+                    && rootEntityClass.getSuperclass().getAnnotation(javax.persistence.Entity.class) != null) {
+                rootEntityClass = rootEntityClass.getSuperclass();
+            }
+
+            // Skip subclasses so we only evaluate root-level entities
+            if (!entityClass.equals(rootEntityClass)) {
+                continue;
+            }
+
             String entityName = entityClass.getSimpleName();
             EntityFieldError entityFieldError = new EntityFieldError(entityName);
             String jpql = "SELECT e FROM " + entityName + " e";
+
             try {
-                itemFacade.executeQueryFirstResult(entityClass, jpql);
+                facade.executeQueryFirstResult(entityClass, jpql);
             } catch (Exception e) {
                 Throwable cause = e.getCause();
                 while (cause != null && !(cause instanceof SQLSyntaxErrorException)) {
                     cause = cause.getCause();
                 }
                 if (cause != null) {
-                    String message = cause.getMessage();
-                    Pattern pattern = Pattern.compile("Unknown column '([^']+)' in 'field list'");
-                    Matcher matcher = pattern.matcher(message);
-                    while (matcher.find()) {
-                        String missingColumn = matcher.group(1);
+                    String message = getExceptionMessage(cause);
+
+                    // Check for missing table
+                    Pattern tablePattern = Pattern.compile("Table '.*?\\.(.*?)' doesn't exist");
+                    Matcher tableMatcher = tablePattern.matcher(message);
+                    if (tableMatcher.find()) {
+                        String missingTable = tableMatcher.group(1);
+                        entityFieldError.addMissingField("Table not found: " + missingTable);
+                        missingTableErrors.add(entityFieldError);
+                        continue;
+                    }
+
+                    // Check for missing fields
+                    Pattern columnPattern = Pattern.compile("Unknown column '([^']+)' in 'field list'");
+                    Matcher columnMatcher = columnPattern.matcher(message);
+                    while (columnMatcher.find()) {
+                        String missingColumn = columnMatcher.group(1);
                         entityFieldError.addMissingField(missingColumn);
                     }
-                    if (!entityFieldError.missingFields.isEmpty()) {
-                        entityFieldErrors.add(entityFieldError);
+
+                    if (!entityFieldError.getMissingFields().isEmpty()) {
+                        missingFieldErrors.add(entityFieldError);
                     }
                 }
             }
         }
 
-        // Convert the list of EntityFieldError objects to a string
-        StringBuilder errorsBuilder = new StringBuilder();
-        for (EntityFieldError error : entityFieldErrors) {
-            errorsBuilder.append(error.toString()).append("\n");
+        StringBuilder outputBuilder = new StringBuilder();
+        outputBuilder.append("=== ").append(databaseName).append(" ===\n");
+
+        if (!missingTableErrors.isEmpty()) {
+            outputBuilder.append("\n=== Missing Tables ===\n");
+            for (EntityFieldError error : missingTableErrors) {
+                for (String field : error.getMissingFields()) {
+                    outputBuilder.append("Entity: ").append(error.getEntityName())
+                            .append(", ").append(field).append("\n");
+                }
+            }
         }
 
-        errors = errorsBuilder.toString();
+        if (!missingFieldErrors.isEmpty()) {
+            outputBuilder.append("\n=== Missing Fields ===\n");
+            for (EntityFieldError error : missingFieldErrors) {
+                outputBuilder.append(error.toString()).append("\n");
+            }
+        }
+
+        String databaseResult = outputBuilder.toString().trim();
+
+        // Store results based on database type
+        if (databaseName.equals("Main Database")) {
+            mainDatabaseErrors = databaseResult;
+        } else {
+            auditDatabaseErrors = databaseResult;
+        }
+
+        // Update the combined errors field
+        if (errors.isEmpty()) {
+            errors = databaseResult;
+        } else {
+            errors += "\n\n" + databaseResult;
+        }
     }
 
     public List<Class<?>> findEntityClassNames() {
@@ -818,20 +2597,44 @@ public class DataAdministrationController implements Serializable {
         int end = sql.lastIndexOf(")");
         String columnsSection = sql.substring(start + 1, end);
 
-        String[] definitions = columnsSection.split(",");
-        for (String def : definitions) {
-            def = def.trim();
-            // Skip constraints
-            if (def.toUpperCase().startsWith("PRIMARY KEY")
-                    || def.toUpperCase().startsWith("FOREIGN KEY")
-                    || def.toUpperCase().startsWith("CONSTRAINT")
-                    || def.toUpperCase().startsWith("UNIQUE")
-                    || def.toUpperCase().startsWith("CHECK")) {
-                continue;
+        StringBuilder current = new StringBuilder();
+        int parens = 0;
+
+        for (char c : columnsSection.toCharArray()) {
+            if (c == '(') {
+                parens++;
+            } else if (c == ')') {
+                parens--;
             }
-            columns.add(def);
+
+            if (c == ',' && parens == 0) {
+                String def = current.toString().trim();
+                if (!isConstraintDefinition(def)) {
+                    columns.add(def);
+                }
+                current.setLength(0);
+            } else {
+                current.append(c);
+            }
         }
+
+        if (current.length() > 0) {
+            String def = current.toString().trim();
+            if (!isConstraintDefinition(def)) {
+                columns.add(def);
+            }
+        }
+
         return columns;
+    }
+
+    private boolean isConstraintDefinition(String def) {
+        String upper = def.toUpperCase();
+        return upper.startsWith("PRIMARY KEY")
+                || upper.startsWith("FOREIGN KEY")
+                || upper.startsWith("CONSTRAINT")
+                || upper.startsWith("UNIQUE")
+                || upper.startsWith("CHECK");
     }
 
     private List<String> extractConstraintDefinitions(String sql) {
@@ -872,13 +2675,38 @@ public class DataAdministrationController implements Serializable {
     }
 
     public void createTablesAndFieldsForAllCreateStatements() {
+        // Clear previous execution feedback
+        executionFeedback = "";
+        mainDatabaseExecutionFeedback = "";
+        auditDatabaseExecutionFeedback = "";
+
+        // Require DDL content — do not mark schema current if nothing to apply
+        boolean hasDdl = allCreateStetements != null && !allCreateStetements.trim().isEmpty();
+        if (!hasDdl) {
+            executionFeedback = "DDL content is empty. Paste the full createDDL.jdbc contents into the 'DDL Content' field before clicking Update Database.";
+            mainDatabaseExecutionFeedback = executionFeedback;
+            auditDatabaseExecutionFeedback = executionFeedback;
+            return;
+        }
+
+        // Run on both databases if enabled
+        boolean executionPerformed = false;
+        if (runOnMainDatabase) {
+            createTablesOnDatabase(itemFacade, "Main Database");
+            executionPerformed = true;
+        }
+        if (runOnAuditDatabase) {
+            createTablesOnDatabase(auditDatabaseFacade, "Audit Database");
+            executionPerformed = true;
+        }
+        markSchemaAsCurrentSilently(executionPerformed);
+    }
+
+    private void createTablesOnDatabase(AbstractFacade<?> facade, String databaseName) {
         StringBuilder executionResults = new StringBuilder();
+        executionResults.append("=== ").append(databaseName).append(" ===<br/>");
 
-        System.out.println("===== Starting CREATE TABLE parsing and ALTER execution =====");
-
-        // Split by CREATE TABLE, keeping it in the output
         String[] rawParts = allCreateStetements.split("(?i)CREATE TABLE");
-        int counter = 0;
 
         for (String part : rawParts) {
             part = part.trim();
@@ -887,21 +2715,25 @@ public class DataAdministrationController implements Serializable {
             }
 
             String createStatement = "CREATE TABLE " + part;
-            System.out.println("\n[INFO] Processing statement #" + (++counter));
-            System.out.println("Create SQL:\n" + createStatement);
 
             try {
+                // First execute the CREATE TABLE outside JTA (DDL causes implicit MySQL commit
+                // which desyncs the JTA transaction manager if run via EntityManager)
+                try {
+                    executeDdlForDatabase(databaseName, createStatement);
+                    executionResults.append("<br/>Successfully executed: ").append(createStatement);
+                } catch (Exception e) {
+                    executionResults.append("<br/>CREATE TABLE failed (likely already exists): ").append(getExceptionMessage(e));
+                }
+
+                // Proceed with ALTER logic
                 String tableName = extractTableName(createStatement);
                 if (tableName == null || tableName.isEmpty()) {
-                    System.out.println("[WARNING] Skipping statement — table name not found.");
                     executionResults.append("<br/>Skipped malformed CREATE TABLE statement.");
                     continue;
                 }
 
-                System.out.println("[INFO] Extracted table name: " + tableName);
-
                 String alterSql = generateAlterStatements(createStatement);
-                System.out.println("[INFO] Generated ALTER statements:\n" + alterSql);
 
                 String[] sqlStatements = alterSql.split(";");
                 for (String sql : sqlStatements) {
@@ -912,71 +2744,267 @@ public class DataAdministrationController implements Serializable {
 
                     try {
                         if (isValidSqlStatement(sql)) {
-                            System.out.println("[EXEC] Running SQL: " + sql);
-                            itemFacade.executeNativeSql(sql);
+                            executeDdlForDatabase(databaseName, sql);
                             executionResults.append("<br/>Successfully executed: ").append(sql);
                         } else {
-                            System.out.println("[ERROR] Potentially harmful SQL rejected: " + sql);
                             executionResults.append("<br/>Rejected potentially harmful SQL: ").append(sql);
                         }
                     } catch (Exception e) {
-                        System.out.println("[ERROR] SQL failed: " + sql);
-                        System.out.println("[ERROR] Exception: " + e.getMessage());
                         executionResults.append("<br/>Failed to execute: ").append(sql);
-                        executionResults.append("<br/>Error: ").append(e.getMessage());
+                        executionResults.append("<br/>Error: ").append(getExceptionMessage(e));
                     }
                 }
             } catch (Exception e) {
-                System.out.println("[ERROR] Unexpected error while processing create statement.");
                 e.printStackTrace();
-                executionResults.append("<br/>Error processing create statement: ").append(e.getMessage());
+                executionResults.append("<br/>Error processing create statement: ").append(getExceptionMessage(e));
             }
         }
 
-        executionFeedback = executionResults.toString();
+        String databaseResult = executionResults.toString();
 
-        System.out.println("===== All CREATE TABLE processing complete =====");
+        // Store results based on database type
+        if (databaseName.equals("Main Database")) {
+            mainDatabaseExecutionFeedback = databaseResult;
+        } else {
+            auditDatabaseExecutionFeedback = databaseResult;
+        }
+
+        // Update the combined execution feedback
+        if (executionFeedback.isEmpty()) {
+            executionFeedback = databaseResult;
+        } else {
+            executionFeedback += "<br/><br/>" + databaseResult;
+        }
     }
-    
+
     // Add this method to validate SQL statements
     private boolean isValidSqlStatement(String sql) {
         sql = sql.trim().toLowerCase();
         // Only allow CREATE TABLE, ALTER TABLE statements, and setting foreign key checks
-        return (sql.startsWith("create table") || 
-                sql.startsWith("alter table") ||
-                sql.startsWith("set foreign_key_checks")) &&
-               !sql.contains("drop") &&
-               !sql.contains("truncate") &&
-               !sql.contains("delete") &&
-               !sql.contains("update");
+        return (sql.startsWith("create table")
+                || sql.startsWith("alter table")
+                || sql.startsWith("set foreign_key_checks"))
+                && !sql.contains("drop")
+                && !sql.contains("truncate")
+                && !sql.contains("delete")
+                && !sql.contains("update");
     }
 
     public void runSqlToCreateFields() {
+        // Clear previous execution feedback
+        executionFeedback = "";
+        mainDatabaseExecutionFeedback = "";
+        auditDatabaseExecutionFeedback = "";
+
+        // Require SQL content — do not mark schema current if nothing to apply
+        boolean hasSql = suggestedSql != null && !suggestedSql.trim().isEmpty();
+        if (!hasSql) {
+            executionFeedback = "SQL field is empty. Enter SQL statements before clicking RUN SQL.";
+            mainDatabaseExecutionFeedback = executionFeedback;
+            auditDatabaseExecutionFeedback = executionFeedback;
+            return;
+        }
+
+        // Run on both databases if enabled
+        boolean executionPerformed = false;
+        if (runOnMainDatabase) {
+            runSqlOnDatabase(itemFacade, suggestedSql, "Main Database");
+            executionPerformed = true;
+        }
+        if (runOnAuditDatabase) {
+            runSqlOnDatabase(auditDatabaseFacade, suggestedSql, "Audit Database");
+            executionPerformed = true;
+        }
+        markSchemaAsCurrentSilently(executionPerformed);
+    }
+
+    /**
+     * Detect missing fields for each entity and automatically apply ALTER TABLE
+     * ADD COLUMN statements sourced from the pasted DDL content in
+     * {@code allCreateStetements}. Uses {@link DatabaseMigrationFacade#executeDdlNative}
+     * for the main database and {@link AuditDatabaseFacade#executeDdlNative} for
+     * the audit database so that DDL runs outside JTA (avoids MySQL implicit-commit
+     * desync).
+     *
+     * <p>Requires the full DDL file content to be pasted into the
+     * "allCreateStetements" field (Tab 1) before calling this method. If no DDL
+     * is available the method reports which entities still need attention.</p>
+     */
+    public void fixMissingFields() {
+        executionFeedback = "";
+        mainDatabaseExecutionFeedback = "";
+        auditDatabaseExecutionFeedback = "";
+
+        if (allCreateStetements == null || allCreateStetements.trim().isEmpty()) {
+            String msg = "DDL content is empty. Paste the full createDDL.jdbc contents into the 'DDL Content' field in Tab 1 first.";
+            executionFeedback = msg;
+            mainDatabaseExecutionFeedback = msg;
+            auditDatabaseExecutionFeedback = msg;
+            return;
+        }
+
+        if (runOnMainDatabase) {
+            fixMissingFieldsForDatabase(itemFacade, "Main Database");
+        }
+        if (runOnAuditDatabase) {
+            fixMissingFieldsForDatabase(auditDatabaseFacade, "Audit Database");
+        }
+    }
+
+    private void fixMissingFieldsForDatabase(AbstractFacade<?> facade, String databaseName) {
+        StringBuilder executionResults = new StringBuilder();
+        executionResults.append("=== ").append(databaseName).append(" ===<br/>");
+
+        for (Class<?> entityClass : findEntityClassNames()) {
+            Class<?> rootEntityClass = entityClass;
+            while (rootEntityClass.getSuperclass() != null
+                    && rootEntityClass.getSuperclass().getAnnotation(javax.persistence.Entity.class) != null) {
+                rootEntityClass = rootEntityClass.getSuperclass();
+            }
+            if (!entityClass.equals(rootEntityClass)) {
+                continue;
+            }
+
+            String entityName = entityClass.getSimpleName();
+            String jpql = "SELECT e FROM " + entityName + " e";
+
+            try {
+                facade.executeQueryFirstResult(entityClass, jpql);
+            } catch (Exception e) {
+                Throwable cause = e.getCause();
+                while (cause != null && !(cause instanceof SQLSyntaxErrorException)) {
+                    cause = cause.getCause();
+                }
+                if (cause == null) {
+                    continue;
+                }
+                // Entity has at least one missing column — fix ALL columns for this entity
+                // by generating ADD COLUMN statements from the CREATE TABLE in the DDL.
+                String createStatement = findCreateStatementInDdl(entityName);
+                if (createStatement == null) {
+                    executionResults.append("<br/>No DDL found for entity: ").append(entityName)
+                            .append(" — cannot auto-fix.");
+                    continue;
+                }
+                String alterSql = generateAlterStatements(createStatement);
+                String[] statements = alterSql.split(";");
+                for (String stmt : statements) {
+                    stmt = stmt.trim();
+                    if (stmt.isEmpty()) {
+                        continue;
+                    }
+                    String stmtLower = stmt.toLowerCase();
+                    if (!stmtLower.contains("add column")) {
+                        continue; // only apply ADD COLUMN fixes here
+                    }
+                    if (!isValidSqlStatement(stmt)) {
+                        continue;
+                    }
+                    try {
+                        executeDdlForDatabase(databaseName, stmt);
+                        executionResults.append("<br/>Fixed [").append(entityName).append("]: ").append(stmt);
+                    } catch (Exception ex) {
+                        String errMsg = getExceptionMessage(ex);
+                        if (errMsg != null && errMsg.toLowerCase().contains("duplicate column")) {
+                            // Column already exists — not an error
+                        } else {
+                            executionResults.append("<br/>Failed [").append(entityName).append("]: ")
+                                    .append(stmt).append(" | ").append(errMsg);
+                        }
+                    }
+                }
+            }
+        }
+
+        String databaseResult = executionResults.toString();
+        if ("Main Database".equals(databaseName)) {
+            mainDatabaseExecutionFeedback = databaseResult;
+        } else {
+            auditDatabaseExecutionFeedback = databaseResult;
+        }
+        if (executionFeedback.isEmpty()) {
+            executionFeedback = databaseResult;
+        } else {
+            executionFeedback += "<br/><br/>" + databaseResult;
+        }
+    }
+
+    /**
+     * Find the full CREATE TABLE statement for the given entity name (case-insensitive)
+     * within the pasted {@code allCreateStetements} DDL content.
+     *
+     * @return the CREATE TABLE statement string, or {@code null} if not found
+     */
+    private String findCreateStatementInDdl(String entityName) {
+        if (allCreateStetements == null || allCreateStetements.trim().isEmpty()) {
+            return null;
+        }
+        String upperEntityName = entityName.toUpperCase();
+        String[] rawParts = allCreateStetements.split("(?i)CREATE TABLE");
+        for (String part : rawParts) {
+            String trimmedPart = part.trim();
+            if (trimmedPart.toUpperCase().startsWith(upperEntityName + " ")
+                    || trimmedPart.toUpperCase().startsWith(upperEntityName + "(")) {
+                return "CREATE TABLE " + trimmedPart;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Execute a DDL statement on the correct database (main or audit) using the
+     * native JDBC path that bypasses JTA. This avoids the MySQL implicit-commit
+     * desync that occurs when DDL runs through an EntityManager inside a JTA
+     * transaction.
+     */
+    private void executeDdlForDatabase(String databaseName, String sql) throws Exception {
+        if ("Main Database".equals(databaseName)) {
+            databaseMigrationFacade.executeDdlNative(sql);
+        } else {
+            auditDatabaseFacade.executeDdlNative(sql);
+        }
+    }
+
+    private void runSqlOnDatabase(AbstractFacade<?> facade, String sql, String databaseName) {
         // Adjust the split pattern based on your actual SQL string format
         // Assuming statements end with semicolons
-        String[] sqlStatements = suggestedSql.split(";");
+        String[] sqlStatements = sql.split(";");
         StringBuilder executionResults = new StringBuilder();
+        executionResults.append("=== ").append(databaseName).append(" ===<br/>");
 
-        for (String sql : sqlStatements) {
-            sql = sql.trim();
-            if (sql.isEmpty()) {
+        for (String sqlStatement : sqlStatements) {
+            sqlStatement = sqlStatement.trim();
+            if (sqlStatement.isEmpty()) {
                 continue; // Skip empty statements
             }
             try {
                 // Execute the SQL statement
-                itemFacade.executeNativeSql(sql);
+                facade.executeNativeSql(sqlStatement);
 
                 // Append success message
-                executionResults.append("<br/>Successfully executed: ").append(sql);
+                executionResults.append("<br/>Successfully executed: ").append(sqlStatement);
             } catch (Exception e) {
                 // Append error message with exception details
-                executionResults.append("<br/>Failed to execute: ").append(sql);
-                executionResults.append("<br/>Error: ").append(e.getMessage());
+                executionResults.append("<br/>Failed to execute: ").append(sqlStatement);
+                executionResults.append("<br/>Error: ").append(getExceptionMessage(e));
             }
         }
 
-        // Update the execution feedback
-        executionFeedback = executionResults.toString();
+        String databaseResult = executionResults.toString();
+
+        // Store results based on database type
+        if (databaseName.equals("Main Database")) {
+            mainDatabaseExecutionFeedback = databaseResult;
+        } else {
+            auditDatabaseExecutionFeedback = databaseResult;
+        }
+
+        // Update the combined execution feedback
+        if (executionFeedback.isEmpty()) {
+            executionFeedback = databaseResult;
+        } else {
+            executionFeedback += "<br/><br/>" + databaseResult;
+        }
     }
 
     public void addBillFeesToProfessionalCancelBills() {
@@ -1628,29 +3656,17 @@ public class DataAdministrationController implements Serializable {
     public void createCodeSelectedCategory() {
         Map m = new HashMap();
         String sql = "select c from Amp c "
-                + " where c.retired=false"
-                + " and (c.departmentType is null "
-                + " or c.departmentType=:dep) ";
-
-        m.put("dep", DepartmentType.Pharmacy);
+                + " where c.retired=false";
+        if (departmentType != null) {
+            sql += " and c.departmentType=:dep ";
+            m.put("dep", departmentType);
+        }
         if (itemCategory != null) {
             sql += " and c.category=:cat ";
             m.put("cat", itemCategory);
         }
         sql += " order by c.name";
-
         items = itemFacade.findByJpql(sql, m);
-
-        int j = 1;
-
-//        for (Item i : items) {
-//            DecimalFormat df = new DecimalFormat("0000");
-////            df=new DecimalFormat("####");
-////            //System.out.println("df = " + df.format(j));
-//            i.setCode(itemCategory.getDescription() + df.format(j));
-//            itemFacade.edit(i);
-//            j++;
-//        }
     }
 
     public void createremoveAllCodes() {
@@ -1815,6 +3831,10 @@ public class DataAdministrationController implements Serializable {
             getPharmaceuticalItemCategoryFacade().edit(c);
         }
         fillPharmacyCategory();
+    }
+
+    public void causeError() {
+        throw new RuntimeException("This is a test exception to verify error handling.");
     }
 
     public void deActveSelectedCategories() {
@@ -2192,6 +4212,28 @@ public class DataAdministrationController implements Serializable {
         this.departmentType = departmentType;
     }
 
+    public List<DepartmentType> completeDepartmentType(String qry) {
+        List<DepartmentType> filteredTypes = new ArrayList<>();
+        if (qry == null || qry.trim().isEmpty()) {
+            return Arrays.asList(DepartmentType.values());
+        }
+
+        String query = qry.toLowerCase().trim();
+        for (DepartmentType type : DepartmentType.values()) {
+            String label = type.getLabel();
+            boolean labelMatches = label != null && label.toLowerCase().contains(query);
+            boolean nameMatches = type.name().toLowerCase().contains(query);
+            if (labelMatches || nameMatches) {
+                filteredTypes.add(type);
+            }
+        }
+        return filteredTypes;
+    }
+
+    public List<DepartmentType> getDepartmentTypeList() {
+        return Arrays.asList(DepartmentType.values());
+    }
+
     public Date getFromDate() {
         if (fromDate == null) {
             fromDate = CommonFunctions.getStartOfMonth(new Date());
@@ -2275,6 +4317,17 @@ public class DataAdministrationController implements Serializable {
         return "/dataAdmin/admin_data_administration?faces-redirect=true";
     }
 
+    public void clearAllJpaCaches() {
+        try {
+            if (cacheAdminService != null) {
+                cacheAdminService.clearAll();
+            }
+            JsfUtil.addSuccessMessage("Cleared JPA shared caches.");
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Failed to clear caches: " + getExceptionMessage(e));
+        }
+    }
+
     public String getErrors() {
         return errors;
     }
@@ -2297,6 +4350,71 @@ public class DataAdministrationController implements Serializable {
 
     public void setExecutionFeedback(String executionFeedback) {
         this.executionFeedback = executionFeedback;
+    }
+
+    // Getters and setters for dual database support
+    public boolean isRunOnMainDatabase() {
+        return runOnMainDatabase;
+    }
+
+    public void setRunOnMainDatabase(boolean runOnMainDatabase) {
+        this.runOnMainDatabase = runOnMainDatabase;
+    }
+
+    public boolean isRunOnAuditDatabase() {
+        return runOnAuditDatabase;
+    }
+
+    public void setRunOnAuditDatabase(boolean runOnAuditDatabase) {
+        this.runOnAuditDatabase = runOnAuditDatabase;
+    }
+
+    public String getMainDatabaseErrors() {
+        return mainDatabaseErrors;
+    }
+
+    public void setMainDatabaseErrors(String mainDatabaseErrors) {
+        this.mainDatabaseErrors = mainDatabaseErrors;
+    }
+
+    public String getAuditDatabaseErrors() {
+        return auditDatabaseErrors;
+    }
+
+    public void setAuditDatabaseErrors(String auditDatabaseErrors) {
+        this.auditDatabaseErrors = auditDatabaseErrors;
+    }
+
+    public String getMainDatabaseSuggestedSql() {
+        return mainDatabaseSuggestedSql;
+    }
+
+    public void setMainDatabaseSuggestedSql(String mainDatabaseSuggestedSql) {
+        this.mainDatabaseSuggestedSql = mainDatabaseSuggestedSql;
+    }
+
+    public String getAuditDatabaseSuggestedSql() {
+        return auditDatabaseSuggestedSql;
+    }
+
+    public void setAuditDatabaseSuggestedSql(String auditDatabaseSuggestedSql) {
+        this.auditDatabaseSuggestedSql = auditDatabaseSuggestedSql;
+    }
+
+    public String getMainDatabaseExecutionFeedback() {
+        return mainDatabaseExecutionFeedback;
+    }
+
+    public void setMainDatabaseExecutionFeedback(String mainDatabaseExecutionFeedback) {
+        this.mainDatabaseExecutionFeedback = mainDatabaseExecutionFeedback;
+    }
+
+    public String getAuditDatabaseExecutionFeedback() {
+        return auditDatabaseExecutionFeedback;
+    }
+
+    public void setAuditDatabaseExecutionFeedback(String auditDatabaseExecutionFeedback) {
+        this.auditDatabaseExecutionFeedback = auditDatabaseExecutionFeedback;
     }
 
     public String getCreatedSql() {
@@ -2370,8 +4488,581 @@ public class DataAdministrationController implements Serializable {
     public void setTabIndexMissingFields(int tabIndexMissingFields) {
         this.tabIndexMissingFields = tabIndexMissingFields;
     }
-    
-    
+
+    public List<Path> getLogs() {
+        return logs;
+    }
+
+    public void setLogs(List<Path> logs) {
+        this.logs = logs;
+    }
+
+    public Path getSelected() {
+        return selected;
+    }
+
+    public void setSelected(Path selected) {
+        this.selected = selected;
+    }
+
+    /**
+     * Corrects BillItemFinanceDetails and BillFinanceDetails for historical
+     * inpatient direct issue bills within the selected date range.
+     *
+     * Skips bills that already have BillFinanceDetails populated (non-zero totalCostValue).
+     * Uses the same service method as new bill settlement for consistency.
+     */
+    public void correctInpatientDirectIssueBillFinanceDetails() {
+        int processed = 0;
+        int updated = 0;
+        int skipped = 0;
+
+        // Target bill types for inpatient direct issues
+        List<BillTypeAtomic> targetTypes = Arrays.asList(
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE,
+                BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE,
+                BillTypeAtomic.DIRECT_ISSUE_STORE_INWARD,
+                BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD
+        );
+
+        // Build JPQL query with date range
+        Map<String, Object> params = new HashMap<>();
+        params.put("ret", false);
+        params.put("types", targetTypes);
+
+        StringBuilder jpql = new StringBuilder(
+                "SELECT b FROM Bill b WHERE b.retired = :ret AND b.billTypeAtomic IN :types"
+        );
+        if (fromDate != null) {
+            jpql.append(" AND b.createdAt >= :fromDate");
+            params.put("fromDate", fromDate);
+        }
+        if (toDate != null) {
+            jpql.append(" AND b.createdAt <= :toDate");
+            params.put("toDate", toDate);
+        }
+
+        List<Bill> bills = billFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+
+        for (Bill bill : bills) {
+            processed++;
+
+            // Skip if BillFinanceDetails already has data (non-zero totalCostValue)
+            if (bill.getBillFinanceDetails() != null
+                    && bill.getBillFinanceDetails().getTotalCostValue() != null
+                    && bill.getBillFinanceDetails().getTotalCostValue().compareTo(BigDecimal.ZERO) != 0) {
+                skipped++;
+                continue;
+            }
+
+            // Call existing service method to populate BIFD and BFD
+            billService.createBillFinancialDetailsForInpatientDirectIssueBill(bill);
+            updated++;
+        }
+
+        // Build feedback message
+        StringBuilder output = new StringBuilder();
+        output.append("Inpatient Direct Issue Finance Details Correction\n");
+        output.append("=================================================\n");
+        output.append("Processed: ").append(processed).append(" bills\n");
+        output.append("Updated: ").append(updated).append(" bills\n");
+        output.append("Skipped (already populated): ").append(skipped).append(" bills\n");
+        if (fromDate != null || toDate != null) {
+            output.append("Date range: ").append(fromDate).append(" to ").append(toDate);
+        }
+        executionFeedback = output.toString();
+    }
+
+    /**
+     * Corrects finance details for OPD and pharmacy retail sale bills.
+     * This method populates BillItemFinanceDetails and BillFinanceDetails for historical
+     * OPD and pharmacy retail sale bills with missing or incorrect stock values.
+     * Stock values are made negative as stock goes out during sales.
+     */
+    public void correctOpdAndPharmacyRetailSaleBillFinanceDetails() {
+        int processed = 0;
+        int updated = 0;
+        int skipped = 0;
+
+        // Target bill types for OPD and pharmacy retail sales
+        List<BillTypeAtomic> targetTypes = Arrays.asList(
+                // OPD Bills with stock going out (OPD_IN service type)
+                BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER,
+                BillTypeAtomic.OPD_BILL_WITH_PAYMENT,
+                BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER,
+                BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT,
+                BillTypeAtomic.PACKAGE_OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER,
+                BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT,
+
+                // Pharmacy Retail Sales with stock going out
+                BillTypeAtomic.PHARMACY_RETAIL_SALE,
+                BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER
+        );
+
+        // Build JPQL query with date range
+        Map<String, Object> params = new HashMap<>();
+        params.put("ret", false);
+        params.put("types", targetTypes);
+
+        StringBuilder jpql = new StringBuilder(
+                "SELECT b FROM Bill b WHERE b.retired = :ret AND b.billTypeAtomic IN :types"
+        );
+        if (fromDate != null) {
+            jpql.append(" AND b.createdAt >= :fromDate");
+            params.put("fromDate", fromDate);
+        }
+        if (toDate != null) {
+            jpql.append(" AND b.createdAt <= :toDate");
+            params.put("toDate", toDate);
+        }
+
+        List<Bill> bills = billFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+
+        for (Bill bill : bills) {
+            processed++;
+
+            // Skip if BillFinanceDetails already has negative totalCostValue (already corrected)
+            if (bill.getBillFinanceDetails() != null
+                    && bill.getBillFinanceDetails().getTotalCostValue() != null
+                    && bill.getBillFinanceDetails().getTotalCostValue().compareTo(BigDecimal.ZERO) <= 0) {
+                skipped++;
+                continue;
+            }
+
+            // Call service method to populate/correct BIFD and BFD
+            billService.createBillFinancialDetailsForOpdAndPharmacyRetailSaleBill(bill);
+            updated++;
+        }
+
+        // Build feedback message
+        StringBuilder output = new StringBuilder();
+        output.append("OPD and Pharmacy Retail Sale Finance Details Correction\n");
+        output.append("======================================================\n");
+        output.append("Processed: ").append(processed).append(" bills\n");
+        output.append("Updated: ").append(updated).append(" bills\n");
+        output.append("Skipped (already corrected): ").append(skipped).append(" bills\n");
+        if (fromDate != null || toDate != null) {
+            output.append("Date range: ").append(fromDate).append(" to ").append(toDate);
+        }
+        executionFeedback = output.toString();
+    }
+
+    // Batch processing configuration
+    private static final int BATCH_SIZE_FOR_FINANCE_CORRECTION = 100; // Process 100 bills per batch
+
+    /**
+     * Corrects finance details for historical Return Without Tracing bills.
+     * Creates BillItemFinanceDetails and BillFinanceDetails for bills that were created
+     * before the BIFD/BFD implementation was added to the return process.
+     * Uses batch processing for better performance with large datasets.
+     */
+    public void correctReturnWithoutTracingBillFinanceDetails() {
+        long startTime = System.currentTimeMillis();
+        int totalProcessed = 0;
+        int totalUpdated = 0;
+        int totalSkipped = 0;
+        int batchNumber = 0;
+
+        // Target Return Without Tracing bill type
+        List<BillTypeAtomic> targetTypes = Arrays.asList(
+                BillTypeAtomic.PHARMACY_RETURN_WITHOUT_TREASING
+        );
+
+        // Build base JPQL query with date range
+        Map<String, Object> params = new HashMap<>();
+        params.put("ret", false);
+        params.put("types", targetTypes);
+
+        StringBuilder jpql = new StringBuilder(
+                "SELECT b FROM Bill b WHERE b.retired = :ret AND b.billTypeAtomic IN :types"
+        );
+        if (fromDate != null) {
+            jpql.append(" AND b.createdAt >= :fromDate");
+            params.put("fromDate", fromDate);
+        }
+        if (toDate != null) {
+            jpql.append(" AND b.createdAt <= :toDate");
+            params.put("toDate", toDate);
+        }
+        jpql.append(" ORDER BY b.id"); // Ensure consistent ordering for pagination
+
+        // First, get total count for progress indication
+        String countJpql = jpql.toString().replace("SELECT b FROM", "SELECT COUNT(b) FROM");
+        Long totalCount = billFacade.findLongByJpql(countJpql, params, TemporalType.TIMESTAMP);
+        if (totalCount == null) totalCount = 0L;
+
+        StringBuilder progressOutput = new StringBuilder();
+        progressOutput.append("Return Without Tracing Finance Details Correction\n");
+        progressOutput.append("=================================================\n");
+        progressOutput.append("Total bills to process: ").append(totalCount).append("\n");
+        progressOutput.append("Batch size: ").append(BATCH_SIZE_FOR_FINANCE_CORRECTION).append("\n");
+        progressOutput.append("Processing in batches...\n\n");
+
+        boolean hasMoreBatches = true;
+        int offset = 0;
+
+        while (hasMoreBatches) {
+            batchNumber++;
+            int batchProcessed = 0;
+            int batchUpdated = 0;
+            int batchSkipped = 0;
+
+            // Get next batch of bills (using fromRecord/toRecord pagination)
+            int fromRecord = offset;
+            int toRecord = offset + BATCH_SIZE_FOR_FINANCE_CORRECTION - 1;
+            List<Bill> bills = billFacade.findByJpql(jpql.toString(), params, fromRecord, toRecord);
+
+            if (bills == null || bills.isEmpty()) {
+                hasMoreBatches = false;
+                break;
+            }
+
+            progressOutput.append("Batch ").append(batchNumber).append(": Processing ")
+                    .append(bills.size()).append(" bills (").append(offset + 1).append(" to ")
+                    .append(offset + bills.size()).append(" of ").append(totalCount).append(")\n");
+
+            for (Bill bill : bills) {
+                batchProcessed++;
+                totalProcessed++;
+
+                // Skip if bill already has valid finance details for returns
+                if (hasValidReturnFinanceDetails(bill)) {
+                    batchSkipped++;
+                    totalSkipped++;
+                    continue;
+                }
+
+                try {
+                    // Create financial details using the same logic as new returns
+                    createFinanceDetailsForHistoricalReturnBill(bill);
+                    batchUpdated++;
+                    totalUpdated++;
+                } catch (Exception e) {
+                    // Log error but continue processing other bills
+                    String errorMsg = "Error processing Return Without Tracing bill ID " + bill.getId() + ": " + getExceptionMessage(e);
+                    System.err.println(errorMsg);
+                    progressOutput.append("  ERROR: ").append(errorMsg).append("\n");
+                    batchSkipped++;
+                    totalSkipped++;
+                }
+            }
+
+            progressOutput.append("  Batch ").append(batchNumber).append(" results: ")
+                    .append(batchUpdated).append(" updated, ")
+                    .append(batchSkipped).append(" skipped\n\n");
+
+            offset += BATCH_SIZE_FOR_FINANCE_CORRECTION;
+
+            // Check if we've processed all bills
+            if (bills.size() < BATCH_SIZE_FOR_FINANCE_CORRECTION) {
+                hasMoreBatches = false;
+            }
+        }
+
+        long endTime = System.currentTimeMillis();
+        long durationMs = endTime - startTime;
+        long durationSeconds = durationMs / 1000;
+
+        // Build final feedback message
+        progressOutput.append("FINAL RESULTS\n");
+        progressOutput.append("=============\n");
+        progressOutput.append("Total processed: ").append(totalProcessed).append(" bills\n");
+        progressOutput.append("Total updated: ").append(totalUpdated).append(" bills\n");
+        progressOutput.append("Total skipped (already populated or errors): ").append(totalSkipped).append(" bills\n");
+        progressOutput.append("Batches processed: ").append(batchNumber).append("\n");
+        progressOutput.append("Processing time: ").append(durationSeconds).append(" seconds\n");
+        if (fromDate != null || toDate != null) {
+            progressOutput.append("Date range: ").append(fromDate).append(" to ").append(toDate).append("\n");
+        }
+
+        if (totalUpdated > 0) {
+            double avgTimePerBill = (double) durationMs / totalUpdated;
+            progressOutput.append("Average time per updated bill: ").append(String.format("%.2f", avgTimePerBill)).append(" ms\n");
+        }
+
+        executionFeedback = progressOutput.toString();
+    }
+
+    /**
+     * Creates financial details for a historical Return Without Tracing bill.
+     * Uses the same logic as the current implementation in PharmacyReturnwithouttresing.
+     */
+    private void createFinanceDetailsForHistoricalReturnBill(Bill bill) {
+        if (bill == null || bill.getBillItems() == null || bill.getBillItems().isEmpty()) {
+            return;
+        }
+
+        // Process each bill item
+        for (BillItem billItem : bill.getBillItems()) {
+            if (billItem.isRetired()) {
+                continue;
+            }
+            createHistoricalBillItemFinanceDetails(billItem);
+        }
+
+        // Create bill-level finance details
+        createHistoricalBillFinanceDetails(bill);
+
+        // Persist the updated bill
+        billFacade.edit(bill);
+    }
+
+    /**
+     * Creates BIFD for historical bill item using comprehensive logic from PharmacyReturnwithouttresing.
+     * Includes PharmacyCostingService integration and complete field population.
+     */
+    private void createHistoricalBillItemFinanceDetails(BillItem billItem) {
+        PharmaceuticalBillItem phi = billItem.getPharmaceuticalBillItem();
+        if (phi == null || phi.getStock() == null || phi.getStock().getItemBatch() == null) {
+            return;
+        }
+
+        // Initialize BIFD (replicating billItem.initializeBillItemFinanceDetails())
+        if (billItem.getBillItemFinanceDetails() == null) {
+            billItem.setBillItemFinanceDetails(new BillItemFinanceDetails());
+            billItem.getBillItemFinanceDetails().setBillItem(billItem);
+        }
+
+        BillItemFinanceDetails bifd = billItem.getBillItemFinanceDetails();
+
+        // Set audit information
+        bifd.setCreatedAt(new Date());
+
+        // Calculate units per pack using PharmacyCostingService
+        pharmacyCostingService.calculateUnitsPerPack(bifd);
+
+        // Set quantities from PharmaceuticalBillItem (negative for returns)
+        pharmacyCostingService.addBillItemFinanceDetailQuantitiesFromPharmaceuticalBillItem(phi, bifd);
+
+        // Extract and set rates from ItemBatch (positive values)
+        ItemBatch batch = phi.getStock().getItemBatch();
+        bifd.setCostRate(BigDecimal.valueOf(batch.getCostRate() != null ? batch.getCostRate() : batch.getPurcahseRate()));
+        bifd.setPurchaseRate(BigDecimal.valueOf(batch.getPurcahseRate()));
+        bifd.setRetailSaleRate(BigDecimal.valueOf(batch.getRetailsaleRate()));
+
+        // Set line rates (using purchase rate for return pricing)
+        bifd.setLineGrossRate(bifd.getPurchaseRate());
+
+        // Apply comprehensive line total calculation
+        calculateHistoricalLineTotal(billItem);
+    }
+
+    /**
+     * Comprehensive line total calculation for historical corrections.
+     * Based on PharmacyReturnwithouttresing.calculateLineTotal() method.
+     */
+    private void calculateHistoricalLineTotal(BillItem bi) {
+        BillItemFinanceDetails fd = bi.getBillItemFinanceDetails();
+        PharmaceuticalBillItem phi = bi.getPharmaceuticalBillItem();
+
+        // Get current quantities and rates
+        BigDecimal qty = fd.getQuantity();
+        BigDecimal freeQty = fd.getFreeQuantity();
+        BigDecimal rate = fd.getLineGrossRate();
+
+        // Null safety
+        if (qty == null) qty = BigDecimal.ZERO;
+        if (freeQty == null) freeQty = BigDecimal.ZERO;
+        if (rate == null) rate = BigDecimal.ZERO;
+
+        // Use absolute values for calculation (quantities are already negative)
+        qty = qty.abs();
+        freeQty = freeQty.abs();
+
+        // Calculate total quantity and line total
+        BigDecimal totalQty = qty.add(freeQty);
+        BigDecimal lineTotal = totalQty.multiply(rate);
+
+        // Set total quantity (negative for returns - stock moving out)
+        fd.setTotalQuantity(totalQty.abs().negate());
+
+        // Set financial totals (positive for refund amounts)
+        fd.setLineGrossTotal(lineTotal);
+        fd.setLineNetTotal(lineTotal);
+
+        // Calculate line net rate
+        if (totalQty.compareTo(BigDecimal.ZERO) > 0) {
+            fd.setLineNetRate(lineTotal.divide(totalQty, 4, RoundingMode.HALF_UP));
+        } else {
+            fd.setLineNetRate(BigDecimal.ZERO);
+        }
+
+        // Set bill-level rates and totals in BIFD
+        fd.setGrossRate(rate);
+        fd.setNetRate(fd.getLineNetRate());
+        fd.setGrossTotal(lineTotal);
+        fd.setNetTotal(lineTotal);
+
+        // Set BillItem legacy fields (matching BIFD values)
+        bi.setRate(rate.doubleValue());
+        bi.setQty(qty.doubleValue());
+        bi.setNetRate(fd.getLineNetRate() != null ? fd.getLineNetRate().doubleValue() : 0.0);
+        bi.setGrossValue(lineTotal.doubleValue());
+        bi.setNetValue(lineTotal.doubleValue());
+
+        // Calculate unit-based quantities
+        boolean isAmpp = bi.getItem() instanceof Ampp;
+        BigDecimal unitsPerPack = fd.getUnitsPerPack() != null ? fd.getUnitsPerPack() : BigDecimal.ONE;
+        BigDecimal qtyByUnits = isAmpp ? qty.multiply(unitsPerPack) : qty;
+        BigDecimal freeQtyByUnits = isAmpp ? freeQty.multiply(unitsPerPack) : freeQty;
+        BigDecimal totalQtyByUnits = qtyByUnits.add(freeQtyByUnits);
+
+        // Update BIFD quantities (negative for returns - stock moving out)
+        fd.setQuantity(qty.abs().negate());
+        fd.setFreeQuantity(freeQty.abs().negate());
+        fd.setQuantityByUnits(qtyByUnits.abs().negate());
+        fd.setFreeQuantityByUnits(freeQtyByUnits.abs().negate());
+        fd.setTotalQuantityByUnits(totalQtyByUnits.abs().negate());
+
+        // Set cost rate fields for consistency
+        if (fd.getCostRate() != null) {
+            fd.setLineCostRate(fd.getCostRate());
+            fd.setBillCostRate(fd.getCostRate());
+            fd.setTotalCostRate(fd.getCostRate());
+
+            // Calculate cost values (negative for returns)
+            BigDecimal totalCostValue = fd.getCostRate().multiply(totalQtyByUnits.abs());
+            fd.setLineCost(totalCostValue.negate());
+            fd.setBillCost(totalCostValue.negate());
+            fd.setTotalCost(totalCostValue.negate());
+        }
+
+        // Set BIFD value fields for aggregation by createHistoricalBillFinanceDetails()
+        // Calculate stock valuation values (NEGATIVE for returns)
+        if (fd.getCostRate() != null) {
+            BigDecimal costValue = fd.getCostRate().multiply(totalQtyByUnits.abs()).negate();
+            fd.setValueAtCostRate(costValue);
+        }
+        if (fd.getPurchaseRate() != null) {
+            BigDecimal purchaseValue = fd.getPurchaseRate().multiply(totalQtyByUnits.abs()).negate();
+            fd.setValueAtPurchaseRate(purchaseValue);
+        }
+        if (fd.getRetailSaleRate() != null) {
+            BigDecimal retailValue = fd.getRetailSaleRate().multiply(totalQtyByUnits.abs()).negate();
+            fd.setValueAtRetailRate(retailValue);
+        }
+
+        // Set PharmaceuticalBillItem stock values (negative for returns)
+        if (phi != null) {
+            double totalQtyInUnits = totalQtyByUnits.doubleValue();
+            if (fd.getPurchaseRate() != null) {
+                phi.setPurchaseValue(-Math.abs(totalQtyInUnits * fd.getPurchaseRate().doubleValue()));
+            }
+            if (fd.getCostRate() != null) {
+                phi.setCostValue(-Math.abs(totalQtyInUnits * fd.getCostRate().doubleValue()));
+                phi.setCostRate(fd.getCostRate().doubleValue());
+            }
+            if (fd.getRetailSaleRate() != null) {
+                phi.setRetailValue(-Math.abs(totalQtyInUnits * fd.getRetailSaleRate().doubleValue()));
+                phi.setRetailRate(fd.getRetailSaleRate().doubleValue());
+            }
+        }
+
+        // Set zero-value fields (no discounts, taxes, or expenses on returns without tracing)
+        fd.setLineDiscount(BigDecimal.ZERO);
+        fd.setLineTax(BigDecimal.ZERO);
+        fd.setLineExpense(BigDecimal.ZERO);
+        fd.setBillDiscount(BigDecimal.ZERO);
+        fd.setBillTax(BigDecimal.ZERO);
+        fd.setBillExpense(BigDecimal.ZERO);
+        fd.setTotalDiscount(BigDecimal.ZERO);
+        fd.setTotalTax(BigDecimal.ZERO);
+        fd.setTotalExpense(BigDecimal.ZERO);
+    }
+
+    /**
+     * Creates BFD for historical bill with aggregated values.
+     */
+    private void createHistoricalBillFinanceDetails(Bill bill) {
+        if (bill.getBillFinanceDetails() == null) {
+            bill.setBillFinanceDetails(new BillFinanceDetails());
+            bill.getBillFinanceDetails().setBill(bill);
+        }
+
+        BillFinanceDetails bfd = bill.getBillFinanceDetails();
+
+        // Aggregate totals from bill items
+        BigDecimal totalGross = BigDecimal.ZERO;
+        BigDecimal totalCostValue = BigDecimal.ZERO;
+        BigDecimal totalPurchaseValue = BigDecimal.ZERO;
+        BigDecimal totalRetailValue = BigDecimal.ZERO;
+
+        for (BillItem billItem : bill.getBillItems()) {
+            if (billItem.isRetired() || billItem.getBillItemFinanceDetails() == null) {
+                continue;
+            }
+
+            BillItemFinanceDetails bifd = billItem.getBillItemFinanceDetails();
+
+            // Aggregate positive revenue
+            if (bifd.getGrossTotal() != null) {
+                totalGross = totalGross.add(bifd.getGrossTotal());
+            }
+
+            // Aggregate negative stock valuations
+            if (bifd.getValueAtCostRate() != null) {
+                totalCostValue = totalCostValue.add(bifd.getValueAtCostRate());
+            }
+            if (bifd.getValueAtPurchaseRate() != null) {
+                totalPurchaseValue = totalPurchaseValue.add(bifd.getValueAtPurchaseRate());
+            }
+            if (bifd.getValueAtRetailRate() != null) {
+                totalRetailValue = totalRetailValue.add(bifd.getValueAtRetailRate());
+            }
+        }
+
+        // Set aggregated values
+        bfd.setGrossTotal(totalGross);
+        bfd.setNetTotal(totalGross);
+        bfd.setTotalCostValue(totalCostValue);
+        bfd.setTotalPurchaseValue(totalPurchaseValue);
+        bfd.setTotalRetailSaleValue(totalRetailValue);
+    }
+
+    /**
+     * Checks if a return without tracing bill already has valid finance details.
+     * For returns, we expect:
+     * - BillFinanceDetails with negative stock valuation values
+     * - BillItemFinanceDetails for each bill item with proper calculations
+     * - Consistent positive revenue totals
+     */
+    private boolean hasValidReturnFinanceDetails(Bill bill) {
+        // Must have BillFinanceDetails
+        BillFinanceDetails bfd = bill.getBillFinanceDetails();
+        if (bfd == null) {
+            return false;
+        }
+
+        // For returns, totalCostValue should be negative (stock moving out)
+        if (bfd.getTotalCostValue() == null || bfd.getTotalCostValue().compareTo(BigDecimal.ZERO) >= 0) {
+            return false;
+        }
+
+        // Must have at least one BillItemFinanceDetails that makes sense
+        boolean hasValidBIFD = false;
+        for (BillItem billItem : bill.getBillItems()) {
+            if (billItem.isRetired()) {
+                continue;
+            }
+
+            BillItemFinanceDetails bifd = billItem.getBillItemFinanceDetails();
+            if (bifd == null) {
+                return false; // Missing BIFD for active item
+            }
+
+            // Check if BIFD has sensible values for returns
+            if (bifd.getValueAtCostRate() != null
+                    && bifd.getValueAtCostRate().compareTo(BigDecimal.ZERO) < 0 // Should be negative
+                    && bifd.getQuantity() != null
+                    && bifd.getQuantity().compareTo(BigDecimal.ZERO) < 0 // Should be negative
+                    && bifd.getGrossTotal() != null
+                    && bifd.getGrossTotal().compareTo(BigDecimal.ZERO) > 0) { // Should be positive
+                hasValidBIFD = true;
+            }
+        }
+
+        return hasValidBIFD;
+    }
 
     public class EntityFieldError {
 
@@ -2407,6 +5098,170 @@ public class DataAdministrationController implements Serializable {
             this.missingFields = missingFields;
         }
 
+    }
+
+    public void dischargeOldDuplicateEncounters() {
+        try {
+            String t = patientEncounterFacade.getTableName();
+            String pr = patientRoomFacade.getTableName();
+            // Group by the actual room (roomFacilityCharge_id in patientroom), not by the
+            // PatientRoom assignment ID. Multiple PatientRoom records can point to the same
+            // physical room, so grouping by currentPatientRoom_id only catches duplicates
+            // within the same assignment, not across different admissions to the same room.
+            String sql = "UPDATE " + t + " pe "
+                    + "JOIN " + pr + " prm ON pe.currentPatientRoom_id = prm.id "
+                    + "JOIN ( "
+                    + "  SELECT MAX(pe2.id) AS keep_id, prm2.roomFacilityCharge_id "
+                    + "  FROM " + t + " pe2 "
+                    + "  JOIN " + pr + " prm2 ON pe2.currentPatientRoom_id = prm2.id "
+                    + "  WHERE pe2.discharged = 0 AND pe2.paymentFinalized = 0 AND pe2.currentPatientRoom_id IS NOT NULL "
+                    + "  GROUP BY prm2.roomFacilityCharge_id "
+                    + ") latest ON prm.roomFacilityCharge_id = latest.roomFacilityCharge_id "
+                    + "SET pe.discharged = 1, pe.currentPatientRoom_id = NULL, prm.discharged = 1, prm.dischargedAt = NOW() "
+                    + "WHERE pe.discharged = 0 AND pe.paymentFinalized = 0 "
+                    + "AND pe.id != latest.keep_id "
+                    + "AND pe.currentPatientRoom_id IS NOT NULL";
+            patientEncounterFacade.executeNativeSql(sql);
+            JsfUtil.addSuccessMessage("Done. Old duplicate undischarged encounters have been discharged, and their current rooms have been released.");
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error: " + getExceptionMessage(e));
+        }
+    }
+
+    private int staleEncounterDays = 60;
+
+    public void dischargeStaleEncounters() {
+        if (staleEncounterDays <= 0) {
+            JsfUtil.addErrorMessage("Please enter a value greater than 0 days.");
+            return;
+        }
+        try {
+            String t = patientEncounterFacade.getTableName();
+            String pr = patientRoomFacade.getTableName();
+            String sql = "UPDATE " + t + " pe "
+                    + "JOIN " + pr + " prm ON pe.currentPatientRoom_id = prm.id "
+                    + "SET pe.discharged = 1, pe.currentPatientRoom_id = NULL, prm.discharged = 1, prm.dischargedAt = NOW() "
+                    + "WHERE pe.discharged = 0 AND pe.paymentFinalized = 0 "
+                    + "AND pe.currentPatientRoom_id IS NOT NULL "
+                    + "AND pe.createdAt < DATE_SUB(NOW(), INTERVAL " + staleEncounterDays + " DAY)";
+            patientEncounterFacade.executeNativeSql(sql);
+            JsfUtil.addSuccessMessage("Done. Undischarged encounters older than " + staleEncounterDays + " days have been marked as discharged and their current rooms have been released.");
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error: " + getExceptionMessage(e));
+        }
+    }
+
+    public int getStaleEncounterDays() {
+        return staleEncounterDays;
+    }
+
+    public void setStaleEncounterDays(int staleEncounterDays) {
+        this.staleEncounterDays = staleEncounterDays;
+    }
+
+    /**
+     * One-time migration: creates INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY
+     * bills for old admissions that were settled before per-company billing was
+     * introduced. Skips any encounter that already has such a bill.
+     * Closes #19571
+     */
+    public void migrateInwardCreditCompanyBills() {
+        executionFeedback = "";
+        StringBuilder result = new StringBuilder();
+        int created = 0;
+        int skipped = 0;
+
+        try {
+            // Find finalized credit admissions that have no per-company bill yet
+            String jpql = "Select pe From PatientEncounter pe "
+                    + " where pe.retired = false "
+                    + " and pe.paymentFinalized = true "
+                    + " and pe.paymentMethod = :pm "
+                    + " and pe.creditCompany is not null "
+                    + " and pe.finalBill is not null "
+                    + " and pe.id not in ("
+                    + "   Select b.patientEncounter.id From Bill b "
+                    + "   where b.retired = false "
+                    + "   and b.billTypeAtomic = :bta "
+                    + " )";
+            Map<String, Object> params = new HashMap<>();
+            params.put("pm", PaymentMethod.Credit);
+            params.put("bta", BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
+
+            List<PatientEncounter> encounters = patientEncounterFacade.findByJpql(jpql, params);
+            result.append("Found ").append(encounters.size()).append(" encounter(s) to migrate.\n\n");
+
+            for (PatientEncounter pe : encounters) {
+                try {
+                    if (pe.getCreditCompany() == null || pe.getFinalBill() == null) {
+                        skipped++;
+                        continue;
+                    }
+
+                    double netTotal = Math.abs(pe.getCreditUsedAmount());
+                    if (netTotal < 0.01 && pe.getFinalBill().getNetTotal() != 0) {
+                        netTotal = Math.abs(pe.getFinalBill().getNetTotal());
+                    }
+                    if (netTotal < 0.01) {
+                        skipped++;
+                        continue;
+                    }
+
+                    double paidAmount = Math.abs(pe.getCreditPaidAmount());
+
+                    Bill ccBill = new BilledBill();
+                    ccBill.setGrantTotal(netTotal);
+                    ccBill.setTotal(netTotal);
+                    ccBill.setNetTotal(netTotal);
+                    ccBill.setPaidAmount(paidAmount);
+                    ccBill.setInstitution(pe.getFinalBill().getInstitution());
+                    ccBill.setCreditCompany(pe.getCreditCompany());
+                    ccBill.setPaymentMethod(PaymentMethod.Credit);
+                    ccBill.setBillType(BillType.InwardFinalBillCCPayment);
+                    ccBill.setBillTypeAtomic(BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
+
+                    ccBill.setDeptId(billNumberGenerator.departmentBillNumberGenerator(
+                            pe.getFinalBill().getDepartment(), BillType.InwardFinalBillCCPayment,
+                            BillClassType.BilledBill, BillNumberSuffix.INWFINALCCPAY));
+                    ccBill.setInsId(billNumberGenerator.institutionBillNumberGenerator(
+                            pe.getFinalBill().getInstitution(), BillType.InwardFinalBillCCPayment,
+                            BillClassType.BilledBill, BillNumberSuffix.INWFINALCCPAY));
+
+                    Date billDate = pe.getDateOfDischarge() != null ? pe.getDateOfDischarge()
+                            : (pe.getFinalBill() != null && pe.getFinalBill().getCreatedAt() != null
+                                    ? pe.getFinalBill().getCreatedAt() : pe.getCreatedAt());
+                    ccBill.setBillDate(billDate);
+                    ccBill.setBillTime(billDate);
+                    ccBill.setCreatedAt(new Date()); // audit timestamp — when the migration ran
+                    ccBill.setCreater(sessionController.getLoggedUser());
+
+                    ccBill.setPatientEncounter(pe);
+                    ccBill.setPatient(pe.getPatient());
+                    ccBill.setReferenceBill(pe.getFinalBill());
+
+                    billFacade.create(ccBill);
+                    created++;
+
+                    if (created % 50 == 0) {
+                        result.append("Created ").append(created).append(" bills so far...\n");
+                    }
+                } catch (Exception ex) {
+                    result.append("Error for encounter ID ").append(pe.getId())
+                            .append(": ").append(ex.getMessage()).append("\n");
+                    skipped++;
+                }
+            }
+
+            result.append("\n=== Migration Summary ===\n");
+            result.append("Bills created: ").append(created).append("\n");
+            result.append("Skipped: ").append(skipped).append("\n");
+            executionFeedback = result.toString();
+            JsfUtil.addSuccessMessage("Migration complete. Created: " + created + ", Skipped: " + skipped);
+
+        } catch (Exception e) {
+            executionFeedback = "Error: " + getExceptionMessage(e);
+            JsfUtil.addErrorMessage(executionFeedback);
+        }
     }
 
 }

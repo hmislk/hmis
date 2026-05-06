@@ -19,7 +19,7 @@
             <h:outputLabel value="Item Name"/>
             <h:outputLabel value="Item Code"/>
             <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" />
-            <p:inputText autocomplete="off" value="#{searchController.searchKeyword.toDepartment}"/>
+            <p:inputText autocomplete="off" value="#{searchController.searchKeyword.department}"/>
             <p:inputText autocomplete="off" value="#{searchController.searchKeyword.netTotal}"/>
             <p:inputText autocomplete="off" value="#{searchController.searchKeyword.itemName}"/>
             <p:inputText autocomplete="off" value="#{searchController.searchKeyword.code}"/>
@@ -29,16 +29,15 @@
                 <h:outputLabel value="TRANSFER REQUEST"/>
             </f:facet>
 
-            <p:column>
-                <p:commandButton ajax="false" value="View" action="pharmacy_reprint_transfer_request">
-                    <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
-                </p:commandButton>
-            </p:column>
-
-
             <p:column headerText="Request No">                      
-                <h:outputLabel value="#{bill.deptId}"/>                         
+                <h:commandLink action="pharmacy_reprint_transfer_request?faces-redirect=true" value="#{bill.deptId}">
+                    <h:outputLabel ></h:outputLabel>
+                    <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
+                </h:commandLink>
             </p:column>
+
+            
+
             <p:column headerText="From Department">                      
                 <h:outputLabel value="#{bill.toDepartment.name}"/>                          
             </p:column> 
@@ -69,9 +68,9 @@
             </p:column>  
 
             <p:column headerText="Net Value" filterBy="#{bill.netTotal}" style="text-align: right;"  >               
-                    <h:outputLabel value="#{bill.netTotal}" >
-                        <f:convertNumber pattern="#,##0.00"/>
-                    </h:outputLabel>                  
+                <h:outputLabel value="#{bill.netTotal}" >
+                    <f:convertNumber pattern="#,##0.00"/>
+                </h:outputLabel>                  
             </p:column>
 
             <p:column headerText="Comments" >

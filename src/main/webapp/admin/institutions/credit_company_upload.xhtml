@@ -94,15 +94,23 @@
 
         <p:poll update="tbl"></p:poll>
 
-        <p:dataTable id="tbl" 
+        <p:dataTable id="tbl"
                      value="#{dataUploadController.creditCompanies}" var="colcen" >
-            <p:column >
-                <h:outputText value="#{colcen.name}" ></h:outputText>
+            <p:column headerText="Name">
+                <h:outputText value="#{colcen.name}" />
             </p:column>
-            <p:column >
-               
+            <p:column headerText="Printing Name">
+                <h:outputText value="#{colcen.chequePrintingName}" />
             </p:column>
-
+            <p:column headerText="Contact No">
+                <h:outputText value="#{colcen.phone}" />
+            </p:column>
+            <p:column headerText="Email Address">
+                <h:outputText value="#{colcen.email}" />
+            </p:column>
+            <p:column headerText="Address">
+                <h:outputText value="#{colcen.address}" />
+            </p:column>
         </p:dataTable>
 
 

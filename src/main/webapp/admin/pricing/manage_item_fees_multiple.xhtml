@@ -12,7 +12,7 @@
 
         <h:panelGroup >
             <h:form id="form"  >
-                
+
                 <p:growl ></p:growl>
 
                 <p:dialog id="dlg"  header="Adding New Fee" widgetVar="dlg" modal="true" height="400" >
@@ -114,138 +114,134 @@
                     <f:facet name="header" >
                         <h:outputLabel value="List of Items and Services"></h:outputLabel>
                     </f:facet>
+                    <p:commandButton 
+                        id="btnToAddNewFees"
+                        value="Add New Fees for Selected" 
+                        process="btnToAddNewFees tblItems" 
+                        onclick="PF('dlg').show();" 
+                        class="m-1 ui-button-success" 
+                        icon="fa fa-plus">   
+                    </p:commandButton>
+                    <p:commandButton 
+                        ajax="false" 
+                        value="Clear Selected Items" 
+                        class="m-1" 
+                        action="#{itemFeeManager.clearItemFees()}" >
+                    </p:commandButton>
+                    <p:commandButton 
+                        ajax="false" 
+                        class="m-1" 
+                        value="Add Fees For Selected Items" 
+                        action="#{itemController.createItemFessForItemsWithoutFee}" >
+                    </p:commandButton>
+                    <p:commandButton 
+                        ajax="false"
+                        class="m-1" 
+                        value="Fix Items Totals"
+                        action="#{itemController.updateSelectedItemFees}" >
+                    </p:commandButton>
+                    <p:commandButton 
+                        ajax="false"
+                        class="m-1" 
+                        value="Fix Discount Allowed Property" 
+                        action="#{itemController.updateSelectedFeesForDiscountAllow}" >
+                    </p:commandButton>
+                    <p:commandButton 
+                        ajax="false"
+                        class="m-1" 
+                        value="Process Items" 
+                        action="#{itemController.refreshInvestigationsAndServices}" >
+                    </p:commandButton>
 
-                    <h:panelGrid columns="1" styleClass="alignTop" >
-                        <h:panelGrid columns="4" >
+                    <p:dataTable 
+                        id="tblItems"
+                        value="#{itemController.investigationsAndServices}" 
+                        var="i"   
+                        class="m-1 w-100" 
+                        rowKey="#{i.id}" 
+                        selection="#{itemFeeManager.selectedList}" 
+                        rowIndexVar="s"
+                        rows="20"
+                        paginator="true"
+                        selectionMode="multiple"
+                        paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                        rowsPerPageTemplate="20,50,100,500,1000,1500"
+                        >
 
-                            <p:commandButton 
-                                id="btnToAddNewFees"
-                                value="Add New Fees for Selected" 
-                                process="btnToAddNewFees tblItems" 
-                                onclick="PF('dlg').show();" 
-                                class="w-100 mt-2 ui-button-success" 
-                                icon="fa fa-plus">   
-                            </p:commandButton>
+                        <p:column selectRow="true"  style="width: 10px;">                            
+                        </p:column>
 
-                            
-                            <p:commandButton ajax="false" 
-                                             value="Clear Selected Items" 
-                                             action="#{itemFeeManager.clearItemFees()}" >
-                            </p:commandButton>
+                        <p:column   sortBy="#{i.name}" width="200"
+                                    filterMatchMode="contains" filterBy="#{i.name}" >  
+                            <f:facet name="header">
+                                <h:outputLabel value="Item Name" />
+                            </f:facet>
+                            <h:outputLabel value="#{i.name}"/>
+                        </p:column>
 
-                            <p:commandButton ajax="false" 
-                                             value="Add Fees For Selected Items" 
-                                             action="#{itemController.createItemFessForItemsWithoutFee}" >
-                            </p:commandButton>
+                        <p:column sortBy="#{i.institution.name}" width="200"
+                                  filterMatchMode="contains" filterBy="#{i.institution.name}">
+                            <f:facet name="header">
+                                <h:outputLabel value="Institution" />
+                            </f:facet>
+                            <h:outputLabel value="#{i.institution.name}" ></h:outputLabel>
+                        </p:column>
 
-                            <p:commandButton 
-                                ajax="false" value="Fix Items Totals" action="#{itemController.updateSelectedItemFees}" >
-                            </p:commandButton>
-                            <p:commandButton 
-                                ajax="false" value="Fix Discount Allowed Property" action="#{itemController.updateSelectedFeesForDiscountAllow}" >
-                            </p:commandButton>
+                        <p:column sortBy="#{i.department.name}" width="120"
+                                  filterMatchMode="contains" filterBy="#{i.department.name}">
+                            <f:facet name="header">
+                                <h:outputLabel value="Department" />
+                            </f:facet>
+                            <h:outputLabel value="#{i.department.name}" ></h:outputLabel>
+                        </p:column>
+                        <p:column sortBy="#{i.dblValue}" width="80"
+                                  filterMatchMode="contains" filterBy="#{i.dblValue}">
+                            <f:facet name="header">
+                                <h:outputLabel value="Total Fee" >
 
-                            <p:commandButton 
-                                ajax="false" value="Process Items" action="#{itemController.refreshInvestigationsAndServices}" >
-                            </p:commandButton>
+                                </h:outputLabel>
+                            </f:facet>
+                            <h:outputLabel value="#{i.total}" >
+                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                            </h:outputLabel>
+                        </p:column>
+                        <p:column style="text-align: right;">
+                            <f:facet name="header">
+                                <h:outputLabel value="Fees" />
+                            </f:facet>
 
-                        </h:panelGrid>
-                        <p:panel >
-                            <p:dataTable 
-                                id="tblItems"
-                                value="#{itemController.investigationsAndServices}" 
-                                var="i"   
-                                rowKey="#{i.id}" 
-                                selection="#{itemFeeManager.selectedList}" 
-                                rowIndexVar="s"
-                                rows="20"
-                                paginator="true"
-                                selectionMode="multiple"
-                                paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                rowsPerPageTemplate="20,50,100,500,1000,1500"
-                                >
-
-                                <p:column selectRow="true"  style="width: 10px;">                            
+                            <p:dataTable  value="#{i.itemFeesActive}" var="itfe" >
+                                <p:column headerText="Name">
+                                    <p:outputLabel value="#{itfe.name}" ></p:outputLabel>
                                 </p:column>
-
-                                <p:column   sortBy="#{i.name}" width="200"
-                                            filterMatchMode="contains" filterBy="#{i.name}" >  
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Item Name" />
-                                    </f:facet>
-                                    <h:outputLabel value="#{i.name}"/>
+                                <p:column headerText="Type">
+                                    <p:outputLabel value="#{itfe.feeType}" ></p:outputLabel>
                                 </p:column>
-
-                                <p:column sortBy="#{i.institution.name}" width="200"
-                                          filterMatchMode="contains" filterBy="#{i.institution.name}">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Institution" />
-                                    </f:facet>
-                                    <h:outputLabel value="#{i.institution.name}" ></h:outputLabel>
+                                <p:column headerText="Discount">
+                                    <p:outputLabel value="#{itfe.discountAllowed?'Allowed':'Not Allowed'}" ></p:outputLabel>
                                 </p:column>
-
-                                <p:column sortBy="#{i.department.name}" width="120"
-                                          filterMatchMode="contains" filterBy="#{i.department.name}">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Department" />
-                                    </f:facet>
-                                    <h:outputLabel value="#{i.department.name}" ></h:outputLabel>
-                                </p:column>
-                                <p:column sortBy="#{i.dblValue}" width="80"
-                                          filterMatchMode="contains" filterBy="#{i.dblValue}">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Total Fee" >
-
-                                        </h:outputLabel>
-                                    </f:facet>
-                                    <h:outputLabel value="#{i.total}" >
+                                <p:column headerText="Fee">
+                                    <p:outputLabel value="#{itfe.fee}" >
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                    </h:outputLabel>
+                                    </p:outputLabel>
                                 </p:column>
-                                <p:column style="text-align: right;">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Fees" />
-                                    </f:facet>
-
-                                    <p:dataTable  value="#{i.itemFeesActive}" var="itfe" >
-                                        <p:column headerText="Name">
-                                            <p:outputLabel value="#{itfe.name}" ></p:outputLabel>
-                                        </p:column>
-                                        <p:column headerText="Type">
-                                            <p:outputLabel value="#{itfe.feeType}" ></p:outputLabel>
-                                        </p:column>
-                                        <p:column headerText="Discount">
-                                            <p:outputLabel value="#{itfe.discountAllowed?'Allowed':'Not Allowed'}" ></p:outputLabel>
-                                        </p:column>
-                                        <p:column headerText="Fee">
-                                            <p:outputLabel value="#{itfe.fee}" >
-                                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                            </p:outputLabel>
-                                        </p:column>
-                                        <p:column headerText="Foreigner">
-                                            <p:outputLabel value="#{itfe.ffee}" >
-                                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>  
-                                            </p:outputLabel>
-                                        </p:column>
-                                    </p:dataTable>
-
-
+                                <p:column headerText="Foreigner">
+                                    <p:outputLabel value="#{itfe.ffee}" >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>  
+                                    </p:outputLabel>
                                 </p:column>
-
-                                <p:column headerText="Actions" width="60">
-                                    <p:commandButton ajax="false" value="Edit" action="${itemFeeManager.toManageItemFees()}"  actionListener="#{viewController.makeBulkFeesAsPreviousPage()}">
-                                        <f:setPropertyActionListener value="#{i}" target="#{itemFeeManager.item}" ></f:setPropertyActionListener>
-                                    </p:commandButton>
-                                </p:column>
-
                             </p:dataTable>
-                        </p:panel>
 
 
+                        </p:column>
 
+                        <p:column headerText="Actions" width="60">
+                            <p:commandButton ajax="false" value="Edit" action="${itemFeeManager.toManageItemFees()}"  actionListener="#{viewController.makeBulkFeesAsPreviousPage()}">
+                                <f:setPropertyActionListener value="#{i}" target="#{itemFeeManager.item}" ></f:setPropertyActionListener>
+                            </p:commandButton>
+                        </p:column>
 
-                    </h:panelGrid>
-
+                    </p:dataTable>
                 </p:panel>
             </h:form>
 

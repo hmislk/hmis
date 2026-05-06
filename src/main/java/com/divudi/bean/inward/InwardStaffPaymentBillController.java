@@ -21,6 +21,7 @@ import com.divudi.core.entity.BillFee;
 import com.divudi.core.entity.BillFeePayment;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Payment;
 import com.divudi.core.entity.Speciality;
@@ -163,6 +164,9 @@ public class InwardStaffPaymentBillController implements Serializable {
     private SearchKeyword searchKeyword;
     private AdmissionType admissionType;
     private Institution institution;
+    private Institution site;
+    private Department department;
+    private String dateBasis = "createdAt";
 
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Constructors">
@@ -317,7 +321,8 @@ public class InwardStaffPaymentBillController implements Serializable {
                 + " and bf.bill.cancelled=false "
                 + " and bf.bill.createdAt between :fd and :td "
                 + " and (bf.feeValue - bf.paidValue) > 0 "
-                + " and bf.staff=:stf ";
+                + " and bf.staff=:stf "
+                + " order by bf.createdAt desc";
 
         h.put("fd", fromDate);
         h.put("td", toDate);
@@ -484,15 +489,7 @@ public class InwardStaffPaymentBillController implements Serializable {
     }
 
     public void createBillFeePaymentAndPayment(BillFee bf, Payment p) {
-        BillFeePayment bfp = new BillFeePayment();
-        bfp.setBillFee(bf);
-        bfp.setAmount(bf.getSettleValue());
-        bfp.setInstitution(getSessionController().getInstitution());
-        bfp.setDepartment(getSessionController().getDepartment());
-        bfp.setCreater(getSessionController().getLoggedUser());
-        bfp.setCreatedAt(new Date());
-        bfp.setPayment(p);
-        getBillFeePaymentFacade().create(bfp);
+        // BillFeePayment is deprecated and no longer used
     }
 
     public void fillDocPayingBillByCreatedDate() {
@@ -733,6 +730,11 @@ public class InwardStaffPaymentBillController implements Serializable {
         if (speciality != null) {
             jpql += " and bf.staff.speciality=:s ";
             params.put("s", speciality);
+        }
+        
+        if (currentStaff != null) {
+            jpql += " and bf.staff.id=:staffid ";
+            params.put("staffid", currentStaff.getId());
         }
 
         if (admissionType != null) {
@@ -1198,14 +1200,6 @@ public class InwardStaffPaymentBillController implements Serializable {
 
     }
 
-    public StaffFacade getStaffFacade() {
-        return staffFacade;
-    }
-
-    public void setStaffFacade(StaffFacade staffFacade) {
-        this.staffFacade = staffFacade;
-    }
-
     public Speciality getSpeciality() {
         return speciality;
     }
@@ -1227,7 +1221,7 @@ public class InwardStaffPaymentBillController implements Serializable {
                 sql = "select p from Staff p where p.retired=false and ((p.person.name) like '%" + query.toUpperCase() + "%'or  (p.code) like '%" + query.toUpperCase() + "%' ) order by p.person.name";
             }
             //   ////// // System.out.println(sql);
-            suggestions = getStaffFacade().findByJpql(sql);
+            suggestions = staffFacade.findByJpql(sql);
         }
         return suggestions;
     }
@@ -1243,10 +1237,10 @@ public class InwardStaffPaymentBillController implements Serializable {
         } else {
             if (getReferringDoctorSpeciality() != null) {
                 sql = "select p from Staff p where p.retired=false and ((p.person.name) like '%" + query.toUpperCase() + "%'or  (p.code) like '%" + query.toUpperCase() + "%' ) and p.speciality=:rd order by p.person.name";
-                suggestions = getStaffFacade().findByJpql(sql, m);
+                suggestions = staffFacade.findByJpql(sql, m);
             } else {
                 sql = "select p from Staff p where p.retired=false and ((p.person.name) like '%" + query.toUpperCase() + "%'or  (p.code) like '%" + query.toUpperCase() + "%' ) order by p.person.name";
-                suggestions = getStaffFacade().findByJpql(sql);
+                suggestions = staffFacade.findByJpql(sql);
             }
         }
         return suggestions;
@@ -1594,7 +1588,7 @@ public class InwardStaffPaymentBillController implements Serializable {
             getFacade().edit(current);
             JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            JsfUtil.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addErrorMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();
@@ -1765,6 +1759,30 @@ public class InwardStaffPaymentBillController implements Serializable {
 
     public void setInstitution(Institution institution) {
         this.institution = institution;
+    }
+
+    public Institution getSite() {
+        return site;
+    }
+
+    public void setSite(Institution site) {
+        this.site = site;
+    }
+
+    public Department getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(Department department) {
+        this.department = department;
+    }
+
+    public String getDateBasis() {
+        return dateBasis;
+    }
+
+    public void setDateBasis(String dateBasis) {
+        this.dateBasis = dateBasis;
     }
 
     public List<BillItem> getBillItems1() {

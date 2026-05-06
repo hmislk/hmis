@@ -135,7 +135,7 @@
                                                  onfocus="this.select()"
                                                  styleClass="numericTxt"
                                                  value="#{opticianPurchaseController.currentBillItem.pharmaceuticalBillItem.purchaseRate}"  >
-                                        <f:ajax event="keyup" execute="@this acItem" render="tmpRetail" listener="#{opticianPurchaseController.calSaleRte()}"></f:ajax>
+                                        <f:ajax event="keyup" execute="@this acItem" render="tmpRetail" listener="#{opticianPurchaseController.calculateSaleRate()}"></f:ajax>
                                     </p:inputText>
                                 </div>
                                 <div class="col">

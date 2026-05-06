@@ -12,6 +12,14 @@ import java.util.Set;
 public class JsfUtil {
 
     public static SelectItem[] getSelectItems(List<?> entities, boolean selectOne) {
+        if (entities == null || entities.isEmpty()) {
+            if (selectOne) {
+                return new SelectItem[]{new SelectItem("", "---")};
+            } else {
+                return new SelectItem[0];
+            }
+        }
+
         int size = selectOne ? entities.size() + 1 : entities.size();
         SelectItem[] items = new SelectItem[size];
         int i = 0;
@@ -39,6 +47,16 @@ public class JsfUtil {
     public static void addSuccessMessage(String msg) {
         FacesMessage facesMsg = new FacesMessage(FacesMessage.SEVERITY_INFO, msg, msg);
         FacesContext.getCurrentInstance().addMessage("successInfo", facesMsg);
+    }
+
+    public static void addInfoMessage(String string) {
+        FacesMessage facesMsg = new FacesMessage(FacesMessage.SEVERITY_INFO, string, string);
+        FacesContext.getCurrentInstance().addMessage(null, facesMsg);
+    }
+
+    public static void addWarningMessage(String msg) {
+        FacesMessage facesMsg = new FacesMessage(FacesMessage.SEVERITY_WARN, msg, msg);
+        FacesContext.getCurrentInstance().addMessage(null, facesMsg);
     }
 
     public static String getRequestParameter(String key) {

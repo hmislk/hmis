@@ -19,6 +19,7 @@ import java.util.UUID;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author buddhika
@@ -69,6 +70,11 @@ public class ReportTemplateRowBundle implements Serializable {
     private Long long9;
     private Long long10;
 
+    private Long billedCount;
+    private Long cancelledCount;
+    private Long returnCount;
+    private Long netCount;
+
     private PaymentMethod paymentMethod;
 
     private double onCallValue;
@@ -112,6 +118,11 @@ public class ReportTemplateRowBundle implements Serializable {
     private double settledAmountBySponsorsTotal;
     private double totalBalance;
 
+    private double floatOutTotal;
+    private double floatInTotal;
+    private double cashFloatOutTotal;
+    private double cashFloatInTotal;
+
     // Booleans to track transactions
     private boolean hasOnCallTransaction;
     private boolean hasCashTransaction;
@@ -146,8 +157,22 @@ public class ReportTemplateRowBundle implements Serializable {
 
     private boolean patientDepositsAreConsideredInHandingover = true;
 
+    private double cashierGrandTotal;
+    private double cashierCollectionTotal;
+    private double cashierExcludedTotal;
+    private boolean cashierGrandTotalComputed;
+    private boolean cashierCollectionTotalComputed;
+    private boolean cashierExcludedTotalComputed;
+    private List<PaymentMethod> cashierCollectionPaymentMethods = new ArrayList<>();
+    private List<PaymentMethod> cashierExcludedPaymentMethods = new ArrayList<>();
+
     public ReportTemplateRowBundle() {
         this.id = UUID.randomUUID();
+    }
+
+    public ReportTemplateRowBundle(String name) {
+        this.id = UUID.randomUUID();
+        this.name = name;
     }
 
     //    public ReportTemplateRowBundle(SessionController sessionController) {
@@ -228,6 +253,17 @@ public class ReportTemplateRowBundle implements Serializable {
         hasPatientDepositTransaction = false;
         hasPatientPointsTransaction = false;
         hasOnlineSettlementTransaction = false;
+
+        resetCashierTotalsAndFlags();
+    }
+
+    private void resetCashierTotalsAndFlags() {
+        cashierGrandTotal = 0.0;
+        cashierCollectionTotal = 0.0;
+        cashierExcludedTotal = 0.0;
+        cashierGrandTotalComputed = false;
+        cashierCollectionTotalComputed = false;
+        cashierExcludedTotalComputed = false;
     }
 
     public void collectDepartments() {
@@ -834,7 +870,6 @@ public class ReportTemplateRowBundle implements Serializable {
     }
 
     public void calculateTotalsByChildBundles(boolean forHandover) {
-        System.out.println("calculateTotalsByChildBundles");
         resetTotalsAndFlags();
         boolean selectAll = !forHandover;
 
@@ -872,7 +907,6 @@ public class ReportTemplateRowBundle implements Serializable {
 
                     System.out.println("childBundle.getTotal() = " + childBundle.getTotal());
 
-                    System.out.println("total Before= " + total);
 
                     addValueAndUpdateFlag("total", safeDouble(childBundle.getTotal()));
 
@@ -882,7 +916,6 @@ public class ReportTemplateRowBundle implements Serializable {
     }
 
     public void calculateTotalsByChildBundlesForHandover() {
-        System.out.println("calculateTotalsByChildBundlesForHandover");
         resetTotalsAndFlags();
 
         if (this.bundles != null && !this.bundles.isEmpty()) {
@@ -929,7 +962,6 @@ public class ReportTemplateRowBundle implements Serializable {
                     System.out.println("total After= " + total);
 
                     System.out.println("childBundle.totalOut() = " + childBundle.getTotalOut());
-                    System.out.println("totalOut Before= " + totalOut);
                     addValueAndUpdateFlag("totalOut", safeDouble(childBundle.getTotalOut()));
 
                 }
@@ -1070,8 +1102,8 @@ public class ReportTemplateRowBundle implements Serializable {
                 if (row.getBill() == null) {
                     continue;
                 }
-                double amount = isOutpatient ? row.getBill().getNetTotal() : row.getBill().getBillClassType().equals(BillClassType.CancelledBill) ?
-                        row.getBill().getNetTotal() : row.getBill().getPatientEncounter().getFinalBill().getNetTotal();
+                double amount = isOutpatient ? row.getBill().getNetTotal() : row.getBill().getBillClassType().equals(BillClassType.CancelledBill)
+                        ? row.getBill().getNetTotal() : row.getBill().getPatientEncounter().getFinalBill().getNetTotal();
                 total += amount;
             }
         }
@@ -1112,8 +1144,8 @@ public class ReportTemplateRowBundle implements Serializable {
                     continue;
                 }
 
-                double amount = isOutpatient ? row.getBill().getSettledAmountByPatient() : row.getBill().getBillClassType().equals(BillClassType.CancelledBill) ?
-                        row.getBill().getSettledAmountByPatient() : row.getBill().getPatientEncounter().getFinalBill().getSettledAmountByPatient();
+                double amount = isOutpatient ? row.getBill().getSettledAmountByPatient() : row.getBill().getBillClassType().equals(BillClassType.CancelledBill)
+                        ? row.getBill().getSettledAmountByPatient() : row.getBill().getPatientEncounter().getFinalBill().getSettledAmountByPatient();
 
                 settledAmountByPatientsTotal += amount;
             }
@@ -1127,8 +1159,8 @@ public class ReportTemplateRowBundle implements Serializable {
                 if (row.getBill() == null) {
                     continue;
                 }
-                double amount = isOutpatient ? row.getBill().getSettledAmountBySponsor() : row.getBill().getBillClassType().equals(BillClassType.CancelledBill) ?
-                        row.getBill().getSettledAmountBySponsor() : row.getBill().getPatientEncounter().getFinalBill().getSettledAmountBySponsor();
+                double amount = isOutpatient ? row.getBill().getSettledAmountBySponsor() : row.getBill().getBillClassType().equals(BillClassType.CancelledBill)
+                        ? row.getBill().getSettledAmountBySponsor() : row.getBill().getPatientEncounter().getFinalBill().getSettledAmountBySponsor();
 
                 settledAmountBySponsorsTotal += amount;
             }
@@ -1143,11 +1175,11 @@ public class ReportTemplateRowBundle implements Serializable {
                     continue;
                 }
 
-                double amount = isOutpatient ? row.getBill().getNetTotal() - row.getBill().getSettledAmountBySponsor() - row.getBill().getSettledAmountByPatient() :
-                        row.getBill().getBillClassType().equals(BillClassType.CancelledBill) ?
-                                row.getBill().getNetTotal() - row.getBill().getSettledAmountBySponsor() - row.getBill().getSettledAmountByPatient() :
-                                row.getBill().getPatientEncounter().getFinalBill().getNetTotal() - row.getBill().getPatientEncounter().getFinalBill().getSettledAmountBySponsor() -
-                                        row.getBill().getPatientEncounter().getFinalBill().getSettledAmountByPatient();
+                double amount = isOutpatient ? row.getBill().getNetTotal() - row.getBill().getSettledAmountBySponsor() - row.getBill().getSettledAmountByPatient()
+                        : row.getBill().getBillClassType().equals(BillClassType.CancelledBill)
+                        ? row.getBill().getNetTotal() - row.getBill().getSettledAmountBySponsor() - row.getBill().getSettledAmountByPatient()
+                        : row.getBill().getPatientEncounter().getFinalBill().getNetTotal() - row.getBill().getPatientEncounter().getFinalBill().getSettledAmountBySponsor()
+                        - row.getBill().getPatientEncounter().getFinalBill().getSettledAmountByPatient();
 
                 totalBalance += amount;
             }
@@ -1784,6 +1816,7 @@ public class ReportTemplateRowBundle implements Serializable {
                 if (row.getBill() == null) {
                     continue;
                 }
+                // Debugging bill details
 
                 // Debugging bill details
                 System.out.println("row.getBill().getGrantTotal() = " + row.getBill().getGrantTotal());
@@ -1801,13 +1834,13 @@ public class ReportTemplateRowBundle implements Serializable {
                 row.setStaffTotal(row.getBill().getTotalStaffFee());
                 row.setCcTotal(row.getBill().getTotalCenterFee());
                 // Debugging after setting
+                // Debugging after setting
 
                 // Debugging after setting
                 System.out.println("row.getGrossTotal() = " + row.getGrossTotal());
                 System.out.println("row.getDiscount() = " + row.getDiscount());
                 System.out.println("row.getTotal() = " + row.getTotal());
                 System.out.println("row.getHospitalTotal() = " + row.getHospitalTotal());
-                System.out.println("row.getStaffTotal() = " + row.getStaffTotal());
             }
         } else {
         }
@@ -1831,15 +1864,35 @@ public class ReportTemplateRowBundle implements Serializable {
                 row.setStaffTotal(row.getBillItem().getStaffFee());
                 row.setCcTotal(row.getBillItem().getCollectingCentreFee());
                 // Debugging after setting
+                // Debugging after setting
 
                 // Debugging after setting
                 System.out.println("row.getGrossTotal() = " + row.getGrossTotal());
                 System.out.println("row.getDiscount() = " + row.getDiscount());
                 System.out.println("row.getTotal() = " + row.getTotal());
                 System.out.println("row.getHospitalTotal() = " + row.getHospitalTotal());
-                System.out.println("row.getStaffTotal() = " + row.getStaffTotal());
             }
         } else {
+        }
+    }
+
+    // For channel bills
+    public void createRowValuesFromBillForChannelBills() {
+        if (this.reportTemplateRows != null && !this.reportTemplateRows.isEmpty()) {
+            for (ReportTemplateRow row : this.reportTemplateRows) {
+
+                if (row.getBill() == null) {
+                    continue;
+                }
+
+                // Setting values
+                row.setGrossTotal(row.getBill().getTotal());
+                row.setDiscount(row.getBill().getDiscount());
+                row.setTotal(row.getBill().getNetTotal());
+                row.setHospitalTotal(row.getBill().getHospitalFee());
+                row.setStaffTotal(row.getBill().getStaffFee());
+                row.setCcTotal(row.getBill().getTotalCenterFee());
+            }
         }
     }
 
@@ -1860,6 +1913,8 @@ public class ReportTemplateRowBundle implements Serializable {
     }
 
     private void resetTotalsAndFlags() {
+        resetCashierTotalsAndFlags();
+
         this.cashValue = this.cardValue = this.multiplePaymentMethodsValue = this.staffValue
                 = this.creditValue = this.staffWelfareValue = this.voucherValue = this.iouValue
                 = this.agentValue = this.chequeValue = this.slipValue = this.eWalletValue
@@ -2254,6 +2309,46 @@ public class ReportTemplateRowBundle implements Serializable {
 
     public void setTotalBalance(double totalBalance) {
         this.totalBalance = totalBalance;
+    }
+
+    public double getFloatOutTotal() {
+        return floatOutTotal;
+    }
+
+    public void setFloatOutTotal(double floatOutTotal) {
+        this.floatOutTotal = floatOutTotal;
+    }
+
+    public double getFloatInTotal() {
+        return floatInTotal;
+    }
+
+    public void setFloatInTotal(double floatInTotal) {
+        this.floatInTotal = floatInTotal;
+    }
+
+    public double getFloatNetTotal() {
+        return floatInTotal - floatOutTotal;
+    }
+
+    public double getCashFloatOutTotal() {
+        return cashFloatOutTotal;
+    }
+
+    public void setCashFloatOutTotal(double cashFloatOutTotal) {
+        this.cashFloatOutTotal = cashFloatOutTotal;
+    }
+
+    public double getCashFloatInTotal() {
+        return cashFloatInTotal;
+    }
+
+    public void setCashFloatInTotal(double cashFloatInTotal) {
+        this.cashFloatInTotal = cashFloatInTotal;
+    }
+
+    public double getCashFloatNetTotal() {
+        return cashFloatInTotal - cashFloatOutTotal;
     }
 
     public void setTotal(Double total) {
@@ -2841,6 +2936,86 @@ public class ReportTemplateRowBundle implements Serializable {
         this.onlineSettlementHandoverValue = onlineSettlementHandoverValue;
     }
 
+    public double getCashierGrandTotal() {
+        return cashierGrandTotal;
+    }
+
+    public void setCashierGrandTotal(double cashierGrandTotal) {
+        this.cashierGrandTotal = cashierGrandTotal;
+        this.cashierGrandTotalComputed = true;
+    }
+
+    public double getCashierCollectionTotal() {
+        return cashierCollectionTotal;
+    }
+
+    public void setCashierCollectionTotal(double cashierCollectionTotal) {
+        this.cashierCollectionTotal = cashierCollectionTotal;
+        this.cashierCollectionTotalComputed = true;
+    }
+
+    public double getCashierExcludedTotal() {
+        return cashierExcludedTotal;
+    }
+
+    public void setCashierExcludedTotal(double cashierExcludedTotal) {
+        this.cashierExcludedTotal = cashierExcludedTotal;
+        this.cashierExcludedTotalComputed = true;
+    }
+
+    public boolean isCashierGrandTotalComputed() {
+        return cashierGrandTotalComputed;
+    }
+
+    public void setCashierGrandTotalComputed(boolean cashierGrandTotalComputed) {
+        this.cashierGrandTotalComputed = cashierGrandTotalComputed;
+        if (!cashierGrandTotalComputed) {
+            this.cashierGrandTotal = 0.0;
+        }
+    }
+
+    public boolean isCashierCollectionTotalComputed() {
+        return cashierCollectionTotalComputed;
+    }
+
+    public void setCashierCollectionTotalComputed(boolean cashierCollectionTotalComputed) {
+        this.cashierCollectionTotalComputed = cashierCollectionTotalComputed;
+        if (!cashierCollectionTotalComputed) {
+            this.cashierCollectionTotal = 0.0;
+        }
+    }
+
+    public boolean isCashierExcludedTotalComputed() {
+        return cashierExcludedTotalComputed;
+    }
+
+    public void setCashierExcludedTotalComputed(boolean cashierExcludedTotalComputed) {
+        this.cashierExcludedTotalComputed = cashierExcludedTotalComputed;
+        if (!cashierExcludedTotalComputed) {
+            this.cashierExcludedTotal = 0.0;
+        }
+    }
+
+    public List<PaymentMethod> getCashierCollectionPaymentMethods() {
+        return cashierCollectionPaymentMethods;
+    }
+
+    public void setCashierCollectionPaymentMethods(List<PaymentMethod> cashierCollectionPaymentMethods) {
+        this.cashierCollectionPaymentMethods = cashierCollectionPaymentMethods == null
+                ? new ArrayList<>()
+                : new ArrayList<>(cashierCollectionPaymentMethods);
+    }
+
+    public List<PaymentMethod> getCashierExcludedPaymentMethods() {
+        return cashierExcludedPaymentMethods;
+    }
+
+    public void setCashierExcludedPaymentMethods(List<PaymentMethod> cashierExcludedPaymentMethods) {
+        this.cashierExcludedPaymentMethods = cashierExcludedPaymentMethods == null
+                ? new ArrayList<>()
+                : new ArrayList<>(cashierExcludedPaymentMethods);
+    }
+
     //    public SessionController getSessionController() {
 //        return sessionController;
 //    }
@@ -2850,6 +3025,13 @@ public class ReportTemplateRowBundle implements Serializable {
 //    }
     public List<DenominationTransaction> getDenominationTransactions() {
         return denominationTransactions;
+    }
+
+    public List<DenominationTransaction> getFilteredDenominationTransactions() {
+        return getDenominationTransactions()
+                .stream()
+                .filter(t -> t.getDenominationQty() != 0 || t.getDenominationValue() != 0)
+                .collect(Collectors.toList());
     }
 
     public void setDenominationTransactions(List<DenominationTransaction> denominationTransactions) {
@@ -2980,6 +3162,54 @@ public class ReportTemplateRowBundle implements Serializable {
 
     public void setHandoverBill(Bill handoverBill) {
         this.handoverBill = handoverBill;
+    }
+
+    public Long getBilledCount() {
+        return billedCount;
+    }
+
+    public void setBilledCount(Long billedCount) {
+        this.billedCount = billedCount;
+    }
+
+    public Long getCancelledCount() {
+        return cancelledCount;
+    }
+
+    public void setCancelledCount(Long cancelledCount) {
+        this.cancelledCount = cancelledCount;
+    }
+
+    public Long getReturnCount() {
+        return returnCount;
+    }
+
+    public void setReturnCount(Long returnCount) {
+        this.returnCount = returnCount;
+    }
+
+    public Long getNetCount() {
+        return netCount;
+    }
+
+    public void setNetCount(Long netCount) {
+        this.netCount = netCount;
+    }
+
+    public double geteWalletHandoverValue() {
+        return eWalletHandoverValue;
+    }
+
+    public void seteWalletHandoverValue(double eWalletHandoverValue) {
+        this.eWalletHandoverValue = eWalletHandoverValue;
+    }
+
+    public double getEWalletValue() {
+        return eWalletValue;
+    }
+    
+     public void setEWalletValue(double eWalletValue) {
+        this.eWalletValue = eWalletValue;
     }
 
 }

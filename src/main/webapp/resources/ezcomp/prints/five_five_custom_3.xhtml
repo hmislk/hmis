@@ -31,12 +31,114 @@
         <cc:implementation>
             <h:panelGroup rendered="#{!configOptionApplicationController.getBooleanValueByKey('Enable OPD Custom 3 Bill Header')}" >
                 <h:outputStylesheet library="css" name="sale_bill_five_five_custom_3.css" />
+                <style>
+                    /* Print Styles */
+                    @media print {
+                        .receipt-container {
+                            border: none;
+                            width: 10cm!important;
+                            height: 9.5cm!important;
+                            margin-left: 0cm!important;
+                            margin-right: 2.5cm!important;
+                            margin-bottom: 1.0cm!important;
+                            margin-top: 2.5cm!important;
+                            font-family: sans-serif !important;
+                            padding-left: 0.25cm;
+                            /*        font-family: sans-serif !important;
+                                    border: none;
+                                    width: 11cm!important;
+                                    height: 14cm!important;
+                                    margin-left: 0cm!important;
+                                    margin-right: 1.5cm!important;
+                                    margin-top: 1cm!important;
+                                    margin-bottom: 0cm!important;
+                                    padding: 2px!important;
+                                    line-height: 1.2!important;*/
+                        }
+
+                        .hospital-name {
+                            font-size: 12px;
+                            font-family: sans-serif !important;
+                            line-height: 1.2;
+                        }
+
+                        .receipt-table th,
+                        .receipt-table td {
+                            padding: 2px;
+                            font-family: sans-serif !important;
+                            line-height: 1.2;
+                        }
+
+                        .separator {
+                            margin: 2px;
+                            font-family: sans-serif !important;
+                            line-height: 1.2;
+                        }
+                    }
+                </style>
             </h:panelGroup>
             <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable OPD Custom 3 Bill Header')}" >
                 <h:outputStylesheet library="css" name="sale_bill_five_five_custom_3_without_header.css" />
+                <style>
+                    @font-face {
+                        font-family: 'OCR-B';
+                        src: url('../../fonts/OCR-B.ttf') format('truetype');
+                        /* Add other font properties like font-weight, font-style if necessary */
+                    }
+
+                    @media print {
+                        .receipt-container {
+                            border: none;
+                            width: 10cm!important;
+                            height: 9.5cm!important;
+                            margin-left: 0cm!important;
+                            margin-right: 2.5cm!important;
+                            margin-bottom: 1.0cm!important;
+                            margin-top: 0.7cm!important;
+                            font-family: "Trebuchet MS", sans-serif !important;
+                            padding-left: 0.25cm;
+                            /*        font-family: sans-serif !important;
+                                    border: none;
+                                    width: 11cm!important;
+                                    height: 14cm!important;
+                                    margin-left: 0cm!important;
+                                    margin-right: 1.5cm!important;
+                                    margin-top: 1cm!important;
+                                    margin-bottom: 0cm!important;
+                                    padding: 2px!important;
+                                    line-height: 1.2!important;*/
+                        }
+
+                        .hospital-name {
+                            font-size: 12px;
+                            font-family: "Trebuchet MS", sans-serif !important;
+                            line-height: 1.2;
+                        }
+
+                        .hospital-details {
+                            font-family: "Trebuchet MS", sans-serif !important;
+                        }
+
+                        .receipt-table th,
+                        .receipt-table td {
+                            padding: 2px;
+                            font-family: "Trebuchet MS", sans-serif !important;
+                            line-height: 1.2;
+                        }
+
+                        .total-table th,
+                        .total-table td {
+                            font-family: "Trebuchet MS", sans-serif !important;
+                        }
+
+                        .separator {
+                            margin: 2px;
+                            font-family: "Trebuchet MS", sans-serif !important;
+                            line-height: 1.2;
+                        }
+                    }
+                </style>
             </h:panelGroup>
-
-
 
             <div class="receipt-container">
                 <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable OPD Custom 3 Bill Header')}">
@@ -75,7 +177,10 @@
                         <tr>
                             <td style="padding: 2px;">Name :</td>
                             <td style="padding: 2px;" colspan="4">
-                                <h:outputLabel value="#{cc.attrs.bill.patient.person.nameWithTitle}"/>
+                                <div class="d-flex">
+                                    <h:outputLabel value="#{cc.attrs.bill.patient.person.nameWithTitle}" rendered="#{sessionController.applicationPreference.changeTextCasesPatientName ne 'UPPERCASE'}"/>
+                                    <h:outputLabel value="#{cc.attrs.bill.patient.person.capitalNameWithTitle}" rendered="#{sessionController.applicationPreference.changeTextCasesPatientName eq 'UPPERCASE'}"/>
+                                </div>
                             </td>
                         </tr>
                     </h:panelGroup>
@@ -158,7 +263,16 @@
                             <tr>
                                 <!-- Display the item number across all items -->
                                 <td>#{s.index +1}</td> <!-- status.index starts from 0, so add 1 for a human-readable count -->
-                                <td>#{item.item.name}</td>
+                                <td>
+                                    <h:outputLabel 
+                                        value="#{item.item.name}" 
+                                        rendered="#{!configOptionApplicationController.getBooleanValueByKey('Show the print name of the items on the 5x5 Custum 3 bill.',false)}">
+                                    </h:outputLabel>
+                                    <h:outputLabel 
+                                        value="#{item.item.printName}" 
+                                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Show the print name of the items on the 5x5 Custum 3 bill.',false)}">
+                                    </h:outputLabel>  
+                                </td>
                                 <td style="text-align: right">
                                     <h:outputLabel value="#{item.grossValue}">
                                         <f:convertNumber pattern="#,##0.00" />
@@ -185,7 +299,7 @@
 
                     <h:panelGroup rendered="#{cc.attrs.bill.discount ne 0.0}" >
                         <tr>
-                            <td >Discount:</td>
+                            <td >Discount : (#{cc.attrs.bill.backwardReferenceBill.paymentScheme.name}) </td>
                             <td  style="text-align: right;">
                                 <h:outputLabel  value="#{-cc.attrs.bill.discount}">
                                     <f:convertNumber pattern="#,##0.00" />

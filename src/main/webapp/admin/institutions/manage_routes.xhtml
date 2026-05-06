@@ -54,6 +54,8 @@
                                     <h:panelGrid id="gpDetail" columns="2" class="w-100">
                                         <h:outputLabel class="form-label" for="txtName" value="Name" ></h:outputLabel>
                                         <p:inputText class="form form-control" id="txtName" value="#{routeController.current.name}"></p:inputText>
+                                        <h:outputLabel class="form-label" for="routecode" value="Route Code" ></h:outputLabel>
+                                        <p:inputText class="form form-control" id="routecode" value="#{routeController.current.code}"></p:inputText>
                                         <h:outputLabel class="form-label" for="acIns" value="Institution" ></h:outputLabel>
                                         <p:autoComplete 
                                             required="true"

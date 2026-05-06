@@ -1,5 +1,6 @@
 <?xml version='1.0' encoding='UTF-8' ?>
-<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 template="/dataAdmin/admin_data_administration.xhtml"
                 xmlns:h="http://xmlns.jcp.org/jsf/html"
@@ -7,16 +8,13 @@
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui">
 
-
     <ui:define name="subcontent">
-
-
-        <div class="container-fluid" >
-            <div class="card" >
-                <div class="card-header" >
+        <div class="container-fluid">
+            <div class="card">
+                <div class="card-header">
                     Upload Members
                 </div>
-                <div class="card-body" >
+                <div class="card-body">
                     <h:form enctype="multipart/form-data">
                         <p:fileUpload value="#{dataUploadController.file}"
                                       mode="simple"
@@ -26,13 +24,14 @@
                                          action="#{dataUploadController.uploadMembers()}"
                                          ajax="false"/>
 
-                        <h:panelGroup id="gpPoll" >
-                            <h:panelGroup rendered="#{dataUploadController.pollActive}" >
-                                <p:poll interval="10" process="@this" update="tbls gpPoll" ></p:poll>
+                        <h:panelGroup id="gpPoll">
+                            <h:panelGroup rendered="#{dataUploadController.pollActive}">
+                                <p:poll interval="10" process="@this" update="tbls gpPoll"></p:poll>
                             </h:panelGroup>
                         </h:panelGroup>
 
-                        <p:dialog modal="true" widgetVar="statusDialog" header="Status" draggable="false" closable="false" resizable="false">
+                        <p:dialog modal="true" widgetVar="statusDialog" header="Status" draggable="false"
+                                  closable="false" resizable="false">
                         </p:dialog>
                         <script type="text/javascript">
                             function start() {
@@ -44,125 +43,113 @@
                             }
                         </script>
 
-                        <h:panelGroup id="tbls" >
-
+                        <h:panelGroup id="tbls">
                             <table class="table">
                                 <thead>
-                                    <tr>
-                                        <th>Column</th>
-                                        <th>Title</th>
-                                        <th>Description</th>
-                                    </tr>
+                                <tr>
+                                    <th>Column</th>
+                                    <th>Title</th>
+                                    <th>Description</th>
+                                </tr>
                                 </thead>
                                 <tbody>
-                                    <tr>
-                                        <td>1</td>
-                                        <td>Serial</td>
-                                        <td>Serial number of the member. Ignored.</td>
-                                    </tr>
-                                    <tr>
-                                        <td>2</td>
-                                        <td>Member Name</td>
-                                        <td>Full name of the member. Required.</td>
-                                    </tr>
-                                    <tr>
-                                        <td>3</td>
-                                        <td>Title</td>
-                                        <td>Title of the member (e.g., Mr., Mrs., Dr.). Required.</td>
-                                    </tr>
-                                    <tr>
-                                        <td>4</td>
-                                        <td>Gender</td>
-                                        <td>Gender of the member (M or F). Required.</td>
-                                    </tr>
-                                    <tr>
-                                        <td>5</td>
-                                        <td>Membership No</td>
-                                        <td>Membership number of the member. Required.</td>
-                                    </tr>
-                                    <tr>
-                                        <td>6</td>
-                                        <td>Telephone No</td>
-                                        <td>Contact telephone number of the member. Optional.</td>
-                                    </tr>
-                                    <tr>
-                                        <td>7</td>
-                                        <td>NIC No</td>
-                                        <td>National Identity Card number of the member. Optional.</td>
-                                    </tr>
-                                    <tr>
-                                        <td>8</td>
-                                        <td>Address</td>
-                                        <td>Residential address of the member. Optional.</td>
-                                    </tr>
-                                    <tr>
-                                        <td>9</td>
-                                        <td>Membership Scheme</td>
-                                        <td>Membership scheme the member belongs to. Required.</td>
-                                    </tr>
-                                    <tr>
-                                        <td>10</td>
-                                        <td>Relationship to CHH</td>
-                                        <td>Relationship of the member to the Central Health Home (e.g., Daughter, Son, Wife). Required.</td>
-                                    </tr>
+                                <tr>
+                                    <td>1</td>
+                                    <td>Serial</td>
+                                    <td>Serial number of the member. Ignored.</td>
+                                </tr>
+                                <tr>
+                                    <td>2</td>
+                                    <td>Member Name</td>
+                                    <td>Full name of the member. Required.</td>
+                                </tr>
+                                <tr>
+                                    <td>3</td>
+                                    <td>Title</td>
+                                    <td>Title of the member (e.g., Mr., Mrs., Dr.). Required.</td>
+                                </tr>
+                                <tr>
+                                    <td>4</td>
+                                    <td>Gender</td>
+                                    <td>Gender of the member (M or F). Required.</td>
+                                </tr>
+                                <tr>
+                                    <td>5</td>
+                                    <td>Membership No</td>
+                                    <td>Membership number of the member. Required.</td>
+                                </tr>
+                                <tr>
+                                    <td>6</td>
+                                    <td>Telephone No</td>
+                                    <td>Contact telephone number of the member. Optional.</td>
+                                </tr>
+                                <tr>
+                                    <td>7</td>
+                                    <td>NIC No</td>
+                                    <td>National Identity Card number of the member. Optional.</td>
+                                </tr>
+                                <tr>
+                                    <td>8</td>
+                                    <td>Address</td>
+                                    <td>Residential address of the member. Optional.</td>
+                                </tr>
+                                <tr>
+                                    <td>9</td>
+                                    <td>Membership Scheme</td>
+                                    <td>Membership scheme the member belongs to. Required.</td>
+                                </tr>
+                                <tr>
+                                    <td>10</td>
+                                    <td>Relationship to CHH</td>
+                                    <td>Relationship of the member to the Central Health Home (e.g., Daughter, Son, Wife). Required.</td>
+                                </tr>
+                                <tr>
+                                    <td>11</td>
+                                    <td>Date of Birth</td>
+                                    <td>dd/mm/yyyy or d/m/yy. Optional.</td>
+                                </tr>
                                 </tbody>
                             </table>
-
-
-
-
                         </h:panelGroup>
-
                     </h:form>
-
                 </div>
             </div>
         </div>
 
-
-
         <h:form>
-
-
-
             <p:dataTable
-                class="my-2"
-                paginator="true"
-                rows="10"
-                rowKey="#{item.id}"
-                id="tbl"
-                value="#{dataUploadController.savedPatients}"
-                var="item" >
+                    class="my-2"
+                    paginator="true"
+                    rows="10"
+                    rowKey="#{item.id}"
+                    id="tbl"
+                    value="#{dataUploadController.savedPatients}"
+                    var="item">
                 <f:facet name="header">
                     <p:outputLabel value="Members Saved"></p:outputLabel>
                 </f:facet>
-
                 <p:column headerText="Title">
                     #{item.person.title.label}
                 </p:column>
-
-
                 <p:column headerText="Sex">
                     #{item.person.sex.label}
                 </p:column>
-
                 <p:column headerText="Name">
                     #{item.person.name}
                 </p:column>
-
-
                 <p:column headerText="Address">
                     #{item.person.address}
                 </p:column>
-
                 <p:column headerText="Membership">
                     #{item.person.membershipScheme.name}
                 </p:column>
-
-
+                <p:column headerText="Date of Birth">
+                    <p:outputLabel value="#{item.person.dob}">
+                        <f:convertDateTime timeZone="Asia/Colombo"
+                                           pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
+                    </p:outputLabel>
+                </p:column>
             </p:dataTable>
-
         </h:form>
-
     </ui:define>
 </ui:composition>

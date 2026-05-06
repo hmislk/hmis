@@ -5,16 +5,22 @@
  */
 package com.divudi.bean.common;
 
+import com.divudi.bean.lab.LabTestHistoryController;
 import com.divudi.core.data.MessageType;
+import com.divudi.core.data.Sex;
 import com.divudi.core.data.hr.ReportKeyWord;
 import com.divudi.ejb.SmsManagerEjb;
+import com.divudi.core.entity.Area;
+import com.divudi.core.entity.Patient;
 import com.divudi.core.entity.Sms;
+import com.divudi.core.facade.PatientFacade;
 import com.divudi.core.facade.SmsFacade;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.util.CommonFunctions;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Calendar;
 
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
@@ -24,6 +30,10 @@ import java.util.HashMap;
 import javax.ejb.EJB;
 import javax.inject.Inject;
 import javax.persistence.TemporalType;
+
+import com.divudi.core.data.dto.SmsDTO;
+
+import java.util.ArrayList;
 
 /**
  *
@@ -39,12 +49,18 @@ public class SmsController implements Serializable {
     @EJB
     SmsFacade smsFacade;
     @EJB
+    PatientFacade patientFacade;
+    @EJB
     private SmsManagerEjb smsManager;
     /*
     Controllers
      */
     @Inject
     SessionController sessionController;
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    LabTestHistoryController labTestHistoryController;
 
     /*
     Class Variables
@@ -56,7 +72,20 @@ public class SmsController implements Serializable {
 
     private String smsMessage;
     private String smsNumber;
+    private String smsNumbersInput;
     private String smsOutput;
+
+    // Bulk SMS related fields
+    private Integer ageFrom;
+    private Integer ageTo;
+    private Long maxNumberToList;
+    private Sex sex;
+    private Area area;
+    private String smsTemplate;
+    private List<Patient> patientsForSms;
+    private List<Patient> selectedPatients;
+
+    private List<SmsDTO> smsDtoList;
 
     // New variable to control SMS sending
     private static boolean doNotSendAnySms = false;
@@ -83,6 +112,17 @@ public class SmsController implements Serializable {
     public SmsController() {
     }
 
+    public void makeNull() {
+        smsDtoList = new ArrayList<>();
+        fromDate = null;
+        toDate = null;
+    }
+
+    public String navigateToSmsList() {
+        makeNull();
+        return "/analytics/sms_list?faces-redirect=true";
+    }
+
     public Boolean sendSms(String number, String message, String username, String password, String sendingAlias) {
         if (doNotSendAnySms) {
             return false;
@@ -106,12 +146,11 @@ public class SmsController implements Serializable {
     }
 
     public void sendSmsFromWeb() {
-        System.out.println("sendSmsFromWeb");
-        System.out.println("doNotSendAnySms = " + doNotSendAnySms);
         if (doNotSendAnySms) {
             return;
         }
         Sms s = new Sms();
+        s.setSmsType(MessageType.CustomSMS);
         s.setReceipientNumber(smsNumber);
         s.setSendingMessage(smsMessage);
         save(s);
@@ -129,16 +168,99 @@ public class SmsController implements Serializable {
         return smsManager.sendSms(s);
     }
 
+//    public void fillAllSms() {
+//        String j = "select s "
+//                + " from Sms s "
+//                + " where s.createdAt between :fd and :td ";
+//        Map m = new HashMap();
+//        m.put("fd", fromDate);
+//        m.put("td", toDate);
+//        smses = smsFacade.findByJpql(j, m, TemporalType.TIMESTAMP);
+//    }
+    @Deprecated
     public void fillAllSms() {
-        String j = "select s "
-                + " from Sms s "
-                + " where s.createdAt between :fd and :td ";
+        String j = "select s from Sms s where s.createdAt between :fd and :td";
         Map m = new HashMap();
         m.put("fd", fromDate);
         m.put("td", toDate);
+
+        // Existing entity list (DO NOT REMOVE)
         smses = smsFacade.findByJpql(j, m, TemporalType.TIMESTAMP);
+
+        // NEW DTO list (PARALLEL)
+        //SmsDTO = new java.util.ArrayList<>();
+        for (Sms s : smses) {
+            //allSmsListDtos.add(toDto(s));
+        }
     }
 
+    public void fillAllSmsDtos() {
+        smsDtoList = new ArrayList<>();
+        String jpql = "select new com.divudi.core.data.dto.SmsDTO("
+                + " COALESCE(s.id,0),"
+                + " s.createdAt,"
+                + " s.sentAt,"
+                + " s.smsType,"
+                + " COALESCE(s.sendingMessage,'N/A'),"
+                + " COALESCE(s.receipientNumber,'N/A'),"
+                + " s.sentSuccessfully,"
+                + " s.pending,"
+                + " COALESCE(s.receivedMessage,'N/A'),"
+                + " p.title, "
+                + " COALESCE(p.name,'')"
+                + " )"
+                + " from Sms s "
+                + " LEFT JOIN s.bill b "
+                + " LEFT JOIN b.patient pt "
+                + " LEFT JOIN pt.person p "
+                + " where s.createdAt between :fd and :td "
+                + " and s.retired =:ret"
+                + " ORDER BY s.id asc";
+
+        Map params = new HashMap();
+        params.put("fd", fromDate);
+        params.put("td", toDate);
+        params.put("ret", false);
+
+        smsDtoList = (List<SmsDTO>) smsFacade.findLightsByJpqlWithoutCache(jpql, params, TemporalType.TIMESTAMP);
+
+    }
+
+    public void fillAllFailedSmsDtos() {
+        smsDtoList = new ArrayList<>();
+
+        String jpql
+                = "select new com.divudi.core.data.dto.SmsDTO("
+                + " COALESCE(s.id, 0), "
+                + " s.createdAt, "
+                + " s.sentAt, "
+                + " s.smsType, "
+                + " COALESCE(s.sendingMessage, 'N/A'), "
+                + " COALESCE(s.receipientNumber, 'N/A'), "
+                + " s.sentSuccessfully, "
+                + " s.pending, "
+                + " COALESCE(s.receivedMessage, 'Unknown failure'), "
+                + " p.title, "
+                + " COALESCE(p.name, '') "
+                + ") "
+                + " from Sms s "
+                + " LEFT JOIN s.bill b "
+                + " LEFT JOIN b.patient pt "
+                + " LEFT JOIN pt.person p "
+                + " where s.sentSuccessfully = false "
+                + " and s.createdAt between :fd and :td "
+                + " order by s.createdAt desc";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("fd", fromDate);
+        params.put("td", toDate);
+
+        smsDtoList = (List<SmsDTO>) (List<?>) smsFacade.findLightsByJpqlWithoutCache(jpql, params, TemporalType.TIMESTAMP
+        );
+
+    }
+
+    @Deprecated
     public void fillAllFaildSms() {
         // Modified by Dr M H B Ariyaratne with assistance from ChatGPT from OpenAI
         String j = "select s "
@@ -275,18 +397,211 @@ public class SmsController implements Serializable {
         this.bool = bool;
     }
 
+    public void sendFailedSmsById(Long smsId) {
+        if (doNotSendAnySms) {
+            JsfUtil.addErrorMessage("SMS sending is disabled");
+            return;
+        }
+
+        if (smsId == null) {
+            JsfUtil.addErrorMessage("Invalid SMS");
+            return;
+        }
+
+        Sms s = smsFacade.findWithoutCache(smsId);
+
+        if (s == null) {
+            JsfUtil.addErrorMessage("SMS not found");
+            return;
+        }
+
+        boolean sent = smsManager.sendSms(s);
+
+        if (sent) {
+            if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
+                labTestHistoryController.addResentFailureSMSHistory(s.getPatientInvestigation(), s.getPatientReport(), s);
+            }
+            JsfUtil.addSuccessMessage("SMS sent successfully");
+        } else {
+            
+            if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
+                labTestHistoryController.addSentSMSFailureHistory(s.getPatientInvestigation(), s.getPatientReport(), s, s.getReceivedMessage());
+            }
+            JsfUtil.addErrorMessage("SMS sending failed");
+        }
+    }
+
     private void save(Sms s) {
-        if(s==null){
+        if (s == null) {
             JsfUtil.addErrorMessage("No SMS");
             return;
         }
-        if(s.getId()==null){
+        if (s.getId() == null) {
             s.setCreatedAt(new Date());
             s.setCreater(sessionController.getLoggedUser());
             smsFacade.create(s);
-        }else{
+        } else {
             smsFacade.edit(s);
         }
+    }
+
+    public void searchPatientsForBulkSms() {
+        if (doNotSendAnySms) {
+            JsfUtil.addErrorMessage("SMS sending is disabled");
+            return;
+        }
+
+        String j = "select p from Patient p where p.retired=false";
+        Map<String, Object> m = new HashMap<>();
+        if (sex != null) {
+            j += " and p.person.sex=:sx";
+            m.put("sx", sex);
+        }
+        if (area != null) {
+            j += " and p.person.area=:ar";
+            m.put("ar", area);
+        }
+        Date dobFrom = null;
+        Date dobTo = null;
+        if (ageFrom != null) {
+            Calendar cal = Calendar.getInstance();
+            cal.add(Calendar.YEAR, -ageFrom);
+            dobTo = cal.getTime();
+        }
+        if (ageTo != null) {
+            Calendar cal = Calendar.getInstance();
+            cal.add(Calendar.YEAR, -ageTo);
+            dobFrom = cal.getTime();
+        }
+        if (dobFrom != null) {
+            j += " and p.person.dob >= :df";
+            m.put("df", dobFrom);
+        }
+        if (dobTo != null) {
+            j += " and p.person.dob <= :dt";
+            m.put("dt", dobTo);
+        }
+        j += " order by p.person.name";
+        patientsForSms = patientFacade.findByJpql(j, m, TemporalType.DATE, maxNumberToList.intValue());
+    }
+
+    private String applyPatientPlaceholders(Patient p, String template) {
+        if (p == null || p.getPerson() == null) {
+            return template;
+        }
+        String msg = template;
+        msg = msg.replace("{name}", nvl(p.getPerson().getName()));
+        msg = msg.replace("{phone1}", nvl(p.getPerson().getPhone()));
+        msg = msg.replace("{phone2}", nvl(p.getPerson().getMobile()));
+        msg = msg.replace("{address}", nvl(p.getPerson().getAddress()));
+        msg = msg.replace("{area}", p.getPerson().getArea() != null ? p.getPerson().getArea().getName() : "");
+        if (p.getPerson().getSex() != null) {
+            msg = msg.replace("{he/she}", p.getPerson().getSex() == Sex.Male ? "he" : "she");
+            msg = msg.replace("{sir/madam}", p.getPerson().getSex() == Sex.Male ? "sir" : "madam");
+        }
+        msg = msg.replace("{title}", p.getPerson().getTitle() != null ? p.getPerson().getTitle().getLabel() : "");
+        return msg;
+    }
+
+    private String nvl(String s) {
+        return s == null ? "" : s;
+    }
+
+    public void sendBulkSmsToPatients() {
+        if (selectedPatients == null || selectedPatients.isEmpty()) {
+            JsfUtil.addErrorMessage("No patients selected");
+            return;
+        }
+        if (smsTemplate == null || smsTemplate.trim().isEmpty()) {
+            JsfUtil.addErrorMessage("No SMS template");
+            return;
+        }
+        for (Patient p : selectedPatients) {
+            String msg = applyPatientPlaceholders(p, smsTemplate);
+            String number = nvl(p.getPerson().getMobile());
+            if (number.isEmpty()) {
+                number = nvl(p.getPerson().getPhone());
+            }
+            if (number.isEmpty()) {
+                continue;
+            }
+            Sms s = new Sms();
+            s.setReceipientNumber(number);
+            s.setSendingMessage(msg);
+            save(s);
+            smsManager.sendSms(s);
+        }
+        JsfUtil.addSuccessMessage("SMS sending initiated");
+    }
+
+    public String navigateToBillContactNumbers() {
+        //to do. completly rewrite this method and page in a seperate issue
+        return "/admin/users/sent_bulk_sms_to_bills.xhtml?faces-redirect=true";
+    }
+
+    public String navigateToSendBulkSmsToPatients() {
+        selectedPatients = null;
+        patientsForSms = null;
+        smsTemplate = null;
+        ageFrom = null;
+        ageTo = null;
+        sex = null;
+        area = null;
+        return "/admin/users/send_bulk_sms_patients?faces-redirect=true";
+    }
+
+    public String navigateToSendBulkSmsToNumbers() {
+        smsNumbersInput = null;
+        smsMessage = null;
+        return "/admin/users/send_bulk_sms_numbers?faces-redirect=true";
+    }
+
+    public void sendBulkSmsToNumbers() {
+        if (doNotSendAnySms) {
+            JsfUtil.addErrorMessage("SMS sending is disabled");
+            return;
+        }
+        if (smsNumbersInput == null || smsNumbersInput.trim().isEmpty()) {
+            JsfUtil.addErrorMessage("No numbers specified");
+            return;
+        }
+        if (smsMessage == null || smsMessage.trim().isEmpty()) {
+            JsfUtil.addErrorMessage("No SMS message specified");
+            return;
+        }
+        String[] arr = smsNumbersInput.split("[\n,]+");
+        for (String n : arr) {
+            String number = n.trim();
+            if (number.isEmpty()) {
+                continue;
+            }
+            Sms s = new Sms();
+            s.setReceipientNumber(number);
+            s.setSendingMessage(smsMessage.trim());
+            s.setSmsType(MessageType.BulkNumberSms);
+            save(s);
+            smsManager.sendSms(s);
+        }
+        JsfUtil.addSuccessMessage("SMS sending initiated");
+    }
+
+    public Long getMaxNumberToList() {
+        if (maxNumberToList == null) {
+            maxNumberToList = configOptionApplicationController.getLongValueByKey("Maximum Number of Patients to List to Send Bulkl SMS", 100l);
+        }
+        return maxNumberToList;
+    }
+
+    public void setMaxNumberToList(Long maxNumberToList) {
+        this.maxNumberToList = maxNumberToList;
+    }
+
+    public List<SmsDTO> getSmsDtoList() {
+        return smsDtoList;
+    }
+
+    public void setSmsDtoList(List<SmsDTO> smsDtoList) {
+        this.smsDtoList = smsDtoList;
     }
 
     public class SmsSummeryRow {
@@ -345,6 +660,70 @@ public class SmsController implements Serializable {
 
     public void setSmses(List<Sms> smses) {
         this.smses = smses;
+    }
+
+    public Integer getAgeFrom() {
+        return ageFrom;
+    }
+
+    public void setAgeFrom(Integer ageFrom) {
+        this.ageFrom = ageFrom;
+    }
+
+    public Integer getAgeTo() {
+        return ageTo;
+    }
+
+    public void setAgeTo(Integer ageTo) {
+        this.ageTo = ageTo;
+    }
+
+    public Sex getSex() {
+        return sex;
+    }
+
+    public void setSex(Sex sex) {
+        this.sex = sex;
+    }
+
+    public Area getArea() {
+        return area;
+    }
+
+    public void setArea(Area area) {
+        this.area = area;
+    }
+
+    public String getSmsTemplate() {
+        return smsTemplate;
+    }
+
+    public void setSmsTemplate(String smsTemplate) {
+        this.smsTemplate = smsTemplate;
+    }
+
+    public List<Patient> getPatientsForSms() {
+        return patientsForSms;
+    }
+
+    public void setPatientsForSms(List<Patient> patientsForSms) {
+        this.patientsForSms = patientsForSms;
+    }
+
+    public List<Patient> getSelectedPatients() {
+        return selectedPatients;
+    }
+
+    public void setSelectedPatients(List<Patient> selectedPatients) {
+        this.selectedPatients = selectedPatients;
+    }
+
+    public String getSmsNumbersInput() {
+        return smsNumbersInput;
+    }
+
+    public void setSmsNumbersInput(String smsNumbersInput) {
+        this.smsNumbersInput = smsNumbersInput;
     }
 
 }

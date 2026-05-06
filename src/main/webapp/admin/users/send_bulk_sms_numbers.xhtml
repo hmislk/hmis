@@ -1,0 +1,37 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body>
+        <ui:composition template="/admin/users/index.xhtml">
+            <ui:define name="subcontent">
+                <h:panelGroup rendered="#{!webUserController.hasPrivilege('AdminManagingUsers') and !sessionController.firstLogin }" >
+                    <h:outputText value="You are NOT authorized"/>
+                </h:panelGroup>
+
+                <h:panelGroup rendered="#{webUserController.hasPrivilege('AdminManagingUsers') or sessionController.firstLogin }" >
+                    <h:form id="form">
+                        <p:panel header="Send SMS to Phone Numbers" class="m-1 w-100">
+                            <h:panelGrid columns="2" class="w-100 p-2" >
+                                <h:outputText value="Enter numbers separated by newline or comma"/>
+                                <p:inputTextarea value="#{smsController.smsNumbersInput}" rows="10" class="w-100"/>
+                                <h:outputLabel value="Message"/>
+                                <p:inputTextarea value="#{smsController.smsMessage}" class="w-100"/>
+                                <p:spacer/>
+                                <p:commandButton
+                                    value="Send SMS"
+                                    action="#{smsController.sendBulkSmsToNumbers()}"
+                                    icon="fa fa-paper-plane"
+                                    ajax="false"
+                                    class="ui-button-success"/>
+                            </h:panelGrid>
+                        </p:panel>
+                    </h:form>
+                </h:panelGroup>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

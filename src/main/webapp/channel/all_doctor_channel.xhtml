@@ -1,19 +1,137 @@
 <?xml version='1.0' encoding='UTF-8' ?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      template="/channel/channel_scheduling/index.xhtml"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
-      xmlns:p="http://primefaces.org/ui">
-    <h:head>
-        <title>All Doctors Clannel</title>
-    </h:head>
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
     <h:body>
-      
-        <h:form>
-           
-            
-            
-        </h:form>
-        
+
+        <ui:composition template="/channel/channel_scheduling/index.xhtml">
+
+            <ui:define name="subcontent">
+
+                <h:form id="form">
+                    <p:growl id="msg"/>
+
+                    <p:panel>
+                        <f:facet name="header">
+                            <div class="d-flex justify-content-center">
+                                <h:outputText styleClass="fa-solid fa-calendar-alt"/>
+                                <h:outputText class="mx-4" value="Channel Scheduling for All Doctors"/>
+                            </div>
+                        </f:facet>
+
+                        <div class="d-flex gap-2 mb-3 justify-content-center">
+                            <p:selectCheckboxMenu
+                                value="#{doctorSpecialityController.selectedItems}"
+                                label="Select Specialities"
+                                filter="true"
+                                filterMatchMode="startsWith"
+                                panelStyle="width:350px"
+                                styleClass="w-25">
+                                <f:selectItems value="#{doctorSpecialityController.items}"
+                                             var="spec"
+                                             itemLabel="#{spec.name}"
+                                             itemValue="#{spec}"/>
+                            </p:selectCheckboxMenu>
+
+                            <p:calendar
+                                id="sessionDate"
+                                value="#{channelScheduleController.sessionStartingDate}"
+                                pattern="#{sessionController.applicationPreference.longDateFormat}"
+                                navigator="true"
+                                styleClass="w-25"
+                                inputStyleClass="w-100"
+                                placeholder="Select Starting Date">
+                            </p:calendar>
+
+                            <p:commandButton
+                                value="Generate Schedule"
+                                action="#{channelScheduleController.channelSheduleForAllDoctor(null)}"
+                                class="ui-button-success"
+                                icon="fa fa-calendar"
+                                ajax="false"/>
+                        </div>
+
+                        <h:panelGroup id="schedulePanel" rendered="#{channelScheduleController.eventModel != null}">
+                            <div style="margin-left: 2%; margin-right: 2%;">
+                                <p:schedule
+                                    id="schedule"
+                                    value="#{channelScheduleController.eventModel}"
+                                    widgetVar="allDoctorSchedule"
+                                    timeZone="#{bookingControllerViewScope.serverTimeZone}"
+                                    clientTimeZone="#{bookingControllerViewScope.serverTimeZone}"
+                                    locale="en">
+                                    <p:ajax
+                                        event="eventSelect"
+                                        listener="#{channelScheduleController.onEventSelect}"
+                                        update="eventDetails"
+                                        oncomplete="PF('eventDialog').show();"/>
+                                </p:schedule>
+                            </div>
+                        </h:panelGroup>
+
+                    </p:panel>
+
+                    <p:dialog
+                        closeOnEscape="true"
+                        widgetVar="eventDialog"
+                        header="Session Details"
+                        position="center"
+                        showEffect="fade"
+                        width="500"
+                        hideEffect="fade"
+                        modal="true">
+                        <h:panelGroup id="eventDetails">
+                            <h:panelGrid columns="2" cellpadding="7" styleClass="w-100" rendered="#{channelScheduleController.currentSessionInstance ne null}">
+                                <p:outputLabel value="Session Name" styleClass="font-bold"/>
+                                <h:outputLabel value="#{channelScheduleController.currentSessionInstance.name}"/>
+
+                                <p:outputLabel value="Session Date" styleClass="font-bold"/>
+                                <h:outputLabel value="#{channelScheduleController.currentSessionInstance.sessionDate}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                                </h:outputLabel>
+
+                                <p:outputLabel value="Start Time" styleClass="font-bold"/>
+                                <h:outputLabel value="#{channelScheduleController.currentSessionInstance.startingTime}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortTimeFormat}"/>
+                                </h:outputLabel>
+
+                                <p:outputLabel value="End Time" styleClass="font-bold"/>
+                                <h:outputLabel value="#{channelScheduleController.currentSessionInstance.endingTime}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortTimeFormat}"/>
+                                </h:outputLabel>
+
+                                <p:outputLabel value="Speciality" styleClass="font-bold"/>
+                                <h:outputLabel value="#{channelScheduleController.currentSessionInstance.staff.speciality.name}"/>
+
+                                <p:outputLabel value="Consultant" styleClass="font-bold"/>
+                                <h:outputLabel value="#{channelScheduleController.currentSessionInstance.staff.person.nameWithTitle}"/>
+
+                                <p:outputLabel value="Max No of Patients" styleClass="font-bold"/>
+                                <h:outputLabel value="#{channelScheduleController.currentSessionInstance.maxNo}"/>
+
+                                <p:outputLabel value="Booked Patients" styleClass="font-bold"/>
+                                <h:outputLabel value="#{channelScheduleController.currentSessionInstance.bookedPatientCount == null ? '0' : channelScheduleController.currentSessionInstance.bookedPatientCount}"/>
+                            </h:panelGrid>
+                        </h:panelGroup>
+
+                        <div class="d-flex justify-content-end mt-3 gap-2">
+                            <p:commandButton
+                                value="Close"
+                                onclick="PF('eventDialog').hide();"
+                                class="ui-button-secondary"
+                                type="button"/>
+                        </div>
+                    </p:dialog>
+
+                </h:form>
+
+            </ui:define>
+
+        </ui:composition>
+
     </h:body>
 </html>
-

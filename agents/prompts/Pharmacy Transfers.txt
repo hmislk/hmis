@@ -1,0 +1,36 @@
+Pharmacy users request medicines from another department at:
+http://localhost:8080/rh/faces/pharmacy/pharmacy_transfer_request.xhtml
+
+These requests are listed for the other department at:
+http://localhost:8080/rh/faces/pharmacy/pharmacy_transfer_request_list.xhtml
+Clicking the button with id="btnToIssue" navigates to:
+http://localhost:8080/rh/faces/pharmacy/pharmacy_transfer_issue.xhtml
+
+There can be multiple issues for a request, provided that the issued quantities do not exceed the requested quantities.
+
+Issues to be received by a department are listed at:
+http://localhost:8080/rh/faces/pharmacy/pharmacy_transfer_issued_list.xhtml
+An issued transfer can be received at:
+http://localhost:8080/rh/faces/pharmacy/pharmacy_transfer_receive.xhtml
+
+
+
+These transfers are listed in this report:
+http://localhost:8080/rh/faces/reports/inventoryReports/good_in_transit.xhtml
+
+In this report, pack details are not properly displayed.
+This is how it currently displays details
+
+| Staff    | Item                  | Code | Stock | Expiry    | From Department | Issued Date | Retail Sale Value | Purchase Value | Cost Value |
+| -------- | --------------------- | ---- | ----: | --------- | --------------- | ----------- | ----------------: | -------------: | ---------: |
+| Buddhika | Zaart 25mg Tab        | Za25 | 100.0 | 31 Aug 25 | Main Pharmacy   | 02 Sep 25   |          1,200.00 |         740.00 |     672.73 |
+| Buddhika | Zaart 25mg X 100 Pack |      |   1.0 | 31 Aug 25 | Main Pharmacy   | 02 Sep 25   |             12.00 |           7.40 |       0.00 |
+
+
+What should be corrected in packs — packs are AMPP in billItem.item
+
+Stock should be displayed as 100.0 (1 pack × 100). Use billItem.billItemFinanceDetails.unitsPerPack, but sorting should be based on quantity by units (i.e., 100).
+
+Retail Sale value should be corrected by getting quantity and prices from billItem.pharmaceuticalBillItem.
+Apply the same correction for Purchase Value and Cost Value.
+

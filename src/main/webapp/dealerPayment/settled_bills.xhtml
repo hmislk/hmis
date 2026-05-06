@@ -140,11 +140,21 @@
                                         </f:facet>
                                     </p:column>
 
-                                    <p:column  headerText="Actions" >
+                                    <p:column  headerText="Actions" style="justify-content: center" >
                                         <p:commandButton 
                                             value="View" 
+                                            class="mx-1 my-1"
                                             action="#{supplierPaymentController.navigateToViewProcurementBill(b)}" 
                                             ajax="false" >
+                                        </p:commandButton>
+                                     
+                                        <p:commandButton
+                                            value="View Voucher" 
+                                            style="width: 10em;"
+                                            action="#{supplierPaymentController.findAndnavigateToViewSupplierPaymentVoucher(b)}" 
+                                            ajax="false"
+                                            class="ui-button-info mx-1"
+                                            icon="pi pi-file">
                                         </p:commandButton>
                                     </p:column>
                                 </p:dataTable>

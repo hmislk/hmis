@@ -1,0 +1,155 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <ui:define name="content">
+        <h:panelGroup rendered="#{!webUserController.hasPrivilege('PharmacyGrnFinalize')}">You are NOT authorized</h:panelGroup>
+        <p:panel  
+            id="gpGrnFinalize" 
+            rendered="#{webUserController.hasPrivilege('PharmacyGrnFinalize')}">
+            <f:facet name="header">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-clipboard-check text-warning me-2"></i>
+                    <h:outputText value="GRN List to Finalize" class="mb-0 text-warning"></h:outputText>
+                </div>
+            </f:facet>
+            <h:form>
+                <div class="row g-3">
+                    <div class="col-lg-3 col-md-4">
+                        <p:panel header="Search Filters" styleClass="h-100 shadow-sm">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold text-secondary">
+                                    <i class="fas fa-calendar-alt me-1"></i>From Date
+                                </label>
+                                <p:calendar 
+                                    id="fromDate" 
+                                    class="w-100"
+                                    inputStyleClass="form-control"
+                                    value="#{searchController.fromDate}" 
+                                    navigator="false" 
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                    placeholder="Select start date">      
+                                </p:calendar>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold text-secondary">
+                                    <i class="fas fa-calendar-alt me-1"></i>To Date
+                                </label>
+                                <p:calendar 
+                                    id="toDate"
+                                    class="w-100"
+                                    inputStyleClass="form-control"
+                                    value="#{searchController.toDate}" 
+                                    navigator="false" 
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                    placeholder="Select end date">                                                                              
+                                </p:calendar>
+                            </div>
+                            <p:commandButton 
+                                class="ui-button-warning w-100" 
+                                icon="fas fa-search"
+                                id="btnSearch" 
+                                ajax="false" 
+                                value="Search GRNs" 
+                                action="#{searchController.createGrnTableToFinalize}"
+                                style="min-height: 45px;"/>  
+                        </p:panel>
+                    </div>
+                    <div class="col-lg-9 col-md-8">
+
+                        <p:dataTable 
+                            value="#{searchController.bills}" 
+                            var="g"
+                            paginator="true"
+                            rows="15"
+                            paginatorPosition="both"
+                            paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                            rowsPerPageTemplate="10,15,25,50"
+                            styleClass="ui-table-condensed"
+                            emptyMessage="No GRNs found matching your criteria"
+                            sortMode="multiple"
+                            resizableColumns="true"
+                            reflow="true"
+                            size="small"
+                            style="font-size: 0.9em;">
+
+                            <p:column headerText="Created" width="80px" sortBy="#{g.createdAt}" styleClass="text-center">
+                                <h:outputLabel value="#{g.createdAt}" styleClass="text-muted small">
+                                    <f:convertDateTime timeZone="Asia/Colombo" pattern="dd/MM/yy" />
+                                </h:outputLabel>
+                            </p:column> 
+
+                            <p:column headerText="Dept" width="100px" sortBy="#{g.fromDepartment.name}">
+                                <h:outputLabel value="#{g.fromDepartment.name}" title="#{g.fromDepartment.name}" styleClass="text-truncate d-block"/>
+                            </p:column>
+
+                            <p:column headerText="Created By" width="120px" sortBy="#{g.creater.webUserPerson.name}">
+                                <h:outputLabel value="#{g.creater.webUserPerson.name}" title="#{g.creater.webUserPerson.name}" styleClass="text-truncate d-block small"/>
+                            </p:column>    
+
+                            <p:column headerText="Distributor" width="150px" sortBy="#{g.toInstitution.name}">
+                                <h:outputLabel value="#{g.toInstitution.name}" title="#{g.toInstitution.name}" styleClass="text-truncate d-block fw-medium"/>
+                            </p:column>
+
+                            <p:column headerText="GRN No" width="90px" sortBy="#{g.deptId}" styleClass="text-center">
+                                <div class="d-flex align-items-center justify-content-center">
+                                    <i class="fas fa-receipt text-info me-1" style="font-size: 0.8em;"></i>
+                                    <h:outputLabel value="#{g.deptId}" styleClass="fw-bold text-primary small"/>
+                                </div>
+                            </p:column>              
+
+                            <p:column headerText="Value" width="100px" styleClass="text-end" sortBy="#{g.netTotal}">
+                                <div class="d-flex align-items-center justify-content-end">
+                                    <i class="fas fa-coins text-success me-1" style="font-size: 0.8em;"></i>
+                                    <span class="fw-bold text-success small">
+                                        <h:outputLabel value="#{g.netTotal}">
+                                            <f:convertNumber pattern="#,##0" />
+                                        </h:outputLabel>
+                                    </span>
+                                </div>
+                            </p:column>
+
+                            <p:column headerText="PO" width="80px" sortBy="#{g.referenceBill.deptId}" styleClass="text-center">
+                                <h:outputLabel value="#{g.referenceBill.deptId}" rendered="#{g.referenceBill ne null}" styleClass="small text-muted"/>
+                                <span class="text-muted small" rendered="#{g.referenceBill eq null}">-</span>
+                            </p:column>
+
+                            <p:column headerText="Action" styleClass="text-center" exportable="false" width="100px">
+                                <p:commandButton  
+                                    styleClass="ui-button ui-button-warning ui-button-sm"  
+                                    icon="fas fa-check-circle"
+                                    value="Finalize"
+                                    title="Edit and Finalize GRN" 
+                                    ajax="false"
+                                    rendered="#{!configOptionApplicationController.getBooleanValueByKey('Manage Costing', true)}"
+                                    action="#{pharmacyBillSearch.navigateToEditSavedGrn()}"
+                                    style="font-size: 0.85em; padding: 0.375rem 0.75rem;">
+                                    <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{g}"/>
+                                </p:commandButton>
+                                <p:commandButton  
+                                    styleClass="ui-button ui-button-warning ui-button-sm"  
+                                    icon="fas fa-calculator"
+                                    value="Finalize"
+                                    title="Edit and Finalize GRN with Costing" 
+                                    ajax="false"
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Manage Costing', true)}"
+                                    action="#{pharmacyBillSearch.navigateToEditSavedGrnCosting()}"
+                                    style="font-size: 0.85em; padding: 0.375rem 0.75rem;">
+                                    <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{g}"/>
+                                </p:commandButton>
+                            </p:column>
+                        </p:dataTable>
+
+                    </div>
+                </div>
+            </h:form>
+
+        </p:panel>
+
+
+    </ui:define>  
+
+</ui:composition>

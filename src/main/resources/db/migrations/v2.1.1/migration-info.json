@@ -1,0 +1,35 @@
+{
+    "version": "v2.1.1",
+    "description": "Fix decimal precision for financial fields in BILLFINANCEDETAILS table",
+    "author": "Dr M H B Ariyaratne",
+    "estimatedDurationMinutes": 5,
+    "requiresDowntime": false,
+    "affectedTables": ["BILLFINANCEDETAILS"],
+    "affectedModules": ["Pharmacy", "Finance", "Reports", "Billing", "Payment Processing"],
+    "preRequisites": [
+        "Database backup completed",
+        "Ensure no active transactions on BILLFINANCEDETAILS table",
+        "Verify sufficient disk space for column modifications",
+        "NOTE: This migration has no rollback script - it's a one-way precision improvement"
+    ],
+    "migrationSteps": [
+        {
+            "description": "Fix core financial value columns (TOTALCOSTVALUE, TOTALPURCHASEVALUE, TOTALRETAILSALEVALUE, etc.) from DECIMAL(38,0) to DECIMAL(18,4)"
+        },
+        {
+            "description": "Fix discount and tax columns (BILLDISCOUNT, TOTALDISCOUNT, TOTALTAXVALUE, etc.) precision"
+        },
+        {
+            "description": "Fix quantity columns (TOTALQUANTITY, TOTALFREEQUANTITY, etc.) precision"
+        },
+        {
+            "description": "Fix payment method breakdown columns (TOTALPAIDASCASH, TOTALPAIDASCARD, etc.) precision"
+        },
+        {
+            "description": "Verify existing data integrity and precision after all column modifications"
+        },
+        {
+            "description": "Test critical financial calculation accuracy in reports"
+        }
+    ]
+}

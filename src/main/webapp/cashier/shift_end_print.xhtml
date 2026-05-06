@@ -13,9 +13,18 @@
                 <ui:define name="subcontent">
                     <p:panel rendered="#{financialTransactionController.currentBill ne null}">
                         <f:facet name="header">
-                            <h:outputText value="Shift End Print" />
+                            <h:outputText value="Shift End Print" class="mx-1" />
                             <p:commandButton value="Print" ajax="false">
                                 <p:printer target="gpSummaryBill" />
+                            </p:commandButton>
+                            <p:commandButton
+                                rendered="#{webUserController.hasPrivilege('Admin')}"
+                                value="Config"
+                                icon="fa fa-cog"
+                                title="Page Configuration Management"
+                                action="#{pageAdminController.navigateToPageAdmin('cashier/shift_end_print')}"
+                                ajax="false"
+                                styleClass="ui-button-secondary ms-5">
                             </p:commandButton>
                         </f:facet>
 

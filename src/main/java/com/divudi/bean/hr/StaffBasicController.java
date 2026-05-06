@@ -232,7 +232,7 @@ public class StaffBasicController implements Serializable {
 
         if (getFromDate() != null) {
             sql += " and ((ss.fromDate <=:fd "
-                    + " and ss.toDate >=:fd) or ss.fromDate >=:fd) ";
+                    + " and (ss.toDate >=:fd or ss.toDate is null)) or ss.fromDate >=:fd) ";
             hm.put("fd", getFromDate());
         }
 
@@ -277,7 +277,6 @@ public class StaffBasicController implements Serializable {
                 for (StaffPaysheetComponent err : getRepeatedComponent()) {
                     if (sp.getId().equals(err.getId())) {
                         sp.setExist(true);
-                        //////// // System.out.println("settin");
                     }
                 }
             }
@@ -380,8 +379,6 @@ public class StaffBasicController implements Serializable {
         items = getStaffPaysheetComponentFacade().findByJpql(sql, hm, TemporalType.DATE);
         calTotal(items);
 
-
-
     }
 
     public void calTotal(List<StaffPaysheetComponent> staffPaysheetComponents) {
@@ -452,6 +449,8 @@ public class StaffBasicController implements Serializable {
     public StaffPaysheetComponent getCurrent() {
         if (current == null) {
             current = new StaffPaysheetComponent();
+        }
+        if (current.getPaysheetComponent() == null) {
             current.setPaysheetComponent(getBasicCompnent());
         }
         return current;
@@ -612,6 +611,10 @@ public class StaffBasicController implements Serializable {
 
     public String navigateToHrRoster() {
         return "/hr/hr_roster?faces-redirect=true";
+    }
+
+    public String navigateToHrStaffRoster() {
+        return "/hr/hr_staff_roster?faces-redirect=true";
     }
 
     public String navigateToHrShift() {

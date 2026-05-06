@@ -1,0 +1,64 @@
+﻿codex exec @"
+You are working in a JavaEE + JSF (PrimeFaces), JPA (EclipseLink), Payara project called CareCode HIMS. Goal: implement 'Direct Purchase Return' by duplicating the existing GRN Return workflow one-to-one, changing only bill types/atomics and menu entries. No schema changes. Keep method names and patterns consistent with existing GRN Return code. Preserve null checks, cloning, and existing controller patterns.
+
+Context (current GRN Return UI routes):
+- List to request: /faces/pharmacy/pharmacy_grn_return_request.xhtml
+- List to finalize: /faces/pharmacy/pharmacy_grn_return_list_to_finalize.xhtml
+- List to approve: /faces/pharmacy/pharmacy_grn_return_list_to_approve.xhtml
+- Return form: /faces/pharmacy/pharmacy_grn_return_form.xhtml
+
+Deliver a parallel 'Direct Purchase Return' feature with identical behaviour:
+- Create these JSF pages under the same folder:
+  /faces/pharmacy/pharmacy_direct_purchase_return_request.xhtml
+  /faces/pharmacy/pharmacy_direct_purchase_return_list_to_finalize.xhtml
+  /faces/pharmacy/pharmacy_direct_purchase_return_list_to_approve.xhtml
+  /faces/pharmacy/pharmacy_direct_purchase_return_form.xhtml
+- Copy content from the GRN Return pages and adjust only labels, titles, and navigation outcomes to â€œDirect Purchase Returnâ€.
+
+Controllers and facades:
+- Duplicate the GRN Return backing bean/controller classes into Direct Purchase Return equivalents. Keep package structure and CDI/EJB annotations. Keep method names unless they embed â€œGrnâ€ explicitly; then create parallel names that embed â€œDirectPurchaseâ€ while leaving any widely referenced method names unchanged per project convention.
+- Reuse the same facades and services where logic is generic. Where bill type branching exists, add the new types to switch/if blocks.
+
+Enums and constants:
+- Use distinct types for Direct Purchase Return.
+  Example mapping:
+  BillType for GRN Return: PharmacyGrnReturn
+  BillTypeAtomic for GRN Return: PHARMACY_GRN_RETURN
+  New BillType for Direct Purchase Return: PurchaseReturn
+  New BillTypeAtomic for Direct Purchase Return: PHARMACY_DIRECT_PURCHASE_REFUND
+
+Menu:
+- In menu.xhtml, immediately below the GRN Return items, add four new menu items pointing to the four new Direct Purchase Return pages. Keep the same access control and rendered conditions used by GRN Return items.
+
+Business rules:
+- The workflow steps remain identical: save â†’ finalize â†’ approve.
+- Stock movement must mirror GRN Return (return to supplier decreases on-hand stock accordingly). Reuse existing movement logic keyed by bill type where possible.
+- Reporting and exports should work automatically if they query by bill type. 
+
+QA and acceptance:
+- Navigation to each of the four new pages works from the menu.
+- Create a Direct Purchase Return, save, finalize, and approve without errors.
+- Stock adjustments and ledger entries are produced with the new bill types.
+- Lists (request/finalize/approve) show only the relevant Direct Purchase Return bills.
+- No changes to GRN Return behaviour.
+- All messages, breadcrumbs, and page titles use 'Direct Purchase Return'.
+
+What to produce:
+1) The four new .xhtml files with updated titles/outcomes.
+2) New/updated controller classes, fully compiling, with bill type handling added.
+3) Enum additions and all necessary switch/if extensions.
+4) The menu.xhtml diff adding the four items directly under GRN Return items.
+5) A short test checklist in the commit message body.
+
+Constraints:
+- Keep code style and existing logging patterns.
+- Do not change database schema.
+- Do not rename existing public methods that are widely used.
+- Keep exports functioning; use <h:outputText> etc. where needed.
+
+Output:
+- Provide a single unified git diff patch that I can apply with `git apply`.
+- If new files are created, include them in the diff with correct paths.
+- Include a concise commit message summarising the feature and test steps.
+"@
+

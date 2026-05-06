@@ -1,0 +1,276 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      >
+
+    <h:body>
+
+        <ui:composition template="/admin/pricing/index.xhtml">
+
+            <ui:define name="subcontent">
+
+                <p:panel header="Discount Scheme for Credit Company">
+                    <h:form>
+
+
+                        <p:panel id="addNewMatrixPanel" header="Add New Matrix" >
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <p:outputLabel for="acDiscountScheme" value="Discount Scheme" styleClass="d-block mb-1"/>
+                                    <p:autoComplete
+                                        id="acDiscountScheme"
+                                        value="#{opdMemberShipDiscountController.paymentScheme}"
+                                        completeMethod="#{paymentSchemeController.completePaymentScheme}"
+                                        var="mem"
+                                        itemLabel="#{mem.name}"
+                                        itemValue="#{mem}"
+                                        styleClass="w-100"
+                                        inputStyleClass="w-100"
+                                        placeholder="Search discount scheme..."
+                                        title="Type to search and select a payment / discount scheme">
+                                    </p:autoComplete>
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <p:outputLabel for="acCreditCompany" value="Credit Company" styleClass="d-block mb-1"/>
+                                    <p:autoComplete
+                                        id="acCreditCompany"
+                                        value="#{opdMemberShipDiscountController.selectedCreditCompany}"
+                                        completeMethod="#{institutionController.completeCreditCompany}"
+                                        inputStyleClass="w-100"
+                                        itemLabel="#{ix.name}"
+                                        itemValue="#{ix}"
+                                        styleClass="w-100"
+                                        maxResults="20"
+                                        var="ix"
+                                        placeholder="Search credit company..."
+                                        title="Type to search and select a credit company">
+                                    </p:autoComplete>
+                                </div>
+
+                                <div class="col-md-4 mb-3">
+                                    <p:outputLabel for="acCategory" value="Category/Subcategory" styleClass="d-block mb-1"/>
+                                    <p:autoComplete
+                                        id="acCategory"
+                                        value="#{opdMemberShipDiscountController.category}"
+                                        forceSelection="true"
+                                        completeMethod="#{categoryController.completeCategoryServiceInvestigation}"
+                                        styleClass="w-100"
+                                        inputStyleClass="w-100"
+                                        var="cat"
+                                        itemLabel="#{cat.name}"
+                                        itemValue="#{cat}"
+                                        placeholder="Search category or subcategory..."
+                                        title="Type to search a service or investigation category" >
+                                        <p:column headerText="Category" style="padding: 6px;">
+                                            <h:outputLabel value="#{cat.name}"/>
+                                        </p:column>
+                                    </p:autoComplete>
+                                </div>
+
+                                <div class="col-md-4 mb-3">
+                                    <p:outputLabel for="smPaymentMethod" value="Payment Method" styleClass="d-block mb-1"/>
+                                    <p:selectOneMenu 
+                                        id="smPaymentMethod"
+                                        value="#{opdMemberShipDiscountController.paymentMethod}"
+                                        styleClass="w-100"
+                                        disabled="true"
+                                        title="Choose the payment method this discount applies to">
+                                        <f:selectItem itemLabel="Select" />
+                                        <f:selectItems value="#{enumController.allPaymentMethods}" />
+                                    </p:selectOneMenu>
+                                </div>
+
+                                <div class="col-md-4 mb-3">
+                                    <p:outputLabel for="txtDiscount" value="Discount (%)" styleClass="d-block mb-1"/>
+                                    <div class="d-flex align-items-center">
+                                        <p:inputText 
+                                            id="txtDiscount" 
+                                            autocomplete="off"
+                                            value="#{opdMemberShipDiscountController.margin}"
+                                            styleClass="flex-grow-1 text-end"
+                                            placeholder="0.00"
+                                            onfocus="this.select()"
+                                            title="Enter the discount percentage (numeric value)"/>
+                                        <span class="ms-2 fw-bold">%</span>
+                                    </div>
+                                </div>
+
+                                <div class="col-12 mb-3 d-flex justify-content-end gap-3">
+                                    <p:commandButton
+                                        value="New"
+                                        process="@this"
+                                        update="addNewMatrixPanel :growl"
+                                        styleClass="ui-button-info ui-button-outlined fw-bold px-4"
+                                        style="min-width: 160px; height: 42px; letter-spacing: 0.5px;"
+                                        icon="fa fa-file"
+                                        action="#{opdMemberShipDiscountController.clearCreditCompanyDiscountData()}">
+                                    </p:commandButton>
+                                    <p:commandButton
+                                        id="btnSave"
+                                        value="Save"
+                                        process="@this acDiscountScheme acCreditCompany acCategory smPaymentMethod txtDiscount"
+                                        update="addNewMatrixPanel inwd :growl"
+                                        styleClass="ui-button-success fw-bold px-4"
+                                        style="min-width: 160px; height: 42px; letter-spacing: 0.5px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"
+                                        icon="fa fa-save"
+                                        action="#{opdMemberShipDiscountController.saveSelectedCreditCompany()}">
+                                    </p:commandButton>
+                                </div>
+                            </div>
+
+                        </p:panel>
+
+
+
+                        <p:panel header="Price Matrix" class="mt-3">
+
+                            <div class="d-flex gap-3 justify-content-end mb-3">
+                                <p:autoComplete
+                                    id="acFilterScheme"
+                                    forceSelection="true"
+                                    value="#{opdMemberShipDiscountController.paymentSchemeForSearch}"
+                                    completeMethod="#{paymentSchemeController.completePaymentScheme}"
+                                    var="mem"
+                                    itemLabel="#{mem.name}"
+                                    itemValue="#{mem}"
+                                    inputStyleClass="w-100"
+                                    placeholder="Search discount scheme..."
+                                    title="Type to search and select a payment / discount scheme">
+                                </p:autoComplete>
+
+                                <p:autoComplete
+                                    id="acFilterCompany"
+                                    forceSelection="true"
+                                    value="#{opdMemberShipDiscountController.creditCompanyForSearch}"
+                                    completeMethod="#{institutionController.completeCreditCompany}"
+                                    inputStyleClass="w-100"
+                                    itemLabel="#{ix.name}"
+                                    itemValue="#{ix}"
+                                    maxResults="20"
+                                    var="ix"
+                                    placeholder="Search credit company..."
+                                    title="Type to search and select a credit company">
+                                </p:autoComplete>
+
+                                <p:commandButton
+                                    value="Fill"
+                                    process="@this acFilterScheme acFilterCompany"
+                                    update="inwd :growl"
+                                    icon="fas fa-sync"
+                                    style="width: 8em;"
+                                    title="Auto-fill matrix entries for the selected scheme"
+                                    action="#{opdMemberShipDiscountController.createItemsCreditCompanyOpdPaymentScheme()}" >
+                                </p:commandButton>
+
+                            </div>
+
+                            <p:dataTable 
+                                id="inwd" 
+                                value="#{opdMemberShipDiscountController.items}"
+                                filteredValue="#{opdMemberShipDiscountController.filterItems}"
+                                var="a"
+                                rowKey="#{a.id}"
+                                rowIndexVar="i"
+                                paginator="true" 
+                                paginatorPosition="bottom"
+                                rows="15"
+                                paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
+                                rowsPerPageTemplate="15,25,50,100,{ShowAll|'All'}"
+                                emptyMessage="No discount entries found for the selected filters">
+                                
+                                <p:column headerText="#" style="padding: 6px; width: 2em;" class="text-center">
+                                    <h:outputLabel value="#{i+1}" class="text-center"/>
+                                </p:column>
+
+                                <p:column headerText="Discount Scheme" style="padding: 6px;">
+                                    <p:autoComplete 
+                                        forceSelection="true"
+                                        value="#{a.paymentScheme}"
+                                        completeMethod="#{paymentSchemeController.completePaymentScheme}"
+                                        var="mem" 
+                                        class="w-100"
+                                        inputStyleClass="w-100"
+                                        itemLabel="#{mem.name}" 
+                                        itemValue="#{mem}" >
+                                    </p:autoComplete>
+                                </p:column>
+
+                                <p:column 
+                                    style="padding: 6px;"
+                                    headerText="Credit Company"
+                                    filterBy="#{a.creditCompany.name}" 
+                                    filterMatchMode="contains">
+                                    <h:outputLabel value="#{a.creditCompany.name}"/>
+                                </p:column>
+
+                                <p:column
+                                    style="padding: 6px;"
+                                    headerText="Category Name"
+                                    filterBy="#{a.category.name}" 
+                                    filterMatchMode="contains">
+                                    <p:autoComplete 
+                                        forceSelection="true" 
+                                        value="#{a.category}"
+                                        completeMethod="#{categoryController.completeCategoryInvestigation}"
+                                        var="cat" 
+                                        class="w-100"
+                                        inputStyleClass="w-100"
+                                        itemLabel="#{cat.name}" 
+                                        itemValue="#{cat}" >
+                                        <p:column>
+                                            <h:outputLabel value="#{cat.name}"/>
+                                        </p:column>
+                                    </p:autoComplete>
+                                </p:column>
+
+                                <p:column headerText="Payment Method" style="padding: 6px; width: 12em;" class="text-center">
+                                    <h:outputLabel value="#{a.paymentMethod.label}" class="text-center"/>
+                                </p:column>
+
+                                <p:column headerText="Discount" class="text-end"  style="padding: 6px;">
+                                    <div class="d-flex justify-content-end gap-2 w-100">
+                                        <p:inputText value="#{a.discountPercent}" styleClass="text-end" onfocus="this.select()" >
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </p:inputText>
+                                        <p:outputLabel value="%" styleClass="d-block mt-2"/>
+                                    </div>
+
+                                </p:column>
+
+                                <p:column headerText="Action" style="width:12em; padding: 6px;" class="text-center">
+                                    <div class="d-flex gap-2">
+                                        <p:commandButton
+                                            ajax="false"
+                                            value="Update"
+                                            icon="fas fa-edit"
+                                            styleClass="ui-button-warning"
+                                            title="Save changes to this row"
+                                            action="#{opdMemberShipDiscountController.onEditCreditCompanyDiscount(a)}">
+                                        </p:commandButton>
+                                        <p:commandButton 
+                                            value="Delete" 
+                                            ajax="false" 
+                                            icon="fas fa-trash" 
+                                            styleClass="ui-button-danger"
+                                            title="Delete this discount entry"
+                                            onclick="return confirm('Delete this discount entry? This cannot be undone.');"
+                                            action="#{opdMemberShipDiscountController.deleteCreditCompanyOpdPaymentScheme}">
+                                            <f:setPropertyActionListener value="#{a}" target="#{opdMemberShipDiscountController.current}"/>
+                                        </p:commandButton>
+                                    </div>
+                                </p:column>
+                            </p:dataTable>
+                        </p:panel>
+
+                    </h:form>
+                </p:panel>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

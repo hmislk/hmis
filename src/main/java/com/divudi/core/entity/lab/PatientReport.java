@@ -45,9 +45,12 @@ public class PatientReport implements Serializable, RetirableEntity {
     @OneToMany(mappedBy = "patientReport", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<PatientReportItemValue> patientReportItemValues;
 
+    @OneToMany(mappedBy = "patientReport", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    private List<PatientReportGroup> patientReportGroups;
+
     private static final long serialVersionUID = 1L;
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @ManyToOne
     private Item item;
@@ -168,7 +171,19 @@ public class PatientReport implements Serializable, RetirableEntity {
 
     @Enumerated(EnumType.STRING)
     private ReportType reportType;
+    
+    private String patientName;
+    private String patientAge;
+    private String patientGender;
+    
+    private Boolean requiresImmediateDoctorReview;
+    
+    private Boolean handoverComplete = false;
+    private Boolean printComplete = false;
+    private Boolean sendSMSComplete = false;
+    private Boolean sendEmailComplete = false;
 
+    
     public PatientReport() {
         if (status == null) {
             status = PatientInvestigationStatus.ORDERED;
@@ -176,8 +191,6 @@ public class PatientReport implements Serializable, RetirableEntity {
         printed = false;
         approved = false;
     }
-
-
 
     public PatientReportItemValue getTemplateItem() {
 
@@ -697,8 +710,8 @@ public class PatientReport implements Serializable, RetirableEntity {
 
         transHasAbst = false;
         for (PatientReportItemValue priva : this.patientReportItemValues) {
-            if (priva.strValue != null) {
-                if (priva.strValue.equals("SENSITIVE") || priva.strValue.equals("Resistant") || priva.strValue.equals("Intermediate")) {
+            if (priva.getStrValue() != null) {
+                if (priva.getStrValue().equals("SENSITIVE") || priva.getStrValue().equals("Resistant") || priva.getStrValue().equals("Intermediate")) {
                     transHasAbst = true;
                     return transHasAbst;
                 }
@@ -828,6 +841,80 @@ public class PatientReport implements Serializable, RetirableEntity {
     public void setReportType(ReportType reportType) {
         this.reportType = reportType;
     }
+
+    public List<PatientReportGroup> getPatientReportGroups() {
+        return patientReportGroups;
+    }
+
+    public void setPatientReportGroups(List<PatientReportGroup> patientReportGroups) {
+        this.patientReportGroups = patientReportGroups;
+    }
+
+    public String getPatientName() {
+        return patientName;
+    }
+
+    public void setPatientName(String patientName) {
+        this.patientName = patientName;
+    }
+
+    public String getPatientAge() {
+        return patientAge;
+    }
+
+    public void setPatientAge(String patientAge) {
+        this.patientAge = patientAge;
+    }
+
+    public String getPatientGender() {
+        return patientGender;
+    }
+
+    public void setPatientGender(String patientGender) {
+        this.patientGender = patientGender;
+    }
+
+    public Boolean getRequiresImmediateDoctorReview() {
+        return requiresImmediateDoctorReview;
+    }
+
+    public void setRequiresImmediateDoctorReview(Boolean requiresImmediateDoctorReview) {
+        this.requiresImmediateDoctorReview = requiresImmediateDoctorReview;
+    }
+
+    public Boolean getHandoverComplete() {
+        return handoverComplete;
+    }
+
+    public void setHandoverComplete(Boolean handoverComplete) {
+        this.handoverComplete = handoverComplete;
+    }
+
+    public Boolean getPrintComplete() {
+        return printComplete;
+    }
+
+    public void setPrintComplete(Boolean printComplete) {
+        this.printComplete = printComplete;
+    }
+
+    public Boolean getSendSMSComplete() {
+        return sendSMSComplete;
+    }
+
+    public void setSendSMSComplete(Boolean sendSMSComplete) {
+        this.sendSMSComplete = sendSMSComplete;
+    }
+
+    public Boolean getSendEmailComplete() {
+        return sendEmailComplete;
+    }
+
+    public void setSendEmailComplete(Boolean sendEmailComplete) {
+        this.sendEmailComplete = sendEmailComplete;
+    }
+    
+    
 
     static class PatientReportItemValueComparator implements Comparator<PatientReportItemValue> {
 

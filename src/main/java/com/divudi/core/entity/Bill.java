@@ -7,10 +7,13 @@ package com.divudi.core.entity;
 import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.DepartmentType;
+import static com.divudi.core.data.BillTypeAtomic.PHARMACY_GRN_RETURN;
 import com.divudi.core.data.IdentifiableWithNameOrCode;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.inward.SurgeryBillType;
 import com.divudi.core.data.lab.PatientInvestigationStatus;
+import com.divudi.core.data.lab.Priority;
 import com.divudi.core.entity.cashTransaction.CashTransaction;
 import com.divudi.core.entity.hr.BankAccount;
 import com.divudi.core.entity.membership.MembershipScheme;
@@ -40,6 +43,7 @@ import javax.persistence.Temporal;
 import javax.persistence.Transient;
 
 import static com.divudi.core.util.CommonFunctions.formatDate;
+import javax.persistence.JoinColumn;
 
 /**
  * @author buddhika
@@ -49,7 +53,7 @@ import static com.divudi.core.util.CommonFunctions.formatDate;
 public class Bill implements Serializable, RetirableEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
 
     static final long serialVersionUID = 1L;
@@ -80,6 +84,9 @@ public class Bill implements Serializable, RetirableEntity {
     @OneToMany(mappedBy = "billedBill", fetch = FetchType.LAZY)
     private List<Bill> refundBills = new ArrayList<>();
 
+    @OneToOne
+    private OnlineBooking onlineBooking;
+
     @Enumerated(EnumType.STRING)
     protected BillClassType billClassType;
 
@@ -107,10 +114,15 @@ public class Bill implements Serializable, RetirableEntity {
     ////////////////////////////////////////////////
     @Lob
     private String comments;
+    @Lob
+    private String paymentMemo;
+    @Lob
+    private String indication;
     // Bank Detail
     private String creditCardRefNo;
     private String chequeRefNo;
     private boolean creditBill;
+    private boolean consignment;
     private int creditDuration;
     @ManyToOne(fetch = FetchType.LAZY)
     private Institution bank;
@@ -136,6 +148,8 @@ public class Bill implements Serializable, RetirableEntity {
     private BillTypeAtomic billTypeAtomic;
     @Enumerated(EnumType.STRING)
     private PaymentMethod paymentMethod;
+    @Enumerated(EnumType.STRING)
+    private DepartmentType departmentType;
     @ManyToOne(fetch = FetchType.LAZY)
     private BillItem singleBillItem;
     @ManyToOne(fetch = FetchType.LAZY)
@@ -147,6 +161,23 @@ public class Bill implements Serializable, RetirableEntity {
     private String referenceNumber; //referenceNumber
 
     //Values
+    /**
+     * IMPORTANT: Despite the name, this field stores the SERVICE CHARGE value
+     * for pharmacy bills. This is the PRIMARY field used for service charges.
+     *
+     * Data analysis (Dec 2024) shows:
+     * - 23,065 bills have margin != 0 with serviceCharge = 0
+     * - 7,476 bills have both fields with equal values
+     * - 0 bills have serviceCharge used independently
+     *
+     * Current usage:
+     * - Pharmacy reports use this field to display "Service Charge" column
+     * - PharmacyBundle.populateRowFromBill() maps this to serviceCharge in PharmacyRow
+     * - actualTotal is calculated as: total - margin
+     *
+     * @see #serviceCharge
+     * @see com.divudi.core.data.PharmacyBundle#populateRowFromBill
+     */
     private double margin;
 
     private double total;
@@ -166,6 +197,20 @@ public class Bill implements Serializable, RetirableEntity {
     private double settledAmountBySponsor;
     private double refundAmount;
     private double balance;
+    /**
+     * WARNING: This field is DEPRECATED for pharmacy billing - use 'margin' instead.
+     *
+     * Data analysis (Dec 2024) confirms:
+     * - This field is NEVER used independently (always 0 or equals margin)
+     * - When populated, it mirrors the 'margin' field value exactly
+     * - All pharmacy reports should use 'margin' for service charge values
+     *
+     * This naming confusion caused a bug in PharmacyBundle where actualTotal
+     * was incorrectly calculated using this field instead of margin.
+     *
+     * @see #margin
+     * @deprecated Use {@link #margin} for service charge values
+     */
     private double serviceCharge;
     private Double tax = 0.0;
     private Double cashPaid = 0.0;
@@ -175,8 +220,11 @@ public class Bill implements Serializable, RetirableEntity {
     private double performInstitutionFee;
     private double staffFee;
     private double billerFee;
+    // This is a known typo, can not correct it because of backword compatibility. Its grandTotal
     private double grantTotal;
     private double expenseTotal;
+    private double expensesTotalConsideredForCosting;
+    private double expensesTotalNotConsideredForCosting;
     //with minus tax and discount
     private double grnNetTotal;
 
@@ -191,6 +239,8 @@ public class Bill implements Serializable, RetirableEntity {
     private Institution collectingCentre;
     @ManyToOne(fetch = FetchType.LAZY)
     private Institution institution;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Institution site;
     @ManyToOne(fetch = FetchType.LAZY)
     private Institution fromInstitution;
     @ManyToOne(fetch = FetchType.LAZY)
@@ -254,10 +304,13 @@ public class Bill implements Serializable, RetirableEntity {
     private WebUser editor;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date editedAt;
-    //Checking Property
+    //Checking Property == Finalized
+    private boolean checked = false;
     @ManyToOne(fetch = FetchType.LAZY)
     private WebUser checkedBy;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    // Legacy field name: intentionally named "checkeAt" (not "checkedAt") for backward compatibility
+    // This field is widely used across billing system - DO NOT rename to maintain database compatibility
     private Date checkeAt;
     //Retairing properties
     private boolean retired;
@@ -335,6 +388,18 @@ public class Bill implements Serializable, RetirableEntity {
     private WebUser completedBy;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date completedAt;
+
+    private boolean fullyIssued;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private WebUser fullyIssuedBy;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date fullyIssuedAt;
+
+    private boolean fullReturned;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private WebUser fullReturnedBy;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date fullReturnedAt;
 
     //Print Information
     private boolean printed;
@@ -434,8 +499,25 @@ public class Bill implements Serializable, RetirableEntity {
 
     private String externalDoctor;
 
-    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER, optional = true, orphanRemoval = true)
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private StockBill stockBill;
+
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JoinColumn(name = "BILLFINANCEDETAILS_ID", unique = true)
+    private BillFinanceDetails billFinanceDetails;
+
+    @Transient
+    private Institution transientSupplier;
+    
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    private Request currentRequest;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Patient chiefHouseHolder;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Family memberFamily;
+    @Enumerated(EnumType.STRING)
+    private Priority priority;
 
     public Bill() {
         if (status == null) {
@@ -446,9 +528,19 @@ public class Bill implements Serializable, RetirableEntity {
         reactivated = false;
         refunded = false;
         cancelled = false;
+        consignment = false;
         billDate = new Date();
         billTime = new Date();
         createdAt = new Date();
+        priority = Priority.NORMAL;
+    }
+
+    public OnlineBooking getOnlineBooking() {
+        return onlineBooking;
+    }
+
+    public void setOnlineBooking(OnlineBooking onlineBooking) {
+        this.onlineBooking = onlineBooking;
     }
 
     private void generateBillPrintFromBillTemplate() {
@@ -786,10 +878,14 @@ public class Bill implements Serializable, RetirableEntity {
         this.checkedBy = checkedBy;
     }
 
+    // Legacy method name: intentionally named "getCheckeAt" for backward compatibility
+    // DO NOT rename to "getCheckedAt" - widely used across billing system
     public Date getCheckeAt() {
         return checkeAt;
     }
 
+    // Legacy method name: intentionally named "setCheckeAt" for backward compatibility
+    // DO NOT rename to "setCheckedAt" - widely used across billing system
     public void setCheckeAt(Date checkeAt) {
         this.checkeAt = checkeAt;
     }
@@ -852,6 +948,8 @@ public class Bill implements Serializable, RetirableEntity {
         refundAmount = 0 - bill.getRefundAmount();
         serviceCharge = 0 - bill.getServiceCharge();
         expenseTotal = 0 - bill.getExpenseTotal();
+        expensesTotalConsideredForCosting = 0 - bill.getExpensesTotalConsideredForCosting();
+        expensesTotalNotConsideredForCosting = 0 - bill.getExpensesTotalNotConsideredForCosting();
         claimableTotal = 0 - bill.getClaimableTotal();
         tenderedAmount = 0 - bill.getTenderedAmount();
         totalHospitalFee = 0 - bill.getTotalHospitalFee();
@@ -888,6 +986,8 @@ public class Bill implements Serializable, RetirableEntity {
         refundAmount = 0 - getRefundAmount();
         serviceCharge = 0 - getServiceCharge();
         expenseTotal = 0 - getExpenseTotal();
+        expensesTotalConsideredForCosting = 0 - getExpensesTotalConsideredForCosting();
+        expensesTotalNotConsideredForCosting = 0 - getExpensesTotalNotConsideredForCosting();
         claimableTotal = 0 - getClaimableTotal();
         tenderedAmount = 0 - getTenderedAmount();
         totalHospitalFee = 0 - getTotalHospitalFee();
@@ -923,6 +1023,8 @@ public class Bill implements Serializable, RetirableEntity {
         referringDepartment = bill.getReferringDepartment();
         surgeryBillType = bill.getSurgeryBillType();
         comments = bill.getComments();
+        paymentMemo = bill.getPaymentMemo();
+        indication = bill.getIndication();
         paymentMethod = bill.getPaymentMethod();
         paymentScheme = bill.getPaymentScheme();
         bank = bill.getBank();
@@ -944,6 +1046,12 @@ public class Bill implements Serializable, RetirableEntity {
             pharmacyBill = bill.getPharmacyBill().cloneWithoutIdAndBill();
             pharmacyBill.setBill(this);
         }
+        // Access field directly to avoid auto-creation
+        if (bill.billFinanceDetails != null) {
+            BillFinanceDetails clonedFinanceDetails = bill.billFinanceDetails.clone();
+            clonedFinanceDetails.setBill(this);
+            this.setBillFinanceDetails(clonedFinanceDetails);
+        }
     }
 
     public void copyValue(Bill bill) {
@@ -958,10 +1066,92 @@ public class Bill implements Serializable, RetirableEntity {
         this.tax = bill.getTax();
         this.billTotal = bill.getBillTotal();
         this.vatPlusNetTotal = bill.getVatPlusNetTotal();
+        this.consignment = bill.isConsignment();
         this.settledAmountByPatient = bill.getSettledAmountByPatient();
         this.settledAmountBySponsor = bill.getSettledAmountBySponsor();
         if (this.getPharmacyBill() != null && bill.getPharmacyBill() != null) {
             this.getPharmacyBill().copyValue(bill.getPharmacyBill());
+        }
+        // Access field directly to avoid auto-creation
+        if (bill.billFinanceDetails != null) {
+            BillFinanceDetails clonedFinanceDetails = bill.billFinanceDetails.clone();
+            clonedFinanceDetails.setBill(this);
+            this.setBillFinanceDetails(clonedFinanceDetails);
+        }
+    }
+
+    public void clone(Bill bill) {
+        billType = bill.getBillType();
+        referenceNumber = bill.getReferenceNumber();
+        membershipScheme = bill.getMembershipScheme();
+        collectingCentre = bill.getCollectingCentre();
+        catId = bill.getCatId();
+        creditCompany = bill.getCreditCompany();
+        staff = bill.getStaff();
+        webUser = bill.getWebUser();
+        toStaff = bill.getToStaff();
+        fromStaff = bill.getFromStaff();
+        toDepartment = bill.getToDepartment();
+        toInstitution = bill.getToInstitution();
+        fromDepartment = bill.getFromDepartment();
+        fromInstitution = bill.getFromInstitution();
+        discountPercent = bill.getDiscountPercent();
+        patient = bill.getPatient();
+        patientEncounter = bill.getPatientEncounter();
+        referredBy = bill.getReferredBy();
+        referringDepartment = bill.getReferringDepartment();
+        surgeryBillType = bill.getSurgeryBillType();
+        comments = bill.getComments();
+        paymentMemo = bill.getPaymentMemo();
+        indication = bill.getIndication();
+        paymentMethod = bill.getPaymentMethod();
+        paymentScheme = bill.getPaymentScheme();
+        bank = bill.getBank();
+        chequeDate = bill.getChequeDate();
+        referenceInstitution = bill.getReferenceInstitution();
+        bookingId = bill.getBookingId();
+        appointmentAt = bill.getAppointmentAt();
+        referredByInstitution = bill.getReferredByInstitution();
+        invoiceNumber = bill.getInvoiceNumber();
+        vat = bill.getVat();
+        vatPlusNetTotal = bill.getVatPlusNetTotal();
+        sessionId = bill.getSessionId();
+        ipOpOrCc = bill.getIpOpOrCc();
+        chequeRefNo = bill.getChequeRefNo();
+        consignment = bill.isConsignment();
+        settledAmountByPatient = bill.getSettledAmountByPatient();
+        settledAmountBySponsor = bill.getSettledAmountBySponsor();
+        qty = bill.getQty();
+        hospitalFee = bill.getHospitalFee();
+        totalHospitalFee = bill.getTotalHospitalFee();
+        billItems = new ArrayList<>(BillItem.copyBillItems(bill.getBillItems()));
+        //      referenceBill=bill.getReferenceBill();
+        if (bill.getPharmacyBill() != null) {
+            pharmacyBill = bill.getPharmacyBill().cloneWithoutIdAndBill();
+            pharmacyBill.setBill(this);
+        }
+
+        if (bill.getReferenceBill() != null) {
+            Bill referenceBill = new Bill();
+            referenceBill.clone(bill.getReferenceBill());
+            this.referenceBill = referenceBill;
+        }
+
+        setCancelled(bill.isCancelled());
+        setRetired(bill.isRetired());
+        netTotal = bill.getNetTotal();
+        paidAmount = bill.getPaidAmount();
+
+        // Access field directly to avoid auto-creation
+        if (bill.billFinanceDetails != null) {
+            BillFinanceDetails clonedFinanceDetails = bill.billFinanceDetails.clone();
+            clonedFinanceDetails.setBill(this);
+            this.setBillFinanceDetails(clonedFinanceDetails);
+        }
+
+        if (bill.paidBill != null) {
+            this.paidBill = new Bill();
+            this.paidBill.clone(bill.paidBill);
         }
     }
 
@@ -1035,6 +1225,22 @@ public class Bill implements Serializable, RetirableEntity {
         this.expenseTotal = expenseTotal;
     }
 
+    public double getExpensesTotalConsideredForCosting() {
+        return expensesTotalConsideredForCosting;
+    }
+
+    public void setExpensesTotalConsideredForCosting(double expensesTotalConsideredForCosting) {
+        this.expensesTotalConsideredForCosting = expensesTotalConsideredForCosting;
+    }
+
+    public double getExpensesTotalNotConsideredForCosting() {
+        return expensesTotalNotConsideredForCosting;
+    }
+
+    public void setExpensesTotalNotConsideredForCosting(double expensesTotalNotConsideredForCosting) {
+        this.expensesTotalNotConsideredForCosting = expensesTotalNotConsideredForCosting;
+    }
+
     public double getDiscountPercentPharmacy() {
         ////System.out.println("getting discount percent");
 //        ////System.out.println("bill item"+getBillItems());
@@ -1060,6 +1266,10 @@ public class Bill implements Serializable, RetirableEntity {
         return netTotal;
     }
 
+    public double getGrossAmount() {
+        return total;
+    }
+
     @Transient
     public Double getAbsoluteNetTotalTransient() {
         return Math.abs(netTotal);
@@ -1083,9 +1293,10 @@ public class Bill implements Serializable, RetirableEntity {
         return balance;
     }
 
-//    public void setBalance(double balance) {
-//        this.balance = balance;
-//    }
+    public void setBalance(double balance) {
+        this.balance = balance;
+    }
+
     public List<Bill> getListOfBill() {
         if (listOfBill == null) {
             listOfBill = new ArrayList<>();
@@ -1120,6 +1331,14 @@ public class Bill implements Serializable, RetirableEntity {
 
     public void setPaymentMethod(PaymentMethod paymentMethod) {
         this.paymentMethod = paymentMethod;
+    }
+
+    public DepartmentType getDepartmentType() {
+        return departmentType;
+    }
+
+    public void setDepartmentType(DepartmentType departmentType) {
+        this.departmentType = departmentType;
     }
 
     public Item getBillPackege() {
@@ -1421,9 +1640,6 @@ public class Bill implements Serializable, RetirableEntity {
     }
 
     public Patient getPatient() {
-        if (patientEncounter != null) {
-            patient = patientEncounter.getPatient();
-        }
         return patient;
     }
 
@@ -1651,6 +1867,14 @@ public class Bill implements Serializable, RetirableEntity {
 
     public void setComments(String comments) {
         this.comments = comments;
+    }
+
+    public String getPaymentMemo() {
+        return paymentMemo;
+    }
+
+    public void setPaymentMemo(String paymentMemo) {
+        this.paymentMemo = paymentMemo;
     }
 
     public Bill getReferenceBill() {
@@ -2507,6 +2731,14 @@ public class Bill implements Serializable, RetirableEntity {
         this.creditBill = creditBill;
     }
 
+    public boolean isConsignment() {
+        return consignment;
+    }
+
+    public void setConsignment(boolean consignment) {
+        this.consignment = consignment;
+    }
+
     public boolean isCompleted() {
         return completed;
     }
@@ -2537,6 +2769,54 @@ public class Bill implements Serializable, RetirableEntity {
 
     public void setCompletedAt(Date completedAt) {
         this.completedAt = completedAt;
+    }
+
+    public boolean isFullyIssued() {
+        return fullyIssued;
+    }
+
+    public void setFullyIssued(boolean fullyIssued) {
+        this.fullyIssued = fullyIssued;
+    }
+
+    public WebUser getFullyIssuedBy() {
+        return fullyIssuedBy;
+    }
+
+    public void setFullyIssuedBy(WebUser fullyIssuedBy) {
+        this.fullyIssuedBy = fullyIssuedBy;
+    }
+
+    public Date getFullyIssuedAt() {
+        return fullyIssuedAt;
+    }
+
+    public void setFullyIssuedAt(Date fullyIssuedAt) {
+        this.fullyIssuedAt = fullyIssuedAt;
+    }
+
+    public boolean isFullReturned() {
+        return fullReturned;
+    }
+
+    public void setFullReturned(boolean fullReturned) {
+        this.fullReturned = fullReturned;
+    }
+
+    public WebUser getFullReturnedBy() {
+        return fullReturnedBy;
+    }
+
+    public void setFullReturnedBy(WebUser fullReturnedBy) {
+        this.fullReturnedBy = fullReturnedBy;
+    }
+
+    public Date getFullReturnedAt() {
+        return fullReturnedAt;
+    }
+
+    public void setFullReturnedAt(Date fullReturnedAt) {
+        this.fullReturnedAt = fullReturnedAt;
     }
 
     public BankAccount getBankAccount() {
@@ -2776,4 +3056,90 @@ public class Bill implements Serializable, RetirableEntity {
         }
         return m;
     }
+
+    public BillFinanceDetails getBillFinanceDetails() {
+        if (billFinanceDetails == null) {
+            billFinanceDetails = new BillFinanceDetails();
+            billFinanceDetails.setBill(this);
+        }
+        return billFinanceDetails;
+    }
+
+    public void setBillFinanceDetails(BillFinanceDetails billFinanceDetails) {
+        this.billFinanceDetails = billFinanceDetails;
+        if (billFinanceDetails != null && billFinanceDetails.getBill() != this) {
+            billFinanceDetails.setBill(this);
+        }
+    }
+
+    public String getIndication() {
+        return indication;
+    }
+
+    public void setIndication(String indication) {
+        this.indication = indication;
+    }
+
+    public Institution getTransientSupplier() {
+        if (this.getBillTypeAtomic() == null) {
+            return transientSupplier = this.getFromInstitution();
+        }
+        switch (this.getBillTypeAtomic()) {
+            case PHARMACY_GRN_RETURN:
+                transientSupplier = this.getToInstitution();
+                break;
+            default:
+                transientSupplier = this.getFromInstitution();
+        }
+        return transientSupplier;
+    }
+
+    public boolean isChecked() {
+        return checked;
+    }
+
+    public void setChecked(boolean checked) {
+        this.checked = checked;
+    }
+
+    public Institution getSite() {
+        return site;
+    }
+
+    public void setSite(Institution site) {
+        this.site = site;
+    }
+
+    public Request getCurrentRequest() {
+        return currentRequest;
+    }
+
+    public void setCurrentRequest(Request currentRequest) {
+        this.currentRequest = currentRequest;
+    }
+
+    public Patient getChiefHouseHolder() {
+        return chiefHouseHolder;
+    }
+
+    public void setChiefHouseHolder(Patient chiefHouseHolder) {
+        this.chiefHouseHolder = chiefHouseHolder;
+    }
+
+    public Family getMemberFamily() {
+        return memberFamily;
+    }
+
+    public void setMemberFamily(Family memberFamily) {
+        this.memberFamily = memberFamily;
+    }
+
+    public Priority getPriority() {
+        return priority;
+    }
+
+    public void setPriority(Priority priority) {
+        this.priority = priority;
+    }
+
 }

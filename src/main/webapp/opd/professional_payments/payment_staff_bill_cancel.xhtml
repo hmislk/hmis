@@ -8,8 +8,8 @@
       xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill">
     
     <h:body>
-        <ui:composition template="/payments/pay_index.xhtml">
-            <ui:define name="admin">
+        <ui:composition template="/opd/opd_doctor_payment_index.xhtml">
+            <ui:define name="opdPaymentContent">
                 <h:form>
                     <h:panelGroup rendered="#{!billSearch.printPreview}" styleClass="alignTop" >
                         <p:panel  header="Cancellation">

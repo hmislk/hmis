@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
-                template="/payments/pay_index.xhtml"
+                template="/payments/credit_company_pay_index.xhtml"
                 xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
@@ -15,7 +15,7 @@
                 <p:panel>
                     <f:facet name="header">
                         <h:outputLabel value="Credit Company Payment Bill Search To approved"/>
-                        <p:commandButton value="Back" icon="fas fa-arrow-left" class="ui-button-warning" style="float: right;" action="/payments/pay_index?faces-redirect=true" ajax="false"/>     
+                        <p:commandButton value="Back" icon="fas fa-arrow-left" styleClass="ui-button-warning" style="float: right;" action="/payments/credit_company_pay_index?faces-redirect=true" ajax="false"/>     
                     </f:facet>
 
                     <div class="row">
@@ -53,19 +53,14 @@
                             <p:inputText  value="#{searchController.searchKeyword.billNo}" class="w-100" />
 
                             <h:outputLabel value="Credit Company" class="w-100"/>
-                            <p:autoComplete 
-                                id="creditCompany" 
-                                class="w-100 -mx-2"
-                                inputStyleClass="form-control"
-                                forceSelection="true"
-                                value="#{searchController.creditCompany}"  
-                                completeMethod="#{creditCompanyController.completeCredit}" 
-                                var="ix"
-                                minQueryLength="2"
-                                placeholder="Company (Type at least 2 letters to search)"
-                                itemLabel="#{ix.name}" 
-                                itemValue="#{ix}" 
-                                size="10"  />
+                            <p:selectOneMenu id="creditCompany"
+                                             value="#{searchController.creditCompany}"
+                                             styleClass="w-100"
+                                             filter="true"
+                                             filterMatchMode="contains">
+                                <f:selectItem itemLabel="All Credit Companies" itemValue="#{null}" noSelectionOption="true"/>
+                                <f:selectItems value="#{institutionController.creditCompanies}" var="ix" itemLabel="#{ix.name}" itemValue="#{ix}"/>
+                            </p:selectOneMenu>
 
                         </div>
                         <div class="col-md-10">

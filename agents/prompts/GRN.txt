@@ -1,0 +1,2 @@
+List of Purchase Orders to Start a GRN on a selected PO - http://localhost:8080/rh/faces/pharmacy/pharmacy_purchase_order_list_for_recieve.xhtml
+Where GRN Details are entered - http://localhost:8080/rh/faces/pharmacy/pharmacy_grn_costing_with_save_approve.xhtml

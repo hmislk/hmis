@@ -75,6 +75,11 @@ public class RouteController implements Serializable {
         m.put("ret", false);
         items = getFacade().findByJpql(j, m);
     }
+    
+    public List<Route> fillRoutes() {
+        fillItems();
+        return items;
+    }
 
     public List<Route> completeRoute(String qry) {
         List<Route> list;
@@ -218,7 +223,7 @@ public class RouteController implements Serializable {
             getFacade().edit(current);
             JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            JsfUtil.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addErrorMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();

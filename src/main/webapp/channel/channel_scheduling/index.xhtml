@@ -20,15 +20,21 @@
                         <div class="col-2">
                             <h:form>
                                 <div class="d-grid gap-2 m-1">
-                                    <p:commandButton  
-                                        ajax="false" 
-                                        value="Channel Schedule Management" 
+                                    <p:commandButton
+                                        ajax="false"
+                                        value="Channel Schedule Management"
                                         action="#{channelScheduleController.navigateToChannelSchedule}"
                                         icon="fa fa-calendar-alt"
                                         styleClass="ui-button-success" />
-                                    <p:commandButton  
-                                        ajax="false" 
-                                        value="Channel Session Management" 
+                                    <p:commandButton
+                                        ajax="false"
+                                        value="Bulk Hospital Fee Editing"
+                                        action="#{channelScheduleController.navigateToBulkHospitalFeeEdit}"
+                                        icon="fa fa-money-bill"
+                                        styleClass="ui-button-warning" />
+                                    <p:commandButton
+                                        ajax="false"
+                                        value="Channel Session Management"
                                         action="#{channelScheduleController.navigateToChannelScheduleManagement}"
                                         icon="fa fa-users"
                                         styleClass="ui-button-info" />

@@ -206,8 +206,8 @@
                                         rendered="#{b.billType eq 'PharmacyTransferIssue'}"
                                         action="pharmacy_transfer_issue" >
 
-                                        <f:setPropertyActionListener target="#{transferIssueController.issuedBill}" value="#{b}"/>
-                                        <f:setPropertyActionListener target="#{transferIssueController.printPreview}" value="true"/>
+                                        <f:setPropertyActionListener target="#{transferIssueForRequestsController.issuedBill}" value="#{b}"/>
+                                        <f:setPropertyActionListener target="#{transferIssueForRequestsController.printPreview}" value="true"/>
                                     </p:commandButton>
                                 </div>
 

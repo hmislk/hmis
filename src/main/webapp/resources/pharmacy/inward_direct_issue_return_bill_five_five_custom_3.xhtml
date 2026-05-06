@@ -29,7 +29,7 @@
                 <!-- Header Section -->
                 <div class="hospital-name">
                     <h:outputLabel value="#{cc.attrs.bill.department.name}"/>
-                    <h:outputLabel value="RETURN BILL"   />
+                    <h:outputLabel value=" RETURN BILL" class="mx-2"/>
                 </div>
 
                 <!-- Separator Line -->
@@ -148,9 +148,17 @@
                             </h:outputLabel>
                         </td>
                     </tr>
+
+
                 </table>
 
                 <table >
+                    <tr>
+                        <h:panelGroup rendered="#{cc.attrs.bill.comments ne null}"> 
+                                <h:outputLabel value="Reason for Return : " class="mx-2"/>
+                                <h:outputLabel value=" #{cc.attrs.bill.comments}"></h:outputLabel>
+                            </h:panelGroup>
+                    </tr>
                     <tr>
                         <td>
                             <ui:repeat value="#{cc.attrs.bill.payments}" var="ps" rendered="#{cc.attrs.bill.paymentMethod eq 'MultiplePaymentMethods'}">
@@ -169,7 +177,7 @@
 
                         </td>
                         <td>
-
+                            
                         </td>
                         <td>
                             <h:outputLabel value="Printed By :"/>
@@ -180,6 +188,7 @@
                             </h:outputLabel>
                         </td>
                     </tr>
+                    
                 </table>
 
 

@@ -8,10 +8,12 @@ import com.divudi.core.data.EncounterType;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.SymanticType;
 import com.divudi.core.data.inward.PatientEncounterType;
+import com.divudi.core.entity.clinical.ClinicalEntity;
 import com.divudi.core.entity.clinical.ClinicalFindingValue;
 import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.entity.inward.EncounterComponent;
 import com.divudi.core.entity.inward.PatientRoom;
+import com.divudi.core.entity.inward.Reservation;
 import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.util.*;
@@ -47,7 +49,7 @@ public class PatientEncounter implements Serializable, RetirableEntity {
 
     static final long serialVersionUID = 1L;
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     //Main Properties
     Long id;
     String bhtNo;
@@ -84,6 +86,8 @@ public class PatientEncounter implements Serializable, RetirableEntity {
     @Enumerated(EnumType.STRING)
     PaymentMethod paymentMethod;
     @ManyToOne
+    private PaymentScheme paymentScheme;
+    @ManyToOne
     Institution creditCompany;
     @ManyToOne
     private Staff referringDoctor;
@@ -100,6 +104,19 @@ public class PatientEncounter implements Serializable, RetirableEntity {
     Date timeOfDischarge;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date dateOfDischarge;
+
+    // Clinical discharge — set on the parent admission when doctor confirms clinical clearance
+    Boolean clinicallyDischarged = false;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date clinicalDischargeDateTime;
+    @ManyToOne
+    private WebUser clinicalDischargedBy;
+
+    // Room discharge mirror — set on the parent admission when the last room is vacated
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date roomDischargeDateTime;
+    @ManyToOne
+    private WebUser roomDischargedBy;
     double creditLimit;
     double creditUsedAmount;
     private double creditPaidAmount;
@@ -157,6 +174,7 @@ public class PatientEncounter implements Serializable, RetirableEntity {
     private Integer respiratoryRate = null;
     private Integer pfr = null;
     private Double saturation = null;
+    private Double temperature = null;
     @ManyToOne
     private Institution workplace;
     @ManyToOne
@@ -166,6 +184,13 @@ public class PatientEncounter implements Serializable, RetirableEntity {
     @ManyToOne
     private Staff referringStaff;
     private boolean convertedToAnotherEncounter;
+    @ManyToOne
+    private ClinicalEntity primaryReason;
+    private String referringMethod;
+    private boolean roomAdmitted;
+    
+    @ManyToOne
+    private Reservation encounterReservation;
 
     // Transient method for BP
     public String getBp() {
@@ -295,6 +320,18 @@ public class PatientEncounter implements Serializable, RetirableEntity {
     }
     @Lob
     String comments;
+    @Lob
+    private String planOfAction;
+
+    // Clinical discharge content fields — used on the child ClinicalDischarge record
+    @ManyToOne
+    private ClinicalEntity dischargeCondition;
+    @Lob
+    private String followUpPlan;
+    @Lob
+    private String activityInstructions;
+    @Lob
+    private String dietInstructions;
     @Transient
     List<ClinicalFindingValue> diagnosis;
     @ManyToOne
@@ -554,9 +591,6 @@ public class PatientEncounter implements Serializable, RetirableEntity {
     }
 
     public Patient getPatient() {
-        if (patient == null) {
-            patient = new Patient();
-        }
         return patient;
     }
 
@@ -651,6 +685,14 @@ public class PatientEncounter implements Serializable, RetirableEntity {
 
     public void setPaymentMethod(PaymentMethod paymentMethod) {
         this.paymentMethod = paymentMethod;
+    }
+
+    public PaymentScheme getPaymentScheme() {
+        return paymentScheme;
+    }
+
+    public void setPaymentScheme(PaymentScheme paymentScheme) {
+        this.paymentScheme = paymentScheme;
     }
 
     public double getCreditLimit() {
@@ -795,6 +837,14 @@ public class PatientEncounter implements Serializable, RetirableEntity {
         this.comments = comments;
     }
 
+    public String getPlanOfAction() {
+        return planOfAction;
+    }
+
+    public void setPlanOfAction(String planOfAction) {
+        this.planOfAction = planOfAction;
+    }
+
     public double getCreditPaidAmount() {
         return creditPaidAmount;
     }
@@ -827,6 +877,82 @@ public class PatientEncounter implements Serializable, RetirableEntity {
 
     public void setPrintingDischargeTime(Date printingDischargeTime) {
         this.printingDischargeTime = printingDischargeTime;
+    }
+
+    public Boolean getClinicallyDischarged() {
+        return clinicallyDischarged;
+    }
+
+    public boolean isClinicallyDischarged() {
+        return Boolean.TRUE.equals(clinicallyDischarged);
+    }
+
+    public void setClinicallyDischarged(Boolean clinicallyDischarged) {
+        this.clinicallyDischarged = clinicallyDischarged;
+    }
+
+    public Date getClinicalDischargeDateTime() {
+        return clinicalDischargeDateTime;
+    }
+
+    public void setClinicalDischargeDateTime(Date clinicalDischargeDateTime) {
+        this.clinicalDischargeDateTime = clinicalDischargeDateTime;
+    }
+
+    public WebUser getClinicalDischargedBy() {
+        return clinicalDischargedBy;
+    }
+
+    public void setClinicalDischargedBy(WebUser clinicalDischargedBy) {
+        this.clinicalDischargedBy = clinicalDischargedBy;
+    }
+
+    public Date getRoomDischargeDateTime() {
+        return roomDischargeDateTime;
+    }
+
+    public void setRoomDischargeDateTime(Date roomDischargeDateTime) {
+        this.roomDischargeDateTime = roomDischargeDateTime;
+    }
+
+    public WebUser getRoomDischargedBy() {
+        return roomDischargedBy;
+    }
+
+    public void setRoomDischargedBy(WebUser roomDischargedBy) {
+        this.roomDischargedBy = roomDischargedBy;
+    }
+
+    public ClinicalEntity getDischargeCondition() {
+        return dischargeCondition;
+    }
+
+    public void setDischargeCondition(ClinicalEntity dischargeCondition) {
+        this.dischargeCondition = dischargeCondition;
+    }
+
+    public String getFollowUpPlan() {
+        return followUpPlan;
+    }
+
+    public void setFollowUpPlan(String followUpPlan) {
+        this.followUpPlan = followUpPlan;
+    }
+
+    public String getActivityInstructions() {
+        return activityInstructions;
+    }
+
+    public void setActivityInstructions(String activityInstructions) {
+        this.activityInstructions = activityInstructions;
+    }
+
+    public String getDietInstructions() {
+        return dietInstructions;
+    }
+
+    public void setDietInstructions(String dietInstructions) {
+        this.dietInstructions = dietInstructions;
     }
 
     public Bill getFinalBill() {
@@ -1021,6 +1147,14 @@ public class PatientEncounter implements Serializable, RetirableEntity {
         this.saturation = saturation;
     }
 
+    public Double getTemperature() {
+        return temperature;
+    }
+
+    public void setTemperature(Double temperature) {
+        this.temperature = temperature;
+    }
+
     public Item getGuardianRelationshipToPatient() {
         return guardianRelationshipToPatient;
     }
@@ -1035,6 +1169,14 @@ public class PatientEncounter implements Serializable, RetirableEntity {
 
     public void setConvertedToAnotherEncounter(boolean convertedToAnotherEncounter) {
         this.convertedToAnotherEncounter = convertedToAnotherEncounter;
+    }
+
+    public ClinicalEntity getPrimaryReason() {
+        return primaryReason;
+    }
+
+    public void setPrimaryReason(ClinicalEntity primaryReason) {
+        this.primaryReason = primaryReason;
     }
 
     public static Map<String, String> toMap(PatientEncounter e) {
@@ -1068,5 +1210,29 @@ public class PatientEncounter implements Serializable, RetirableEntity {
             p.forEach(m::putIfAbsent);
         }
         return m;
+    }
+
+    public String getReferringMethod() {
+        return referringMethod;
+    }
+
+    public void setReferringMethod(String referringMethod) {
+        this.referringMethod = referringMethod;
+    }
+
+    public boolean isRoomAdmitted() {
+        return roomAdmitted;
+    }
+
+    public void setRoomAdmitted(boolean roomAdmitted) {
+        this.roomAdmitted = roomAdmitted;
+    }
+
+    public Reservation getEncounterReservation() {
+        return encounterReservation;
+    }
+
+    public void setEncounterReservation(Reservation encounterReservation) {
+        this.encounterReservation = encounterReservation;
     }
 }

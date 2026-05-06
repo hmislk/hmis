@@ -4,6 +4,8 @@
  */
 package com.divudi.bean.channel;
 
+import com.divudi.bean.channel.ChannelReportTemplateController.OnlineBookingDetialRow;
+import com.divudi.bean.common.ExcelController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.WebUserController;
 import com.divudi.core.util.JsfUtil;
@@ -14,10 +16,12 @@ import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.DoctorDayChannelCount;
 import com.divudi.core.data.FeeType;
 import com.divudi.core.data.HistoryType;
+import com.divudi.core.data.OnlineBookingStatus;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.PersonInstitutionType;
 import com.divudi.core.data.ReportTemplateRow;
 import com.divudi.core.data.ReportTemplateRowBundle;
+import com.divudi.core.data.Title;
 import com.divudi.core.data.WeekdayDisplay;
 import com.divudi.core.data.channel.DateEnum;
 import com.divudi.core.data.channel.PaymentEnum;
@@ -75,6 +79,8 @@ import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
+
+import org.primefaces.model.StreamedContent;
 
 @Named
 @SessionScoped
@@ -245,22 +251,22 @@ public class ChannelReportTemplateController implements Serializable {
 
     public String navigateToChannlingSessionCount() {
         bundle = new ReportTemplateRowBundle();
-        return "/channel/reports/daily_session_counts?faces-redirect=true;";
+        return "/channel/reports/daily_session_counts?faces-redirect=true";
     }
 
     public String navigateToChannlingDoctorCount() {
         bundle = new ReportTemplateRowBundle();
-        return "/channel/reports/daily_doctor_counts?faces-redirect=true;";
+        return "/channel/reports/daily_doctor_counts?faces-redirect=true";
     }
 
     public String navigateToCategorySessionCount() {
         bundle = new ReportTemplateRowBundle();
-        return "/channel/reports/category_session_counts?faces-redirect=true;";
+        return "/channel/reports/category_session_counts?faces-redirect=true";
     }
 
     public String navigateToOnlineBookings() {
         bundle = new ReportTemplateRowBundle();
-        return "/channel/reports/online_session_booking_count?faces-redirect=true;";
+        return "/channel/reports/online_session_booking_count?faces-redirect=true";
     }
 
     public void clearWithDefultValue() {
@@ -753,7 +759,6 @@ public class ChannelReportTemplateController implements Serializable {
 //        hm.put("class", BilledBill.class);
 //        hm.put("class", BilledBill.class);
 //        hm.put("class", BilledBill.class);
-        System.out.println("sql = " + sql);
         Long count = billFeeFacade.findLongByJpql(sql, hm, TemporalType.TIMESTAMP);
         return count;
     }
@@ -802,7 +807,6 @@ public class ChannelReportTemplateController implements Serializable {
         Long long7 = 0L;
         Long long8 = 0L;
 
-        System.out.println("Processing result rows...");
         for (ReportTemplateRow r : rs) {
             if (r == null) {
                 continue;
@@ -908,29 +912,13 @@ public class ChannelReportTemplateController implements Serializable {
         String j;
         Map m = new HashMap();
         rows = new ArrayList<>();
-        //BillSession
-        boolean test = false;
-        if (test) {
-            BillSession bs = new BillSession();
-            bs.getSessionInstance().getSessionDate();
-            if (bs.getBill().getBillTypeAtomic() == BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT_ONLINE) {
-                bs.getBill().getPatient().getPerson();
-                bs.getBill().getCreditCompany().getName();
-                bs.getBill().getCreatedAt();
-                bs.getSessionInstance().getOriginatingSession().getStaff().getSpeciality();
-                bs.getSessionInstance().getOriginatingSession().getSpeciality().getName();
-                bs.getBill().isCancelled();
-
-            }
-        }
 
         j = "select new com.divudi.core.data.ReportTemplateRow(bs) "
-                + " from BillSession bs "
-                + " where bs.retired = false "
-                + " and bs.bill.creditCompany is not null "
-                + " and bs.bill.creditCompany.name = 'DOC_990'"
-                + " and bs.bill.billTypeAtomic = :bta"
-                + " and bs.bill.createdAt between :fd and :td ";
+                    + " from BillSession bs "
+                    + " where bs.retired = false "
+                    + " and bs.bill.creditCompany is not null "
+                    + " and bs.bill.billTypeAtomic = :bta"
+                    + " and bs.bill.createdAt between :fd and :td ";
 
         if (institution != null) {
             m.put("ins", institution);
@@ -945,9 +933,7 @@ public class ChannelReportTemplateController implements Serializable {
         if (speciality != null) {
             j += " and bs.sessionInstance.originatingSession.staff.speciality =:sp";
             m.put("sp", speciality);
-
         }
-        System.out.println("here2");
         if (staff != null) {
             j += " and bs.sessionInstance.originatingSession.staff =:staff";
             m.put("staff", staff);
@@ -1013,7 +999,94 @@ public class ChannelReportTemplateController implements Serializable {
                 }
             }
         }
+    }
 
+    List<OnlineBookingDetialRow> onlineBookingDetialRows;
+    private double totalNetTotalInOBReport;
+
+    public void generateOnlineSessionBookingsReport() {
+        onlineBookingDetialRows = new ArrayList<>();
+        totalNetTotalInOBReport = 0.0;
+        String j;
+        Map m = new HashMap();
+        rows = new ArrayList<>();
+
+        j = "select new com.divudi.bean.channel.ChannelReportTemplateController.OnlineBookingDetialRow( "
+                + " b.id, b.deptId, bs.sessionDate, bs.sessionInstance.name, "
+                + " COALESCE(s.person.name, ''), s.person.title, "
+                + " COALESCE(s.speciality.name, ''), "
+                + " CONCAT(COALESCE(ob.title, ''), CONCAT('. ', COALESCE(ob.patientName, ''))), "
+                + " COALESCE(ob.phoneNo, ''), COALESCE(b.creditCompany.name, ''), "
+                + " b.cancelled, b.refunded, bs.absent, "
+                + " ob.onlineBookingStatus, "
+                + " b.paidAmount) "
+                + " from BillSession bs "
+                + " left join bs.bill b "
+                + " left join b.referenceBill rb "
+                + " left join rb.onlineBooking ob "
+                + " left join b.staff s "
+                + " where bs.retired = false "
+                + " and b.creditCompany is not null "
+                + " and b.billTypeAtomic = :bta"
+                + " and b.createdAt between :fd and :td ";
+
+        if (institution != null) {
+            m.put("ins", institution);
+            j += " and bs.institution=:ins ";
+        }
+
+        if (category != null) {
+            m.put("cat", category);
+            j += " and bs.originatingSession.category=:cat ";
+        }
+
+        if (speciality != null) {
+            j += " and bs.sessionInstance.originatingSession.staff.speciality =:sp";
+            m.put("sp", speciality);
+        }
+
+        if (staff != null) {
+            j += " and bs.sessionInstance.originatingSession.staff =:staff";
+            m.put("staff", staff);
+        }
+
+        if(selectedBillTypeInOBReport != null){
+            switch (selectedBillTypeInOBReport) {
+                case "Cancelled":
+                    j += " and b.cancelled = true ";
+                    break;
+                case "Refunded":
+                    j += " and b.refunded = true ";
+                    break;
+                case "Completed":
+                    j += " and b.refunded = false and b.cancelled = false  ";
+                    break;
+                case "Absent":
+                    j += " and b.refunded = false and b.cancelled = false and bs.absent = true ";
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        j += " order by b.createdAt desc";
+
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        m.put("bta", BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT);
+
+        onlineBookingDetialRows = (List<OnlineBookingDetialRow>) billFacade.findLightsByJpql(j, m, TemporalType.TIMESTAMP);
+
+        if (onlineBookingDetialRows == null || onlineBookingDetialRows.isEmpty()) {
+            return;
+        }
+
+        for (OnlineBookingDetialRow row : onlineBookingDetialRows) {
+            if (row.isBillCancelled()) {
+                continue;
+            }
+            totalNetTotalInOBReport += row.getPaidAmount();
+        }
     }
 
     public void fillDailyDoctorCounts() {
@@ -7817,4 +7890,173 @@ public class ChannelReportTemplateController implements Serializable {
         this.doctorDayChannelCounts = doctorDayChannelCounts;
     }
 
+    public void setTotalNetTotalInOBReport(double totalNetTotalInOBReport) {
+        this.totalNetTotalInOBReport = totalNetTotalInOBReport;
+    }
+
+    public double getTotalNetTotalInOBReport() {
+        return totalNetTotalInOBReport;
+    }
+
+    public List<OnlineBookingDetialRow> getOnlineBookingDetialRows() {
+        return onlineBookingDetialRows;
+    }
+
+    public void setOnlineBookingDetialRows(List<OnlineBookingDetialRow> onlineBookingDetialRows) {
+        this.onlineBookingDetialRows = onlineBookingDetialRows;
+    }
+
+    public static class OnlineBookingDetialRow {
+
+        private Long billId;
+        private String billDeptId;
+        private Date sessionDate;
+        private String sessionName;
+        private String consultantName;
+        private Title cnosultantTitle;
+        private String consultantSpeciality;
+        private String patientName;
+        private String patientPhone;
+        private String AgentName;
+        private boolean billCancelled;
+        private boolean billRefunded;
+        private boolean absent;
+        private OnlineBookingStatus onlineBookingStatus;
+        private double paidAmount;
+
+        public OnlineBookingDetialRow(Long billId, String billDeptId, Date sessionDate, String sessionName, String consultantName, Title cosultantTitle, String consultantSpeciality, String patientName, String patientPhone, String agentName, boolean billCancelled, boolean billRefunded, boolean absent, OnlineBookingStatus onlineBookingStatus, double paidAmount) {
+            this.billId = billId;
+            this.billDeptId = billDeptId;
+            this.sessionDate = sessionDate;
+            this.sessionName = sessionName;
+            this.consultantName = consultantName;
+            this.cnosultantTitle = cosultantTitle;
+            this.consultantSpeciality = consultantSpeciality;
+            this.patientName = patientName;
+            this.patientPhone = patientPhone;
+            this.AgentName = agentName;
+            this.billCancelled = billCancelled;
+            this.billRefunded = billRefunded;
+            this.absent = absent;
+            this.onlineBookingStatus = onlineBookingStatus;
+            this.paidAmount = paidAmount;
+        }
+
+        public Long getBillId() {
+            return billId;
+        }
+
+        public void setBillId(Long billId) {
+            this.billId = billId;
+        }
+
+        public String getBillDeptId() {
+            return billDeptId;
+        }
+
+        public void setBillDeptId(String billDeptId) {
+            this.billDeptId = billDeptId;
+        }
+
+        public Date getSessionDate() {
+            return sessionDate;
+        }
+
+        public void setSessionDate(Date sessionDate) {
+            this.sessionDate = sessionDate;
+        }
+
+        public String getSessionName() {
+            return sessionName;
+        }
+
+        public void setSessionName(String sessionName) {
+            this.sessionName = sessionName;
+        }
+
+        public String getConsultantName() {
+            String name = "";
+            if (cnosultantTitle != null) {
+                name = cnosultantTitle.getLabel() + " ";
+            }
+            name += consultantName;
+            return name;
+        }
+
+        public void setConsultantName(String consultantName) {
+            this.consultantName = consultantName;
+        }
+
+        public String getConsultantSpeciality() {
+            return consultantSpeciality;
+        }
+
+        public void setConsultantSpeciality(String consultantSpeciality) {
+            this.consultantSpeciality = consultantSpeciality;
+        }
+
+        public String getPatientName() {
+            return patientName;
+        }
+
+        public void setPatientName(String patientName) {
+            this.patientName = patientName;
+        }
+
+        public String getPatientPhone() {
+            return patientPhone;
+        }
+
+        public void setPatientPhone(String patientPhone) {
+            this.patientPhone = patientPhone;
+        }
+
+        public String getAgentName() {
+            return AgentName;
+        }
+
+        public void setAgentName(String AgentName) {
+            this.AgentName = AgentName;
+        }
+
+        public boolean isBillCancelled() {
+            return billCancelled;
+        }
+
+        public void setBillCancelled(boolean billCancelled) {
+            this.billCancelled = billCancelled;
+        }
+
+        public boolean isBillRefunded() {
+            return billRefunded;
+        }
+
+        public void setBillRefunded(boolean billRefunded) {
+            this.billRefunded = billRefunded;
+        }
+
+        public boolean isAbsent() {
+            return absent;
+        }
+
+        public void setAbsent(boolean absent) {
+            this.absent = absent;
+        }
+
+        public OnlineBookingStatus getOnlineBookingStatus() {
+            return onlineBookingStatus;
+        }
+
+        public void setOnlineBookingStatus(OnlineBookingStatus onlineBookingStatus) {
+            this.onlineBookingStatus = onlineBookingStatus;
+        }
+
+        public double getPaidAmount() {
+            return paidAmount;
+        }
+
+        public void setPaidAmount(double paidAmount) {
+            this.paidAmount = paidAmount;
+        }
+    }
 }

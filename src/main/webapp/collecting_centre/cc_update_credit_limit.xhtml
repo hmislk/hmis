@@ -13,11 +13,11 @@
         <ui:composition template="/collecting_centre/index.xhtml">
             <ui:define name="subcontent">
                 <h:form  >
-                    <h:panelGroup rendered="#{not webUserController.hasPrivilege('ChangeCreditLimitInCC')}">
+                    <h:panelGroup rendered="#{!webUserController.hasPrivilege('ChangeCreditLimitInCC') and !webUserController.hasPrivilege('CollectingCentreManageMenu')}">
                         <na:not_authorize />
                     </h:panelGroup>
 
-                    <h:panelGroup rendered="#{webUserController.hasPrivilege('Payment') and webUserController.hasPrivilege('ChangeCreditLimitInCC')}" >
+                    <h:panelGroup rendered="#{webUserController.hasPrivilege('ChangeCreditLimitInCC') and webUserController.hasPrivilege('CollectingCentreManageMenu')}" >
                         <p:panel header="Manage Collecting Centre Credit Limits" >
                             <div class="d-flex gap-4">
                                 <div class="col-5">

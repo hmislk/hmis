@@ -10,19 +10,39 @@
 
     <ui:define name="subcontent">
         <div class="container-fluid" >
-            <div class="card" >
-                <div class="card-header" >
-                    <h2>Upload Collecting Centre Price List</h2>
-                </div>
+            <p:panel >
+                <f:facet name="header">
+                    <div class="d-flex justify-content-between">
+                        <p:outputLabel value="Upload Institution(Site) Fees " class="mt-2"></p:outputLabel>
+                        <h:form>
+                            <p:commandButton 
+                                value="Download Template" 
+                                ajax="false" 
+                                icon="fas fa-file-excel"
+                                class="ui-button-success m-1"
+                                onclick="PrimeFaces.monitorDownload(start, stop);" >
+                                <p:fileDownload value="#{dataUploadController.getTemplateForItemFeeUploadToSite()}" />
+                            </p:commandButton>
+                        </h:form>
+                    </div>
+                </f:facet>
 
                 <div class="card-body" >
                     <h:form enctype="multipart/form-data">
-                        <p:fileUpload value="#{dataUploadController.file}"
-                                      mode="simple"
-                                      label="Choose File"/>
-                        <p:commandButton value="Upload"
-                                         action="#{dataUploadController.uploadInstitutionItemFees()}"
-                                         ajax="false"/>
+                        <p:fileUpload 
+                            value="#{dataUploadController.file}"
+                            mode="simple"
+                            skinSimple="true"
+                            label="Choose File"/>
+
+                        <p:commandButton 
+                            value="Upload"
+                            icon="fas fa-upload"
+                            class="ui-button-warning"
+                            style="float: right; width: 200px;"
+                            action="#{dataUploadController.uploadInstitutionItemFees()}"
+                            ajax="false">
+                        </p:commandButton>
 
                     </h:form>
 
@@ -36,21 +56,28 @@
                         <tbody>
                             <tr>
                                 <td>A</td>
-                                <td>Item Code</td>
+                                <td>Item Code (Required)</td>
                             </tr>
                             <tr>
                                 <td>B</td>
-                                <td>Item Name</td>
+                                <td>Item Name (Required)</td>
                             </tr>
                             <tr>
                                 <td>C</td>
-                                <td>For Institution</td>
+                                <td>For Institution (Site)</td>
                             </tr>
                             <tr>
                                 <td>D</td>
-                                <td>Fee</td>
+                                <td>Item Type (Investigation or Service) Default - Investigation</td>
                             </tr>
-                            
+                            <tr>
+                                <td>E</td>
+                                <td>Local Fee</td>
+                            </tr>
+                            <tr>
+                                <td>F</td>
+                                <td>Foreigner Fee</td>
+                            </tr>
                             <tr>
                                 <td>G</td>
                                 <td>Institution</td>
@@ -61,11 +88,65 @@
                             </tr>
                         </tbody>
                     </table>
-                </div>
-            </div>
-        </div>
 
-       
+                    <h:form>
+                        <p:tabView orientation="top" >
+                            <p:tab title="Uploaded Completed Item" >
+                                <div class="d-grid">
+                                    <div>
+                                        <p:commandButton 
+                                            value="Download Completed Fee List" 
+                                            ajax="false" 
+                                            style="float: right;"
+                                            icon="fas fa-file-excel"
+                                            class="ui-button-success my-2">
+                                            <p:dataExporter type="xlsx" target="comItms" fileName="download_completed_fee_list"  />
+                                        </p:commandButton>
+                                    </div>
+                                    <p:dataTable value="#{dataUploadController.uploadeditemFees}" id="comItms" var="b" rowIndexVar="i">
+                                        <p:column headerText="#" width="5em;" >
+                                            <p:outputLabel value="#{i+1}"></p:outputLabel>
+                                        </p:column>
+                                        <p:column headerText="Code" width="10em;">
+                                            <p:outputLabel value="#{b.code}"></p:outputLabel>
+                                        </p:column>
+                                        <p:column headerText="Name" >
+                                            <p:outputLabel value="#{b.name}"></p:outputLabel>
+                                        </p:column>
+                                    </p:dataTable>
+                                </div>
+                            </p:tab>
+
+                            <p:tab title="Rejected Items" >
+                                <div class="d-grid">
+                                    <div>
+                                        <p:commandButton 
+                                            value="Download Rejected Items Fees" 
+                                            ajax="false" 
+                                            style="float: right;"
+                                            icon="fas fa-file-excel"
+                                            class="ui-button-warning my-2">
+                                            <p:dataExporter type="xlsx" target="rjItems" fileName="rejected_items_fees"  />
+                                        </p:commandButton>
+                                    </div>
+                                    <p:dataTable value="#{dataUploadController.rejecteditemFees}" var="rb" id="rjItems" rowIndexVar="i">
+                                        <p:column headerText="#" width="5em;" >
+                                            <p:outputLabel value="#{i+1}"></p:outputLabel>
+                                        </p:column>
+                                        <p:column headerText="Code" width="10em;">
+                                            <p:outputLabel value="#{rb.code}"></p:outputLabel>
+                                        </p:column>
+                                        <p:column headerText="Name" >
+                                            <p:outputLabel value="#{rb.name}"></p:outputLabel>
+                                        </p:column>
+                                    </p:dataTable>
+                                </div>
+                            </p:tab>
+                        </p:tabView>
+                    </h:form>
+                </div>
+            </p:panel>
+        </div>
 
     </ui:define>
 </ui:composition>

@@ -28,7 +28,7 @@ public class BillFee implements Serializable, RetirableEntity {
 
     static final long serialVersionUID = 1L;
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
     //Created Properties
     @ManyToOne
@@ -79,20 +79,30 @@ public class BillFee implements Serializable, RetirableEntity {
     @ManyToOne
     Bill bill;
     ///////////////
-    double feeValue = 0.0;
+    private double feeValue = 0.0;
+    private Double feeGrossValue;
+    private double feeDiscount;
+    private double feeVat;
+    private double feeVatPlusValue;
+    private boolean freeOfCharge;
+
     @Transient
     private double absoluteFeeValue;
-    private Double feeGrossValue;
+
     @Transient
     private Double feeGrossValueTransient;
     @Transient
     private boolean userChangedTheGrossValueTransient;
-    double feeDiscount;
-    double feeVat;
-    double feeVatPlusValue;
 
     double feeMargin;
     double feeAdjusted;
+
+    // Per-unit rate fields — store the rate for a single unit before qty multiplication.
+    // The main fee fields (feeGrossValue, feeValue, feeMargin, feeDiscount) hold totals (unit × qty).
+    private Double feeUnitGrossValue;
+    private Double feeUnitValue;
+    private Double feeUnitMargin;
+    private Double feeUnitDiscount;
 
     //This records the payment made for the payment due staff or institution
     double paidValue = 0.0;
@@ -104,6 +114,9 @@ public class BillFee implements Serializable, RetirableEntity {
 
     // Indicates if the payment has been completed to the professional or institution
     private Boolean completedPayment;
+    
+    // Indicates if the fee has been collected directly by the surgeon/doctor
+    private boolean feeCollectedByDoctor;
 
     @ManyToOne(fetch = FetchType.LAZY)
     private BillItem referenceBillItem;
@@ -120,6 +133,14 @@ public class BillFee implements Serializable, RetirableEntity {
 
     @Transient
     private final String uuid;
+
+    public boolean isFreeOfCharge() {
+        return freeOfCharge;
+    }
+
+    public void setFreeOfCharge(boolean freeOfCharge) {
+        this.freeOfCharge = freeOfCharge;
+    }
 
     public BillFee(String uuid) {
         this.uuid = uuid;
@@ -178,6 +199,10 @@ public class BillFee implements Serializable, RetirableEntity {
         feeVatPlusValue = billFee.getFeeVatPlusValue();
         feeMargin = billFee.getFeeMargin();
         paidValue = billFee.getPaidValue();
+        feeUnitGrossValue = billFee.getFeeUnitGrossValue();
+        feeUnitValue = billFee.getFeeUnitValue();
+        feeUnitMargin = billFee.getFeeUnitMargin();
+        feeUnitDiscount = billFee.getFeeUnitDiscount();
     }
 
     public void copyWithoutFinancialData(BillFee billFee) {
@@ -215,6 +240,10 @@ public class BillFee implements Serializable, RetirableEntity {
         feeMargin = 0 - billFee.getFeeMargin();
         feeAdjusted = 0 - billFee.getFeeAdjusted();
         paidValue = 0 - billFee.getPaidValue();
+        feeUnitGrossValue = billFee.getFeeUnitGrossValue() != null ? 0 - billFee.getFeeUnitGrossValue() : null;
+        feeUnitValue = billFee.getFeeUnitValue() != null ? 0 - billFee.getFeeUnitValue() : null;
+        feeUnitMargin = billFee.getFeeUnitMargin() != null ? 0 - billFee.getFeeUnitMargin() : null;
+        feeUnitDiscount = billFee.getFeeUnitDiscount() != null ? 0 - billFee.getFeeUnitDiscount() : null;
     }
 
     public void invertValue() {
@@ -228,6 +257,10 @@ public class BillFee implements Serializable, RetirableEntity {
         feeMargin = 0 - feeMargin;
         feeAdjusted = 0 - feeAdjusted;
         paidValue = 0 - paidValue;
+        if (feeUnitGrossValue != null) feeUnitGrossValue = 0 - feeUnitGrossValue;
+        if (feeUnitValue != null) feeUnitValue = 0 - feeUnitValue;
+        if (feeUnitMargin != null) feeUnitMargin = 0 - feeUnitMargin;
+        if (feeUnitDiscount != null) feeUnitDiscount = 0 - feeUnitDiscount;
     }
 
     public BillFee() {
@@ -263,6 +296,7 @@ public class BillFee implements Serializable, RetirableEntity {
 
     public void setFeeValueBoolean(boolean foriegn) {
         if (tmpChangedValue != null) {
+            this.feeUnitGrossValue = tmpChangedValue;
             this.feeGrossValue = tmpChangedValue * this.getBillItem().getQty();
             this.feeValue = tmpChangedValue * this.getBillItem().getQty();
 //            this.feeVatPlusValue = this.feeVat + this.feeValue;
@@ -270,10 +304,12 @@ public class BillFee implements Serializable, RetirableEntity {
         }
 
         if (foriegn) {
+            this.feeUnitGrossValue = getFee().getFfee();
             this.feeGrossValue = getFee().getFfee() * this.getBillItem().getQty();
             this.feeValue = getFee().getFfee() * this.getBillItem().getQty();
 //            this.feeVatPlusValue = this.feeVat + this.feeValue;
         } else {
+            this.feeUnitGrossValue = getFee().getFee();
             this.feeGrossValue = getFee().getFee() * this.getBillItem().getQty();
             this.feeValue = getFee().getFee() * this.getBillItem().getQty();
 //            this.feeVatPlusValue = this.feeVat + this.feeValue;
@@ -283,6 +319,7 @@ public class BillFee implements Serializable, RetirableEntity {
 
     public void setFeeValueForDiscountAllowedAndUserChangable(boolean foriegn, double discountPercent) {
         if (tmpChangedValue != null) {
+            this.feeUnitGrossValue = tmpChangedValue;
             this.feeGrossValue = tmpChangedValue * this.getBillItem().getQty();
             this.feeValue = tmpChangedValue * this.getBillItem().getQty();
             return;
@@ -290,9 +327,11 @@ public class BillFee implements Serializable, RetirableEntity {
 
         if (discountPercent == 0) {
             if (foriegn) {
+                this.feeUnitGrossValue = getFee().getFfee();
                 this.feeGrossValue = getFee().getFfee() * this.getBillItem().getQty();
                 this.feeValue = getFee().getFfee() * this.getBillItem().getQty();
             } else {
+                this.feeUnitGrossValue = getFee().getFee();
                 this.feeGrossValue = getFee().getFee() * this.getBillItem().getQty();
                 this.feeValue = getFee().getFee() * this.getBillItem().getQty();
 
@@ -301,9 +340,11 @@ public class BillFee implements Serializable, RetirableEntity {
 
         if (discountPercent != 0) {
             if (foriegn) {
+                this.feeUnitGrossValue = getFee().getFfee();
                 this.feeGrossValue = getFee().getFfee() * this.getBillItem().getQty();
                 this.feeValue = (getFee().getFfee() / 100 * (100 - discountPercent)) * this.getBillItem().getQty();
             } else {
+                this.feeUnitGrossValue = getFee().getFee();
                 this.feeGrossValue = getFee().getFee() * this.getBillItem().getQty();
                 this.feeValue = (getFee().getFee() / 100 * (100 - discountPercent)) * this.getBillItem().getQty();
 
@@ -321,9 +362,11 @@ public class BillFee implements Serializable, RetirableEntity {
 
         if (discountPercent == 0) {
             if (foriegn) {
+                this.feeUnitGrossValue = getFee().getFfee();
                 this.feeGrossValue = getFee().getFfee() * this.getBillItem().getQty();
                 this.feeValue = getFee().getFfee() * this.getBillItem().getQty();
             } else {
+                this.feeUnitGrossValue = getFee().getFee();
                 this.feeGrossValue = getFee().getFee() * this.getBillItem().getQty();
                 this.feeValue = getFee().getFee() * this.getBillItem().getQty();
 
@@ -332,9 +375,11 @@ public class BillFee implements Serializable, RetirableEntity {
 
         if (discountPercent != 0) {
             if (foriegn) {
+                this.feeUnitGrossValue = getFee().getFfee();
                 this.feeGrossValue = getFee().getFfee() * this.getBillItem().getQty();
                 this.feeValue = (getFee().getFfee() / 100 * (100 - discountPercent)) * this.getBillItem().getQty();
             } else {
+                this.feeUnitGrossValue = getFee().getFee();
                 this.feeGrossValue = getFee().getFee() * this.getBillItem().getQty();
                 this.feeValue = (getFee().getFee() / 100 * (100 - discountPercent)) * this.getBillItem().getQty();
 
@@ -345,15 +390,18 @@ public class BillFee implements Serializable, RetirableEntity {
 
     public void setFeeValueForUserChangableAndNotDiscountAllowed(boolean foriegn) {
         if (tmpChangedValue != null) {
+            this.feeUnitGrossValue = tmpChangedValue;
             this.feeGrossValue = tmpChangedValue * this.getBillItem().getQty();
             this.feeValue = tmpChangedValue * this.getBillItem().getQty();
             return;
         }
 
         if (foriegn) {
+            this.feeUnitGrossValue = getFee().getFfee();
             this.feeGrossValue = getFee().getFfee() * this.getBillItem().getQty();
             this.feeValue = getFee().getFfee() * this.getBillItem().getQty();
         } else {
+            this.feeUnitGrossValue = getFee().getFee();
             this.feeGrossValue = getFee().getFee() * this.getBillItem().getQty();
             this.feeValue = getFee().getFee() * this.getBillItem().getQty();
 
@@ -367,15 +415,16 @@ public class BillFee implements Serializable, RetirableEntity {
     private Double tmpSettleChangedValue;
 
     public void setFeeValueForCreditCompany(boolean foriegn, double discountPercent) {
-        System.out.println("setFeeValueForCreditCompany" );
-        System.out.println("tmpChangedValue = " + tmpChangedValue);
+        System.out.println("setFeeValueForCreditCompany");
         if (tmpChangedValue == null) {
             if (getFee().getFeeType() != FeeType.Staff) {
                 if (foriegn) {
+                    this.feeUnitGrossValue = getFee().getFfee();
                     this.feeGrossValue = getFee().getFfee() * this.getBillItem().getQty();
                     this.feeDiscount = (getFee().getFfee() / 100 * (discountPercent)) * this.getBillItem().getQty();
                     this.feeValue = feeGrossValue - feeDiscount;
                 } else {
+                    this.feeUnitGrossValue = getFee().getFee();
                     this.feeGrossValue = getFee().getFee() * this.getBillItem().getQty();
                     this.feeDiscount = (getFee().getFee() / 100 * (discountPercent)) * this.getBillItem().getQty();
                     this.feeValue = feeGrossValue - feeDiscount;
@@ -383,14 +432,17 @@ public class BillFee implements Serializable, RetirableEntity {
 
             } else {
                 if (foriegn) {
+                    this.feeUnitGrossValue = getFee().getFfee();
                     this.feeGrossValue = getFee().getFfee() * this.getBillItem().getQty();
                     this.feeValue = getFee().getFfee() * this.getBillItem().getQty();
                 } else {
+                    this.feeUnitGrossValue = getFee().getFee();
                     this.feeGrossValue = getFee().getFee() * this.getBillItem().getQty();
                     this.feeValue = getFee().getFee() * this.getBillItem().getQty();
                 }
             }
         } else {
+            this.feeUnitGrossValue = tmpChangedValue;
             if (getFee().getFeeType() != FeeType.Staff) {
                 this.feeGrossValue = tmpChangedValue * this.getBillItem().getQty();
                 if (tmpChangedValue != 0) {
@@ -408,12 +460,13 @@ public class BillFee implements Serializable, RetirableEntity {
 
     public void setFeeValueForeignAndDiscount(boolean foriegn, double discountPercent) {
         System.out.println("setFeeValueForeignAndDiscount");
-        System.out.println("tmpChangedValue = " + tmpChangedValue);
         if (tmpChangedValue == null) {
             if (getFee().getFeeType() != FeeType.Staff) {
                 if (foriegn) {
+                    this.feeUnitGrossValue = getFee().getFfee();
                     this.feeGrossValue = getFee().getFfee() * this.getBillItem().getQty();
                 } else {
+                    this.feeUnitGrossValue = getFee().getFee();
                     this.feeGrossValue = getFee().getFee() * this.getBillItem().getQty();
                 }
 
@@ -423,14 +476,17 @@ public class BillFee implements Serializable, RetirableEntity {
 
             } else {
                 if (foriegn) {
+                    this.feeUnitGrossValue = getFee().getFfee();
                     this.feeGrossValue = getFee().getFfee() * this.getBillItem().getQty();
                     this.feeValue = getFee().getFfee() * this.getBillItem().getQty();
                 } else {
+                    this.feeUnitGrossValue = getFee().getFee();
                     this.feeGrossValue = getFee().getFee() * this.getBillItem().getQty();
                     this.feeValue = getFee().getFee() * this.getBillItem().getQty();
                 }
             }
         } else {
+            this.feeUnitGrossValue = tmpChangedValue;
             if (getFee().getFeeType() != FeeType.Staff) {
                 this.feeGrossValue = tmpChangedValue * this.getBillItem().getQty();
                 if (tmpChangedValue != 0) {
@@ -630,6 +686,17 @@ public class BillFee implements Serializable, RetirableEntity {
         this.tmpChangedValue = tmpChangedValue;
     }
 
+    public double getDisplayRate() {
+        if (tmpChangedValue != null) {
+            return tmpChangedValue;
+        }
+        return fee != null ? fee.getFee() : 0.0;
+    }
+
+    public void setDisplayRate(double displayRate) {
+        this.tmpChangedValue = displayRate;
+    }
+
     public Double getTmpSettleChangedValue() {
         return tmpSettleChangedValue;
     }
@@ -700,6 +767,38 @@ public class BillFee implements Serializable, RetirableEntity {
 
     public void setFeeGrossValue(Double feeGrossValue) {
         this.feeGrossValue = feeGrossValue;
+    }
+
+    public Double getFeeUnitGrossValue() {
+        return feeUnitGrossValue;
+    }
+
+    public void setFeeUnitGrossValue(Double feeUnitGrossValue) {
+        this.feeUnitGrossValue = feeUnitGrossValue;
+    }
+
+    public Double getFeeUnitValue() {
+        return feeUnitValue;
+    }
+
+    public void setFeeUnitValue(Double feeUnitValue) {
+        this.feeUnitValue = feeUnitValue;
+    }
+
+    public Double getFeeUnitMargin() {
+        return feeUnitMargin;
+    }
+
+    public void setFeeUnitMargin(Double feeUnitMargin) {
+        this.feeUnitMargin = feeUnitMargin;
+    }
+
+    public Double getFeeUnitDiscount() {
+        return feeUnitDiscount;
+    }
+
+    public void setFeeUnitDiscount(Double feeUnitDiscount) {
+        this.feeUnitDiscount = feeUnitDiscount;
     }
 
     public double getSettleValue() {
@@ -776,6 +875,12 @@ public class BillFee implements Serializable, RetirableEntity {
         this.userChangedTheGrossValueTransient = userChangedTheGrossValueTransient;
     }
 
+    public boolean isFeeCollectedByDoctor() {
+        return feeCollectedByDoctor;
+    }
 
+    public void setFeeCollectedByDoctor(boolean feeCollectedByDoctor) {
+        this.feeCollectedByDoctor = feeCollectedByDoctor;
+    }
 
 }

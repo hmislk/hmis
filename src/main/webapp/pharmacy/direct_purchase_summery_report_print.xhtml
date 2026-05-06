@@ -1,0 +1,316 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+<h:body>
+    <ui:composition template="/resources/template/template.xhtml">
+        <ui:define name="content">
+
+            <h:form>
+                <p:panel header="Direct Purchase Summary Report Print View" styleClass="w-100">
+                    <f:facet name="header">
+                        <div class="d-flex justify-content-between">
+                            <h:outputText value="Direct Purchase Summary Report Print View" class="mt-2"/>
+                            <div class="d-flex gap-2">
+                                <p:commandButton
+                                        icon="fa-solid fa-print"
+                                        class="ui-button-info"
+                                        style="width: 150px"
+                                        ajax="false"
+                                        value="Print">
+                                    <p:printer target="reportView"/>
+                                </p:commandButton>
+                                <p:commandButton
+                                        ajax="false"
+                                        value="Back to Report"
+                                        style="width: 200px"
+                                        icon="fa fa-arrow-left"
+                                        class="ui-button-warning"
+                                        action="direct_purchase_summery_report?faces-redirect=true">
+                                </p:commandButton>
+                            </div>
+
+                        </div>
+                    </f:facet>
+
+                    <style>
+
+                        @media screen {
+                            .paper {
+                                position: static !important;
+                                width: 297mm !important;
+                                zoom: 2.0;
+                            }
+
+                            table {
+                                border-collapse: collapse;
+                                width: 100%;
+                                font-size: 12px !important;
+                                margin-top: 1mm !important;
+                            }
+
+                            th, td {
+                                border: 1px solid #000;
+                                padding: 0px !important;
+                                margin: 2px !important;
+                                text-align: left;
+                                margin-left: 10mm !important;
+                            }
+
+                            .header {
+                                font-size: 16px !important;
+                            }
+
+                            tfoot {
+                                font-weight: 700 !important;
+                                font-size: 11px !important;
+                            }
+                        }
+
+                        @media print {
+                            @page {
+                                @bottom-right {
+                                    content: "Page " counter(page) " of " counter(pages);
+                                    font-family: Arial, sans-serif;
+                                    font-size: 10pt;
+                                }
+                                size: A4 landscape !important;
+                            }
+
+                            body {
+                                counter-reset: page;
+                            }
+
+                            .paper {
+                                position: static !important;
+                                width: 297mm !important;
+
+
+                            }
+
+                            .header {
+                                line-height: 1.1;
+                                margin: 0mm !important;
+                                font-size: 13px !important;
+                            }
+
+                            table {
+                                border-collapse: collapse;
+                                width: 99.9%;
+                                font-size: 12px !important;
+                                margin-top: 1mm !important;
+                            }
+
+                            th, td {
+                                border: 1px solid #000;
+                                padding: 0px !important;
+                                margin: 2px !important;
+                                text-align: left;
+                                margin-left: 10mm !important;
+                            }
+
+
+                            tfoot {
+                                font-weight: 700 !important;
+                                font-size: 11px !important;
+                            }
+                        }
+                    </style>
+
+                    <!-- JavaScript for calculating totals -->
+                    <script>
+                        // Calculate totals when page loads
+                        document.addEventListener('DOMContentLoaded', function() {
+                            setTimeout(calAllTotals, 500);
+                        });
+
+                        function calAllTotals() {
+                            calTableTotals(".pValue", ".totalPValue");
+                            calTableTotals(".sValue", ".totalSValue");
+                        }
+
+                        function calTableTotals(valueComponent, totalComponent) {
+                            let total = 0;
+
+                            document.querySelectorAll(valueComponent).forEach(
+                                cell => {
+                                    let singleValue = cell.innerText || cell.textContent;
+                                    let cleanValue = singleValue.replace(/[^0-9.-]+/g, "");
+                                    let value = parseFloat(cleanValue);
+
+                                    if (!isNaN(value)) {
+                                        total += value;
+                                    }
+                                }
+                            );
+
+                            let totalElement = document.querySelector(totalComponent);
+                            if (totalElement) {
+                                totalElement.innerText = total.toLocaleString(undefined, {minimumFractionDigits: 2});
+                            }
+                        }
+
+                        // Recalculate totals before printing
+                        window.addEventListener('beforeprint', function() {
+                            calAllTotals();
+                        });
+                    </script>
+
+                    <h:panelGroup id="reportView" class="d-flex justify-content-center">
+                        <div class="paper">
+                            <div class="header">
+                                <div class="d-flex justify-content-center text-5 gap-2"
+                                     style="font-weight: 700; font-size: 22px;margin-bottom: 5px;">
+                                    <h:outputText value="#{sessionController.institution.name}"/>
+                                </div>
+                                <div class="d-flex justify-content-center text-5 gap-2"
+                                     style="font-weight: 400; font-size: 20px;margin-bottom: 5px;">
+                                    <h:outputText value="Direct Purchase Summary Report"/>
+                                </div>
+                                <div class="d-flex justify-content-center text-5 gap-2"
+                                     style="font-weight: 600; font-size: 15px;margin-bottom: 5px;">
+                                    <h:outputText value="From Date - "/>
+                                    <h:outputText value="#{pharmacyReportController.fromDate}">
+                                        <f:convertDateTime
+                                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                    </h:outputText>
+                                    <h:outputText value="" style="width: 2em!important;" class="text-center"/>
+                                    <h:outputText value="To Date - "/>
+                                    <h:outputText value="#{pharmacyReportController.toDate}">
+                                        <f:convertDateTime
+                                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                    </h:outputText>
+                                </div>
+                            </div>
+
+                            <div>
+                                <table style="width: 100%; border-collapse: collapse;">
+                                    <thead>
+                                    <tr>
+                                        <th style="font-weight: 700; text-align: center; padding: 4px;">
+                                            <h:outputText value="S.No."/>
+                                        </th>
+                                        <th style="font-weight: 700; text-align: center; padding: 4px;">
+                                            <h:outputText value="Bill Id"/>
+                                        </th>
+                                        <th style="font-weight: 700; text-align: center; padding: 4px;">
+                                            <h:outputText value="Item Name"/>
+                                        </th>
+                                        <th style="font-weight: 700; text-align: center; padding: 4px;">
+                                            <h:outputText value="Bill No"/>
+                                        </th>
+                                        <th style="font-weight: 700; text-align: center; padding: 4px; min-width: 150px;">
+                                            <h:outputText value="Order Date"/>
+                                        </th>
+                                        <th style="font-weight: 700; text-align: center; padding: 4px;">
+                                            <h:outputText value="Quantity"/>
+                                        </th>
+                                        <th style="font-weight: 700; text-align: center; padding: 4px;">
+                                            <h:outputText value="Free Quantity"/>
+                                        </th>
+                                        <th style="font-weight: 700; text-align: center; padding: 4px;">
+                                            <h:outputText value="Purchase Rate"/>
+                                        </th>
+                                        <th style="font-weight: 700; text-align: center; padding: 4px;">
+                                            <h:outputText value="Purchase Value"/>
+                                        </th>
+                                        <th style="font-weight: 700; text-align: center; padding: 4px;">
+                                            <h:outputText value="Sale Rate"/>
+                                        </th>
+                                        <th style="font-weight: 700; text-align: center; padding: 4px;">
+                                            <h:outputText value="Sale Value"/>
+                                        </th>
+
+                                    </tr>
+                                    </thead>
+
+                                    <tbody>
+                                    <ui:repeat value="#{pharmacyReportController.dtoList}" var="item" varStatus="status">
+                                        <tr>
+                                            <td style="font-weight: 500; text-align: center; padding: 4px;">
+                                                <h:outputText value="#{status.index + 1}"/>
+                                            </td>
+                                            <td style="font-weight: 500; text-align: left; padding: 4px;">
+                                                <h:outputText value="#{item.billId}"/>
+                                            </td>
+                                            <td style="font-weight: 500; text-align: left; padding: 4px;">
+                                                <h:outputText value="#{item.itemName}"/>
+                                            </td>
+                                            <td style="font-weight: 500; text-align: left; padding: 4px;">
+                                                <h:outputText value="#{item.billNo}"/>
+                                            </td>
+                                            <td style="font-weight: 500; text-align: left; padding: 4px;">
+                                                <h:outputText value="#{item.billDate}">
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                                </h:outputText>
+                                            </td>
+                                            <td style="font-weight: 500; text-align: right; padding: 4px;">
+                                                <h:outputText value="#{item.quantity}" >
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </td>
+                                            <td style="font-weight: 500; text-align: right; padding: 4px;">
+                                                <h:outputText value="#{item.freeQuantity}" >
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </td>
+                                            <td style="font-weight: 500; text-align: right; padding: 4px;">
+                                                <h:outputText value="#{item.purchaseRate}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </td>
+                                            <td style="font-weight: 500; text-align: right; padding: 4px;">
+                                                <h:outputText styleClass="pValue" value="#{item.purchaseValue}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </td>
+                                            <td style="font-weight: 500; text-align: right; padding: 4px;">
+                                                <h:outputText value="#{item.saleRate}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </td>
+                                            <td style="font-weight: 500; text-align: right; padding: 4px;">
+                                                <h:outputText styleClass="sValue" value="#{item.saleValue}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </td>
+
+                                        </tr>
+                                    </ui:repeat>
+                                    </tbody>
+
+                                    <tfoot>
+                                    <tr>
+                                        <td colspan="8" style="text-align: center; font-weight: 700; padding: 4px;">
+                                            <h:outputText value="Total Values"/>
+                                        </td>
+                                        <td style="text-align: right; font-weight: 700; padding: 4px;">
+                                            <span class="totalPValue">0.00</span>
+                                        </td>
+                                        <td style="padding: 4px;">
+                                            <!-- Empty cell for Sale Rate column -->
+                                        </td>
+                                        <td style="text-align: right; font-weight: 700; padding: 4px;">
+                                            <span class="totalSValue">0.00</span>
+                                        </td>
+                                    </tr>
+                                    </tfoot>
+                                </table>
+
+                            </div>
+
+                        </div>
+                    </h:panelGroup>
+
+                </p:panel>
+            </h:form>
+        </ui:define>
+    </ui:composition>
+
+</h:body>
+</html>

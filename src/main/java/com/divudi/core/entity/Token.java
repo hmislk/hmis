@@ -22,7 +22,7 @@ public class Token implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     // <editor-fold defaultstate="collapsed" desc="Class variables">
@@ -36,6 +36,7 @@ public class Token implements Serializable {
     private TokenType tokenType;
     @ManyToOne
     private Category caterory;
+    @ManyToOne
     private Bill bill;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date issuedAt;

@@ -10,9 +10,11 @@ import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.entity.cashTransaction.CashBook;
 import com.divudi.core.entity.cashTransaction.CashBookEntry;
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -32,7 +34,7 @@ public class Payment implements Serializable, RetirableEntity {
     static final long serialVersionUID = 1L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
 
     @ManyToOne
@@ -88,12 +90,14 @@ public class Payment implements Serializable, RetirableEntity {
 
     private String retireComments;
 
+    @Deprecated // Use referenceNo
     private String chequeRefNo;
+
+    @Deprecated // Use referenceNo
+    private String creditCardRefNo;
 
     @Temporal(javax.persistence.TemporalType.DATE)
     private Date chequeDate;
-
-    private String creditCardRefNo;
 
     private double paidValue;
 
@@ -129,13 +133,12 @@ public class Payment implements Serializable, RetirableEntity {
     private boolean paymentRecordCompleted;
 
     private boolean selectedForHandover;
+    private boolean handoverProofMissing;
     private boolean selectedForCashbookEntry;
     private boolean selectedForRecording;
     private boolean selectedForRecordingConfirmation;
     private boolean handingOverStarted;
     private boolean handingOverCompleted;
-
-
 
     //Payment Record Creation
     @ManyToOne
@@ -152,6 +155,8 @@ public class Payment implements Serializable, RetirableEntity {
     private CashBookEntry cashbookEntry;
     @ManyToOne
     private CashBook cashbook;
+
+    private boolean deposited;
 
     private boolean cancelled;
     @ManyToOne
@@ -189,7 +194,14 @@ public class Payment implements Serializable, RetirableEntity {
     @ManyToOne
     private Institution toInstitution;
 
+    @ManyToOne
+    private WebUser floatRecipient;
+
     private Staff toStaff;
+
+    // newly added fields
+    @Column(precision = 18, scale = 4)
+    private BigDecimal discountValue = null;
 
     public Payment() {
         cashbookEntryStated = false;
@@ -381,10 +393,12 @@ public class Payment implements Serializable, RetirableEntity {
     }
 
     // Can be use as a reference number for any payment method
+    @Deprecated // Use getReferenceNo()
     public String getChequeRefNo() {
         return chequeRefNo;
     }
 
+    @Deprecated // Use setReferenceNo()
     public void setChequeRefNo(String chequeRefNo) {
         this.chequeRefNo = chequeRefNo;
     }
@@ -397,10 +411,12 @@ public class Payment implements Serializable, RetirableEntity {
         this.chequeDate = chequeDate;
     }
 
+    @Deprecated // Use getReferenceNo()
     public String getCreditCardRefNo() {
         return creditCardRefNo;
     }
 
+    @Deprecated // Use setReferenceNo()
     public void setCreditCardRefNo(String creditCardRefNo) {
         this.creditCardRefNo = creditCardRefNo;
     }
@@ -493,6 +509,7 @@ public class Payment implements Serializable, RetirableEntity {
         newPayment.setChequeDate(this.chequeDate);
         newPayment.setCreditCardRefNo(this.creditCardRefNo);
         newPayment.setPaidValue(this.paidValue);
+        newPayment.setDiscountValue(this.discountValue);
         newPayment.setInstitution(this.institution);
         newPayment.setDepartment(this.department);
         newPayment.setReferancePayment(this);
@@ -582,12 +599,25 @@ public class Payment implements Serializable, RetirableEntity {
     }
 
     public String getReferenceNo() {
-
+        // Backward compatibility: if referenceNo is null or blank, try deprecated fields
+        if (referenceNo == null || referenceNo.trim().isEmpty()) {
+            if (chequeRefNo != null && !chequeRefNo.trim().isEmpty()) {
+                return chequeRefNo;
+            }
+            if (creditCardRefNo != null && !creditCardRefNo.trim().isEmpty()) {
+                return creditCardRefNo;
+            }
+        }
         return referenceNo;
     }
 
     public void setReferenceNo(String referenceNo) {
         this.referenceNo = referenceNo;
+        // Sync deprecated fields during migration period for backward compatibility
+        if (referenceNo != null && !referenceNo.trim().isEmpty()) {
+            setChequeRefNo(referenceNo);
+            setCreditCardRefNo(referenceNo);
+        }
     }
 
     public boolean getCashbookEntryCompleted() {
@@ -664,7 +694,9 @@ public class Payment implements Serializable, RetirableEntity {
 
     public Date getPaymentDate() {
         if (paymentDate == null) {
-            if (this.getBill() != null) {
+            if (chequeDate != null) {
+                paymentDate = chequeDate;
+            } else if (this.getBill() != null) {
                 paymentDate = this.getBill().getCreatedAt();
             }
         }
@@ -697,6 +729,14 @@ public class Payment implements Serializable, RetirableEntity {
 
     public void setSelectedForHandover(boolean selectedForHandover) {
         this.selectedForHandover = selectedForHandover;
+    }
+
+    public boolean isHandoverProofMissing() {
+        return handoverProofMissing;
+    }
+
+    public void setHandoverProofMissing(boolean handoverProofMissing) {
+        this.handoverProofMissing = handoverProofMissing;
     }
 
     public boolean isSelectedForRecording() {
@@ -732,6 +772,22 @@ public class Payment implements Serializable, RetirableEntity {
 
     public void setCurrentHolder(WebUser currentHolder) {
         this.currentHolder = currentHolder;
+    }
+
+    public WebUser getFloatRecipient() {
+        return floatRecipient;
+    }
+
+    public void setFloatRecipient(WebUser floatRecipient) {
+        this.floatRecipient = floatRecipient;
+    }
+
+    public boolean isDeposited() {
+        return deposited;
+    }
+
+    public void setDeposited(boolean deposited) {
+        this.deposited = deposited;
     }
 
     public boolean isCancelled() {
@@ -900,6 +956,23 @@ public class Payment implements Serializable, RetirableEntity {
 
     public void setToStaff(Staff toStaff) {
         this.toStaff = toStaff;
+    }
+
+    public BigDecimal getDiscountValue() {
+        if (discountValue == null) {
+            if (bill != null && bill.getDiscount() != 0.0 && bill.getNetTotal() != 0.0 && paidValue != 0.0) {
+                // Calculate proportionally based on this payment's contribution to the bill
+                double proportion = paidValue / bill.getNetTotal();
+                return BigDecimal.valueOf(bill.getDiscount() * proportion);
+            } else {
+                return BigDecimal.ZERO;
+            }
+        }
+        return discountValue;
+    }
+
+    public void setDiscountValue(BigDecimal discountValue) {
+        this.discountValue = discountValue;
     }
 
     @Transient

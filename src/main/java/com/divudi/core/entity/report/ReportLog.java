@@ -10,7 +10,7 @@ import java.util.Date;
 @Entity
 public class ReportLog implements Serializable {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     static final long serialVersionUID = 1L;
@@ -52,6 +52,15 @@ public class ReportLog implements Serializable {
         this.endTime = endTime;
         this.reportType = reportType.getReportType();
         this.reportName = reportType.getReportName();
+        this.executionTimeInMillis = endTime != null && startTime != null ? endTime.getTime() - startTime.getTime() : null;
+    }
+
+    public ReportLog(IReportType reportType, String reportName, WebUser generatedBy, Date startTime, Date endTime) {
+        this.generatedById = generatedBy.getId();
+        this.startTime = startTime;
+        this.endTime = endTime;
+        this.reportType = reportType.getReportType();
+        this.reportName = reportName;
         this.executionTimeInMillis = endTime != null && startTime != null ? endTime.getTime() - startTime.getTime() : null;
     }
 

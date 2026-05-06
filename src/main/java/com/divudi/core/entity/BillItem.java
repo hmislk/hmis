@@ -41,7 +41,7 @@ import javax.persistence.Transient;
 public class BillItem implements Serializable, RetirableEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
 
     static final long serialVersionUID = 1L;
@@ -63,9 +63,10 @@ public class BillItem implements Serializable, RetirableEntity {
     @ManyToOne
     PriceMatrix priceMatrix;
     double remainingQty;
-    @OneToOne
+    @OneToOne(cascade = CascadeType.ALL)
     private Prescription prescription;
 
+    //Kown Typo, can not correct because of backword compatability issues
     double Rate;
     double discountRate;
     double marginRate;
@@ -87,6 +88,10 @@ public class BillItem implements Serializable, RetirableEntity {
     private double otherFee;
     private double reagentFee;
 
+    @OneToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE},
+              fetch = FetchType.EAGER,
+              orphanRemoval = true)
+    private BillItemFinanceDetails billItemFinanceDetails;
 
 //    private double dblValue;
     @ManyToOne
@@ -113,6 +118,7 @@ public class BillItem implements Serializable, RetirableEntity {
     WebUser retirer;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date retiredAt;
+    @Lob
     String retireComments;
     String insId;
     String deptId;
@@ -153,6 +159,8 @@ public class BillItem implements Serializable, RetirableEntity {
     private Department peformedDepartment;
     @Lob
     private String instructions;
+    
+    private boolean consideredForCosting = true;
 
 //    @Transient
     int searialNo;
@@ -174,6 +182,8 @@ public class BillItem implements Serializable, RetirableEntity {
     private double previousRecieveFreeQtyInUnit;
     @Transient
     private double issuedPhamaceuticalItemQty;
+    @ManyToOne
+    private Staff primaryStaff;
 
     public double getIssuedPhamaceuticalItemQty() {
         return issuedPhamaceuticalItemQty;
@@ -275,8 +285,64 @@ public class BillItem implements Serializable, RetirableEntity {
         agentRefNo = billItem.getAgentRefNo();
         vat = billItem.getVat();
         vatPlusNetValue = billItem.getVatPlusNetValue();
-        collectingCentreFee=billItem.getCollectingCentreFee();
+        collectingCentreFee = billItem.getCollectingCentreFee();
+        consideredForCosting = billItem.isConsideredForCosting();
+        primaryStaff = billItem.getPrimaryStaff();
         //  referanceBillItem=billItem.getReferanceBillItem();
+        // Copy BillItemFinanceDetails if present (access field directly to avoid auto-creation)
+        if (billItem.billItemFinanceDetails != null) {
+            BillItemFinanceDetails clonedFinanceDetails = billItem.billItemFinanceDetails.clone();
+            clonedFinanceDetails.setBillItem(this);
+            this.setBillItemFinanceDetails(clonedFinanceDetails);
+        }
+    }
+
+    public void copyWithPharmaceuticalAndFinancialData(BillItem billItem) {
+        item = billItem.getItem();
+        sessionDate = billItem.getSessionDate();
+        patientEncounter = billItem.getPatientEncounter();
+        patientInvestigation = billItem.getPatientInvestigation();
+        inwardChargeType = billItem.getInwardChargeType();
+        agentRefNo = billItem.getAgentRefNo();
+        item = billItem.getItem();
+        qty = billItem.getQty();
+        descreption = billItem.getDescreption();
+        billTime = billItem.getBillTime();
+        grossValue = billItem.getGrossValue();
+        netValue = billItem.getNetValue();
+        discount = billItem.getDiscount();
+        adjustedValue = billItem.getAdjustedValue();
+        discountRate = billItem.getDiscountRate();
+        staffFee = billItem.getStaffFee();
+        hospitalFee = billItem.getHospitalFee();
+        otherFee = billItem.getOtherFee();
+        reagentFee = billItem.getReagentFee();
+        Rate = billItem.getRate();
+        marginRate = billItem.getMarginRate();
+        netRate = billItem.getNetRate();
+        searialNo = billItem.getSearialNo();
+        tmpQty = billItem.tmpQty;
+        referenceBill = billItem.getReferenceBill();
+        marginValue = billItem.getMarginValue();
+        priceMatrix = billItem.getPriceMatrix();
+        agentRefNo = billItem.getAgentRefNo();
+        vat = billItem.getVat();
+        vatPlusNetValue = billItem.getVatPlusNetValue();
+        collectingCentreFee = billItem.getCollectingCentreFee();
+        consideredForCosting = billItem.isConsideredForCosting();
+        primaryStaff = billItem.getPrimaryStaff();
+
+        // Access field directly to avoid auto-creation, then use getter for cloning
+        if (billItem.billItemFinanceDetails != null) {
+            BillItemFinanceDetails clonedFinanceDetails = billItem.billItemFinanceDetails.clone();
+            clonedFinanceDetails.setBillItem(this);
+            this.setBillItemFinanceDetails(clonedFinanceDetails);
+        }
+        
+        PharmaceuticalBillItem clonedPharmaceuticalBillItem = new PharmaceuticalBillItem();
+        clonedPharmaceuticalBillItem.copy(billItem.getPharmaceuticalBillItem());
+        clonedPharmaceuticalBillItem.setBillItem(this);
+        this.setPharmaceuticalBillItem(clonedPharmaceuticalBillItem);
     }
 
     public void copyWithoutFinancialData(BillItem billItem) {
@@ -296,6 +362,8 @@ public class BillItem implements Serializable, RetirableEntity {
 //        marginValue = billItem.getMarginValue();
         priceMatrix = billItem.getPriceMatrix();
         agentRefNo = billItem.getAgentRefNo();
+        consideredForCosting = billItem.isConsideredForCosting();
+        primaryStaff = billItem.getPrimaryStaff();
     }
 
     public void resetValue() {
@@ -308,7 +376,7 @@ public class BillItem implements Serializable, RetirableEntity {
         staffFee = 0.0;
         hospitalFee = 0.0;
         Rate = 0.0;
-        marginRate =0.0;
+        marginRate = 0.0;
         netRate = 0.0;
         tmpQty = 0.0;
         marginValue = 0.0;
@@ -319,14 +387,25 @@ public class BillItem implements Serializable, RetirableEntity {
     public BillItem() {
     }
 
+    public static List<BillItem> copyBillItems(List<BillItem> billItems) {
+        List<BillItem> tmp = new ArrayList<>();
+        for (BillItem b : billItems) {
+            BillItem bi = new BillItem();
+            bi.copy(b);
+            tmp.add(bi);
+        }
+        return tmp;
+    }
+
     public void invertValue(BillItem billItem) {
         if (billItem.getQty() != null) {
             qty = 0 - billItem.getQty();
         }
-        Rate = 0 - billItem.getRate();
+        // Rates should remain positive - they are unit prices, not values
+        Rate = billItem.getRate();
         discount = 0 - billItem.getDiscount();
-        netRate = 0 - billItem.getNetRate();
-        marginRate = 0 - billItem.getMarginRate();
+        netRate = billItem.getNetRate();
+        marginRate = billItem.getMarginRate();
         grossValue = 0 - billItem.getGrossValue();
         marginValue = 0 - billItem.getMarginValue();
         netValue = 0 - billItem.getNetValue();
@@ -345,9 +424,10 @@ public class BillItem implements Serializable, RetirableEntity {
         if (getQty() != null) {
             qty = 0 - getQty();
         }
-        Rate = 0 - getRate();
+        // Rates should remain positive - they are unit prices, not values
+        // Rate = 0 - getRate(); // Do not invert rates
         discount = 0 - getDiscount();
-        netRate = 0 - getNetRate();
+        // netRate = 0 - getNetRate(); // Do not invert rates
         grossValue = 0 - getGrossValue();
         marginValue = 0 - getMarginValue();
         netValue = 0 - getNetValue();
@@ -735,6 +815,7 @@ public class BillItem implements Serializable, RetirableEntity {
         this.tmpSuggession = tmpSuggession;
     }
 
+    @Deprecated // Will be remnoved soon. Use other variables like qty, free qty
     public double getTmpQty() {
         if (getItem() instanceof Ampp || getItem() instanceof Vmpp) {
             return tmpQty / getItem().getDblValue();
@@ -743,6 +824,7 @@ public class BillItem implements Serializable, RetirableEntity {
         }
     }
 
+    @Deprecated // Will be remnoved soon. Use other variables like qty, free qty
     public void setTmpQty(double tmpQty) {
         qty = tmpQty;
         if (getItem() instanceof Ampp || getItem() instanceof Vmpp) {
@@ -1092,7 +1174,7 @@ public class BillItem implements Serializable, RetirableEntity {
     }
 
     public Prescription getPrescription() {
-        if(prescription == null){
+        if (prescription == null) {
             prescription = new Prescription();
         }
         return prescription;
@@ -1110,6 +1192,56 @@ public class BillItem implements Serializable, RetirableEntity {
         this.reagentFee = reagentFee;
     }
 
+    /**
+     * TODO: MIGRATION NEEDED - Replace all callers with initializeBillItemFinanceDetails()
+     * This getter currently auto-creates to maintain compatibility, but this causes
+     * potential duplicate creation issues. Once all callers are migrated to use
+     * the explicit initializeBillItemFinanceDetails() method, change this to:
+     * return billItemFinanceDetails;
+     */
+    public BillItemFinanceDetails getBillItemFinanceDetails() {
+        if (billItemFinanceDetails == null) {
+            billItemFinanceDetails = new BillItemFinanceDetails();
+            billItemFinanceDetails.setBillItem(this);
+            billItemFinanceDetails.setCreatedAt(new Date());
+        }
+        return billItemFinanceDetails;
+    }
 
+    /**
+     * Explicit method to initialize BillItemFinanceDetails.
+     * Use this instead of relying on getter auto-creation to prevent duplicates.
+     * PREFERRED: Use this method for new code and migrate existing callers here.
+     */
+    public void initializeBillItemFinanceDetails() {
+        if (billItemFinanceDetails == null) {
+            billItemFinanceDetails = new BillItemFinanceDetails();
+            billItemFinanceDetails.setBillItem(this);
+            billItemFinanceDetails.setCreatedAt(new Date());
+        }
+    }
+
+    public void setBillItemFinanceDetails(BillItemFinanceDetails billItemFinanceDetails) {
+        this.billItemFinanceDetails = billItemFinanceDetails;
+        if (billItemFinanceDetails != null && billItemFinanceDetails.getBillItem() != this) {
+            billItemFinanceDetails.setBillItem(this);
+        }
+    }
+
+    public boolean isConsideredForCosting() {
+        return consideredForCosting;
+    }
+
+    public void setConsideredForCosting(boolean consideredForCosting) {
+        this.consideredForCosting = consideredForCosting;
+    }
+
+    public Staff getPrimaryStaff() {
+        return primaryStaff;
+    }
+
+    public void setPrimaryStaff(Staff primaryStaff) {
+        this.primaryStaff = primaryStaff;
+    }
 
 }

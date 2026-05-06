@@ -27,7 +27,7 @@ public class WebUserRole implements Serializable {
 
     static final long serialVersionUID = 1L;
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
 
     //Main Properties
@@ -40,6 +40,11 @@ public class WebUserRole implements Serializable {
     @JsonIgnore
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date createdAt;
+    //Last Update Properties
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date lastUpdateAt;
+    @ManyToOne
+    private WebUser lastUpdater;
     //Retairing properties
     @JsonIgnore
     boolean retired;
@@ -189,6 +194,22 @@ public class WebUserRole implements Serializable {
     @Override
     public String toString() {
         return "gov.sp.health.entity.WebUserRole[ id=" + id + " ]";
+    }
+
+    public Date getLastUpdateAt() {
+        return lastUpdateAt;
+    }
+
+    public void setLastUpdateAt(Date lastUpdateAt) {
+        this.lastUpdateAt = lastUpdateAt;
+    }
+
+    public WebUser getLastUpdater() {
+        return lastUpdater;
+    }
+
+    public void setLastUpdater(WebUser lastUpdater) {
+        this.lastUpdater = lastUpdater;
     }
 
 }

@@ -1,0 +1,935 @@
+/*
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
+ */
+package com.divudi.bean.common;
+
+import com.divudi.core.entity.DatabaseMigration;
+import com.divudi.core.facade.DatabaseMigrationFacade;
+import com.divudi.core.data.MigrationStatus;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.util.MigrationDiscoveryService;
+import com.divudi.core.util.MigrationInfo;
+import java.io.Serializable;
+import javax.persistence.EntityManager;
+import javax.persistence.Query;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.annotation.PostConstruct;
+import javax.ejb.EJB;
+import javax.enterprise.context.SessionScoped;
+import javax.inject.Inject;
+import javax.inject.Named;
+
+/**
+ * Controller for managing database migrations
+ *
+ * @author Dr M H B Ariyaratne <buddhika.ari@gmail.com>
+ */
+@Named
+@SessionScoped
+public class DatabaseMigrationController implements Serializable {
+
+    private static final Logger LOGGER = Logger.getLogger(DatabaseMigrationController.class.getName());
+
+    @EJB
+    private DatabaseMigrationFacade migrationFacade;
+
+    @Inject
+    private MigrationDiscoveryService discoveryService;
+
+    @Inject
+    private ConfigOptionApplicationController configController;
+
+    @Inject
+    private SessionController sessionController;
+
+    @Inject
+    private WebUserController webUserController;
+
+
+    // UI properties
+    private List<MigrationInfo> availableMigrations;
+    private List<DatabaseMigration> executedMigrations;
+    private MigrationInfo selectedMigration;
+    private String migrationLog;
+    private boolean migrationInProgress;
+    private AtomicBoolean migrationLock = new AtomicBoolean(false);
+
+    // Migration progress
+    private String currentMigrationVersion;
+    private String currentStep;
+    private int totalSteps;
+    private int completedSteps;
+    private long migrationStartTime;
+
+    public DatabaseMigrationController() {
+    }
+
+    @PostConstruct
+    public void init() {
+        refreshMigrationLists();
+    }
+
+    /**
+     * Navigate to the database migration page.
+     * Authorization is enforced here (the correct place for {@code @SessionScoped}
+     * beans — see developer_docs/jsf/navigation-patterns.md).
+     * Unauthenticated users or users without the SuperAdmin privilege are
+     * redirected to the login page instead.
+     */
+    public String navigateToDatabaseMigration() {
+        if (!isAuthorized()) {
+            return "/index1?faces-redirect=true";
+        }
+        return "/admin/database_migration?faces-redirect=true";
+    }
+
+    /**
+     * Returns true only when the current user is authenticated and holds the
+     * SuperAdmin privilege.  Used as a rendered guard on the migration form so
+     * that page content is never delivered to unauthorised sessions even when
+     * the page is reached by a direct URL rather than the navigation method.
+     */
+    public boolean isAuthorized() {
+        return sessionController.getLoggedUser() != null
+                && webUserController.hasPrivilege("SuperAdmin");
+    }
+
+    /**
+     * Refresh migration lists from database and filesystem
+     */
+    public void refreshMigrationLists() {
+        try {
+            availableMigrations = discoveryService.loadAllMigrationInfo();
+            executedMigrations = migrationFacade.findAllMigrationsOrderedByVersion();
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error refreshing migration lists", e);
+            JsfUtil.addErrorMessage("Error loading migration data: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Get migrations that are pending execution
+     */
+    public List<MigrationInfo> getPendingMigrations() {
+        List<MigrationInfo> pending = new ArrayList<>();
+
+        for (MigrationInfo info : availableMigrations) {
+            if (!isMigrationExecuted(info.getVersion())) {
+                pending.add(info);
+            }
+        }
+
+        return pending;
+    }
+
+    /**
+     * Re-execute a migration regardless of current status
+     */
+    public void reExecuteMigration(String version) {
+        if (!migrationLock.compareAndSet(false, true)) {
+            JsfUtil.addErrorMessage("Migration is already in progress");
+            return;
+        }
+
+        try {
+            // Find the migration info
+            MigrationInfo migrationInfo = null;
+            for (MigrationInfo info : availableMigrations) {
+                if (info.getVersion().equals(version)) {
+                    migrationInfo = info;
+                    break;
+                }
+            }
+
+            if (migrationInfo == null) {
+                JsfUtil.addErrorMessage("Migration version not found: " + version);
+                return;
+            }
+
+            migrationInProgress = true;
+            totalSteps = 1;
+            completedSteps = 0;
+            migrationStartTime = System.currentTimeMillis();
+            migrationLog = "";
+
+            StringBuilder logBuilder = new StringBuilder();
+            logBuilder.append("Starting migration re-execution at ").append(new Date()).append("\\n");
+            logBuilder.append("Migration: ").append(version).append(" - ").append(migrationInfo.getDescription()).append("\\n");
+            logBuilder.append("Note: Re-executing migration regardless of previous status\\n\\n");
+
+            currentMigrationVersion = version;
+            currentStep = "Re-executing migration " + version;
+
+            boolean success = executeSingleMigration(migrationInfo, logBuilder);
+            completedSteps = 1;
+
+            migrationLog = logBuilder.toString();
+            migrationInProgress = false;
+            currentMigrationVersion = null;
+            currentStep = null;
+
+            if (success) {
+                updateLastMigrationVersion();
+                JsfUtil.addSuccessMessage("Migration " + version + " re-executed successfully");
+            } else {
+                JsfUtil.addErrorMessage("Migration " + version + " re-execution failed. Check logs for details.");
+            }
+
+            refreshMigrationLists();
+
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error re-executing migration " + version, e);
+            migrationInProgress = false;
+            JsfUtil.addErrorMessage("Migration re-execution error: " + e.getMessage());
+        } finally {
+            migrationLock.set(false);
+        }
+    }
+
+    /**
+     * Execute a single migration by version
+     */
+    public void executeSingleMigration(String version) {
+        if (!migrationLock.compareAndSet(false, true)) {
+            JsfUtil.addErrorMessage("Migration is already in progress");
+            return;
+        }
+
+        try {
+            // Find the migration info
+            MigrationInfo migrationInfo = null;
+            for (MigrationInfo info : availableMigrations) {
+                if (info.getVersion().equals(version)) {
+                    migrationInfo = info;
+                    break;
+                }
+            }
+
+            if (migrationInfo == null) {
+                JsfUtil.addErrorMessage("Migration version not found: " + version);
+                return;
+            }
+
+            migrationInProgress = true;
+            totalSteps = 1;
+            completedSteps = 0;
+            migrationStartTime = System.currentTimeMillis();
+            migrationLog = "";
+
+            StringBuilder logBuilder = new StringBuilder();
+            logBuilder.append("Starting single migration execution at ").append(new Date()).append("\\n");
+            logBuilder.append("Migration: ").append(version).append(" - ").append(migrationInfo.getDescription()).append("\\n\\n");
+
+            currentMigrationVersion = version;
+            currentStep = "Executing migration " + version;
+
+            boolean success = executeSingleMigration(migrationInfo, logBuilder);
+            completedSteps = 1;
+
+            migrationLog = logBuilder.toString();
+            migrationInProgress = false;
+            currentMigrationVersion = null;
+            currentStep = null;
+
+            if (success) {
+                updateLastMigrationVersion();
+                JsfUtil.addSuccessMessage("Migration " + version + " executed successfully");
+            } else {
+                JsfUtil.addErrorMessage("Migration " + version + " execution failed. Check logs for details.");
+            }
+
+            refreshMigrationLists();
+
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error executing single migration " + version, e);
+            migrationInProgress = false;
+            JsfUtil.addErrorMessage("Migration execution error: " + e.getMessage());
+        } finally {
+            migrationLock.set(false);
+        }
+    }
+
+    /**
+     * Get failed migrations
+     */
+    public List<DatabaseMigration> getFailedMigrations() {
+        if (executedMigrations == null) {
+            return new ArrayList<>();
+        }
+
+        List<DatabaseMigration> failed = new ArrayList<>();
+        for (DatabaseMigration migration : executedMigrations) {
+            if (migration.getStatus() == MigrationStatus.FAILED) {
+                failed.add(migration);
+            }
+        }
+        return failed;
+    }
+
+    /**
+     * Execute all failed migrations
+     */
+    public void executeAllFailedMigrations() {
+        if (!migrationLock.compareAndSet(false, true)) {
+            JsfUtil.addErrorMessage("Migration is already in progress");
+            return;
+        }
+
+        try {
+            List<DatabaseMigration> failedMigrations = getFailedMigrations();
+            if (failedMigrations.isEmpty()) {
+                JsfUtil.addSuccessMessage("No failed migrations to execute");
+                return;
+            }
+
+            migrationInProgress = true;
+            totalSteps = failedMigrations.size();
+            completedSteps = 0;
+            migrationStartTime = System.currentTimeMillis();
+            migrationLog = "";
+
+            StringBuilder logBuilder = new StringBuilder();
+            logBuilder.append("Starting failed migration re-execution at ").append(new Date()).append("\\n");
+            logBuilder.append("Total failed migrations to re-execute: ").append(failedMigrations.size()).append("\\n\\n");
+
+            boolean allSuccessful = true;
+
+            for (DatabaseMigration failedMigration : failedMigrations) {
+                // Find corresponding migration info
+                MigrationInfo migrationInfo = null;
+                for (MigrationInfo info : availableMigrations) {
+                    if (info.getVersion().equals(failedMigration.getVersion())) {
+                        migrationInfo = info;
+                        break;
+                    }
+                }
+
+                if (migrationInfo == null) {
+                    logBuilder.append("Migration info not found for version: ").append(failedMigration.getVersion()).append("\\n");
+                    continue;
+                }
+
+                currentMigrationVersion = failedMigration.getVersion();
+                currentStep = "Re-executing migration " + failedMigration.getVersion();
+
+                logBuilder.append("=== Re-executing Migration ").append(failedMigration.getVersion()).append(" ===\\n");
+                logBuilder.append("Description: ").append(migrationInfo.getDescription()).append("\\n");
+
+                boolean success = executeSingleMigration(migrationInfo, logBuilder);
+                completedSteps++;
+
+                if (!success) {
+                    allSuccessful = false;
+                    logBuilder.append("MIGRATION RE-EXECUTION FAILED - Continuing with next migration\\n");
+                } else {
+                    logBuilder.append("Migration ").append(failedMigration.getVersion()).append(" re-executed successfully\\n\\n");
+                }
+            }
+
+            migrationLog = logBuilder.toString();
+            migrationInProgress = false;
+            currentMigrationVersion = null;
+            currentStep = null;
+
+            if (allSuccessful) {
+                updateLastMigrationVersion();
+                JsfUtil.addSuccessMessage("All failed migrations re-executed successfully");
+            } else {
+                JsfUtil.addWarningMessage("Some migrations failed during re-execution. Check logs for details.");
+            }
+
+            refreshMigrationLists();
+
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error during failed migration re-execution", e);
+            migrationInProgress = false;
+            JsfUtil.addErrorMessage("Failed migration re-execution error: " + e.getMessage());
+        } finally {
+            migrationLock.set(false);
+        }
+    }
+
+    /**
+     * Re-execute all available migrations regardless of status
+     */
+    public void reExecuteAllMigrations() {
+        if (!migrationLock.compareAndSet(false, true)) {
+            JsfUtil.addErrorMessage("Migration is already in progress");
+            return;
+        }
+
+        try {
+            if (availableMigrations == null || availableMigrations.isEmpty()) {
+                JsfUtil.addSuccessMessage("No migrations available to re-execute");
+                return;
+            }
+
+            migrationInProgress = true;
+            totalSteps = availableMigrations.size();
+            completedSteps = 0;
+            migrationStartTime = System.currentTimeMillis();
+            migrationLog = "";
+
+            StringBuilder logBuilder = new StringBuilder();
+            logBuilder.append("Starting re-execution of ALL migrations at ").append(new Date()).append("\\n");
+            logBuilder.append("Total migrations to re-execute: ").append(availableMigrations.size()).append("\\n");
+            logBuilder.append("WARNING: This will re-execute ALL migrations regardless of current status\\n\\n");
+
+            boolean allSuccessful = true;
+
+            for (MigrationInfo migrationInfo : availableMigrations) {
+                currentMigrationVersion = migrationInfo.getVersion();
+                currentStep = "Re-executing migration " + migrationInfo.getVersion();
+
+                logBuilder.append("=== Re-executing Migration ").append(migrationInfo.getVersion()).append(" ===\\n");
+                logBuilder.append("Description: ").append(migrationInfo.getDescription()).append("\\n");
+
+                boolean success = executeSingleMigration(migrationInfo, logBuilder);
+                completedSteps++;
+
+                if (!success) {
+                    allSuccessful = false;
+                    logBuilder.append("MIGRATION RE-EXECUTION FAILED - Continuing with next migration\\n");
+                } else {
+                    logBuilder.append("Migration ").append(migrationInfo.getVersion()).append(" re-executed successfully\\n\\n");
+                }
+            }
+
+            migrationLog = logBuilder.toString();
+            migrationInProgress = false;
+            currentMigrationVersion = null;
+            currentStep = null;
+
+            if (allSuccessful) {
+                updateLastMigrationVersion();
+                JsfUtil.addSuccessMessage("All migrations re-executed successfully");
+            } else {
+                JsfUtil.addWarningMessage("Some migrations failed during re-execution. Check logs for details.");
+            }
+
+            refreshMigrationLists();
+
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error during all migrations re-execution", e);
+            migrationInProgress = false;
+            JsfUtil.addErrorMessage("All migrations re-execution error: " + e.getMessage());
+        } finally {
+            migrationLock.set(false);
+        }
+    }
+
+    /**
+     * Execute all pending migrations
+     */
+    public void executeAllPendingMigrations() {
+        if (!migrationLock.compareAndSet(false, true)) {
+            JsfUtil.addErrorMessage("Migration is already in progress");
+            return;
+        }
+
+        try {
+            List<MigrationInfo> pending = getPendingMigrations();
+            if (pending.isEmpty()) {
+                JsfUtil.addSuccessMessage("No pending migrations to execute");
+                return;
+            }
+
+            migrationInProgress = true;
+            totalSteps = pending.size();
+            completedSteps = 0;
+            migrationStartTime = System.currentTimeMillis();
+            migrationLog = "";
+
+            StringBuilder logBuilder = new StringBuilder();
+            logBuilder.append("Starting migration execution at ").append(new Date()).append("\\n");
+            logBuilder.append("Total migrations to execute: ").append(pending.size()).append("\\n\\n");
+
+            boolean allSuccessful = true;
+
+            for (MigrationInfo migrationInfo : pending) {
+                currentMigrationVersion = migrationInfo.getVersion();
+                currentStep = "Executing migration " + migrationInfo.getVersion();
+
+                logBuilder.append("=== Executing Migration ").append(migrationInfo.getVersion()).append(" ===\\n");
+                logBuilder.append("Description: ").append(migrationInfo.getDescription()).append("\\n");
+
+                boolean success = executeSingleMigration(migrationInfo, logBuilder);
+                completedSteps++;
+
+                if (!success) {
+                    allSuccessful = false;
+                    logBuilder.append("MIGRATION FAILED - Stopping execution\\n");
+                    break;
+                }
+
+                logBuilder.append("Migration ").append(migrationInfo.getVersion()).append(" completed successfully\\n\\n");
+            }
+
+            migrationLog = logBuilder.toString();
+            migrationInProgress = false;
+            currentMigrationVersion = null;
+            currentStep = null;
+
+            if (allSuccessful) {
+                updateLastMigrationVersion();
+                JsfUtil.addSuccessMessage("All migrations executed successfully");
+            } else {
+                JsfUtil.addErrorMessage("Migration execution failed. Check logs for details.");
+            }
+
+            refreshMigrationLists();
+
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error during migration execution", e);
+            migrationInProgress = false;
+            JsfUtil.addErrorMessage("Migration execution error: " + e.getMessage());
+        } finally {
+            migrationLock.set(false);
+        }
+    }
+
+    /**
+     * Execute a single migration
+     */
+    private boolean executeSingleMigration(MigrationInfo migrationInfo, StringBuilder logBuilder) {
+        String version = migrationInfo.getVersion();
+        long startTime = System.currentTimeMillis();
+
+        try {
+            // Create or update migration record
+            DatabaseMigration migration = migrationFacade.createOrUpdateMigration(
+                    version,
+                    migrationInfo.getDescription(),
+                    "migration.sql"
+            );
+
+            migration.setStatus(MigrationStatus.EXECUTING);
+            migration.setExecutedBy(sessionController.getLoggedUser());
+            migration.setRequiresDowntime(migrationInfo.isRequiresDowntime());
+            migration.setEstimatedDurationMs(migrationInfo.getEstimatedDurationMs());
+            migration.setMigrationMetadata(serializeMigrationInfo(migrationInfo));
+            migrationFacade.edit(migration);
+
+            // Load and execute SQL
+            String sql = discoveryService.loadMigrationSql(version);
+            if (sql == null || sql.trim().isEmpty()) {
+                throw new RuntimeException("Migration SQL not found or empty for version: " + version);
+            }
+
+            logBuilder.append("Executing SQL for version ").append(version).append("\\n");
+            executeSqlScript(sql, logBuilder);
+
+            // Mark as successful
+            long executionTime = System.currentTimeMillis() - startTime;
+            migration.setStatus(MigrationStatus.SUCCESS);
+            migration.setExecutionTimeMs(executionTime);
+            migration.setExecutionLog(logBuilder.toString());
+            migrationFacade.edit(migration);
+
+            logBuilder.append("Execution time: ").append(executionTime).append("ms\\n");
+            return true;
+
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error executing migration " + version, e);
+
+            // Mark as failed
+            try {
+                DatabaseMigration migration = migrationFacade.findByVersion(version);
+                if (migration != null) {
+                    migration.setStatus(MigrationStatus.FAILED);
+                    migration.setErrorMessage(e.getMessage());
+                    migration.setExecutionTimeMs(System.currentTimeMillis() - startTime);
+                    migration.setExecutionLog(logBuilder.toString());
+                    migrationFacade.edit(migration);
+                }
+            } catch (Exception dbError) {
+                LOGGER.log(Level.SEVERE, "Error updating migration status", dbError);
+            }
+
+            logBuilder.append("ERROR: ").append(e.getMessage()).append("\\n");
+            return false;
+        }
+    }
+
+    /**
+     * Execute SQL script, routing each statement to the correct executor.
+     *
+     * DDL statements (CREATE, ALTER, DROP, CALL, DELIMITER blocks) are
+     * executed via executeDdlNative() which uses a raw JDBC connection
+     * outside JTA — necessary because MySQL auto-commits DDL implicitly,
+     * which would otherwise abort the JTA transaction.
+     *
+     * DML/query statements (SELECT, INSERT, UPDATE, DELETE) continue to
+     * use executeNativeSql() through the EntityManager.
+     */
+    private void executeSqlScript(String sql, StringBuilder logBuilder) throws Exception {
+        try {
+            List<String> statements = splitSqlStatements(sql);
+
+            for (String stmt : statements) {
+                // Strip leading comment/blank lines to get to the executable SQL
+                String executableStmt = stripLeadingComments(stmt);
+                if (executableStmt.isEmpty()) {
+                    continue;
+                }
+                logBuilder.append("Executing: ").append(executableStmt.substring(0, Math.min(100, executableStmt.length()))).append("...\n");
+                try {
+                    if (isDdlStatement(executableStmt)) {
+                        migrationFacade.executeDdlNative(executableStmt);
+                    } else {
+                        migrationFacade.executeNativeSql(executableStmt);
+                    }
+                } catch (Exception e) {
+                    String skipReason = getIdempotentSkipReason(executableStmt, e);
+                    if (skipReason != null) {
+                        logBuilder.append(skipReason).append("\n");
+                    } else {
+                        throw e;
+                    }
+                }
+            }
+
+            logBuilder.append("All statements executed successfully\n");
+
+        } catch (Exception e) {
+            logBuilder.append("Error executing SQL: ").append(e.getMessage()).append("\n");
+            throw e;
+        }
+    }
+
+    /**
+     * Strips leading comment lines (--) and blank lines from a SQL statement block,
+     * returning only the executable portion. This handles the common pattern of
+     * comment blocks accumulated with the following SQL statement by splitSqlStatements.
+     */
+    private String stripLeadingComments(String sql) {
+        if (sql == null) {
+            return "";
+        }
+        StringBuilder result = new StringBuilder();
+        boolean foundExecutable = false;
+        for (String line : sql.split("\n")) {
+            String trimmed = line.trim();
+            if (!foundExecutable) {
+                if (trimmed.isEmpty() || trimmed.startsWith("--")) {
+                    continue;
+                }
+                foundExecutable = true;
+            }
+            result.append(line).append("\n");
+        }
+        return result.toString().trim();
+    }
+
+    /**
+     * Splits a SQL script into individual executable statements.
+     * Handles DELIMITER directives used in stored procedure definitions.
+     * DELIMITER is a MySQL client convention — the directive itself is
+     * stripped; the procedure body is submitted as a single JDBC call.
+     */
+    private List<String> splitSqlStatements(String sql) {
+        List<String> statements = new ArrayList<>();
+        String currentDelimiter = ";";
+        StringBuilder current = new StringBuilder();
+
+        for (String line : sql.split("\n")) {
+            String trimmed = line.trim();
+
+            if (trimmed.toUpperCase().startsWith("DELIMITER")) {
+                String buffered = current.toString().trim();
+                if (!buffered.isEmpty()) {
+                    statements.add(buffered);
+                    current = new StringBuilder();
+                }
+                String[] parts = trimmed.split("\\s+", 2);
+                currentDelimiter = parts.length > 1 ? parts[1].trim() : ";";
+                continue;
+            }
+
+            if (!currentDelimiter.equals(";") && trimmed.endsWith(currentDelimiter)) {
+                // End of a procedure block — strip the custom delimiter and flush
+                int delimIdx = line.lastIndexOf(currentDelimiter);
+                current.append(line, 0, delimIdx).append("\n");
+                statements.add(current.toString().trim());
+                current = new StringBuilder();
+                currentDelimiter = ";";
+            } else if (currentDelimiter.equals(";") && trimmed.endsWith(";")) {
+                // Normal semicolon-terminated statement
+                int semiIdx = line.lastIndexOf(";");
+                current.append(line, 0, semiIdx).append("\n");
+                String stmt = current.toString().trim();
+                if (!stmt.isEmpty()) {
+                    statements.add(stmt);
+                }
+                current = new StringBuilder();
+            } else {
+                current.append(line).append("\n");
+            }
+        }
+
+        String remaining = current.toString().trim();
+        if (!remaining.isEmpty()) {
+            statements.add(remaining);
+        }
+        return statements;
+    }
+
+    private boolean isDdlStatement(String sql) {
+        String upper = sql.toUpperCase().trim();
+        return upper.startsWith("CREATE") || upper.startsWith("ALTER")
+                || upper.startsWith("DROP") || upper.startsWith("CALL")
+                || upper.startsWith("RENAME") || upper.startsWith("TRUNCATE");
+    }
+
+    /**
+     * Returns a non-null skip message if the failure is a benign idempotency
+     * error for the given DDL statement (e.g. CREATE INDEX on an existing
+     * index, ADD COLUMN for an existing column, DROP FOREIGN KEY on a
+     * non-existent key). Returns null when the error should propagate.
+     *
+     * This lets migrations be safely re-run against databases in mixed states
+     * — an earlier partial run, a JPA-generated schema, or a different
+     * vendor-style FK naming — without rewriting every script to guard each
+     * statement individually.
+     */
+    private String getIdempotentSkipReason(String sql, Exception e) {
+        String upper = sql.toUpperCase().trim();
+        String msg = collectCauseMessages(e);
+        if (msg == null) {
+            return null;
+        }
+        // CREATE INDEX on an index that already exists, or on a table whose
+        // casing doesn't match (e.g. userstock vs USER_STOCK).
+        if ((upper.startsWith("CREATE INDEX") || upper.startsWith("CREATE UNIQUE INDEX"))
+                && (msg.contains("1061") || msg.contains("Duplicate key name")
+                    || msg.contains("1146") || msg.contains("doesn't exist"))) {
+            return "Index already exists or target table missing, skipping...";
+        }
+        // ALTER TABLE ... ADD COLUMN that already exists (MySQL 1060).
+        if (upper.startsWith("ALTER TABLE") && upper.contains("ADD COLUMN")
+                && (msg.contains("1060") || msg.contains("Duplicate column name"))) {
+            return "Column already exists, skipping...";
+        }
+        // ALTER TABLE ... DROP FOREIGN KEY / DROP INDEX where the key doesn't exist (MySQL 1091).
+        // Only 1091 is safe to skip — it means "already absent". Errors like 1025 / 1553
+        // ("needed in a foreign key constraint") mean the index is still required and must
+        // surface so the operator can drop the owning FK first.
+        if (upper.startsWith("ALTER TABLE")
+                && (upper.contains("DROP FOREIGN KEY") || upper.contains("DROP INDEX") || upper.contains("DROP KEY"))
+                && (msg.contains("1091") || msg.contains("check that column/key exists"))) {
+            return "Foreign key or index already absent, skipping...";
+        }
+        return null;
+    }
+
+    private String collectCauseMessages(Throwable e) {
+        StringBuilder sb = new StringBuilder();
+        Throwable cause = e;
+        while (cause != null) {
+            if (cause.getMessage() != null) {
+                sb.append(cause.getMessage()).append('\n');
+            }
+            cause = cause.getCause();
+        }
+        return sb.length() == 0 ? null : sb.toString();
+    }
+
+    /**
+     * Rollback a specific migration
+     */
+    public void rollbackMigration(String version) {
+        if (!migrationLock.compareAndSet(false, true)) {
+            JsfUtil.addErrorMessage("Migration is already in progress");
+            return;
+        }
+
+        try {
+            DatabaseMigration migration = migrationFacade.findByVersion(version);
+            if (migration == null || !migration.isSuccessful()) {
+                JsfUtil.addErrorMessage("Cannot rollback migration that hasn't been successfully executed");
+                return;
+            }
+
+            String rollbackSql = discoveryService.loadRollbackSql(version);
+            if (rollbackSql == null || rollbackSql.trim().isEmpty()) {
+                JsfUtil.addErrorMessage("Rollback script not found for version: " + version);
+                return;
+            }
+
+            StringBuilder logBuilder = new StringBuilder();
+            logBuilder.append("Rolling back migration ").append(version).append("\\n");
+
+            try {
+                executeSqlScript(rollbackSql, logBuilder);
+
+                migration.setStatus(MigrationStatus.ROLLED_BACK);
+                migration.setRollbackAt(new Date());
+                migration.setRollbackBy(sessionController.getLoggedUser());
+                migrationFacade.edit(migration);
+
+                JsfUtil.addSuccessMessage("Migration " + version + " rolled back successfully");
+
+            } catch (Exception e) {
+                migration.setStatus(MigrationStatus.ROLLBACK_FAILED);
+                migration.setErrorMessage("Rollback failed: " + e.getMessage());
+                migrationFacade.edit(migration);
+                throw e;
+            }
+
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error rolling back migration " + version, e);
+            JsfUtil.addErrorMessage("Rollback error: " + e.getMessage());
+        } finally {
+            migrationLock.set(false);
+            refreshMigrationLists();
+        }
+    }
+
+    /**
+     * Check if a migration has been executed successfully
+     */
+    public boolean isMigrationExecuted(String version) {
+        return migrationFacade.isMigrationExecuted(version);
+    }
+
+    /**
+     * Get last executed migration version
+     */
+    public String getLastExecutedVersion() {
+        return migrationFacade.getLatestExecutedVersion();
+    }
+
+    /**
+     * Update the last migration version in config
+     */
+    private void updateLastMigrationVersion() {
+        String latestVersion = migrationFacade.getLatestExecutedVersion();
+        if (latestVersion != null) {
+            configController.setLongTextValueByKey("Database Schema Version", latestVersion);
+        }
+    }
+
+    /**
+     * Get application version (simplified - could be read from manifest)
+     */
+    public String getApplicationVersion() {
+        return discoveryService.getLatestMigrationVersion();
+    }
+
+    /**
+     * Compare two versions using semantic versioning rules
+     * Returns -1 if version1 < version2, 0 if equal, 1 if version1 > version2
+     */
+    private int compareVersions(String version1, String version2) {
+        if (version1 == null && version2 == null) return 0;
+        if (version1 == null) return -1;
+        if (version2 == null) return 1;
+
+        // Remove 'v' prefix if present
+        String v1 = version1.startsWith("v") ? version1.substring(1) : version1;
+        String v2 = version2.startsWith("v") ? version2.substring(1) : version2;
+
+        String[] parts1 = v1.split("\\.");
+        String[] parts2 = v2.split("\\.");
+
+        int maxLength = Math.max(parts1.length, parts2.length);
+
+        for (int i = 0; i < maxLength; i++) {
+            String part1 = i < parts1.length ? parts1[i] : "0";
+            String part2 = i < parts2.length ? parts2[i] : "0";
+
+            try {
+                int num1 = Integer.parseInt(part1);
+                int num2 = Integer.parseInt(part2);
+
+                if (num1 < num2) return -1;
+                if (num1 > num2) return 1;
+            } catch (NumberFormatException e) {
+                // Fall back to string comparison for non-numeric segments
+                int stringCompare = part1.compareTo(part2);
+                if (stringCompare != 0) return stringCompare;
+            }
+        }
+
+        return 0;
+    }
+
+    /**
+     * Serialize migration info to JSON string (simplified)
+     */
+    private String serializeMigrationInfo(MigrationInfo info) {
+        try {
+            return info.toString(); // Simplified - could use proper JSON serialization
+        } catch (Exception e) {
+            return "Serialization error: " + e.getMessage();
+        }
+    }
+
+    /**
+     * Get migration statistics
+     */
+    public Map<String, Long> getMigrationStatistics() {
+        return migrationFacade.getMigrationStatistics();
+    }
+
+    // Getters and Setters
+    public List<MigrationInfo> getAvailableMigrations() {
+        return availableMigrations;
+    }
+
+    public List<DatabaseMigration> getExecutedMigrations() {
+        return executedMigrations;
+    }
+
+    public MigrationInfo getSelectedMigration() {
+        return selectedMigration;
+    }
+
+    public void setSelectedMigration(MigrationInfo selectedMigration) {
+        this.selectedMigration = selectedMigration;
+    }
+
+    public String getMigrationLog() {
+        return migrationLog;
+    }
+
+    public boolean isMigrationInProgress() {
+        return migrationInProgress;
+    }
+
+    public String getCurrentMigrationVersion() {
+        return currentMigrationVersion;
+    }
+
+    public String getCurrentStep() {
+        return currentStep;
+    }
+
+    public int getTotalSteps() {
+        return totalSteps;
+    }
+
+    public int getCompletedSteps() {
+        return completedSteps;
+    }
+
+    public int getProgressPercentage() {
+        if (totalSteps == 0) return 0;
+        return (completedSteps * 100) / totalSteps;
+    }
+
+    public boolean getHasPendingMigrations() {
+        return !getPendingMigrations().isEmpty();
+    }
+
+    public int getPendingMigrationsCount() {
+        return getPendingMigrations().size();
+    }
+}

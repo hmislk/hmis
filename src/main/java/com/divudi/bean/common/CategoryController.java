@@ -8,6 +8,9 @@
  */
 package com.divudi.bean.common;
 
+import com.divudi.bean.pharmacy.ConsumableCategoryController;
+import com.divudi.bean.pharmacy.PharmaceuticalItemCategoryController;
+import com.divudi.core.data.CategoryType;
 import com.divudi.core.entity.Category;
 import com.divudi.core.entity.Item;
 import com.divudi.core.entity.Nationality;
@@ -57,14 +60,20 @@ public class CategoryController implements Serializable {
     private CategoryFacade ejbFacade;
     List<Category> selectedItems;
     private Category current;
-    Category fromCategory;
-    Category toCategory;
+    private Category fromCategory;
+    private Category toCategory;
     private List<Category> items = null;
     private List<Category> feeListTypes = null;
-    String selectText = "";
+    private String selectText = "";
 
     @Inject
     ItemController itemController;
+    @Inject
+    PharmaceuticalItemCategoryController pharmaceuticalItemCategoryController;
+    @Inject
+    ConsumableCategoryController consumableCategoryController;
+
+    private List<Category> serviceCategories;
 
     public String navigateToManageFeeListTypes() {
         fillFeeItemListTypes();
@@ -149,12 +158,54 @@ public class CategoryController implements Serializable {
     }
 
     public List<Category> completeCategory(String qry) {
-        List<Category> c;
-        c = getFacade().findByJpql("select c from Category c where c.retired=false and c.name like '%" + qry.toUpperCase() + "%' order by c.name");
-        if (c == null) {
-            c = new ArrayList<>();
+        if (qry == null || qry.trim().isEmpty()) {
+            return new ArrayList<>();
         }
-        return c;
+        String jpql = "SELECT c FROM Category c WHERE c.retired = false AND c.name LIKE :q ORDER BY c.name";
+        Map<String, Object> params = new HashMap<>();
+        params.put("q", "%" + qry.trim() + "%");
+        List<Category> c = getFacade().findByJpql(jpql, params);
+        return c != null ? c : new ArrayList<>();
+    }
+
+    /**
+     * Returns a list of non-retired {@link Category} entities matching the
+     * given name query and category type. Uses a case-insensitive partial match
+     * for the name and filters by {@link CategoryType}.
+     *
+     * @param qry The name or partial name of the category to search for.
+     * @param categoryType The specific {@link CategoryType} to filter results
+     * by.
+     * @return A list of matching {@link Category} entities, or an empty list if
+     * none found.
+     */
+    public List<Category> completeCategory(String qry, CategoryType categoryType) {
+        if (qry == null || qry.trim().isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        String jpql = "SELECT c FROM Category c WHERE c.retired = false "
+                + "AND c.name LIKE :q AND c.categoryType = :type ORDER BY c.name";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("q", "%" + qry.trim() + "%");
+        params.put("type", categoryType);
+
+        List<Category> c = getFacade().findByJpql(jpql, params);
+        return c != null ? c : new ArrayList<>();
+    }
+
+    /**
+     * Returns a list of non-retired {@link Category} entities of type
+     * {@code FINANCIAL_CATEGORY} matching the given name query.
+     *
+     * @param qry The name or partial name of the financial category to search
+     * for.
+     * @return A list of matching financial {@link Category} entities, or an
+     * empty list if none found.
+     */
+    public List<Category> completeFinancialCategory(String qry) {
+        return completeCategory(qry, CategoryType.FINANCIAL_CATEGORY);
     }
 
     public Category findAndCreateCategoryByName(String qry) {
@@ -206,22 +257,24 @@ public class CategoryController implements Serializable {
 
     public List<Category> completeServiceCategory(String query) {
         List<Category> suggestions;
-        String sql;
-        HashMap tmpMap = new HashMap();
-        if (query == null) {
-            suggestions = new ArrayList<>();
-        } else {
-
-            sql = "select c from Category c where c.retired=false and (type(c)= :sup or type(c)= :sub) and (c.name) like '%" + query.toUpperCase() + "%' order by c.name";
-            //////// // System.out.println(sql);
-            tmpMap.put("sup", ServiceCategory.class);
-            tmpMap.put("sub", ServiceSubCategory.class);
-            suggestions = getFacade().findByJpql(sql, tmpMap, TemporalType.TIMESTAMP);
+        if (query == null || query.trim().isEmpty()) {
+            return new ArrayList<>();
         }
+
+        String jpql = "SELECT c FROM Category c "
+                + "WHERE c.retired = FALSE "
+                + "AND (TYPE(c) = :sup OR TYPE(c) = :sub) "
+                + "AND LOWER(c.name) LIKE :q "
+                + "ORDER BY c.name";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("sup", ServiceCategory.class);
+        params.put("sub", ServiceSubCategory.class);
+        params.put("q", "%" + query.toLowerCase() + "%");
+
+        suggestions = getFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
         return suggestions;
     }
-
-    private List<Category> serviceCategories;
 
     public List<Category> findServiceCategories() {
         List<Category> suggestions;
@@ -350,13 +403,19 @@ public class CategoryController implements Serializable {
                 + " where c.retired=false"
                 + " and (type(c)= :service "
                 + " or type(c)= :sub "
-                + " or type(c)=:invest )"
+                + " or type(c)=:invest "
+                + " or c.categoryType= :serviceType "
+                + " or c.categoryType= :subType "
+                + " or c.categoryType= :investType )"
                 + " and (c.name)"
                 + " like :q order by c.name";
 
         temMap.put("service", ServiceCategory.class);
         temMap.put("sub", ServiceSubCategory.class);
         temMap.put("invest", InvestigationCategory.class);
+        temMap.put("serviceType", CategoryType.SERVICE_CATEGORY);
+        temMap.put("subType", CategoryType.SERVICE_SUB_CATEGORY);
+        temMap.put("investType", CategoryType.INVESTIGATION_CATEGORY);
         temMap.put("q", "%" + qry.toUpperCase() + "%");
 
         c = getFacade().findByJpql(sql, temMap, TemporalType.DATE);
@@ -612,7 +671,7 @@ public class CategoryController implements Serializable {
             getFacade().edit(current);
             JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            JsfUtil.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addErrorMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();
@@ -634,6 +693,13 @@ public class CategoryController implements Serializable {
             items = getFacade().findByJpql(j);
         }
         return items;
+    }
+
+    public List<Category> getPharmaceuticalAndConsumableItemCategories() {
+        List<Category> combinedItems = new ArrayList<>();
+        combinedItems.addAll(pharmaceuticalItemCategoryController.getItems());
+        combinedItems.addAll(consumableCategoryController.getItemsAvailableSelectOne());
+        return combinedItems;
     }
 
     List<Category> nationalities;

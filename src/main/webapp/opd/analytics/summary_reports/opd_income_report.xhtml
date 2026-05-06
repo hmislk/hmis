@@ -40,8 +40,24 @@
                             />
 
                         <p:spacer width="50" ></p:spacer>
-                        <p:spacer width="50" ></p:spacer>
-                        <p:spacer width="50" ></p:spacer>
+                        <!-- New Doctor Field with Icon -->
+                        <h:panelGroup layout="block" styleClass="form-group">
+                            <h:outputText value="&#xf0f0;" styleClass="fa mr-2" /> 
+                            <h:outputLabel value="User" for="user" class="mx-3" />
+                        </h:panelGroup>
+                        <p:autoComplete 
+                            forceSelection="true"
+                            value="#{opdReportController.webUser}"
+                            placeholder="Select User"
+                            completeMethod="#{webUserController.completeUser}" 
+                            id="user"
+                            var="u" 
+                            itemLabel="#{u.webUserPerson.name}" 
+                            itemValue="#{u}"
+                            class="w-100"
+                            inputStyleClass="w-100"
+                            >
+                        </p:autoComplete>
 
                         <h:panelGroup layout="block" styleClass="form-group">
                             <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> 
@@ -268,13 +284,27 @@
                             <h:outputText value="&#xf80d;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
                             <h:outputLabel value="Discount Scheme" for="cmbDept" class="mx-3"/>
                         </h:panelGroup>
-                        <p:selectOneMenu 
+                        <p:selectOneMenu
                             id="cmdDiscount"
                             class="w-100"
                             autoWidth="false"
                             value="#{opdReportController.paymentScheme}" >
                             <f:selectItem itemLabel="Select"/>
                             <f:selectItems value="#{paymentSchemeController.items}" var="ps" itemLabel="#{ps.name}"/>
+                        </p:selectOneMenu>
+
+                        <p:spacer ></p:spacer>
+                        <h:panelGroup layout="block" styleClass="form-group">
+                            <h:outputText value="&#xf0d6;" styleClass="fa mr-2"/>
+                            <h:outputLabel value="Payment Method" for="cmbPayMethod" class="mx-3"/>
+                        </h:panelGroup>
+                        <p:selectOneMenu
+                            id="cmbPayMethod"
+                            class="w-100"
+                            autoWidth="false"
+                            value="#{opdReportController.paymentMethod}" >
+                            <f:selectItem itemLabel="All Payment Methods" />
+                            <f:selectItems value="#{enumController.paymentMethods}" var="pm" itemLabel="#{pm.label}" itemValue="#{pm}"/>
                         </p:selectOneMenu>
 
                     </h:panelGrid>
@@ -305,12 +335,12 @@
                     </p:commandButton>
 
                     <p:button 
-                        disabled="true"
+                        disabled="false"
                         value="To Print" 
                         styleClass="ui-button-warning m-1"
                         icon="pi pi-print"
-                        outcome="opd_income_report_print"
-                        target="_blank"/>
+                        outcome="opd_income_report_print1"
+                        />
 
 
                     <p:dataTable
@@ -376,6 +406,28 @@
                             </h:outputText>
                             <f:facet name="footer" >
                                 <h:outputText value="#{opdReportController.bundle.summaryRow.chequeValue}" style="padding: 0px!important; margin: 0px!important; font-weight: bold" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </f:facet>
+
+                        </p:column>
+                        <p:column headerText="Slip"   width="10em"  class="text-end" style="padding: 0px!important; margin: 0px!important;" >
+                            <h:outputText value="#{row.slipValue}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
+                            <f:facet name="footer" >
+                                <h:outputText value="#{opdReportController.bundle.summaryRow.slipValue}" style="padding: 0px!important; margin: 0px!important; font-weight: bold" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </f:facet>
+
+                        </p:column>
+                        <p:column headerText="Online"   width="10em"  class="text-end" style="padding: 0px!important; margin: 0px!important;" >
+                            <h:outputText value="#{row.onlineSettlementValue}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
+                            <f:facet name="footer" >
+                                <h:outputText value="#{opdReportController.bundle.summaryRow.onlineSettlementValue}" style="padding: 0px!important; margin: 0px!important; font-weight: bold" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </f:facet>
@@ -477,35 +529,18 @@
                                 ajax="false">
                                 <f:setPropertyActionListener value="#{row.bill}" target="#{billSearch.bill}" />
                             </p:commandLink>
-
-                            <!--                            <p:commandLink 
-                                                            value="Manage" 
-                                                            style="font-size: #{opdReportController.fontSizeForScreen}!important;" 
-                                                            class="mx-1"
-                                                            action="#{billSearch.navigateToManageBillByAtomicBillType()}" 
-                                                            ajax="false">
-                                                            <f:setPropertyActionListener value="#{row.bill}" target="#{billSearch.bill}" />
-                                                        </p:commandLink>-->
-
-                            <!--                            <p:commandLink 
-                                                            value="Admin" 
-                                                            style="font-size: #{opdReportController.fontSizeForScreen}!important;" 
-                                                            class="mx-1"
-                                                            action="#{billSearch.navigateToAdminBillByAtomicBillType()}" 
-                                                            ajax="false" 
-                                                            rendered="#{webUserController.hasPrivilege('Developers')}">
-                                                            <f:setPropertyActionListener value="#{row.bill}" target="#{billSearch.bill}" />
-                                                        </p:commandLink>-->
+                            <p:commandLink 
+                                value="Admin" 
+                                style="font-size: #{opdReportController.fontSizeForScreen}!important;" 
+                                class="mx-1"
+                                action="#{billSearch.navigateToAdminBillByAtomicBillType()}" 
+                                ajax="false" 
+                                rendered="#{webUserController.hasPrivilege('Developers')}">
+                                <f:setPropertyActionListener value="#{row.bill}" target="#{billSearch.bill}" />
+                            </p:commandLink>
                         </p:column>
-
-
                     </p:dataTable>
-
-
-
-
                 </h:form>
-
             </ui:define>
         </ui:composition>
     </h:body>

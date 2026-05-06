@@ -1,0 +1,17 @@
+when a new privileges is required to add,
+please view the enum  - src/main/java/com/divudi/core/data/Privileges.java
+for backword compatibility we can not change / edit old ones with spellings, convention errors
+check for a similar privilege, if so, please use it without creating a new one
+if new one needs to be created, find the appropriate section and put it there
+
+the have to update the 
+jsf page
+http://localhost:8080/rh/faces/admin/users/user_privileges.xhtml
+
+controller
+UserPrivilageController
+
+method
+private TreeNode<PrivilegeHolder> createPrivilegeHolderTreeNodes() {
+
+Add to appropriate postion in the tree note

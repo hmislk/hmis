@@ -78,6 +78,13 @@
 
                         <f:facet name="footer">
                             <p:commandButton 
+                                value="Fix All Remaining Records" 
+                                ajax="false" 
+                                class="m-1 ui-button-warning"
+                                icon="pi pi-cog"
+                                action="#{collectingCentreController.fixAllRemainingRecords()}"
+                                onclick="return confirm('This will automatically fix all remaining records from this point forward. Are you sure you want to continue?');" />
+                            <p:commandButton 
                                 value="Update History and Back to Statement" 
                                 ajax="false" 
                                 class="m-1"

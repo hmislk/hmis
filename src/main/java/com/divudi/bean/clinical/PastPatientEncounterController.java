@@ -2205,7 +2205,7 @@ public class PastPatientEncounterController implements Serializable {
             getFacade().edit(current);
             JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            JsfUtil.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addErrorMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();
@@ -2485,6 +2485,7 @@ public class PastPatientEncounterController implements Serializable {
 
     public void setRemovingClinicalFindingValue(ClinicalFindingValue removingClinicalFindingValue) {
         this.removingClinicalFindingValue = removingClinicalFindingValue;
+        this.removingCfv = removingClinicalFindingValue;
     }
 
     public Patient getPatient() {

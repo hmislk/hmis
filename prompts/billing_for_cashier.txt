@@ -1,0 +1,19 @@
+Pharmacy Retail Sale — Billing Through Cashier
+
+Billing for Cashier is done by the Pharmacist at: /pharmacy/pharmacy_bill_retail_sale_for_cashier.xhtml
+Bill Class: PreBill
+Bill Type: BillType.PharmacyPre
+Bill Type Atomic: BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER
+
+Such bills are listed for the Pharmacist at: /pharmacy/pharmacy_search_sale_pre_bill.xhtml
+
+Global bill-view method (in BillSearch):
+public String navigateToViewBillByAtomicBillTypeByBillId(Long billId)
+
+Cashier searches for Pre Bills at: /pharmacy/pharmacy_search_pre_bill.xhtml
+
+Cashier accepts payments at: /pharmacy/pharmacy_bill_pre_settle.xhtml
+
+There is currently no dedicated view page.
+Create a new page that displays the content under id="panelPrint" from /pharmacy/pharmacy_bill_retail_sale_for_cashier.xhtml.
+Please create that page.

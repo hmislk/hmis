@@ -6,27 +6,35 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
+      xmlns:na="http://xmlns.jcp.org/jsf/composite/template"
       xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill">
 
     <h:body>
         <ui:composition template="/collecting_centre/index.xhtml">
             <ui:define name="subcontent">
                 <h:form  >
-                    <h:panelGroup >
+
+                    <h:panelGroup rendered="#{!webUserController.hasPrivilege('CCPaymentReceive') and !webUserController.hasPrivilege('CollectingCentreManageMenu')}">
+                        <na:not_authorize />
+                    </h:panelGroup>
+                    
+                    <h:panelGroup rendered="#{webUserController.hasPrivilege('CCPaymentReceive') and webUserController.hasPrivilege('CollectingCentreManageMenu')}">
                         <p:panel rendered="#{!agentAndCcPaymentController.printPreview}" >
                             <f:facet name="header" >
                                 <div class="d-flex justify-content-between">
                                     <h:outputLabel value="Collecting Centre Payment" class="mt-2"/>
                                     <div class="d-flex gap-2">
-                                        <p:commandButton 
-                                            id="btnSettle" 
-                                            value="Settle" 
+                                        <p:commandButton
+                                            id="btnSettle"
+                                            value="Settle"
                                             class="ui-button-success"
                                             icon="fa fa-check"
-                                            action="#{agentAndCcPaymentController.collectingCentrePaymentRecieveSettleBill}" 
-                                            ajax="false"  
+                                            action="#{agentAndCcPaymentController.collectingCentrePaymentRecieveSettleBill}"
+                                            ajax="false"
+                                            onclick="if (!confirm('Are you sure you want to Settle This Bill ?'))
+                                                        return false;"
                                             style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;" >
-                                        </p:commandButton> 
+                                        </p:commandButton>
                                         <p:defaultCommand target="btnSettle"/>
                                         <p:commandButton 
                                             value="New Bill" 
@@ -41,10 +49,10 @@
                             </f:facet>
 
                             <div class="row">
-                                <div class="col-md-2">
+                                <div class="col-md-3">
                                     <p:outputLabel value="Collecting Centre" />
                                 </div>
-                                <div class="col-md-7">
+                                <div class="col-md-8">
                                     <p:autoComplete 
                                         id="creditCom" 
                                         forceSelection="true" 
@@ -69,13 +77,14 @@
                                     </p:autoComplete>
                                 </div>
                             </div>
-                            
+
                             <div class="row my-2">
-                                <div class="col-md-2">
+                                <div class="col-md-3">
                                     <p:outputLabel value="Value" />
                                 </div>
-                                <div class="col-md-2">
+                                <div class="col-md-9">
                                     <p:inputText 
+                                        class="text-end"
                                         autocomplete="off" 
                                         onfocus="this.select();"
                                         value="#{agentAndCcPaymentController.current.netTotal}"/> 
@@ -83,7 +92,7 @@
                             </div>
 
                             <div class="row my-2">
-                                <div class="col-md-2">
+                                <div class="col-md-3">
                                     <p:outputLabel value="Payment" />
                                 </div>
                                 <div class="col-md-2">
@@ -96,11 +105,11 @@
                                         <p:ajax process="@this" update="paymentDetails" event="change" />
                                     </p:selectOneMenu>
                                 </div>
-                                
-                                <div class="col-md-5">
-                                    <h:panelGroup id="paymentDetails">
+
+                                <div class="col-md-7">
+                                    <h:panelGroup id="paymentDetails" class="w-100">
                                         <h:panelGroup id="creditCard"  rendered="#{agentAndCcPaymentController.current.paymentMethod eq 'Card'}">
-                                            <pa:creditCardDetailsAsOnlyPayment paymentMethodData="#{agentAndCcPaymentController.paymentMethodData}"/>
+                                            <pa:creditCardDetailsAsOnlyPayment class="w-100" paymentMethodData="#{agentAndCcPaymentController.paymentMethodData}"/>
                                         </h:panelGroup>
 
                                         <h:panelGroup id="cheque"  rendered="#{agentAndCcPaymentController.current.paymentMethod eq 'Cheque'}">
@@ -110,11 +119,11 @@
                                         <h:panelGroup id="slip" rendered="#{agentAndCcPaymentController.current.paymentMethod eq 'Slip'}">
                                             <pa:slipDetailsAsOnlyPayment paymentMethodData="#{agentAndCcPaymentController.paymentMethodData}"/>
                                         </h:panelGroup>
-                                        
+
                                         <h:panelGroup id="eWallet"  rendered="#{agentAndCcPaymentController.current.paymentMethod eq 'ewallet'}">
                                             <pa:ewalletDetailsAsOnlyPayment paymentMethodData="#{agentAndCcPaymentController.paymentMethodData}"/>
                                         </h:panelGroup>
-                                       
+
                                     </h:panelGroup>
                                 </div>
                             </div>

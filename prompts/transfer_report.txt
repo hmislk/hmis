@@ -1,0 +1,33 @@
+I want to add a new report under the page - stock_transfer_report
+http://localhost:8080/rh/faces/reports/inventoryReports/stock_transfer_report.xhtml
+
+A new report Type should be there - Breakdown Summary
+So new addition is required for id="reportType"
+
+We should user billTypeAtomics
+
+if the  id="transferType" is issue
+It should consider transfer issue bills
+First Level- fromDepartment - sum of qty in pharmaceuticalBillItems
+Second Level - toDepartment -sum of qty in  pharmaceuticalBillItems where from Department from level 1 + to department in level 2
+
+Example
+Issued From
+
+Main Pharmacy			500
+	OPD		250
+	ETU		250
+Main Stores			1000
+	OPD		750
+	ETU		250
+
+if the  id="transferType" is receive
+It should consider transfer receive bills 
+First Level- fromDepartment - sum of qty in pharmaceuticalBillItems
+Second Level - toDepartment -sum of qty in  pharmaceuticalBillItems where from Department from level 1 + to department in level 2
+
+Received to
+OPD		1000
+	Main Pharmacy 
+
+

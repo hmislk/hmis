@@ -286,7 +286,6 @@ public class ChannelSearchController implements Serializable {
         p.setBill(bill);
         double valueToSet = Math.abs(bill.getNetTotal());
         p.setPaidValue(valueToSet);
-        System.out.println("value To Set " + valueToSet);
         setPaymentMethodData(p, pm);
         return p;
     }
@@ -309,7 +308,7 @@ public class ChannelSearchController implements Serializable {
             return "";
         }
         printPreview = false;
-        return "/channel/channel_payment_staff_bill_cancel?faces-redirect=true;";
+        return "/channel/channel_payment_staff_bill_cancel?faces-redirect=true";
     }
 
     private boolean errorCheck() {

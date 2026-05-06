@@ -5,6 +5,8 @@
  */
 package com.divudi.core.data;
 
+import com.divudi.bean.lab.LaborataryReportController;
+
 public enum Privileges {
 
     //<editor-fold defaultstate="collapsed" desc="Main">
@@ -33,7 +35,6 @@ public enum Privileges {
     RefundOpdBillsFromCashier("Refund opd Bills From Cashier"),
     RefundPharmacyBillsFromCashier("Rufund Pharmacy Bills From Cashier"),
     AcceptPaymentForPharmacyBills("Accept payment For Pharmacy Bill(Cashier)"),
-    
     //<editor-fold defaultstate="collapsed" desc="OPD">
     // Submenu Privileges
     OpdBilling("OPD Billing"),
@@ -46,6 +47,7 @@ public enum Privileges {
     OpdBillItemSearch("OPD Bill Item Search"),
     OpdReprint("OPD Reprint"),
     OpdCancel("OPD Cancel"),
+    OpdIndividualCancel("OPD Individual Cancel"),
     OpdReturn("OPD Return"),
     OpdReactivate("OPD Reactivate"),
     OpdBillSearchEdit("OPD Bill Search Edit"),
@@ -54,6 +56,8 @@ public enum Privileges {
     OpdAddNewRefferalDoctor("OPD Add New Referral Doctor"),
     OpdAddNewCollectingCentre("OPD Add New Collecting Centre"),
     ChangeProfessionalFee("Change Professional Fee"),
+    OpdPackageBillCancel("OPD Package Bill Cancel"),
+    OpdEditPatientDetails("OPD Edit Patient Details"),
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Inpatient">
@@ -65,8 +69,19 @@ public enum Privileges {
     InwardRoom("Inward Room"),
     InwardRoomRoomOccupency("Inward Room Occupancy"),
     InwardRoomRoomChange("Inward Room Change"),
+    
+    // IP Appointment
+    InwardAppointmentMenu("IP Appointment Menu"),
+    AddInwardAppointment("Add IP Appointment"),
+    InwardAppointmentAdmission("IP Appointment to Admit"),
+    InwardAppointmentUpdate("IP Appointment Update"),
+    InwardAppointmentCancel("IP Appointment Cancel"),
+    
+    WatingRoomAdmitPatient("Wating Room Admit Patient"),
     InwardRoomGurdianRoomChange("Inward Guardian Room Change"),
     InwardRoomDischarge("Inward Room Discharge"),
+    InwardRoomTransferInitiate("Inward Room Transfer Initiate"),
+    InwardRoomPatientAccept("Inward Room Patient Accept"),
     InwardServicesAndItems("Inward Services and Items"),
     InwardServicesAndItemsAddServices("Inward Add Services"),
     InwardServicesAndItemsAddOutSideCharges("Inward Add Outside Charges"),
@@ -99,20 +114,31 @@ public enum Privileges {
     ShowInwardFee("Show Inward Fee"),
     InwardPharmacyMenu("Inward Pharmacy Menu"),
     InwardPharmacyIssueRequest("Inward Pharmacy Issue Request"),
+    InwardPharmacyIssueRequestCancel("Inward Pharmacy Issue Request Cancel"),
     InwardPharmacyIssueRequestSearch("Inward Pharmacy Issue Request Search"),
     InwardBillSettleWithoutCheck("Inward Bill Settle Without Check"),
     TheaterIssueBHT("Theater Issue BHT"),
+    InpatientClinicalAssessment("Inpatient Clinical Assessment"),
+    InpatientClinicalDischarge("Inpatient Clinical Discharge"),
+    //</editor-fold>
+    
+    //<editor-fold defaultstate="collapsed" desc="Nurse">
+    NursingWorkBench("Nursing Work Bench"),
+    ShowDrugCharges("Show Drug Charges"),
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Finance">
     PettyCashBillCancellationApprove("Petty Cash Bill Cancellation Approval"),
     PettyCashBillApprove("Petty Cash Bill Approval"),
+    PettyCashEditFinancialYear("Petty Cash Edit Financial Year"),
     AllCashierSummery("All Cashier Summary"),
     CashTransactionCashIn("Cash Transaction Cash In"),
     CashTransactionCashOut("Cash Transaction Cash Out"),
     CashTransactionListToCashRecieve("Cash Transaction List to Cash Receive"),
     ShiftHandoverAcceptAsCashier("Shift Handover Accept As Cashier"),
     ShiftHandoverAcceptAsMainCashier("Shift Handover Accept As Main Cashier"),
+    CashierHandoverStatusReport("Cashier Handover Status Report"),
+    SettleHandoverProofMissing("Settle Handover Proof Missing"),
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Lab">
@@ -132,7 +158,12 @@ public enum Privileges {
     LabBillRefunding("Lab Bill Refunding"),
     LabBillReactivating("Lab Bill Reactivating"),
     LabSampleCollecting("Lab Sample Collecting"),
+    LabSampleSending("Lab Sample Sending"),
+    OutLabSampleSending("Out Lab Sample Sending"),
     LabSampleReceiving("Lab Sample Receiving"),
+    LabSampleRejecting("Lab Sample Rejecting"),
+    LabSampleSeparate("Lab Sample Separate"),
+    LabSampleRetrieving("Receiving the Sent Sample"),
     LabReportFormatEditing("Lab Report Format Editing"),
     LabDataentry("Lab Data Entry"),
     LabAutherizing("Lab Authorizing"),
@@ -155,6 +186,7 @@ public enum Privileges {
     LabInvestigationFee("Lab Investigation Fee"),
     LabAddInwardServices("Lab Add Inward Services"),
     LabReportSearchByLoggedInstitution("Lab Report Search by Logged Institution"),
+    LabReportSearchByLoggedDepartment("Lab Report Search by Logged Department"),
     IncomeReport("Income Report"),
     LabReport("Lab Report"),
     DuesAndAccess("Dues and Access"),
@@ -176,6 +208,18 @@ public enum Privileges {
     LabReporting("Lab Reporting"),
     // Don't remove
     LabSearchBillLoggedInstitution("Lab Search Bill Logged Institution"),
+    DashBoardMenu("DashBoard Menu"),
+    DashBoardBillSearch("DashBoard Bill Search"),
+    DashBoardWorksheet("DashBoard WorkSheet"),
+    DashBoardSampleSearch("DashBoard Sample Search"),
+    DashBoardInvestigationSearch("DashBoard Investigation Search"),
+    DashBoardReportSearch("DashBoard Report Search"),
+    DashBoardPatientReportSearch("DashBoard Patient Report Search"),
+    AccessLabTestHistory("Access Lab Test History"),
+    
+    DoctorDashBoardMenu("Doctor DashBoard Menu"),
+    
+    
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Pharmacy">
@@ -197,6 +241,7 @@ public enum Privileges {
     PharmacyOrderCancellation("Pharmacy Order Cancellation"),
     PharmacySaleWithoutStock("Pharmacy Sale Without Stock"),
     PharmacySaleReprint("Pharmacy Sale Reprint"),
+    PrintOriginalPharmacyBillFromReprint("Print Original Pharmacy Bill From Reprint"),
     PharmacySaleCancel("Pharmacy Sale Cancel"),
     PharmacySaleReturn("Pharmacy Sale Return"),
     // Wholesale
@@ -219,6 +264,7 @@ public enum Privileges {
     // Wholesale
     PharmacyPurchaseWh("Pharmacy Purchase Wholesale"),
     PharmacyTokenManagement("Pharmacy Token Management"),
+    PharmacyDonation("Pharmacy Donation"),
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Theatre">
@@ -358,6 +404,14 @@ public enum Privileges {
     ChannelCashierTransactionExpencess("Channel Cashier Transaction Expenses"),
     ChannelCashierTransactionExpencessSearch("Channel Cashier Transaction Expenses Search"),
     ChannelActiveVat("Channel Active VAT"),
+    
+    ChannelSessionMultipleDeletion("Delete Multiple Channel Sessions"),
+    ChannelSessionHolidayMark("Channel Sessions Holidays Mark"),
+    ChannelSessionManagement("Channel Session Management"),
+    ChannelSheduleManagement("Channel Shedule Management"),
+    ChannelBookingByMonth("Channel Booking by Month"),
+    ChannelDoctorCard("Doctor Card"),
+    ChannelPatientPortal("Patient Portal"),
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Clinis">
@@ -437,6 +491,7 @@ public enum Privileges {
     // Pharmacy Disbursement
     PharmacyDisburesementMenu("Pharmacy Disbursement Menu"),
     PharmacyDisbursementRequest("Pharmacy Disbursement Request"),
+    PharmacyDisbursementFinalizeRequest("Pharmacy Disbursement Finalize Request"),
     PharmacyDisbursementIssurForRequest("Pharmacy Disbursement Issue for Request"),
     PharmacyDisbursementDirectIssue("Pharmacy Disbursement Direct Issue"),
     PharmacyDisbursementRecieve("Pharmacy Disbursement Receive"),
@@ -455,7 +510,9 @@ public enum Privileges {
     PharmacyRetailTransactionMenue("Pharmacy Retail Transaction Menu"),
     PharmacyRetailTransaction("Pharmacy Retail Transaction"),
     PharmacySale("Pharmacy Sale"),
+    PharmacySaleQuick("Pharmacy Sale - Quick"),
     PharmacySaleForCashier("Pharmacy Sale for Cashier"),
+    PharmacySaleForCashierQuick("Pharmacy Sale for Cashier - Quick"),
     PharmacySaleWithOutStock("Pharmacy Sale without Stock"),
     PharmacySearchSaleBill("Pharmacy Search Sale Bill"),
     PharmacySearchSalePreBill("Pharmacy Search Sale Pre-Bill"),
@@ -489,11 +546,15 @@ public enum Privileges {
     PharmacyAdjustmentDepartmentStockBySingleItemQTY("Pharmacy Adjustment Department Stock by Single Item Quantity"),
     PharmacyAdjustmentStaffStockAdjustment("Pharmacy Adjustment Staff Stock Adjustment"),
     PharmacyAdjustmentPurchaseRate("Pharmacy Adjustment Purchase Rate"),
+    PharmacyAdjustmentCostRate("Pharmacy Adjustment Cost Rate"),
     PharmacyAdjustmentSaleRate("Pharmacy Adjustment Sale Rate"),
     PharmacyAdjustmentWholeSaleRate("Pharmacy Adjustment Wholesale Rate"),
     PharmacyAdjustmentExpiryDate("Pharmacy Adjustment Expiry Date"),
     PharmacyAdjustmentSearchAdjustmentBills("Pharmacy Adjustment Search Adjustment Bills"),
     PharmacyAdjustmentTransferAllStock("Pharmacy Adjustment Transfer All Stock"),
+    PharmacyAdjustmentCreateBatch("Pharmacy Adjustment Create Batch"),
+    PharmacyPhysicalCountApprove("Pharmacy Physical Count Approve"),
+    PharmacyStockTakeApprove("Pharmacy Stock Take Approve"),
     // Pharmacy Dealer Payments
     PharmacyDealerPaymentMenue("Pharmacy Dealer Payment Menu"),
     PharmacyDealerDueSearch("Pharmacy Dealer Due Search"),
@@ -515,6 +576,13 @@ public enum Privileges {
     PharmacySearch("Pharmacy Search"),
     PharmacyReports("Pharmacy Reports"),
     PharmacyTransfer("Pharmacy Transfer"),
+    PharmacyTransferViewRates("Pharmacy Transfer View Rates"),
+    NursingIPBillingViewRates("Nursing IP Billing View Rates"),
+    IPRequestViewRates("IP Request View Rates"),
+    StockRequestViewRates("Stock Request View Rates"),
+    ConsumptionViewRates("Consumption View Rates"),
+    StockTransactionViewRates("Stock Transaction View Rates"),
+    DiscardViewRates("Discard View Rates"),
     PharmacySummery("Pharmacy Summary"),
     PharmacyAdministration("Pharmacy Administration"),
     PharmacySetReorderLevel("Pharmacy Set Reorder Level"),
@@ -530,10 +598,26 @@ public enum Privileges {
     TransferReciveApproval("Transfer Receive Approval"),
     GoodsRecipt("Goods Receipt"),
     ReturnReceviedGoods("Return Received Goods"),
+    CreateGrnReturn("Create GRN Return"),
+    FinalizeGrnReturn("Finalize GRN Return"),
+    ApproveGrnReturn("Approve GRN Return"),
+    CreateDisposalReturn("Create Disposal Return"),
+    FinalizeDisposalReturn("Finalize Disposal Return"),
+    ApproveDisposalReturn("Approve Disposal Return"),
+    ViewDisposalReturn("View Disposal Return"),
+    CreateDirectPurchaseReturn("Create Direct Purchase Return"),
+    FinalizeDirectPurchaseReturn("Finalize Direct Purchase Return"),
+    ApproveDirectPurchaseReturn("Approve Direct Purchase Return"),
     ReturnWithoutRecipt("Return without Receipt"),
+    PharmacyReturnWithoutReceiptBill("Pharmacy Return Without Receipt Bill"),
+    PharmacyGrnSave("Pharmacy GRN Save"),
+    PharmacyGrnFinalize("Pharmacy GRN Finalize"),
+    PharmacyGrnApprove("Pharmacy GRN Approve"),
     PharmacyItemSearch("Pharmacy Item Search"),
     PharmacyGenarateReports("Pharmacy Generate Reports"),
     PharmacySummaryViews("Pharmacy Summary Views"),
+    PrintOriginalPoBillFromReprint("Print Original PO Bill From Reprint"),
+    PrintOriginalGrnBillFromReprint("Print Original GRN Bill From Reprint"),
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Optician">
@@ -561,7 +645,7 @@ public enum Privileges {
     OphthalmologyRepairManagement("Ophthalmology Repair Management"),
     //</editor-fold>
 
-    //<editor-fold defaultstate="collapsed" desc="Collecting Centre">
+    //<editor-fold defaultstate="collapsed" desc="Courier">
     Courier("Courier"),
     CourierCollectSamples("Courier Collect Samples"),
     CourierHandoverSamplesToLab("Courier Handover Samples to Lab"),
@@ -570,8 +654,21 @@ public enum Privileges {
     CourierViewStatistics("Courier View Statistics"),
     CourierViewBillReports("Courier View Bill Reports"),
     CourierViewPaymentReports("Courier View Payment Reports"),
-    ChangeCreditLimitInCC("Change Credit Limit in Collecting Centre"),
-    CollectingCentreReports("Collecting Centre Reports"),
+    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="Collecting Centre">
+    CollectingCentreManageMenu("Collecting Centre Manage Menu"),
+    CollectingCentreBilling("Collecting Centre Billing"),
+    CCPaymentReceive("CC Payment Receive"),
+    SearchCCPaymentReceive("Search CC Payment Receive"),
+    IssueReferenceBook("CC Issue Reference Book"),
+    SearchIssuedReferenceBook("Search CC Reference Book"),
+    ChangeCreditLimitInCC("Change CC Credit Limit"),
+    PayCollectingCentre("Pay Collecting Centre"),
+    CollectingCentreCreditDebitNoteMenu("CC Credit/Debit Note Menu"),
+    CollectingCentreCreditNote("CC Credit Note"),
+    CollectingCentreDebitNote("CC Debit Note"),
+    CollectingCentreReports("CC Reports"),
     ChangeCollectingCentre("Change Collecting Centre"),
     //</editor-fold>
 
@@ -581,6 +678,7 @@ public enum Privileges {
     ChangeMyTheme("Change My Theme"),
     ChangePreferece("Change My Preference"),
     ChangeMyApiKeys("Change My Api Keys"),
+    ChangeReceiptPrintingPaperTypes("Change Receipt Printing Paper Types"),
     MyFinanacialTransactionManager("My Finanacial Transaction Manager"),
     //</editor-fold>
 
@@ -591,7 +689,27 @@ public enum Privileges {
     AdminStaff("Admin Staff"),
     AdminItems("Admin Items"),
     AdminPrices("Admin Prices"),
+    ManageCreditCompany("Manage Credit Company"),
     AdminFilterWithoutDepartment("Admin Filter Without Department"),
+    //</editor-fold>
+    
+    //<editor-fold defaultstate="collapsed" desc="Approval">
+    BillCancelRequestApproval("Bill Cancel Request Approval"),
+    ItemRefundRequestApproval("Item Refund Request Approval"),
+    DrawerAdjustmentRequestApproval("Drawer Adjustment Request Approval"),
+    DrawerAdjustmentDirect("Drawer Adjustment Direct (No Approval)"),
+    PettyCashCancellationApproval("Petty-Cash Cancellation Approval"),
+    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="Float Transfer">
+    IssueFundTransfer("Issue Float Transfer"),
+    ReceiveFundTransfer("Receive Float Transfer"),
+    DeclineFundTransfer("Decline Float Transfer"),
+    RequestFundTransfer("Request Float Transfer"),
+    ProcessFundTransferRequest("Process Float Transfer Request"),
+    CancelOwnFundTransfer("Cancel Own Float Transfer"),
+    CancelOthersFundTransfer("Cancel Others Float Transfer"),
+    ViewFundTransferReports("View Float Transfer Reports"),
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Developers">
@@ -605,6 +723,7 @@ public enum Privileges {
     DeleteData("Delete Data"),
     BillCancel("Bill Cancel"),
     BillRefund("Bill Refund"), //</editor-fold>
+    AiChat("AI Chat")
     ;
 
     private final String label;
@@ -644,6 +763,7 @@ public enum Privileges {
         switch (this) {
             case Opd:
             case OpdCancel:
+            case OpdPackageBillCancel:
             case OpdReturn:
             case OpdBilling:
             case OpdOrdering:
@@ -653,6 +773,7 @@ public enum Privileges {
             case OpdReactivate:
             case OpdBillItemSearch:
             case OpdBillSearchEdit:
+            case OpdEditPatientDetails:
             case OpdCollectingCentreBilling:
             case OpdCollectingCentreBillSearch:
             case OpdCollectingCentreBillingMenu:
@@ -699,6 +820,7 @@ public enum Privileges {
             case LabBillReactivating:
             case LabInvestigationFee:
             case LabSampleCollecting:
+            case OutLabSampleSending:
             case LabAddInwardServices:
             case LabBillCancelSpecial:
             case LabBillRefundSpecial:
@@ -710,6 +832,8 @@ public enum Privileges {
             case LabReportSearchByDepartment:
             case LabSearchBillLoggedInstitution:
             case LabReportSearchByLoggedInstitution:
+            case AccessLabTestHistory:
+            case DoctorDashBoardMenu:
                 return "Lab";
             case Pharmacy:
             case PharmacySaleWh:
@@ -718,6 +842,13 @@ public enum Privileges {
             case PharmacySummery:
             case PharmacyPurchase:
             case PharmacyTransfer:
+            case PharmacyTransferViewRates:
+            case NursingIPBillingViewRates:
+            case IPRequestViewRates:
+            case StockRequestViewRates:
+            case ConsumptionViewRates:
+            case StockTransactionViewRates:
+            case DiscardViewRates:
             case PharmacyPurchaseWh:
             case PharmacySaleCancel:
             case PharmacySaleReturn:
@@ -767,7 +898,18 @@ public enum Privileges {
             case PurchaseOrdersApprovel:
             case GoodsRecipt:
             case ReturnReceviedGoods:
+            case CreateGrnReturn:
+            case FinalizeGrnReturn:
+            case ApproveGrnReturn:
+            case CreateDisposalReturn:
+            case FinalizeDisposalReturn:
+            case ApproveDisposalReturn:
+            case ViewDisposalReturn:
+            case CreateDirectPurchaseReturn:
+            case FinalizeDirectPurchaseReturn:
+            case ApproveDirectPurchaseReturn:
             case ReturnWithoutRecipt:
+            case PharmacyReturnWithoutReceiptBill:
             // Disbursement
             case PharmacyDisburesementMenu:
             case PharmacyDisbursementRequest:
@@ -779,6 +921,8 @@ public enum Privileges {
             // Retail Transactions
             case PharmacyRetailTransaction:
             case PharmacySale:
+            case PharmacySaleQuick:
+            case PharmacySaleForCashierQuick:
             case PharmacySaleForCashier:
             case PharmacySaleWithOutStock:
             case PharmacySearchSaleBill:
@@ -788,6 +932,7 @@ public enum Privileges {
             case PharmacyReturnItemsAndPayments:
             case PharmacySearchReturnBill:
             case PharmacyAddToStock:
+            case PharmacyDonation:
 
             // Wholesale Transaction
             case PharmacyWholeSaleTransaction:
@@ -812,11 +957,15 @@ public enum Privileges {
             case PharmacyAdjustmentDepartmentStockBySingleItemQTY:
             case PharmacyAdjustmentStaffStockAdjustment:
             case PharmacyAdjustmentPurchaseRate:
+            case PharmacyAdjustmentCostRate:
             case PharmacyAdjustmentSaleRate:
             case PharmacyAdjustmentWholeSaleRate:
             case PharmacyAdjustmentExpiryDate:
             case PharmacyAdjustmentSearchAdjustmentBills:
             case PharmacyAdjustmentTransferAllStock:
+            case PharmacyAdjustmentCreateBatch:
+            case PharmacyPhysicalCountApprove:
+            case PharmacyStockTakeApprove:
 
             // Pharmacy Dealer Payments
             case PharmacyDealerDueSearch:
@@ -829,6 +978,11 @@ public enum Privileges {
             case PharmacyItemSearch:
             case PharmacyGenarateReports:
             case PharmacySummaryViews:
+            case PharmacyGrnSave:
+            case PharmacyGrnFinalize:
+            case PharmacyGrnApprove:
+            case PrintOriginalPoBillFromReprint:
+            case PrintOriginalGrnBillFromReprint:    
 
                 return "Pharmacy";
 
@@ -840,6 +994,59 @@ public enum Privileges {
             case ClinicSchedule:
             case ClinicSession:
                 return "Clinics";
+
+            // Collecting Centre Privileges
+            case CollectingCentreManageMenu:
+            case CollectingCentreBilling:
+            case CCPaymentReceive:
+            case SearchCCPaymentReceive:
+            case IssueReferenceBook:
+            case SearchIssuedReferenceBook:
+            case ChangeCreditLimitInCC:
+            case PayCollectingCentre:
+            case CollectingCentreCreditDebitNoteMenu:
+            case CollectingCentreCreditNote:
+            case CollectingCentreDebitNote:
+            case CollectingCentreReports:
+            case ChangeCollectingCentre:
+                return "Collecting Centre";
+            
+            // Approval Privileges
+            case BillCancelRequestApproval:
+            case ItemRefundRequestApproval:
+            case DrawerAdjustmentRequestApproval:
+            case DrawerAdjustmentDirect:
+            case PettyCashCancellationApproval:
+                return "Approval";
+
+            case CashierHandoverStatusReport:
+            case SettleHandoverProofMissing:
+                return "Finance";
+
+            case IssueFundTransfer:
+            case ReceiveFundTransfer:
+            case DeclineFundTransfer:
+            case RequestFundTransfer:
+            case ProcessFundTransferRequest:
+            case CancelOwnFundTransfer:
+            case CancelOthersFundTransfer:
+            case ViewFundTransferReports:
+                return "Float Transfer";
+
+            case NursingWorkBench:
+            case ShowDrugCharges:
+                return "Nursing Work Bench";
+                
+            case WatingRoomAdmitPatient:
+            case InwardAppointmentMenu:
+            case AddInwardAppointment:
+            case InwardAppointmentAdmission:
+            case InwardAppointmentUpdate:
+            case InwardAppointmentCancel:
+            case InpatientClinicalAssessment:
+            case InpatientClinicalDischarge:
+                return "Inward";
+
             default:
                 return this.toString();
         }

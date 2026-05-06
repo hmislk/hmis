@@ -29,7 +29,7 @@
                 <h:outputLabel value="TRANSFER RECIEVE"/>
             </f:facet>
             <p:column>
-                <p:commandButton ajax="false" value="View Bill" action="pharmacy_reprint_transfer_receive">
+                <p:commandButton ajax="false" value="View Bill" action="/pharmacy/pharmacy_reprint_transfer_receive?faces-redirect=true">
                     <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{bill}"/>
                 </p:commandButton>
             </p:column>

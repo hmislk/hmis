@@ -1,0 +1,301 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:ph="http://xmlns.jcp.org/jsf/composite/pharmacy">
+
+    <ui:define name="content">
+        <h:form>
+
+            <h:panelGroup rendered="#{!directPurchaseReturnController.printPreview}" styleClass="alignTop" >
+
+                <p:panel 
+                    header="Pharmacy Direct Purchase Return" 
+                    class="w-100 m-1">
+
+                    <div class="row" >
+                        <div class="col-12" >
+                            <p:messages id="messages" showDetail="true" closable="true" />
+                        </div>
+                    </div>
+
+                    <div class="row" >
+                        <div class="col-7" >
+                            <p:dataTable 
+                                var="ph" 
+                                value="#{directPurchaseReturnController.billItems}"
+                                id="itemList" >
+
+                                <f:facet name="header">
+                                    <h:outputText value="Returning Items" ></h:outputText>
+                                </f:facet>
+
+                                <p:column headerText="Item Name"  >
+                                    <h:outputLabel value="#{ph.item.name}"/>
+                                </p:column>
+
+                                <p:column
+                                    width="5em" 
+                                    headerText="Purchased Quantity" >
+                                    <h:outputLabel  value="#{ph.referanceBillItem.billItemFinanceDetails.quantity}" />
+                                </p:column>
+                                <p:column
+                                    width="5em" 
+                                    headerText="Free Quantity" >
+                                    <h:outputLabel  value="#{ph.referanceBillItem.billItemFinanceDetails.freeQuantity}" />
+                                </p:column>
+                                <p:column 
+                                    width="5em" 
+                                    headerText="Already Returned Qty" >
+                                    <h:outputLabel  value="#{ph.referanceBillItem.billItemFinanceDetails.returnQuantity}" />
+                                </p:column>
+                                <p:column 
+                                    width="5em" 
+                                    headerText="Already Returned Free Qty" 
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Purchase Return by Quantity and Free Quantity')}">
+                                    <h:outputLabel  value="#{ph.referanceBillItem.billItemFinanceDetails.returnFreeQuantity}" />
+                                </p:column>
+                                <p:column 
+                                    width="5em" 
+                                    headerText="Purchased Rate" >
+                                    <h:outputLabel value="#{ph.referanceBillItem.billItemFinanceDetails.lineGrossRate}" >
+                                        <f:convertNumber pattern="#,##0.00##" ></f:convertNumber>
+                                    </h:outputLabel>
+                                </p:column>
+                                <p:column 
+                                    width="5em" 
+                                    headerText="Cost Rate (Per Unit)" >
+                                    <h:outputText value="#{ph.referanceBillItem.billItemFinanceDetails.totalCostRate}" >
+                                        <f:convertNumber pattern="#,##0.00##" ></f:convertNumber>
+                                    </h:outputText>
+                                </p:column>
+
+                                <p:column
+                                    width="5em" 
+                                    headerText="Return rate (#{directPurchaseReturnController.returnRateLabel})" >
+                                    <h:panelGroup id="purchase" >
+                                        <h:outputText  
+                                            value="#{ph.billItemFinanceDetails.lineGrossRate}" 
+                                            rendered="#{!configOptionApplicationController.getBooleanValueByKey('Purchase Return - Changing Return Rate is allowed')}">
+                                            <f:convertNumber pattern="#,##0.00##" />
+                                        </h:outputText>
+                                        <p:inputText
+                                            id="txtReturnRate"
+                                            class="w-100 text-end"
+                                            value="#{ph.billItemFinanceDetails.lineGrossRate}"
+                                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Purchase Return - Changing Return Rate is allowed')}">
+                                            <f:convertNumber pattern="#,##0.00##" ></f:convertNumber>
+                                            <f:ajax event="blur" render="@this txtLineReturnValue :#{p:resolveFirstComponentWithId('panelReturnBillDetails',view).clientId}" listener="#{directPurchaseReturnController.onReturnRateChange(ph)}" />
+                                        </p:inputText>
+                                        <h:outputText value="&nbsp;per Pack" rendered="#{ph.item.class eq 'class com.divudi.core.entity.pharmacy.Ampp'}" />
+                                    </h:panelGroup>
+                                </p:column>
+                                <!--                                <p:column headerText="Batch No" >
+                                                                    <h:outputText value="#{ph.pharmaceuticalBillItem.stringValue}" />
+                                                                </p:column>-->
+                                <p:column 
+                                    headerText="Date of Expirey" 
+                                    width="5em" >
+                                    <h:outputText value="#{ph.pharmaceuticalBillItem.doe}" >
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
+                                    </h:outputText>
+                                </p:column>
+                                <p:column 
+                                    width="5em" 
+                                    headerText="Returning Total Qty"
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Purchase Return by Total Quantity')}">
+                                    <p:inputText
+                                        id="txtReturningTotalQty"
+                                        autocomplete="off"
+                                        class="w-100 text-end"
+                                        onfocus="this.select()"
+                                        value="#{ph.billItemFinanceDetails.quantity}">
+                                        <f:convertNumber pattern="#,##0.00##" integerOnly="#{!ph.item.allowFractions}" ></f:convertNumber>
+                                        <f:validator validatorId="positiveNumberValidator" />
+                                    </p:inputText>
+                                    <p:keyFilter for="txtReturningTotalQty" mask="#{ph.item.allowFractions ? 'num' : 'int'}" />
+                                        <p:ajax 
+                                            event="keyup" 
+                                            process="@this"
+                                            update="txtLineReturnValue :#{p:resolveFirstComponentWithId('panelReturnBillDetails',view).clientId}" 
+                                            listener="#{directPurchaseReturnController.onReturningTotalQtyChange(ph)}" />
+                                        <p:ajax 
+                                            event="blur" 
+                                            process="@this"
+                                            update="@this" />
+                                    </p:inputText>
+                                    <h:outputText value="&nbsp;Packs" rendered="#{ph.item.class eq 'class com.divudi.core.entity.pharmacy.Ampp'}" />
+                                </p:column>
+
+                                <p:column
+                                    width="5em" 
+                                    headerText="Returning Qty"
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Purchase Return by Quantity and Free Quantity')}">
+                                    <p:inputText
+                                        id="txtReturningQty"
+                                        autocomplete="off"
+                                        onfocus="this.select()"
+                                        class="w-100 text-end"
+                                        value="#{ph.billItemFinanceDetails.quantity}">
+                                        <f:convertNumber integerOnly="#{!ph.item.allowFractions}" />
+                                        <f:validator validatorId="nonNegativeNumberValidator" />
+                                    </p:inputText>
+                                    <p:keyFilter for="txtReturningQty" mask="#{ph.item.allowFractions ? 'num' : 'int'}" />
+                                        <p:ajax 
+                                            process="@this"
+                                            event="keyup" 
+                                            update="txtLineReturnValue :#{p:resolveFirstComponentWithId('panelReturnBillDetails',view).clientId}" 
+                                            listener="#{directPurchaseReturnController.onReturningQtyChange(ph)}" 
+                                            />
+                                        <p:ajax 
+                                            event="blur" 
+                                            process="@this"
+                                            update="@this" />
+                                    </p:inputText>
+                                </p:column>
+
+                                <p:column
+                                    headerText="Returning Free Qty"
+                                    width="5em" 
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Purchase Return by Quantity and Free Quantity')}">
+                                    <p:inputText
+                                        class="w-100 text-end"
+                                        id="txtReturningFreeQty"
+                                        autocomplete="off" value="#{ph.billItemFinanceDetails.freeQuantity}">
+                                        <f:convertNumber integerOnly="#{!ph.item.allowFractions}" />
+                                        <f:validator validatorId="nonNegativeNumberValidator" />
+                                        <p:ajax
+                                            event="blur" 
+                                            process="@this txtLineReturnValue :#{p:resolveFirstComponentWithId('panelReturnBillDetails',view).clientId}" 
+                                            update="@this txtLineReturnValue :#{p:resolveFirstComponentWithId('panelReturnBillDetails',view).clientId}"
+                                            listener="#{directPurchaseReturnController.onReturningFreeQtyChange(ph)}" />
+                                    </p:inputText>
+                                    <p:keyFilter for="txtReturningFreeQty" mask="#{ph.item.allowFractions ? 'num' : 'int'}" />
+                                </p:column>
+
+                                <p:column headerText="Return Value" width="5em" >
+                                    <h:outputText id="txtLineReturnValue" value="#{ph.billItemFinanceDetails.lineGrossTotal}" >
+                                        <f:convertNumber pattern="#,##0.00##" ></f:convertNumber>
+                                    </h:outputText>
+                                </p:column>
+
+                            </p:dataTable>
+
+                        </div>
+                        <div class="col-5" >
+                            <p:panel 
+                                class="w-100 m-1"
+                                >
+                                <f:facet name="header" >
+                                    <h:outputText value="Return Details" ></h:outputText>
+                                    <p:commandButton  
+                                        value="Return"
+                                        action="#{directPurchaseReturnController.settle}"
+                                        ajax="false"  
+                                        style="float: right;"
+                                        class="ui-button-warning"
+                                        >
+                                    </p:commandButton>
+                                </f:facet>
+
+                                <p:panelGrid 
+                                    columns="2"
+                                    id="panelReturnBillDetails"
+                                    layout="tabular"
+                                    class="w-100">
+                                    <p:outputLabel value="Supplier : " />
+                                    <p:outputLabel value="#{directPurchaseReturnController.bill.fromInstitution.name}" />
+                                    <p:outputLabel  value="Receivable Amount : " />
+                                    <p:outputLabel 
+                                        id="total" 
+                                        class="h1"
+                                        value="#{0-directPurchaseReturnController.returnBill.netTotal}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </p:outputLabel>
+
+                                    <p:outputLabel value="Payment Received as : " />
+                                    <p:selectOneMenu id="cmbPs" value="#{directPurchaseReturnController.returnBill.paymentMethod}">
+                                        <f:selectItems value="#{enumController.paymentMethods}"/>
+                                        <p:ajax process="cmbPs"  event="change" />
+                                    </p:selectOneMenu>
+
+                                    <p:outputLabel
+                                        for="txtReturnComments"
+                                        value="Return Comments:" />
+                                    <p:inputTextarea 
+                                        id="txtReturnComments"
+                                        class="w-100"
+                                        value="#{directPurchaseReturnController.returnBill.comments}" 
+                                        required="true"
+                                        requiredMessage="Please enter a comment"
+                                        ></p:inputTextarea>
+                                    <p:message for="txtReturnComments" />
+                                </p:panelGrid>
+
+
+
+
+                            </p:panel>
+                            <p:panel class="w-100 m-1">
+                                <f:facet name="header" >
+                                    <h:outputText value="Direct Purchase Details" ></h:outputText>
+                                    <p:commandButton 
+                                        value="View Bill" 
+                                        ajax="false" 
+                                        class="ui-button-info" 
+                                        icon="fa fa-eye"
+                                        style="float: right;"
+                                        action="pharmacy_reprint_purchase?faces-redirect=true">
+                                        <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{directPurchaseReturnController.bill}"/>
+                                    </p:commandButton>
+                                </f:facet>
+                                <p:panelGrid columns="2" class="w-100">
+                                    <h:outputLabel value="Direct Purchase Bill No :"/>
+                                    <h:outputLabel value="#{directPurchaseReturnController.bill.deptId}"/>
+                                    <h:outputLabel value="Purchase Net Total :"/>
+                                    <h:outputLabel value="#{directPurchaseReturnController.bill.netTotal}">
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>
+                                    <h:outputLabel value="Purchase Date :"/>
+                                    <h:outputLabel value="#{directPurchaseReturnController.bill.invoiceDate}">
+                                        <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
+                                    </h:outputLabel>
+                                </p:panelGrid>
+
+
+                            </p:panel>
+                            <p:panel header="Invoice Details" >
+                                <p:panelGrid columns="2" class="poDetail">
+                                    <h:outputLabel value="Invoice No :"/>
+                                    <h:outputLabel value="#{directPurchaseReturnController.bill.deptId}"/>
+                                    <h:outputLabel value="Invoice Date :"/>
+                                    <h:outputLabel value="#{directPurchaseReturnController.bill.invoiceDate}">
+                                        <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
+                                    </h:outputLabel>
+                                </p:panelGrid>
+                            </p:panel>
+
+                        </div>
+                    </div>
+
+                </p:panel>
+
+
+            </h:panelGroup>
+
+            <p:panel rendered="#{directPurchaseReturnController.printPreview}">
+                <p:commandButton value="Print" ajax="false" action="#" >
+                    <p:printer target="gpBillPreview" ></p:printer>
+                </p:commandButton>
+                <p:panel   id="gpBillPreview">
+                    <ph:direct_purchase_return_receipt_with_costing bill="#{directPurchaseReturnController.returnBill}"/>
+                </p:panel>
+            </p:panel>
+
+        </h:form>
+    </ui:define>
+
+</ui:composition>

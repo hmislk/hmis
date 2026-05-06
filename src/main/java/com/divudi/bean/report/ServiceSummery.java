@@ -7,10 +7,8 @@ package com.divudi.bean.report;
 
 import com.divudi.bean.common.ServiceSubCategoryController;
 import com.divudi.bean.common.SessionController;
+import com.divudi.core.data.*;
 import com.divudi.core.util.JsfUtil;
-import com.divudi.core.data.BillType;
-import com.divudi.core.data.FeeType;
-import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.dataStructure.BillItemWithFee;
 import com.divudi.core.data.table.String1Value5;
 
@@ -24,6 +22,11 @@ import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Item;
 import com.divudi.core.entity.ItemFee;
+import com.divudi.core.data.dto.StaffWelfarePaymentDTO;
+import com.divudi.core.data.dto.StaffWelfareSummaryDTO;
+import com.divudi.core.data.dto.StaffWelfarePaymentBreakdownDTO;
+import com.divudi.core.data.dto.StaffWelfarePaymentBreakdownSummaryDTO;
+import com.divudi.core.entity.Payment;
 import com.divudi.core.entity.RefundBill;
 import com.divudi.core.entity.ServiceCategory;
 import com.divudi.core.entity.ServiceSubCategory;
@@ -34,8 +37,10 @@ import com.divudi.core.facade.BillFeeFacade;
 import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.FeeFacade;
 import com.divudi.core.facade.ItemFeeFacade;
+import com.divudi.core.facade.PaymentFacade;
 import com.divudi.core.facade.StaffFacade;
 import com.divudi.core.util.CommonFunctions;
+import com.divudi.service.BillService;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -60,66 +65,95 @@ import javax.persistence.TemporalType;
 @SessionScoped
 public class ServiceSummery implements Serializable {
 
-    @Inject
-    private SessionController sessionController;
-    // private List<DailyCash> dailyCashs;
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date fromDate;
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date toDate;
-    private Item service;
-    private Category category;
-    double count;
-    double value;
-    private double proFeeTotal;
-    private double hosFeeTotal;
-    double hosFeeGrossValueTotal;
-    double hosFeeDisTotal;
-    double hosFeeMarginTotal;
-    private double outSideFeeTotoal;
-    double outSideFeeGrossTotal;
-    double outSideFeeDiscountTotal;
-    double outSideFeeMarginTotal;
-    double reagentFeeTotal;
-
-    double proFeeTotalC;
-    double hosFeeTotalC;
-    double reagentFeeTotalC;
-    double outSideFeeTotoalC;
-
-    double proFeeTotalR;
-    double hosFeeTotalR;
-    double reagentFeeTotalR;
-    double outSideFeeTotoalR;
-
-    double proFeeTotalGT;
-    double hosFeeTotalGT;
-    double reagentFeeTotalGT;
-    double outSideFeeTotoalGT;
-
-    double vatFeeTotal;
-
-    boolean onlyInwardBills;
-    boolean credit = false;
-    private Staff staff;
-
-    List<String1Value5> string1Value5;
-
+    // <editor-fold defaultstate="collapsed" desc="EJBs">
+    @EJB
+    private BillService billService;
     @EJB
     private BillItemFacade billItemFacade;
     @EJB
     private BillFeeFacade billFeeFacade;
     @EJB
-    ItemFeeFacade itemFeeFacade;
+    private ItemFeeFacade itemFeeFacade;
     @EJB
-    FeeFacade feeFacade;
-
-    List<BillItem> billItems;
-
-    List<Staff> staffs;
+    private FeeFacade feeFacade;
     @EJB
-    StaffFacade staffFacade;
+    private StaffFacade staffFacade;
+    @EJB
+    private BillFacade billFacade;
+    @EJB
+    private PaymentFacade paymentFacade;
+// </editor-fold>  
 
+    // <editor-fold defaultstate="collapsed" desc="Controllers">
+    @Inject
+    private SessionController sessionController;
+    // </editor-fold>  
+
+    // <editor-fold defaultstate="collapsed" desc="Class Variables">
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date fromDate;
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date toDate;
+
+    private Item service;
+    private Category category;
+    private Staff staff;
+
+    private boolean onlyInwardBills;
+    private boolean credit = false;
+
+    private List<BillItem> billItems;
+    private List<Payment> payments;
+    private List<StaffWelfarePaymentDTO> staffWelfarePayments;
+    private List<StaffWelfareSummaryDTO> staffWelfareSummary;
+    private List<StaffWelfarePaymentBreakdownDTO> staffWelfarePaymentBreakdown;
+    private List<StaffWelfarePaymentBreakdownSummaryDTO> staffWelfarePaymentBreakdownSummary;
+    private List<Staff> staffs;
+    private List<Bill> bills;
+    private List<String1Value5> string1Value5;
+
+    private double count;
+    private double value;
+
+    private double proFeeTotal;
+    private double hosFeeTotal;
+    private double hosFeeGrossValueTotal;
+    private double hosFeeDisTotal;
+    private double hosFeeMarginTotal;
+
+    private double outSideFeeTotoal;
+    private double outSideFeeGrossTotal;
+    private double outSideFeeDiscountTotal;
+    private double outSideFeeMarginTotal;
+
+    private double reagentFeeTotal;
+
+    private double proFeeTotalC;
+    private double hosFeeTotalC;
+    private double reagentFeeTotalC;
+    private double outSideFeeTotoalC;
+
+    private double proFeeTotalR;
+    private double hosFeeTotalR;
+    private double reagentFeeTotalR;
+    private double outSideFeeTotoalR;
+
+    private double proFeeTotalGT;
+    private double hosFeeTotalGT;
+    private double reagentFeeTotalGT;
+    private double outSideFeeTotoalGT;
+
+    private double vatFeeTotal;
+
+    private double totalBill;
+    private double discountBill;
+    private double netTotalBill;
+
+    private Department department;
+    private Institution institution;
+    private PaymentMethod paymentMethod;
+
+    // </editor-fold>  
     public double getCount() {
         return count;
     }
@@ -842,12 +876,13 @@ public class ServiceSummery implements Serializable {
 
     }
 
-    List<Bill> bills;
-    @EJB
-    BillFacade billFacade;
+    public double getNetTotalBill() {
+        return netTotalBill;
+    }
 
-    double totalBill;
-    double discountBill;
+    public void setNetTotalBill(double netTotalBill) {
+        this.netTotalBill = netTotalBill;
+    }
 
     public double getDiscountBill() {
         return discountBill;
@@ -873,44 +908,345 @@ public class ServiceSummery implements Serializable {
         this.bills = bills;
     }
 
+    @Deprecated // use opdPharmacyStaffWelfarePayments
     public void opdPharmacyStaffWelfarebills() {
-        Date startTime = new Date();
-
         String sql;
         Map m = new HashMap();
-
         sql = " select b from Bill b where "
                 + " b.retired=false "
                 + " and b.toStaff is not null "
                 + " and b.createdAt between :fd and :td "
                 + " and (b.billType=:bt1 or b.billType=:bt2) "
                 + " order by b.id ";
-
         m.put("fd", fromDate);
         m.put("td", toDate);
         m.put("bt1", BillType.PharmacySale);
         m.put("bt2", BillType.OpdBill);
-
         bills = billFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
-        ////// // System.out.println("bills = " + bills);
-
         calTotal(bills);
+    }
 
+    /**
+     * Loads all valid staff welfare payments related to OPD and Pharmacy Retail
+     * Sale bills within the specified date range. Filters are applied to
+     * ensure: - Payments are not retired. - Payment method is 'Staff Welfare'.
+     * - The associated bill is not retired. - The bill is for a staff member
+     * (i.e., b.toStaff is not null). - The bill type is among valid OPD and
+     * Pharmacy retail sale types. The method then calculates totals
+     * proportionally from payments.
+     */
+    public void opdPharmacyStaffWelfarePayments() {
+        String jpql;
+        Map<String, Object> m = new HashMap<>();
+
+        jpql = " select p "
+                + " from Payment p join p.bill b "
+                + " where p.retired = false "
+                + " and p.paymentMethod = :pm "
+                + " and b.retired = false "
+                + " and b.toStaff is not null "
+                + " and b.createdAt between :fd and :td "
+                + " and b.billTypeAtomic in :btas "
+                + " order by b.id ";
+
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        m.put("pm", PaymentMethod.Staff_Welfare);
+
+        List<BillTypeAtomic> btas = billService.fetchBillTypeAtomicsForPharmacyRetailSaleAndOpdSaleBills();
+        m.put("btas", btas);
+
+        payments = paymentFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
+
+        fixDiscountsAndMarginsInRows(payments);
+        calculateTotalsForPayments(payments);
+    }
+
+    /**
+     * DTO-based version of opdPharmacyStaffWelfarePayments().
+     * Fetches all required display fields in a single JOIN query to avoid
+     * N+1 lazy-load timeouts on large date ranges.
+     */
+    public void opdPharmacyStaffWelfarePaymentsDto() {
+        String jpql = "SELECT new com.divudi.core.data.dto.StaffWelfarePaymentDTO("
+                + " b.deptId,"
+                + " st.epfNo,"
+                + " per.title,"
+                + " per.name,"
+                + " b.billTypeAtomic,"
+                + " b.createdAt,"
+                + " b.total,"
+                + " b.netTotal,"
+                + " b.discount,"
+                + " p.paidValue)"
+                + " FROM Payment p"
+                + " JOIN p.bill b"
+                + " JOIN b.toStaff st"
+                + " JOIN st.person per"
+                + " WHERE p.retired = false"
+                + " AND p.paymentMethod = :pm"
+                + " AND b.retired = false"
+                + " AND b.createdAt BETWEEN :fd AND :td"
+                + " AND b.billTypeAtomic IN :btas"
+                + " ORDER BY b.id";
+
+        Map<String, Object> m = new HashMap<>();
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        m.put("pm", PaymentMethod.Staff_Welfare);
+        m.put("btas", billService.fetchBillTypeAtomicsForPharmacyRetailSaleAndOpdSaleBills());
+
+        if (staff != null) {
+            jpql += " AND st.id = :staffId";
+            m.put("staffId", staff.getId());
+        }
+
+        staffWelfarePayments = (List<StaffWelfarePaymentDTO>) paymentFacade.findLightsByJpql(jpql, m, TemporalType.TIMESTAMP);
+
+        calculateTotalsForStaffWelfarePayments(staffWelfarePayments);
+    }
+
+    public void calculateTotalsForStaffWelfarePayments(List<StaffWelfarePaymentDTO> rows) {
+        totalBill = 0.0;
+        discountBill = 0.0;
+        netTotalBill = 0.0;
+        if (rows == null) return;
+        for (StaffWelfarePaymentDTO row : rows) {
+            if (row.getBillNetTotal() == 0.0 || row.getPaidValue() == 0.0) continue;
+            totalBill += row.getGrossAmount();
+            discountBill += row.getDiscountValue();
+            netTotalBill += row.getPaidValue();
+        }
+    }
+
+    public List<StaffWelfarePaymentDTO> getStaffWelfarePayments() {
+        return staffWelfarePayments;
+    }
+
+    public void setStaffWelfarePayments(List<StaffWelfarePaymentDTO> staffWelfarePayments) {
+        this.staffWelfarePayments = staffWelfarePayments;
+    }
+
+    /**
+     * Report 1b: Staff Welfare Summary grouped by staff.
+     * Aggregates gross, discount and paid value per staff member
+     * from payments where paymentMethod = Staff_Welfare.
+     */
+    public void opdPharmacyStaffWelfareSummaryDto() {
+        String jpql = "SELECT new com.divudi.core.data.dto.StaffWelfareSummaryDTO("
+                + " st.epfNo,"
+                + " per.title,"
+                + " per.name,"
+                + " SUM(b.total * (p.paidValue / b.netTotal)),"
+                + " SUM(b.discount * (p.paidValue / b.netTotal)),"
+                + " SUM(p.paidValue))"
+                + " FROM Payment p"
+                + " JOIN p.bill b"
+                + " JOIN b.toStaff st"
+                + " JOIN st.person per"
+                + " WHERE p.retired = false"
+                + " AND p.paymentMethod = :pm"
+                + " AND b.retired = false"
+                + " AND b.createdAt BETWEEN :fd AND :td"
+                + " AND b.billTypeAtomic IN :btas"
+                + " GROUP BY st.epfNo, per.title, per.name"
+                + " ORDER BY per.name";
+
+        Map<String, Object> m = new HashMap<>();
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        m.put("pm", PaymentMethod.Staff_Welfare);
+        m.put("btas", billService.fetchBillTypeAtomicsForPharmacyRetailSaleAndOpdSaleBills());
+
+        if (staff != null) {
+            jpql = jpql.replace(" GROUP BY", " AND st.id = :staffId GROUP BY");
+            m.put("staffId", staff.getId());
+        }
+
+        staffWelfareSummary = (List<StaffWelfareSummaryDTO>) paymentFacade.findLightsByJpql(jpql, m, TemporalType.TIMESTAMP);
+
+        totalBill = staffWelfareSummary.stream().mapToDouble(StaffWelfareSummaryDTO::getTotalGrossAmount).sum();
+        discountBill = staffWelfareSummary.stream().mapToDouble(StaffWelfareSummaryDTO::getTotalDiscount).sum();
+        netTotalBill = staffWelfareSummary.stream().mapToDouble(StaffWelfareSummaryDTO::getTotalPaidValue).sum();
+    }
+
+    /**
+     * Report 2: All payments on bills that have at least one Staff_Welfare payment.
+     * Shows every payment method used per bill, not just Staff_Welfare.
+     */
+    public void opdPharmacyStaffWelfarePaymentBreakdownDto() {
+        String jpql = "SELECT new com.divudi.core.data.dto.StaffWelfarePaymentBreakdownDTO("
+                + " b.deptId,"
+                + " st.epfNo,"
+                + " per.title,"
+                + " per.name,"
+                + " p.paymentMethod,"
+                + " p.paidValue)"
+                + " FROM Payment p"
+                + " JOIN p.bill b"
+                + " JOIN b.toStaff st"
+                + " JOIN st.person per"
+                + " WHERE p.retired = false"
+                + " AND b.retired = false"
+                + " AND b.createdAt BETWEEN :fd AND :td"
+                + " AND b.billTypeAtomic IN :btas"
+                + " AND b.id IN ("
+                + "   SELECT DISTINCT b2.id FROM Payment p2 JOIN p2.bill b2"
+                + "   WHERE p2.retired = false AND p2.paymentMethod = :pm"
+                + "   AND b2.retired = false AND b2.createdAt BETWEEN :fd AND :td"
+                + "   AND b2.billTypeAtomic IN :btas"
+                + " )"
+                + " ORDER BY b.id, p.paymentMethod";
+
+        Map<String, Object> m = new HashMap<>();
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        m.put("pm", PaymentMethod.Staff_Welfare);
+        m.put("btas", billService.fetchBillTypeAtomicsForPharmacyRetailSaleAndOpdSaleBills());
+
+        if (staff != null) {
+            jpql = jpql.replace(" ORDER BY", " AND st.id = :staffId ORDER BY");
+            m.put("staffId", staff.getId());
+        }
+
+        staffWelfarePaymentBreakdown = (List<StaffWelfarePaymentBreakdownDTO>) paymentFacade.findLightsByJpql(jpql, m, TemporalType.TIMESTAMP);
+
+        netTotalBill = staffWelfarePaymentBreakdown.stream().mapToDouble(StaffWelfarePaymentBreakdownDTO::getPaidValue).sum();
+        totalBill = 0.0;
+        discountBill = 0.0;
+    }
+
+    /**
+     * Report 2b: Summary of payment breakdown grouped by staff.
+     * Sums paidValue across ALL payment methods on staff welfare bills, per staff.
+     */
+    public void opdPharmacyStaffWelfarePaymentBreakdownSummaryDto() {
+        String jpql = "SELECT new com.divudi.core.data.dto.StaffWelfarePaymentBreakdownSummaryDTO("
+                + " st.epfNo,"
+                + " per.title,"
+                + " per.name,"
+                + " SUM(p.paidValue))"
+                + " FROM Payment p"
+                + " JOIN p.bill b"
+                + " JOIN b.toStaff st"
+                + " JOIN st.person per"
+                + " WHERE p.retired = false"
+                + " AND b.retired = false"
+                + " AND b.createdAt BETWEEN :fd AND :td"
+                + " AND b.billTypeAtomic IN :btas"
+                + " AND b.id IN ("
+                + "   SELECT DISTINCT b2.id FROM Payment p2 JOIN p2.bill b2"
+                + "   WHERE p2.retired = false AND p2.paymentMethod = :pm"
+                + "   AND b2.retired = false AND b2.createdAt BETWEEN :fd AND :td"
+                + "   AND b2.billTypeAtomic IN :btas"
+                + " )"
+                + " GROUP BY st.epfNo, per.title, per.name"
+                + " ORDER BY per.name";
+
+        Map<String, Object> m = new HashMap<>();
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        m.put("pm", PaymentMethod.Staff_Welfare);
+        m.put("btas", billService.fetchBillTypeAtomicsForPharmacyRetailSaleAndOpdSaleBills());
+
+        if (staff != null) {
+            jpql = jpql.replace(" GROUP BY", " AND st.id = :staffId GROUP BY");
+            m.put("staffId", staff.getId());
+        }
+
+        staffWelfarePaymentBreakdownSummary = (List<StaffWelfarePaymentBreakdownSummaryDTO>) paymentFacade.findLightsByJpql(jpql, m, TemporalType.TIMESTAMP);
+
+        netTotalBill = staffWelfarePaymentBreakdownSummary.stream().mapToDouble(StaffWelfarePaymentBreakdownSummaryDTO::getTotalPaidValue).sum();
+        totalBill = 0.0;
+        discountBill = 0.0;
+    }
+
+    public List<StaffWelfareSummaryDTO> getStaffWelfareSummary() { return staffWelfareSummary; }
+    public void setStaffWelfareSummary(List<StaffWelfareSummaryDTO> staffWelfareSummary) { this.staffWelfareSummary = staffWelfareSummary; }
+
+    public List<StaffWelfarePaymentBreakdownDTO> getStaffWelfarePaymentBreakdown() { return staffWelfarePaymentBreakdown; }
+    public void setStaffWelfarePaymentBreakdown(List<StaffWelfarePaymentBreakdownDTO> staffWelfarePaymentBreakdown) { this.staffWelfarePaymentBreakdown = staffWelfarePaymentBreakdown; }
+
+    public List<StaffWelfarePaymentBreakdownSummaryDTO> getStaffWelfarePaymentBreakdownSummary() { return staffWelfarePaymentBreakdownSummary; }
+    public void setStaffWelfarePaymentBreakdownSummary(List<StaffWelfarePaymentBreakdownSummaryDTO> staffWelfarePaymentBreakdownSummary) { this.staffWelfarePaymentBreakdownSummary = staffWelfarePaymentBreakdownSummary; }
+
+    public void fixDiscountsAndMarginsInRows(List<Payment> payments) {
+        for (Payment ir : payments) {
+            if (ir == null) {
+                continue;
+            }
+
+            Bill bill = ir.getBill();
+            if (bill != null && bill.getBillTypeAtomic() != null && bill.getBillTypeAtomic().getBillCategory() != null) {
+                switch (bill.getBillTypeAtomic().getBillCategory()) {
+                    case BILL:
+                        bill.setDiscount(-Math.abs(bill.getDiscount()));
+                        bill.setMargin(Math.abs(bill.getMargin()));
+                        break;
+                    case REFUND:
+                        bill.setDiscount(Math.abs(bill.getDiscount()));
+                        bill.setMargin(-Math.abs(bill.getMargin()));
+                        break;
+                    case CANCELLATION:
+                        bill.setDiscount(Math.abs(bill.getDiscount()));
+                        bill.setMargin(-Math.abs(bill.getMargin()));
+                        break;
+                }
+            }
+        }
     }
 
     public void calTotal(List<Bill> bills) {
         totalBill = 0.0;
         discountBill = 0.0;
+        netTotalBill = 0.0;
         for (Bill bill : bills) {
-            totalBill += bill.getNetTotal();
+            totalBill += bill.getTotal();
             discountBill += bill.getDiscount();
+            netTotalBill += bill.getNetTotal();
 
         }
     }
 
-    Department department;
-    Institution institution;
-    PaymentMethod paymentMethod;
+    /**
+     * Calculates total, discount, and net values based on individual
+     * payments.Since discount is only stored at bill level, it is
+     * proportionally distributed across payments according to the payment's
+     * contribution to the bill's net total.
+     *
+     * @param payments
+     */
+    public void calculateTotalsForPayments(List<Payment> payments) {
+        totalBill = 0.0;
+        discountBill = 0.0;
+        netTotalBill = 0.0;
+
+        for (Payment payment : payments) {
+            Bill bill = payment.getBill();
+            if (bill == null || payment.getPaidValue() == 0.0 || bill.getNetTotal() == 0.0) { // both are double, not Double, so null checks NOT necessary
+                continue; // Skip invalid entries to avoid divide-by-zero or nulls
+            }
+
+            double paidValue = payment.getPaidValue();
+            double billTotal = bill.getTotal();
+            double billDiscount = bill.getDiscount();
+            double billNetTotal = bill.getNetTotal();
+
+            // Calculate the proportion of this payment relative to the bill's net total
+            double proportion = paidValue / billNetTotal;
+
+            // Proportionally allocate total and discount.
+            // fixDiscountsAndMarginsInRows() already normalises signs via Math.abs():
+            //   BilledBill discount is negative, CancelledBill/RefundBill discount is positive.
+            // For cancelled/refund bills proportion = paidValue/netTotal = negative/negative = positive,
+            // so billProportionalDiscount is already correctly signed — no special case needed.
+            double billProportionalDiscount = billDiscount * proportion;
+
+            totalBill += billTotal * proportion;
+            discountBill += billProportionalDiscount;
+            netTotalBill += paidValue; // The payment amount is already the proportional net
+        }
+    }
 
     public void createServiceSummeryLab() {
         Date startTime = new Date();
@@ -2126,6 +2462,14 @@ public class ServiceSummery implements Serializable {
 
     public void setStaff(Staff staff) {
         this.staff = staff;
+    }
+
+    public List<Payment> getPayments() {
+        return payments;
+    }
+
+    public void setPayments(List<Payment> payments) {
+        this.payments = payments;
     }
 
 }

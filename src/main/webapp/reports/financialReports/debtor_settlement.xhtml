@@ -65,10 +65,10 @@
                                 <p:printer target="dtaPr"/>
                             </p:commandButton>
                             <p:commandButton ajax="false" value="Excel" icon="fas fa-file-excel" class="ui-button-success" >
-                                <p:dataExporter fileName="Debtor Settlement - #{webUserController.institution} (#{reportController.fromDate} - #{reportController.fromDate})" type="xlsx" target="dtaPr0" />
+                                <p:dataExporter fileName="Debtor Settlement - #{webUserController.institution} (#{reportController.fromDate} - #{reportController.toDate})" type="xlsx" target="dtaPr0" />
                             </p:commandButton>
                             <p:commandButton ajax="false" value="PDF" icon="fas fa-file-pdf" class="ui-button-danger mx-1" >
-                                <p:dataExporter fileName="Debtor Settlement - #{webUserController.institution} (#{reportController.fromDate} - #{reportController.fromDate})" type="pdf" target="dtaPr0" />
+                                <p:dataExporter fileName="Debtor Settlement - #{webUserController.institution} (#{reportController.fromDate} - #{reportController.toDate})" type="pdf" target="dtaPr0" />
                             </p:commandButton>
                         </h:panelGrid>
 
@@ -92,24 +92,25 @@
                                 <h:outputLabel value="#{reportController.institution.name}" rendered="#{reportController.institution ne null}" />
                             </f:facet>
 
-                            <p:dataTable id="dtaPr0" value="#{reportController.bills}" var="pc" rowIndexVar="rowIndex">
+                            <p:dataTable id="dtaPr0" value="#{reportController.billItems}" var="bi" rowIndexVar="rowIndex">
                                 <p:column headerText="S" width="2em">
                                     <h:outputText value="#{rowIndex+1}" ></h:outputText>
                                 </p:column>
-                                <p:column headerText="Credit C. Name"><h:outputText value="#{pc.creditCompany.name}" ></h:outputText></p:column>
+                                <p:column headerText="Credit C. Name"><h:outputText value="#{bi.bill.fromInstitution.name}" ></h:outputText></p:column>
                                 <p:column headerText="Voucher No" width="">
-                                    <h:outputText value="#{reportController.findVoucherIsAvailable(pc).bill.deptId}"  rendered="#{reportController.findVoucherIsAvailable(pc) ne null}"></h:outputText>
+                                    <h:outputText value="#{bi.bill.deptId}"  ></h:outputText><br/>
+                                    <h:outputText value="#{bi.bill.cancelledBill.deptId}" rendered="#{bi.bill.cancelled}" style="color: red"  ></h:outputText>
                                 </p:column>
-                                <p:column headerText="Voucher Date" >
-                                    <h:outputText value="#{reportController.findVoucherIsAvailable(pc).bill.createdAt}" rendered="#{reportController.findVoucherIsAvailable(pc) ne null}" >
+<!--                                <p:column headerText="Voucher Date" >
+                                    <h:outputText value="#{bi.bill.createdAt}" rendered="#{bi.bill.createdAt}" >
                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                     </h:outputText>
                                     <f:facet name="footer">
                                         <h:outputText value="Grand Total" />
                                     </f:facet>
-                                </p:column>
+                                </p:column>-->
                                 <p:column headerText="Voucher Amount" >
-                                    <h:outputText value="#{reportController.findVoucherIsAvailable(pc).bill.netTotal}" rendered="#{reportController.findVoucherIsAvailable(pc) ne null}" ></h:outputText>
+                                    <h:outputText value="#{bi.bill.total}" ></h:outputText>
                                     <f:facet name="footer">
                                         <h:outputText value="#{reportController.netTotal}" >
                                        <f:convertNumber pattern="#,##0.00" />
@@ -117,34 +118,36 @@
                                     </f:facet>
                                 </p:column>
                                 <p:column headerText="Adjusted Amount" >
-                                    <h:outputText value="#{reportController.findVoucherIsAvailable(pc).bill.adjustedTotal}" rendered="#{reportController.findVoucherIsAvailable(pc) ne null}" >
+                                    <h:outputText value="#{bi.bill.adjustedTotal}" >
                                        <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                 </p:column>
                                 <p:column headerText="Balance Amount" >
-                                    <h:outputText value="#{reportController.findVoucherIsAvailable(pc).bill.balance}" rendered="#{reportController.findVoucherIsAvailable(pc) ne null}" >
+                                    <h:outputText value="#{bi.bill.netTotal}" >
                                           <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                 </p:column>
                                 <p:column headerText="Payment Method" >
-                                    <h:outputText value="#{reportController.findVoucherIsAvailable(pc).bill.paymentMethod}" rendered="#{reportController.findVoucherIsAvailable(pc) ne null}" ></h:outputText>
+                                    <h:outputText value="#{bi.bill.paymentMethod}"  ></h:outputText>
                                 </p:column>
                                 <p:column headerText="Narration"  width="15em">
-                                    <h:outputText value="#{pc.deptId}" ></h:outputText>
+                                    <h:outputText value="#{bi.referenceBill.deptId}" ></h:outputText><br/>
+                                    <h:outputText value="Cancelled by #{bi.bill.cancelledBill.deptId}" rendered="#{bi.bill.cancelled}" style="color: red"  ></h:outputText>
                                 </p:column>
                                 <p:column headerText="Voucher Status" >
-                                    <h:outputLabel value="#{reportController.findVoucherIsAvailable(pc).bill.approveUser ne null ? 'Approved' : 'Not Approved' }" rendered="#{reportController.findVoucherIsAvailable(pc) ne null}" />
+                                    <h:outputLabel value="#{bi.bill.approveUser ne null ? 'Approved' : 'Not Approved' }" />
                                 </p:column>
                                 <p:column headerText="Settlement Status" >
-                                   <h:outputText value="Settled" rendered="#{pc.netTotal eq reportController.findVoucherIsAvailable(pc).bill.netTotal}" />
-                                    <h:outputText value="Partially Settled" rendered="#{reportController.findVoucherIsAvailable(pc).bill.netTotal lt pc.netTotal}" />
-                                    <h:outputText value="Unsettled" rendered="#{reportController.findVoucherIsAvailable(pc) eq null}" />
+                                    <h:outputText value="Settled" rendered="#{bi.referenceBill.paidAmount eq bi.referenceBill.netTotal}" />
+                                    <h:outputText value="Partially Settled" rendered="#{bi.referenceBill.paidAmount lt bi.referenceBill.netTotal}" />
+<!--                                    <h:outputText value="Unsettled" rendered="#{bi.netValue eq bi.referenceBill.paidAmount}" />-->
                                 </p:column>
                                 <p:column headerText="Created By" >
-                                    <h:outputText value="#{reportController.findVoucherIsAvailable(pc).bill.creater.name}" rendered="#{reportController.findVoucherIsAvailable(pc) ne null}"></h:outputText>
+                                    <h:outputText value="#{bi.bill.creater.name}" ></h:outputText><br/>
+                                    <h:outputText value="Cancelled by #{bi.bill.cancelledBill.creater.name}" rendered="#{bi.bill.cancelled}" style="color: red"  ></h:outputText>                                    
                                 </p:column>
                                 <p:column headerText="Approved By">
-                                    <h:outputText value="#{reportController.findVoucherIsAvailable(pc).bill.approveUser.name}" rendered="#{reportController.findVoucherIsAvailable(pc) ne null}" ></h:outputText>
+                                    <h:outputText value="#{bi.bill.approveUser.name}"  ></h:outputText>
                                 </p:column>
                                 <f:facet name="footer">
                                     <h:outputLabel value="Generated by #{sessionController.loggedUser.name} @&nbsp;" />

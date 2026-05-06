@@ -4,7 +4,6 @@
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
-      xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
       xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <h:body>
@@ -191,7 +190,309 @@
 
                         </p:panelGrid>
 
+                        <!-- Detailed Section -->
+                        <p:panel header="Detailed Payment Information" toggleable="true" collapsed="true" class="mt-3">
+                            <p:tabView>
+                                <!-- Date/Time Information Tab -->
+                                <p:tab title="Date &amp; Time">
+                                    <p:panelGrid columns="2" class="w-100" layout="tabular">
+                                        <h:outputText value="Payment Date"/>
+                                        <h:panelGroup>
+                                            <h:outputText value="#{billSearch.payment.paymentDate}" rendered="#{not webUserController.hasPrivilege('Developers')}">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                                            </h:outputText>
+                                            <p:calendar value="#{billSearch.payment.paymentDate}"
+                                                      pattern="#{sessionController.applicationPreference.longDateFormat}"
+                                                      rendered="#{webUserController.hasPrivilege('Developers')}"/>
+                                        </h:panelGroup>
 
+                                        <h:outputText value="Written At"/>
+                                        <h:panelGroup>
+                                            <h:outputText value="#{billSearch.payment.writtenAt}" rendered="#{not webUserController.hasPrivilege('Developers')}">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                                            </h:outputText>
+                                            <p:calendar value="#{billSearch.payment.writtenAt}"
+                                                      pattern="#{sessionController.applicationPreference.longDateFormat}"
+                                                      rendered="#{webUserController.hasPrivilege('Developers')}"/>
+                                        </h:panelGroup>
+
+                                        <h:outputText value="To Realize At"/>
+                                        <h:panelGroup>
+                                            <h:outputText value="#{billSearch.payment.toRealizeAt}" rendered="#{not webUserController.hasPrivilege('Developers')}">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                                            </h:outputText>
+                                            <p:calendar value="#{billSearch.payment.toRealizeAt}"
+                                                      pattern="#{sessionController.applicationPreference.longDateFormat}"
+                                                      rendered="#{webUserController.hasPrivilege('Developers')}"/>
+                                        </h:panelGroup>
+
+                                        <h:outputText value="Realized At"/>
+                                        <h:panelGroup>
+                                            <h:outputText value="#{billSearch.payment.realizedAt}" rendered="#{not webUserController.hasPrivilege('Developers')}">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                                            </h:outputText>
+                                            <p:calendar value="#{billSearch.payment.realizedAt}"
+                                                      pattern="#{sessionController.applicationPreference.longDateFormat}"
+                                                      rendered="#{webUserController.hasPrivilege('Developers')}"/>
+                                        </h:panelGroup>
+
+                                        <h:outputText value="Retired At"/>
+                                        <h:panelGroup>
+                                            <h:outputText value="#{billSearch.payment.retiredAt}" rendered="#{not webUserController.hasPrivilege('Developers')}">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                            </h:outputText>
+                                            <p:calendar value="#{billSearch.payment.retiredAt}"
+                                                      pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                                      rendered="#{webUserController.hasPrivilege('Developers')}"/>
+                                        </h:panelGroup>
+
+                                        <h:outputText value="Cancelled At"/>
+                                        <h:panelGroup>
+                                            <h:outputText value="#{billSearch.payment.cancelledAt}">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                            </h:outputText>
+                                        </h:panelGroup>
+
+                                        <h:outputText value="Cheque Paid At"/>
+                                        <h:panelGroup>
+                                            <h:outputText value="#{billSearch.payment.chequePaidAt}">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                            </h:outputText>
+                                        </h:panelGroup>
+
+                                        <h:outputText value="Cheque Realized At"/>
+                                        <h:panelGroup>
+                                            <h:outputText value="#{billSearch.payment.chequeRealizedAt}">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                            </h:outputText>
+                                        </h:panelGroup>
+                                    </p:panelGrid>
+                                </p:tab>
+
+                                <!-- User Information Tab -->
+                                <p:tab title="Users">
+                                    <p:panelGrid columns="2" class="w-100" layout="tabular">
+                                        <h:outputText value="Realizer"/>
+                                        <h:outputText value="#{billSearch.payment.realizer.webUserPerson.name}"/>
+
+                                        <h:outputText value="Retirer"/>
+                                        <h:outputText value="#{billSearch.payment.retirer.webUserPerson.name}"/>
+
+                                        <h:outputText value="Current Holder"/>
+                                        <h:outputText value="#{billSearch.payment.currentHolder.webUserPerson.name}"/>
+
+                                        <h:outputText value="Cancelled By"/>
+                                        <h:outputText value="#{billSearch.payment.cancelledBy.webUserPerson.name}"/>
+
+                                        <h:outputText value="Cheque Payer"/>
+                                        <h:outputText value="#{billSearch.payment.chequePayer.webUserPerson.name}"/>
+
+                                        <h:outputText value="Cheque Realizer"/>
+                                        <h:outputText value="#{billSearch.payment.chequeRealizer.webUserPerson.name}"/>
+                                    </p:panelGrid>
+                                </p:tab>
+
+                                <!-- Status Flags Tab -->
+                                <p:tab title="Status Flags">
+                                    <p:panelGrid columns="2" class="w-100" layout="tabular">
+                                        <h:outputText value="Realized"/>
+                                        <p:selectBooleanCheckbox value="#{billSearch.payment.realized}" disabled="#{not webUserController.hasPrivilege('Developers')}"/>
+
+                                        <h:outputText value="Cashbook Entry Stated"/>
+                                        <p:selectBooleanCheckbox value="#{billSearch.payment.cashbookEntryStated}" disabled="#{not webUserController.hasPrivilege('Developers')}"/>
+
+                                        <h:outputText value="Cashbook Entry Completed"/>
+                                        <p:selectBooleanCheckbox value="#{billSearch.payment.cashbookEntryCompleted}" disabled="#{not webUserController.hasPrivilege('Developers')}"/>
+
+                                        <h:outputText value="Payment Record Stated"/>
+                                        <p:selectBooleanCheckbox value="#{billSearch.payment.paymentRecordStated}" disabled="#{not webUserController.hasPrivilege('Developers')}"/>
+
+                                        <h:outputText value="Payment Record Completed"/>
+                                        <p:selectBooleanCheckbox value="#{billSearch.payment.paymentRecordCompleted}" disabled="#{not webUserController.hasPrivilege('Developers')}"/>
+
+                                        <h:outputText value="Selected For Handover"/>
+                                        <p:selectBooleanCheckbox value="#{billSearch.payment.selectedForHandover}" disabled="#{not webUserController.hasPrivilege('Developers')}"/>
+
+                                        <h:outputText value="Selected For Cashbook Entry"/>
+                                        <p:selectBooleanCheckbox value="#{billSearch.payment.selectedForCashbookEntry}" disabled="#{not webUserController.hasPrivilege('Developers')}"/>
+
+                                        <h:outputText value="Selected For Recording"/>
+                                        <p:selectBooleanCheckbox value="#{billSearch.payment.selectedForRecording}" disabled="#{not webUserController.hasPrivilege('Developers')}"/>
+
+                                        <h:outputText value="Selected For Recording Confirmation"/>
+                                        <p:selectBooleanCheckbox value="#{billSearch.payment.selectedForRecordingConfirmation}" disabled="#{not webUserController.hasPrivilege('Developers')}"/>
+
+                                        <h:outputText value="Handing Over Started"/>
+                                        <p:selectBooleanCheckbox value="#{billSearch.payment.handingOverStarted}" disabled="#{not webUserController.hasPrivilege('Developers')}"/>
+
+                                        <h:outputText value="Handing Over Completed"/>
+                                        <p:selectBooleanCheckbox value="#{billSearch.payment.handingOverCompleted}" disabled="#{not webUserController.hasPrivilege('Developers')}"/>
+
+                                        <h:outputText value="Cancelled"/>
+                                        <p:selectBooleanCheckbox value="#{billSearch.payment.cancelled}" disabled="#{not webUserController.hasPrivilege('Developers')}"/>
+
+                                        <h:outputText value="Cheque Paid"/>
+                                        <p:selectBooleanCheckbox value="#{billSearch.payment.chequePaid}" disabled="#{not webUserController.hasPrivilege('Developers')}"/>
+
+                                        <h:outputText value="Cheque Realized"/>
+                                        <p:selectBooleanCheckbox value="#{billSearch.payment.chequeRealized}" disabled="#{not webUserController.hasPrivilege('Developers')}"/>
+                                    </p:panelGrid>
+                                </p:tab>
+
+                                <!-- Comments &amp; Text Tab -->
+                                <p:tab title="Comments &amp; Text">
+                                    <p:panelGrid columns="2" class="w-100" layout="tabular">
+                                        <h:outputText value="Comments"/>
+                                        <h:panelGroup>
+                                            <h:outputText value="#{billSearch.payment.comments}" rendered="#{not webUserController.hasPrivilege('Developers')}"/>
+                                            <p:inputTextarea value="#{billSearch.payment.comments}" rows="3" cols="50" rendered="#{webUserController.hasPrivilege('Developers')}"/>
+                                        </h:panelGroup>
+
+                                        <h:outputText value="Realize Comments"/>
+                                        <h:panelGroup>
+                                            <h:outputText value="#{billSearch.payment.realizeComments}" rendered="#{not webUserController.hasPrivilege('Developers')}"/>
+                                            <p:inputTextarea value="#{billSearch.payment.realizeComments}" rows="3" cols="50" rendered="#{webUserController.hasPrivilege('Developers')}"/>
+                                        </h:panelGroup>
+
+                                        <h:outputText value="Retire Comments"/>
+                                        <h:panelGroup>
+                                            <h:outputText value="#{billSearch.payment.retireComments}" rendered="#{not webUserController.hasPrivilege('Developers')}"/>
+                                            <p:inputTextarea value="#{billSearch.payment.retireComments}" rows="3" cols="50" rendered="#{webUserController.hasPrivilege('Developers')}"/>
+                                        </h:panelGroup>
+
+                                        <h:outputText value="Reference No"/>
+                                        <h:panelGroup>
+                                            <h:outputText value="#{billSearch.payment.referenceNo}" rendered="#{not webUserController.hasPrivilege('Developers')}"/>
+                                            <p:inputText value="#{billSearch.payment.referenceNo}" rendered="#{webUserController.hasPrivilege('Developers')}"/>
+                                        </h:panelGroup>
+
+                                        <h:outputText value="Policy No"/>
+                                        <h:panelGroup>
+                                            <h:outputText value="#{billSearch.payment.policyNo}" rendered="#{not webUserController.hasPrivilege('Developers')}"/>
+                                            <p:inputText value="#{billSearch.payment.policyNo}" rendered="#{webUserController.hasPrivilege('Developers')}"/>
+                                        </h:panelGroup>
+                                    </p:panelGrid>
+                                </p:tab>
+
+                                <!-- Financial Information Tab -->
+                                <p:tab title="Financial">
+                                    <p:panelGrid columns="2" class="w-100" layout="tabular">
+                                        <h:outputText value="Credit Duration (Days)"/>
+                                        <h:panelGroup>
+                                            <h:outputText value="#{billSearch.payment.creditDurationInDays}" rendered="#{not webUserController.hasPrivilege('Developers')}"/>
+                                            <p:inputNumber value="#{billSearch.payment.creditDurationInDays}" decimalPlaces="0" rendered="#{webUserController.hasPrivilege('Developers')}"/>
+                                        </h:panelGroup>
+
+                                        <h:outputText value="Discount Value"/>
+                                        <h:panelGroup>
+                                            <h:outputText value="#{billSearch.payment.discountValue}" rendered="#{not webUserController.hasPrivilege('Developers')}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                            <p:inputNumber value="#{billSearch.payment.discountValue}" decimalPlaces="2" rendered="#{webUserController.hasPrivilege('Developers')}"/>
+                                        </h:panelGroup>
+
+                                        <h:outputText value="Credit Company"/>
+                                        <h:panelGroup>
+                                            <h:outputText value="#{billSearch.payment.creditCompany.name}" rendered="#{not webUserController.hasPrivilege('Developers')}"/>
+                                            <p:autoComplete value="#{billSearch.payment.creditCompany}"
+                                                          completeMethod="#{institutionController.completeCompany}"
+                                                          var="cc"
+                                                          itemLabel="#{cc.name}"
+                                                          itemValue="#{cc}"
+                                                          forceSelection="true"
+                                                          rendered="#{webUserController.hasPrivilege('Developers')}"/>
+                                        </h:panelGroup>
+                                    </p:panelGrid>
+                                </p:tab>
+
+                                <!-- Institutions Tab -->
+                                <p:tab title="Institutions">
+                                    <p:panelGrid columns="2" class="w-100" layout="tabular">
+                                        <h:outputText value="From Institution"/>
+                                        <h:panelGroup>
+                                            <h:outputText value="#{billSearch.payment.fromInstitution.name}" rendered="#{not webUserController.hasPrivilege('Developers')}"/>
+                                            <p:autoComplete value="#{billSearch.payment.fromInstitution}"
+                                                          completeMethod="#{institutionController.completeCompany}"
+                                                          var="fi"
+                                                          itemLabel="#{fi.name}"
+                                                          itemValue="#{fi}"
+                                                          forceSelection="true"
+                                                          rendered="#{webUserController.hasPrivilege('Developers')}"/>
+                                        </h:panelGroup>
+
+                                        <h:outputText value="To Institution"/>
+                                        <h:panelGroup>
+                                            <h:outputText value="#{billSearch.payment.toInstitution.name}" rendered="#{not webUserController.hasPrivilege('Developers')}"/>
+                                            <p:autoComplete value="#{billSearch.payment.toInstitution}"
+                                                          completeMethod="#{institutionController.completeCompany}"
+                                                          var="ti"
+                                                          itemLabel="#{ti.name}"
+                                                          itemValue="#{ti}"
+                                                          forceSelection="true"
+                                                          rendered="#{webUserController.hasPrivilege('Developers')}"/>
+                                        </h:panelGroup>
+
+                                        <h:outputText value="To Staff"/>
+                                        <h:panelGroup>
+                                            <h:outputText value="#{billSearch.payment.toStaff.person.name}" rendered="#{not webUserController.hasPrivilege('Developers')}"/>
+                                            <p:autoComplete value="#{billSearch.payment.toStaff}"
+                                                          completeMethod="#{staffController.completeStaff}"
+                                                          var="st"
+                                                          itemLabel="#{st.person.name}"
+                                                          itemValue="#{st}"
+                                                          forceSelection="true"
+                                                          rendered="#{webUserController.hasPrivilege('Developers')}"/>
+                                        </h:panelGroup>
+                                    </p:panelGrid>
+                                </p:tab>
+
+                                <!-- Bill References Tab -->
+                                <p:tab title="Bill References">
+                                    <p:panelGrid columns="2" class="w-100" layout="tabular">
+                                        <h:outputText value="Bill"/>
+                                        <h:outputText value="#{billSearch.payment.bill.insId}"/>
+
+                                        <h:outputText value="Payment Record Create Bill"/>
+                                        <h:outputText value="#{billSearch.payment.paymentRecordCreateBill.insId}"/>
+
+                                        <h:outputText value="Payment Record Create Component Bill"/>
+                                        <h:outputText value="#{billSearch.payment.paymentRecordCreateComponantBill.insId}"/>
+
+                                        <h:outputText value="Payment Record Complete Bill"/>
+                                        <h:outputText value="#{billSearch.payment.paymentRecordCompleteBill.insId}"/>
+
+                                        <h:outputText value="Payment Record Complete Component Bill"/>
+                                        <h:outputText value="#{billSearch.payment.paymentRecordCompleteComponantBill.insId}"/>
+
+                                        <h:outputText value="Cancelled Bill"/>
+                                        <h:outputText value="#{billSearch.payment.cancelledBill.insId}"/>
+
+                                        <h:outputText value="Cheque Paid Bill"/>
+                                        <h:outputText value="#{billSearch.payment.chequePaidBill.insId}"/>
+
+                                        <h:outputText value="Cheque Realized Bill"/>
+                                        <h:outputText value="#{billSearch.payment.chequeRealizedBill.insId}"/>
+                                    </p:panelGrid>
+                                </p:tab>
+
+                                <!-- Other References Tab -->
+                                <p:tab title="Other References">
+                                    <p:panelGrid columns="2" class="w-100" layout="tabular">
+                                        <h:outputText value="Reference Payment ID"/>
+                                        <h:outputText value="#{billSearch.payment.referancePayment.id}"/>
+
+                                        <h:outputText value="Cancelled Payment ID"/>
+                                        <h:outputText value="#{billSearch.payment.cancelledPayment.id}"/>
+
+                                        <h:outputText value="Cashbook Entry ID"/>
+                                        <h:outputText value="#{billSearch.payment.cashbookEntry.id}"/>
+
+                                        <h:outputText value="Cashbook Name"/>
+                                        <h:outputText value="#{billSearch.payment.cashbook.name}"/>
+                                    </p:panelGrid>
+                                </p:tab>
+                            </p:tabView>
+                        </p:panel>
 
                     </p:panel>
                 </h:form>

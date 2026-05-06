@@ -99,7 +99,7 @@ public class DoctorController implements Serializable {
                     + " order by p.person.name";
             HashMap hm = new HashMap();
             hm.put("q", "%" + query.toUpperCase() + "%");
-            suggestions = getFacade().findByJpql(sql, hm);
+            suggestions = getFacade().findByJpql(sql, hm,30);
         }
         return suggestions;
     }
@@ -143,6 +143,14 @@ public class DoctorController implements Serializable {
         selectedItems = getFacade().findByJpql(j, m);
     }
 
+    public void reloadDoctorsIncludingConsultants() {
+        fillDoctorsIncludingConsultants();
+    }
+
+    public void reloadDoctorsExcludingConsultants() {
+        fillDoctorsExcludingConsultants();
+    }
+
     private void fillDoctorsExcludingConsultants() {
         String j;
         j = "select c "
@@ -171,6 +179,19 @@ public class DoctorController implements Serializable {
        List<Doctor> docList = getFacade().findByJpql(j, m);
 
        return docList;
+    }
+    
+    // used in specialty/doctor wise income report
+    public List<Doctor> fillDoctorsAndConsultants() {
+        String j;
+        j = "select c "
+                + " from Doctor c "
+                + " where c.retired=:ret"
+                + " order by c.person.name";
+        Map m = new HashMap();
+        m.put("ret", false);
+        List<Doctor> docList = getFacade().findByJpql(j, m);
+        return docList;
     }
 
     public void prepareAdd() {
@@ -204,13 +225,15 @@ public class DoctorController implements Serializable {
             int rowNum = 1;
             for (Doctor doctor : items) {
                 Row row = sheet.createRow(rowNum++);
-                row.createCell(0).setCellValue(doctor.getName());
-                row.createCell(1).setCellValue(doctor.getPerson().getPhone());
-                row.createCell(2).setCellValue(doctor.getPerson().getFax());
-                row.createCell(3).setCellValue(doctor.getPerson().getMobile());
-                row.createCell(4).setCellValue(doctor.getPerson().getAddress());
+                Person person = doctor.getPerson();
+                String name = person != null ? person.getNameWithTitle() : doctor.getName();
+                row.createCell(0).setCellValue(name);
+                row.createCell(1).setCellValue(person != null ? person.getPhone() : null);
+                row.createCell(2).setCellValue(person != null ? person.getFax() : null);
+                row.createCell(3).setCellValue(person != null ? person.getMobile() : null);
+                row.createCell(4).setCellValue(person != null ? person.getAddress() : null);
                 row.createCell(5).setCellValue(doctor.getCode());
-                row.createCell(6).setCellValue(doctor.getSpeciality().getName());
+                row.createCell(6).setCellValue(doctor.getSpeciality() != null ? doctor.getSpeciality().getName() : null);
                 row.createCell(7).setCellValue(doctor.getRegistration());
                 row.createCell(8).setCellValue(doctor.getQualification());
                 row.createCell(9).setCellValue(doctor.getCharge());
@@ -241,7 +264,7 @@ public class DoctorController implements Serializable {
             getFacade().edit(current);
             JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            JsfUtil.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addErrorMessage("Nothing to Delete");
         }
         recreateModel();
         //  getItems();

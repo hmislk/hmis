@@ -1,0 +1,34 @@
+please read /home/buddhika/development/rh/developer_docs/billing/bill-number-generation-strategy-guide.md
+
+Please generate bill numbers for accordingly for the following 
+
+Page : http://localhost:8080/rh/faces/pharmacy/pharmacy_cancel_bill_retail.xhtml
+
+First please check for
+Controller: PharmacyFastRetailSaleForCashierController
+Method: private void savePreBillFinallyForRetailSaleForCashier(Patient pt) {
+
+we develop only the pharmacy retail page.
+
+there are similar 3 more pages and 3 similar controllers which are there to have the same functionality. It will allow user to have 4 sales at the same time in one window. It was developed before view scope was available. Now there is no time to refactor it to allow user have any number of windows. So we have to keep the updates propagated from sale to other 3 sale pages and controllers. Any edits done on other pages need not to be retained. there should be no separate configurations, all will follow main page
+
+Main Page - 
+http://localhost:8080/rh/faces/pharmacy/pharmacy_bill_retail_sale.xhtml
+
+Main Controller - 
+pharmacySaleController
+
+Copy and Paste pages - 
+http://localhost:8080/rh/faces/pharmacy/pharmacy_bill_retail_sale_1.xhtml - Sale 2
+http://localhost:8080/rh/faces/pharmacy/pharmacy_bill_retail_sale_2.xhtml - Sale 3
+http://localhost:8080/rh/faces/pharmacy/pharmacy_bill_retail_sale_3.xhtml - Sale 4
+
+Copy and Paste Controllers
+pharmacySaleController1 - sale 2
+pharmacySaleController2 - Sale 3
+pharmacySaleController3 - Sale 4
+
+only the navigation methods should be different so that it navigate to corosponding page
+
+In this process, there should be no changes in the main page or main controller. All changes in the other pages will be overwritten by pasting contents from the main page/controller.
+

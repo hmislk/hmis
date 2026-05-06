@@ -9,18 +9,24 @@
 package com.divudi.bean.common;
 
 import com.divudi.core.data.DepartmentType;
+import com.divudi.core.data.dto.DepartmentDto;
+import com.divudi.core.entity.AuditEvent;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
+import com.divudi.core.facade.AuditEventFacade;
 import com.divudi.core.facade.DepartmentFacade;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.InstitutionType;
 import com.divudi.core.entity.Route;
+import com.divudi.service.AuditService;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -45,6 +51,11 @@ public class DepartmentController implements Serializable {
     SessionController sessionController;
     @EJB
     private DepartmentFacade ejbFacade;
+    @EJB
+    AuditEventFacade auditEventFacade;
+    @EJB
+    AuditService auditService;
+
     List<Department> selectedItems;
     private Department current;
     private List<Department> items = null;
@@ -57,67 +68,88 @@ public class DepartmentController implements Serializable {
 
     List<Department> itemsToRemove;
 
+    private List<DepartmentDuplicateGroup> duplicateGroups;
+
+    // Status filtering - following VMP/AMP pattern
+    private String filterStatus = "active";
+    private List<AuditEvent> departmentAuditEvents;
+
+    // DTO properties
+    private List<DepartmentDto> departmentDtoList;
+    private DepartmentDto selectedDepartmentDto;
+    private boolean editable;
+
     public Department findAndSaveDepartmentByName(String name) {
-        if (name == null || name.trim().equals("")) {
+        if (name == null) {
             return null;
         }
-        String sql;
-        Map m = new HashMap();
-        m.put("name", name);
+
+        String cleanedName = name.trim();
+        if (cleanedName.isEmpty()) {
+            return null;
+        }
+
+        String sql = "select i from Department i where upper(i.name)=:name and i.retired=:ret";
+        Map<String, Object> m = new HashMap<>();
+        m.put("name", cleanedName.toUpperCase());
         m.put("ret", false);
-        sql = "select i "
-                + " from Department i "
-                + " where i.name=:name"
-                + " and i.retired=:ret";
         Department i = getFacade().findFirstByJpql(sql, m);
+
         if (i == null) {
             i = new Department();
-            i.setName(name);
+            i.setName(cleanedName);
             getFacade().create(i);
-        } else {
+        } else if (i.isRetired()) {
             i.setRetired(false);
             getFacade().edit(i);
         }
+
         return i;
     }
 
     public Department findAndSaveDepartmentByName(String name, Institution ins) {
-        if (name == null || name.trim().equals("")) {
+        if (name == null) {
             return null;
         }
-        String sql;
-        Map m = new HashMap();
-        m.put("name", name);
+
+        String cleanedName = name.trim();
+        if (cleanedName.isEmpty()) {
+            return null;
+        }
+
+        String sql = "select i from Department i where upper(i.name)=:name and i.retired=:ret";
+        Map<String, Object> m = new HashMap<>();
+        m.put("name", cleanedName.toUpperCase());
         m.put("ret", false);
-        sql = "select i "
-                + " from Department i "
-                + " where i.name=:name"
-                + " and i.retired=:ret";
         Department i = getFacade().findFirstByJpql(sql, m);
+
         if (i == null) {
             i = new Department();
-            i.setName(name);
+            i.setName(cleanedName);
             i.setInstitution(ins);
             getFacade().create(i);
-        } else {
+        } else if (i.isRetired()) {
             i.setRetired(false);
             getFacade().edit(i);
         }
+
         return i;
     }
 
     public Department findExistingDepartmentByName(String name, Institution ins) {
-        if (name == null || name.trim().equals("")) {
+        if (name == null) {
             return null;
         }
-        String sql;
-        Map m = new HashMap();
-        m.put("name", name);
+
+        String cleanedName = name.trim();
+        if (cleanedName.isEmpty()) {
+            return null;
+        }
+
+        String sql = "select i from Department i where upper(i.name)=:name and i.retired=:ret";
+        Map<String, Object> m = new HashMap<>();
+        m.put("name", cleanedName.toUpperCase());
         m.put("ret", false);
-        sql = "select i "
-                + " from Department i "
-                + " where i.name=:name"
-                + " and i.retired=:ret";
         Department i = getFacade().findFirstByJpql(sql, m);
         return i;
     }
@@ -156,8 +188,22 @@ public class DepartmentController implements Serializable {
 
     public void fillItems() {
         String j;
-        j = "select i from Department i where i.retired=false order by i.name";
-        items = getFacade().findByJpql(j);
+        Map<String, Object> m = new HashMap<>();
+        j = "select i from Department i where i.retired=:ret ";
+        m.put("ret", false);
+
+        // Apply inactive status filter
+        if ("active".equals(filterStatus)) {
+            j += " and i.inactive=:inactive ";
+            m.put("inactive", false);
+        } else if ("inactive".equals(filterStatus)) {
+            j += " and i.inactive=:inactive ";
+            m.put("inactive", true);
+        }
+        // For "all", no additional inactive filter needed
+
+        j += " order by i.name";
+        items = getFacade().findByJpql(j, m);
     }
 
     public List<Department> getInstitutionDepartments(Institution ins) {
@@ -175,6 +221,69 @@ public class DepartmentController implements Serializable {
             deps = getFacade().findByJpql(jpql, m);
         }
         return deps;
+    }
+
+    public List<Department> getInstitutionLabDepartments(Institution ins) {
+        List<Department> deps;
+        if (ins == null) {
+            deps = new ArrayList<>();
+        } else {
+            Map<String, Object> m = new HashMap<>();
+            m.put("ins", ins);
+            m.put("type", DepartmentType.Lab);
+            String jpql = "Select d From Department d "
+                    + " where d.retired=false "
+                    + " and d.institution=:ins "
+                    + " and d.departmentType=:type "
+                    + " and TYPE(d) <> Route "
+                    + " order by d.name";
+            deps = getFacade().findByJpql(jpql, m);
+        }
+        return deps;
+    }
+
+    public List<Department> getInstitutionAllLabTypesDepartments(Institution ins) {
+        List<Department> deps;
+        if (ins == null) {
+            deps = new ArrayList<>();
+        } else {
+            List<DepartmentType> dtypes = Arrays.asList(DepartmentType.Lab, DepartmentType.External_Lab);
+            Map<String, Object> m = new HashMap<>();
+            m.put("ins", ins);
+            m.put("types", dtypes);
+
+            String jpql = "Select d From Department d "
+                    + " where d.retired=false "
+                    + " and d.institution=:ins "
+                    + " and d.departmentType in :types "
+                    + " and TYPE(d) <> (Route)" // Adjust based on your entity structure
+                    + " order by d.name";
+
+            deps = getFacade().findByJpql(jpql, m);
+        }
+        return deps;
+    }
+
+    public List<Department> getAllDepartmentsWithInstitutionFilter(Institution ins) {
+        List<Department> deps;
+        Map<String, Object> m = new HashMap<>();
+
+        String jpql = "Select d From Department d "
+                + " where d.retired=false "
+                + " and TYPE(d) <> Route "
+                + " and d.name IS NOT NULL "
+                + " and TRIM(d.name) <> '' ";
+
+        if (ins != null) {
+            m.put("ins", ins);
+            jpql += " and d.institution=:ins ";
+        }
+
+        jpql += " order by d.name";
+
+        deps = getFacade().findByJpql(jpql, m);
+
+        return deps != null ? deps : new ArrayList<>();
     }
 
     public List<Department> getInstitutionDepartmentsWithSite(Institution ins, Institution site) {
@@ -216,14 +325,14 @@ public class DepartmentController implements Serializable {
     }
 
     @Deprecated
-    public List<Department> getInsDepartments(Institution currentInstituion) {
+    public List<Department> getInsDepartments(Institution currentInstitution) {
         // Please use public List<Department> getInstitutionDepatrments(Institution ins) {
         List<Department> currentInsDepartments = new ArrayList<>();
-        if (currentInstituion == null) {
+        if (currentInstitution == null) {
             return currentInsDepartments;
         }
         Map m = new HashMap();
-        m.put("ins", currentInstituion);
+        m.put("ins", currentInstitution);
         m.put("ret", false);
         String jpql = "SELECT d "
                 + " FROM Department d "
@@ -286,6 +395,26 @@ public class DepartmentController implements Serializable {
         return departments != null ? departments : new ArrayList<>();
     }
 
+    public DepartmentType findDepaermentTypeFromDeoaermnrt(Department department) {
+        if (department == null || department.getId() == null) {
+            return DepartmentType.Other;
+        }
+
+        Department d = getFacade().find(department.getId());
+
+        if (d == null) {
+            return DepartmentType.Other;
+        }
+
+        DepartmentType type = d.getDepartmentType();
+
+        if (type == null) {
+            return DepartmentType.Other;
+        }
+
+        return type;
+    }
+
 //    public List<Department> getDepartmentsOfInstitutionAndSite(Institution ins, Institution site) {
 //        if (ins == null && site == null) {
 //            return new ArrayList<>();
@@ -339,6 +468,17 @@ public class DepartmentController implements Serializable {
     public String saveSelectedDepartment() {
         if (current == null) {
             JsfUtil.addErrorMessage("Nothing selected");
+            return "";
+        }
+        if (current.getName() != null) {
+            current.setName(current.getName().trim());
+        }
+        String sql = "select d from Department d where upper(d.name)=:nm and d.retired=false";
+        Map<String, Object> m = new HashMap<>();
+        m.put("nm", current.getName() == null ? "" : current.getName().toUpperCase());
+        Department existing = getFacade().findFirstByJpql(sql, m);
+        if (existing != null && (current.getId() == null || !existing.getId().equals(current.getId()))) {
+            JsfUtil.addErrorMessage("Department with same name already exists");
             return "";
         }
         if (current.getId() == null) {
@@ -430,6 +570,17 @@ public class DepartmentController implements Serializable {
         return departments;
     }
 
+    public List<Department> listAllLabDepartments() {
+        List<Department> departments;
+        Map<String, Object> m = new HashMap<>();
+        m.put("type", DepartmentType.Lab);
+        String sql = "Select d From Department d "
+                + " where d.retired=false "
+                + " and d.departmentType=:type";
+        departments = getFacade().findByJpql(sql, m);
+        return departments;
+    }
+
     public Department getDefaultDepatrment(Institution ins) {
         Department dep;
         if (ins == null) {
@@ -467,7 +618,21 @@ public class DepartmentController implements Serializable {
     }
 
     public List<Department> getSelectedItems() {
-        selectedItems = getFacade().findByJpql("select c from Department c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+        Map<String, Object> m = new HashMap<>();
+        String jpql = "select c from Department c where c.retired=:ret and (c.name) like :q ";
+        m.put("ret", false);
+        m.put("q", "%" + getSelectText().toUpperCase() + "%");
+
+        if ("active".equals(filterStatus)) {
+            jpql += " and c.inactive=:inactive ";
+            m.put("inactive", false);
+        } else if ("inactive".equals(filterStatus)) {
+            jpql += " and c.inactive=:inactive ";
+            m.put("inactive", true);
+        }
+
+        jpql += " order by c.name";
+        selectedItems = getFacade().findByJpql(jpql, m);
         return selectedItems;
     }
 
@@ -505,6 +670,7 @@ public class DepartmentController implements Serializable {
         HashMap hm = new HashMap();
         sql = "select c from Department c "
                 + " where c.retired=false "
+                + " and c.inactive=false "
                 + " and (c.name) like :q"
                 + " order by c.name";
         hm.put("q", "%" + qry.toUpperCase() + "%");
@@ -520,6 +686,7 @@ public class DepartmentController implements Serializable {
         HashMap<String, Object> hm = new HashMap<>();
         sql = "select c from Department c "
                 + " where c.retired=false "
+                + " and c.inactive=false "
                 + " and (c.name) like :q "
                 + " and c.institution=:ins "
                 + " order by c.name";
@@ -534,6 +701,7 @@ public class DepartmentController implements Serializable {
         HashMap hm = new HashMap();
         sql = "select c from Department c "
                 + " where c.retired=false "
+                + " and c.inactive=false "
                 + " and (c.name) like :q "
                 + " and c.institution=:ins "
                 + " order by c.name";
@@ -557,6 +725,7 @@ public class DepartmentController implements Serializable {
         HashMap hm = new HashMap();
         sql = "select c from Department c "
                 + " where c.retired=false "
+                + " and c.inactive=false "
                 + " and c.name like :q "
                 + " and c.institution=:ins "
                 + " and c.departmentType=:dt"
@@ -575,6 +744,7 @@ public class DepartmentController implements Serializable {
             hm = new HashMap();
             sql = "select c from Department c "
                     + " where c.retired=false "
+                    + " and c.inactive=false "
                     + " and c.name like :q "
                     + " order by c.name";
             hm.put("q", "%" + qry.toUpperCase() + "%");
@@ -588,15 +758,35 @@ public class DepartmentController implements Serializable {
         HashMap hm = new HashMap();
         sql = "select c from Department c "
                 + " where c.retired=false "
+                + " and c.inactive=false "
                 + " and ((c.name) like :q or (c.institution.name) like :q )"
                 + " order by c.name";
         hm.put("q", "%" + qry.toUpperCase() + "%");
         return getFacade().findByJpql(sql, hm);
     }
 
+    public List<Department> completeDepartments(String qry) {
+        List<Department> results;
+        if (qry == null) {
+            qry = "";
+        }
+        String sql;
+        HashMap hm = new HashMap();
+        sql = "select c from Department c "
+                + " where c.retired=false "
+                + " and c.inactive=false "
+                + " and upper(c.name) like :q "
+                + " order by c.name";
+        hm.put("q", "%" + qry.toUpperCase() + "%");
+        results = getFacade().findByJpql(sql, hm);
+        return results;
+    }
+
     public void prepareAdd() {
         codeDisabled = false;
         current = new Department();
+        selectedDepartmentDto = null;
+        editable = true;
     }
 
     public void setSelectedItems(List<Department> selectedItems) {
@@ -731,20 +921,28 @@ public class DepartmentController implements Serializable {
     }
 
     public void delete() {
-
         if (current != null) {
+            Map<String, Object> beforeData = createAuditMap(current);
+
             current.setRetired(true);
             current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
+
+            Map<String, Object> afterData = createAuditMap(current);
+            auditService.logAudit(beforeData, afterData,
+                    getSessionController().getLoggedUser(),
+                    "Department", "Delete Department", current.getId());
+
             JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            JsfUtil.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addErrorMessage("Nothing to Delete");
         }
-        recreateModel();
-        getItems();
         current = null;
-        getCurrent();
+        selectedDepartmentDto = null;
+        editable = false;
+        recreateModel();
+        clearDtoCache();
     }
 
     public List<Department> getItemsToRemove() {
@@ -833,6 +1031,408 @@ public class DepartmentController implements Serializable {
         this.superDepartment = superDepartment;
     }
 
+    public List<DepartmentDuplicateGroup> getDuplicateGroups() {
+        return duplicateGroups;
+    }
+
+    public String navigateToDuplicateDepartments() {
+        detectDuplicateDepartments();
+        return "/admin/institutions/department_duplicates?faces-redirect=true";
+    }
+
+    public void detectDuplicateDepartments() {
+        String jpql = "SELECT d FROM Department d WHERE d.retired=false ORDER BY UPPER(TRIM(d.name)), d.id";
+        List<Department> all = getFacade().findByJpql(jpql);
+        Map<String, List<Department>> grouped = all.stream()
+                .collect(Collectors.groupingBy(d -> d.getName() == null ? "" : d.getName().trim().toUpperCase()));
+        duplicateGroups = grouped.values().stream()
+                .filter(l -> l.size() > 1)
+                .map(l -> new DepartmentDuplicateGroup(l))
+                .collect(Collectors.toList());
+    }
+
+    public void retireDuplicateGroup(DepartmentDuplicateGroup g) {
+        if (g == null || g.getDepartments() == null || g.getDepartments().size() < 2) {
+            return;
+        }
+        g.getDepartments().sort((a, b) -> a.getId().compareTo(b.getId()));
+        for (int i = 1; i < g.getDepartments().size(); i++) {
+            Department d = g.getDepartments().get(i);
+            d.setRetired(true);
+            d.setRetiredAt(new Date());
+            d.setRetirer(sessionController.getLoggedUser());
+            getFacade().edit(d);
+        }
+        detectDuplicateDepartments();
+        JsfUtil.addSuccessMessage("Duplicates retired for " + g.getName());
+    }
+
+    // ===================== Filter Status Management (VMP/AMP Pattern) =====================
+    public String getFilterStatus() {
+        return filterStatus;
+    }
+
+    public void setFilterStatus(String filterStatus) {
+        this.filterStatus = filterStatus;
+    }
+
+    public void setFilterToActive() {
+        filterStatus = "active";
+        refreshData();
+    }
+
+    public void setFilterToInactive() {
+        filterStatus = "inactive";
+        refreshData();
+    }
+
+    public void setFilterToAll() {
+        filterStatus = "all";
+        refreshData();
+    }
+
+    public void refreshData() {
+        recreateModel();
+        clearDtoCache();
+
+        // Clear selection if current item doesn't match new filter
+        if (current != null && current.getId() != null) {
+            boolean shouldKeepSelection = false;
+            switch (filterStatus) {
+                case "active":
+                    shouldKeepSelection = !current.isInactive();
+                    break;
+                case "inactive":
+                    shouldKeepSelection = current.isInactive();
+                    break;
+                case "all":
+                    shouldKeepSelection = true;
+                    break;
+            }
+
+            if (!shouldKeepSelection) {
+                current = null;
+                selectedDepartmentDto = null;
+                departmentAuditEvents = null;
+            }
+        }
+    }
+
+    public boolean isShowingActive() {
+        return "active".equals(filterStatus);
+    }
+
+    public boolean isShowingInactive() {
+        return "inactive".equals(filterStatus);
+    }
+
+    public boolean isShowingAll() {
+        return "all".equals(filterStatus);
+    }
+
+    public String getFilterStatusDisplay() {
+        switch (filterStatus) {
+            case "active":
+                return "Active Departments";
+            case "inactive":
+                return "Inactive Departments";
+            case "all":
+                return "All Departments";
+            default:
+                return "Active Departments";
+        }
+    }
+
+    // ===================== Status Toggle Methods =====================
+    /**
+     * Toggle Department inactive status with audit logging
+     */
+    public void toggleDepartmentStatus() {
+        if (current == null || current.getId() == null) {
+            JsfUtil.addErrorMessage("No Department selected");
+            return;
+        }
+
+        Map<String, Object> beforeData = createAuditMap(current);
+        boolean wasInactive = current.isInactive();
+
+        if (wasInactive) {
+            current.setInactive(false);
+            JsfUtil.addSuccessMessage("Department Activated Successfully");
+        } else {
+            current.setInactive(true);
+            JsfUtil.addSuccessMessage("Department Deactivated Successfully");
+        }
+
+        getFacade().edit(current);
+
+        Map<String, Object> afterData = createAuditMap(current);
+        String action = wasInactive ? "Activate Department" : "Deactivate Department";
+        auditService.logAudit(beforeData, afterData,
+                getSessionController().getLoggedUser(),
+                "Department", action, current.getId());
+
+        recreateModel();
+        clearDtoCache();
+    }
+
+    public String getToggleStatusButtonText() {
+        if (current == null || current.getId() == null) {
+            return "Toggle Status";
+        }
+        return current.isInactive() ? "Activate" : "Deactivate";
+    }
+
+    public String getToggleStatusButtonIcon() {
+        if (current == null || current.getId() == null) {
+            return "fas fa-toggle-off";
+        }
+        return current.isInactive() ? "fas fa-check-circle" : "fas fa-times-circle";
+    }
+
+    public String getToggleStatusButtonClass() {
+        if (current == null || current.getId() == null) {
+            return "ui-button-secondary";
+        }
+        return current.isInactive() ? "ui-button-success" : "ui-button-warning";
+    }
+
+    // ===================== Audit Trail Methods =====================
+    /**
+     * Create audit map with Department-specific fields
+     */
+    private Map<String, Object> createAuditMap(Department dept) {
+        Map<String, Object> auditData = new HashMap<>();
+        if (dept != null) {
+            // Core identification
+            auditData.put("id", dept.getId());
+            auditData.put("name", dept.getName());
+            auditData.put("code", dept.getCode());
+            auditData.put("departmentCode", dept.getDepartmentCode());
+            auditData.put("retired", dept.isRetired());
+            auditData.put("inactive", dept.isInactive());
+            auditData.put("departmentType", dept.getDepartmentType() != null
+                    ? dept.getDepartmentType().toString() : null);
+
+            // Relationships
+            auditData.put("institutionId", dept.getInstitution() != null
+                    ? dept.getInstitution().getId() : null);
+            auditData.put("institutionName", dept.getInstitution() != null
+                    ? dept.getInstitution().getName() : null);
+            auditData.put("siteId", dept.getSite() != null
+                    ? dept.getSite().getId() : null);
+            auditData.put("siteName", dept.getSite() != null
+                    ? dept.getSite().getName() : null);
+            auditData.put("superDepartmentId", dept.getSuperDepartment() != null
+                    ? dept.getSuperDepartment().getId() : null);
+            auditData.put("superDepartmentName", dept.getSuperDepartment() != null
+                    ? dept.getSuperDepartment().getName() : null);
+        }
+        return auditData;
+    }
+
+    public void fillDepartmentAuditEvents() {
+        if (current != null && current.getId() != null) {
+            try {
+                String jpql = "SELECT a FROM AuditEvent a WHERE a.objectId = :objectId "
+                        + "AND a.entityType = :entityType ORDER BY a.eventDataTime DESC";
+                Map<String, Object> parameters = new HashMap<>();
+                parameters.put("objectId", current.getId());
+                parameters.put("entityType", "Department");
+
+                departmentAuditEvents = auditEventFacade.findByJpql(jpql, parameters);
+            } catch (Exception e) {
+                departmentAuditEvents = new ArrayList<>();
+            }
+        } else {
+            departmentAuditEvents = new ArrayList<>();
+        }
+    }
+
+    public String navigateToDepartmentAuditEvents() {
+        fillDepartmentAuditEvents();
+        return "/admin/institutions/department_audit_events?faces-redirect=true";
+    }
+
+    public List<AuditEvent> getDepartmentAuditEvents() {
+        if (departmentAuditEvents == null) {
+            fillDepartmentAuditEvents();
+        }
+        return departmentAuditEvents;
+    }
+
+    public void setDepartmentAuditEvents(List<AuditEvent> departmentAuditEvents) {
+        this.departmentAuditEvents = departmentAuditEvents;
+    }
+
+    public void refreshDepartmentAuditEvents() {
+        departmentAuditEvents = null;
+        fillDepartmentAuditEvents();
+    }
+
+    // ===================== DTO Methods =====================
+    public List<DepartmentDto> completeDepartmentDto(String query) {
+        if (query == null || query.trim().isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        String jpql = "SELECT new com.divudi.core.data.dto.DepartmentDto("
+                + "d.id, d.name, d.code, d.departmentCode, d.retired, d.inactive) "
+                + "FROM Department d WHERE d.retired=:ret "
+                + "AND UPPER(d.name) LIKE :query ";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("ret", false);
+        params.put("query", "%" + query.toUpperCase() + "%");
+
+        if ("active".equals(filterStatus)) {
+            jpql += "AND d.inactive=:inactive ";
+            params.put("inactive", false);
+        } else if ("inactive".equals(filterStatus)) {
+            jpql += "AND d.inactive=:inactive ";
+            params.put("inactive", true);
+        }
+
+        jpql += "ORDER BY d.name";
+
+        try {
+            return (List<DepartmentDto>) getFacade().findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+        } catch (Exception e) {
+            return new ArrayList<>();
+        }
+    }
+
+    public DepartmentDto createDepartmentDto(Department dept) {
+        if (dept == null) {
+            return null;
+        }
+        return new DepartmentDto(
+                dept.getId(),
+                dept.getName(),
+                dept.getCode(),
+                dept.getDepartmentCode(),
+                dept.isRetired(),
+                dept.isInactive()
+        );
+    }
+
+    public void clearDtoCache() {
+        departmentDtoList = null;
+    }
+
+    public DepartmentDto getSelectedDepartmentDto() {
+        return selectedDepartmentDto;
+    }
+
+    public void setSelectedDepartmentDto(DepartmentDto selectedDepartmentDto) {
+        this.selectedDepartmentDto = selectedDepartmentDto;
+        if (selectedDepartmentDto != null && selectedDepartmentDto.getId() != null) {
+            this.current = getFacade().find(selectedDepartmentDto.getId());
+        } else {
+            this.current = null;
+        }
+    }
+
+    public boolean isEditable() {
+        return editable;
+    }
+
+    public void setEditable(boolean editable) {
+        this.editable = editable;
+    }
+
+    public void edit() {
+        if (current == null || current.getId() == null) {
+            JsfUtil.addErrorMessage("Please select a Department to edit");
+            return;
+        }
+        if (current.isInactive()) {
+            JsfUtil.addWarningMessage("Editing inactive Department '" + current.getName() + "'");
+        }
+        editable = true;
+    }
+
+    public void cancel() {
+        current = null;
+        selectedDepartmentDto = null;
+        editable = false;
+    }
+
+    public void saveDepartment() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("Nothing to save");
+            return;
+        }
+        if (current.getName() == null || current.getName().trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Please enter a name");
+            return;
+        }
+        if (current.getInstitution() == null) {
+            JsfUtil.addErrorMessage("Please select an institution");
+            return;
+        }
+
+        // Duplicate name check
+        String sql = "select d from Department d where upper(d.name)=:nm and d.retired=false";
+        Map<String, Object> m = new HashMap<>();
+        m.put("nm", current.getName().trim().toUpperCase());
+        Department existing = getFacade().findFirstByJpql(sql, m);
+        if (existing != null && (current.getId() == null || !existing.getId().equals(current.getId()))) {
+            JsfUtil.addErrorMessage("Department with same name already exists");
+            return;
+        }
+
+        try {
+            boolean isNew = current.getId() == null;
+            Map<String, Object> beforeData = isNew ? null : createAuditMap(getFacade().find(current.getId()));
+
+            if (isNew) {
+                current.setCreatedAt(new Date());
+                current.setCreater(getSessionController().getLoggedUser());
+                getFacade().create(current);
+                JsfUtil.addSuccessMessage("Department '" + current.getName() + "' created successfully");
+            } else {
+                getFacade().edit(current);
+                JsfUtil.addSuccessMessage("Department '" + current.getName() + "' updated successfully");
+            }
+
+            Map<String, Object> afterData = createAuditMap(current);
+            String action = isNew ? "Create Department" : "Update Department";
+            auditService.logAudit(beforeData, afterData,
+                    getSessionController().getLoggedUser(),
+                    "Department", action, current.getId());
+
+            if (isNew && current.getId() != null) {
+                selectedDepartmentDto = createDepartmentDto(current);
+            }
+
+            editable = false;
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error saving Department: " + e.getMessage());
+        }
+
+        recreateModel();
+        clearDtoCache();
+    }
+
+    // ===================== Inner Classes =====================
+    public static class DepartmentDuplicateGroup {
+
+        private List<Department> departments;
+
+        public DepartmentDuplicateGroup(List<Department> departments) {
+            this.departments = departments;
+        }
+
+        public List<Department> getDepartments() {
+            return departments;
+        }
+
+        public String getName() {
+            return departments.get(0).getName();
+        }
+    }
+
     /**
      * Converters
      */
@@ -886,6 +1486,46 @@ public class DepartmentController implements Serializable {
                 throw new IllegalArgumentException("object " + object + " is of type "
                         + object.getClass().getName() + "; expected type: " + Department.class.getName());
             }
+        }
+    }
+
+    @FacesConverter("departmentDtoConverter")
+    public static class DepartmentDtoConverter implements Converter {
+
+        @Override
+        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
+            if (value == null || value.isEmpty()) {
+                return null;
+            }
+            try {
+                Long id = Long.parseLong(value);
+                DepartmentController controller = (DepartmentController) facesContext.getApplication()
+                        .getELResolver().getValue(facesContext.getELContext(), null, "departmentController");
+
+                if (controller == null) {
+                    return null;
+                }
+
+                Department entity = controller.getEjbFacade().find(id);
+                if (entity != null) {
+                    return controller.createDepartmentDto(entity);
+                }
+                return null;
+            } catch (Exception e) {
+                return null;
+            }
+        }
+
+        @Override
+        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
+            if (object == null) {
+                return null;
+            }
+            if (object instanceof DepartmentDto) {
+                DepartmentDto dto = (DepartmentDto) object;
+                return dto.getId() != null ? dto.getId().toString() : null;
+            }
+            throw new IllegalArgumentException("Expected DepartmentDto object");
         }
     }
 }

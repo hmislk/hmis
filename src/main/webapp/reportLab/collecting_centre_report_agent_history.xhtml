@@ -6,143 +6,152 @@
                 xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:ch="http://xmlns.jcp.org/jsf/composite/channel"
+                xmlns:na="http://xmlns.jcp.org/jsf/composite/template"
                 >
 
     <ui:define name="content">
 
         <h:form>
 
-            <p:panel header="Collecting Centre Reference Book">
+            <h:panelGroup rendered="#{!webUserController.hasPrivilege('CollectingCentreReports')}">
+                <na:not_authorize />
+            </h:panelGroup>
 
-                <p:panel>
-                    <h:panelGrid columns="2" >
-                        <h:outputLabel value="From Date"/>
-                        <p:calendar value="#{channelReportController.fromDate}" navigator="true" pattern="dd MMM yyyy HH:mm:ss"  >
-                        </p:calendar>
-                        <h:outputLabel value="To Date"/>
-                        <p:calendar value="#{channelReportController.toDate}" navigator="true" pattern="dd MMM yyyy HH:mm:ss" >
-                        </p:calendar>
-                        <p:outputLabel value="Collecting Centre Name" />
-                        <p:autoComplete converter="deal" value="#{channelReportController.institution}" styleClass="mediuminput"
-                                        forceSelection="true"
-                                        completeMethod="#{institutionController.completeCollectingCenter}" var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
-                            <p:column>#{vt.institutionCode}</p:column>
-                            <p:column>#{vt.name}</p:column>
-                        </p:autoComplete>
+            <h:panelGroup rendered="#{webUserController.hasPrivilege('CollectingCentreReports')}">
+                <p:panel header="Collecting Centre Reference Book">
+
+                    <p:panel>
+                        <h:panelGrid columns="2" >
+                            <h:outputLabel value="From Date"/>
+                            <p:calendar value="#{channelReportController.fromDate}" navigator="true" pattern="dd MMM yyyy HH:mm:ss"  >
+                            </p:calendar>
+                            <h:outputLabel value="To Date"/>
+                            <p:calendar value="#{channelReportController.toDate}" navigator="true" pattern="dd MMM yyyy HH:mm:ss" >
+                            </p:calendar>
+                            <p:outputLabel value="Collecting Centre Name" />
+                            <p:autoComplete converter="deal" value="#{channelReportController.institution}" styleClass="mediuminput"
+                                            forceSelection="true"
+                                            completeMethod="#{institutionController.completeCollectingCenter}" var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
+                                <p:column>#{vt.institutionCode}</p:column>
+                                <p:column>#{vt.name}</p:column>
+                            </p:autoComplete>
 
 
-                        <p:commandButton action="#{channelReportController.createCollectingCentreHistoryTable}" value="Fill" ajax="false" ></p:commandButton> 
-                        <h:panelGrid columns="2">
-                            <p:commandButton ajax="false" value="Print" styleClass="noPrintButton">
-                                <p:printer target="reportPrint"  />
-                            </p:commandButton>
+                            <p:commandButton action="#{channelReportController.createCollectingCentreHistoryTable}" value="Fill" ajax="false" ></p:commandButton> 
+                            <h:panelGrid columns="2">
+                                <p:commandButton ajax="false" value="Print" styleClass="noPrintButton">
+                                    <p:printer target="reportPrint"  />
+                                </p:commandButton>
 
-                            <p:commandButton actionListener="#{channelReportController.createCollectingCentreHistoryTable}" ajax="false" value="Excel" styleClass="noPrintButton">
-                                <p:dataExporter type="xlsx" target="tbl1" fileName="collecting_centre_report_agent_history"  />
-                            </p:commandButton>
-                        </h:panelGrid>
-                    </h:panelGrid> 
+                                <p:commandButton actionListener="#{channelReportController.createCollectingCentreHistoryTable}" ajax="false" value="Excel" styleClass="noPrintButton">
+                                    <p:dataExporter type="xlsx" target="tbl1" fileName="collecting_centre_report_agent_history"  />
+                                </p:commandButton>
+                            </h:panelGrid>
+                        </h:panelGrid> 
+                    </p:panel>
+                    <p:panel id="reportPrint" styleClass="noBorder summeryBorder" >
+                        <p:dataTable value="#{channelReportController.agentHistorys}" var="a" id="tbl1" rowIndexVar="i">
+                            <f:facet name="header">
+                                <p:outputLabel value="From - " />
+                                <p:outputLabel value="#{channelReportController.fromDate}" >
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
+                                </p:outputLabel>
+                                <p:outputLabel value=" - To - " />
+                                <p:outputLabel value="#{channelReportController.toDate}" >
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
+                                </p:outputLabel>
+                                <p:outputLabel value=" Channel Agent " />
+                                <p:outputLabel value="#{channelReportController.institution.name}" />
+                                <p:outputLabel value=" History" />
+                            </f:facet>
+                            <p:column>
+                                <f:facet name="header">
+                                    <p:outputLabel value="No" />
+                                </f:facet>
+                                <p:outputLabel value="#{i+1}" />
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header">
+                                    <p:outputLabel value="Collecting Centre" />
+                                </f:facet>
+                                <p:outputLabel value="#{a.bill.creditCompany.name}" />
+                                <p:outputLabel value="#{a.bill.fromInstitution.name}" />
+                                <p:outputLabel value="- Ref. No(#{a.referenceNo})" />
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header">
+                                    <p:outputLabel value="Bill No" />
+                                </f:facet>
+                                <p:outputLabel value="#{a.bill.deptId} - #{a.bill.deptId}" >
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column styleClass="numberCol" >
+                                <f:facet name="header">
+                                    <p:outputLabel value="Before Balance" />
+                                </f:facet>
+                                <p:outputLabel value="#{a.beforeBallance}" >
+                                    <f:convertNumber pattern="#,##,##0.00" />
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column styleClass="numberCol">
+                                <f:facet name="header">
+                                    <p:outputLabel value="Transaction Value" />
+                                </f:facet>
+                                <p:outputLabel value="#{a.transactionValue}" >
+                                    <f:convertNumber pattern="#,##,##0.00" />
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column styleClass="numberCol" >
+                                <f:facet name="header">
+                                    <p:outputLabel value="After Balance" />
+                                </f:facet>
+                                <p:outputLabel value="#{a.beforeBallance+a.transactionValue}" >
+                                    <f:convertNumber pattern="#,##,##0.00" />
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column styleClass="numberCol" >
+                                <f:facet name="header">
+                                    <p:outputLabel value="Cum Balance" />
+                                </f:facet>
+                                <p:outputLabel value="#{a.transCumilativeTotal}" >
+                                    <f:convertNumber pattern="#,##,##0.00" />
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column styleClass="numberCol" >
+                                <f:facet name="header">
+                                    <p:outputLabel value="Def." />
+                                </f:facet>
+                                <p:outputLabel value="#{(a.beforeBallance+a.transactionValue)-a.transCumilativeTotal}" >
+                                    <f:convertNumber pattern="#,##,##0.00" />
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header">
+                                    <p:outputLabel value="History Type" />
+                                </f:facet>
+                                <p:outputLabel value="#{a.historyType}" />
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header">
+                                    <p:outputLabel value="Creator" />
+                                </f:facet>
+                                <p:outputLabel value="#{a.creater.webUserPerson.nameWithTitle}" />
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header">
+                                    <p:outputLabel value="Created Date" />
+                                </f:facet>
+                                <p:outputLabel value="#{a.createdAt}" >
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
+                                </p:outputLabel>
+                            </p:column>
+                        </p:dataTable>
+                    </p:panel>
+
                 </p:panel>
-                <p:panel id="reportPrint" styleClass="noBorder summeryBorder" >
-                    <p:dataTable value="#{channelReportController.agentHistorys}" var="a" id="tbl1" rowIndexVar="i">
-                        <f:facet name="header">
-                            <p:outputLabel value="From - " />
-                            <p:outputLabel value="#{channelReportController.fromDate}" >
-                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
-                            </p:outputLabel>
-                            <p:outputLabel value=" - To - " />
-                            <p:outputLabel value="#{channelReportController.toDate}" >
-                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
-                            </p:outputLabel>
-                            <p:outputLabel value=" Channel Agent " />
-                            <p:outputLabel value="#{channelReportController.institution.name}" />
-                            <p:outputLabel value=" History" />
-                        </f:facet>
-                        <p:column>
-                            <f:facet name="header">
-                                <p:outputLabel value="No" />
-                            </f:facet>
-                            <p:outputLabel value="#{i+1}" />
-                        </p:column>
-                        <p:column>
-                            <f:facet name="header">
-                                <p:outputLabel value="Collecting Centre" />
-                            </f:facet>
-                            <p:outputLabel value="#{a.bill.creditCompany.name}" />
-                            <p:outputLabel value="#{a.bill.fromInstitution.name}" />
-                            <p:outputLabel value="- Ref. No(#{a.referenceNo})" />
-                        </p:column>
-                        <p:column>
-                            <f:facet name="header">
-                                <p:outputLabel value="Bill No" />
-                            </f:facet>
-                            <p:outputLabel value="#{a.bill.deptId} - #{a.bill.deptId}" >
-                            </p:outputLabel>
-                        </p:column>
-                        <p:column styleClass="numberCol" >
-                            <f:facet name="header">
-                                <p:outputLabel value="Before Balance" />
-                            </f:facet>
-                            <p:outputLabel value="#{a.beforeBallance}" >
-                                <f:convertNumber pattern="#,##,##0.00" />
-                            </p:outputLabel>
-                        </p:column>
-                        <p:column styleClass="numberCol">
-                            <f:facet name="header">
-                                <p:outputLabel value="Transaction Value" />
-                            </f:facet>
-                            <p:outputLabel value="#{a.transactionValue}" >
-                                <f:convertNumber pattern="#,##,##0.00" />
-                            </p:outputLabel>
-                        </p:column>
-                        <p:column styleClass="numberCol" >
-                            <f:facet name="header">
-                                <p:outputLabel value="After Balance" />
-                            </f:facet>
-                            <p:outputLabel value="#{a.beforeBallance+a.transactionValue}" >
-                                <f:convertNumber pattern="#,##,##0.00" />
-                            </p:outputLabel>
-                        </p:column>
-                        <p:column styleClass="numberCol" >
-                            <f:facet name="header">
-                                <p:outputLabel value="Cum Balance" />
-                            </f:facet>
-                            <p:outputLabel value="#{a.transCumilativeTotal}" >
-                                <f:convertNumber pattern="#,##,##0.00" />
-                            </p:outputLabel>
-                        </p:column>
-                        <p:column styleClass="numberCol" >
-                            <f:facet name="header">
-                                <p:outputLabel value="Def." />
-                            </f:facet>
-                            <p:outputLabel value="#{(a.beforeBallance+a.transactionValue)-a.transCumilativeTotal}" >
-                                <f:convertNumber pattern="#,##,##0.00" />
-                            </p:outputLabel>
-                        </p:column>
-                        <p:column>
-                            <f:facet name="header">
-                                <p:outputLabel value="History Type" />
-                            </f:facet>
-                            <p:outputLabel value="#{a.historyType}" />
-                        </p:column>
-                        <p:column>
-                            <f:facet name="header">
-                                <p:outputLabel value="Creator" />
-                            </f:facet>
-                            <p:outputLabel value="#{a.creater.webUserPerson.nameWithTitle}" />
-                        </p:column>
-                        <p:column>
-                            <f:facet name="header">
-                                <p:outputLabel value="Created Date" />
-                            </f:facet>
-                            <p:outputLabel value="#{a.createdAt}" >
-                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
-                            </p:outputLabel>
-                        </p:column>
-                    </p:dataTable>
-                </p:panel>
 
-            </p:panel>
+            </h:panelGroup>
+
 
         </h:form>
     </ui:define>

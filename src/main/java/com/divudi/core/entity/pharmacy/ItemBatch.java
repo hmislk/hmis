@@ -30,7 +30,7 @@ public class ItemBatch implements Serializable, RetirableEntity {
 
     private static final long serialVersionUID = 1L;
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @Temporal(TemporalType.TIMESTAMP)
     private Date dateOfManufacture;
@@ -39,9 +39,10 @@ public class ItemBatch implements Serializable, RetirableEntity {
     private String batchNo;
     @ManyToOne
     private Item item;
-    double purcahseRate;
+    double purcahseRate; // Typo, Can not correct it now as it has already propergated toall databases.
     double retailsaleRate;
     double wholesaleRate;
+    private Double costRate;
     @ManyToOne
     Category make;
     String modal;
@@ -334,5 +335,17 @@ public class ItemBatch implements Serializable, RetirableEntity {
         this.retireComments = retireComments;
     }
 
+    public Double getCostRate() {
+        if (costRate == null) {
+            if (purcahseRate != 0.0) {
+                costRate = purcahseRate;
+            }
+        }
+        return costRate;
+    }
+
+    public void setCostRate(Double costRate) {
+        this.costRate = costRate;
+    }
 
 }

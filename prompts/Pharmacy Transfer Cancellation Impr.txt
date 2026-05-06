@@ -1,0 +1,14 @@
+Pharmacy Transfer Cancellation Improvements
+
+The current pharmacy transfer receive cancellation is not complete.
+
+The current button to navigate to cancellation is in the page - http://localhost:8080/rh/faces/pharmacy/pharmacy_reprint_transfer_receive.xhtml
+The current cancellation page is http://localhost:8080/rh/faces/pharmacy/pharmacy_cancel_transfer_receive.xhtml
+
+But we have to improve them following what we have done in cancellation for transfer issue cancellations
+navigation to transfer issue cancellation is in the page - http://localhost:8080/rh/faces/pharmacy/pharmacy_reprint_transfer_isssue.xhtml , id="btnToCancel"
+transfer issue cancellation is done in the page - http://localhost:8080/rh/faces/pharmacy/pharmacy_transfer_issue_cancel.xhtml
+Please follow that pattern to cancel the transfer receives
+
+I have done some development, but it is not in this branch. can you please check with other local branch have we done it?
+

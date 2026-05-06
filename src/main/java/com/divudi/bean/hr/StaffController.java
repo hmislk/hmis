@@ -173,15 +173,12 @@ public class StaffController implements Serializable {
     public void saveSignatureUrl() {
         System.out.println("saveSignatureUrl");
         if (current.getId() == null || current.getId() == 0) {
-            System.out.println("current Null");
             JsfUtil.addErrorMessage("Please Select Staff Member");
         }
         if (getSignatureUrl() == null || getSignatureUrl().trim() == "") {
-            System.out.println("URL Null");
             JsfUtil.addErrorMessage("Add Signature Url");
         }
         System.out.println("getStaffController().getCurrent = " + getCurrent());
-        System.out.println("Signature Url = " + getSignatureUrl());
 
         current.setSignatureUrl(getSignatureUrl());
         ejbFacade.edit(getCurrent());
@@ -192,10 +189,8 @@ public class StaffController implements Serializable {
     public void removeSignatureUrl() {
         System.out.println("RemoveSignatureUrl");
         if (current.getId() == null || current.getId() == 0) {
-            System.out.println("current Null");
             JsfUtil.addErrorMessage("Please Select Staff Member");
         }
-        System.out.println("getStaffController().getCurrent = " + getCurrent());
 
         current.setSignatureUrl(null);
         ejbFacade.edit(getCurrent());
@@ -203,13 +198,14 @@ public class StaffController implements Serializable {
     }
 
     public String navigateToListStaff() {
+        staff = null;
         fillItems();
-        return "/admin/staff/staff_list?faces-redirect=true;";
+        return "/admin/staff/staff_list?faces-redirect=true";
     }
 
     public String navigateToStaffWelfareEligibilityAdjustmentList() {
         fillItems();
-        return "/admin/staff/staff_welfare_eligibility_adjustment_list?faces-redirect=true;";
+        return "/admin/staff/staff_welfare_eligibility_adjustment_list?faces-redirect=true";
     }
 
     public String navigateToManageStaff(Staff staff) {
@@ -223,14 +219,14 @@ public class StaffController implements Serializable {
             currentPerson = new Person();
             current.setPerson(currentPerson);
         }
-        return "/admin/staff/staff?faces-redirect=true;";
+        return "/admin/staff/staff?faces-redirect=true";
     }
 
     public String navigateToAddNewStaff() {
         current = new Staff();
         currentPerson = new Person();
         current.setPerson(currentPerson);
-        return "/admin/staff/staff?faces-redirect=true;";
+        return "/admin/staff/staff?faces-redirect=true";
     }
 
     public void saveCurrentStaff() {
@@ -853,6 +849,7 @@ public class StaffController implements Serializable {
         } else {
             sql = "select p from Staff p where p.retired=false  and"
                     + " ((p.person.name) like :q or  "
+                    + " (p.staffCode) like :q or "
                     + " (p.code) like :q or "
                     + " (p.epfNo) like :q ) "
                     + " order by p.person.name";
@@ -863,7 +860,7 @@ public class StaffController implements Serializable {
         }
 
         return suggestions;
-    }
+    }  
     Roster roster;
 
     public List<Staff> getSuggestions() {
@@ -916,6 +913,24 @@ public class StaffController implements Serializable {
         return ss;
     }
 
+    // Staff with speciality optional
+    public List<Staff> getSpecialityStaffOptional(Speciality speciality) {
+        List<Staff> ss;
+        String sql;
+        HashMap hm = new HashMap();
+        sql = "select p from Staff p where  "
+                + " p.retired=false ";
+        
+        if (speciality != null) {
+            sql += " and p.speciality=:sp ";
+            hm.put("sp", speciality);
+        } 
+        sql += " order by p.person.name";
+
+        ss = getFacade().findByJpql(sql, hm);
+        return ss;
+    }
+
     public List<Staff> completeStaffWithoutDoctors(String query) {
         List<Staff> suggestions;
         String sql;
@@ -923,11 +938,13 @@ public class StaffController implements Serializable {
             suggestions = new ArrayList<>();
         } else {
             sql = "select p from Staff p where p.retired=false and "
-                    + "((p.person.name) like '%" + query.toUpperCase() + "%' or "
-                    + " (p.code) like '%" + query.toUpperCase() + "%' ) and type(p) != Doctor"
+                    + "((p.person.name) like :q or "
+                    + " (p.code) like :q or "
+                    + " (p.staffCode) like :q ) and type(p) != Doctor"
                     + " order by p.person.name";
-            //////System.out.println(sql);
-            suggestions = getFacade().findByJpql(sql, 20);
+            HashMap hm = new HashMap();
+            hm.put("q", "%" + query.toUpperCase() + "%");
+            suggestions = getFacade().findByJpql(sql, hm, 20);
         }
         return suggestions;
     }
@@ -1172,7 +1189,7 @@ public class StaffController implements Serializable {
     public void delete() {
         if (current != null) {
             if (current.getId() == null) {
-                JsfUtil.addSuccessMessage("Nothing To Delete");
+                JsfUtil.addErrorMessage("Nothing To Delete");
             } else {
 
                 current.setRetired(true);
@@ -1182,7 +1199,7 @@ public class StaffController implements Serializable {
                 JsfUtil.addSuccessMessage("Deleted Successfully");
             }
         } else {
-            JsfUtil.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addErrorMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();
@@ -1292,7 +1309,6 @@ public class StaffController implements Serializable {
         }
 
         System.out.println(" current.getName() = " + current.getName());
-        System.out.println(" current.getPerson().getName() = " + current.getPerson().getName());
 
         updateStaffEmployment();
 
@@ -1347,7 +1363,6 @@ public class StaffController implements Serializable {
         }
 
         System.out.println(" current.getName() = " + current.getName());
-        System.out.println(" current.getPerson().getName() = " + current.getPerson().getName());
 
         recreateModel();
         getItems();

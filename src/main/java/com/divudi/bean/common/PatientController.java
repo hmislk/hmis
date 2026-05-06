@@ -9,6 +9,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+
 import com.divudi.bean.clinical.PatientEncounterController;
 import com.divudi.bean.clinical.PhotoCamBean;
 import com.divudi.bean.clinical.PracticeBookingController;
@@ -38,6 +39,7 @@ import com.divudi.core.entity.FamilyMember;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Patient;
 import com.divudi.core.entity.PatientEncounter;
+import com.divudi.core.entity.Payment;
 import com.divudi.core.entity.Person;
 import com.divudi.core.entity.Relation;
 import com.divudi.core.entity.WebUser;
@@ -55,6 +57,7 @@ import com.divudi.core.facade.PersonFacade;
 import com.divudi.core.facade.WebUserFacade;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.SpecificPatientStatus;
 import com.divudi.core.entity.CancelledBill;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.PatientDeposit;
@@ -67,8 +70,11 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.Serializable;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -91,6 +97,7 @@ import javax.faces.validator.ValidatorException;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
+
 import net.sourceforge.barbecue.Barcode;
 import net.sourceforge.barbecue.BarcodeFactory;
 import net.sourceforge.barbecue.BarcodeImageHandler;
@@ -225,11 +232,14 @@ public class PatientController implements Serializable, ControllerWithPatient {
     private String membershipTypeListner = "1";
 
     boolean patientDetailsEditable;
+    private boolean navigatedFromAdmissionProfile = false;
 
     StreamedContent barcode;
     ReportKeyWord reportKeyWord;
 
     private String searchText;
+    private String searchMembershipCardNo;
+    private String searchPatientAddress;
 
     private String searchName;
     private String searchPhone;
@@ -241,6 +251,8 @@ public class PatientController implements Serializable, ControllerWithPatient {
     private String searchBillId;
     private String searchSampleId;
     private String searchPatientPhoneNumber;
+    private SpecificPatientStatus specificPatientStatus;
+    private boolean blackListStatus;
 
     private List<Patient> searchedPatients;
     private List<Person> searchedPersons;
@@ -256,6 +268,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
     private BillItem billItem;
     private List<BillItem> billItems;
     private PaymentMethodData paymentMethodData;
+    private List<Payment> originalBillPayments;
 
     private boolean printPreview = false;
 
@@ -267,6 +280,31 @@ public class PatientController implements Serializable, ControllerWithPatient {
 
     private boolean reGenerateePhn;
     private PaymentMethod paymentMethod;
+    private String blacklistComment;
+
+    public boolean isBlackListStatus() {
+        return blackListStatus;
+    }
+
+    public void setBlackListStatus(boolean blackListStatus) {
+        this.blackListStatus = blackListStatus;
+    }
+
+    public SpecificPatientStatus getSpecificPatientStatus() {
+        return specificPatientStatus;
+    }
+
+    public void setSpecificPatientStatus(SpecificPatientStatus specificPatientStatus) {
+        this.specificPatientStatus = specificPatientStatus;
+    }
+
+    public String getBlacklistComment() {
+        return blacklistComment;
+    }
+
+    public void setBlacklistComment(String blacklistComment) {
+        this.blacklistComment = blacklistComment;
+    }
 
     /**
      *
@@ -301,6 +339,14 @@ public class PatientController implements Serializable, ControllerWithPatient {
 
     public String navigateToPatientPastChannelBiiking() {
         return "/channel/patients_pastbookings_channel?faces-redirect=true";
+    }
+
+    public String navigateToPatientLookup() {
+        return "/opd/patient_search.xhtml";
+    }
+
+    public List<SpecificPatientStatus> getAllPatientSpecificLabels() {
+        return Arrays.asList(SpecificPatientStatus.values());
     }
 
     public void fillPatientsPastChannelbookings() {
@@ -518,7 +564,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
             JsfUtil.addErrorMessage("No patient");
             return "";
         }
-        return "/emr/patient_photo_capture?faces-redirect=true;";
+        return "/emr/patient_photo_capture?faces-redirect=true";
     }
 
     public StreamedContent getImage() throws IOException {
@@ -710,7 +756,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         getPatientEncounterController().fillCurrentEncounterLists(opdVisit);
         getPatientEncounterController().generateDocumentsFromDocumentTemplates(opdVisit);
         getPatientEncounterController().saveSelected();
-        return "/emr/select_data_entry_form?faces-redirect=true;";
+        return "/emr/select_data_entry_form?faces-redirect=true";
     }
 
     public void generateNewPhn() {
@@ -760,10 +806,10 @@ public class PatientController implements Serializable, ControllerWithPatient {
         patientEncounterController.setPatient(current);
         patientEncounterController.fillCurrentPatientLists(current);
         patientEncounterController.fillPatientInvestigations(current);
-        return "/emr/patient_profile?faces-redirect=true;";
+        return "/emr/patient_profile?faces-redirect=true";
     }
 
-//    public String toEmrPatientProfile() {
+    //    public String toEmrPatientProfile() {
 //        if (current == null) {
 //            JsfUtil.addErrorMessage("No patient selected");
 //            return "";
@@ -774,7 +820,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
 //        patientEncounterController.setPatient(current);
 //        patientEncounterController.fillCurrentPatientLists(current);
 //        patientEncounterController.fillPatientInvestigations(current);
-//        return "/emr/patient_profile?faces-redirect=true;";
+//        return "/emr/patient_profile?faces-redirect=true";
 //    }
     public String navigateToOpdBilling() {
         if (current == null) {
@@ -785,7 +831,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         patientEncounterController.setPatient(current);
         patientEncounterController.fillCurrentPatientLists(current);
         patientEncounterController.fillPatientInvestigations(current);
-        return "/opd/opd_bill?faces-redirect=true;";
+        return "/opd/opd_bill?faces-redirect=true";
     }
 
     public String navigateToPharamecyBilling() {
@@ -798,7 +844,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         patientEncounterController.setPatient(current);
         patientEncounterController.fillCurrentPatientLists(current);
         patientEncounterController.fillPatientInvestigations(current);
-        return "/pharmacy/pharmacy_bill_retail_sale?faces-redirect=true;";
+        return "/pharmacy/pharmacy_bill_retail_sale?faces-redirect=true";
     }
 
     public String navigateToOpticianBilling() {
@@ -810,7 +856,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         patientEncounterController.setPatient(current);
         patientEncounterController.fillCurrentPatientLists(current);
         patientEncounterController.fillPatientInvestigations(current);
-        return "/optician/sale?faces-redirect=true;";
+        return "/optician/sale?faces-redirect=true";
     }
 
     public String navigateToOpdPatientProfile() {
@@ -818,6 +864,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
             JsfUtil.addErrorMessage("No patient selected");
             return "";
         }
+        navigatedFromAdmissionProfile = false;
         return "/opd/patient?faces-redirect=true";
     }
 
@@ -829,6 +876,16 @@ public class PatientController implements Serializable, ControllerWithPatient {
         return "/optician/patient?faces-redirect=true";
     }
 
+    public String navigateToPatientProfileFromAdmissionProfile() {
+        navigatedFromAdmissionProfile = true;
+        return toEmrPatientProfile();
+    }
+
+    public String navigateToInpatientDashboard() {
+        navigatedFromAdmissionProfile = false;
+        return "/inward/admission_profile?faces-redirect=true";
+    }
+
     public String navigateToAdmitFromPatientProfile() {
         if (current == null) {
             JsfUtil.addErrorMessage("No patient selected");
@@ -836,7 +893,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         }
         admissionController.prepereToAdmitNewPatient();
         admissionController.getCurrent().setPatient(current);
-        return "/inward/inward_admission?faces-redirect=true;";
+        return "/inward/inward_admission?faces-redirect=true";
     }
 
     public String navigateToAddToQueueFromPatientProfile() {
@@ -846,7 +903,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         }
         admissionController.prepereToAdmitNewPatient();
         admissionController.getCurrent().setPatient(current);
-        return "/inward/inward_admission?faces-redirect=true;";
+        return "/inward/inward_admission?faces-redirect=true";
     }
 
     public String navigatePatientAdmit() {
@@ -858,7 +915,11 @@ public class PatientController implements Serializable, ControllerWithPatient {
         admissionController.setPrintPreview(false);
         admissionController.setAdmittingProcessStarted(false);
         admissionController.setPatientRoom(new PatientRoom());
-        return "/inward/inward_admission?faces-redirect=true;";
+        admissionController.setBhtText("");
+        quickSearchPhoneNumber = null;
+        admissionController.setPatientAllergies(null);
+        admissionController.setCurrentReservation(null);
+        return "/inward/inward_admission?faces-redirect=true";
 
     }
 
@@ -871,7 +932,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         admissionController.setCurrentNonBht(nonBhtAd);
         admissionController.setCurrent(ad);
         admissionController.setPrintPreview(false);
-        return "/inward/convert_inward_admission?faces-redirect=true;";
+        return "/inward/convert_inward_admission?faces-redirect=true";
 
     }
 
@@ -884,7 +945,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         appointmentController.setSearchedPatient(getCurrent());
         appointmentController.getCurrentAppointment().setPatient(getCurrent());
         appointmentController.getCurrentBill().setPatient(getCurrent());
-        return "/inward/inward_appointment?faces-redirect=true;";
+        return "/inward/inward_appointment?faces-redirect=true";
     }
 
     public String navigateToMedicalPakageBillingFromPatientProfile() {
@@ -898,7 +959,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
 //        appointmentController.setSearchedPatient(getCurrent());
 //        appointmentController.getCurrentAppointment().setPatient(getCurrent());
 //        appointmentController.getCurrentBill().setPatient(getCurrent());
-        return "/opd_bill_package_medical?faces-redirect=true;";
+        return "/opd_bill_package_medical?faces-redirect=true";
     }
 
     public String navigateToBillingForCashierFromPatientProfile() {
@@ -908,7 +969,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         }
         opdPreBillController.prepareNewBill();
         opdPreBillController.setPatient(getCurrent());
-        return "/opd/opd_pre_bill?faces-redirect=true;";
+        return "/opd/opd_pre_bill?faces-redirect=true";
     }
 
     public String navigateToBillingForCashierFromFamilyMembership() {
@@ -935,7 +996,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         opdPreBillController.prepareNewBill();
         opdPreBillController.setPatient(getCurrent());
         opdPreBillController.setPaymentScheme(current.getPerson().getMembershipScheme().getPaymentScheme());
-        return "/opd/opd_pre_bill?faces-redirect=true;";
+        return "/opd/opd_pre_bill?faces-redirect=true";
     }
 
     public String navigateToReceiveDepositsFromPatientProfile() {
@@ -958,7 +1019,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         billItem = new BillItem();
         billItems = new ArrayList<>();
         printPreview = false;
-        return "/payments/patient/receive?faces-redirect=true;";
+        return "/payments/patient/receive?faces-redirect=true";
     }
 
     public void clearDataForPatientDeposite() {
@@ -972,7 +1033,24 @@ public class PatientController implements Serializable, ControllerWithPatient {
 
     public void preparePatientDepositCancel() {
         cancelBill = new CancelledBill();
+        paymentMethodData = new PaymentMethodData();
         current = getBill().getPatient();
+
+        PaymentMethod pm = getBill().getPaymentMethod();
+
+        // Fetch original bill payments for display
+        originalBillPayments = billBeanController.fetchBillPayments(getBill());
+
+        if (originalBillPayments != null && !originalBillPayments.isEmpty()) {
+            initializePaymentDataFromOriginalPayments(originalBillPayments);
+        } else if (pm == PaymentMethod.MultiplePaymentMethods) {
+            cancelBill.setPaymentMethod(PaymentMethod.Cash);
+        } else {
+            cancelBill.setPaymentMethod(pm);
+        }
+
+        // Fetch bill items for display in cancel page
+        billItems = billBeanController.fetchBillItems(getBill());
     }
 
     public void clearDataForPatientRefund() {
@@ -992,7 +1070,8 @@ public class PatientController implements Serializable, ControllerWithPatient {
 
         collectingCentreBillController.prepareNewBill();
         collectingCentreBillController.setPatient(getCurrent());
-        return "/collecting_centre/bill?faces-redirect=true;";
+        collectingCentreBillController.setCcBillSettlingStarted(false);
+        return "/collecting_centre/bill?faces-redirect=true";
     }
 
     public String navigateToOpdPatientEdit() {
@@ -1002,7 +1081,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         }
         reGenerateePhn = webUserController.hasPrivilege("EditData");
 
-        return "/opd/patient_edit?faces-redirect=true;";
+        return "/opd/patient_edit?faces-redirect=true";
     }
 
     public String navigateToOpdPatientEditFromId() {
@@ -1016,7 +1095,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
             return "";
         }
 
-        return "/opd/patient?faces-redirect=true;";
+        return "/opd/patient?faces-redirect=true";
     }
 
     public String navigateToOpdBillFromOpdPatient() {
@@ -1025,6 +1104,14 @@ public class PatientController implements Serializable, ControllerWithPatient {
             return "";
         }
         return opdBillController.navigateToNewOpdBill(current);
+    }
+
+    public String navigateToPharmacyRetailSaleFromOpdPatient() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("No patient selected");
+            return "";
+        }
+        return pharmacySaleController.navigateToPharmacyRetailSale(current, null);
     }
 
     public String navigateToSaleFromOpticianRepair() {
@@ -1069,7 +1156,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
             JsfUtil.addErrorMessage("No patient selected");
             return "";
         }
-        return "/opd/opd_bill?faces-redirect=true;";
+        return "/opd/opd_bill?faces-redirect=true";
     }
 
     public String navigateToConvertOldPatientPhoneNumbers() {
@@ -1078,17 +1165,17 @@ public class PatientController implements Serializable, ControllerWithPatient {
 
     public String navigateToSearchPatients() {
         setSearchedPatients(null);
-        return "/opd/patient_search?faces-redirect=true;";
+        return "/opd/patient_search?faces-redirect=true";
     }
 
     public String navigateToPatientAcceptPayment() {
         setSearchedPatients(null);
-        return "/opd/patient_accept_payment?faces-redirect=true;";
+        return "/opd/patient_accept_payment?faces-redirect=true";
     }
 
     public String navigateToPatientRefundPayment() {
         setSearchedPatients(null);
-        return "/opd/patient_refund_payment?faces-redirect=true;";
+        return "/opd/patient_refund_payment?faces-redirect=true";
     }
 
     public void createPatientInvestigationsTableAllByLoggedInstitution() {
@@ -1235,30 +1322,33 @@ public class PatientController implements Serializable, ControllerWithPatient {
     }
 
     public int settlePatientDepositReceiveCancelNew() {
-        if (getCancelBill().getPaymentMethod() == null) {
-            JsfUtil.addErrorMessage("Please select a Payment Method");
-            return 1;
-        }
-//        if (!current.getHasAnAccount()) {
-//            JsfUtil.addErrorMessage("Please Create Patient Account");
-//            return;
-//        }
-        if (paymentSchemeController.checkPaymentMethodError(getCancelBill().getPaymentMethod(), paymentMethodData)) {
-            JsfUtil.addErrorMessage("Please enter all relavent Payment Method Details");
-            return 2;
+        if (current == null) {
+            return 1; // No Patient
         }
 
-        PaymentMethod tempPm = getCancelBill().getPaymentMethod();
+        // Ensure billedBill reference is set for automatic payment reversal
+        if (getCancelBill().getBilledBill() == null) {
+            getCancelBill().setBilledBill(getBill());
+        }
+
+        // Set payment method from original bill for display/record purposes
+        // (User input is ignored - payments will be auto-reversed from original bill)
+        getCancelBill().setPaymentMethod(getBill().getPaymentMethod());
+
         String tempComment = getCancelBill().getComments();
 
+        // Copy bill details
         cancelBill.copy(getBill());
-        getCancelBill().setPaymentMethod(tempPm);
+        // Copy financial values (netTotal, total, discount, etc.) which are needed for proper cancellation
+        getCancelBill().copyValue(getBill());
+        getCancelBill().setPaymentMethod(getBill().getPaymentMethod());
         getCancelBill().setComments(tempComment);
         getBill().setCancelled(true);
         getBill().setCancelledBill(getCancelBill());
-        getCancelBill().setReferenceBill(cancelBill);
-        getCancelBill().setNetTotal(0 - getBill().getNetTotal());
+        getCancelBill().setReferenceBill(getBill());
+        getCancelBill().invertValueOfThisBill();
 
+        // Save the cancellation bill (payment creation happens in PatientDepositController)
         settleCancelBill(BillType.PatientPaymentCanceldBill, HistoryType.PatientDeposit, BillNumberSuffix.PDC, current);
 
         billFacade.edit(getCancelBill());
@@ -1299,7 +1389,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
     public void settleCancelBill(BillType billType, HistoryType historyType, BillNumberSuffix billNumberSuffix, Patient patient) {
 
         saveCancelBill(billType, billNumberSuffix, patient);
-        billBeanController.setPaymentMethodData(getBill(), getCancelBill().getPaymentMethod(), getPaymentMethodData());
+        // Payment method data setting removed - payments are auto-reversed by PaymentService.createPaymentsForCancelling()
         addToCancelBill();
         saveBillItem();
         getCancelBill().setBillTypeAtomic(BillTypeAtomic.PATIENT_DEPOSIT_CANCELLED);
@@ -1319,7 +1409,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
 
     public String navigateToPatientDepositRefund() {
         createNewPatientDepositRefund();
-        return "/payments/patient/send?faces-redirect=true;";
+        return "/payments/patient/send?faces-redirect=true";
     }
 
     public String navigateToPatientDepositRefundFromOPDBill(Patient patient) {
@@ -1327,7 +1417,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         bill = new Bill();
         paymentMethodData = null;
         printPreview = false;
-        return "/payments/patient/send?faces-redirect=true;";
+        return "/payments/patient/send?faces-redirect=true";
     }
 
     public void makeNull() {
@@ -1497,7 +1587,19 @@ public class PatientController implements Serializable, ControllerWithPatient {
     }
 
     private void saveBillItem() {
+        if (getBill().isCancelled() && getBill().getCancelledBill() != null) {
+            for (BillItem tmp : getBillItems()) {
+                tmp.setId(null);
+                tmp.setCreatedAt(new Date());
+                tmp.setCreater(getSessionController().getLoggedUser());
+                tmp.setBill(getBill().getCancelledBill());
+                tmp.setNetValue(tmp.getNetValue());
+                billItemFacade.create(tmp);
+            }
+            return;
+        }
         for (BillItem tmp : getBillItems()) {
+            tmp.setId(null);
             tmp.setCreatedAt(new Date());
             tmp.setCreater(getSessionController().getLoggedUser());
             tmp.setBill(getBill());
@@ -1585,7 +1687,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
     }
 
     public String toSearchPatient() {
-        return "/emr/patient_search?faces-redirect=true;";
+        return "/emr/patient_search?faces-redirect=true";
     }
 
     public void generateNewCode() {
@@ -1598,7 +1700,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
 
     public String toChangeMembershipOfSelectedPersons() {
         items = new ArrayList<>();
-        return "/membership/change_membership?faces-redirect=true;";
+        return "/membership/change_membership?faces-redirect=true";
     }
 
     public String toAddToQueueFromSearchPatients() {
@@ -1607,7 +1709,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
             return "";
         }
         patientSelected();
-        return "/emr/patient_add_to_queue?faces-redirect=true;";
+        return "/emr/patient_add_to_queue?faces-redirect=true";
     }
 
     public void patientSelected() {
@@ -1674,11 +1776,23 @@ public class PatientController implements Serializable, ControllerWithPatient {
         if (searchSampleId != null && !searchSampleId.trim().equals("")) {
             noSearchCriteriaWasFound = false;
         }
+        if (specificPatientStatus != null) {
+            System.out.println("line 1721");
+            noSearchCriteriaWasFound = false;
+        }
+
+        System.out.println(blackListStatus);
+
+        if (blackListStatus) {
+            System.out.println("line 1726");
+            noSearchCriteriaWasFound = false;
+        }
 
         if (noSearchCriteriaWasFound) {
             JsfUtil.addErrorMessage("No Search Criteria Found !");
             return false;
         }
+        System.out.println("line 1737 " + blackListStatus);
 
         if (searchBillId != null && !searchBillId.trim().equals("")) {
             searchByBill();
@@ -1692,6 +1806,12 @@ public class PatientController implements Serializable, ControllerWithPatient {
             searchPatientByNic();
         } else if (searchPhone == null && searchName == null && searchNic != null && searchNic != null && !searchPatientPhoneNumber.trim().equals("")) {
             searchByPatientPhoneNumber();
+        } else if (specificPatientStatus != null) {
+            System.out.println("line 1748");
+            searchPatientBySpecificStatus();
+        } else if (blackListStatus) {
+            System.out.println("line 1751");
+            searchPatientsBlacklisted();
         } else {
             searchPatientByDetails();
         }
@@ -1702,15 +1822,18 @@ public class PatientController implements Serializable, ControllerWithPatient {
     public String searchPatientForOpd() {
         boolean noError = searchPatientCommon();
         if (!noError) {
+            searchedPatients = null;
             return "";
         }
         if (searchedPatients == null || searchedPatients.isEmpty()) {
             JsfUtil.addErrorMessage("No Matches. Please use different criteria");
-            return navigateToAddNewPatientForOpd(getSearchName(), getSearchNic(), getSearchPhone());
-        } else if (searchedPatients.size() == 1) {
-            setCurrent(searchedPatients.get(0));
-            return navigateToOpdPatientProfile();
+
+            return "";
         }
+//        } else if (searchedPatients.size() == 1) {
+//            setCurrent(searchedPatients.get(0));
+//            return navigateToOpdPatientProfile();
+//        }
         clearSearchDetails();
         return "";
     }
@@ -1763,6 +1886,8 @@ public class PatientController implements Serializable, ControllerWithPatient {
         searchBillId = null;
         searchSampleId = null;
         searchPatientPhoneNumber = null;
+        specificPatientStatus = null;
+        blackListStatus = false;
     }
 
     public void searchByBill() {
@@ -1985,6 +2110,23 @@ public class PatientController implements Serializable, ControllerWithPatient {
         }
     }
 
+    public void searchPatientsBlacklisted() {
+
+        String j;
+        Map m = new HashMap();
+        j = "select p from Patient p where p.retired=false and p.blacklisted = :status";
+        m.put("status", blackListStatus);
+        searchedPatients = getFacade().findByJpql(j, m, TemporalType.DATE, 20);
+    }
+
+    public void searchPatientBySpecificStatus() {
+        String j;
+        Map m = new HashMap();
+        j = "select p from Patient p where p.retired=false and p.specificStatus = :status";
+        m.put("status", specificPatientStatus);
+        searchedPatients = getFacade().findByJpql(j, m, TemporalType.DATE, 20);
+    }
+
     public void searchByPatientPhoneNumber() {
         Long patientPhoneNumber = CommonFunctions.removeSpecialCharsInPhonenumber(searchPatientPhoneNumber);
         if (patientPhoneNumber == null) {
@@ -1998,7 +2140,27 @@ public class PatientController implements Serializable, ControllerWithPatient {
         searchedPatients = getFacade().findByJpql(j, m);
     }
 
-    public void quickSearchPatientLongPhoneNumber(ControllerWithPatient controller) {
+    public boolean checkHasField(Class<?> controller, String fieldName) {
+        try {
+            System.out.println("line 2028");
+            controller.getDeclaredField(fieldName);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    public boolean checkHasMethod(Class<?> controller, String methodName, Class<?>... parameterTypes) {
+        try {
+            System.out.println("line 2038");
+            controller.getMethod(methodName, parameterTypes);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    public void quickSearchPatientLongPhoneNumber(ControllerWithPatient controller) throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
         boolean checkOnlyNumeric = CommonFunctions.checkOnlyNumeric(quickSearchPhoneNumber);
         Patient patientSearched = null;
         boolean usePHN = false;
@@ -2044,7 +2206,13 @@ public class PatientController implements Serializable, ControllerWithPatient {
             controller.setPatientDetailsEditable(false);
 //            controller.setPaymentMethod(null);
 
-            admissionController.fillCurrentPatientAllergies(current);//TODO
+            if (checkHasField(controller.getClass(), "patientAllergies") && checkHasMethod(controller.getClass(), "fillCurrentPatientAllergies", Patient.class)) {
+                Method method = controller.getClass().getDeclaredMethod("fillCurrentPatientAllergies", Patient.class);
+                method.setAccessible(true);
+                method.invoke(controller, patientSearched);
+                System.out.println("line 2094");
+            }
+//            admissionController.fillCurrentPatientAllergies(current);//TODO
 
             boolean automaticallySetPatientDeposit = configOptionApplicationController.getBooleanValueByKey("Automatically set the PatientDeposit payment Method if a Deposit is Available", false);
             System.out.println("One patient found - controller.getPatient().getHasAnAccount() = " + controller.getPatient().getHasAnAccount());
@@ -2087,7 +2255,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         admissionController.fillCurrentPatientAllergies(current); //TODO
 
         boolean automaticallySetPatientDeposit = configOptionApplicationController.getBooleanValueByKey("Automatically set the PatientDeposit payment Method if a Deposit is Available", false);
-        System.out.println("Select Patient - controller.getPatient().getHasAnAccount() = " + controller.getPatient().getHasAnAccount());
+
         if (controller.getPatient().getHasAnAccount() != null) {
             if (controller.getPatient().getHasAnAccount() && automaticallySetPatientDeposit) {
                 controller.setPatient(controller.getPatient());
@@ -2137,7 +2305,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         JsfUtil.addSuccessMessage("Membership Updated");
     }
 
-//    @Deprecated
+    //    @Deprecated
 //    public String toAddAFamily() {
 //        currentFamily = new Family();
 //        return "/membership/add_family";
@@ -2175,7 +2343,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
             JsfUtil.addErrorMessage("No Family is Selected");
             return null;
         }
-        currentFamily=family;
+        currentFamily = family;
         familyMembers = membershipService.fetchFamilyMembers(currentFamily);
         return "/membership/family_membership_manage?faces-redirect=true";
     }
@@ -2194,7 +2362,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
     public String deleteFamilyMembershipAndMembers() {
         if (currentFamily == null) {
             JsfUtil.addErrorMessage("No Family is Selected");
-            return null ;
+            return null;
         }
         membershipService.deleteFamilyAndMembers(currentFamily, sessionController.getLoggedUser());
         families = null;
@@ -2230,11 +2398,11 @@ public class PatientController implements Serializable, ControllerWithPatient {
         Map params = new HashMap();
         Long mcn;
         try {
-            mcn = Long.parseLong(searchText);
+            mcn = Long.parseLong(searchMembershipCardNo);
         } catch (Exception e) {
             mcn = 0L;
         }
-        params.put("pn", searchText);
+        params.put("pn", searchMembershipCardNo);
         params.put("mcn", mcn);
         List<Family> fs = getFamilyFacade().findByJpql(jpql, params);
         if (fs == null || fs.isEmpty()) {
@@ -2242,11 +2410,11 @@ public class PatientController implements Serializable, ControllerWithPatient {
             return "";
         } else if (fs.size() == 1) {
             currentFamily = fs.get(0);
-            searchText = "";
+            searchMembershipCardNo = "";
             return navigateToManageFamilyMembership();
         } else {
             families = fs;
-            searchText = "";
+            searchMembershipCardNo = "";
             return null;
         }
     }
@@ -2283,6 +2451,76 @@ public class PatientController implements Serializable, ControllerWithPatient {
         } else {
             families = fs;
             searchText = "";
+            return null;
+        }
+    }
+
+    public String searchFamilyByNIC() {
+        if (searchNic == null) {
+            JsfUtil.addErrorMessage("No NIC provided");
+            return null;
+        }
+        if (searchNic.trim().isEmpty()) {
+            JsfUtil.addErrorMessage("No NIC provided");
+            return null;
+        }
+
+        families = null;
+        String jpql = "Select f "
+                + " from Family f "
+                + " where f.retired=false "
+                + " and f.chiefHouseHolder.person.nic like :nic "
+                + " order by f.chiefHouseHolder.person.name";
+        Map params = new HashMap();
+        params.put("nic", "%" + searchNic.trim().toUpperCase() + "%");
+
+        List<Family> fs = getFamilyFacade().findByJpql(jpql, params);
+        if (fs == null || fs.isEmpty()) {
+            JsfUtil.addErrorMessage("No matching families found");
+            return "";
+        } else if (fs.size() == 1) {
+            currentFamily = fs.get(0);
+            searchNic = "";
+            return navigateToManageFamilyMembership();
+        } else {
+            families = fs;
+            searchNic = "";
+            return null;
+        }
+    }
+
+    public String searchFamilyByAddress() {
+        if (searchPatientAddress == null) {
+            JsfUtil.addErrorMessage("No Search Text");
+            return null;
+        }
+        if (searchPatientAddress.trim().isEmpty()) {
+            JsfUtil.addErrorMessage("No Search Text");
+            return null;
+        }
+        if (searchPatientAddress.trim().length() < 4) {
+            JsfUtil.addErrorMessage("Enter at least 4 characters");
+            return null;
+        }
+        families = null;
+        String jpql = "Select f "
+                + " from Family f "
+                + " where f.retired=false "
+                + " and f.chiefHouseHolder.person.address like :address "
+                + " order by f.chiefHouseHolder.person.name";
+        Map params = new HashMap();
+        params.put("address", "%" + searchPatientAddress + "%");
+        List<Family> fs = getFamilyFacade().findByJpql(jpql, params);
+        if (fs == null || fs.isEmpty()) {
+            JsfUtil.addErrorMessage("No matching families found");
+            return "";
+        } else if (fs.size() == 1) {
+            currentFamily = fs.get(0);
+            searchPatientAddress = "";
+            return navigateToManageFamilyMembership();
+        } else {
+            families = fs;
+            searchPatientAddress = "";
             return null;
         }
     }
@@ -2479,7 +2717,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         return navigateToAddNewFamilyMembership();
     }
 
-//    public String saveAndClearForNewFamily() {
+    //    public String saveAndClearForNewFamily() {
 //        saveFamily();
 //        currentFamily = new Family();
 //        return navigateToAddNewFamilyMembership();
@@ -2503,16 +2741,16 @@ public class PatientController implements Serializable, ControllerWithPatient {
         return navigateToAddNewIndividualMembership();
     }
 
-//    public String toAddNewFamily() {
+    //    public String toAddNewFamily() {
 //        currentFamily = new Family();
 //        return toFamily();
 //    }
 //    public String toFamily() {
-//        return "/membership/add_family?faces-redirect=true;";
+//        return "/membership/add_family?faces-redirect=true";
 //    }
     public String toNewPatient() {
         prepareAdd();
-        return "/membership/patient?faces-redirect=true;";
+        return "/membership/patient?faces-redirect=true";
     }
 
     public void clearPatientToAddNewMemberToFamily() {
@@ -2645,7 +2883,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
             return "";
         }
         patientSelected();
-        return "/emr/patient_basic_info?faces-redirect=true;";
+        return "/emr/patient_basic_info?faces-redirect=true";
     }
 
     public String toPatientFromSearchPatientsProfile() {
@@ -2654,7 +2892,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
             return "";
         }
         patientSelected();
-        return "/emr/patient_profile?faces-redirect=true;";
+        return "/emr/patient_profile?faces-redirect=true";
     }
 
     public void createPatientBarcode() {
@@ -2816,7 +3054,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         yearMonthDay = null;
         getCurrent();
         getYearMonthDay();
-        return "/emr/patient?faces-redirect=true;";
+        return "/emr/patient?faces-redirect=true";
     }
 
     public String navigateToAddNewPatientForOpd() {
@@ -2824,13 +3062,13 @@ public class PatientController implements Serializable, ControllerWithPatient {
         getCurrent();
 
         reGenerateePhn = true;
-        return "/opd/patient_edit?faces-redirect=true;";
+        return "/opd/patient_edit?faces-redirect=true";
     }
 
     public String navigateToAddNewPatientForOptician() {
         current = null;
         getCurrent();
-        return "/optician/patient_edit?faces-redirect=true;";
+        return "/optician/patient_edit?faces-redirect=true";
     }
 
     public String navigateToAddNewPatientForOpd(String name, String nic, String phone) {
@@ -2840,7 +3078,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         getCurrent().getPerson().setNic(nic);
         getCurrent().getPerson().setPhone(phone);
         getCurrent().getPerson().setMobile(phone);
-        return "/opd/patient_edit?faces-redirect=true;";
+        return "/opd/patient_edit?faces-redirect=true";
     }
 
     public String navigateToAddNewPatientForOptician(String name, String nic, String phone) {
@@ -2850,7 +3088,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         getCurrent().getPerson().setNic(nic);
         getCurrent().getPerson().setPhone(phone);
         getCurrent().getPerson().setMobile(phone);
-        return "/optician/patient_edit?faces-redirect=true;";
+        return "/optician/patient_edit?faces-redirect=true";
     }
 
     public String navigateToAddNewPatientForOpd(String phone) {
@@ -2858,22 +3096,71 @@ public class PatientController implements Serializable, ControllerWithPatient {
         getCurrent();
         getCurrent().getPerson().setPhone(phone);
         getCurrent().getPerson().setMobile(phone);
-        return "/opd/patient_edit?faces-redirect=true;";
+        return "/opd/patient_edit?faces-redirect=true";
     }
 
     public String navigateToEmrEditPatient() {
         getCurrent();
-        return "/emr/patient?faces-redirect=true;";
+        return "/emr/patient?faces-redirect=true";
     }
 
     public String toViewPatient() {
         current = null;
-        return "/emr/patient_profile?faces-redirect=true;";
+        return "/emr/patient_profile?faces-redirect=true";
     }
 
     public String savePatientAndThenNavigateToPatientProfile() {
         saveSelectedPatient();
         return toViewPatient();
+    }
+
+    public void toggleBlacklistPatient(boolean blacklist) {
+        Patient patient = this.current;
+        if (patient == null || patient.getId() == null) {
+            return;
+        }
+
+        if (blacklist && !patient.isBlacklisted()) {
+            if (blacklistComment == null || blacklistComment.isEmpty()) {
+                JsfUtil.addErrorMessage("Please provide a reason for blacklisting. ");
+                return;
+            }
+            Patient newb = getFacade().find(patient.getId());
+            newb.setBlacklisted(true);
+            newb.setBlacklistedAt(new Date());
+            getFacade().edit(newb);
+            newb.setBlacklistedBy(sessionController.getLoggedUser());
+            newb.setReasonForBlacklist(newb.getReasonForBlacklist() != null ? newb.getReasonForBlacklist() + " / " + blacklistComment : blacklistComment);
+//            getFacade().edit(patient);
+
+            getFacade().editAndCommit(newb);
+            this.current = getFacade().findWithoutCache(newb.getId());
+            blacklistComment = null;
+            JsfUtil.addSuccessMessage("Patient is blacklisted.");
+
+        } else if (!blacklist && patient.isBlacklisted()) {
+            if (blacklistComment == null || blacklistComment.isEmpty()) {
+                JsfUtil.addErrorMessage("Please provide a reason for revert blacklisting. ");
+                return;
+            }
+
+            Patient newb = getFacade().find(patient.getId());
+            newb.setBlacklisted(false);
+            getFacade().edit(newb);
+            newb.setReasonForBlacklist(patient.getReasonForBlacklist() + " at "
+                    + newb.getBlacklistedAt() + " by "
+                    + newb.getBlacklistedBy()
+                    + " / revert by " + sessionController.getWebUser()
+                    + " at " + new Date() + " revert comment - " + blacklistComment);
+
+            newb.setBlacklistedAt(null);
+            newb.setBlacklistedBy(null);
+
+            getFacade().editAndCommit(newb);
+
+            blacklistComment = null;
+            JsfUtil.addSuccessMessage("Patient blacklist is reverted.");
+        }
     }
 
     public String deletePatient() {
@@ -2884,7 +3171,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
             getFacade().edit(current);
             JsfUtil.addSuccessMessage("Deleted Successfull");
         } else {
-            JsfUtil.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addErrorMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();
@@ -2902,7 +3189,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
             getFacade().edit(current);
             JsfUtil.addSuccessMessage("Deleted Successfull");
         } else {
-            JsfUtil.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addErrorMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();
@@ -2983,6 +3270,30 @@ public class PatientController implements Serializable, ControllerWithPatient {
         return str;
     }
 
+    /**
+     * Applies patient name capitalization based on configuration settings
+     *
+     * @param patient Patient whose name should be capitalized
+     */
+    public void applyPatientNameCapitalization(Patient patient) {
+        if (patient == null || patient.getPerson() == null) {
+            return;
+        }
+
+        boolean capitalizeAll = configOptionApplicationController.getBooleanValueByKey("Capitalize Entire Patient Name", false);
+        boolean capitalizeEach = configOptionApplicationController.getBooleanValueByKey("Capitalize Each Word in Patient Name", false);
+        String personName = patient.getPerson().getName();
+
+        if (personName != null) {
+            if (capitalizeAll) {
+                personName = personName.toUpperCase();
+            } else if (capitalizeEach) {
+                personName = CommonFunctions.capitalizeFirstLetter(personName);
+            }
+            patient.getPerson().setName(personName);
+        }
+    }
+
     public boolean saveSelected() {
         return saveSelected(current);
     }
@@ -2993,7 +3304,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         if (!savedSuccessfully) {
             return null;
         }
-        return "/membership/add_family?faces-redirect=true;";
+        return "/membership/add_family?faces-redirect=true";
     }
 
     public String saveAndNavigateToOpdPatientProfile() {
@@ -3005,7 +3316,19 @@ public class PatientController implements Serializable, ControllerWithPatient {
         if (!savedSuccessfully) {
             return null;
         }
-        return "/opd/patient?faces-redirect=true;";
+        return "/opd/patient?faces-redirect=true";
+    }
+
+    public String saveAndNavigateToAdmissionProfile() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("Nothing selected");
+            return "";
+        }
+        boolean savedSuccessfully = saveSelected(current);
+        if (!savedSuccessfully) {
+            return null;
+        }
+        return admissionController.navigateToAdmissionProfilePage();
     }
 
     public boolean saveSelected(Patient p) {
@@ -3057,24 +3380,90 @@ public class PatientController implements Serializable, ControllerWithPatient {
                 return false;
             }
         }
-//        if (p.getPerson().getId() == null) {
-//            p.getPerson().setCreatedAt(Calendar.getInstance().getTime());
-//            p.getPerson().setCreater(getSessionController().getLoggedUser());
-//            getPersonFacade().create(p.getPerson());
-//        } else {
-//            getPersonFacade().edit(p.getPerson());
-//        }
+
+        // If only one of phone/mobile is provided, copy it to the other.
+        // Both fields are used interchangeably; at least one must be present.
+        String phone = p.getPerson().getPhone();
+        String mobile = p.getPerson().getMobile();
+        boolean hasPhone = phone != null && !phone.trim().isEmpty();
+        boolean hasMobile = mobile != null && !mobile.trim().isEmpty();
+        if (sessionController.getApplicationPreference().isNeedPhoneNumberForPatientRegistration()) {
+            if (!hasPhone && !hasMobile) {
+                JsfUtil.addErrorMessage("Please enter at least one contact number (Phone or Mobile)");
+                return false;
+            }
+        }
+        if (hasPhone && !hasMobile) {
+            p.setMobileNumberStringTransient(phone.trim());
+        } else if (hasMobile && !hasPhone) {
+            p.setPhoneNumberStringTransient(mobile.trim());
+        }
+
+        //applyPatientNameCapitalization(p);
+        // Generate PHN upfront if needed
+        if (p.getPhn() == null || p.getPhn().trim().equals("")) {
+            p.setPhn(applicationController.createNewPersonalHealthNumber(getSessionController().getInstitution()));
+        }
+
+        // Add TextCase Format
+        if (p.getPerson().getName() != null) {
+            String updatedPatientName;
+            updatedPatientName = changeTextCases(p.getPerson().getName(), sessionController.getApplicationPreference().getChangeTextCasesPatientName());
+            p.getPerson().setName(updatedPatientName);
+        }
+
+        // Save Person first (no flush yet)
+        if (p.getPerson().getId() == null) {
+            p.getPerson().setCreatedAt(Calendar.getInstance().getTime());
+            p.getPerson().setCreater(getSessionController().getLoggedUser());
+            getPersonFacade().create(p.getPerson());
+        } else {
+            getPersonFacade().edit(p.getPerson());
+        }
+
+        // Save Patient with immediate flush (flushes both Person and Patient)
         if (p.getId() == null) {
             p.setCreatedAt(new Date());
             p.setCreater(getSessionController().getLoggedUser());
             p.setCreatedInstitution(getSessionController().getInstitution());
-            getFacade().create(p);
+            getFacade().createAndFlush(p);  // Immediate flush to database
             JsfUtil.addSuccessMessage("Patient Saved Successfully");
         } else {
-            getFacade().edit(p);
+            getFacade().editAndFlush(p);    // Immediate flush to database
             JsfUtil.addSuccessMessage("Patient Saved Successfully");
         }
         return true;
+    }
+
+    public String changeTextCases(String nm, String tc) {
+        if (tc == null) {
+            return nm;
+        }
+        switch (tc.toUpperCase()) {
+            case "UPPERCASE":
+                return nm.toUpperCase();
+            case "LOWERCASE":
+                return nm.toLowerCase();
+            case "CAPITALIZE":
+                return capitalizeFirstLetter(nm);
+            default:
+                return nm;
+        }
+    }
+    
+    public String capitalizeFirstLetter(String str) {
+        if (str == null || str.isEmpty()) {
+            return str;
+        }
+
+        StringBuilder result = new StringBuilder();
+        String[] words = str.split("\\s");
+        for (String word : words) {
+            if (!word.isEmpty()) {
+                result.append(Character.toUpperCase(word.charAt(0))).append(word.substring(1)).append(" ");
+            }
+        }
+        return result.toString().trim();
     }
 
     public List<Patient> findPatientUsingPhnNumber(String phn) {
@@ -3149,6 +3538,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
             return;
         }
 
+        //applyPatientNameCapitalization(p);
         if (p.getPerson().getId() == null) {
             p.getPerson().setCreatedAt(Calendar.getInstance().getTime());
             p.getPerson().setCreater(getSessionController().getLoggedUser());
@@ -3157,19 +3547,17 @@ public class PatientController implements Serializable, ControllerWithPatient {
             getPersonFacade().edit(p.getPerson());
         }
 
+        // Save Patient with immediate flush (flushes both Person and Patient)
         if (p.getId() == null) {
             p.setCreatedAt(new Date());
             p.setCreater(getSessionController().getLoggedUser());
             p.setCreatedInstitution(getSessionController().getInstitution());
-            getFacade().create(p);
+            getFacade().createAndFlush(p);  // Immediate flush to database
             JsfUtil.addSuccessMessage("Saved Successfully");
         } else {
-            getFacade().edit(p);
+            getFacade().editAndFlush(p);    // Immediate flush to database
         }
-        if (p.getPhn() == null || p.getPhn().trim().equals("")) {
-            p.setPhn(applicationController.createNewPersonalHealthNumber(getSessionController().getInstitution()));
-            getEjbFacade().edit(p);
-        }
+
         p.setEditingMode(false);
     }
 
@@ -3216,6 +3604,8 @@ public class PatientController implements Serializable, ControllerWithPatient {
     }
 
     public void saveSelectedPatient() {
+        //applyPatientNameCapitalization(getCurrent());
+
         if (getCurrent().getPerson().getId() == null) {
             getCurrent().getPerson().setCreatedAt(Calendar.getInstance().getTime());
             getCurrent().getPerson().setCreater(getSessionController().getLoggedUser());
@@ -3510,8 +3900,10 @@ public class PatientController implements Serializable, ControllerWithPatient {
             }
         }
         if (sessionController.getApplicationPreference().isNeedPhoneNumberForPatientRegistration()) {
-            if (p.getPerson().getPhone() == null || p.getPerson().getPhone().equals("")) {
-                JsfUtil.addErrorMessage("Please Enter a Phone Number");
+            boolean phonePresent = p.getPerson().getPhone() != null && !p.getPerson().getPhone().trim().isEmpty();
+            boolean mobilePresent = p.getPerson().getMobile() != null && !p.getPerson().getMobile().trim().isEmpty();
+            if (!phonePresent && !mobilePresent) {
+                JsfUtil.addErrorMessage("Please Enter a Phone or Mobile Number");
                 return true;
             }
         }
@@ -3931,6 +4323,14 @@ public class PatientController implements Serializable, ControllerWithPatient {
 
     public void setSearchText(String searchText) {
         this.searchText = searchText;
+    }
+
+    public boolean isNavigatedFromAdmissionProfile() {
+        return navigatedFromAdmissionProfile;
+    }
+
+    public void setNavigatedFromAdmissionProfile(boolean navigatedFromAdmissionProfile) {
+        this.navigatedFromAdmissionProfile = navigatedFromAdmissionProfile;
     }
 
     public List<Patient> getSelectedItems() {
@@ -4395,6 +4795,80 @@ public class PatientController implements Serializable, ControllerWithPatient {
     @Override
     public void setPaymentMethod(PaymentMethod paymentMethod) {
         this.paymentMethod = paymentMethod;
+    }
+
+    public String getSearchMembershipCardNo() {
+        return searchMembershipCardNo;
+    }
+
+    public void setSearchMembershipCardNo(String searchMembershipCardNo) {
+        this.searchMembershipCardNo = searchMembershipCardNo;
+    }
+
+    public String getSearchPatientAddress() {
+        return searchPatientAddress;
+    }
+
+    public void setSearchPatientAddress(String searchPatientAddress) {
+        this.searchPatientAddress = searchPatientAddress;
+    }
+
+    private void initializePaymentDataFromOriginalPayments(List<Payment> originalPayments) {
+        if (originalPayments == null || originalPayments.isEmpty()) {
+            return;
+        }
+
+        // For single payment method
+        if (originalPayments.size() == 1) {
+            Payment originalPayment = originalPayments.get(0);
+            cancelBill.setPaymentMethod(originalPayment.getPaymentMethod());
+
+            // Initialize paymentMethodData based on payment method (using absolute values for UI display)
+            // Note: Total value will be updated later when user selects items to refund
+            switch (originalPayment.getPaymentMethod()) {
+                case Cash:
+                    getPaymentMethodData().getCash().setTotalValue(Math.abs(getBill().getNetTotal()));
+                    break;
+                case Card:
+                    getPaymentMethodData().getCreditCard().setInstitution(originalPayment.getBank());
+                    getPaymentMethodData().getCreditCard().setNo(originalPayment.getCreditCardRefNo());
+                    getPaymentMethodData().getCreditCard().setComment(originalPayment.getComments());
+                    getPaymentMethodData().getCreditCard().setTotalValue(Math.abs(getBill().getNetTotal()));
+                    break;
+                case Cheque:
+                    getPaymentMethodData().getCheque().setInstitution(originalPayment.getBank());
+                    getPaymentMethodData().getCheque().setDate(originalPayment.getChequeDate());
+                    getPaymentMethodData().getCheque().setNo(originalPayment.getChequeRefNo());
+                    getPaymentMethodData().getCheque().setComment(originalPayment.getComments());
+                    getPaymentMethodData().getCheque().setTotalValue(Math.abs(getBill().getNetTotal()));
+                    break;
+                case Slip:
+                    getPaymentMethodData().getSlip().setInstitution(originalPayment.getBank());
+                    getPaymentMethodData().getSlip().setDate(originalPayment.getPaymentDate());
+                    getPaymentMethodData().getSlip().setReferenceNo(originalPayment.getReferenceNo());
+                    getPaymentMethodData().getSlip().setComment(originalPayment.getComments());
+                    getPaymentMethodData().getSlip().setTotalValue(Math.abs(getBill().getNetTotal()));
+                    break;
+                case ewallet:
+                    Institution selectedInstitution = originalPayment.getBank() != null ? originalPayment.getBank() : originalPayment.getInstitution();
+
+                    getPaymentMethodData().getEwallet().setInstitution(selectedInstitution);
+                    getPaymentMethodData().getEwallet().setReferenceNo(originalPayment.getReferenceNo());
+                    getPaymentMethodData().getEwallet().setNo(originalPayment.getReferenceNo());
+                    getPaymentMethodData().getEwallet().setReferralNo(originalPayment.getPolicyNo());
+                    getPaymentMethodData().getEwallet().setTotalValue(Math.abs(getBill().getNetTotal()));
+                    getPaymentMethodData().getEwallet().setComment(originalPayment.getComments());
+                    break;
+                default:
+                    // For any other payment method, just set the total value
+                    break;
+            }
+        } else {
+            // Multiple payments - set to MultiplePaymentMethods
+            cancelBill.setPaymentMethod(PaymentMethod.Cash);
+            // Note: For multiple payments, the user would need to manually configure them
+            // This is a complex scenario that may require additional UI handling
+        }
     }
 
     /**

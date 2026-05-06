@@ -29,5 +29,13 @@ public enum MessageType {
     ChannelTimeDateChange,
     ChannelDoctorReminder,
     ChannelStatusUpdate,
-    DoctorPayment
+    DoctorPayment,
+    BulkPatientSms,
+    BulkNumberSms,
+    ConfirmationEmail,
+    CustomSMS,
+    @Deprecated
+    OTP,
+    PatientPortalOTP,
+    PatientPortal_Link
 }

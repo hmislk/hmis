@@ -1,0 +1,284 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:ph="http://xmlns.jcp.org/jsf/composite/pharmacy">
+
+    <ui:define name="content">
+        <h:form>
+
+            <h:panelGroup rendered="#{!grnReturnWithCostingController.printPreview}" styleClass="alignTop" >
+
+                <p:panel 
+                    header="Pharmacy GRN Return" 
+                    class="w-100 m-1">
+
+                    <div class="row" >
+                        <div class="col-7" >
+                            <p:dataTable 
+                                var="ph" 
+                                value="#{grnReturnWithCostingController.billItems}"
+                                id="itemList" >
+
+                                <f:facet name="header">
+                                    <h:outputText value="Returning Items" ></h:outputText>
+                                </f:facet>
+
+                                <p:column headerText="Item Name"  >
+                                    <h:outputLabel value="#{ph.item.name}"/>
+                                </p:column>
+                                <p:column 
+                                    headerText="Date of Expirey" 
+                                    width="5em" >
+                                    <h:outputText value="#{ph.pharmaceuticalBillItem.stock.itemBatch.dateOfExpire}" >
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
+                                    </h:outputText>
+                                </p:column>
+                                <p:column 
+                                    headerText="Batch No" 
+                                    width="5em" >
+                                    <h:outputText value="#{ph.pharmaceuticalBillItem.stock.itemBatch.batchNo}" >
+                                    </h:outputText>
+                                </p:column>
+                                <p:column 
+                                    headerText="Current Stock" 
+                                    width="5em" >
+                                    <h:outputText value="#{ph.pharmaceuticalBillItem.stock.stock}" >
+                                        <f:convertNumber pattern="#.#" ></f:convertNumber>
+                                    </h:outputText>
+                                </p:column>
+
+                                <p:column
+                                    width="5em" 
+                                    headerText="Purchased Quantity" >
+                                    <h:outputLabel  value="#{ph.referanceBillItem.billItemFinanceDetails.quantity}" />
+                                </p:column>
+                                <p:column
+                                    width="5em" 
+                                    headerText="Free Quantity" >
+                                    <h:outputLabel  value="#{ph.referanceBillItem.billItemFinanceDetails.freeQuantity}" />
+                                </p:column>
+                                <p:column 
+                                    width="5em" 
+                                    headerText="Already Returned Qty" >
+                                    <h:outputLabel
+                                        id="lblAlreadyReturnedQty"
+                                        value="#{grnReturnWithCostingController.getAlreadyReturnedQuantity(ph.referanceBillItem)}" />
+                                </p:column>
+                                <p:column 
+                                    width="5em" 
+                                    headerText="Already Returned Free Qty" 
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Purchase Return by Quantity and Free Quantity')}">
+                                    <h:outputLabel  value="#{grnReturnWithCostingController.getAlreadyReturnedFreeQuantity(ph.referanceBillItem)}" />
+                                </p:column>
+                                <p:column
+                                    width="5em" 
+                                    headerText="Return rate (#{grnReturnWithCostingController.returnRateLabel})" >
+                                    <h:panelGroup id="purchase" >
+                                        <h:outputText  
+                                            value="#{ph.billItemFinanceDetails.lineGrossRate}" 
+                                            rendered="#{!configOptionApplicationController.getBooleanValueByKey('Purchase Return - Changing Return Rate is allowed')}">
+                                            <f:convertNumber pattern="#,##0.00##" />
+                                        </h:outputText>
+                                        <p:inputText
+                                            id="txtReturnRate"
+                                            class="w-100 text-end"
+                                            value="#{ph.billItemFinanceDetails.lineGrossRate}"
+                                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Purchase Return - Changing Return Rate is allowed')}">
+                                            <f:convertNumber pattern="#,##0.00##" ></f:convertNumber>
+                                            <p:ajax event="blur" process="@this" update="@this txtLineReturnValue @form" listener="#{grnReturnWithCostingController.onReturnRateChange(ph)}" />
+                                        </p:inputText>
+                                        <h:outputText value="&nbsp;per Pack" rendered="#{ph.item.class eq 'class com.divudi.core.entity.pharmacy.Ampp'}" />
+                                    </h:panelGroup>
+                                </p:column>
+
+                                <p:column 
+                                    width="5em" 
+                                    headerText="Returning Total Qty"
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Purchase Return by Total Quantity')}">
+                                <p:inputText
+                                    id="txtReturningTotalQty"
+                                    autocomplete="off"
+                                    class="w-100 text-end"
+                                    onfocus="this.select()"
+                                    value="#{ph.billItemFinanceDetails.quantity}">
+                                    <f:convertNumber pattern="#,##0.00##" integerOnly="#{!ph.item.allowFractions}" ></f:convertNumber>
+                                    <p:ajax 
+                                        event="blur" 
+                                        process="@this" 
+                                        update="txtLineReturnValue @form" 
+                                        listener="#{grnReturnWithCostingController.onReturningTotalQtyChange(ph)}" />
+                                </p:inputText>
+                                <p:keyFilter for="txtReturningTotalQty" mask="#{ph.item.allowFractions ? 'num' : 'int'}" />
+                                    <h:outputText value="&nbsp;Packs" rendered="#{ph.item.class eq 'class com.divudi.core.entity.pharmacy.Ampp'}" />
+                                </p:column>
+
+                                <p:column
+                                    width="5em" 
+                                    headerText="Returning Qty"
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Purchase Return by Quantity and Free Quantity')}">
+                                <p:inputText
+                                    id="txtReturningQty"
+                                    autocomplete="off"
+                                    onfocus="this.select()"
+                                    class="w-100 text-end"
+                                    value="#{ph.billItemFinanceDetails.quantity}">
+                                    <f:convertNumber integerOnly="#{!ph.item.allowFractions}" />
+                                    <p:ajax 
+                                        process="@this"
+                                        event="blur" 
+                                        update="txtLineReturnValue @form" 
+                                        listener="#{grnReturnWithCostingController.onReturningQtyChange(ph)}" 
+                                        />
+                                </p:inputText>
+                                <p:keyFilter for="txtReturningQty" mask="#{ph.item.allowFractions ? 'num' : 'int'}" />
+                                </p:column>
+
+                                <p:column
+                                    headerText="Returning Free Qty"
+                                    width="5em" 
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Purchase Return by Quantity and Free Quantity')}">
+                                <p:inputText
+                                    class="w-100 text-end"
+                                    id="txtReturningFreeQty"
+                                    autocomplete="off" value="#{ph.billItemFinanceDetails.freeQuantity}">
+                                    <f:convertNumber integerOnly="#{!ph.item.allowFractions}" />
+                                    <p:ajax
+                                        event="blur" 
+                                        process="@this" 
+                                        update="txtLineReturnValue @form"
+                                        listener="#{grnReturnWithCostingController.onReturningFreeQtyChange(ph)}" />
+                                </p:inputText>
+                                <p:keyFilter for="txtReturningFreeQty" mask="#{ph.item.allowFractions ? 'num' : 'int'}" />
+                                </p:column>
+
+                                <p:column headerText="Return Value" width="5em" >
+                                    <h:outputText id="txtLineReturnValue" value="#{ph.billItemFinanceDetails.lineGrossTotal}" >
+                                        <f:convertNumber pattern="#,##0.00##" ></f:convertNumber>
+                                    </h:outputText>
+                                </p:column>
+
+                            </p:dataTable>
+
+                        </div>
+                        <div class="col-5" >
+                            <p:panel 
+                                class="w-100 m-1"
+                                >
+                                <f:facet name="header" >
+                                    <h:outputText value="Return Details" ></h:outputText>
+                                    <p:commandButton  
+                                        value="Return"
+                                        action="#{grnReturnWithCostingController.settleGrnReturn}"
+                                        ajax="false"  
+                                        style="float: right;"
+                                        class="ui-button-warning"
+                                        >
+                                    </p:commandButton>
+                                </f:facet>
+
+                                <p:messages id="messages" showDetail="true" closable="true" />
+
+                                <p:panelGrid 
+                                    columns="2"
+                                    id="panelReturnBillDetails"
+                                    layout="tabular"
+                                    class="w-100">
+                                    <p:outputLabel value="Supplier : " />
+                                    <p:outputLabel value="#{grnReturnWithCostingController.bill.fromInstitution.name}" />
+                                    <p:outputLabel  value="Receivable Amount : " />
+                                    <p:outputLabel 
+                                        id="returnTotal" 
+                                        class="h1"
+                                        value="#{grnReturnWithCostingController.returnBill.billFinanceDetails.netTotal}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </p:outputLabel>
+
+                                    <p:outputLabel value="Payment Received as : " />
+                                    <p:selectOneMenu id="cmbPs" value="#{grnReturnWithCostingController.returnBill.paymentMethod}">
+                                        <f:selectItems value="#{enumController.paymentMethods}"/>
+                                        <p:ajax process="cmbPs"  event="change" />
+                                    </p:selectOneMenu>
+
+                                    <p:outputLabel
+                                        for="txtReturnComments"
+                                        value="Return Comments: " />
+                                    <h:panelGroup>
+                                        <p:inputTextarea 
+                                            id="txtReturnComments"
+                                            class="w-100"
+                                            value="#{grnReturnWithCostingController.returnBill.comments}" 
+                                            required="true"
+                                            requiredMessage="Please enter a comment"
+                                            ></p:inputTextarea>
+                                        <p:message for="txtReturnComments" />
+                                    </h:panelGroup>
+                                </p:panelGrid>
+
+
+
+
+                            </p:panel>
+                            <p:panel class="w-100 m-1">
+                                <f:facet name="header" >
+                                    <h:outputText value="GRN Details" ></h:outputText>
+                                    <p:commandButton 
+                                        value="View Bill" 
+                                        ajax="false" 
+                                        class="ui-button-info" 
+                                        icon="fa fa-eye"
+                                        style="float: right;"
+                                        action="pharmacy_reprint_purchase?faces-redirect=true">
+                                        <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{grnReturnWithCostingController.bill}"/>
+                                    </p:commandButton>
+                                </f:facet>
+                                <p:panelGrid columns="2" class="w-100">
+                                    <h:outputLabel value="GRN Bill No :"/>
+                                    <h:outputLabel value="#{grnReturnWithCostingController.bill.deptId}"/>
+                                    <h:outputLabel value="GRN Net Total :"/>
+                                    <h:outputLabel value="#{grnReturnWithCostingController.bill.netTotal}">
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>
+                                    <h:outputLabel value="GRN Date :"/>
+                                    <h:outputLabel value="#{grnReturnWithCostingController.bill.invoiceDate}">
+                                        <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
+                                    </h:outputLabel>
+                                </p:panelGrid>
+
+
+                            </p:panel>
+                            <p:panel header="Invoice Details" >
+                                <p:panelGrid columns="2" class="poDetail">
+                                    <h:outputLabel value="Invoice No :"/>
+                                    <h:outputLabel value="#{grnReturnWithCostingController.bill.deptId}"/>
+                                    <h:outputLabel value="Invoice Date :"/>
+                                    <h:outputLabel value="#{grnReturnWithCostingController.bill.invoiceDate}">
+                                        <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
+                                    </h:outputLabel>
+                                </p:panelGrid>
+                            </p:panel>
+
+                        </div>
+                    </div>
+
+                </p:panel>
+
+
+            </h:panelGroup>
+
+            <p:panel rendered="#{grnReturnWithCostingController.printPreview}">
+                <p:commandButton value="Print" ajax="false" action="#" >
+                    <p:printer target="gpBillPreview" ></p:printer>
+                </p:commandButton>
+                <p:panel   id="gpBillPreview">
+                    <ph:grn_return_receipt_with_costing bill="#{grnReturnWithCostingController.returnBill}"/>
+                </p:panel>
+            </p:panel>
+
+        </h:form>
+    </ui:define>
+
+</ui:composition>

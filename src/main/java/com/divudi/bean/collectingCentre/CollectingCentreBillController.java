@@ -2,6 +2,7 @@ package com.divudi.bean.collectingCentre;
 
 import com.divudi.bean.channel.AgentReferenceBookController;
 import com.divudi.bean.common.*;
+import com.divudi.bean.lab.LabTestHistoryController;
 import com.divudi.bean.membership.MembershipSchemeController;
 import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.core.data.BillClassType;
@@ -74,6 +75,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -136,6 +138,8 @@ public class CollectingCentreBillController implements Serializable, ControllerW
      * Controllers
      */
     @Inject
+    WebUserController webUserController;
+    @Inject
     ItemFeeManager itemFeeManager;
     @Inject
     ItemController itemController;
@@ -177,6 +181,8 @@ public class CollectingCentreBillController implements Serializable, ControllerW
     private BillSearch billSearch;
     @Inject
     private BillBeanController billBean;
+    @Inject
+    LabTestHistoryController labTestHistoryController;
 
     /**
      * Properties
@@ -257,6 +263,8 @@ public class CollectingCentreBillController implements Serializable, ControllerW
 
     private String externalDoctor;
 
+    private final AtomicBoolean ccBillSettlingStarted = new AtomicBoolean(false);
+
     public List<AgentReferenceBook> getAgentReferenceBooks() {
         return agentReferenceBooks;
     }
@@ -276,6 +284,14 @@ public class CollectingCentreBillController implements Serializable, ControllerW
 
     public void setAgentReferenceBooks(List<AgentReferenceBook> agentReferenceBooks) {
         this.agentReferenceBooks = agentReferenceBooks;
+    }
+
+    public String generateBookNumberFromReference(String referenceNumber) {
+        if (referenceNumber != null && referenceNumber.length() > 2) {
+            return referenceNumber.substring(0, referenceNumber.length() - 2);
+        } else {
+            return null;
+        }
     }
 
     public void selectCollectingCentre() {
@@ -819,13 +835,19 @@ public class CollectingCentreBillController implements Serializable, ControllerW
     }
 
     public String settleCcBill() {
+        if (!ccBillSettlingStarted.compareAndSet(false, true)) {
+            JsfUtil.addErrorMessage("Bill Settling Already Started.");
+            return null;
+        }
         if (errorCheck()) {
+            ccBillSettlingStarted.set(false);
             return "";
         }
         savePatient();
         calTotals();
         Bill ccBill = createCcBill(lstBillEntries.get(0).getBillItem().getItem().getDepartment());
         if (ccBill == null) {
+            ccBillSettlingStarted.set(false);
             return "";
         }
         List<BillItem> list = new ArrayList<>();
@@ -881,7 +903,8 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         setPrintigBill();
         checkBillValues();
 
-        return "/collecting_centre/bill_print?faces-redirect=true;";
+        ccBillSettlingStarted.set(false);
+        return "/collecting_centre/bill_print?faces-redirect=true";
 
     }
 
@@ -970,6 +993,13 @@ public class CollectingCentreBillController implements Serializable, ControllerW
 
         if (ptIx.getId() == null) {
             getPatientInvestigationFacade().create(ptIx);
+        }
+
+        try {
+            if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
+                labTestHistoryController.addBillingHistory(ptIx, sessionController.getDepartment());
+            }
+        } catch (Exception error) {
         }
 
     }
@@ -1545,7 +1575,6 @@ public class CollectingCentreBillController implements Serializable, ControllerW
             bi.setVat(entryVat);
             bi.setVatPlusNetValue(entryVat + entryNet);
 
-
             billGross += bi.getGrossValue();
             billNet += bi.getNetValue();
             billDiscount += bi.getDiscount();
@@ -1679,6 +1708,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
     public String navigateToCollectingCenterBillingromMenu() {
         prepareNewBill();
         setPatient(getPatient());
+        ccBillSettlingStarted.set(false);
         return "/collecting_centre/bill?faces-redirect=true";
     }
 
@@ -1686,6 +1716,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         prepareNewBillKeepingCollectingCenter();
         fillAvailableAgentReferanceNumbers(collectingCentre);
         setPatient(getPatient());
+        ccBillSettlingStarted.set(false);
         return "/collecting_centre/bill?faces-redirect=true";
     }
 
@@ -1702,7 +1733,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
     }
 
     public void loadCCFinancialData(Institution collectingCentre) {
-        Institution cc = institutionFacade.find(collectingCentre.getId());
+        Institution cc = institutionFacade.findWithoutCache(collectingCentre.getId());
 
         ccBalance = cc.getBallance();
         ccAllowedCreditLImit = cc.getAllowedCreditLimit();
@@ -1715,6 +1746,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         prepareNewBillKeepingCollectingCenter();
         fillAvailableAgentReferanceNumbers(collectingCentre);
         setPatient(getPatient());
+        ccBillSettlingStarted.set(false);
         return "/collecting_centre/bill?faces-redirect=true";
     }
 
@@ -1783,15 +1815,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
     }
 
     public void setBillFeePaymentAndPayment(double amount, BillFee bf, Payment p) {
-        BillFeePayment bfp = new BillFeePayment();
-        bfp.setBillFee(bf);
-        bfp.setAmount(amount);
-        bfp.setInstitution(bf.getBillItem().getItem().getInstitution());
-        bfp.setDepartment(bf.getBillItem().getItem().getDepartment());
-        bfp.setCreater(getSessionController().getLoggedUser());
-        bfp.setCreatedAt(new Date());
-        bfp.setPayment(p);
-        getBillFeePaymentFacade().create(bfp);
+        // BillFeePayment is deprecated and no longer used
     }
 
     public double calBillPaidValue(Bill b) {
@@ -2439,6 +2463,12 @@ public class CollectingCentreBillController implements Serializable, ControllerW
 
     @Override
     public void setPatientDetailsEditable(boolean patientDetailsEditable) {
+        // Allow editing for new patients (id is null), or if user has the privilege for existing patients
+        if (patientDetailsEditable && patient != null && patient.getId() != null && !webUserController.hasPrivilege("OpdEditPatientDetails")) {
+            JsfUtil.addErrorMessage("You don't have permission to edit patient details");
+            this.patientDetailsEditable = false;
+            return;
+        }
         this.patientDetailsEditable = patientDetailsEditable;
     }
 
@@ -2524,7 +2554,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
 
     @Override
     public void listnerForPaymentMethodChange() {
-        // ToDo: Add Logic
+        paymentMethod = PaymentMethod.Agent;
     }
 
     public String getExternalDoctor() {
@@ -2533,6 +2563,15 @@ public class CollectingCentreBillController implements Serializable, ControllerW
 
     public void setExternalDoctor(String externalDoctor) {
         this.externalDoctor = externalDoctor;
+    }
+
+    public boolean isCcBillSettlingStarted() {
+        return ccBillSettlingStarted.get();
+    }
+
+    public void setCcBillSettlingStarted(boolean ccBillSettlingStarted) {
+        this.ccBillSettlingStarted.set(ccBillSettlingStarted);
+
     }
 
     public class CollectingCenterBookSummeryRow {

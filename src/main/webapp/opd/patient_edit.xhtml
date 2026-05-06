@@ -11,10 +11,10 @@
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
-                <h:panelGroup rendered="#{!(webUserController.hasPrivilege('OpdBilling') or webUserController.hasPrivilege('LabCashier'))}" >
+                <h:panelGroup rendered="#{!webUserController.hasPrivilege('LabEditPatient') and patientController.current.id ne null}" >
                     <na:not_authorize />
                 </h:panelGroup>
-                <h:panelGroup rendered="#{webUserController.hasPrivilege('OpdBilling') or webUserController.hasPrivilege('LabCashier')}" styleClass="opdPanel" >
+                <h:panelGroup rendered="#{webUserController.hasPrivilege('LabEditPatient') or patientController.current.id eq null}" styleClass="opdPanel" >
                     <h:panelGroup rendered="#{patientController.current ne null}">
                         <h:form>
                             <p:panel >
@@ -44,13 +44,22 @@
                                                 class="ui-button-warning m-1 " />
 
                                             <p:commandButton
-                                                value="Patient Lookup" 
+                                                value="Patient Lookup"
                                                 action="#{opdBillController.navigateToSearchPatients()}"
-                                                ajax="false" 
-                                                icon="fa fa-search" 
-                                                iconPos="left" 
-                                                class="ui-button-warning m-1 " 
+                                                ajax="false"
+                                                icon="fa fa-search"
+                                                iconPos="left"
+                                                class="ui-button-warning m-1 "
                                                 immediate="true" />
+
+                                            <p:commandButton
+                                                value="Inpatient Dashboard"
+                                                rendered="#{admissionController.current ne null and admissionController.current.id ne null}"
+                                                action="#{patientController.saveAndNavigateToAdmissionProfile()}"
+                                                ajax="false"
+                                                icon="fa fa-hospital-o"
+                                                iconPos="left"
+                                                class="ui-button-info m-1" />
 
                                         </div>
                                     </div>
@@ -129,10 +138,9 @@
                                     <div class="row form-group mb-1">
                                         <div class="col-md-3">
                                             <p:outputLabel value="Phone Number:"  class="form-label" />
-                                            <p:inputText 
-                                                required="true"
-                                                value="#{patientController.current.phoneNumberStringTransient}" 
-                                                class="form-control" 
+                                            <p:inputText
+                                                value="#{patientController.current.phoneNumberStringTransient}"
+                                                class="form-control"
                                                 validatorMessage="Please enter Valid Phone Number."
                                                 validator="#{patientController.validateMobile}"
                                                 >
@@ -196,6 +204,28 @@
                                             </p:autoComplete> 
                                         </div>
                                     </div>
+                                    
+                                    <div class="row form-group mb-1" style="display: #{configOptionApplicationController.getBooleanValueByKey('Enable patient specific status management in the system') ? 'flex' : 'none'}">
+                                        <div class="col-md-3">
+                                            <p:outputLabel value="Patient Specific Status:" class="form-label" />
+                                            <div class="input-group">
+                                                <p:selectOneMenu class="w-100" id="specificStatus" value="#{patientController.current.specificStatus}">
+                                                    <f:selectItems value="#{patientController.getAllPatientSpecificLabels()}"/>
+                                                </p:selectOneMenu>
+
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-9">
+                                            <p:outputLabel value="Comment for Patient Specific Status:" class="form-label" />
+                                            <div class="input-group">
+                                                <p:inputText value="#{patientController.current.specificStatusComment}" style="width: 100%" class="form-control" />
+
+                                            </div>
+                                        </div>
+
+                                    </div>
+
                                     <div class="row form-group mb-1">
                                         <div class="col-md-6">
                                             <p:outputLabel value="PHN Number:" class="form-label" />

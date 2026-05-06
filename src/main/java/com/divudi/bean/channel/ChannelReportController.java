@@ -4,19 +4,44 @@
  */
 package com.divudi.bean.channel;
 
+import com.divudi.bean.channel.ChannelReportTemplateController.AgentHistoryWithDate;
+import com.divudi.bean.channel.ChannelReportTemplateController.BookingCountSummryRow;
+import com.divudi.bean.channel.ChannelReportTemplateController.ChannelBillTotals;
+import com.divudi.bean.channel.ChannelReportTemplateController.ChannelReportColumnModel;
+import com.divudi.bean.channel.ChannelReportTemplateController.ChannelReportColumnModelBundle;
+import com.divudi.bean.channel.ChannelReportTemplateController.DepartmentBill;
+import com.divudi.bean.channel.ChannelReportTemplateController.DoctorPaymentSummeryRow;
+import com.divudi.bean.channel.ChannelReportTemplateController.DoctorPaymentSummeryRowSub;
+import com.divudi.bean.channel.ChannelReportTemplateController.FeetypeFee;
+import com.divudi.bean.channel.analytics.ReportTemplateController;
+import com.divudi.bean.common.ExcelController;
+import com.divudi.bean.common.InstitutionController;
+import com.divudi.bean.common.PdfController;
+import com.divudi.bean.common.ReportTimerController;
+import com.divudi.bean.common.SearchController;
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.pharmacy.PharmacyController;
+import com.divudi.core.data.BillClassType;
 
 import com.divudi.core.data.BillType;
+import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.FeeType;
+import com.divudi.core.data.FinancialReport;
 import com.divudi.core.data.HistoryType;
+import com.divudi.core.data.InstitutionType;
 import com.divudi.core.data.MessageType;
 import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.ReportTemplateRowBundle;
 import com.divudi.core.data.channel.DateEnum;
 import com.divudi.core.data.channel.PaymentEnum;
 import com.divudi.core.data.dataStructure.BillsTotals;
 import com.divudi.core.data.dataStructure.ChannelDoctor;
 import com.divudi.core.data.dataStructure.WebUserBillsTotal;
+import com.divudi.core.data.dto.ChannelServiceCategorywiseDetailsWrapperDTO;
+import com.divudi.core.data.dto.channel.ChannelAbsentPatientsDTO;
 import com.divudi.core.data.hr.ReportKeyWord;
+import com.divudi.core.data.reports.PharmacyReports;
 import com.divudi.core.data.table.String1Value1;
 import com.divudi.core.data.table.String1Value3;
 import com.divudi.ejb.ChannelBean;
@@ -28,8 +53,11 @@ import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.BillSession;
 import com.divudi.core.entity.BilledBill;
 import com.divudi.core.entity.CancelledBill;
+import com.divudi.core.entity.Category;
 import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Doctor;
 import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Payment;
 import com.divudi.core.entity.RefundBill;
 import com.divudi.core.entity.ServiceSession;
 import com.divudi.core.entity.Sms;
@@ -46,10 +74,12 @@ import com.divudi.core.facade.ServiceSessionFacade;
 import com.divudi.core.facade.SmsFacade;
 import com.divudi.core.facade.StaffFacade;
 import com.divudi.core.facade.WebUserFacade;
+import com.divudi.core.light.common.BillLight;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.entity.Speciality;
 import com.divudi.core.facade.SessionInstanceFacade;
 import com.divudi.core.util.CommonFunctions;
+import com.divudi.service.ChannelService;
 import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -59,14 +89,26 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
+
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.primefaces.model.StreamedContent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import java.io.IOException;
+import com.itextpdf.kernel.geom.PageSize;
 
 @Named
 @SessionScoped
@@ -105,17 +147,27 @@ public class ChannelReportController implements Serializable {
     double hospitalFeeCancellededTotal;
     double hospitalFeeRefundededTotal;
     private int channelReportMenuIndex;
-    List<String1Value3> valueList;
-    ReportKeyWord reportKeyWord;
-    Date fromDate;
-    Date toDate;
+    private List<String1Value3> valueList;
+    private ReportKeyWord reportKeyWord;
+    private Date fromDate;
+    private Date toDate;
     private Date newSessionDateTime;
-    Institution institution;
-    WebUser webUser;
-    Staff staff;
-    ChannelBillTotals billTotals;
-    Department department;
+    private Institution institution;
+    private WebUser webUser;
+    private Staff staff;
+    private ChannelBillTotals billTotals;
+    private Department department;
     boolean paid = false;
+    private Category category;
+    private List<Category> categoryList;
+
+    public List<Category> getCategoryList() {
+        return categoryList;
+    }
+
+    public void setCategoryList(List<Category> categoryList) {
+        this.categoryList = categoryList;
+    }
     /////
     private List<ChannelDoctor> channelDoctors;
     List<AgentHistory> agentHistorys;
@@ -125,6 +177,8 @@ public class ChannelReportController implements Serializable {
     List<Bill> channelBills;
     List<Bill> channelBillsCancelled;
     List<Bill> channelBillsRefunded;
+
+    List<ChannelAbsentPatientsDTO> absentPatientsDTO;
 
     /////
     @EJB
@@ -140,6 +194,12 @@ public class ChannelReportController implements Serializable {
     private ChannelBean channelBean;
     @Inject
     SessionController sessionController;
+    @Inject
+    PdfController pdfController;
+    @Inject
+    ExcelController excelController;
+    @Inject
+    PharmacyController pharmacyController;
 
     @EJB
     DepartmentFacade departmentFacade;
@@ -152,12 +212,28 @@ public class ChannelReportController implements Serializable {
     SmsManagerEjb smsManagerEjb;
     @EJB
     SessionInstanceFacade sessionInstanceFacade;
+    @EJB
+    private ReportTimerController reportTimerController;
+    @Inject
+    private InstitutionController institutionController;
+    @Inject
+    private ReportTemplateController reportTemplateController;
 
     private Speciality speciality;
 
     private List<SessionInstance> sessioninstances;
     private PaymentMethod paymentMethod;
     private List<PaymentMethod> paymentMethods;
+    private List<Bill> shiftStartBills;
+
+    private String reportStatus;
+
+    @EJB
+    ChannelService channelService;
+
+    private ReportTemplateRowBundle dataBundle;
+
+    private static final Logger logger = LoggerFactory.getLogger(ChannelReportController.class);
 
     public Institution getInstitution() {
         return institution;
@@ -337,6 +413,745 @@ public class ChannelReportController implements Serializable {
 
     public void setServiceSessions(List<ServiceSession> serviceSessions) {
         this.serviceSessions = serviceSessions;
+    }
+
+    public String navigateToIncomeForScanning() {
+        makeNull();
+        return "/channel/income_for_scanning_bookings?faces-redirect=true";
+    }
+
+    public String navigateToIncomeForAgentBookings() {
+        makeNull();
+        return "/channel/income_with_agent_bookings?faces-redirect=true";
+    }
+
+    public String navigateToFutureIncomeForChanneling() {
+        makeNull();
+        return "/channel/income_with_summery_by_user?faces-redirect=true";
+    }
+    
+    public String navigateToServiceCategoryWiseIncomeForChanneling() {
+        makeNull();
+        return "/channel/service_category_list_by_user_shift?faces-redirect=true";
+    }
+
+    public List<Bill> getShiftStartBills() {
+        return shiftStartBills;
+    }
+
+    public void setShiaftStartBills(List<Bill> shiftStartBills) {
+        this.shiftStartBills = shiftStartBills;
+    }
+    
+    private ChannelServiceCategorywiseDetailsWrapperDTO categorywiseDetailsWrapperDTO;
+
+    public ChannelServiceCategorywiseDetailsWrapperDTO getCategorywiseDetailsWrapperDTO() {
+        return categorywiseDetailsWrapperDTO;
+    }
+
+    public void setCategorywiseDetailsWrapperDTO(ChannelServiceCategorywiseDetailsWrapperDTO categorywiseDetailsWrapperDTO) {
+        this.categorywiseDetailsWrapperDTO = categorywiseDetailsWrapperDTO;
+    }
+
+    public void generateChannelCategorywiseDetailsForShitEndFromChannelReportController(Long shiftStartBillId){
+        categorywiseDetailsWrapperDTO = reportTemplateController.generateChannelCategorywiseDetailsForShitEnd(shiftStartBillId);
+    }
+    
+    
+    public void listShiftStartBills() {
+        
+        categorywiseDetailsWrapperDTO = null;
+        
+        String jpql = "select b "
+                + " from Bill b "
+                + " where b.retired=:ret"
+                + " and b.billTypeAtomic=:bta "
+                + " and b.createdAt between :fd and :td ";
+
+        Map params = new HashMap<>();
+        params.put("ret", false);
+        params.put("bta", BillTypeAtomic.FUND_SHIFT_START_BILL);
+        params.put("fd", fromDate);
+        params.put("td", toDate);
+
+        if(webUser != null){
+             jpql += " and b.creater = :webUser";
+             params.put("webUser", webUser);
+        }
+
+        if (getDepartment() != null) {
+            jpql += " and b.department =:dept";
+            params.put("dept", getDepartment());
+        }
+        jpql += " order by b.createdAt ";
+
+        shiftStartBills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+    }
+
+    private WrapperDtoForChannelFutureIncome cardPaymentDetails;
+
+    public WrapperDtoForChannelFutureIncome getCardPaymentDetails() {
+        return cardPaymentDetails;
+    }
+
+    public void setCardPaymentDetails(WrapperDtoForChannelFutureIncome cardPaymentDetails) {
+        this.cardPaymentDetails = cardPaymentDetails;
+    }
+
+    public List<Institution> getInstitutionForChannelReports() {
+        List<Institution> list = institutionController.getItems();
+
+        list = list.stream().filter(ins -> ins.getInstitutionType() == InstitutionType.Company).collect(Collectors.toList());
+
+        return list;
+    }
+
+    public void getPaymentsForChannelCardAppoinments() {
+
+        if (institution == null) {
+            JsfUtil.addErrorMessage("Please Select The Institution");
+            return;
+        }
+
+        cardPaymentDetails = channelService.fetchCardPaymentDetailsForChannelIncome(fromDate, toDate, institution, reportStatus);
+    }
+
+    public double calculateTotalsFromPayment(List<Payment> payments, String type) {
+        if (payments == null || payments.isEmpty()) {
+            return 0;
+        }
+
+        if (type == null || type.trim().isEmpty()) {
+            return 0;
+        }
+
+        double total = 0;
+        switch (type) {
+            case "TotalFee":
+                for (Payment p : payments) {
+                    if (!p.getBill().isCancelled()) {
+                        total += p.getBill().getTotal();
+                    }
+                }
+                return total;
+            case "HosFee":
+                for (Payment p : payments) {
+                    if (!p.getBill().isCancelled()) {
+                        total += p.getBill().getHospitalFee();
+                    }
+                }
+                return total;
+            case "StaffFee":
+                for (Payment p : payments) {
+                    if (!p.getBill().isCancelled()) {
+                        total += p.getBill().getStaffFee();
+                    }
+                }
+                return total;
+            case "Card":
+                for (Payment p : payments) {
+                    if (!p.getBill().isCancelled()) {
+                        total += p.getPaidValue();
+                    }
+                }
+                return total;
+            default:
+                throw new AssertionError();
+        }
+    }
+
+    public void fetchScanningSessionForIncome() {
+//        List<BillSession> bsList = channelService.fetchScanningSessionBillSessions(fromDate, toDate, institution);
+        if (institution == null) {
+            JsfUtil.addErrorMessage("Please Select The Institution");
+            return;
+        }
+
+        ReportTemplateRowBundle bundle = channelService.generateChannelIncomeSummeryForSessions(fromDate, toDate, institution, null, null, "Scanning", reportStatus);
+        dataBundle = bundle;
+
+    }
+
+    public static class ChannelIncomeDetailDto {
+
+        private long bsId;
+        private long billId;
+        private String billDeptId;
+        private BillTypeAtomic billTypeAtomic;
+        private BillType billType;
+        private Date appoinmentDate;
+        private Date billedDate;
+        private String billedBy;
+        private String patientName;
+        private String patientPhone;
+
+        private PaymentMethod paymentMethod;
+        private String creditCompanyName;
+        private String paymentReference;
+
+        private double doctorFee;
+        private double hosFee;
+        private double totalAppoinmentFee;
+        private double cardFee;
+
+        private String remark;
+
+        private boolean isCancelled;
+        private String cancelledBillDeptId;
+
+        private boolean isRefunded;
+        private String refundBillDeptId;
+
+
+
+        public ChannelIncomeDetailDto(long bsId, long billId, BillTypeAtomic billTypeAtomic, Date appoinmentDate, Date billedDate, String billedBy, String patientName, String patientPhone, PaymentMethod paymentMethod, double doctorFee, double hosFee, double totalAppoinmentFee, String remark, boolean isCancelled, boolean isRefunded) {
+            this.bsId = bsId;
+            this.billId = billId;
+            this.billTypeAtomic = billTypeAtomic;
+            this.appoinmentDate = appoinmentDate;
+            this.billedDate = billedDate;
+            this.billedBy = billedBy;
+            this.patientName = patientName != null ? patientName : "N/A";
+            this.patientPhone = patientPhone != null ? patientPhone : "N/A";
+            this.paymentMethod = paymentMethod;
+            this.doctorFee = doctorFee;
+            this.hosFee = hosFee;
+            this.totalAppoinmentFee = totalAppoinmentFee;
+            this.remark = remark;
+            this.isCancelled = isCancelled;
+            this.isRefunded = isRefunded;
+        }
+
+         // constructor for channel income card payments
+        public ChannelIncomeDetailDto(Long billId, Date createdAt, String billDeptId, BillTypeAtomic billTypeAtomic, BillType billType, String patientName, String cashierName, Boolean canceled, String cancelledBillDeptId,
+                        Boolean refunded, String refundBillDeptId, Double hospitalFee, Double staffFee, Double grossTotal, Double netTotal, String paymentReference, String bankName) {
+            this.billId = billId;
+            this.billedDate = createdAt;
+            this.billDeptId = billDeptId;
+            this.billTypeAtomic = billTypeAtomic;
+            this.billType = billType;
+            this.patientName = patientName;
+            this.billedBy = cashierName;
+            this.isCancelled = canceled;
+            this.cancelledBillDeptId = cancelledBillDeptId;
+            this.isRefunded = refunded;
+            this.refundBillDeptId = refundBillDeptId;
+            this.hosFee = hospitalFee;
+            this.doctorFee = staffFee;
+            this.totalAppoinmentFee = grossTotal;
+            this.cardFee = netTotal;
+            this.paymentReference = paymentReference;
+            this.creditCompanyName = bankName;
+        }
+
+        public BillTypeAtomic getBillTypeAtomic() {
+            return billTypeAtomic;
+        }
+
+        public void setBillTypeAtomic(BillTypeAtomic billTypeAtomic) {
+            this.billTypeAtomic = billTypeAtomic;
+        }
+
+        public boolean isIsCancelled() {
+            return isCancelled;
+        }
+
+        public void setIsCancelled(boolean isCancelled) {
+            this.isCancelled = isCancelled;
+        }
+
+        public boolean isIsRefunded() {
+            return isRefunded;
+        }
+
+        public void setIsRefunded(boolean isRefunded) {
+            this.isRefunded = isRefunded;
+        }
+
+        public String getBilledBy() {
+            return billedBy;
+        }
+
+        public void setBilledBy(String billedBy) {
+            this.billedBy = billedBy;
+        }
+
+        public Date getAppoinmentDate() {
+            return appoinmentDate;
+        }
+
+        public void setAppoinmentDate(Date appoinmentDate) {
+            this.appoinmentDate = appoinmentDate;
+        }
+
+        public String getPatientName() {
+            return patientName;
+        }
+
+        public void setPatientName(String patientName) {
+            this.patientName = patientName;
+        }
+
+        public String getPatientPhone() {
+            return patientPhone;
+        }
+
+        public void setPatientPhone(String patientPhone) {
+            this.patientPhone = patientPhone;
+        }
+
+        public PaymentMethod getPaymentMethod() {
+            return paymentMethod;
+        }
+
+        public void setPaymentMethod(PaymentMethod paymentMethod) {
+            this.paymentMethod = paymentMethod;
+        }
+
+        public double getDoctorFee() {
+            return doctorFee;
+        }
+
+        public void setDoctorFee(double doctorFee) {
+            this.doctorFee = doctorFee;
+        }
+
+        public double getHosFee() {
+            return hosFee;
+        }
+
+        public void setHosFee(double hosFee) {
+            this.hosFee = hosFee;
+        }
+
+        public double getTotalAppoinmentFee() {
+            return totalAppoinmentFee;
+        }
+
+        public void setTotalAppoinmentFee(double totalAppoinmentFee) {
+            this.totalAppoinmentFee = totalAppoinmentFee;
+        }
+
+        public String getRemark() {
+            return remark;
+        }
+
+        public void setRemark(String remark) {
+            this.remark = remark;
+        }
+
+        public long getBsId() {
+            return bsId;
+        }
+
+        public void setBsId(long bsId) {
+            this.bsId = bsId;
+        }
+
+        public long getBillId() {
+            return billId;
+        }
+
+        public void setBillId(long billId) {
+            this.billId = billId;
+        }
+
+        public Date getBilledDate() {
+            return billedDate;
+        }
+
+        public void setBilledDate(Date billedDate) {
+            this.billedDate = billedDate;
+        }
+
+        public String getBillDeptId() {
+            return billDeptId;
+        }
+
+        public void setBillDeptId(String billDeptId) {
+            this.billDeptId = billDeptId;
+        }
+
+        public BillType getBillType() {
+            return billType;
+        }
+
+        public void setBillType(BillType billType) {
+            this.billType = billType;
+        }
+
+        public String getCancelledBillDeptId() {
+            return cancelledBillDeptId;
+        }
+
+        public void setCancelledBillDeptId(String cancelledBillDeptId) {
+            this.cancelledBillDeptId = cancelledBillDeptId;
+        }
+
+        public String getRefundBillDeptId() {
+            return refundBillDeptId;
+        }
+
+        public void setRefundBillDeptId(String refundBillDeptId) {
+            this.refundBillDeptId = refundBillDeptId;
+        }
+
+        public String getPaymentReference() {
+            return paymentReference;
+        }
+
+        public void setPaymentReference(String paymentReference) {
+            this.paymentReference = paymentReference;
+        }
+
+        public String getCreditCompanyName() {
+            return creditCompanyName;
+        }
+
+        public void setCreditCompanyName(String companyName) {
+            this.creditCompanyName = companyName;
+        }
+
+        public double getCardFee() {
+            return cardFee;
+        }
+
+        public void serCardFee(double fee) {
+            this.cardFee = fee;
+        }
+    }
+
+    public static class WrapperDtoForChannelFutureIncome {
+
+        private List<ChannelIncomeDetailDto> incomeDtos;
+        private List<ChannelIncomeSummeryDto> summeryDtos;
+        private Institution hospital;
+        private Date processDate;
+        private String processedBy;
+        private double allCashTotal;
+        private double allCardTotal;
+        private double allCreditTotal;
+        private double totalValidAppoinments;
+        private double allCancelTotal;
+        private double allRefundTotal;
+        private double allCancelAppoinments;
+        private double allRefundAppoinments;
+
+         // fee Totals
+        private double allHosFeeTotal;
+        private double allDoctorFeeTotal;
+        private double allTotalAmount;
+
+        public double getAllCashTotal() {
+            return allCashTotal;
+        }
+
+        public void setAllCashTotal(double allCashTotal) {
+            this.allCashTotal = allCashTotal;
+        }
+
+        public double getAllCardTotal() {
+            return allCardTotal;
+        }
+
+        public void setAllCardTotal(double allCardTotal) {
+            this.allCardTotal = allCardTotal;
+        }
+
+        public double getAllCreditTotal() {
+            return allCreditTotal;
+        }
+
+        public void setAllCreditTotal(double allCreditTotal) {
+            this.allCreditTotal = allCreditTotal;
+        }
+
+        public double getTotalValidAppoinments() {
+            return totalValidAppoinments;
+        }
+
+        public void setTotalValidAppoinments(double totalValidAppoinments) {
+            this.totalValidAppoinments = totalValidAppoinments;
+        }
+
+        public double getAllCancelTotal() {
+            return allCancelTotal;
+        }
+
+        public void setAllCancelTotal(double allCancelTotal) {
+            this.allCancelTotal = allCancelTotal;
+        }
+
+        public double getAllRefundTotal() {
+            return allRefundTotal;
+        }
+
+        public void setAllRefundTotal(double allRefundTotal) {
+            this.allRefundTotal = allRefundTotal;
+        }
+
+        public double getAllCancelAppoinments() {
+            return allCancelAppoinments;
+        }
+
+        public void setAllCancelAppoinments(double allCancelAppoinments) {
+            this.allCancelAppoinments = allCancelAppoinments;
+        }
+
+        public double getAllRefundAppoinments() {
+            return allRefundAppoinments;
+        }
+
+        public void setAllRefundAppoinments(double allRefundAppoinments) {
+            this.allRefundAppoinments = allRefundAppoinments;
+        }
+
+        public List<ChannelIncomeDetailDto> getIncomeDtos() {
+            return incomeDtos;
+        }
+
+        public void setIncomeDtos(List<ChannelIncomeDetailDto> incomeDtos) {
+            this.incomeDtos = incomeDtos;
+        }
+
+        public List<ChannelIncomeSummeryDto> getSummeryDtos() {
+            return summeryDtos;
+        }
+
+        public void setSummeryDtos(List<ChannelIncomeSummeryDto> summeryDtos) {
+            this.summeryDtos = summeryDtos;
+        }
+
+        public Institution getHospital() {
+            return hospital;
+        }
+
+        public void setHospital(Institution hospital) {
+            this.hospital = hospital;
+        }
+
+        public Date getProcessDate() {
+            return processDate;
+        }
+
+        public void setProcessDate(Date processDate) {
+            this.processDate = processDate;
+        }
+
+        public String getProcessedBy() {
+            return processedBy;
+        }
+
+        public void setProcessedBy(String processedBy) {
+            this.processedBy = processedBy;
+        }
+
+        public double getAllHosFeeTotal() {
+            return allHosFeeTotal;
+        }
+
+        public void setAllHosFeeTotal(double allHosFeeTotal) {
+            this.allHosFeeTotal = allHosFeeTotal;
+        }
+
+        public double getAllDoctorFeeTotal() {
+            return allDoctorFeeTotal;
+        }
+
+        public void setAllDoctorFeeTotal(double allDoctorFeeTotal) {
+            this.allDoctorFeeTotal = allDoctorFeeTotal;
+        }
+
+        public double getAllTotalAmount() {
+            return allTotalAmount;
+        }
+
+        public void setAllTotalAmount(double allTotalAmount) {
+            this.allTotalAmount = allTotalAmount;
+        }
+
+    }
+
+    public static class ChannelIncomeSummeryDto {
+
+        private Date appoimentDate;
+        private double cashTotal;
+        private double cardTotal;
+        private double creditTotal;
+        private double agentTotal;
+        private double cancelTotal;
+        private double refundTotal;
+        private double totalDocFee;
+        private double totalHosFee;
+        private double totalAmount;
+        private double totalActiveAppoinments;
+        private double totalCancelAppoinments;
+        private double totalRefundAppoinments;
+
+        public double getTotalRefundAppoinments() {
+            return totalRefundAppoinments;
+        }
+
+        public void setTotalRefundAppoinments(double totalRefundAppoinments) {
+            this.totalRefundAppoinments = totalRefundAppoinments;
+        }
+
+        public double getAgentTotal() {
+            return agentTotal;
+        }
+
+        public void setAgentTotal(double agentTotal) {
+            this.agentTotal = agentTotal;
+        }
+
+        public Date getAppoimentDate() {
+            return appoimentDate;
+        }
+
+        public void setAppoimentDate(Date appoimentDate) {
+            this.appoimentDate = appoimentDate;
+        }
+
+        public double getCashTotal() {
+            return cashTotal;
+        }
+
+        public void setCashTotal(double cashTotal) {
+            this.cashTotal = cashTotal;
+        }
+
+        public double getCardTotal() {
+            return cardTotal;
+        }
+
+        public void setCardTotal(double cardTotal) {
+            this.cardTotal = cardTotal;
+        }
+
+        public double getCreditTotal() {
+            return creditTotal;
+        }
+
+        public void setCreditTotal(double creditTotal) {
+            this.creditTotal = creditTotal;
+        }
+
+        public double getCancelTotal() {
+            return cancelTotal;
+        }
+
+        public void setCancelTotal(double cancelTotal) {
+            this.cancelTotal = cancelTotal;
+        }
+
+        public double getRefundTotal() {
+            return refundTotal;
+        }
+
+        public void setRefundTotal(double refundTotal) {
+            this.refundTotal = refundTotal;
+        }
+
+        public double getTotalDocFee() {
+            return totalDocFee;
+        }
+
+        public void setTotalDocFee(double totalDocFee) {
+            this.totalDocFee = totalDocFee;
+        }
+
+        public double getTotalHosFee() {
+            return totalHosFee;
+        }
+
+        public void setTotalHosFee(double totalHosFee) {
+            this.totalHosFee = totalHosFee;
+        }
+
+        public double getTotalAmount() {
+            return totalAmount;
+        }
+
+        public void setTotalAmount(double totalAmount) {
+            this.totalAmount = totalAmount;
+        }
+
+        public double getTotalActiveAppoinments() {
+            return totalActiveAppoinments;
+        }
+
+        public void setTotalActiveAppoinments(double totalActiveAppoinments) {
+            this.totalActiveAppoinments = totalActiveAppoinments;
+        }
+
+        public double getTotalCancelAppoinments() {
+            return totalCancelAppoinments;
+        }
+
+        public void setTotalCancelAppoinments(double totalCancelAppoinments) {
+            this.totalCancelAppoinments = totalCancelAppoinments;
+        }
+    }
+
+    private WrapperDtoForChannelFutureIncome wrapperDto;
+
+    public WrapperDtoForChannelFutureIncome getWrapperDto() {
+        return wrapperDto;
+    }
+
+    public void setWrapperDto(WrapperDtoForChannelFutureIncome wrapperDto) {
+        this.wrapperDto = wrapperDto;
+    }
+
+    public void fetchChannelIncomeSummeryByUserWise() {
+        if (fromDate == null || toDate == null) {
+            JsfUtil.addErrorMessage("Date range is not selected.");
+            return;
+        }
+
+        if (fromDate.after(toDate)) {
+            JsfUtil.addErrorMessage("From date should be before to toDate.");
+            return;
+        }
+        if (categoryList == null || categoryList.isEmpty()) {
+            JsfUtil.addErrorMessage("Please select categories to proceed the report.");
+            return;
+        }
+
+        wrapperDto = channelService.fetchChannelIncomeByUser(fromDate, toDate, institution, webUser, categoryList, reportStatus, reportStatus);
+
+        if (wrapperDto == null) {
+            return;
+        }
+
+        wrapperDto.setProcessedBy(sessionController.getLoggedUser().getWebUserPerson().getName());
+
+        if (institution != null) {
+            wrapperDto.setHospital(institution);
+        }
+    }
+
+    public void fetchAgentSessionIncome() {
+
+        if (institution == null) {
+            JsfUtil.addErrorMessage("Please Select The Institution");
+            return;
+        }
+
+        ReportTemplateRowBundle bundle = channelService.generateChannelIncomeSummeryForSessions(fromDate, toDate, institution, null, null, "Agent", reportStatus);
+        dataBundle = bundle;
+    }
+
+    public List<Bill> getChildBills(Bill parent) {
+        List<Bill> childList = new ArrayList<>();
+
+        if (parent.isCancelled()) {
+            childList.add(parent.getCancelledBill());
+        } else if (parent.isRefunded()) {
+            childList.addAll(parent.getRefundBills());
+        }
+
+        return childList;
     }
 
     public void fillSessionsForChannelDoctorCard() {
@@ -1208,32 +2023,34 @@ public class ChannelReportController implements Serializable {
     BillsTotals refundBillList;
 
     public void createChannelCashierBillList() {
+        reportTimerController.trackReportExecution(() -> {
 
-        getBilledBillList().setBills(createUserChannelBills(new BilledBill(), getWebUser(), getDepartment()));
-        getCanceledBillList().setBills(createUserChannelBills(new CancelledBill(), getWebUser(), getDepartment()));
-        getRefundBillList().setBills(createUserChannelBills(new RefundBill(), getWebUser(), getDepartment()));
+            getBilledBillList().setBills(createUserChannelBills(new BilledBill(), getWebUser(), getDepartment()));
+            getCanceledBillList().setBills(createUserChannelBills(new CancelledBill(), getWebUser(), getDepartment()));
+            getRefundBillList().setBills(createUserChannelBills(new RefundBill(), getWebUser(), getDepartment()));
 
-        getBilledBillList().setAgent(calChannelTotal(new BilledBill(), getWebUser(), getDepartment(), PaymentMethod.Agent));
-        getCanceledBillList().setAgent(calChannelTotal(new CancelledBill(), getWebUser(), getDepartment(), PaymentMethod.Agent));
-        getRefundBillList().setAgent(calChannelTotal(new RefundBill(), getWebUser(), getDepartment(), PaymentMethod.Agent));
+            getBilledBillList().setAgent(calChannelTotal(new BilledBill(), getWebUser(), getDepartment(), PaymentMethod.Agent));
+            getCanceledBillList().setAgent(calChannelTotal(new CancelledBill(), getWebUser(), getDepartment(), PaymentMethod.Agent));
+            getRefundBillList().setAgent(calChannelTotal(new RefundBill(), getWebUser(), getDepartment(), PaymentMethod.Agent));
 
-        getBilledBillList().setCash(calChannelTotal(new BilledBill(), getWebUser(), getDepartment(), PaymentMethod.Cash));
-        getCanceledBillList().setCash(calChannelTotal(new CancelledBill(), getWebUser(), getDepartment(), PaymentMethod.Cash));
-        getRefundBillList().setCash(calChannelTotal(new RefundBill(), getWebUser(), getDepartment(), PaymentMethod.Cash));
+            getBilledBillList().setCash(calChannelTotal(new BilledBill(), getWebUser(), getDepartment(), PaymentMethod.Cash));
+            getCanceledBillList().setCash(calChannelTotal(new CancelledBill(), getWebUser(), getDepartment(), PaymentMethod.Cash));
+            getRefundBillList().setCash(calChannelTotal(new RefundBill(), getWebUser(), getDepartment(), PaymentMethod.Cash));
 
-        getBilledBillList().setCard(calChannelTotal(new BilledBill(), getWebUser(), getDepartment(), PaymentMethod.Card));
-        getCanceledBillList().setCard(calChannelTotal(new CancelledBill(), getWebUser(), getDepartment(), PaymentMethod.Card));
-        getRefundBillList().setCard(calChannelTotal(new RefundBill(), getWebUser(), getDepartment(), PaymentMethod.Card));
+            getBilledBillList().setCard(calChannelTotal(new BilledBill(), getWebUser(), getDepartment(), PaymentMethod.Card));
+            getCanceledBillList().setCard(calChannelTotal(new CancelledBill(), getWebUser(), getDepartment(), PaymentMethod.Card));
+            getRefundBillList().setCard(calChannelTotal(new RefundBill(), getWebUser(), getDepartment(), PaymentMethod.Card));
 
-        getBilledBillList().setSlip(calChannelTotal(new BilledBill(), getWebUser(), getDepartment(), PaymentMethod.Slip));
-        getCanceledBillList().setSlip(calChannelTotal(new CancelledBill(), getWebUser(), getDepartment(), PaymentMethod.Slip));
-        getRefundBillList().setSlip(calChannelTotal(new RefundBill(), getWebUser(), getDepartment(), PaymentMethod.Slip));
+            getBilledBillList().setSlip(calChannelTotal(new BilledBill(), getWebUser(), getDepartment(), PaymentMethod.Slip));
+            getCanceledBillList().setSlip(calChannelTotal(new CancelledBill(), getWebUser(), getDepartment(), PaymentMethod.Slip));
+            getRefundBillList().setSlip(calChannelTotal(new RefundBill(), getWebUser(), getDepartment(), PaymentMethod.Slip));
 
-        getBilledBillList().setCheque(calChannelTotal(new BilledBill(), getWebUser(), getDepartment(), PaymentMethod.Cheque));
-        getCanceledBillList().setCheque(calChannelTotal(new CancelledBill(), getWebUser(), getDepartment(), PaymentMethod.Cheque));
-        getRefundBillList().setCheque(calChannelTotal(new RefundBill(), getWebUser(), getDepartment(), PaymentMethod.Cheque));
+            getBilledBillList().setCheque(calChannelTotal(new BilledBill(), getWebUser(), getDepartment(), PaymentMethod.Cheque));
+            getCanceledBillList().setCheque(calChannelTotal(new CancelledBill(), getWebUser(), getDepartment(), PaymentMethod.Cheque));
+            getRefundBillList().setCheque(calChannelTotal(new RefundBill(), getWebUser(), getDepartment(), PaymentMethod.Cheque));
 
-        createSummary();
+            createSummary();
+        }, PharmacyReports.CASHIER_REPORT, sessionController.getLoggedUser());
     }
 
     public void createCashierBillList() {
@@ -2571,7 +3388,7 @@ public class ChannelReportController implements Serializable {
 
     public void createAbsentPatientTable() {
         channelBills = new ArrayList<>();
-        channelBills.addAll(getChannelBillsAbsentPatient(staff, paymentMethods));
+        channelBills.addAll(getChannelBillsAbsentPatient(staff, paymentMethods));  
     }
 
     public List<Bill> getChannelBillsAbsentPatient(Staff stf) {
@@ -2598,8 +3415,128 @@ public class ChannelReportController implements Serializable {
         return b;
     }
 
+    private List<ChannelAbsentPatientsDTO> absentPatients;
+    private ChannelAbsentPatientsDTO summaryAbsentPatients;
+
+    // Patient Absent Report 
+    // Consider temporary bookings can not be makred absent
+    public void processPatientAbsentReport() {
+        absentPatients = new ArrayList<>();
+        summaryAbsentPatients = new ChannelAbsentPatientsDTO();
+        HashMap params = new HashMap();
+
+        String sql = " Select new com.divudi.core.data.dto.channel.ChannelAbsentPatientsDTO( "
+                + " b.id, "
+                + " coalesce(b.deptId, ''), "
+                + " b.billTypeAtomic, "
+                + " coalesce(bs.serviceSession.name, ''), "
+                + " bs.serialNo, "
+                + " coalesce(case when b.billTypeAtomic = :onlineCompletedPayment then ob.patientName "
+                + " when b.billTypeAtomic = :onlineCancellation then orbb.patientName "
+                + " else pe.name end, ''), "
+                + " coalesce(c.name, '-'), "
+                + " b.paymentMethod, "
+                + " coalesce(b.staff.person.name, ''), "
+                + " coalesce(b.staffFee, 0.0), "
+                + " coalesce(b.hospitalFee, 0.0), "
+                + " coalesce(b.netTotal, 0.0), "
+                + " b.cancelled, "
+                + " b.refunded, "
+                + " coalesce(cb.deptId, ''), "
+                + " coalesce(rfb.deptId, ''), "
+                + " rb.id, "
+                + " pb.id "
+                + " ) "
+                + " from Bill b"
+                + " join b.singleBillSession bs "
+                + " left join b.patient p "
+                + " left join p.person pe "
+                + " left join b.creater c "
+                + " left join b.cancelledBill cb "
+                + " left join b.refundedBill rfb "
+                + " left join b.referenceBill rb "
+                + " left join b.paidBill pb"
+                + " left join b.billedBill bb "
+                + " left join bb.referenceBill rbb "
+                + " left join rbb.onlineBooking orbb "
+                + " left join rb.onlineBooking ob"
+                + " left join rb.singleBillSession rbs "
+                + " where b.retired=false "
+                + " and bs.retired=false "
+                + " and ("
+                + "      (bs.absent=true and b.createdAt between :fd and :td) "
+                + "   or (rbs.absent=true and rb.paymentMethod=:pmo and rb.createdAt between :fd and :td) "
+                + " )";
+
+        params.put("onlineCompletedPayment", BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT);
+        params.put("onlineCancellation", BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING);
+        params.put("fd", fromDate);
+        params.put("td", toDate);
+        params.put("pmo", PaymentMethod.OnCall);
+
+        if (staff != null) {
+            sql += " and b.staff=:st ";
+            params.put("st", staff);
+        }
+        if (paymentMethods != null && !paymentMethods.isEmpty()) {
+            if (paymentMethods.contains(PaymentMethod.OnCall)) {
+                sql += " and ((b.paymentMethod in :pm) or (rb is not null and rb.billTypeAtomic in :onCallBTA)) ";
+                params.put("pm", paymentMethods);
+                params.put("onCallBTA", Arrays.asList(
+                    BillTypeAtomic.CHANNEL_BOOKING_WITHOUT_PAYMENT,
+                    BillTypeAtomic.CHANNEL_RESHEDULE_WITH_OUT_PAYMENT
+                ));
+            } else {
+                sql += " and b.paymentMethod in :pm and b.billTypeAtomic != :paymentBTA  ";
+                params.put("pm", paymentMethods);
+                params.put("paymentBTA", BillTypeAtomic.CHANNEL_PAYMENT_FOR_BOOKING_BILL);
+            }
+        }
+
+        sql += " order by b.createdAt desc ";
+
+        List<ChannelAbsentPatientsDTO> fetchedBills = (List<ChannelAbsentPatientsDTO>) billFacade.findLightsByJpqlWithoutCache(sql, params, TemporalType.TIMESTAMP);
+
+        if (fetchedBills == null || fetchedBills.isEmpty()) {
+            return;
+        }
+
+        double totalStaffFee = 0.0;
+        double totalHosFee = 0.0;
+        double totalNetTotal = 0.0;
+
+        for (ChannelAbsentPatientsDTO dto : fetchedBills) { 
+            if (dto.getPaymentMethod() == PaymentMethod.OnCall) {
+                if (dto.getPaidId() != null) {
+                    continue;
+                } else {
+                    absentPatients.add(dto);
+
+                    totalNetTotal += dto.getNetTotal();
+                    totalStaffFee += dto.getStaffFee();
+                    totalHosFee += dto.getHospitalFee();
+                }
+            } else {
+                if (dto.getReferenceId() != null && dto.getBillTypeAtomic() != BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT && dto.getBillTypeAtomic() != BillTypeAtomic.CHANNEL_PAYMENT_FOR_BOOKING_BILL) {
+                    continue;
+                } else {
+                    absentPatients.add(dto);
+
+                    totalNetTotal += dto.getNetTotal();
+                    totalStaffFee += dto.getStaffFee();
+                    totalHosFee += dto.getHospitalFee();
+                }
+            }
+        }
+
+        summaryAbsentPatients.setStaffFee(totalStaffFee);
+        summaryAbsentPatients.setHospitalFee(totalHosFee);
+        summaryAbsentPatients.setNetTotal(totalNetTotal);
+    }
+
     public List<Bill> getChannelBillsAbsentPatient(Staff stf, List<PaymentMethod> pms) {
         HashMap hm = new HashMap();
+
         String sql = " select b from Bill b "
                 + " where b.retired=false "
                 + " and b.singleBillSession.absent=true "
@@ -2610,21 +3547,40 @@ public class ChannelReportController implements Serializable {
             hm.put("st", stf);
         }
 
-        if (pms != null) {
+        if (pms != null && !pms.isEmpty()) {
             sql += " and b.paymentMethod in :pm";
             hm.put("pm", pms);
         }
 
-        sql += " order by b.insId ";
+        sql += " order by b.createdAt desc ";
 
         hm.put("fd", fromDate);
         hm.put("td", toDate);
 
         List<Bill> b = getBillFacade().findByJpql(sql, hm, TemporalType.TIMESTAMP);
+        List<Bill> billList = new ArrayList<>();
 
-        doctorFeeTotal = getStaffFeeTotal(b);
+        for (Bill bill : b) {
+            if (bill.getPaymentMethod() == PaymentMethod.OnCall) {
+                if (bill.getPaidBill() != null) {
+                    billList.add(bill.getPaidBill());
+                    continue;
+                } else {
+                    billList.add(bill);
+                }
+            } else {
+                if (bill.getReferenceBill() != null && bill.getBillTypeAtomic() != BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT) {
+                    continue;
+                } else {
+                    billList.add(bill);
+                }
 
-        return b;
+            }
+        }
+
+        doctorFeeTotal = getStaffFeeTotal(billList);
+
+        return billList;
     }
 
     public double getChannelPaymentBillCountbyClassTypes(Bill b, List<BillType> bts, BillType bt, Date d, Staff stf, PaymentMethod pm) {
@@ -3309,6 +4265,11 @@ public class ChannelReportController implements Serializable {
         serviceSession = null;
         billSessions = null;
         valueList = null;
+        dataBundle = null;
+        categoryList = null;
+        webUser = null;
+        shiftStartBills = null;
+        categorywiseDetailsWrapperDTO = null;
     }
 
     List<BillSession> nurseViewSessions;
@@ -4266,6 +5227,341 @@ public class ChannelReportController implements Serializable {
         this.paymentMethods = paymentMethods;
     }
 
+    public ReportTemplateRowBundle getDataBundle() {
+        return dataBundle;
+    }
+
+    public void setDataBundle(ReportTemplateRowBundle dataBundle) {
+        this.dataBundle = dataBundle;
+    }
+
+    public String getReportStatus() {
+        return reportStatus;
+    }
+
+    public void setReportStatus(String reportStatus) {
+        this.reportStatus = reportStatus;
+    }
+
+    public Category getCategory() {
+        return category;
+    }
+
+    public void setCategory(Category category) {
+        this.category = category;
+    }
+
+    public List<ChannelAbsentPatientsDTO> getAbsentPatients() {
+        return absentPatients;
+    }
+
+    public void setAbsentPatients(List<ChannelAbsentPatientsDTO> absentPatients) {
+        this.absentPatients = absentPatients;
+    }
+
+    public ChannelAbsentPatientsDTO getSummaryAbsentPatients() {
+        return summaryAbsentPatients;
+    }
+
+    public void setSummaryAbsentPatients(ChannelAbsentPatientsDTO summaryAbsentPatients) {
+        this.summaryAbsentPatients = summaryAbsentPatients;
+    }
+
+    // PDF Export: Channel Scanning Income Report
+    public StreamedContent getChannelScanningIncomeReportAsPdf() {
+        if (dataBundle == null || dataBundle.getReportTemplateRows() == null || dataBundle.getReportTemplateRows().isEmpty()) {
+            JsfUtil.addErrorMessage("Please generate the Channel Scanning Income report before exporting.");
+            return null;
+        }
+
+        StreamedContent pdfSc = null;
+        try {
+            String fileName = "Channel_Scanning_Income_Report";
+            
+            String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
+            if (dates != null && !dates.isEmpty()) {
+                fileName += "_" + dates;
+            }
+
+            // set bundleType and bundleName
+            dataBundle.setBundleType("channelIncomeScanning");
+            dataBundle.setName("Channel Scanning Income Report");
+            
+            pdfSc = pdfController.createPdfForReportTemplateRows(dataBundle, PageSize.A4.rotate(), true, getFiltersForChannelIncomeReports(), fileName);
+        } catch (IOException e) {
+            logger.error("getChannelScanningIncomeReportAsPdf: Error creating pdfSc via pdfController.createPdfForReportTemplateRows", e);
+            pdfSc = null;
+            JsfUtil.addErrorMessage("Failed to generate Channel Scanning Income Report PDF file. Please try again.");
+        }
+        return pdfSc;
+    }
+
+    // Excel Export: Channel Scanning Income Report
+    public StreamedContent getChannelScanningIncomeReportAsExcel() {
+        if (dataBundle == null || dataBundle.getReportTemplateRows() == null || dataBundle.getReportTemplateRows().isEmpty()) {
+            JsfUtil.addErrorMessage("Please generate the Channel Scanning Income Report before exporting.");
+            return null;
+        }
+
+        StreamedContent downloadingExcel = null;
+        try {
+            String fileName = "Channel_Scanning_Income_Report";
+            String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
+            if (dates != null && !dates.isEmpty()) {
+                fileName += "_" + dates;
+            }
+            // set bundleType and bundleName
+            dataBundle.setBundleType("channelIncomeScanning");
+            dataBundle.setName("Channel Scanning Income Report");
+            
+            downloadingExcel = excelController.createExcelForReportTemplateRows(dataBundle, getFiltersForChannelIncomeReports(), fileName);
+        } catch (IOException e) {
+            logger.error("getChannelScanningIncomeReportAsExcel: Error creating downloadingExcel via excelController.createExcelForReportTemplateRows", e);
+            downloadingExcel = null;
+            JsfUtil.addErrorMessage("Failed to generate Channel Scanning Income Report Excel file. Please try again.");
+        }
+        return downloadingExcel;
+    }
+
+    // PDF Export: Channel Scanning Income Report
+    public StreamedContent getChannelIncomeFromCardPaymentsReportAsPdf() {
+        if (cardPaymentDetails == null || cardPaymentDetails.getIncomeDtos() == null || cardPaymentDetails.getIncomeDtos().isEmpty()) {
+            JsfUtil.addErrorMessage("Please generate the Channel Income From Card Payment report before exporting.");
+            return null;
+        }
+
+        StreamedContent pdfSc = null;
+        try {            
+            pdfSc = pdfController.createPdfForChannelCardIncomeReport(cardPaymentDetails, PageSize.A4.rotate(), true, getFiltersForChannelIncomeReports(), getIncomeFromCardPaymentReportFileName());
+        } catch (IOException e) {
+            logger.error("getChannelIncomeFromCardPaymentsReportAsPdf: Error creating pdfSc via pdfController.createPdfForChannelCardIncomeReport", e);
+            pdfSc = null;
+            JsfUtil.addErrorMessage("Failed to generate Channel Income From Card Payment Report PDF file. Please try again.");
+        }
+        return pdfSc;
+    }
+
+    // PostProcessor for channem_card_income_report excel export
+    public void postProcessChannelCardIncomeReportExcel(Object document) {
+        if (document == null) {
+            logger.error("postProcessChannelCardIncomeReportExcel: Document is null in postProcessChannelCardIncomeReportExcel");
+            return;
+        }
+        if (!(document instanceof XSSFWorkbook)) {
+            logger.error("postProcessChannelCardIncomeReportExcel:Expected document to be an instance of XSSFWorkbook, but got: {}", document.getClass().getName());
+            return;
+        }
+        XSSFWorkbook workbook = (XSSFWorkbook) document;
+        XSSFSheet sheet = workbook.getSheetAt(0);
+        if (sheet == null) {
+            return;
+        }
+
+        workbook.setSheetName(0, "Channel Card Income Report");
+        sheet.shiftRows(0, sheet.getLastRowNum(), 6);
+
+        Map<String, Object> filters = getFiltersForChannelIncomeReports();
+
+        if (filters != null && !filters.isEmpty()) {
+            pharmacyController.addMetaDataToExcelSheet(workbook, sheet, 0, "Channel Card Income Report", filters);
+        }
+    }
+
+    // PDF Export: Channel Income Daily Summary Report
+    public StreamedContent getChannelIncomeDailySummaryReportAsPdf() {
+        if (wrapperDto == null || wrapperDto.getIncomeDtos() == null || wrapperDto.getIncomeDtos().isEmpty()) {
+            JsfUtil.addErrorMessage("Please generate the Channel Income Daily Summary report before exporting.");
+            return null;
+        }
+
+        StreamedContent pdfSc = null;
+        try {
+            String fileName = "Channel_Income_Daily_Summary_Report";
+            
+            String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
+            if (dates != null && !dates.isEmpty()) {
+                fileName += "_" + dates;
+            }
+
+            pdfSc = pdfController.createPdfForChannelIncomeDailySummaryReport(wrapperDto, PageSize.A4.rotate(), true, getFiltersForChannelIncomeDailySummaryReport(), fileName);
+        } catch (IOException e) {
+            logger.error("getChannelIncomeDailySummaryReportAsPdf: Error creating pdfSc via pdfController.createPdfForChannelIncomeDailySummaryReport", e);
+            pdfSc = null;
+            JsfUtil.addErrorMessage("Failed to generate Channel Income Daily Summary Report PDF file. Please try again.");
+        }
+        return pdfSc;
+    }
+
+     // PDF Export: Channel Income With Agent Booking Report
+    public StreamedContent getChannelIncomeWithAgentBookingReportAsPdf() {
+        if (dataBundle == null || dataBundle.getReportTemplateRows() == null || dataBundle.getReportTemplateRows().isEmpty()) {
+            JsfUtil.addErrorMessage("Please generate the Income With Agent Booking report before exporting.");
+            return null;
+        }
+
+        StreamedContent pdfSc = null;
+        try {
+            // set bundleType and bundleName
+            dataBundle.setBundleType("channelIncomeWithAgentBooking");
+            dataBundle.setName("Income With Agent Booking Report");
+            
+            pdfSc = pdfController.createPdfForReportTemplateRows(dataBundle, PageSize.A4.rotate(), true, getFiltersForChannelIncomeReports(), getIncomeWithAgentBookingReportFileName());
+        } catch (IOException e) {
+            logger.error("getChannelIncomeWithAgentBookingReportAsPdf: Error creating pdfSc via pdfController.createPdfForReportTemplateRows", e);
+            pdfSc = null;
+            JsfUtil.addErrorMessage("Failed to generate Income With Agent Booking report PDF file. Please try again.");
+        }
+        return pdfSc;
+    }
+
+    // Excel Export: Channel Income Daily Summary Report
+    public StreamedContent getChannelIncomeDailySummaryReportAsExcel() {
+        if (wrapperDto == null || wrapperDto.getIncomeDtos() == null || wrapperDto.getIncomeDtos().isEmpty()) {
+            JsfUtil.addErrorMessage("Please generate the Channel Income Daily Summary report before exporting.");
+            return null;
+        }
+
+        StreamedContent downloadingExcel = null;
+        try {
+            String fileName = "Channel_Income_Daily_Summary_Report";
+            String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
+            if (dates != null && !dates.isEmpty()) {
+                fileName += "_" + dates;
+            }
+            
+            downloadingExcel = excelController.createExcelForChannelIncomeDailySummaryReport(wrapperDto, getFiltersForChannelIncomeDailySummaryReport(), fileName);
+        } catch (IOException e) {
+            logger.error("getChannelIncomeDailySummaryReportAsExcel: Error creating downloadingExcel via excelController.createExcelForChannelIncomeDailySummaryReport", e);
+            downloadingExcel = null;
+            JsfUtil.addErrorMessage("Failed to generate Channel Income Daily Summary Report Excel file. Please try again.");
+        }
+        return downloadingExcel;
+    }
+
+    // PostProcessor for Income With Agent Booking excel export
+    public void postProcessIncomeWithAgentBookingReportExcel(Object document) {
+        if (document == null) {
+            logger.error("postProcessIncomeWithAgentBookingReportExcel: Document is null in postProcessIncomeWithAgentBookingReportExcel");
+            return;
+        }
+        if (!(document instanceof XSSFWorkbook)) {
+            logger.error("postProcessIncomeWithAgentBookingReportExcel:Expected document to be an instance of XSSFWorkbook, but got: {}", document.getClass().getName());
+            return;
+        }
+        XSSFWorkbook workbook = (XSSFWorkbook) document;
+        XSSFSheet sheet = workbook.getSheetAt(0);
+        if (sheet == null) {
+            return;
+        }
+
+        workbook.setSheetName(0, "Income With Agent Booking");
+        sheet.shiftRows(0, sheet.getLastRowNum(), 6);
+
+        Map<String, Object> filters = getFiltersForChannelIncomeReports();
+
+        if (filters != null && !filters.isEmpty()) {
+            excelController.addMetaDataToExcelPostProcessor(workbook, sheet, 0, "Income With Agent Booking Report", filters);
+        }
+    }
+
+    // Excel Export fileName : channel income
+    public String getIncomeWithAgentBookingReportFileName() {
+        String fileName = "Income_With_Agent_Booking_Report";
+        String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
+        if (dates != null && !dates.isEmpty()) {
+            fileName += "_" + dates;
+        }
+        
+        return fileName;
+    }
+
+    // Filters for Channel Scanning Income report && Income With Agent Booking Report
+    public Map<String, Object> getFiltersForChannelIncomeReports() {
+        Map<String, Object> params = new LinkedHashMap<>();
+        String dateTimeFormat = sessionController.getApplicationPreference().getLongDateTimeFormat();
+        String formattedFromDate = fromDate != null ? new SimpleDateFormat(dateTimeFormat).format(fromDate) : "Not available";
+        String formattedToDate = toDate != null ? new SimpleDateFormat(dateTimeFormat).format(toDate) : "Not available";
+        String reportStatusString = "Details View";
+        if (reportStatus != null && !reportStatus.isEmpty() && reportStatus.equalsIgnoreCase("Summery")) {
+            reportStatusString = "Summary View";
+        }
+
+        params.put("From Date", formattedFromDate);
+        params.put("To Date", formattedToDate);
+        params.put("Institution", institution != null ? institution.getName() : "All Institutions");
+        params.put("Report Status: ", reportStatusString);
+
+        return params;
+    }
+    // Excel Export fileName : channel income from card payment report
+    public String getIncomeFromCardPaymentReportFileName() {
+        String fileName = "Channel_Card_Income_Report";
+        String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
+        if (dates != null && !dates.isEmpty()) {
+            fileName += "_" + dates;
+        }
+        
+        return fileName;
+    }
+
+    // Helper method to convert selected category list to a comma-separated string
+    public String getCategoryListAsString() {
+
+        if (categoryList == null || categoryList.isEmpty()) {
+            return "All";
+        }
+
+        StringBuilder result = new StringBuilder();
+
+        for (int i = 0; i < categoryList.size(); i++) {
+            Category cat = categoryList.get(i);
+
+            if (cat != null && cat.getName() != null) {
+                result.append(cat.getName());
+            }
+
+            if (i < categoryList.size() - 1) {
+                result.append(", ");
+            }
+        }
+
+        return result.toString();
+    }
+
+    // Filters for Channel Income Daily Summary  Report
+    public Map<String, Object> getFiltersForChannelIncomeDailySummaryReport() {
+        Map<String, Object> params = new LinkedHashMap<>();
+        String dateTimeFormat = sessionController.getApplicationPreference().getLongDateTimeFormat();
+        String formattedFromDate = fromDate != null ? new SimpleDateFormat(dateTimeFormat).format(fromDate) : "Not available";
+        String formattedToDate = toDate != null ? new SimpleDateFormat(dateTimeFormat).format(toDate) : "Not available";
+
+        String reportStatusString = "";
+        if (reportStatus != null && !reportStatus.isEmpty()) {
+            if ("Summery".equalsIgnoreCase(reportStatus.trim())) {
+                reportStatusString = "Summary View";
+            } else if ("Details".equalsIgnoreCase(reportStatus.trim())) {
+                reportStatusString = "Details View";
+            }
+        }
+
+        params.put("From Date", formattedFromDate);
+        params.put("To Date", formattedToDate);
+        params.put("Institution", institution != null ? institution.getName() : "All Institutions");
+        params.put("Report Status", reportStatusString);
+        params.put("User", webUser != null ? webUser.getName() : "All Users");
+        params.put("Category", getCategoryListAsString());
+
+        return params;
+    }
+
+    public List<ChannelAbsentPatientsDTO> getAbsentPatientsDTO() {
+        return absentPatientsDTO;
+    }
+
+    public void setAbsentPatientsDTO(List<ChannelAbsentPatientsDTO> absentPatientsDTO) {
+        this.absentPatientsDTO = absentPatientsDTO;
+    }
+
     public class ChannelReportColumnModelBundle implements Serializable {
 
         List<ChannelReportColumnModel> rows;
@@ -4986,4 +6282,55 @@ public class ChannelReportController implements Serializable {
 
     }
 
+    // Flags for PaymentMethods (hasPaymentMethod)
+    public static class PaymentMethodFlags {
+         // PaymentsMethod boolean values
+        public boolean hasCash;
+        public boolean hasCard;
+        public boolean hasCredit;
+        public boolean hasStaffWelfare;
+        public boolean hasVoucher;
+        public boolean hasIou;
+        public boolean hasAgent;
+        public boolean hasCheque;
+        public boolean hasSlip;
+        public boolean hasEWallet;
+        public boolean hasPatientDeposit;
+        public boolean hasPatientPoints;
+        public boolean hasOnlineSettlement;
+
+        public PaymentMethodFlags() {
+            this.hasCash = false;
+            this.hasCard = false;
+            this.hasCredit = false;
+            this.hasStaffWelfare = false;
+            this.hasVoucher = false;
+            this.hasIou = false;
+            this.hasAgent = false;
+            this.hasCheque = false;
+            this.hasSlip = false;
+            this.hasEWallet = false;
+            this.hasPatientDeposit = false;
+            this.hasPatientPoints = false;
+            this.hasOnlineSettlement = false;
+        }
+
+
+        // Set flags using bundle hasPaymentMethod values
+        public void setFlagsReportTemplateRowBundle(ReportTemplateRowBundle bundle) {
+            this.hasCash             = bundle.isHasCashTransaction();
+            this.hasCard             = bundle.isHasCardTransaction();
+            this.hasCredit           = bundle.isHasCreditTransaction();
+            this.hasStaffWelfare     = bundle.isHasStaffWelfareTransaction();
+            this.hasVoucher          = bundle.isHasVoucherTransaction();
+            this.hasIou              = bundle.isHasIouTransaction();
+            this.hasAgent            = bundle.isHasAgentTransaction();
+            this.hasCheque           = bundle.isHasChequeTransaction();
+            this.hasSlip             = bundle.isHasSlipTransaction();
+            this.hasEWallet          = bundle.isHasEWalletTransaction();
+            this.hasPatientDeposit   = bundle.isHasPatientDepositTransaction();
+            this.hasPatientPoints    = bundle.isHasPatientPointsTransaction();
+            this.hasOnlineSettlement = bundle.isHasOnlineSettlementTransaction();
+        }
+    }
 }

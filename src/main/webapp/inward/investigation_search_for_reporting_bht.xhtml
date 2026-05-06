@@ -15,61 +15,91 @@
                             <i class="fa-solid fa-magnifying-glass mx-2"/>
                             <h:outputLabel value="Inward Investigation Search"/> 
                         </f:facet>
-                        <h:panelGroup class="d-flex gap-2">
-                            <h:panelGrid class="col-1 mx-1 mb-auto">
-                                <h:panelGrid columns="1" class="">
-                                    <h:outputLabel value="From Date"/>
-                                    <p:datePicker class="w-100" id="fromDate" 
-                                                  value="#{inwardReportController.fromDate}" 
-                                                  showTime="true"                                            
-                                                  showButtonBar="true"   
-                                                  timeInput="true" 
-                                                  pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >      
-                                    </p:datePicker>
-                                    <h:outputLabel value="To Date"/>
-                                    <p:datePicker id="toDate" value="#{inwardReportController.toDate}" 
 
-                                                  showTime="true"                                           
-                                                  showButtonBar="true"   
-                                                  timeInput="true" 
-                                                  pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
-                                    </p:datePicker>                                
+                        <div class="row">
+                            <div class="col-2">
+                                <h:outputLabel value="From Date"/>
+                                <p:datePicker
+                                    id="fromDate" 
+                                    value="#{inwardReportController.fromDate}" 
+                                    class="w-100"
+                                    inputStyleClass="form-control"
+                                    showTime="true"       
+                                    timeInput="true" 
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >      
+                                </p:datePicker>
 
-                                    <h:outputLabel value="BHT No"/>
-                                    <p:autoComplete  widgetVar="aPt" id="acPt" forceSelection="true" 
-                                                     value="#{inwardReportController.patientEncounter}"
-                                                     completeMethod="#{admissionController.completePatientDishcargedNotFinalized}" 
-                                                     var="myItem" itemValue="#{myItem}" 
-                                                     itemLabel="#{myItem.bhtNo}" 
-                                                     >                                
-                                        <p:column>
-                                            #{myItem.bhtNo}
-                                        </p:column>
-                                        <p:column>
-                                            #{myItem.patient.person.nameWithTitle}
-                                        </p:column>
-                                        <p:column>
-                                            <h:outputLabel value="#{myItem.currentPatientRoom.roomFacilityCharge.name}"/>
-                                        </p:column>
-                                        <p:column>
-                                            <h:outputLabel value="Discharged"  rendered="#{myItem.discharged}"/>
-                                        </p:column>
-                                    </p:autoComplete>
+                                <h:outputLabel value="To Date"/>
+                                <p:datePicker 
+                                    id="toDate" 
+                                    value="#{inwardReportController.toDate}" 
+                                    showTime="true"   
+                                    class="w-100"
+                                    inputStyleClass="form-control" 
+                                    timeInput="true" 
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
+                                </p:datePicker>                                
 
-                                    <p:commandButton id="btnSearch" ajax="false" 
-                                                     value="Search All" onclick="onSubmitButton();"
-                                                     action="#{inwardReportController.createPatientInvestigationsTableAll()}" 
-                                                     class="w-100 mt-2"/>
-                                    <p:defaultCommand target="btnSearch" />
-                                </h:panelGrid>
-                            </h:panelGrid>
+                                <h:outputLabel value="BHT No"/>
+                                <p:autoComplete  
+                                    widgetVar="aPt" 
+                                    id="acPt" 
+                                    forceSelection="true" 
+                                    value="#{inwardReportController.patientEncounter}"
+                                    completeMethod="#{admissionController.completePatientDishcargedNotFinalized}" 
+                                    var="myItem" 
+                                    class="w-100"
+                                    inputStyleClass="form-control"
+                                    itemValue="#{myItem}" 
+                                    itemLabel="#{myItem.bhtNo}" 
+                                    >                                
+                                    <p:column>
+                                        #{myItem.bhtNo}
+                                    </p:column>
+                                    <p:column>
+                                        #{myItem.patient.person.nameWithTitle}
+                                    </p:column>
+                                    <p:column>
+                                        <h:outputLabel value="#{myItem.currentPatientRoom.roomFacilityCharge.name}"/>
+                                    </p:column>
+                                    <p:column>
+                                        <h:outputLabel value="Discharged"  rendered="#{myItem.discharged}"/>
+                                    </p:column>
+                                </p:autoComplete>
 
-                            <p:panel class="mt-2">
-                                <p:dataTable  id="tblBills" value="#{inwardReportController.patientInvestigations}" var="pi" >
+                                <p:commandButton 
+                                    ajax="false" 
+                                    value="Search All" 
+                                    onclick="onSubmitButton();"
+                                    action="#{inwardReportController.createPatientInvestigationsTableAll()}" 
+                                    class="w-100 mt-2 ui-button-warning" 
+                                    icon="fas fa-search">
+                                </p:commandButton>
+                                
+                                <hr/>
+                                
+                                <h:outputLabel value="MRN / PHN No"/>
+                                <p:inputText autocomplete="off" value="#{inwardReportController.patientCode}" class="w-100"/>
+
+                            </div>
+                            <div class="col-10">
+                                <p:dataTable  
+                                    id="tblBills" 
+                                    value="#{inwardReportController.patientInvestigations}" 
+                                    var="pi"
+                                    paginator="true"
+                                    paginatorPosition="bottom"
+                                    paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                    rowsPerPageTemplate="10,20,50"
+                                    rows="10">
+
                                     <p:column  headerText="Bill" styleClass="alignTop" >
-                                        <h:outputLabel id="lblBillNo" 
-                                                       value="#{pi.billItem.bill.deptId}" 
-                                                       styleClass="#{pi.billItem.bill.cancelled or pi.billItem.refunded ? 'redtext':''}"></h:outputLabel>
+                                        <h:outputLabel 
+                                            id="lblBillNo" 
+                                            value="#{pi.billItem.bill.deptId}" 
+                                            styleClass="#{pi.billItem.bill.cancelled or pi.billItem.refunded ? 'redtext':''}">
+                                        </h:outputLabel>
+
                                         <p:tooltip for="lblBillNo"  >
                                             <h:outputLabel value="Bill No : #{pi.billItem.bill.deptId}" ></h:outputLabel>
                                             <br/>
@@ -101,9 +131,11 @@
                                     </p:column>
 
                                     <p:column  headerText="Dep ID" styleClass="alignTop" >
-                                        <h:outputLabel id="lblInvNo" 
-                                                       value="#{pi.billItem.bill.deptId}" 
-                                                       styleClass="#{pi.billItem.bill.cancelled or pi.billItem.refunded ? 'redtext':''}"></h:outputLabel>
+                                        <h:outputLabel 
+                                            id="lblInvNo" 
+                                            value="#{pi.billItem.bill.deptId}" 
+                                            styleClass="#{pi.billItem.bill.cancelled or pi.billItem.refunded ? 'redtext':''}">
+                                        </h:outputLabel>
                                         <p:tooltip for="lblBillNo"  >
                                             <h:outputLabel value="Bill No : #{pi.billItem.bill.deptId}" ></h:outputLabel>
                                             <br/>
@@ -135,12 +167,13 @@
                                     </p:column>
 
                                     <p:column  headerText="Patient" styleClass="alignTop" >
-                                        <h:commandLink id="colPtDetail" 
-                                                       value="#{pi.billItem.bill.patient.person.nameWithTitle}, #{pi.billItem.bill.patient.age}" 
-                                                       action="patient" 
-                                                       style="text-decoration:underline;"
-                                                       styleClass="#{pi.billItem.bill.cancelled or pi.billItem.refunded ? 'redtext':''}"
-                                                       >
+                                        <h:commandLink 
+                                            id="colPtDetail" 
+                                            value="#{pi.billItem.bill.patient.person.nameWithTitle}, #{pi.billItem.bill.patient.age}" 
+                                            action="patient" 
+                                            style="text-decoration:underline;"
+                                            styleClass="#{pi.billItem.bill.cancelled or pi.billItem.refunded ? 'redtext':''}"
+                                            >
                                             <f:setPropertyActionListener value="#{pi.billItem.bill.patient}" target="#{patientController.current}"/>
                                         </h:commandLink>
                                         <p:tooltip for="colPtDetail"  >
@@ -159,15 +192,11 @@
                                     </p:column>
 
                                     <p:column headerText="BHT Number"  styleClass="alignTop" >
-                                        <h:outputLabel value="#{pi.encounter.bhtNo}" >
-                                        </h:outputLabel>
-
+                                        <h:outputLabel value="#{pi.encounter.bhtNo}" ></h:outputLabel>
                                     </p:column>
 
                                     <p:column headerText="Investigation"  styleClass="alignTop" >
-                                        <h:outputLabel value="#{pi.billItem.item.name}" >
-                                        </h:outputLabel>
-
+                                        <h:outputLabel value="#{pi.billItem.item.name}" ></h:outputLabel>
                                     </p:column>
 
                                     <p:column headerText="Data-Entered Reports"  styleClass="alignTop noBorderGrid" >
@@ -194,13 +223,12 @@
 
                                         <h:outputLabel value="Data Not Entered" rendered="#{pi.patientReports.size() eq 0}"/>
 
-
                                     </p:column>
 
                                 </p:dataTable>
-                            </p:panel>
+                            </div>
+                        </div>
 
-                        </h:panelGroup>
                     </p:panel>
                 </h:form>
             </ui:define>

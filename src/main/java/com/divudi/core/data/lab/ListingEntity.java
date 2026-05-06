@@ -7,12 +7,16 @@ package com.divudi.core.data.lab;
  */
 public enum ListingEntity {
     BILLS("Bills"),
+    WORK_SHEET("Work Sheet"),
     BILL_ITEMS("Bill Items"),
     PATIENT_INVESTIGATIONS("Patient Investigations"),
     PATIENT_SAMPLES("Patient Samples"),
+    PATIENT_SAMPLES_INDIVIDUAL("IndividualPatient Samples"),
     PATIENT_REPORTS("Patient Reports"),
+    VIEW_BARCODE("View Barcodes"),
     BILL_BARCODES("Bill Barcodes"),
-    PATIENT_SAMPLE_RUNS("Patient Sample Runs");
+    PATIENT_SAMPLE_RUNS("Patient Sample Runs"),
+    REPORT_PRINT("Patient Reports Print");
 
     private final String label;
 

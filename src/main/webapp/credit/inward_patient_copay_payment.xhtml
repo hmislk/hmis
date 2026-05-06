@@ -1,0 +1,328 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<ui:composition
+        xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+        template="/payments/credit_company_pay_index.xhtml"
+        xmlns:h="http://xmlns.jcp.org/jsf/html"
+        xmlns:f="http://xmlns.jcp.org/jsf/core"
+        xmlns="http://www.w3.org/1999/xhtml"
+        xmlns:p="http://primefaces.org/ui"
+        xmlns:in="http://xmlns.jcp.org/jsf/composite/inward"
+        xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
+        xmlns:bill="http://xmlns.jcp.org/jsf/composite/inward/bill/payment">
+
+    <ui:define name="admin">
+        <h:panelGroup rendered="#{webUserController.hasPrivilege('InwardBilling')}">
+        <h:panelGroup>
+            <h:form id="copayForm">
+                <p:growl id="growl" showDetail="true"/>
+
+                <!-- BHT Search panel — shown when no encounter is selected -->
+                <h:panelGroup rendered="#{inwardPaymentController.current.patientEncounter eq null}">
+                    <p:panel>
+                        <f:facet name="header">
+                            <h:outputText value="INWARD PATIENT CO-PAYMENT COLLECTION" style="font-size:1.1rem;font-weight:bold;"/>
+                        </f:facet>
+                        <div class="row my-3 align-items-center">
+                            <div class="col-md-3">
+                                <p:outputLabel value="Search by BHT / Patient Name" style="font-weight:bold;"/>
+                            </div>
+                            <div class="col-md-7">
+                                <p:autoComplete
+                                    widgetVar="aBht"
+                                    id="acBht"
+                                    forceSelection="true"
+                                    placeholder="Type BHT number or patient name"
+                                    value="#{inwardPaymentController.current.patientEncounter}"
+                                    completeMethod="#{admissionController.completePatientAll}"
+                                    var="myItem"
+                                    itemValue="#{myItem}"
+                                    itemLabel="#{myItem.bhtNo}"
+                                    class="w-100"
+                                    inputStyleClass="w-100"
+                                    maxResults="20">
+                                    <p:column headerText="BHT No" style="width:8em;">
+                                        <h:outputLabel value="#{myItem.bhtNo}"/>
+                                    </p:column>
+                                    <p:column headerText="Patient" style="width:15em;">
+                                        <h:outputLabel value="#{myItem.patient.person.nameWithTitle}"/>
+                                    </p:column>
+                                    <p:column headerText="Payment" style="width:8em;">
+                                        <h:outputLabel value="#{myItem.paymentMethod}"/>
+                                    </p:column>
+                                </p:autoComplete>
+                            </div>
+                            <div class="col-md-2">
+                                <p:commandButton
+                                    value="Select"
+                                    icon="fa fa-check"
+                                    class="ui-button-success w-100"
+                                    ajax="false"
+                                    action="#{inwardPaymentController.bhtListener}"/>
+                            </div>
+                        </div>
+                    </p:panel>
+                </h:panelGroup>
+
+                <!-- Co-payment form — shown once an encounter is selected -->
+                <h:panelGroup rendered="#{inwardPaymentController.current.patientEncounter ne null and !inwardPaymentController.printPreview}">
+                    <p:panel>
+                        <f:facet name="header">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h:outputText value="INWARD PATIENT CO-PAYMENT COLLECTION" style="font-size:1.1rem;font-weight:bold;"/>
+                                <div class="d-flex gap-2">
+                                    <p:commandButton
+                                        value="Pay"
+                                        icon="fa fa-check"
+                                        class="ui-button-success"
+                                        style="width:150px;"
+                                        ajax="false"
+                                        disabled="#{!inwardPaymentController.current.patientEncounter.paymentFinalized or inwardPaymentController.due le 0}"
+                                        action="#{inwardPaymentController.pay()}"/>
+                                    <p:commandButton
+                                        value="New"
+                                        icon="fa fa-plus"
+                                        class="ui-button-warning"
+                                        ajax="false"
+                                        action="#{inwardPaymentController.makeNull}"/>
+                                </div>
+                            </div>
+                        </f:facet>
+
+                        <div class="row g-3">
+                            <!-- Left: BHT details -->
+                            <div class="col-md-5">
+                                <p:panel header="Patient Details">
+                                    <in:bhtDetail admission="#{inwardPaymentController.current.patientEncounter}"/>
+                                </p:panel>
+
+                                <!-- Balance summary -->
+                                <p:panel header="Balance Summary" styleClass="mt-3">
+                                    <p:panelGrid columns="2" styleClass="w-100">
+                                        <h:outputLabel value="Total Bill" style="font-weight:bold;"/>
+                                        <h:outputLabel value="#{inwardPaymentController.finalBillTotal}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+
+                                        <h:outputLabel value="CC Committed" style="font-weight:bold;"/>
+                                        <h:outputLabel value="#{inwardPaymentController.ccCommittedAmount}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+
+                                        <h:outputLabel value="CC Paid" style="font-weight:bold;"/>
+                                        <h:outputLabel value="#{inwardPaymentController.ccPaidAmount}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+
+                                        <h:outputLabel value="Patient Portion" style="font-weight:bold;"/>
+                                        <h:outputLabel value="#{inwardPaymentController.finalBillTotal - inwardPaymentController.ccCommittedAmount}"
+                                                       style="color:#1565c0;font-weight:bold;">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+
+                                        <h:outputLabel value="Patient Outstanding" style="font-weight:bold;color:#c62828;"/>
+                                        <h:outputLabel value="#{inwardPaymentController.due}"
+                                                       style="font-weight:bold;font-size:1.1em;color:#c62828;">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </p:panelGrid>
+                                </p:panel>
+                            </div>
+
+                            <!-- Right: Payment details -->
+                            <div class="col-md-7">
+                                <p:panel header="Payment Details">
+                                    <h:panelGroup rendered="#{!inwardPaymentController.current.patientEncounter.paymentFinalized}">
+                                        <div class="alert alert-warning">
+                                            <h:outputText styleClass="pi pi-exclamation-triangle me-2"/>
+                                            <h:outputText value="The final bill for this admission has not been finalized yet. Patient co-payment cannot be collected until the final bill is processed."/>
+                                        </div>
+                                    </h:panelGroup>
+
+                                    <h:panelGroup rendered="#{inwardPaymentController.current.patientEncounter.paymentFinalized and inwardPaymentController.due le 0}">
+                                        <div class="alert alert-success">
+                                            <h:outputText styleClass="pi pi-check-circle me-2"/>
+                                            <h:outputText value="Patient outstanding balance is fully settled. No further payment is required."/>
+                                        </div>
+                                    </h:panelGroup>
+
+                                    <h:panelGroup rendered="#{inwardPaymentController.current.patientEncounter.paymentFinalized and inwardPaymentController.due gt 0}">
+                                        <div class="row my-2 align-items-center">
+                                            <div class="col-md-4">
+                                                <p:outputLabel value="Payment Mode" style="font-weight:bold;"/>
+                                            </div>
+                                            <div class="col-md-8">
+                                                <p:selectOneMenu
+                                                    class="w-100"
+                                                    id="cmbPs"
+                                                    value="#{inwardPaymentController.paymentMethod}">
+                                                    <f:selectItem itemLabel="Select Payment Method"/>
+                                                    <f:selectItems
+                                                        value="#{enumController.paymentMethodsForCopay}"
+                                                        var="pm"
+                                                        itemLabel="#{pm.label}"
+                                                        itemValue="#{pm}"/>
+                                                    <p:ajax process="cmbPs" update="paymentDetails" event="change"
+                                                            listener="#{inwardPaymentController.updatePaymentData()}"/>
+                                                </p:selectOneMenu>
+                                            </div>
+                                        </div>
+
+                                        <h:panelGroup id="paymentDetails">
+                                            <h:panelGroup rendered="#{inwardPaymentController.paymentMethod eq 'Cash'}">
+                                                <div class="row my-2 align-items-center">
+                                                    <div class="col-md-4">
+                                                        <p:outputLabel value="Paying Amount" style="font-weight:bold;"/>
+                                                    </div>
+                                                    <div class="col-md-8">
+                                                        <p:inputText class="w-100" autocomplete="off"
+                                                                     value="#{inwardPaymentController.current.total}">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </p:inputText>
+                                                    </div>
+                                                </div>
+                                            </h:panelGroup>
+
+                                            <h:panelGroup rendered="#{inwardPaymentController.paymentMethod eq 'Card'}">
+                                                <pa:creditCard paymentMethodData="#{inwardPaymentController.paymentMethodData}"/>
+                                            </h:panelGroup>
+
+                                            <h:panelGroup rendered="#{inwardPaymentController.paymentMethod eq 'Cheque'}">
+                                                <pa:cheque paymentMethodData="#{inwardPaymentController.paymentMethodData}"/>
+                                            </h:panelGroup>
+
+                                            <h:panelGroup rendered="#{inwardPaymentController.paymentMethod eq 'Slip'}">
+                                                <pa:slip paymentMethodData="#{inwardPaymentController.paymentMethodData}"/>
+                                            </h:panelGroup>
+
+                                            <h:panelGroup rendered="#{inwardPaymentController.paymentMethod eq 'ewallet'}">
+                                                <pa:ewallet paymentMethodData="#{inwardPaymentController.paymentMethodData}"/>
+                                            </h:panelGroup>
+
+                                            <h:panelGroup rendered="#{inwardPaymentController.paymentMethod eq 'OnlineSettlement'}">
+                                                <pa:online_settlement paymentMethodData="#{inwardPaymentController.paymentMethodData}"/>
+                                            </h:panelGroup>
+                                        </h:panelGroup>
+
+                                        <div class="row my-2 align-items-center">
+                                            <div class="col-md-4">
+                                                <p:outputLabel value="Comments" style="font-weight:bold;"/>
+                                            </div>
+                                            <div class="col-md-8">
+                                                <p:inputText class="w-100" id="txtComment"
+                                                             value="#{inwardPaymentController.comment}"
+                                                             placeholder="Payment remarks (optional)"/>
+                                            </div>
+                                        </div>
+                                    </h:panelGroup>
+                                </p:panel>
+                            </div>
+                        </div>
+                    </p:panel>
+                </h:panelGroup>
+
+                <!-- Print preview -->
+                <h:panelGroup rendered="#{inwardPaymentController.printPreview}">
+                    <p:panel>
+                        <f:facet name="header">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <h:outputLabel value="Inpatient Co-payment Bill" class="mt-2"/>
+                                <div class="d-flex gap-2">
+                                    <p:commandButton
+                                        value="Print"
+                                        ajax="false"
+                                        icon="fa fa-print"
+                                        class="ui-button-info">
+                                        <p:printer target="gpCopayBillPreview"/>
+                                    </p:commandButton>
+                                    <p:commandButton
+                                        rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
+                                        value="Settings"
+                                        icon="fas fa-cog"
+                                        class="ui-button-secondary"
+                                        type="button"
+                                        onclick="PF('inwardCopayConfigDialog').show();"/>
+                                    <p:commandButton
+                                        value="New Payment"
+                                        icon="fa-solid fa-plus"
+                                        class="ui-button-success"
+                                        ajax="false"
+                                        action="#{inwardPaymentController.makeNull}"/>
+                                </div>
+                            </div>
+                        </f:facet>
+                        <div class="d-flex justify-content-center my-2">
+                            <h:panelGroup id="gpCopayBillPreview" layout="block">
+                                <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Inward Copayment Bill POS Paper', true)}">
+                                    <bill:posPaperPaymentBill bill="#{inwardPaymentController.current}"/>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Inward Copayment Bill Five Five Paper', false)}">
+                                    <bill:FiveFivePaymentBill bill="#{inwardPaymentController.current}"/>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Inward Copayment Bill A4 Paper', false)}">
+                                    <bill:A4PaperPaymentBill bill="#{inwardPaymentController.current}"/>
+                                </h:panelGroup>
+                            </h:panelGroup>
+                        </div>
+                    </p:panel>
+                </h:panelGroup>
+
+            </h:form>
+        </h:panelGroup>
+
+        <!-- Inward Copayment Printer Configuration Dialog -->
+        <p:dialog id="inwardCopayConfigDialog"
+                  header="Inward Co-payment Bill Printer Configuration"
+                  widgetVar="inwardCopayConfigDialog"
+                  modal="true"
+                  width="560"
+                  resizable="false"
+                  closeOnEscape="true">
+            <p:ajax event="open" listener="#{pharmacyConfigController.loadCurrentConfig}" update="inwardCopayConfigForm"/>
+            <h:form id="inwardCopayConfigForm">
+                <div class="card config-section">
+                    <div class="card-header">
+                        <i class="fas fa-file-alt me-2"/>
+                        <h:outputText value="Paper Format Settings"/>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <h:selectBooleanCheckbox id="inwardCopayPOS"
+                                                     value="#{pharmacyConfigController.inwardCopaymentPosPaper}"/>
+                            <h:outputLabel for="inwardCopayPOS" value="POS Paper" class="ms-2"/>
+                            <small class="form-text text-muted d-block">Standard thermal/POS roll paper (default)</small>
+                        </div>
+                        <div class="mb-3">
+                            <h:selectBooleanCheckbox id="inwardCopayFiveFive"
+                                                     value="#{pharmacyConfigController.inwardCopaymentFiveFivePaper}"/>
+                            <h:outputLabel for="inwardCopayFiveFive" value="5×5 Paper" class="ms-2"/>
+                            <small class="form-text text-muted d-block">5.5-inch half-page format</small>
+                        </div>
+                        <div class="mb-3">
+                            <h:selectBooleanCheckbox id="inwardCopayA4"
+                                                     value="#{pharmacyConfigController.inwardCopaymentA4Paper}"/>
+                            <h:outputLabel for="inwardCopayA4" value="A4 Paper" class="ms-2"/>
+                            <small class="form-text text-muted d-block">Full A4 size paper</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="d-flex gap-2 mt-3">
+                    <p:commandButton value="Apply &amp; Close"
+                                     icon="fas fa-save"
+                                     class="ui-button-success"
+                                     ajax="false"
+                                     action="#{pharmacyConfigController.saveInwardCopaymentConfig}"/>
+                    <p:commandButton value="Cancel"
+                                     icon="fas fa-times"
+                                     class="ui-button-secondary"
+                                     type="button"
+                                     onclick="PF('inwardCopayConfigDialog').hide(); return false;"/>
+                </div>
+            </h:form>
+        </p:dialog>
+
+        </h:panelGroup><!-- /InwardBilling privilege guard -->
+    </ui:define>
+
+</ui:composition>

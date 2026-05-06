@@ -25,9 +25,10 @@ import javax.persistence.Temporal;
 @Entity
 public class AuditEvent implements Serializable {
 
+
     private static final long serialVersionUID = 1L;
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date eventDataTime;
@@ -42,7 +43,8 @@ public class AuditEvent implements Serializable {
     private String eventTrigger;
     private Long institutionId;
     private Long departmentId;
-
+    private Long objectId;
+    
     @Lob
     private String beforeJson;
     @Lob
@@ -50,12 +52,15 @@ public class AuditEvent implements Serializable {
     private Long eventDuration;
     private String eventStatus;
     private String ipAddress;
+    private String host;
 
     private String entityType;
 
     @Transient
     private String difference;
 
+    
+    
     public Long getId() {
         return id;
     }
@@ -89,12 +94,17 @@ public class AuditEvent implements Serializable {
         return "com.divudi.core.entity.AuditEvent[ id=" + id + " ]";
     }
 
+    
+    
     public void calculateDifference() {
-        System.out.println("calculateDifference");
-        System.out.println("Before JSON: " + beforeJson);
-        System.out.println("After JSON: " + afterJson);
         if (beforeJson == null || afterJson == null) {
             this.difference = "One or both JSON values are null.";
+            return;
+        }
+        // If either value is not a JSON object (e.g. a plain toString() string
+        // stored by older code), skip diff calculation and show the raw values.
+        if (!beforeJson.trim().startsWith("{") || !afterJson.trim().startsWith("{")) {
+            this.difference = "Before: " + beforeJson + "\nAfter: " + afterJson;
             return;
         }
         try {
@@ -105,22 +115,18 @@ public class AuditEvent implements Serializable {
             Map<String, Object> beforeMap = gson.fromJson(beforeJson, type);
             Map<String, Object> afterMap = gson.fromJson(afterJson, type);
 
-            // Ensure JSON was parsed successfully
             if (beforeMap == null || afterMap == null) {
                 this.difference = "Failed to parse JSON.";
-                System.out.println("Failed to parse JSON.");
                 return;
             }
 
             this.difference = formatDifference(getDifference(beforeMap, afterMap));
         } catch (Exception e) {
-            e.printStackTrace();
-            this.difference = "Error calculating difference: " + e.getMessage();
+            this.difference = "Before: " + beforeJson + "\nAfter: " + afterJson;
         }
     }
 
     private Map<String, String> getDifference(Map<String, Object> before, Map<String, Object> after) {
-        System.out.println("getDifference");
         Map<String, String> diff = new HashMap<>();
 
         // Create a new HashSet with the keys from 'before' to ensure it's modifiable
@@ -128,28 +134,22 @@ public class AuditEvent implements Serializable {
         allKeys.addAll(after.keySet()); // Now this operation is safe
 
         for (String key : allKeys) {
-            System.out.println("key = " + key);
             Object beforeValue = before.get(key);
             Object afterValue = after.get(key);
             if ((beforeValue == null && afterValue != null)
                     || (beforeValue != null && !beforeValue.equals(afterValue))) {
                 diff.put(key, "Before: " + beforeValue + ", After: " + afterValue);
-                System.out.println("diff = " + diff);
             }
         }
         return diff;
     }
 
     private String formatDifference(Map<String, String> diff) {
-        System.out.println("formatDifference");
-        System.out.println("diff = " + diff);
-
         if (diff.isEmpty()) {
             return "No differences found.";
         }
         StringBuilder sb = new StringBuilder();
         diff.forEach((key, value) -> sb.append(key).append(": ").append(value).append("\n"));
-        System.out.println("sb = " + sb);
         return sb.toString();
     }
 
@@ -270,6 +270,22 @@ public class AuditEvent implements Serializable {
 
     public void setEntityType(String entityType) {
         this.entityType = entityType;
+    }
+
+    public String getHost() {
+        return host;
+    }
+
+    public void setHost(String host) {
+        this.host = host;
+    }
+
+    public Long getObjectId() {
+        return objectId;
+    }
+
+    public void setObjectId(Long objectId) {
+        this.objectId = objectId;
     }
 
 }

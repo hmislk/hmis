@@ -1,0 +1,208 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/pharmacy/returns_and_cancellations_index.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <f:metadata>
+        <f:viewAction action="#{searchController.createTableByKeywordForPharmacyDisposalIssue}"
+                      onPostback="false"/>
+    </f:metadata>
+    <ui:define name="subcontent">
+        <h:panelGroup rendered="#{!webUserController.hasPrivilege('CreateDisposalReturn')}">
+            You are NOT authorized
+        </h:panelGroup>
+        <h:panelGroup id="gpDisposalSearch" rendered="#{webUserController.hasPrivilege('CreateDisposalReturn')}">
+            <h:form id="disposalReturnForm">
+                <p:panel styleClass="shadow-sm border-0">
+                    <f:facet name="header">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h:outputText value="Select Disposal Issue Bill for Return"/>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <p:commandButton
+                                    value="List Issues To Create Return"
+                                    action="/pharmacy/pharmacy_search_issue_bill_for_return?faces-redirect=true"
+                                    ajax="false"
+                                    icon="fas fa-plus-circle"
+                                    styleClass="ui-button-info ui-button-outlined"
+                                    rendered="#{webUserController.hasPrivilege('CreateDisposalReturn')}"
+                                    title="Create a new Disposal Return Request">
+                                </p:commandButton>
+                                <p:commandButton
+                                    value="List Returns to Finalize"
+                                    action="/pharmacy/pharmacy_disposal_return_finalize?faces-redirect=true"
+                                    ajax="false"
+                                    icon="fas fa-tasks"
+                                    styleClass="ui-button-info ui-button-outlined"
+                                    rendered="#{webUserController.hasPrivilege('FinalizeDisposalReturn')}"
+                                    title="Finalize Disposal Return Requests">
+                                </p:commandButton>
+                                <p:commandButton
+                                    value="List Returns To Approve"
+                                    action="/pharmacy/pharmacy_disposal_return_approve?faces-redirect=true"
+                                    ajax="false"
+                                    icon="fas fa-check-circle"
+                                    styleClass="ui-button-info ui-button-outlined"
+                                    rendered="#{webUserController.hasPrivilege('ApproveDisposalReturn')}"
+                                    title="Approve Disposal Return Requests">
+                                </p:commandButton>
+                                <p:commandButton
+                                    value="Completed Returns"
+                                    action="/pharmacy/pharmacy_disposal_return_completed?faces-redirect=true"
+                                    ajax="false"
+                                    icon="fas fa-check-double"
+                                    styleClass="ui-button-info ui-button-outlined"
+                                    rendered="#{webUserController.hasPrivilege('ViewDisposalReturn')}"
+                                    title="View Completed Disposal Returns">
+                                </p:commandButton>
+                            </div>
+                        </div>
+                    </f:facet>
+                    <div class="row g-3">
+                        <div class="col-lg-3 col-md-4">
+                            <p:panelGrid columns="1" styleClass="w-100">
+                                <f:facet name="header">
+                                    <h:outputText value="Search Filters"/>
+                                </f:facet>
+                                <p:outputLabel for="fromDate" value="From Date"/>
+                                <p:calendar
+                                    id="fromDate"
+                                    value="#{searchController.fromDate}"
+                                    styleClass="w-100"
+                                    inputStyleClass="w-100"
+                                    navigator="false"
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                <p:outputLabel for="toDate" value="To Date"/>
+                                <p:calendar
+                                    id="toDate"
+                                    value="#{searchController.toDate}"
+                                    styleClass="w-100"
+                                    inputStyleClass="w-100"
+                                    navigator="false"
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                <p:commandButton
+                                    id="searchDisposalIssues"
+                                    styleClass="w-100 ui-button-warning"
+                                    icon="fas fa-search"
+                                    value="Search"
+                                    actionListener="#{searchController.createTableByKeywordForPharmacyDisposalIssue()}"
+                                    update="disposalIssuesTable :messages"
+                                    process="@form"/>
+                            </p:panelGrid>
+                        </div>
+                        <div class="col-lg-9 col-md-8">
+                            <p:dataTable
+                                id="disposalIssuesTable"
+                                value="#{searchController.bills}"
+                                var="b"
+                                rows="#{userSettingsController.pharmacySearchIssueBillForReturnPageSize}"
+                                paginator="true"
+                                paginatorPosition="bottom"
+                                paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                rowsPerPageTemplate="5,10,15,25"
+                                styleClass="w-100 table-striped"
+                                emptyMessage="No disposal issue bills found matching your criteria. Use the search filters to find bills."
+                                sortMode="multiple"
+                                resizableColumns="true"
+                                reflow="true">
+                                <p:column headerText="Issue Date" sortBy="#{b.billDate}" styleClass="text-nowrap" rendered="#{userSettingsController.pharmacySearchIssueBillForReturnIssueDateVisible}">
+                                    <h:outputText value="#{b.billDate}">
+                                        <f:convertDateTime timeZone="Asia/Colombo"
+                                                           pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                                    </h:outputText>
+                                    <br/>
+                                    <h:outputText value="#{b.createdAt}" styleClass="text-muted small">
+                                        <f:convertDateTime timeZone="Asia/Colombo" pattern="HH:mm"/>
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="Bill No" sortBy="#{b.deptId}" rendered="#{userSettingsController.pharmacySearchIssueBillForReturnBillNoVisible}">
+                                    <h:outputText value="#{b.deptId}"/>
+                                </p:column>
+                                <p:column headerText="Patient" sortBy="#{b.patient.person.nameWithTitle}" rendered="#{userSettingsController.pharmacySearchIssueBillForReturnPatientVisible}">
+                                    <h:outputText value="#{b.patient.person.nameWithTitle}"/>
+                                </p:column>
+                                <p:column headerText="From Department" sortBy="#{b.department.name}" rendered="#{userSettingsController.pharmacySearchIssueBillForReturnFromDepartmentVisible}">
+                                    <h:outputText value="#{b.department.name}"/>
+                                </p:column>
+                                <p:column headerText="To Department" sortBy="#{b.toDepartment.name}" rendered="#{userSettingsController.pharmacySearchIssueBillForReturnToDepartmentVisible}">
+                                    <h:outputText value="#{b.toDepartment.name}"/>
+                                </p:column>
+                                <p:column headerText="Issue Value" sortBy="#{b.netTotal}" styleClass="text-end" rendered="#{userSettingsController.pharmacySearchIssueBillForReturnIssueValueVisible}">
+                                    <h:outputText value="#{b.netTotal}" styleClass="fw-bold text-success">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="Status" styleClass="text-center" rendered="#{userSettingsController.pharmacyDirectPurchaseReturnListToApproveStatusVisible}">
+                                    <h:outputText value="#{b.fullReturned ? 'Fully Returned' : (b.refunded ? 'Partially Returned' : 'Available')}"
+                                                  styleClass="#{b.fullReturned ? 'badge bg-danger' : (b.refunded ? 'badge bg-warning text-dark' : 'badge bg-success')}"/>
+                                    <h:panelGroup rendered="#{b.refunded and not b.fullReturned}">
+                                        <h:outputText value="Partial returns exist" styleClass="d-block text-muted small mt-1"/>
+                                    </h:panelGroup>
+                                </p:column>
+                                <p:column headerText="Actions" styleClass="text-center" exportable="false" width="140">
+                                    <p:commandButton
+                                        id="createReturn"
+                                        ajax="false"
+                                        rendered="#{!b.fullReturned}"
+                                        value="Create Return"
+                                        icon="fas fa-undo-alt"
+                                        styleClass="ui-button-warning"
+                                        action="#{issueReturnController.navigateToReturnDisposalIssueBill(b)}"/>
+                                    <h:panelGroup rendered="#{b.fullReturned}">
+                                        <h:outputText value="Fully Returned" styleClass="badge bg-secondary"/>
+                                    </h:panelGroup>
+                                </p:column>
+                            </p:dataTable>
+                            
+                            <!-- Column Visibility Settings -->
+                            <div class="mt-3 pt-2" style="border-top: 1px solid #e9ecef;">
+                                <p:panel id="panelColumnToggler" toggleable="true" collapsed="true" styleClass="ui-panel-sm">
+                                    <f:facet name="header">
+                                        <span style="font-size: 0.85rem; color: #6c757d;">
+                                            <i class="fas fa-eye me-1" style="font-size: 0.75rem;"></i>
+                                            Customize Columns
+                                        </span>
+                                    </f:facet>
+
+                                    <div class="d-flex flex-wrap gap-2 gap-2xl-0 justify-content-between align-items-center" style="font-size: 0.8rem">
+                                        <div class="d-flex flex-wrap gap-2">
+                                            <p:selectBooleanCheckbox value="#{userSettingsController.pharmacySearchIssueBillForReturnIssueDateVisible}"
+                                                                                itemLabel="Issue Date">
+                                            </p:selectBooleanCheckbox>
+                                            <p:selectBooleanCheckbox value="#{userSettingsController.pharmacySearchIssueBillForReturnBillNoVisible}"
+                                                                                 itemLabel="Bill No">
+                                            </p:selectBooleanCheckbox>                                  
+                                            <p:selectBooleanCheckbox value="#{userSettingsController.pharmacySearchIssueBillForReturnPatientVisible}"
+                                                                                   itemLabel="Patient">
+                                            </p:selectBooleanCheckbox> 
+                                            <p:selectBooleanCheckbox value="#{userSettingsController.pharmacySearchIssueBillForReturnFromDepartmentVisible}"
+                                                                                 itemLabel="From Department">
+                                            </p:selectBooleanCheckbox>
+                                            <p:selectBooleanCheckbox value="#{userSettingsController.pharmacySearchIssueBillForReturnToDepartmentVisible}"
+                                                                                 itemLabel="To Department">
+                                            </p:selectBooleanCheckbox>
+                                            <p:selectBooleanCheckbox value="#{userSettingsController.pharmacySearchIssueBillForReturnIssueValueVisible}"
+                                                                                   itemLabel="Issue Value">
+                                            </p:selectBooleanCheckbox>
+                                            <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyDirectPurchaseReturnListToApproveStatusVisible}"
+                                                                                   itemLabel="Status">
+                                            </p:selectBooleanCheckbox>
+                                        </div>
+                                        <div class="flex">
+                                            <p:commandButton
+                                                value="Apply"
+                                                ajax="false" />
+                                        </div>
+                                    </div>
+                                </p:panel>
+                            </div>
+                        </div>
+                    </div>
+                </p:panel>
+            </h:form>
+        </h:panelGroup>
+    </ui:define>
+</ui:composition>

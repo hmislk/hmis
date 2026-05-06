@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <p:dialog
+        id="panDoc"
+        widgetVar="dlg"
+        resizable="false"
+        modal="true"
+        onShow="$('.ui-dialog').addClass('custom-dialog')"
+        class="w-50">
+        <p:panelGrid columns="2" class="table table-striped">
+            <f:facet name="header">
+                <h:outputLabel value="Item Details" />
+            </f:facet>
+            <p:outputLabel value="Code" style="font-weight: bold;"/>
+            <p:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.item.code}"/>
+            <p:outputLabel value="Name" style="font-weight: bold;"/>
+            <p:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.item.name}"/>
+            <p:outputLabel value="Type" style="font-weight: bold;"/>
+            <p:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.item.class.simpleName}"/>
+            <p:outputLabel value="Product" style="font-weight: bold;"/>
+            <p:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.item.vmp.name}"/>
+            <p:outputLabel value="Stock Quentity" style="font-weight: bold;"/>
+            <p:outputLabel value="#{bi.pharmaceuticalBillItem.stock.stock}"/>
+            <p:outputLabel value="Expiry" style="font-weight: bold;"/>
+            <p:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.dateOfExpire}">
+                <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+            </p:outputLabel>
+            <p:outputLabel value="Batch No" style="font-weight: bold;"/>
+            <p:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.batchNo}"/>
+            <p:outputLabel value="Sale Rate" style="font-weight: bold;"/>
+            <p:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.retailsaleRate}"/>
+        </p:panelGrid>
+    </p:dialog>
+</ui:composition>

@@ -1,0 +1,7 @@
+Go through the following files
+CLAUDE.md
+developer_docs/admin/page-configuration-tracking.md
+developer_docs/admin/config-button-implementation-guide.md
+
+And add a config button to the page 
+http://localhost:8080/rh/faces/opd/bill_reprint.xhtml [for developer, change this as required, for Agent, if this file is not given, ask from the developer)

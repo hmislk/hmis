@@ -20,7 +20,7 @@
     <cc:implementation>
 
         <h:outputStylesheet library="css" name="opd_five_five.css" ></h:outputStylesheet>
-        <div class="fiveinchbill " style="page-break-after: always" >
+        <div class="fiveinchbill "  style="page-break-before: always!important;">
 
             <div style="font-weight: bold;text-align: left;font-size: 10pt" class="row mt-2 d-flex align-items-center">
                 <div class="col-5">
@@ -36,7 +36,7 @@
             </div>
 
             <div class="billline">
-                <hr></hr>
+                <hr/>
             </div>
 
             <div class="billDetailsFiveFive" >
@@ -172,6 +172,33 @@
                         <td style="width: 5px;"></td>
                         <td>
                             <h:outputLabel value="#{cc.attrs.bill.patient.phn}" class="billDetailsFiveFive" >
+                            </h:outputLabel>
+
+                        </td>
+                        <td style="width: 50px;"></td>
+                        <td>
+                            <h:outputLabel value="Batch Bill" class="billDetailsFiveFive" ></h:outputLabel>
+                        </td>
+                        <td>
+                            <h:outputLabel value=":" class="billDetailsFiveFive" ></h:outputLabel>
+                        </td>
+
+                        <td>
+                            <h:outputLabel value="#{cc.attrs.bill.backwardReferenceBill.deptId}" class="billDetailsFiveFive">
+                            </h:outputLabel>
+                        </td>
+
+                    </tr>
+
+                    <tr>
+                        <td style="text-align: left;" >
+                            <h:outputLabel value="" class="billDetailsFiveFive" ></h:outputLabel>
+                        </td>
+                        <td style="width: 10px;"></td>
+                        <td ></td>
+                        <td style="width: 5px;"></td>
+                        <td>
+                            <h:outputLabel value="" class="billDetailsFiveFive" >
                             </h:outputLabel>
 
                         </td>

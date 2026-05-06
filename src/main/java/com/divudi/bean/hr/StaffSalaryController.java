@@ -252,6 +252,26 @@ public class StaffSalaryController implements Serializable {
         getStaffController().makeNull();
     }
 
+    public String navigateToSalaryAdvance() {
+        clear();
+        return "/hr/hr_staff_salary_advance?faces-redirect=true";
+    }
+
+    public String navigateToSalary() {
+        clear();
+        return "/hr/hr_staff_salary?faces-redirect=true";
+    }
+
+    public String navigateToSalarySpecial() {
+        clear();
+        return "/hr/hr_staff_salary_special?faces-redirect=true";
+    }
+
+    public String navigateToSalaryPrint() {
+        clear();
+        return "/hr/hr_staff_salary_print?faces-redirect=true";
+    }
+
     public StaffSalary getCurrent() {
         if (current == null) {
             current = new StaffSalary();
@@ -1225,7 +1245,7 @@ public class StaffSalaryController implements Serializable {
             setAdjustments();
 
             //Record Late No Pay Leave
-            //Not consider in any calcualtion is alredy with general NO Pay
+            // Not considered in any calculation as it is already part of general No Pay
             //only for reporting purpose
 //            double noPayCountLate = getHumanResourceBean().fetchStaffLeaveSystem(getCurrent().getStaff(), LeaveType.No_Pay, getSalaryCycle().getSalaryFromDate(), getSalaryCycle().getSalaryToDate());
             //Issue #311

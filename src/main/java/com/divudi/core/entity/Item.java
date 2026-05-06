@@ -8,6 +8,7 @@ import com.divudi.core.data.BillType;
 import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.ItemBarcodeGenerationStrategy;
 import com.divudi.core.data.ItemType;
+import com.divudi.core.data.MeasurementType;
 import com.divudi.core.data.SessionNumberType;
 import com.divudi.core.data.SymanticType;
 import com.divudi.core.data.inward.InwardChargeType;
@@ -24,6 +25,7 @@ import com.divudi.core.entity.pharmacy.MeasurementUnit;
 import com.divudi.core.entity.pharmacy.Vmp;
 import com.divudi.core.entity.pharmacy.Vmpp;
 import com.divudi.core.entity.pharmacy.Vtm;
+import com.divudi.core.entity.pharmacy.PharmaceuticalItem;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -40,14 +42,12 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.Index;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
 import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
-import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.Transient;
 
@@ -56,16 +56,9 @@ import javax.persistence.Transient;
  * @author buddhika
  */
 @Entity
-@Table(
-    indexes = {
-        @Index(name = "idx_item_name", columnList = "name"),
-        @Index(name = "idx_item_code", columnList = "code"),
-        @Index(name = "idx_item_barcode", columnList = "barcode")
-    }
-)
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name = "DTYPE")
-public class Item implements Serializable, Comparable<Item>, RetirableEntity  {
+public class Item implements Serializable, Comparable<Item>, RetirableEntity {
 
     @OneToMany(mappedBy = "item", fetch = FetchType.EAGER)
     List<InvestigationItem> reportItems;
@@ -79,7 +72,7 @@ public class Item implements Serializable, Comparable<Item>, RetirableEntity  {
     static final long serialVersionUID = 1L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
     int orderNo;
 
@@ -137,7 +130,10 @@ public class Item implements Serializable, Comparable<Item>, RetirableEntity  {
     WebUser creater;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date createdAt;
-    //Retairing properties
+    // Retired: permanent soft-delete. Once retired, the item is excluded from
+    // all queries and is no longer available anywhere in the system. This is
+    // irreversible from a UI perspective (set only by the delete action).
+    // JPQL convention: always filter "a.retired=false" in every query.
     boolean retired;
     @ManyToOne
     WebUser retirer;
@@ -162,6 +158,7 @@ public class Item implements Serializable, Comparable<Item>, RetirableEntity  {
     private double dblValue = 0.0f;
     SessionNumberType sessionNumberType;
     boolean priceByBatch;
+    @Deprecated // User Issue Unit
     @ManyToOne
     MeasurementUnit measurementUnit;
     @ManyToOne
@@ -176,7 +173,12 @@ public class Item implements Serializable, Comparable<Item>, RetirableEntity  {
     boolean requestForQuentity;
     boolean marginNotAllowed;
     private boolean printSessionNumber;
-    @Column
+    private boolean allowFractions = false;
+    // Inactive: temporary, user-togglable status. An inactive item is still
+    // present in the system but hidden from day-to-day use. Users can
+    // reactivate it at any time via the toggle button. The Active/Inactive/All
+    // filter in management pages operates on this field, NOT on 'retired'.
+    // Do NOT conflate with 'retired' which is a permanent removal.
     boolean inactive = false;
     @ManyToOne
     Institution manufacturer;
@@ -189,10 +191,24 @@ public class Item implements Serializable, Comparable<Item>, RetirableEntity  {
     String comments;
     double vatPercentage;
 
+    @ManyToOne
+    private Category dosageForm;
+    @ManyToOne
+    private Item vtm;
+    @ManyToOne
+    private MeasurementUnit issueMultipliesUnit;
+    @ManyToOne
+    private MeasurementUnit minimumIssueQuantityUnit;
+    private Double strengthOfAnIssueUnit;
+    private Double issueMultipliesQuantity;
+    private Double minimumIssueQuantity;
+    @Enumerated(EnumType.STRING)
+    private MeasurementType issueType;
+
     @Enumerated(EnumType.STRING)
     SymanticType symanticType;
-    @Enumerated(EnumType.STRING)
     private DepartmentType departmentType;
+
     @Transient
     private double transBillItemCount;
     @Transient
@@ -206,10 +222,17 @@ public class Item implements Serializable, Comparable<Item>, RetirableEntity  {
     private Date expiryDate;
     private boolean scanFee;
     double profitMargin;
+    
+    @Transient
+    private Boolean expired;
 
     //Matara Phrmacy Sale Autocomplete
     @ManyToOne
     private Vmp vmp;
+    @ManyToOne
+    private Amp amp;
+    @ManyToOne
+    private Vmpp vmpp;
 
     @ManyToOne
     private Machine machine;
@@ -289,6 +312,19 @@ public class Item implements Serializable, Comparable<Item>, RetirableEntity  {
 
     private boolean canRemoveItemfromPackage;
 
+    private boolean consideredForCosting = true;
+
+    private boolean refundsAllowed = false;
+
+    @Column(nullable = false)
+    private boolean consumptionAllowed = true;
+
+    private boolean allowedForBillingPriority;
+    private boolean allowToSendSMS;
+    
+    private boolean calculatedRequerd = false;
+
+
     public double getVatPercentage() {
         return 0;
     }
@@ -367,6 +403,38 @@ public class Item implements Serializable, Comparable<Item>, RetirableEntity  {
 
     public void setInactive(boolean inactive) {
         this.inactive = inactive;
+    }
+
+    public boolean isRetired() {
+        return retired;
+    }
+
+    public void setRetired(boolean retired) {
+        this.retired = retired;
+    }
+
+    public WebUser getRetirer() {
+        return retirer;
+    }
+
+    public void setRetirer(WebUser retirer) {
+        this.retirer = retirer;
+    }
+
+    public Date getRetiredAt() {
+        return retiredAt;
+    }
+
+    public void setRetiredAt(Date retiredAt) {
+        this.retiredAt = retiredAt;
+    }
+
+    public String getRetireComments() {
+        return retireComments;
+    }
+
+    public void setRetireComments(String retireComments) {
+        this.retireComments = retireComments;
     }
 
     public List<WorksheetItem> getWorksheetItems() {
@@ -720,37 +788,6 @@ public class Item implements Serializable, Comparable<Item>, RetirableEntity  {
         this.createdAt = createdAt;
     }
 
-    public boolean isRetired() {
-        return retired;
-    }
-
-    public void setRetired(boolean retired) {
-        this.retired = retired;
-    }
-
-    public WebUser getRetirer() {
-        return retirer;
-    }
-
-    public void setRetirer(WebUser retirer) {
-        this.retirer = retirer;
-    }
-
-    public Date getRetiredAt() {
-        return retiredAt;
-    }
-
-    public void setRetiredAt(Date retiredAt) {
-        this.retiredAt = retiredAt;
-    }
-
-    public String getRetireComments() {
-        return retireComments;
-    }
-
-    public void setRetireComments(String retireComments) {
-        this.retireComments = retireComments;
-    }
 
     public Item getParentItem() {
         return parentItem;
@@ -784,10 +821,12 @@ public class Item implements Serializable, Comparable<Item>, RetirableEntity  {
         this.priceByBatch = priceByBatch;
     }
 
+    @Deprecated // Use getIssueUnit
     public MeasurementUnit getMeasurementUnit() {
-        return measurementUnit;
+        return measurementUnit != null ? measurementUnit : issueUnit;
     }
 
+    @Deprecated // Use setMeasurementUnit
     public void setMeasurementUnit(MeasurementUnit measurementUnit) {
         this.measurementUnit = measurementUnit;
     }
@@ -850,7 +889,7 @@ public class Item implements Serializable, Comparable<Item>, RetirableEntity  {
 
     public SessionNumberType getSessionNumberType() {
         if (sessionNumberType == null) {
-            sessionNumberType = SessionNumberType.ByBill;
+            sessionNumberType = SessionNumberType.None;
         }
         return sessionNumberType;
     }
@@ -908,6 +947,9 @@ public class Item implements Serializable, Comparable<Item>, RetirableEntity  {
     }
 
     public DepartmentType getDepartmentType() {
+        if (departmentType == null && this instanceof PharmaceuticalItem) {
+            return DepartmentType.Pharmacy;
+        }
         return departmentType;
     }
 
@@ -985,6 +1027,22 @@ public class Item implements Serializable, Comparable<Item>, RetirableEntity  {
 
     public void setVmp(Vmp vmp) {
         this.vmp = vmp;
+    }
+
+    public Amp getAmp() {
+        return amp;
+    }
+
+    public void setAmp(Amp amp) {
+        this.amp = amp;
+    }
+
+    public Vmpp getVmpp() {
+        return vmpp;
+    }
+
+    public void setVmpp(Vmpp vmpp) {
+        this.vmpp = vmpp;
     }
 
     public Date getEffectiveTo() {
@@ -1463,6 +1521,14 @@ public class Item implements Serializable, Comparable<Item>, RetirableEntity  {
         this.alternativeReportAllowed = alternativeReportAllowed;
     }
 
+    public boolean isAllowFractions() {
+        return allowFractions;
+    }
+
+    public void setAllowFractions(boolean allowFractions) {
+        this.allowFractions = allowFractions;
+    }
+
     public String getReserveNumbersForFirstVisit() {
         return reserveNumbersForFirstVisit;
     }
@@ -1517,8 +1583,137 @@ public class Item implements Serializable, Comparable<Item>, RetirableEntity  {
         this.instructions = instructions;
     }
 
+    public boolean isConsideredForCosting() {
+        return consideredForCosting;
+    }
 
+    public void setConsideredForCosting(boolean consideredForCosting) {
+        this.consideredForCosting = consideredForCosting;
+    }
 
+    public boolean isRefundsAllowed() {
+        return refundsAllowed;
+    }
+
+    public void setRefundsAllowed(boolean refundsAllowed) {
+        this.refundsAllowed = refundsAllowed;
+    }
+
+    public boolean isConsumptionAllowed() {
+        return consumptionAllowed;
+    }
+
+    public void setConsumptionAllowed(boolean consumptionAllowed) {
+        this.consumptionAllowed = consumptionAllowed;
+    }
+
+    public MeasurementUnit getIssueMultipliesUnit() {
+        return issueMultipliesUnit;
+    }
+
+    public void setIssueMultipliesUnit(MeasurementUnit issueMultipliesUnit) {
+        this.issueMultipliesUnit = issueMultipliesUnit;
+    }
+
+    public MeasurementUnit getMinimumIssueQuantityUnit() {
+        return minimumIssueQuantityUnit;
+    }
+
+    public void setMinimumIssueQuantityUnit(MeasurementUnit minimumIssueQuantityUnit) {
+        this.minimumIssueQuantityUnit = minimumIssueQuantityUnit;
+    }
+
+    public Double getStrengthOfAnIssueUnit() {
+        return strengthOfAnIssueUnit;
+    }
+
+    public void setStrengthOfAnIssueUnit(Double strengthOfAnIssueUnit) {
+        this.strengthOfAnIssueUnit = strengthOfAnIssueUnit;
+    }
+
+//    public Double getIssueUnitsPerPackUnit() {
+//        return issueUnitsPerPackUnit;
+//    }
+//
+//    public void setIssueUnitsPerPackUnit(Double issueUnitsPerPackUnit) {
+//        this.issueUnitsPerPackUnit = issueUnitsPerPackUnit;
+//    }
+    public Double getIssueMultipliesQuantity() {
+        return issueMultipliesQuantity;
+    }
+
+    public void setIssueMultipliesQuantity(Double issueMultipliesQuantity) {
+        this.issueMultipliesQuantity = issueMultipliesQuantity;
+    }
+
+    public Double getMinimumIssueQuantity() {
+        return minimumIssueQuantity;
+    }
+
+    public void setMinimumIssueQuantity(Double minimumIssueQuantity) {
+        this.minimumIssueQuantity = minimumIssueQuantity;
+    }
+
+    public MeasurementType getIssueType() {
+        return issueType;
+    }
+
+    public void setIssueType(MeasurementType issueType) {
+        this.issueType = issueType;
+    }
+
+    public Category getDosageForm() {
+        return dosageForm;
+    }
+
+    public void setDosageForm(Category dosageForm) {
+        this.dosageForm = dosageForm;
+    }
+
+    public Item getVtm() {
+        return vtm;
+    }
+
+    public void setVtm(Item vtm) {
+        this.vtm = vtm;
+    }
+
+    public boolean isAllowedForBillingPriority() {
+        return allowedForBillingPriority;
+    }
+
+    public void setAllowedForBillingPriority(boolean allowedForBillingPriority) {
+        this.allowedForBillingPriority = allowedForBillingPriority;
+    }
+
+    public Boolean getExpired() {
+        if (expiryDate == null) {
+            return false;
+        }
+        expired = new Date().after(expiryDate);
+        return expired;
+    }
+
+    public void setExpired(Boolean expired) {
+        this.expired = expired;
+    }
+
+    public boolean isAllowToSendSMS() {
+        return allowToSendSMS;
+    }
+
+    public void setAllowToSendSMS(boolean allowToSendSMS) {
+        this.allowToSendSMS = allowToSendSMS;
+    }
+
+    public boolean isCalculatedRequerd() {
+        return calculatedRequerd;
+    }
+
+    public void setCalculatedRequerd(boolean calculatedRequerd) {
+        this.calculatedRequerd = calculatedRequerd;
+    }
+    
     static class ReportItemComparator implements Comparator<ReportItem> {
 
         @Override

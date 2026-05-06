@@ -43,6 +43,8 @@
                                     icon="fas fa-search">
                                 </p:commandButton>
 
+                                <hr/>
+
                                 <h:outputLabel value="Bill No"/>
                                 <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" class="w-100"/>
                                 <h:outputLabel value="BHT No"/>
@@ -59,17 +61,35 @@
 
                             <div class="col-10">
 
-                                <p:dataTable id="tblBills" value="#{searchController.bills}" var="bb">
-
-                                    <p:column headerText="Bill No"  >
-                                        <h:outputLabel value="#{bb.deptId}" ></h:outputLabel>
+                                <p:dataTable 
+                                    id="tblBills" 
+                                    rowIndexVar="i"
+                                    paginator="true"
+                                     paginatorPosition="bottom"
+                                     rows="20"
+                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                     rowsPerPageTemplate="20,50,100"
+                                    value="#{searchController.bills}" 
+                                    var="bb">
+                                    
+                                    <p:column headerText="#" width="20px;" style="padding: 12px;">
+                                        <h:outputLabel value="#{i+1}" ></h:outputLabel>
                                     </p:column>
 
-                                    <p:column headerText="BHT No" width="50px">
+                                    <p:column headerText="Bill No" width="8em;" style="padding: 12px;">
+                                        <p:commandLink 
+                                            value="#{bb.deptId}"
+                                            ajax="false" 
+                                            action="inward_reprint_bill_payment?faces-redirect=true">
+                                            <f:setPropertyActionListener value="#{bb}" target="#{inwardSearch.bill}"/>
+                                        </p:commandLink>
+                                    </p:column>
+
+                                    <p:column headerText="BHT No" width="6em;" style="padding: 12px;">
                                         <h:outputLabel value="#{bb.patientEncounter.bhtNo}" ></h:outputLabel>
                                     </p:column>
 
-                                    <p:column headerText="Billed At" >   
+                                    <p:column headerText="Billed At" width="14em;" style="padding: 12px;">   
                                         <h:outputLabel value="#{bb.createdAt}" >
                                             <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                         </h:outputLabel>
@@ -82,41 +102,36 @@
                                         </h:panelGroup>                             
                                     </p:column>
 
-                                    <p:column headerText="Billed By" width="50px">  
-                                        <h:outputLabel value="#{bb.creater.webUserPerson.name}" >                                      
-                                        </h:outputLabel>                                  
+                                    <p:column headerText="Billed By" width="12em;" style="padding: 12px;">  
+                                        <h:outputLabel value="#{bb.creater.webUserPerson.name}" ></h:outputLabel>                                  
                                         <br/>
                                         <h:panelGroup rendered="#{bb.cancelled}" >
                                             <h:outputLabel style="color: red;" value="Cancelled By " />
-                                            <h:outputLabel style="color: red;" rendered="#{bb.cancelled}" value="#{bb.cancelledBill.creater.webUserPerson.name}" >                                       
-                                            </h:outputLabel>
+                                            <h:outputLabel style="color: red;" value="#{bb.cancelledBill.creater.webUserPerson.name}" ></h:outputLabel>
                                         </h:panelGroup>
                                     </p:column>
 
-                                    <p:column headerText="Client">
+                                    <p:column headerText="Patient" style="padding: 12px;">
                                         <h:outputLabel value="#{bb.patientEncounter.patient.person.nameWithTitle}" ></h:outputLabel>
-                                    </p:column>         
-                                    <p:column headerText="Payment Method">                            
+                                    </p:column>  
+                                    
+                                    <p:column headerText="Payment Method" width="10em;" style="padding: 12px;">                            
                                         <h:outputLabel value="#{bb.paymentMethod}" ></h:outputLabel>                                   
                                     </p:column>
-                                    <p:column headerText="Value" width="100px;">                              
+                                    
+                                    <p:column headerText="Value" width="8em;" style="padding: 12px;">                              
                                         <h:outputLabel value="#{bb.netTotal}" >
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>                                  
-                                    </p:column>                                
-                                    <p:column headerText="Comments" >
+                                    </p:column>  
+                                    
+                                    <p:column headerText="Comments" width="16em;" style="padding: 12px;">
                                         <h:outputLabel rendered="#{bb.refundedBill ne null}" value="#{bb.refundedBill.comments}" >
                                         </h:outputLabel>
                                         <h:outputLabel  rendered="#{bb.cancelledBill ne null}" value="#{bb.cancelledBill.comments}" >
                                         </h:outputLabel>
                                     </p:column>
 
-                                    <p:column headerText="Action" width="100px;">
-                                        <p:commandButton ajax="false" value="View Bill"
-                                                         action="inward_reprint_bill_payment?faces-redirect=true">
-                                            <f:setPropertyActionListener value="#{bb}" target="#{inwardSearch.bill}"/>
-                                        </p:commandButton>
-                                    </p:column>
                                 </p:dataTable>
                             </div>
                         </div>

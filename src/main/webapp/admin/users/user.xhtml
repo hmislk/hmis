@@ -41,22 +41,69 @@
                                              >
                             </p:autoComplete>
 
-                            <p:outputLabel value="Institution " style="width: 100px;" for="institution" />
-                            <p:outputLabel value=":" style="width: 20px;"/>
-                            <p:autoComplete forceSelection="true" value="#{webUserController.current.institution}"
-                                            completeMethod="#{institutionController.completeIns}" id="institution"
-                                            var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" size="30" 
-                                            class="w-100" inputStyleClass="w-100">
-                                <f:ajax event="itemSelect" execute="@this" render="department" ></f:ajax>
-                                <f:ajax event="change" execute="@this" render="department" ></f:ajax>
-                            </p:autoComplete>
-
-                            <p:outputLabel value="Department " style="width: 100px;" for="department" />
-                            <p:outputLabel value=":" style="width: 20px;"/>
-                            <p:selectOneMenu id="department" value="#{webUserController.current.department}" style="width: 300px;" >
-                                <f:selectItem itemLabel="Select Department"/>
-                                <f:selectItems value="#{webUserController.departmentsOfSelectedUsersInstitution}"/>
+                            <!-- Institution Row -->
+                            <p:outputLabel value="Institution" style="width: 100px;" for="institution" />
+                            <p:outputLabel value=":" style="width: 20px;" />
+                            <p:selectOneMenu id="institution"
+                                             value="#{webUserController.current.institution}"
+                                             style="width: 300px;" filter="true">
+                                <f:selectItem itemLabel="Select Institution" />
+                                <f:selectItems value="#{institutionController.companies}" var="ins"
+                                               itemLabel="#{ins.name}" itemValue="#{ins}" />
+                                <p:ajax update="site departmentBlock" process="@this" />
                             </p:selectOneMenu>
+
+                            <!-- Site Row -->
+                            <p:outputLabel value="Site" style="width: 100px;" for="site" />
+                            <p:outputLabel value=":" style="width: 20px;" />
+                            <p:selectOneMenu id="site"
+                                             value="#{webUserController.current.site}"
+                                             style="width: 300px;" filter="true">
+                                <f:selectItem itemLabel="Select Site" />
+                                <f:selectItems value="#{institutionController.sites}" var="s"
+                                               itemLabel="#{s.name}" itemValue="#{s}" />
+                                <p:ajax update="departmentBlock" process="@this" />
+                            </p:selectOneMenu>
+
+                            <!-- Department Row (Rendered Depending on Institution and Site) -->
+                            <p:outputLabel value="Department" style="width: 100px;" />
+                            <p:outputLabel value=":" style="width: 20px;" />
+                            <h:panelGroup id="departmentBlock">
+
+                                <p:selectOneMenu rendered="#{webUserController.current.institution eq null and webUserController.current.site eq null}"
+                                                 value="#{webUserController.current.department}"
+                                                 style="width: 300px;" filter="true" filterMatchMode="contains">
+                                    <f:selectItem itemLabel="Select Department" />
+                                    <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite()}" var="d"
+                                                   itemLabel="#{d.name}" itemValue="#{d}" />
+                                </p:selectOneMenu>
+
+                                <p:selectOneMenu rendered="#{webUserController.current.institution eq null and webUserController.current.site ne null}"
+                                                 value="#{webUserController.current.department}"
+                                                 style="width: 300px;" filter="true" filterMatchMode="contains">
+                                    <f:selectItem itemLabel="Select Department" />
+                                    <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite(webUserController.current.site)}" var="d"
+                                                   itemLabel="#{d.name}" itemValue="#{d}" />
+                                </p:selectOneMenu>
+
+                                <p:selectOneMenu rendered="#{webUserController.current.institution ne null and webUserController.current.site eq null}"
+                                                 value="#{webUserController.current.department}"
+                                                 style="width: 300px;" filter="true" filterMatchMode="contains">
+                                    <f:selectItem itemLabel="Select Department" />
+                                    <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(webUserController.current.institution)}" var="d"
+                                                   itemLabel="#{d.name}" itemValue="#{d}" />
+                                </p:selectOneMenu>
+
+                                <p:selectOneMenu rendered="#{webUserController.current.institution ne null and webUserController.current.site ne null}"
+                                                 value="#{webUserController.current.department}"
+                                                 style="width: 300px;" filter="true" filterMatchMode="contains">
+                                    <f:selectItem itemLabel="Select Department" />
+                                    <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite(webUserController.current.institution, webUserController.current.site)}" var="d"
+                                                   itemLabel="#{d.name}" itemValue="#{d}" />
+                                </p:selectOneMenu>
+
+                            </h:panelGroup>
+
 
                             <p:outputLabel for="loginPage" value="Login Page" />
                             <p:outputLabel value=":" style="width: 20px;"/>

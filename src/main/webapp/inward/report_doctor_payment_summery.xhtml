@@ -16,9 +16,8 @@
                 <h:form>
                     <p:panel header="Doctor Payment" >
 
-                        <p:panelGrid 
-                            columns="8" 
-                            layout="tabular"
+                        <h:panelGrid 
+                            columns="5" 
                             class="w-100">
                             <p:outputLabel value="From" />
                             <p:calendar 
@@ -26,15 +25,37 @@
                                 inputStyleClass="w-100" 
                                 id="fdate"
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  value="#{inwardStaffPaymentBillController.fromDate}"></p:calendar>
-                            <p:spacer></p:spacer>
+                                <p:spacer width="10em"></p:spacer>
                             <p:outputLabel value="To" />
                             <p:calendar class=" w-100" inputStyleClass="w-100" id="tdate" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  value="#{inwardStaffPaymentBillController.toDate}"></p:calendar>
-                            <p:spacer></p:spacer>
+
                             <h:outputLabel  value="Speciality" ></h:outputLabel>
-                            <p:autoComplete class=" w-100" inputStyleClass="w-100" forceSelection="true" value="#{inwardStaffPaymentBillController.speciality}" id="acSpeciality"
-                                            completeMethod="#{specialityController.completeSpeciality}" var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
-                                            >
+                            <p:autoComplete 
+                                class=" w-100" 
+                                inputStyleClass="w-100" 
+                                forceSelection="true" 
+                                value="#{inwardStaffPaymentBillController.speciality}" 
+                                id="acSpeciality"
+                                completeMethod="#{specialityController.completeSpeciality}" var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
+                                >
+                                <p:ajax event="itemSelect" process="acSpeciality" update="acStaff" ></p:ajax>
                             </p:autoComplete>
+                            <p:spacer></p:spacer>
+                            <h:outputLabel  value="Consultant" ></h:outputLabel>
+                            <p:selectOneMenu 
+                                value="#{inwardStaffPaymentBillController.currentStaff}" 
+                                filter="true"
+                                class="w-100"
+                                filterMatchMode="contains"
+                                id="acStaff">
+                                <f:selectItem itemLabel="Select" ></f:selectItem>
+                                <f:selectItems 
+                                    value="#{staffController.getSpecialityStaff(inwardStaffPaymentBillController.speciality)}"
+                                    var="staff"           
+                                    itemLabel="#{staff.person.nameWithTitle}"
+                                    itemValue="#{staff}"
+                                    ></f:selectItems>
+                            </p:selectOneMenu>
 
                             <h:outputLabel value="Admission Type  " ></h:outputLabel>
                             <p:selectOneMenu class="w-100 " id="lstAdmissionType"   
@@ -48,14 +69,30 @@
                                 <f:selectItem itemLabel="All BHT Types" />                           
                                 <f:selectItems value="#{enumController.paymentMethodForAdmission}" />
                             </p:selectOneMenu>
-                            <p:spacer></p:spacer>
+                            
                             <h:outputLabel value="Credit Company  " ></h:outputLabel>
                             <p:selectOneMenu class="w-100 " id="lstCc"   value="#{inwardStaffPaymentBillController.institution}" >
                                 <f:selectItem itemLabel="All Credit Companies"/>
                                 <f:selectItems  value="#{creditCompanyController.creditCompanies}" var="ccc"
                                                 itemValue="#{ccc}" itemLabel="#{ccc.name}"></f:selectItems>
-                            </p:selectOneMenu>   
-                        </p:panelGrid>
+                            </p:selectOneMenu>
+                            <h:outputLabel value="Date Basis" />
+                            <p:selectOneMenu class="w-100" value="#{inwardStaffPaymentBillController.dateBasis}">
+                                <f:selectItem itemValue="createdAt" itemLabel="Created Date (default)" />
+                                <f:selectItem itemValue="admissionDate" itemLabel="Admission Date" />
+                            </p:selectOneMenu>
+                            <p:spacer></p:spacer>
+                            <h:outputLabel value="Site" />
+                            <p:selectOneMenu class="w-100" value="#{inwardStaffPaymentBillController.site}" filter="true">
+                                <f:selectItem itemLabel="All Sites" itemValue="#{null}" />
+                                <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
+                            </p:selectOneMenu>
+                            <p:spacer></p:spacer>
+                            <h:outputLabel value="Department" />
+                            <p:autoComplete class="w-100" completeMethod="#{departmentController.completeDept}"
+                                            var="dept" itemLabel="#{dept.name}" itemValue="#{dept}"
+                                            forceSelection="true" value="#{inwardStaffPaymentBillController.department}" />
+                        </h:panelGrid>
 
 
                         <div class="row py-3" >

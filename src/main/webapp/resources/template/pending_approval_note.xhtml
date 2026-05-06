@@ -1,0 +1,232 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                background: #{configOptionApplicationController.getColorValueByKey('Laboratory Report SMS Interface - Background Color ','linear-gradient(180deg,rgba(12, 207, 38, 0.63) 0%, rgba(0, 30, 130, 1) 100%)')};
+                min-height: 90vh;
+                padding: 20px;
+            }
+
+            .pending-container {
+                max-width: 600px;
+                margin: 0 auto;
+                margin-top: 80px;
+                background: white;
+                border-radius: 16px;
+                box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+                overflow: hidden;
+                border: 1px solid #e5e7eb;
+            }
+
+            .pending-header {
+                background: white;
+                padding: 24px;
+                text-align: center;
+                border-bottom: 1px solid #f3f4f6;
+            }
+
+            .pending-logo-section {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin-top: 8px;
+                margin-bottom: 8px;
+                gap: 12px;
+            }
+
+            .pending-logo-icon {
+                width: 80px;
+                height: 80px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .pending-institution-name {
+                font-size: 24px;
+                font-weight: bold;
+                color: #1d4ed8;
+                line-height: 1.2;
+            }
+
+            .pending-welcome-section {
+                background: #{configOptionApplicationController.getColorValueByKey('Laboratory Report SMS Interface - Header Color ','#dbeafe')};
+                padding: 16px 24px;
+                border-top: 4px solid #2563eb;
+                font-size: 14px;
+                color: #374151;
+            }
+
+            .pending-body {
+                padding: 40px 24px;
+                text-align: center;
+                background: white;
+            }
+
+            .pending-icon-circle {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin: 0 auto 24px;
+            }
+
+            .pending-title {
+                font-size: 24px;
+                font-weight: 700;
+                color: #1f2937;
+                margin-bottom: 12px;
+            }
+
+            .pending-subtitle {
+                font-size: 15px;
+                color: #6b7280;
+                margin-bottom: 28px;
+                line-height: 1.7;
+            }
+
+            .pending-footer {
+                background: white;
+                padding: 16px;
+                text-align: center;
+                border-top: 1px solid #f3f4f6;
+                border-radius: 0 0 16px 16px;
+                color: #6b7280;
+                font-size: 13px;
+            }
+
+            .pending-footer-brand {
+                font-weight: 600;
+                color: #374151;
+            }
+
+            /* Mobile responsive */
+            @media (max-width: 768px) {
+                body {
+                    padding: 12px;
+                }
+
+                .pending-container {
+                    margin-top: 24px;
+                }
+
+                .pending-header {
+                    padding: 16px;
+                }
+
+                .pending-institution-name {
+                    font-size: 20px;
+                }
+
+                .pending-body {
+                    padding: 28px 16px;
+                }
+
+                .pending-title {
+                    font-size: 20px;
+                }
+
+                .pending-subtitle {
+                    font-size: 14px;
+                }
+
+                .pending-welcome-section {
+                    padding: 12px 16px;
+                }
+            }
+
+            @media (max-width: 480px) {
+                .pending-logo-section {
+                    flex-direction: column;
+                    gap: 8px;
+                }
+
+                .pending-icon-circle {
+                    width: 80px;
+                    height: 80px;
+                }
+
+                .pending-icon-circle i {
+                    font-size: 32px !important;
+                }
+            }
+        </style>
+
+        <div class="pending-container">
+
+            <!-- Header -->
+            <div class="pending-header">
+                <div class="pending-logo-section">
+                    <div class="pending-logo-icon">
+                        <img
+                            src="#{configOptionApplicationController.getLongTextValueByKey('Laboratory Report SMS Interface Logo')}"
+                            alt="Hospital Logo"
+                            height="80"
+                            width="80"/>
+                    </div>
+                    <div class="pending-institution-name">
+                        #{patientReportController.currentPatientReport.patientInvestigation.billItem.bill.institution.chequePrintingName}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Patient info strip (same style as welcome-section) -->
+            <div class="pending-welcome-section">
+                <div style="display: grid; grid-template-columns: 80px 1fr; row-gap: 6px; font-size: 14px; color: #374151;">
+                    <strong>Patient</strong><span>#{patientReportController.currentPatientReport.patientInvestigation.billItem.bill.patient.person.nameWithTitle}</span>
+                    <strong>Test</strong><span>#{patientReportController.currentPatientReport.patientInvestigation.investigation.name}</span>
+                    <strong>Bill No</strong><span>#{patientReportController.currentPatientReport.patientInvestigation.billItem.bill.deptId}</span>
+                </div>
+            </div>
+
+            <!-- Pending approval body -->
+            <div class="pending-body">
+                <div class="pending-icon-circle">
+                    <p:graphicImage library="image" name="pending.png" style="width: 120px; height: 120px; border: none; box-shadow: none;"/>
+                </div>
+                <div class="pending-title">Pending Approval</div>
+                <div class="pending-subtitle">
+                    Your report is currently under review by our laboratory team.<br/>
+                    You will be notified once it has been approved.
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="pending-footer">
+                <div style="display: flex; align-items: center; justify-content: center; gap: 6px;">
+                    <span>Powered by</span>
+                    <span class="pending-footer-brand">
+                        <a href="https://carecode.lk/" target="_blank" rel="noopener noreferrer">CareCode (Pvt) Ltd.</a>
+                    </span>
+                </div>
+                <div style="display: flex; justify-content: center; margin-top: 8px;">
+                    <img
+                        src="#{configOptionApplicationController.getLongTextValueByKey('Laboratory Report SMS Interface -  Company Logo','https://i.ibb.co/V0bCPdZZ/fcare.png')}"
+                        alt="CareCode Logo"
+                        height="33"/>
+                </div>
+            </div>
+
+        </div>
+
+    </cc:implementation>
+</html>

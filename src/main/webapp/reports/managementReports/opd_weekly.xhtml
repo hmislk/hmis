@@ -259,27 +259,27 @@
                                 <h:outputText value="#{row.key}"/>
                             </p:column>
 
-                            <p:column headerText="Week 1" width="5rem">
+                            <p:column headerText="#{reportsController.getDateRangeText(1, true)}" width="5rem">
                                 <h:outputText
                                         value="#{reportsController.getWeeklyGroupedBillValues(row.key, 1, entry.key)}"/>
                             </p:column>
-                            <p:column headerText="Week 2" width="5rem">
+                            <p:column headerText="#{reportsController.getDateRangeText(2, true)}" width="5rem" rendered="#{reportsController.getNumberOfWeeksOfMonth() >= 2}">
                                 <h:outputText
                                         value="#{reportsController.getWeeklyGroupedBillValues(row.key, 2, entry.key)}"/>
                             </p:column>
-                            <p:column headerText="Week 3" width="5rem">
+                            <p:column headerText="#{reportsController.getDateRangeText(3, true)}" width="5rem" rendered="#{reportsController.getNumberOfWeeksOfMonth() >= 3}">
                                 <h:outputText
                                         value="#{reportsController.getWeeklyGroupedBillValues(row.key, 3, entry.key)}"/>
                             </p:column>
-                            <p:column headerText="Week 4" width="5rem">
+                            <p:column headerText="#{reportsController.getDateRangeText(4, true)}" width="5rem" rendered="#{reportsController.getNumberOfWeeksOfMonth() >= 4}">
                                 <h:outputText
                                         value="#{reportsController.getWeeklyGroupedBillValues(row.key, 4, entry.key)}"/>
                             </p:column>
-                            <p:column headerText="Week 5" width="5rem">
+                            <p:column headerText="#{reportsController.getDateRangeText(5, true)}" width="5rem" rendered="#{reportsController.getNumberOfWeeksOfMonth() >= 5}">
                                 <h:outputText
                                         value="#{reportsController.getWeeklyGroupedBillValues(row.key, 5, entry.key)}"/>
                             </p:column>
-                            <p:column headerText="Week 6" width="5rem">
+                            <p:column headerText="#{reportsController.getDateRangeText(6, true)}" width="5rem" rendered="#{reportsController.getNumberOfWeeksOfMonth() >= 6}">
                                 <h:outputText
                                         value="#{reportsController.getWeeklyGroupedBillValues(row.key, 6, entry.key)}"/>
                             </p:column>
@@ -311,6 +311,9 @@
                                 <h:outputText
                                         value="Weekly Report OPD (7.00pm - 7.00am) Night"
                                         style="font-weight: bold; text-align: left; display: block;"/>
+                                <h:outputText
+                                        value="#{reportsController.getDateRangeText(i, false)}"
+                                        style="font-weight: bold; text-align: left; display: block;"/>
                             </f:facet>
                             <p:column headerText="Item" width="5rem">
                                 <h:outputText value="#{item}"/>
@@ -336,6 +339,9 @@
                                 <h:outputText
                                         value="Weekly Report OPD (7.00am - 1.00pm) Night"
                                         style="font-weight: bold; text-align: left; display: block;"/>
+                                <h:outputText
+                                        value="#{reportsController.getDateRangeText(i, false)}"
+                                        style="font-weight: bold; text-align: left; display: block;"/>
                             </f:facet>
                             <p:column headerText="Item" width="5rem">
                                 <h:outputText value="#{item}"/>
@@ -360,6 +366,9 @@
                             <f:facet name="header">
                                 <h:outputText
                                         value="Weekly Report OPD (1.00pm - 7.00pm) Night"
+                                        style="font-weight: bold; text-align: left; display: block;"/>
+                                <h:outputText
+                                        value="#{reportsController.getDateRangeText(i, false)}"
                                         style="font-weight: bold; text-align: left; display: block;"/>
                             </f:facet>
                             <p:column headerText="Item" width="5rem">

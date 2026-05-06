@@ -29,6 +29,8 @@ public class AdmissionType extends Category implements Serializable {
     @ManyToOne
     RoomFacilityCharge roomFacilityCharge;
     int additionToCount;
+    private boolean generateSeparateAdmissionNumber;
+    private boolean allowToCalculateMargin = true;
 
     public int getAdditionToCount() {
         return additionToCount;
@@ -38,8 +40,6 @@ public class AdmissionType extends Category implements Serializable {
         this.additionToCount = additionToCount;
     }
 
-
-
     public RoomFacilityCharge getRoomFacilityCharge() {
         return roomFacilityCharge;
     }
@@ -48,19 +48,13 @@ public class AdmissionType extends Category implements Serializable {
         this.roomFacilityCharge = roomFacilityCharge;
     }
 
-
-
-
     public boolean isRoomChargesAllowed() {
         return roomChargesAllowed;
     }
 
-
-
     public void setRoomChargesAllowed(boolean roomChargesAllowed) {
         this.roomChargesAllowed = roomChargesAllowed;
     }
-
 
     public double getAdmissionFee() {
         return admissionFee;
@@ -86,5 +80,20 @@ public class AdmissionType extends Category implements Serializable {
         this.admissionTypeEnum = admissionTypeEnum;
     }
 
+    public boolean isGenerateSeparateAdmissionNumber() {
+        return generateSeparateAdmissionNumber;
+    }
 
+    public void setGenerateSeparateAdmissionNumber(boolean generateSeparateAdmissionNumber) {
+        this.generateSeparateAdmissionNumber = generateSeparateAdmissionNumber;
+    }
+
+    public boolean isAllowToCalculateMargin() {
+        return allowToCalculateMargin;
+    }
+
+    public void setAllowToCalculateMargin(boolean allowToCalculateMargin) {
+        this.allowToCalculateMargin = allowToCalculateMargin;
+    }
+    
 }

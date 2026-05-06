@@ -7,6 +7,7 @@ package com.divudi.core.entity.pharmacy;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.Category;
 import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.WebUser;
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Entity;
@@ -31,11 +32,10 @@ public class PharmaceuticalBillItem implements Serializable {
     private StockHistory stockHistory;
     private static final long serialVersionUID = 1L;
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @OneToOne(fetch = FetchType.EAGER)
-//    @JoinColumn(name = "bill_item_id") // This is the owning side, so it should have the @JoinColumn annotation.
     private BillItem billItem;
 
     @Temporal(javax.persistence.TemporalType.DATE)
@@ -53,20 +53,32 @@ public class PharmaceuticalBillItem implements Serializable {
     private double remainingFreeQty;
     private double remainingFreeQtyPack;
 
+    private double remainingQty;
+    private double remainingQtyPack;
+
     private double purchaseRate;
     private double purchaseRatePack;
 
     private double retailRate;
     private double retailRatePack;
-
-    private double purchaseValue;
-    private double purchaseRatePackValue;
-
-    private double retailValue;
-    private double retailPackValue;
+    
+    private double completedQty;
+    private double completedFreeQty;
 
     private double wholesaleRate;
     private double wholesaleRatePack;
+
+    private double costRate;
+    private double costRatePack;
+
+    private double purchaseValue;
+    @Deprecated // Not different from purchase value
+    private double purchaseRatePackValue;
+
+    private double retailValue;
+    @Deprecated // Not different from retail value
+    private double retailPackValue;
+    private double costValue;
 
     private double lastPurchaseRate;
     private double lastPurchaseRatePack;
@@ -108,6 +120,20 @@ public class PharmaceuticalBillItem implements Serializable {
     @ManyToOne
     private Institution manufacturer;
 
+    //Created Properties
+    @ManyToOne
+    private WebUser creater;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date createdAt;
+    //Retairing properties
+    private boolean retired;
+    @ManyToOne
+    private WebUser retirer;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date retiredAt;
+    @Lob
+    private String retireComments;
+
     @Transient
     private double transQtyPlusFreeQty;
     @Transient
@@ -116,6 +142,16 @@ public class PharmaceuticalBillItem implements Serializable {
     private boolean transThisIsStockOut;
     @Transient
     private boolean transThisIsStockIn;
+    @Transient
+    private String transDisplayItemName;
+
+    public String getTransDisplayItemName() {
+        return transDisplayItemName;
+    }
+
+    public void setTransDisplayItemName(String transDisplayItemName) {
+        this.transDisplayItemName = transDisplayItemName;
+    }
 
     public String getSerialNo() {
         return serialNo;
@@ -266,6 +302,10 @@ public class PharmaceuticalBillItem implements Serializable {
 
         remainingFreeQty = ph.remainingFreeQty;
         remainingFreeQtyPack = ph.remainingFreeQtyPack;
+        remainingQty = ph.remainingQty;
+        remainingQtyPack = ph.remainingQtyPack;
+        completedQty = ph.completedQty;
+        completedFreeQty = ph.completedFreeQty;
 
         wholesaleRate = ph.wholesaleRate;
         wholesaleRatePack = ph.wholesaleRatePack;
@@ -277,7 +317,6 @@ public class PharmaceuticalBillItem implements Serializable {
         stock = ph.getStock();
         staffStock = ph.getStaffStock();
         stringValue = ph.getStringValue();
-        //  remainingQty=ph.getRemainingQty();
 
         make = ph.getMake();
         model = ph.getModel();
@@ -301,10 +340,48 @@ public class PharmaceuticalBillItem implements Serializable {
         if (ph == null) {
             return;
         }
+        // Invert quantities (stock goes out)
         qty = 0 - ph.qty;
         qtyPacks = 0 - ph.qtyPacks;
         freeQty = 0 - ph.freeQty;
         freeQtyPacks = 0 - ph.freeQtyPacks;
+        completedQty = 0 - ph.completedQty;
+        completedFreeQty = 0 - ph.completedFreeQty;
+
+        // Invert values (stock valuation reduces)
+        purchaseValue = 0 - ph.purchaseValue;
+        retailValue = 0 - ph.retailValue;
+        costValue = 0 - ph.costValue;
+
+        // Rates remain the same (they are unit prices, not values)
+        purchaseRate = ph.purchaseRate;
+        retailRate = ph.retailRate;
+        costRate = ph.costRate;
+        purchaseRatePack = ph.purchaseRatePack;
+        retailRatePack = ph.retailRatePack;
+        costRatePack = ph.costRatePack;
+        wholesaleRate = ph.wholesaleRate;
+        wholesaleRatePack = ph.wholesaleRatePack;
+        lastPurchaseRate = ph.lastPurchaseRate;
+        lastPurchaseRatePack = ph.lastPurchaseRatePack;
+    }
+
+    public void invertValue() {
+        // Invert quantities (stock goes out)
+        qty = 0 - qty;
+        qtyPacks = 0 - qtyPacks;
+        freeQty = 0 - freeQty;
+        freeQtyPacks = 0 - freeQtyPacks;
+        completedQty = 0 - completedQty;
+        completedFreeQty = 0 - completedFreeQty;
+
+        // Invert values (stock valuation reduces)
+        purchaseValue = 0 - purchaseValue;
+        retailValue = 0 - retailValue;
+        costValue = 0 - costValue;
+
+        // Rates remain the same (they are unit prices, not values)
+        // Do not invert: purchaseRate, retailRate, costRate, etc.
     }
 
     public Stock getStock() {
@@ -360,6 +437,24 @@ public class PharmaceuticalBillItem implements Serializable {
         }
     }
 
+    /**
+     * Attach an ItemBatch reference without dereferencing it to read rates.
+     * The legacy {@link #setItemBatch(ItemBatch)} reads retailRate and
+     * purchaseRate off the argument, which triggers lazy-proxy initialization.
+     * That pulls in the whole ItemBatch object graph eagerly (Item, Category,
+     * Institution, BillItem, chains of WebUser/Staff/Person) — ~46 SQL queries
+     * the first time any user hits it. See issue #20138.
+     *
+     * Callers that already know the rates (e.g. from a StockDTO) should use
+     * this method to pass them in directly, so a thin
+     * {@code em.getReference()} proxy can be attached without a round-trip.
+     */
+    public void setItemBatchWithRates(ItemBatch itemBatch, double retailRate, double purchaseRate) {
+        this.itemBatch = itemBatch;
+        this.retailRate = retailRate;
+        this.purchaseRate = purchaseRate;
+    }
+
     public double getQty() {
 //        if (getBillItem() != null && getBillItem().getItem() instanceof Ampp || getBillItem() != null && getBillItem().getItem() instanceof Vmpp) {
 //            return qty / getBillItem().getItem().getDblValue();
@@ -368,7 +463,6 @@ public class PharmaceuticalBillItem implements Serializable {
 //        }
         return qty;
     }
-
 
     public void setQty(double qty) {
 //        if (getBillItem() != null && getBillItem().getItem() instanceof Ampp || getBillItem() != null && getBillItem().getItem() instanceof Vmpp) {
@@ -450,12 +544,10 @@ public class PharmaceuticalBillItem implements Serializable {
         this.purchaseRate = purchaseRate;
     }
 
-    @Deprecated //use retailRate
     public double getRetailRateInUnit() {
         return retailRate;
     }
 
-    @Deprecated //use RetailRate
     public void setRetailRateInUnit(double retailRate) {
         this.retailRate = retailRate;
     }
@@ -641,6 +733,22 @@ public class PharmaceuticalBillItem implements Serializable {
         this.remainingFreeQtyPack = remainingFreeQtyPack;
     }
 
+    public double getRemainingQty() {
+        return remainingQty;
+    }
+
+    public void setRemainingQty(double remainingQty) {
+        this.remainingQty = remainingQty;
+    }
+
+    public double getRemainingQtyPack() {
+        return remainingQtyPack;
+    }
+
+    public void setRemainingQtyPack(double remainingQtyPack) {
+        this.remainingQtyPack = remainingQtyPack;
+    }
+
     public double getWholesaleRatePack() {
         return wholesaleRatePack;
     }
@@ -721,7 +829,94 @@ public class PharmaceuticalBillItem implements Serializable {
         this.afterAdjustmentExpiry = afterAdjustmentExpiry;
     }
 
+    public WebUser getCreater() {
+        return creater;
+    }
 
+    public void setCreater(WebUser creater) {
+        this.creater = creater;
+    }
 
+    public Date getCreatedAt() {
+        return createdAt;
+    }
 
+    public void setCreatedAt(Date createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public boolean isRetired() {
+        return retired;
+    }
+
+    public void setRetired(boolean retired) {
+        this.retired = retired;
+    }
+
+    public WebUser getRetirer() {
+        return retirer;
+    }
+
+    public void setRetirer(WebUser retirer) {
+        this.retirer = retirer;
+    }
+
+    public Date getRetiredAt() {
+        return retiredAt;
+    }
+
+    public void setRetiredAt(Date retiredAt) {
+        this.retiredAt = retiredAt;
+    }
+
+    public String getRetireComments() {
+        return retireComments;
+    }
+
+    public void setRetireComments(String retireComments) {
+        this.retireComments = retireComments;
+    }
+
+    public double getCostRate() {
+        return costRate;
+    }
+
+    public void setCostRate(double costRate) {
+        this.costRate = costRate;
+    }
+
+    public double getCostRatePack() {
+        return costRatePack;
+    }
+
+    public void setCostRatePack(double costRatePack) {
+        this.costRatePack = costRatePack;
+    }
+
+    public double getCostValue() {
+        return costValue;
+    }
+
+    public void setCostValue(double costValue) {
+        this.costValue = costValue;
+    }
+
+    public double getCompletedQty() {
+        return completedQty;
+    }
+
+    public void setCompletedQty(double completedQty) {
+        this.completedQty = completedQty;
+    }
+
+    public double getCompletedFreeQty() {
+        return completedFreeQty;
+    }
+
+    public void setCompletedFreeQty(double completedFreeQty) {
+        this.completedFreeQty = completedFreeQty;
+    }
+
+    
+    
 }

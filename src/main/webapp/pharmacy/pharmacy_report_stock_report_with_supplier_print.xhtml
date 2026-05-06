@@ -1,0 +1,261 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+
+                <h:form >
+                    <p:panel header="Stock Summary (with Suppliers) Print View" styleClass="w-100">
+                        <f:facet name="header"  >
+                            <div class="d-flex justify-content-between">
+                                <h:outputText value="Stock Summary (with Suppliers) Print View" class="mt-2"/>
+                                <div class="d-flex gap-2">
+                                    <p:commandButton
+                                            icon="pi pi-print"
+                                            styleClass="ui-button-info"
+                                            style="width: 150px"
+                                            ajax="false"
+                                            value="Print">
+                                            <p:printer target="reportView" />
+                                    </p:commandButton>
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        value="Back to Report" 
+                                        style="width: 200px"
+                                        icon="pi pi-arrow-left"
+                                        styleClass="ui-button-warning"
+                                        action="pharmacy_report_stock_report_with_supplier?faces-redirect=true" >
+                                    </p:commandButton>
+                                </div>
+
+                            </div>
+                        </f:facet>
+
+                        <style>
+
+                            @media screen{
+                                .paper{
+                                    position: static !important;
+                                    width: 297mm!important;
+                                    zoom: 2.0;
+                                }
+
+                                table {
+                                    border-collapse: collapse;
+                                    width: 100%;
+                                    font-size: 12px!important;
+                                    margin-top: 1mm!important;
+                                }
+
+                                th, td {
+                                    border: 1px solid #000;
+                                    padding: 0px!important;
+                                    margin: 2px!important;
+                                    text-align: left;
+                                    margin-left: 10mm!important;
+                                }
+
+                                .header{
+                                    font-size: 16px!important;
+                                }
+
+                                tfoot{
+                                    font-weight: 700!important;
+                                    font-size: 11px!important;
+                                }
+                            }
+
+                            @media print {
+                                @page {
+                                    @bottom-right {
+                                        content: "Page " counter(page) " of " counter(pages);
+                                        font-family: Arial, sans-serif;
+                                        font-size: 10pt;
+                                    }
+                                    size: A4 landscape!important;
+                                }
+
+                                body {
+                                    counter-reset: page;
+                                }
+
+                                .paper{
+                                    position: static !important;
+                                    width: 297mm!important;
+
+
+                                }
+
+                                .header{
+                                    line-height: 1.1;
+                                    margin: 0mm!important;
+                                    font-size: 13px!important;
+                                }
+
+                                table {
+                                    border-collapse: collapse;
+                                    width: 99.9%;
+                                    font-size: 12px!important;
+                                    margin-top: 1mm!important;
+                                }
+                                th, td {
+                                    border: 1px solid #000;
+                                    padding: 0px!important;
+                                    margin: 2px!important;
+                                    text-align: left;
+                                    margin-left: 10mm!important;
+                                }
+                                th {
+
+                                }
+                                tfoot{
+                                    font-weight: 700!important;
+                                    font-size: 11px!important;
+                                }
+                            }
+                        </style>
+
+                        <h:panelGroup id="reportView" class="d-flex justify-content-center">
+                            <div class="paper">
+                                <div class="header" >
+                                    <div class="d-flex justify-content-center text-5 gap-2" style="font-weight: 700; font-size: 22px;margin-bottom: 5px;">
+                                        <h:outputText value="#{sessionController.institution.name}"/>
+                                    </div>
+                                    <div class="d-flex justify-content-center text-5 gap-2" style="font-weight: 400; font-size: 20px;margin-bottom: 5px;">
+                                        <h:outputText value="Stock Report"/>
+                                    </div>
+                                    <div class="d-flex justify-content-center text-5 gap-2" style="font-weight: 600; font-size: 15px;margin-bottom: 5px;">
+                                        <h:outputText value="Department - #{reportsStock.department.name}"/>
+                                    </div>
+                                    <div class="d-flex justify-content-center text-5 gap-2" style="font-weight: 600; font-size: 15px;margin-bottom: 5px;">
+                                        <h:outputText value="Supplier - #{reportsStock.institution.name}"/>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <table style="width: 100%; border-collapse: collapse;">
+                                        <thead>
+                                        <tr>
+                                            <th style="font-weight: 700; text-align: left; padding: 4px;">
+                                                <h:outputText value="No" style="margin-left: 1mm;" />
+                                            </th>
+                                            <th style="width:20mm; font-weight: 700; text-align: left; padding: 4px;">
+                                                <h:outputText value="Code" style="margin-left: 1mm;"/>
+                                            </th>
+                                            <th style="width:40mm; font-weight: 700; text-align: left; padding: 4px;">
+                                                <h:outputText value="Item" style="margin-left: 1mm;" />
+                                            </th>
+                                            <th style="width:40mm; font-weight: 700; text-align: left; padding: 4px;">
+                                                <h:outputText value="Suppliers" style="margin-left: 1mm;" />
+                                            </th>
+                                            <th style="font-weight: 700; text-align: left; padding: 4px;">
+                                                <h:outputText value="Stock Quantity" style="margin-left: 1mm;" />
+                                            </th>
+                                            <th style="font-weight: 700; text-align: left; padding: 4px;">
+                                                <h:outputText value="Expiry" style="margin-left: 1mm;" />
+                                            </th>
+                                            <th style="font-weight: 700; text-align: right; padding: 4px;">
+                                                <h:outputText value="Purchase Rate" style="margin-left: 1mm;" />
+                                            </th>
+                                            <th style="font-weight: 700; text-align: right; padding: 4px;">
+                                                <h:outputText value="Purchase Value" style="margin-left: 1mm;" />
+                                            </th>
+                                            <th style="font-weight: 700; text-align: right; padding: 4px;">
+                                                <h:outputText value="Sale Rate" style="margin-left: 1mm;" />
+                                            </th>
+                                            <th style="font-weight: 700; text-align: right; padding: 4px;">
+                                                <h:outputText value="Sale Value" style="margin-left: 1mm;"/>
+                                            </th>
+                                        </tr>
+                                        </thead>
+
+                                        <tbody>
+                                        <ui:repeat value="#{reportsStock.stocks}" var="i" varStatus="status">
+                                            <tr>
+                                                <td style="font-weight: 500; text-align: left; padding: 4px;">
+                                                    <h:outputText value="#{status.index + 1}" />
+                                                </td>
+                                                <td style="font-weight: 500; text-align: left; padding: 4px;">
+                                                    <h:outputText value="#{i.itemBatch.item.code}"/>
+                                                </td>
+                                                <td style="font-weight: 500; text-align: left; padding: 4px;">
+                                                    <h:outputText value="#{i.itemBatch.item.name}" />
+                                                </td>
+                                                <td style="font-weight: 500; text-align: left; padding: 4px;">
+                                                    <h:outputText value="#{i.itemBatch.lastPurchaseBillItem.bill.fromInstitution.name}"/>
+                                                </td>
+                                                <td style="font-weight: 500; text-align: left; padding: 4px;">
+                                                    <h:outputText value="#{i.stock}" >
+                                                        <f:convertNumber pattern="#,###" />
+                                                    </h:outputText>
+                                                </td>
+                                                <td style="font-weight: 500; text-align: left; padding: 4px;">
+                                                    <h:outputText value="#{i.itemBatch.dateOfExpire}" >
+                                                        <f:convertDateTime pattern="dd MMM yy" />
+                                                    </h:outputText>
+                                                </td>
+                                                <td style="font-weight: 500; text-align: right; padding: 4px;">
+                                                    <h:outputText value="#{i.itemBatch.purcahseRate}" >
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </td>
+                                                <td style="font-weight: 500; text-align: right; padding: 4px;">
+                                                    <h:outputText value="#{i.itemBatch.purcahseRate * i.stock}" >
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </td>
+                                                <td style="font-weight: 500; text-align: right; padding: 4px;">
+                                                    <h:outputText value="#{i.itemBatch.retailsaleRate}" >
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </td>
+                                                <td style="font-weight: 500; text-align: right; padding: 4px;">
+                                                    <h:outputText value="#{i.itemBatch.retailsaleRate * i.stock}" >
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </td>
+                                            </tr>
+                                        </ui:repeat>
+                                        </tbody>
+
+                                        <tfoot>
+                                        <tr>
+                                            <td colspan="7" style="text-align: left; font-weight: 700;" >
+                                                <h:outputText value="Total" style="margin-left: 1mm;" />
+                                            </td>
+                                            <td style="text-align: right; font-weight: 700; padding: 4px;">
+                                                <h:outputLabel value="#{reportsStock.stockPurchaseValue}">
+                                                    <f:convertNumber h:pattern="#,##0.00" />
+                                                </h:outputLabel>
+                                            </td>
+                                            <td>
+                                                <h:outputLabel value=""/>
+                                            </td>
+                                            <td style="text-align: right; font-weight: 700; padding: 4px;">
+                                                <h:outputLabel value="#{reportsStock.stockSaleValue}">
+                                                    <f:convertNumber h:pattern="#,##0.00" />
+                                                </h:outputLabel>
+                                            </td>
+                                        </tr>
+                                        </tfoot>
+                                    </table>
+
+
+                                </div>
+
+                            </div>
+                        </h:panelGroup>
+
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>

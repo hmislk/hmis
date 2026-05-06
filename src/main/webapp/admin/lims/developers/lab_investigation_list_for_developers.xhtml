@@ -1,0 +1,121 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/admin/lims/index.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                >
+    <ui:define name="subcontent">
+        <h:panelGroup >
+            <h:form id="form"  >
+                <p:growl />
+                <p:panel id="panIx"  >
+                    <f:facet name="header" >
+                        <h:outputLabel value="List of Investigations"></h:outputLabel>
+                    </f:facet>
+
+                    <p:commandButton 
+                        value="Excel" 
+                        ajax="false" 
+                        icon="pi pi-file-excel" 
+                        styleClass="ui-button-success me-2">
+                        <p:dataExporter 
+                            type="xlsx" 
+                            target="tbl" 
+                            fileName="Lab_Investigation_List"/>
+                    </p:commandButton>
+
+                    <p:commandButton 
+                        value="Delete Selected" 
+                        action="#{investigationController.deleteSelectedItems}" 
+                        ajax="false" 
+                        icon="pi pi-trash" 
+                        styleClass="ui-button-danger me-2" />
+
+                    <p:commandButton 
+                        value="Un-Delete Selected" 
+                        action="#{investigationController.unDeleteSelectedItems}" 
+                        ajax="false" 
+                        icon="pi pi-undo" 
+                        styleClass="ui-button-warning me-2" />
+
+                    <p:commandButton 
+                        value="Active Selected" 
+                        action="#{investigationController.markSelectedActive}" 
+                        ajax="false" 
+                        icon="pi pi-check-circle" 
+                        styleClass="ui-button-success me-2" />
+
+                    <p:commandButton 
+                        value="Inactive Selected" 
+                        action="#{investigationController.markSelectedInactive}" 
+                        ajax="false" 
+                        icon="pi pi-times-circle" 
+                        styleClass="ui-button-secondary me-2" />
+
+                    <p:commandButton 
+                        icon="pi pi-sync" 
+                        value="Convert Selected to Services" 
+                        action="#{investigationController.convertSelectedInvestigationsToServices()}" 
+                        ajax="false" 
+                        styleClass="ui-button-info me-2" />
+
+
+                    <p:dataTable
+                        id="tbl"
+                        value="#{investigationController.investigationDtos}"
+                        var="ix"
+                        rowIndexVar="rowIndex"
+                        selection="#{investigationController.selectedInvestigationDtos}"
+                        selectionMode="multiple"
+                        rowKey="#{ix.id}"
+                        paginator="true"
+                        rows="10"
+                        rowsPerPageTemplate="5,10,20,50"
+                        filterBy="#{ix}"
+                        styleClass="table-responsive">
+
+                        <f:facet name="header">
+                            <h:outputText value="Investigation List" />
+                        </f:facet>
+
+                        <p:column selectionBox="true" style="width:2em" />
+
+                        <p:column headerText="No." style="width:5em">
+                            <h:outputText value="#{rowIndex + 1}" />
+                        </p:column>
+
+                        <p:column headerText="Investigation Name" filterBy="#{ix.name}" sortBy="#{ix.name}" style="width:25em">
+                            <h:outputText value="#{ix.name}" />
+                        </p:column>
+
+                        <p:column headerText="Category" filterBy="#{ix.categoryName}" sortBy="#{ix.categoryName}" style="width:20em">
+                            <h:outputText value="#{ix.categoryName}" />
+                        </p:column>
+
+                        <p:column headerText="Institution Name" filterBy="#{ix.institutionName}" sortBy="#{ix.institutionName}" style="width:20em">
+                            <h:outputText value="#{ix.institutionName}" />
+                        </p:column>
+
+                        <p:column headerText="Machine Name" filterBy="#{ix.machineName}" sortBy="#{ix.machineName}" style="width:20em">
+                            <h:outputText value="#{ix.machineName}" />
+                        </p:column>
+
+                        <p:column headerText="Retired" filterBy="#{ix.retired}" sortBy="#{ix.retired}" style="width:8em">
+                            <h:outputText value="#{ix.retired}" />
+                        </p:column>
+
+                        <p:column headerText="Department Name" filterBy="#{ix.departmentName}" sortBy="#{ix.departmentName}" style="width:20em">
+                            <h:outputText value="#{ix.departmentName}" />
+                        </p:column>
+
+                    </p:dataTable>
+
+                </p:panel>
+            </h:form>
+        </h:panelGroup>
+    </ui:define>
+
+</ui:composition>

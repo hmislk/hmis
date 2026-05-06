@@ -32,7 +32,7 @@
                 <h:panelGrid columns="2" styleClass="alignTop" >
                     <h:panelGrid columns="2" >
                         <h:outputText value="Institution" ></h:outputText>
-                        <p:selectOneMenu  value="#{userDepartmentController.currentInstituion}" id="ins2"  >
+                        <p:selectOneMenu  value="#{userDepartmentController.currentInstitution}" id="ins2"  >
                             <f:selectItem itemLabel="Please select an institutie"/>
                             <f:selectItems value="#{institutionController.items}" var="i" itemLabel="#{i.name}" itemValue="#{i}" />
                             <p:ajax update="dept2" process="ins2" event="change"/>

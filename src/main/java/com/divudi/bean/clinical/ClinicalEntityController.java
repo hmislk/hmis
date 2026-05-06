@@ -50,11 +50,11 @@ public class ClinicalEntityController implements Serializable {
     Department department;
 
     public String navigateToManageClinicalEntities() {
-        return "/emr/admin/clinical_entities";
+        return "/emr/admin/clinical_entities?faces-redirect=true";
     }
 
     public String navigateToMangeSurgeries() {
-        return "/emr/admin/clinical_entities";
+        return "/emr/admin/clinical_entities?faces-redirect=true";
     }
 
     public ClinicalEntity findItemByName(String name,Department dept) {
@@ -94,6 +94,11 @@ public class ClinicalEntityController implements Serializable {
     }
 
     public List<ClinicalEntity> getEhnicity() {
+        // Kept for backward compatibility with older views
+        return listClinicalEntity(SymanticType.Religion);
+    }
+
+    public List<ClinicalEntity> getReligion() {
         return listClinicalEntity(SymanticType.Religion);
     }
 
@@ -196,7 +201,7 @@ public class ClinicalEntityController implements Serializable {
             getFacade().edit(current);
             JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            JsfUtil.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addErrorMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();

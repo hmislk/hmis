@@ -10,6 +10,7 @@ public enum OptionValueType {
     BOOLEAN,
     LONG,
     DOUBLE,
+    INTEGER,
     ENUM,
     COLOR
 }

@@ -32,7 +32,7 @@
                                                 <h:outputText styleClass="fa-solid fa-file-invoice"></h:outputText>
                                                 <h:outputLabel value="Bill Details" class="mx-4"></h:outputLabel>
                                             </f:facet>
-                                            <view:out bill="#{billSearch.viewingBill}"/>
+                                            <view:bill_edit bill="#{billSearch.viewingBill}" editable="true"/>
                                             <p:splitter ></p:splitter>
                                             <common:patient patient="#{billSearch.viewingBill.patient}" class="w-100"/>
                                         </p:panel>

@@ -1,0 +1,108 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="bill" type="com.divudi.core.entity.Bill" />
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+        <div class="row">
+            <!-- Discount Section -->
+            <div class="col-md-6">
+                <p:panel header="Discounts" styleClass="mb-2">
+                    <h:panelGrid columns="2" styleClass="w-100" columnClasses="w-60,w-40">
+                        <p:outputLabel value="Line Discounts" />
+                        <p:outputLabel value="#{cc.attrs.bill.billFinanceDetails.lineDiscount}" styleClass="text-end">
+                            <f:convertNumber pattern="#,##0.0000" />
+                        </p:outputLabel>
+
+                        <p:outputLabel value="Bill Discount" />
+                        <p:outputLabel value="#{cc.attrs.bill.billFinanceDetails.billDiscount}" styleClass="text-end">
+                            <f:convertNumber pattern="#,##0.0000" />
+                        </p:outputLabel>
+
+                        <p:outputLabel value="Total Discount" styleClass="fw-bold" />
+                        <p:outputLabel id="lblBdfTotalDiscount" value="#{cc.attrs.bill.billFinanceDetails.totalDiscount}" styleClass="text-end fw-bold">
+                            <f:convertNumber pattern="#,##0.0000" />
+                        </p:outputLabel>
+                    </h:panelGrid>
+                </p:panel>
+            </div>
+
+            <!-- Expenses & Tax Section -->
+            <div class="col-md-6">
+                <p:panel header="Expenses &amp; Tax" styleClass="mb-2">
+                    <h:panelGrid columns="2" styleClass="w-100" columnClasses="w-60,w-40">
+                        <p:outputLabel value="Expenses (Costing)" />
+                        <p:outputLabel id="lblBillExpensesCosting" value="#{cc.attrs.bill.billFinanceDetails.billExpensesConsideredForCosting}" styleClass="text-end">
+                            <f:convertNumber pattern="#,##0.0000" />
+                        </p:outputLabel>
+
+                        <p:outputLabel value="Expenses (No Costing)" />
+                        <p:outputLabel id="lblBillExpensesNoCosting" value="#{cc.attrs.bill.billFinanceDetails.billExpensesNotConsideredForCosting}" styleClass="text-end">
+                            <f:convertNumber pattern="#,##0.0000" />
+                        </p:outputLabel>
+
+                        <p:outputLabel value="Total Tax" />
+                        <p:outputLabel id="lblBfdTotalTax" value="#{cc.attrs.bill.billFinanceDetails.totalTaxValue}" styleClass="text-end">
+                            <f:convertNumber pattern="#,##0.0000" />
+                        </p:outputLabel>
+                    </h:panelGrid>
+                </p:panel>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Values Section -->
+            <div class="col-md-6">
+                <p:panel header="Values" styleClass="mb-2">
+                    <h:panelGrid columns="2" styleClass="w-100" columnClasses="w-60,w-40">
+                        <p:outputLabel value="Purchase Values" />
+                        <p:outputLabel value="#{cc.attrs.bill.billFinanceDetails.totalPurchaseValue}" styleClass="text-end">
+                            <f:convertNumber pattern="#,##0.0000" />
+                        </p:outputLabel>
+
+                        <p:outputLabel value="Cost Values" />
+                        <p:outputLabel value="#{cc.attrs.bill.billFinanceDetails.totalCostValue}" styleClass="text-end">
+                            <f:convertNumber pattern="#,##0.0000" />
+                        </p:outputLabel>
+
+                        <p:outputLabel value="Retail Values" />
+                        <p:outputLabel value="#{cc.attrs.bill.billFinanceDetails.totalRetailSaleValue}" styleClass="text-end">
+                            <f:convertNumber pattern="#,##0.0000" />
+                        </p:outputLabel>
+                    </h:panelGrid>
+                </p:panel>
+            </div>
+
+            <!-- Free Item Values Section -->
+            <div class="col-md-6">
+                <p:panel header="Free Item Values" styleClass="mb-2">
+                    <h:panelGrid id="panelBfdFreeValues" columns="2" styleClass="w-100" columnClasses="w-60,w-40">
+                        <p:outputLabel value="Purchase Rate" />
+                        <p:outputLabel value="#{cc.attrs.bill.billFinanceDetails.totalPurchaseValueFree}" styleClass="text-end">
+                            <f:convertNumber pattern="#,##0.0000" />
+                        </p:outputLabel>
+
+                        <p:outputLabel value="Cost Rate" />
+                        <p:outputLabel value="#{cc.attrs.bill.billFinanceDetails.totalCostValueFree}" styleClass="text-end">
+                            <f:convertNumber pattern="#,##0.0000" />
+                        </p:outputLabel>
+
+                        <p:outputLabel value="Retail Rate" />
+                        <p:outputLabel value="#{cc.attrs.bill.billFinanceDetails.totalRetailSaleValueFree}" styleClass="text-end">
+                            <f:convertNumber pattern="#,##0.0000" />
+                        </p:outputLabel>
+                    </h:panelGrid>
+                </p:panel>
+            </div>
+        </div>
+    </cc:implementation>
+</html>
