@@ -516,12 +516,12 @@
                                                 <tr class="fw-bold">
                                                     <td>Total</td>
                                                     <td class="text-end">
-                                                        <h:outputText value="#{financialTransactionController.bundle.total}">
+                                                        <h:outputText value="#{financialTransactionController.bundle.total + financialTransactionController.bundle.cashFloatNetTotal}">
                                                             <f:convertNumber pattern="#,##0.00" />
                                                         </h:outputText>
                                                     </td>
                                                     <td class="text-end">
-                                                        <h:outputText value="#{financialTransactionController.bundle.cashHandoverValue + financialTransactionController.bundle.cardHandoverValue + financialTransactionController.bundle.chequeHandoverValue + financialTransactionController.bundle.slipHandoverValue + financialTransactionController.bundle.ewalletHandoverValue + financialTransactionController.bundle.staffWelfareHandoverValue + financialTransactionController.bundle.staffHandoverValue + financialTransactionController.bundle.creditHandoverValue + financialTransactionController.bundle.voucherHandoverValue + financialTransactionController.bundle.iouHandoverValue + financialTransactionController.bundle.agentHandoverValue + financialTransactionController.bundle.patientDepositHandoverValue + financialTransactionController.bundle.patientPointsHandoverValue + financialTransactionController.bundle.onlineSettlementHandoverValue + financialTransactionController.bundle.onCallHandoverValue + financialTransactionController.bundle.multiplePaymentMethodsHandoverValue}">
+                                                        <h:outputText value="#{financialTransactionController.bundle.total + financialTransactionController.bundle.cashFloatNetTotal}">
                                                             <f:convertNumber pattern="#,##0.00" />
                                                         </h:outputText>
                                                     </td>
@@ -954,37 +954,6 @@
                                             <f:facet name="header">
                                                 <p:outputLabel value="Float Transfers" />
                                             </f:facet>
-                                            <p:dataTable
-                                                value="#{financialTransactionController.bundle.reportTemplateRows}"
-                                                var="floatRow"
-                                                rendered="#{not empty financialTransactionController.bundle.reportTemplateRows}"
-                                                emptyMessage="No float transfers">
-                                                <p:column headerText="Date">
-                                                    <h:outputText value="#{floatRow.payment.createdAt}">
-                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                                    </h:outputText>
-                                                </p:column>
-                                                <p:column headerText="Type">
-                                                    <h:outputText value="Float Out"
-                                                        rendered="#{floatRow.payment.bill.billTypeAtomic.name() eq 'FUND_TRANSFER_BILL'}" />
-                                                    <h:outputText value="Float In"
-                                                        rendered="#{floatRow.payment.bill.billTypeAtomic.name() eq 'FUND_TRANSFER_RECEIVED_BILL'}" />
-                                                </p:column>
-                                                <p:column headerText="From">
-                                                    <h:outputText value="#{floatRow.payment.creater.webUserPerson.nameWithTitle}" />
-                                                </p:column>
-                                                <p:column headerText="To">
-                                                    <h:outputText value="#{floatRow.payment.floatRecipient.webUserPerson.nameWithTitle}" />
-                                                </p:column>
-                                                <p:column headerText="Method">
-                                                    <h:outputText value="#{floatRow.payment.paymentMethod}" />
-                                                </p:column>
-                                                <p:column headerText="Amount" styleClass="text-end">
-                                                    <h:outputText value="#{floatRow.payment.paidValue}">
-                                                        <f:convertNumber pattern="#,##0.00" />
-                                                    </h:outputText>
-                                                </p:column>
-                                            </p:dataTable>
                                             <table class="table table-bordered mt-2 w-50">
                                                 <ui:fragment rendered="#{financialTransactionController.bundle.cashFloatInTotal gt 0}">
                                                     <tr>

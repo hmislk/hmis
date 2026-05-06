@@ -920,9 +920,14 @@ public class ReportTemplateRowBundle implements Serializable {
 
                 if (childBundle.isSelected()) {
 
-                    childBundle.calculateTotalsOfSelectedRowsPlusAllCashForHandover(patientDepositsAreConsideredInHandingover);
+                    // Float rows (FLOAT_OUT / FLOAT_IN) are synthetic bundles with no payment rows —
+                    // their cashValue/cashHandoverValue are set directly in generatePaymentBundleForHandovers().
+                    // Calling calculateTotalsOfSelectedRowsPlusAllCashForHandover() would reset them to 0.
+                    if (!childBundle.isFloatRow()) {
+                        childBundle.calculateTotalsOfSelectedRowsPlusAllCashForHandover(patientDepositsAreConsideredInHandingover);
+                    }
 
-                    if (childBundle.getSelectAllCashToHandover()) {
+                    if (childBundle.getSelectAllCashToHandover() || childBundle.isFloatRow()) {
                         addValueAndUpdateFlag("cash", safeDouble(childBundle.getCashValue()), safeDouble(childBundle.getCashHandoverValue()));
                     } else {
                         addValueAndUpdateFlag("cash", safeDouble(childBundle.getCashValue()), safeDouble(childBundle.getCashValue()));
