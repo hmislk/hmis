@@ -2432,20 +2432,22 @@ public class InwardBeanController implements Serializable {
     /**
      * Apply the Inward Discount Matrix discount to a BillFee.
      *
-     * Runs on hospital-portion fees only (skips Staff fees, mirrors the margin
-     * rule) and requires the item to allow discount. The discount scheme is
-     * taken from the admission/encounter itself (set at admission time).
-     * BHT type is the encounter's paymentMethod. When no matrix row matches
-     * the discount is 0, so existing behaviour is preserved for sites that
-     * have not configured the matrix.
+     * Runs on hospital-portion fees only (skips Staff fees). Skipped when the
+     * item does not allow discount or the fee does not allow discount.
+     * The discount scheme is taken from the admission/encounter itself
+     * (set at admission time). BHT type is the encounter's paymentMethod.
+     * When no matrix row matches the discount is 0, so existing behaviour is
+     * preserved for sites that have not configured the matrix.
      */
     public void applyInwardDiscountToBillFee(BillFee billFee, Item item, PatientEncounter patientEncounter) {
         if (billFee == null || item == null || patientEncounter == null) {
             return;
         }
-        if (!item.isDiscountAllowed()
-                || billFee.getFee() == null
-                || billFee.getFee().getFeeType() == FeeType.Staff) {
+        if (billFee.getFee() == null
+                || billFee.getFee().getFeeType() == FeeType.Staff
+                || !Boolean.TRUE.equals(item.isDiscountAllowed())
+                || !billFee.getFee().isDiscountAllowed()) {
+            billFee.setFeeUnitDiscount(0.0);
             billFee.setFeeDiscount(0.0);
             return;
         }
