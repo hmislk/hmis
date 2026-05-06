@@ -8753,8 +8753,8 @@ public void preProcessLaboratoryWorkloadSummaryReportPDF(Object document) {
                 Map<YearMonth, Bill> monthlyData = entrySet.getValue();
 
                 table.addCell(new PdfPCell(new Phrase(String.valueOf(serialNumber++))));
-                table.addCell(new PdfPCell(new Phrase(route.getCode())));
-                table.addCell(new PdfPCell(new Phrase(route.getName())));
+                table.addCell(new PdfPCell(new Phrase(route.getCode()!=null ? route.getCode() : "-")));
+                table.addCell(new PdfPCell(new Phrase(route.getName() != null ? route.getName() : "-")));
 
                 for (YearMonth yearMonth : yearMonths) {
                     Bill billData = monthlyData.get(yearMonth);
@@ -8845,8 +8845,8 @@ public void preProcessLaboratoryWorkloadSummaryReportPDF(Object document) {
                 cellIndex = 0;
 
                 row.createCell(cellIndex++).setCellValue(serialNumber++);
-                row.createCell(cellIndex++).setCellValue(route.getCode());
-                row.createCell(cellIndex++).setCellValue(route.getName());
+                row.createCell(cellIndex++).setCellValue(route.getCode() != null ? route.getCode() : "-");
+                row.createCell(cellIndex++).setCellValue(route.getName() != null ? route.getName() : "-");
 
                 for (YearMonth yearMonth : yearMonths) {
                     Bill billData = monthlyData.get(yearMonth);
