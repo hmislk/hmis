@@ -408,6 +408,14 @@
             <div style="margin-left: 6%" class="mt-1">
                 <div style="font-size: 8pt" class="d-flex gap-2">
                     <h:outputLabel value="Payment : #{cc.attrs.bill.paymentMethod}" ></h:outputLabel>
+
+                    <h:outputLabel rendered="#{cc.attrs.bill.billTypeAtomic eq 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}"
+                                       value="(#{cc.attrs.bill.referenceBill.onlineBooking.agency.name})"
+                                       ></h:outputLabel>
+                    <h:outputLabel rendered="#{cc.attrs.bill.billTypeAtomic eq 'CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING'}"
+                                       value="(#{cc.attrs.bill.billedBill.referenceBill.onlineBooking.agency.name})"
+                                       ></h:outputLabel>
+
                     <h:panelGroup rendered="#{cc.attrs.bill.paidBill ne null and cc.attrs.bill.paymentMethod ne cc.attrs.bill.paidBill.paymentMethod}" >
                         <div class="d-flex gap-2">
                             <h:outputLabel value="-" />
