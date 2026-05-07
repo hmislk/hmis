@@ -2846,6 +2846,25 @@ public class FinancialTransactionController implements Serializable {
             return;
         }
         currentPayment.setPaymentMethod(PaymentMethod.Cash);
+
+        if (configOptionApplicationController.getBooleanValueByKey("Enable Drawer Manegment", true)) {
+            Drawer drawer = sessionController.getLoggedUserDrawer() != null
+                    ? drawerFacade.find(sessionController.getLoggedUserDrawer().getId())
+                    : null;
+            double drawerBalance = (drawer != null && drawer.getCashInHandValue() != null)
+                    ? drawer.getCashInHandValue() : 0.0;
+            double cumulativeCash = Math.abs(currentPayment.getPaidValue());
+            for (Payment p : getCurrentBillPayments()) {
+                if (p.getPaymentMethod() == PaymentMethod.Cash) {
+                    cumulativeCash += Math.abs(p.getPaidValue());
+                }
+            }
+            if (cumulativeCash > drawerBalance) {
+                JsfUtil.addErrorMessage("Transfer amount cannot exceed available drawer balance (" + drawerBalance + ").");
+                return;
+            }
+        }
+
         getCurrentBillPayments().add(currentPayment);
         calculateFundTransferBillTotal();
         currentPayment = null;
@@ -3184,6 +3203,25 @@ public class FinancialTransactionController implements Serializable {
             floatTransferStarted = false;
             JsfUtil.addErrorMessage("At least one float must be added before settlement");
             return "";
+        }
+
+        if (configOptionApplicationController.getBooleanValueByKey("Enable Drawer Manegment", true)) {
+            Drawer drawer = sessionController.getLoggedUserDrawer() != null
+                    ? drawerFacade.find(sessionController.getLoggedUserDrawer().getId())
+                    : null;
+            double drawerBalance = (drawer != null && drawer.getCashInHandValue() != null)
+                    ? drawer.getCashInHandValue() : 0.0;
+            double totalCash = 0.0;
+            for (Payment p : getCurrentBillPayments()) {
+                if (p.getPaymentMethod() == PaymentMethod.Cash) {
+                    totalCash += Math.abs(p.getPaidValue());
+                }
+            }
+            if (totalCash > drawerBalance) {
+                floatTransferStarted = false;
+                JsfUtil.addErrorMessage("Transfer amount cannot exceed available drawer balance (" + drawerBalance + ").");
+                return "";
+            }
         }
 
         // Check for pending transactions before allowing fund transfer creation
