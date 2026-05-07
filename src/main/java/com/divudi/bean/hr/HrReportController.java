@@ -2147,9 +2147,11 @@ public class HrReportController implements Serializable {
                 + " from StaffShift ss "
                 + " where ss.retired=false"
                 + " and ss.staff=:stf "
-                + " and ((ss.startRecord.recordTimeStamp is not null "
-                + " and ss.endRecord.recordTimeStamp is not null)) "
-                //                + " or (ss.leaveType is not null) ) "
+                + " and ("
+                + "   (ss.startRecord.recordTimeStamp is not null "
+                + "   and ss.endRecord.recordTimeStamp is not null)"
+                + "   or ss.leaveType is not null"
+                + " )"
                 + " and ss.shiftDate between :frm  and :to ";
         hm.put("frm", fd);
         hm.put("to", td);
