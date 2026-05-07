@@ -2570,6 +2570,12 @@ public class BhtSummeryController implements Serializable {
         return "/inward/inward_bill_intrim?faces-redirect=true";
     }
 
+    public String navigateToIntrimBillRefresh() {
+        childPatientEncouters = null;
+        createTables();
+        return "/inward/inward_bill_intrim?faces-redirect=true";
+    }
+
     public String toIntrimBillclear() {
         patientEncounter = null;
         makeNull();
@@ -2890,9 +2896,6 @@ public class BhtSummeryController implements Serializable {
     }
 
     public double getPaid() {
-        if (patientEncounter != null) {
-            return getInwardBean().getPaidValue(getPatientEncounter());
-        }
         return paid;
     }
 
@@ -2930,9 +2933,6 @@ public class BhtSummeryController implements Serializable {
     }
 
     public double getDue() {
-        if (patientEncounter != null) {
-            return (grantTotal - discount) - getInwardBean().getPaidValue(getPatientEncounter());
-        }
         return due;
     }
 
