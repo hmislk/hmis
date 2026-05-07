@@ -2848,7 +2848,9 @@ public class FinancialTransactionController implements Serializable {
         currentPayment.setPaymentMethod(PaymentMethod.Cash);
 
         if (configOptionApplicationController.getBooleanValueByKey("Enable Drawer Manegment", true)) {
-            Drawer drawer = getLoggedUserDrawer();
+            Drawer drawer = sessionController.getLoggedUserDrawer() != null
+                    ? drawerFacade.find(sessionController.getLoggedUserDrawer().getId())
+                    : null;
             double drawerBalance = (drawer != null && drawer.getCashInHandValue() != null)
                     ? drawer.getCashInHandValue() : 0.0;
             double cumulativeCash = Math.abs(currentPayment.getPaidValue());
@@ -3204,7 +3206,9 @@ public class FinancialTransactionController implements Serializable {
         }
 
         if (configOptionApplicationController.getBooleanValueByKey("Enable Drawer Manegment", true)) {
-            Drawer drawer = getLoggedUserDrawer();
+            Drawer drawer = sessionController.getLoggedUserDrawer() != null
+                    ? drawerFacade.find(sessionController.getLoggedUserDrawer().getId())
+                    : null;
             double drawerBalance = (drawer != null && drawer.getCashInHandValue() != null)
                     ? drawer.getCashInHandValue() : 0.0;
             double totalCash = 0.0;
