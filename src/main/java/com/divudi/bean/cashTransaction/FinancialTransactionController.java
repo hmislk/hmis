@@ -7901,8 +7901,11 @@ public class FinancialTransactionController implements Serializable {
         billController.save(currentBill);
         for (Payment p : currentBillPayments) {
             p.setBill(currentBill);
+            p.setCurrentHolder(sessionController.getLoggedUser());
             paymentController.save(p);
         }
+        // Reflect the excess in the cashier's drawer: positive cash inflow per payment.
+        drawerController.updateDrawer(currentBillPayments, sessionController.getLoggedUser());
         JsfUtil.addSuccessMessage("All shift excess records have been successfully settled.");
         return "/cashier/record_shift_excess_print?faces-redirect=true";  // Redirect to a summary page or another relevant page
     }
@@ -7966,6 +7969,9 @@ public class FinancialTransactionController implements Serializable {
                 p.setCurrentHolder(sessionController.getLoggedUser());
                 paymentController.save(p);
             }
+            // Shortage payments carry negative paidValue, so updateDrawer subtracts
+            // them from the cashier's cash balance — keeping drawer in sync with the bill.
+            drawerController.updateDrawer(currentBillPayments, sessionController.getLoggedUser());
 
             JsfUtil.addSuccessMessage("All shift shortage records have been successfully recorded.");
             return "/cashier/record_shift_shortage_print?faces-redirect=true";  // Redirect to a summary page
@@ -8006,6 +8012,9 @@ public class FinancialTransactionController implements Serializable {
             currentPayment.setBill(currentBill);
             currentPayment.setCurrentHolder(sessionController.getLoggedUser());
             paymentController.save(currentPayment);
+            // paidValue is already negative for a shortage; this subtracts it from
+            // the cashier's cash drawer so the balance reflects the recorded shortage.
+            drawerController.updateDrawer(currentPayment, currentPayment.getPaidValue(), sessionController.getLoggedUser());
             JsfUtil.addSuccessMessage("Shift shortage recorded successfully.");
             return "/cashier/record_shift_shortage_print?faces-redirect=true";
         } catch (Exception e) {
@@ -8161,6 +8170,8 @@ public class FinancialTransactionController implements Serializable {
             currentPayment.setDepartment(null);
             currentPayment.setCurrentHolder(sessionController.getLoggedUser());
             paymentController.save(currentPayment);
+            // Cashier paying back the shortage: cash flowing into the drawer.
+            drawerController.updateDrawerForIns(currentPayment, sessionController.getLoggedUser());
 
             if (shortageOutstanding - currentPayment.getPaidValue() <= 0.001) {
                 selectedBill.setPaid(true);
