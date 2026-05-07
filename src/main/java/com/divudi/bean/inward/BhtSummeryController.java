@@ -2571,6 +2571,10 @@ public class BhtSummeryController implements Serializable {
     }
 
     public String navigateToIntrimBillRefresh() {
+        if (inwardPaymentController.getCurrent() != null
+                && inwardPaymentController.getCurrent().getPatientEncounter() != null) {
+            this.patientEncounter = inwardPaymentController.getCurrent().getPatientEncounter();
+        }
         childPatientEncouters = null;
         createTables();
         return "/inward/inward_bill_intrim?faces-redirect=true";
