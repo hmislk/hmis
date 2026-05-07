@@ -1630,7 +1630,7 @@ public class StaffSalaryController implements Serializable {
                             + "Salary not Generated for Emp. - " + s.getPerson().getNameWithTitle() + "(" + s.getCode() + ")");
                     continue;
                 }
-                if (!(s.getDateJoined().getTime() > salaryCycle.getDayOffPhToDate().getTime())) {
+                if (s.getDateJoined() == null || !(s.getDateJoined().getTime() > salaryCycle.getDayOffPhToDate().getTime())) {
                     double workedDays = humanResourceBean.calculateWorkedDaysForSalary(salaryCycle.getDayOffPhFromDate(), salaryCycle.getDayOffPhToDate(), s);
                     if (workedDays == 0.0) {
                         JsfUtil.addErrorMessage("No Working Days - " + s.getPerson().getName());
