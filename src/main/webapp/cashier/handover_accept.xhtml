@@ -88,14 +88,6 @@
                                             <f:convertNumber pattern="#,##0.00" />
                                         </p:outputLabel>
 
-                                        <h:panelGroup rendered="#{financialTransactionController.bundle.cashFloatInTotal gt 0}">
-                                            <i class="pi pi-arrow-down" style="margin-right:5px; color: #198754;"></i>
-                                            <p:outputLabel value="Float Received (Cash)" />
-                                        </h:panelGroup>
-                                        <p:outputLabel rendered="#{financialTransactionController.bundle.cashFloatInTotal gt 0}" value="#{financialTransactionController.bundle.cashFloatInTotal}">
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </p:outputLabel>
-
                                         <h:panelGroup rendered="#{financialTransactionController.bundle.cashFloatOutTotal gt 0}">
                                             <i class="pi pi-arrow-up" style="margin-right:5px; color: #dc3545;"></i>
                                             <p:outputLabel value="Float Sent (Cash)" />
@@ -140,8 +132,6 @@
                                                 <tr>
                                                     <th class="text-center">Payment Method</th>
                                                     <th class="text-center">Collected</th>
-                                                    <th class="text-center">Handed Over</th>
-                                                    <th class="text-center">Difference</th>
                                                 </tr>
                                             </thead>
                                             <!-- Table Body -->
@@ -152,16 +142,6 @@
                                                         <td>Cash</td>
                                                         <td class="text-end">
                                                             <h:outputText value="#{financialTransactionController.bundle.cashValue}">
-                                                                <f:convertNumber pattern="#,##0.00" />
-                                                            </h:outputText>
-                                                        </td>
-                                                        <td class="text-end">
-                                                            <h:outputText value="#{financialTransactionController.bundle.cashHandoverValue}">
-                                                                <f:convertNumber pattern="#,##0.00" />
-                                                            </h:outputText>
-                                                        </td>
-                                                        <td class="text-end">
-                                                            <h:outputText value="#{financialTransactionController.bundle.cashValue - financialTransactionController.bundle.cashHandoverValue}">
                                                                 <f:convertNumber pattern="#,##0.00" />
                                                             </h:outputText>
                                                         </td>
@@ -177,8 +157,6 @@
                                                                 <f:convertNumber pattern="#,##0.00" />
                                                             </h:outputText>
                                                         </td>
-                                                        <td></td>
-                                                        <td></td>
                                                     </tr>
                                                 </ui:fragment>
 
@@ -191,16 +169,6 @@
                                                                 <f:convertNumber pattern="#,##0.00" />
                                                             </h:outputText>
                                                         </td>
-                                                        <td class="text-end">
-                                                            <h:outputText value="#{financialTransactionController.bundle.cardHandoverValue}">
-                                                                <f:convertNumber pattern="#,##0.00" />
-                                                            </h:outputText>
-                                                        </td>
-                                                        <td class="text-end">
-                                                            <h:outputText value="#{financialTransactionController.bundle.cardValue - financialTransactionController.bundle.cardHandoverValue}">
-                                                                <f:convertNumber pattern="#,##0.00" />
-                                                            </h:outputText>
-                                                        </td>
                                                     </tr>
                                                 </ui:fragment>
                                                 <!-- Cheque Row -->
@@ -209,16 +177,6 @@
                                                         <td>Cheque</td>
                                                         <td class="text-end">
                                                             <h:outputText value="#{financialTransactionController.bundle.chequeValue}">
-                                                                <f:convertNumber pattern="#,##0.00" />
-                                                            </h:outputText>
-                                                        </td>
-                                                        <td class="text-end">
-                                                            <h:outputText value="#{financialTransactionController.bundle.chequeHandoverValue}">
-                                                                <f:convertNumber pattern="#,##0.00" />
-                                                            </h:outputText>
-                                                        </td>
-                                                        <td class="text-end">
-                                                            <h:outputText value="#{financialTransactionController.bundle.chequeValue - financialTransactionController.bundle.chequeHandoverValue}">
                                                                 <f:convertNumber pattern="#,##0.00" />
                                                             </h:outputText>
                                                         </td>
@@ -234,16 +192,6 @@
                                                                 <f:convertNumber pattern="#,##0.00" />
                                                             </h:outputText>
                                                         </td>
-                                                        <td class="text-end">
-                                                            <h:outputText value="#{financialTransactionController.bundle.slipHandoverValue}">
-                                                                <f:convertNumber pattern="#,##0.00" />
-                                                            </h:outputText>
-                                                        </td>
-                                                        <td class="text-end">
-                                                            <h:outputText value="#{financialTransactionController.bundle.slipValue - financialTransactionController.bundle.slipHandoverValue}">
-                                                                <f:convertNumber pattern="#,##0.00" />
-                                                            </h:outputText>
-                                                        </td>
                                                     </tr>
                                                 </ui:fragment>
 
@@ -253,16 +201,6 @@
                                                         <td>e-Wallet Payment</td>
                                                         <td class="text-end">
                                                             <h:outputText value="#{financialTransactionController.bundle.ewalletValue}">
-                                                                <f:convertNumber pattern="#,##0.00" />
-                                                            </h:outputText>
-                                                        </td>
-                                                        <td class="text-end">
-                                                            <h:outputText value="#{financialTransactionController.bundle.ewalletHandoverValue}">
-                                                                <f:convertNumber pattern="#,##0.00" />
-                                                            </h:outputText>
-                                                        </td>
-                                                        <td class="text-end">
-                                                            <h:outputText value="#{financialTransactionController.bundle.ewalletValue - financialTransactionController.bundle.ewalletHandoverValue}">
                                                                 <f:convertNumber pattern="#,##0.00" />
                                                             </h:outputText>
                                                         </td>
@@ -278,16 +216,6 @@
                                                                 <f:convertNumber pattern="#,##0.00" />
                                                             </h:outputText>
                                                         </td>
-                                                        <td class="text-end">
-                                                            <h:outputText value="#{financialTransactionController.bundle.patientDepositHandoverValue}">
-                                                                <f:convertNumber pattern="#,##0.00" />
-                                                            </h:outputText>
-                                                        </td>
-                                                        <td class="text-end">
-                                                            <h:outputText value="#{financialTransactionController.bundle.patientDepositValue - financialTransactionController.bundle.patientDepositHandoverValue}">
-                                                                <f:convertNumber pattern="#,##0.00" />
-                                                            </h:outputText>
-                                                        </td>
                                                     </tr>
                                                 </ui:fragment>
 
@@ -297,16 +225,6 @@
                                                         <td>On Call</td>
                                                         <td class="text-end">
                                                             <h:outputText value="#{financialTransactionController.bundle.onCallValue}">
-                                                                <f:convertNumber pattern="#,##0.00" />
-                                                            </h:outputText>
-                                                        </td>
-                                                        <td class="text-end">
-                                                            <h:outputText value="#{financialTransactionController.bundle.onCallHandoverValue}">
-                                                                <f:convertNumber pattern="#,##0.00" />
-                                                            </h:outputText>
-                                                        </td>
-                                                        <td class="text-end">
-                                                            <h:outputText value="#{financialTransactionController.bundle.onCallValue - financialTransactionController.bundle.onCallHandoverValue}">
                                                                 <f:convertNumber pattern="#,##0.00" />
                                                             </h:outputText>
                                                         </td>
@@ -322,16 +240,6 @@
                                                                 <f:convertNumber pattern="#,##0.00" />
                                                             </h:outputText>
                                                         </td>
-                                                        <td class="text-end">
-                                                            <h:outputText value="#{financialTransactionController.bundle.multiplePaymentMethodsHandoverValue}">
-                                                                <f:convertNumber pattern="#,##0.00" />
-                                                            </h:outputText>
-                                                        </td>
-                                                        <td class="text-end">
-                                                            <h:outputText value="#{financialTransactionController.bundle.multiplePaymentMethodsValue - financialTransactionController.bundle.multiplePaymentMethodsHandoverValue}">
-                                                                <f:convertNumber pattern="#,##0.00" />
-                                                            </h:outputText>
-                                                        </td>
                                                     </tr>
                                                 </ui:fragment>
 
@@ -341,16 +249,6 @@
                                                         <td>Staff Credit</td>
                                                         <td class="text-end">
                                                             <h:outputText value="#{financialTransactionController.bundle.staffValue}">
-                                                                <f:convertNumber pattern="#,##0.00" />
-                                                            </h:outputText>
-                                                        </td>
-                                                        <td class="text-end">
-                                                            <h:outputText value="#{financialTransactionController.bundle.staffHandoverValue}">
-                                                                <f:convertNumber pattern="#,##0.00" />
-                                                            </h:outputText>
-                                                        </td>
-                                                        <td class="text-end">
-                                                            <h:outputText value="#{financialTransactionController.bundle.staffValue - financialTransactionController.bundle.staffHandoverValue}">
                                                                 <f:convertNumber pattern="#,##0.00" />
                                                             </h:outputText>
                                                         </td>
@@ -366,16 +264,6 @@
                                                                 <f:convertNumber pattern="#,##0.00" />
                                                             </h:outputText>
                                                         </td>
-                                                        <td class="text-end">
-                                                            <h:outputText value="#{financialTransactionController.bundle.creditHandoverValue}">
-                                                                <f:convertNumber pattern="#,##0.00" />
-                                                            </h:outputText>
-                                                        </td>
-                                                        <td class="text-end">
-                                                            <h:outputText value="#{financialTransactionController.bundle.creditValue - financialTransactionController.bundle.creditHandoverValue}">
-                                                                <f:convertNumber pattern="#,##0.00" />
-                                                            </h:outputText>
-                                                        </td>
                                                     </tr>
                                                 </ui:fragment>
 
@@ -385,16 +273,6 @@
                                                         <td>Staff Welfare</td>
                                                         <td class="text-end">
                                                             <h:outputText value="#{financialTransactionController.bundle.staffWelfareValue}">
-                                                                <f:convertNumber pattern="#,##0.00" />
-                                                            </h:outputText>
-                                                        </td>
-                                                        <td class="text-end">
-                                                            <h:outputText value="#{financialTransactionController.bundle.staffWelfareHandoverValue}">
-                                                                <f:convertNumber pattern="#,##0.00" />
-                                                            </h:outputText>
-                                                        </td>
-                                                        <td class="text-end">
-                                                            <h:outputText value="#{financialTransactionController.bundle.staffWelfareValue - financialTransactionController.bundle.staffWelfareHandoverValue}">
                                                                 <f:convertNumber pattern="#,##0.00" />
                                                             </h:outputText>
                                                         </td>
@@ -410,16 +288,6 @@
                                                                 <f:convertNumber pattern="#,##0.00" />
                                                             </h:outputText>
                                                         </td>
-                                                        <td class="text-end">
-                                                            <h:outputText value="#{financialTransactionController.bundle.voucherHandoverValue}">
-                                                                <f:convertNumber pattern="#,##0.00" />
-                                                            </h:outputText>
-                                                        </td>
-                                                        <td class="text-end">
-                                                            <h:outputText value="#{financialTransactionController.bundle.voucherValue - financialTransactionController.bundle.voucherHandoverValue}">
-                                                                <f:convertNumber pattern="#,##0.00" />
-                                                            </h:outputText>
-                                                        </td>
                                                     </tr>
                                                 </ui:fragment>
 
@@ -429,16 +297,6 @@
                                                         <td>IOU</td>
                                                         <td class="text-end">
                                                             <h:outputText value="#{financialTransactionController.bundle.iouValue}">
-                                                                <f:convertNumber pattern="#,##0.00" />
-                                                            </h:outputText>
-                                                        </td>
-                                                        <td class="text-end">
-                                                            <h:outputText value="#{financialTransactionController.bundle.iouHandoverValue}">
-                                                                <f:convertNumber pattern="#,##0.00" />
-                                                            </h:outputText>
-                                                        </td>
-                                                        <td class="text-end">
-                                                            <h:outputText value="#{financialTransactionController.bundle.iouValue - financialTransactionController.bundle.iouHandoverValue}">
                                                                 <f:convertNumber pattern="#,##0.00" />
                                                             </h:outputText>
                                                         </td>
@@ -454,16 +312,6 @@
                                                                 <f:convertNumber pattern="#,##0.00" />
                                                             </h:outputText>
                                                         </td>
-                                                        <td class="text-end">
-                                                            <h:outputText value="#{financialTransactionController.bundle.agentHandoverValue}">
-                                                                <f:convertNumber pattern="#,##0.00" />
-                                                            </h:outputText>
-                                                        </td>
-                                                        <td class="text-end">
-                                                            <h:outputText value="#{financialTransactionController.bundle.agentValue - financialTransactionController.bundle.agentHandoverValue}">
-                                                                <f:convertNumber pattern="#,##0.00" />
-                                                            </h:outputText>
-                                                        </td>
                                                     </tr>
                                                 </ui:fragment>
 
@@ -473,16 +321,6 @@
                                                         <td>Patient Points</td>
                                                         <td class="text-end">
                                                             <h:outputText value="#{financialTransactionController.bundle.patientPointsValue}">
-                                                                <f:convertNumber pattern="#,##0.00" />
-                                                            </h:outputText>
-                                                        </td>
-                                                        <td class="text-end">
-                                                            <h:outputText value="#{financialTransactionController.bundle.patientPointsHandoverValue}">
-                                                                <f:convertNumber pattern="#,##0.00" />
-                                                            </h:outputText>
-                                                        </td>
-                                                        <td class="text-end">
-                                                            <h:outputText value="#{financialTransactionController.bundle.patientPointsValue - financialTransactionController.bundle.patientPointsHandoverValue}">
                                                                 <f:convertNumber pattern="#,##0.00" />
                                                             </h:outputText>
                                                         </td>
@@ -498,16 +336,6 @@
                                                                 <f:convertNumber pattern="#,##0.00" />
                                                             </h:outputText>
                                                         </td>
-                                                        <td class="text-end">
-                                                            <h:outputText value="#{financialTransactionController.bundle.onlineSettlementHandoverValue}">
-                                                                <f:convertNumber pattern="#,##0.00" />
-                                                            </h:outputText>
-                                                        </td>
-                                                        <td class="text-end">
-                                                            <h:outputText value="#{financialTransactionController.bundle.onlineSettlementValue - financialTransactionController.bundle.onlineSettlementHandoverValue}">
-                                                                <f:convertNumber pattern="#,##0.00" />
-                                                            </h:outputText>
-                                                        </td>
                                                     </tr>
                                                 </ui:fragment>
 
@@ -516,16 +344,10 @@
                                                 <tr class="fw-bold">
                                                     <td>Total</td>
                                                     <td class="text-end">
-                                                        <h:outputText value="#{financialTransactionController.bundle.total}">
+                                                        <h:outputText value="#{financialTransactionController.bundle.total + financialTransactionController.bundle.cashFloatNetTotal}">
                                                             <f:convertNumber pattern="#,##0.00" />
                                                         </h:outputText>
                                                     </td>
-                                                    <td class="text-end">
-                                                        <h:outputText value="#{financialTransactionController.bundle.cashHandoverValue + financialTransactionController.bundle.cardHandoverValue + financialTransactionController.bundle.chequeHandoverValue + financialTransactionController.bundle.slipHandoverValue + financialTransactionController.bundle.ewalletHandoverValue + financialTransactionController.bundle.staffWelfareHandoverValue + financialTransactionController.bundle.staffHandoverValue + financialTransactionController.bundle.creditHandoverValue + financialTransactionController.bundle.voucherHandoverValue + financialTransactionController.bundle.iouHandoverValue + financialTransactionController.bundle.agentHandoverValue + financialTransactionController.bundle.patientDepositHandoverValue + financialTransactionController.bundle.patientPointsHandoverValue + financialTransactionController.bundle.onlineSettlementHandoverValue + financialTransactionController.bundle.onCallHandoverValue + financialTransactionController.bundle.multiplePaymentMethodsHandoverValue}">
-                                                            <f:convertNumber pattern="#,##0.00" />
-                                                        </h:outputText>
-                                                    </td>
-                                                    <td></td>
                                                 </tr>
                                             </tfoot>
                                         </table>
@@ -600,32 +422,35 @@
                                         rows="100000"
                                         >
 
-                                        <p:column headerText="Institution" >
-                                            <h:outputText value="#{summary.department.institution.name}" />
+                                        <p:column headerText="Institution / Type" >
+                                            <h:outputText value="#{summary.department.institution.name}" rendered="#{!summary.floatRow and (summary.paymentHandover == null or summary.paymentHandover.name() != 'FLOATS')}" />
+                                            <h:outputText value="Shift Shortage"    rendered="#{summary.paymentHandover ne null and summary.paymentHandover.name() eq 'FLOATS'}" style="color:#dc3545; font-style:italic;" />
+                                            <h:outputText value="Float Sent (Cash)" rendered="#{summary.floatRow and summary.paymentHandover ne null and summary.paymentHandover.name() eq 'FLOAT_OUT'}" style="color:#dc3545; font-style:italic;" />
+                                            <h:outputText value="Net Float (Cash)"  rendered="#{summary.floatRow and summary.paymentHandover ne null and summary.paymentHandover.name() eq 'FLOAT_IN'}"  style="color:#198754; font-style:italic;" />
                                         </p:column>
 
                                         <p:column headerText="Site"  rendered="#{configOptionApplicationController.getBooleanValueByKey('Sites are Managed',true)}" >
-                                            <h:outputText value="#{summary.department.site.name}" />
+                                            <h:outputText value="#{summary.department.site.name}" rendered="#{!summary.floatRow}" />
                                         </p:column>
 
                                         <p:column headerText="Department" >
-                                            <h:outputText value="#{summary.department.name}" />
+                                            <h:outputText value="#{summary.department.name}" rendered="#{!summary.floatRow}" />
                                         </p:column>
 
                                         <p:column headerText="Date" >
-                                            <h:outputText value="#{summary.date}">
+                                            <h:outputText value="#{summary.date}" rendered="#{!summary.floatRow}">
                                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
                                             </h:outputText>
                                         </p:column>
 
-                                        <p:column headerText="Cash" 
+                                        <p:column headerText="Cash"
                                                   class="text-end"
                                                   rendered="#{financialTransactionController.bundle.hasCashTransaction}" >
                                             <h:outputText value="#{summary.cashValue}"  style="text-align: right;">
                                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                             </h:outputText>
                                             <f:facet name="footer" >
-                                                <p:outputLabel value="#{financialTransactionController.bundle.cashValue}" >
+                                                <p:outputLabel value="#{financialTransactionController.bundle.cashValue + financialTransactionController.bundle.cashFloatNetTotal}" >
                                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                 </p:outputLabel>
                                             </f:facet>
@@ -923,7 +748,7 @@
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </h:outputText>
                                             <f:facet name="footer">
-                                                <h:outputText value="#{financialTransactionController.bundle.cashValue + financialTransactionController.bundle.cardValue + financialTransactionController.bundle.multiplePaymentMethodsValue +
+                                                <h:outputText value="#{financialTransactionController.bundle.cashValue + financialTransactionController.bundle.cashFloatNetTotal + financialTransactionController.bundle.cardValue + financialTransactionController.bundle.multiplePaymentMethodsValue +
                                                                        financialTransactionController.bundle.creditValue + financialTransactionController.bundle.staffWelfareValue + financialTransactionController.bundle.staffValue + financialTransactionController.bundle.voucherValue +
                                                                        financialTransactionController.bundle.iouValue + financialTransactionController.bundle.agentValue + financialTransactionController.bundle.chequeValue + financialTransactionController.bundle.slipValue +
                                                                        financialTransactionController.bundle.ewalletValue + financialTransactionController.bundle.patientDepositValue + financialTransactionController.bundle.patientPointsValue + financialTransactionController.bundle.onlineSettlementValue}"
@@ -946,77 +771,6 @@
 
                                     </p:dataTable>
 
-                                    <!-- Float Transfers section -->
-                                    <h:panelGroup layout="block" styleClass="row mt-2"
-                                         rendered="#{financialTransactionController.bundle.cashFloatNetTotal != 0
-                                                     or not empty financialTransactionController.bundle.reportTemplateRows}">
-                                        <p:panel>
-                                            <f:facet name="header">
-                                                <p:outputLabel value="Float Transfers" />
-                                            </f:facet>
-                                            <p:dataTable
-                                                value="#{financialTransactionController.bundle.reportTemplateRows}"
-                                                var="floatRow"
-                                                rendered="#{not empty financialTransactionController.bundle.reportTemplateRows}"
-                                                emptyMessage="No float transfers">
-                                                <p:column headerText="Date">
-                                                    <h:outputText value="#{floatRow.payment.createdAt}">
-                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                                    </h:outputText>
-                                                </p:column>
-                                                <p:column headerText="Type">
-                                                    <h:outputText value="Float Out"
-                                                        rendered="#{floatRow.payment.bill.billTypeAtomic.name() eq 'FUND_TRANSFER_BILL'}" />
-                                                    <h:outputText value="Float In"
-                                                        rendered="#{floatRow.payment.bill.billTypeAtomic.name() eq 'FUND_TRANSFER_RECEIVED_BILL'}" />
-                                                </p:column>
-                                                <p:column headerText="From">
-                                                    <h:outputText value="#{floatRow.payment.creater.webUserPerson.nameWithTitle}" />
-                                                </p:column>
-                                                <p:column headerText="To">
-                                                    <h:outputText value="#{floatRow.payment.floatRecipient.webUserPerson.nameWithTitle}" />
-                                                </p:column>
-                                                <p:column headerText="Method">
-                                                    <h:outputText value="#{floatRow.payment.paymentMethod}" />
-                                                </p:column>
-                                                <p:column headerText="Amount" styleClass="text-end">
-                                                    <h:outputText value="#{floatRow.payment.paidValue}">
-                                                        <f:convertNumber pattern="#,##0.00" />
-                                                    </h:outputText>
-                                                </p:column>
-                                            </p:dataTable>
-                                            <table class="table table-bordered mt-2 w-50">
-                                                <ui:fragment rendered="#{financialTransactionController.bundle.cashFloatInTotal gt 0}">
-                                                    <tr>
-                                                        <td>Float Received (Cash)</td>
-                                                        <td class="text-end">
-                                                            <h:outputText value="#{financialTransactionController.bundle.cashFloatInTotal}">
-                                                                <f:convertNumber pattern="#,##0.00" />
-                                                            </h:outputText>
-                                                        </td>
-                                                    </tr>
-                                                </ui:fragment>
-                                                <ui:fragment rendered="#{financialTransactionController.bundle.cashFloatOutTotal gt 0}">
-                                                    <tr>
-                                                        <td>Float Sent (Cash)</td>
-                                                        <td class="text-end">
-                                                            <h:outputText value="#{financialTransactionController.bundle.cashFloatOutTotal}">
-                                                                <f:convertNumber pattern="#,##0.00" />
-                                                            </h:outputText>
-                                                        </td>
-                                                    </tr>
-                                                </ui:fragment>
-                                                <tr>
-                                                    <td><strong>Net Float (Cash)</strong></td>
-                                                    <td class="text-end">
-                                                        <h:outputText value="#{financialTransactionController.bundle.cashFloatNetTotal}">
-                                                            <f:convertNumber pattern="#,##0.00" />
-                                                        </h:outputText>
-                                                    </td>
-                                                </tr>
-                                            </table>
-                                        </p:panel>
-                                    </h:panelGroup>
 
                                 </div>
                             </div>

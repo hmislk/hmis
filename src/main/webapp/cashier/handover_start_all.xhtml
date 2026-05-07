@@ -39,13 +39,6 @@
                                     <p:panelGrid layout="tabular" columns="2" class="w-100">
                                         <f:facet name="header">
                                             <p:outputLabel value="Shift" class="font-weight-bold" style="float:left;"/>
-                                            <p:commandButton 
-                                                value="Mark Shift Handover Complete"
-                                                action="#{financialTransactionController.completeHandover()}"
-                                                icon="pi pi-check-circle"
-                                                style="float: right;"
-                                                styleClass="ui-button-success float-right"
-                                                ajax="false" />
                                         </f:facet>
                                         <!-- User with Icon -->
                                         <h:panelGroup>
@@ -136,7 +129,7 @@
                                                 <tr class="ui-widget-content" >
                                                     <td>Cash</td>
                                                     <td class="text-end">
-                                                        <h:outputText value="#{financialTransactionController.bundle.cashValue + financialTransactionController.bundle.cashFloatNetTotal}">
+                                                        <h:outputText value="#{financialTransactionController.bundle.cashValue}">
                                                             <f:convertNumber pattern="#,##0.00" />
                                                         </h:outputText>
                                                     </td>
@@ -146,7 +139,7 @@
                                                         </h:outputText>
                                                     </td>
                                                     <td class="text-end">
-                                                        <h:outputText id="txtCashHandover" value="#{financialTransactionController.bundle.cashValue + financialTransactionController.bundle.cashFloatNetTotal - financialTransactionController.bundle.denominatorValue}">
+                                                        <h:outputText id="txtCashHandover" value="#{financialTransactionController.bundle.cashValue - financialTransactionController.bundle.denominatorValue}">
                                                             <f:convertNumber pattern="#,##0.00" />
                                                         </h:outputText>
                                                     </td>
@@ -469,7 +462,7 @@
                                                     <tr class="ui-widget-content fw-bold" style="border-top: 2px solid #6c757d;">
                                                         <td>Net To Handover</td>
                                                         <td class="text-end">
-                                                            <h:outputText value="#{financialTransactionController.bundle.cashValue + financialTransactionController.bundle.cashFloatNetTotal + financialTransactionController.bundle.cardValue + financialTransactionController.bundle.chequeValue + financialTransactionController.bundle.creditValue + financialTransactionController.bundle.staffValue + financialTransactionController.bundle.staffWelfareValue + financialTransactionController.bundle.voucherValue + financialTransactionController.bundle.iouValue + financialTransactionController.bundle.agentValue + financialTransactionController.bundle.slipValue + financialTransactionController.bundle.ewalletValue + financialTransactionController.bundle.onCallValue + financialTransactionController.bundle.patientDepositValue + financialTransactionController.bundle.patientPointsValue + financialTransactionController.bundle.onlineSettlementValue + financialTransactionController.bundle.multiplePaymentMethodsValue}">
+                                                            <h:outputText value="#{financialTransactionController.bundle.cashValue + financialTransactionController.bundle.cardValue + financialTransactionController.bundle.chequeValue + financialTransactionController.bundle.creditValue + financialTransactionController.bundle.staffValue + financialTransactionController.bundle.staffWelfareValue + financialTransactionController.bundle.voucherValue + financialTransactionController.bundle.iouValue + financialTransactionController.bundle.agentValue + financialTransactionController.bundle.slipValue + financialTransactionController.bundle.ewalletValue + financialTransactionController.bundle.onCallValue + financialTransactionController.bundle.patientDepositValue + financialTransactionController.bundle.patientPointsValue + financialTransactionController.bundle.onlineSettlementValue + financialTransactionController.bundle.multiplePaymentMethodsValue}">
                                                                 <f:convertNumber pattern="#,##0.00" />
                                                             </h:outputText>
                                                         </td>
@@ -479,7 +472,7 @@
                                                             </h:outputText>
                                                         </td>
                                                         <td class="text-end">
-                                                            <h:outputText value="#{financialTransactionController.bundle.cashValue + financialTransactionController.bundle.cashFloatNetTotal - financialTransactionController.bundle.denominatorValue}">
+                                                            <h:outputText value="#{financialTransactionController.bundle.cashValue - financialTransactionController.bundle.denominatorValue}">
                                                                 <f:convertNumber pattern="#,##0.00" />
                                                             </h:outputText>
                                                         </td>
@@ -634,7 +627,8 @@
                                     </p:column>
 
                                     <p:column headerText="Institution" >
-                                        <h:outputText value="#{summary.department.institution.name}" />
+                                        <h:outputText value="#{summary.department.institution.name}" rendered="#{summary.paymentHandover == null or summary.paymentHandover.name() != 'FLOATS'}" />
+                                        <h:outputText value="Shortage Bill" rendered="#{summary.paymentHandover ne null and summary.paymentHandover.name() == 'FLOATS'}" style="color:#dc3545; font-style:italic;" />
                                     </p:column>
 
                                     <p:column headerText="Site" >
@@ -655,7 +649,7 @@
 
                                     <p:column class="text-end" headerText="Cash Collected" rendered="#{financialTransactionController.bundle.hasCashTransaction}">
                                         <h:outputText value="#{summary.cashValue}"
-                                            style="color: #{summary.floatRow ? (summary.paymentHandover.name() == 'FLOAT_OUT' ? '#dc3545' : '#198754') : ''}">
+                                            style="color: #{summary.floatRow and summary.paymentHandover ne null ? (summary.paymentHandover.name() == 'FLOAT_OUT' ? '#dc3545' : '#198754') : ''}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputText>
 
@@ -664,7 +658,7 @@
 
 
                                         <f:facet name="footer">
-                                            <h:outputText value="#{financialTransactionController.bundle.cashValue + financialTransactionController.bundle.cashFloatNetTotal}">
+                                            <h:outputText value="#{financialTransactionController.bundle.cashValue}">
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </h:outputText>
                                         </f:facet>
@@ -692,12 +686,12 @@
                                         <h:outputText
                                             rendered="#{summary.floatRow}"
                                             value="#{summary.cashHandoverValue}"
-                                            style="color: #{summary.paymentHandover.name() == 'FLOAT_OUT' ? '#dc3545' : '#198754'}">
+                                            style="color: #{summary.paymentHandover ne null and summary.paymentHandover.name() == 'FLOAT_OUT' ? '#dc3545' : '#198754'}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputText>
 
                                         <f:facet name="footer">
-                                            <h:outputText value="#{financialTransactionController.bundle.cashValue + financialTransactionController.bundle.cashFloatNetTotal}">
+                                            <h:outputText value="#{financialTransactionController.bundle.denominatorValue}">
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </h:outputText>
                                         </f:facet>

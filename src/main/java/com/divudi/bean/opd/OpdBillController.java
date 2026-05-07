@@ -3944,19 +3944,35 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 
                 boolean needToAdd = billFeeIsThereAsSelectedInBillFeeBundle(bf);
                 if (needToAdd) {
-
+                    Institution creditCompany = null;
                     Department department = null;
                     Item item = null;
-                    PriceMatrix priceMatrix;
+                    PriceMatrix priceMatrix = null;
                     Category category = null;
 
                     if (bf.getBillItem() != null && bf.getBillItem().getItem() != null) {
                         department = bf.getBillItem().getItem().getDepartment();
-
                         item = bf.getBillItem().getItem();
                     }
 
-                    priceMatrix = getPriceMatrixController().getPaymentSchemeDiscount(paymentMethod, paymentScheme, department, item);
+                    if(paymentMethod == PaymentMethod.Credit){
+                        System.out.println("PaymentMethod = Credit");
+                        if(paymentMethodData != null && paymentMethodData.getCredit() != null && paymentMethodData.getCredit().getInstitution() != null){
+                            creditCompany = paymentMethodData.getCredit().getInstitution();
+                            
+                            System.out.println("Found Credit Company = " + creditCompany.getId() + " --> " + creditCompany.getName());
+                            priceMatrix = getPriceMatrixController().getPaymentSchemeDiscount(paymentMethod, paymentScheme, creditCompany, item);
+                            
+                        }else{
+                            System.out.println("Not Found Credit Company");
+                        }
+                    }else{
+                        System.out.println("PaymentMethod != Credit");
+                        priceMatrix = getPriceMatrixController().getPaymentSchemeDiscount(paymentMethod, paymentScheme, department, item);
+                    }
+                             
+                    System.out.println("priceMatrix = " + priceMatrix);
+                    
                     getBillBean().setBillFees(bf, isForeigner(), paymentMethod, paymentScheme, getCreditCompany(), priceMatrix);
 
                     if (bf.getBillItem().getItem().isVatable()) {

@@ -585,7 +585,7 @@ public class RequestController implements Serializable {
         currentRequest.setStatus(RequestStatus.APPROVED);
         requestService.save(currentRequest, sessionController.getLoggedUser());
 
-        JsfUtil.addSuccessMessage("Successfully Approve");
+        JsfUtil.addSuccessMessage("Successfully Approved");
 
     }
 
