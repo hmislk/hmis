@@ -7901,8 +7901,11 @@ public class FinancialTransactionController implements Serializable {
         billController.save(currentBill);
         for (Payment p : currentBillPayments) {
             p.setBill(currentBill);
+            p.setCurrentHolder(sessionController.getLoggedUser());
             paymentController.save(p);
         }
+        // Reflect the excess in the cashier's drawer: positive cash inflow per payment.
+        drawerController.updateDrawer(currentBillPayments, sessionController.getLoggedUser());
         JsfUtil.addSuccessMessage("All shift excess records have been successfully settled.");
         return "/cashier/record_shift_excess_print?faces-redirect=true";  // Redirect to a summary page or another relevant page
     }
@@ -7966,13 +7969,17 @@ public class FinancialTransactionController implements Serializable {
                 p.setCurrentHolder(sessionController.getLoggedUser());
                 paymentController.save(p);
             }
-
-            JsfUtil.addSuccessMessage("All shift shortage records have been successfully recorded.");
-            return "/cashier/record_shift_shortage_print?faces-redirect=true";  // Redirect to a summary page
         } catch (Exception e) {
             JsfUtil.addErrorMessage("Error settling shift shortages: " + e.getMessage());
             return "";  // Optionally, redirect to an error page
         }
+        // Drawer update is intentionally outside the try/catch: a drawer failure
+        // must not be misreported as a save failure and must not trigger any
+        // compensating rollback (matching the convention used in fund-transfer,
+        // cancellation, and handover flows).
+        drawerController.updateDrawer(currentBillPayments, sessionController.getLoggedUser());
+        JsfUtil.addSuccessMessage("All shift shortage records have been successfully recorded.");
+        return "/cashier/record_shift_shortage_print?faces-redirect=true";  // Redirect to a summary page
     }
 
     public String recordAndSettleShiftShortage() {
@@ -8006,8 +8013,6 @@ public class FinancialTransactionController implements Serializable {
             currentPayment.setBill(currentBill);
             currentPayment.setCurrentHolder(sessionController.getLoggedUser());
             paymentController.save(currentPayment);
-            JsfUtil.addSuccessMessage("Shift shortage recorded successfully.");
-            return "/cashier/record_shift_shortage_print?faces-redirect=true";
         } catch (Exception e) {
             // If the bill was persisted but the payment failed, cancel the bill so it
             // does not appear as an unmatched record in shortage searches.
@@ -8023,6 +8028,12 @@ public class FinancialTransactionController implements Serializable {
         } finally {
             shortageSubmitting = false;
         }
+        // Drawer update is outside the save try/catch so a drawer failure does
+        // NOT trigger bill cancellation. paidValue is already negative for a
+        // shortage; this subtracts it from the cashier's cash drawer.
+        drawerController.updateDrawer(currentPayment, currentPayment.getPaidValue(), sessionController.getLoggedUser());
+        JsfUtil.addSuccessMessage("Shift shortage recorded successfully.");
+        return "/cashier/record_shift_shortage_print?faces-redirect=true";
     }
 
     public String navigateToCashierShiftBillSearchWithTodayResults() {
@@ -8169,8 +8180,6 @@ public class FinancialTransactionController implements Serializable {
                 billController.save(selectedBill);
             }
             computeShortageSettlementSummary(selectedBill);
-            JsfUtil.addSuccessMessage("Shortage settlement recorded successfully.");
-            return "/cashier/settle_shift_shortage_print?faces-redirect=true";
         } catch (Exception e) {
             if (currentBill != null && currentBill.getId() != null) {
                 try {
@@ -8184,6 +8193,12 @@ public class FinancialTransactionController implements Serializable {
         } finally {
             settlementSubmitting = false;
         }
+        // Drawer update is outside the save try/catch so a drawer failure does
+        // NOT cancel the settlement bill. Cashier is paying back, so cash flows
+        // into the drawer.
+        drawerController.updateDrawerForIns(currentPayment, sessionController.getLoggedUser());
+        JsfUtil.addSuccessMessage("Shortage settlement recorded successfully.");
+        return "/cashier/settle_shift_shortage_print?faces-redirect=true";
     }
 
     private Bill findOriginalShortageBill(Bill bill) {
