@@ -14,7 +14,7 @@
                           <table style="border: none; border-collapse: collapse;">
                               <tr>
                                   <td style="padding: 4px 24px 4px 0; white-space: nowrap; vertical-align: middle; font-weight: 600;">
-                                      <h:outputLabel value="From Date:" />
+                                     <h:outputText value="From Date:" />
                                   </td>
                                   <td style="padding: 4px 0;">
                                       <p:calendar 
@@ -26,7 +26,7 @@
                               </tr>
                               <tr>
                                   <td style="padding: 4px 24px 4px 0; white-space: nowrap; vertical-align: middle; font-weight: 600;">
-                                      <h:outputLabel value="To Date:" />
+                                      <h:outputText value="To Date:" />
                                   </td>
                                   <td style="padding: 4px 0;">
                                       <p:calendar 
@@ -50,7 +50,7 @@
                                 <p:commandButton
                                     value="Excel"
                                     icon="fas fa-file-excel"
-                                    styleClass="ui-botton-success mx-2"
+                                    styleClass="ui-button-success mx-2"
                                     action="#{emailController.fillAllEmails}"
                                     ajax="false" >
                                     <p:dataExporter 
