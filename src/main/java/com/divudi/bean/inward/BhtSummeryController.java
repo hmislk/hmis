@@ -2890,6 +2890,9 @@ public class BhtSummeryController implements Serializable {
     }
 
     public double getPaid() {
+        if (patientEncounter != null) {
+            return getInwardBean().getPaidValue(getPatientEncounter());
+        }
         return paid;
     }
 
@@ -2927,6 +2930,9 @@ public class BhtSummeryController implements Serializable {
     }
 
     public double getDue() {
+        if (patientEncounter != null) {
+            return (grantTotal - discount) - getInwardBean().getPaidValue(getPatientEncounter());
+        }
         return due;
     }
 
