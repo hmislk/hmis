@@ -9,30 +9,63 @@
         <ui:composition template="/analytics/index.xhtml">
             <ui:define name="report">
                 <h:form>
-                    <p:panel header="Sent Email List" styleClass="p-3">
-                        <p:panelGrid columns="6" styleClass="w-100 mb-3">
-                            <h:outputLabel value="From Date:" />
-                            <p:calendar 
-                                value="#{emailController.fromDate}" 
-                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}">
-                            </p:calendar>
+                    <p:panel header="Sent Email List">
+                        <div class="w-80">
+                          <table style="border: none; border-collapse: collapse;">
+                              <tr>
+                                  <td style="padding: 4px 24px 4px 0; white-space: nowrap; vertical-align: middle; font-weight: 600;">
+                                      <h:outputLabel value="From Date:" />
+                                  </td>
+                                  <td style="padding: 4px 0;">
+                                      <p:calendar 
+                                          navigator="true"
+                                          value="#{emailController.fromDate}" 
+                                          pattern="#{sessionController.applicationPreference.longDateTimeFormat}">
+                                      </p:calendar>
+                                  </td>
+                              </tr>
+                              <tr>
+                                  <td style="padding: 4px 24px 4px 0; white-space: nowrap; vertical-align: middle; font-weight: 600;">
+                                      <h:outputLabel value="To Date:" />
+                                  </td>
+                                  <td style="padding: 4px 0;">
+                                      <p:calendar 
+                                          navigator="true"
+                                          value="#{emailController.toDate}" 
+                                          pattern="#{sessionController.applicationPreference.longDateTimeFormat}">
+                                      </p:calendar>
+                                  </td>
+                              </tr>
+                          </table>
+                      </div>
 
-                            <h:outputLabel value="To Date:" />
-                            <p:calendar 
-                                value="#{emailController.toDate}" 
-                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
-                            </p:calendar>
+                            
+                            <h:panelGrid columns="6" class="my-2">
+                                 <p:commandButton
+                                    value="Search"
+                                    icon="pi pi-search"
+                                    styleClass="ui-button-warning"
+                                    action="#{emailController.fillAllEmails}"
+                                    ajax="false" />
+                                <p:commandButton
+                                    value="Excel"
+                                    icon="fas fa-file-excel"
+                                    styleClass="ui-botton-success mx-2"
+                                    action="#{emailController.fillAllEmails}"
+                                    ajax="false" >
+                                    <p:dataExporter 
+                                    fileName="All Emails"
+                                    type="xlsx"
+                                    target="tblEmail"/>
+                                </p:commandButton>
+                                
+                            </h:panelGrid>
 
-                            <p:spacer />
-                            <p:commandButton
-                                value="Search"
-                                icon="pi pi-search"
-                                styleClass="ui-button-info"
-                                action="#{emailController.fillAllEmails}"
-                                ajax="false" />
-                        </p:panelGrid>
+                           
+                        
 
                         <p:dataTable 
+                            id="tblEmail"
                             value="#{emailController.emails}" 
                             var="e" 
                             paginator="true" 
