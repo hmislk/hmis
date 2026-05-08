@@ -338,6 +338,11 @@
                                                                     offLabel="Patient is Local"
                                                                     class="w-100"
                                                                     onLabel="Patient is Forigner" >
+                                                                    <p:ajax 
+                                                                        listener="#{opdBillController.calTotals()}"
+                                                                        process="scbforigner" 
+                                                                        update=":#{p:resolveFirstComponentWithId('panelBillItems',view).clientId} :#{p:resolveFirstComponentWithId('ptImp',view).clientId} :#{p:resolveFirstComponentWithId('paymentDetails',view).clientId} :#{p:resolveFirstComponentWithId('payment',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}">
+                                                                    </p:ajax>
                                                                 </p:selectBooleanButton>
                                                             </h:panelGroup>
 
@@ -465,7 +470,7 @@
                                                     <h:outputText value="#{patientDepositController.getPatientCurrentPatientDepositeTotal(opdBillController.patient, sessionController.loggedUser.department)}" rendered="#{opdBillController.patient.hasAnAccount}">
                                                         <f:convertNumber pattern="#,##0.00" />
                                                     </h:outputText>
-                                                    
+
                                                     <h:outputLabel value="Registered Type" class="mx-3"/>
                                                     <h:outputLabel value=" : " class="mx-3"/>
                                                     <p:badge 
@@ -859,7 +864,7 @@
                                                         </p:tabView>
                                                     </p:dialog>
                                                 </p:column>
-                                                
+
                                                 <p:column  width="2em" class="text-end" >
                                                     <f:facet name="header">
                                                         <h:outputText value="Qty" />
@@ -869,12 +874,12 @@
                                                         value="#{bi.billItem.qty}" 
                                                         class="mx-1 text-end"  ></h:outputText>
                                                 </p:column>
-                                                
+
                                                 <p:column  width="10em" >
                                                     <f:facet name="header">Department</f:facet>
                                                         #{bi.billItem.item.department.name}
                                                 </p:column>
-                                                
+
                                                 <p:column width="8em" >
                                                     <f:facet name="header">Priority</f:facet>
                                                     <p:selectOneMenu  
@@ -900,20 +905,20 @@
                                                         </p:column>
                                                     </p:selectOneMenu>
                                                     <h:panelGroup rendered="#{not bi.billItem.item.allowedForBillingPriority}">
-                                                    <div class="card bg-secondary text-white">
-                                                        <h:outputText value="Not Allow" style="font-weight: 700;" class=" d-flex justify-content-center m-2"/>
-                                                    </div>
+                                                        <div class="card bg-secondary text-white">
+                                                            <h:outputText value="Not Allow" style="font-weight: 700;" class=" d-flex justify-content-center m-2"/>
+                                                        </div>
                                                     </h:panelGroup>
-                                                    
+
                                                 </p:column>
-                                                
+
                                                 <p:column width="5em" class="text-end">
                                                     <f:facet name="header">Fee</f:facet>
                                                     <h:outputText value="#{bi.billItem.netValue}">
                                                         <f:convertNumber pattern="#,##0.00" />
                                                     </h:outputText>
                                                 </p:column>
-                                                
+
                                                 <p:column width="2em">
                                                     <p:commandButton 
                                                         id="btnRemove" 
