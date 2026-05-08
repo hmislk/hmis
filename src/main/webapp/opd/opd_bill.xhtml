@@ -158,9 +158,10 @@
                                                 <p:column>
                                                     <p:commandButton 
                                                         action="#{patientController.selectQuickOneFromQuickSearchPatient(opdBillController)}" 
+                                                        actionListener="#{opdBillController.calTotals()}"
                                                         id="btnSelectPt"
                                                         process="btnSelectPt tblPatients"
-                                                        update=":#{p:resolveFirstComponentWithId('ptImp',view).clientId} :#{p:resolveFirstComponentWithId('paymentDetails',view).clientId} :#{p:resolveFirstComponentWithId('payment',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}"
+                                                        update=":#{p:resolveFirstComponentWithId('panelBillItems',view).clientId} :#{p:resolveFirstComponentWithId('ptImp',view).clientId} :#{p:resolveFirstComponentWithId('paymentDetails',view).clientId} :#{p:resolveFirstComponentWithId('payment',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}"
                                                         value="select">
                                                         <f:setPropertyActionListener value="#{ps}" target="#{patientController.current}" />
                                                     </p:commandButton>
