@@ -3964,6 +3964,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                         if(paymentMethodData != null && paymentMethodData.getCredit() != null && paymentMethodData.getCredit().getInstitution() != null){
                             creditCompany = paymentMethodData.getCredit().getInstitution();
                             priceMatrix = getPriceMatrixController().getPaymentSchemeDiscount(paymentMethod, paymentScheme, creditCompany, item);
+                        }
                     }else{
                         priceMatrix = getPriceMatrixController().getPaymentSchemeDiscount(paymentMethod, paymentScheme, department, item);
                     }
