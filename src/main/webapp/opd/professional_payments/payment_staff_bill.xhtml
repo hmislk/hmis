@@ -14,7 +14,7 @@
                 <h:panelGroup id="panbilledit" rendered="#{!staffPaymentBillController.printPreview}" styleClass="alignTop" >
                     <p:panel header="OPD Professional Payment" >
                         <h:form>
-                            <h:panelGrid columns="5" class="w-100">
+                            <h:panelGrid columns="8" class="w-100">
                                 <p:outputLabel 
                                     value="From" />
                                 <p:calendar 
@@ -37,7 +37,17 @@
                                     navigator="true" 
                                     pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
 
-
+                                <p:spacer width="50" ></p:spacer>
+                                <p:outputLabel 
+                                    value="MRN" />
+                                <p:inputText 
+                                    autocomplete="off" 
+                                    placeholder="Patient MRN"
+                                    value="#{staffPaymentBillController.patientPhn}" 
+                                    class="my-1 w-100">
+                                </p:inputText>
+                                
+                                
                                 <h:outputLabel 
                                     value="Speciality" ></h:outputLabel>
                                 <p:autoComplete 
@@ -45,6 +55,7 @@
                                     value="#{staffPaymentBillController.speciality}"
                                     inputStyleClass="w-100" 
                                     class="m-1 w-100"
+                                    placeholder="Selsect Speciality..."
                                     id="acSpeciality"
                                     completeMethod="#{specialityController.completeSpeciality}" 
                                     var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
@@ -63,18 +74,20 @@
                                     value="#{staffPaymentBillController.currentStaff}"
                                     inputStyleClass="w-100" class="m-1 w-100"
                                     id="scStaff"
+                                    placeholder="Selsect Doctor..."
                                     completeMethod="#{staffPaymentBillController.completeStaff}"
                                     var="mys" 
                                     itemLabel="#{mys.person.nameWithTitle}" 
                                     itemValue="#{mys}"
                                     >
                                 </p:autoComplete>
+
                             </h:panelGrid>
 
 
                             <p:commandButton 
                                 value="Find Due Payments" 
-                                action="#{staffPaymentBillController.calculateDueFeesForOpdForSelectedPeriod}" 
+                                    action="#{staffPaymentBillController.calculateDueFeesForOpdForSelectedPeriod}" 
                                 ajax="false" 
                                 icon="fa-solid fa-arrows-rotate"
                                 class="ui-button-warning" />
@@ -158,7 +171,7 @@
                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
                                     </h:outputLabel>
                                 </p:column>
-                                
+
                                 <p:column width="3em">
                                     <f:facet name="header">
                                         <h:outputLabel value="MRN"/>
@@ -217,7 +230,7 @@
                                         value="&nbsp;&nbsp;&nbsp;&nbsp; Settle Professional Payment" 
                                         style="float: right;"
                                         onclick="if (!confirm('Do you want to process this payment?'))
-                                            return false;"
+                                                    return false;"
                                         class="ui-button-success"
                                         action="#{staffPaymentBillController.settleBill()}" >
                                     </p:commandButton>
