@@ -88,14 +88,6 @@
                                             <f:convertNumber pattern="#,##0.00" />
                                         </p:outputLabel>
 
-                                        <h:panelGroup rendered="#{financialTransactionController.bundle.cashFloatInTotal gt 0}">
-                                            <i class="pi pi-arrow-down" style="margin-right:5px; color: #198754;"></i>
-                                            <p:outputLabel value="Float Received (Cash)" />
-                                        </h:panelGroup>
-                                        <p:outputLabel rendered="#{financialTransactionController.bundle.cashFloatInTotal gt 0}" value="#{financialTransactionController.bundle.cashFloatInTotal}">
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </p:outputLabel>
-
                                         <h:panelGroup rendered="#{financialTransactionController.bundle.cashFloatOutTotal gt 0}">
                                             <i class="pi pi-arrow-up" style="margin-right:5px; color: #dc3545;"></i>
                                             <p:outputLabel value="Float Sent (Cash)" />
@@ -431,9 +423,10 @@
                                         >
 
                                         <p:column headerText="Institution / Type" >
-                                            <h:outputText value="#{summary.department.institution.name}" rendered="#{!summary.floatRow}" />
-                                            <h:outputText value="Float Sent (Cash)"     rendered="#{summary.floatRow and summary.paymentHandover ne null and summary.paymentHandover.name() eq 'FLOAT_OUT'}" style="color:#dc3545; font-style:italic;" />
-                                            <h:outputText value="Float Received (Cash)" rendered="#{summary.floatRow and summary.paymentHandover ne null and summary.paymentHandover.name() eq 'FLOAT_IN'}"  style="color:#198754; font-style:italic;" />
+                                            <h:outputText value="#{summary.department.institution.name}" rendered="#{!summary.floatRow and (summary.paymentHandover == null or summary.paymentHandover.name() != 'FLOATS')}" />
+                                            <h:outputText value="Shift Shortage"    rendered="#{summary.paymentHandover ne null and summary.paymentHandover.name() eq 'FLOATS'}" style="color:#dc3545; font-style:italic;" />
+                                            <h:outputText value="Float Sent (Cash)" rendered="#{summary.floatRow and summary.paymentHandover ne null and summary.paymentHandover.name() eq 'FLOAT_OUT'}" style="color:#dc3545; font-style:italic;" />
+                                            <h:outputText value="Net Float (Cash)"  rendered="#{summary.floatRow and summary.paymentHandover ne null and summary.paymentHandover.name() eq 'FLOAT_IN'}"  style="color:#198754; font-style:italic;" />
                                         </p:column>
 
                                         <p:column headerText="Site"  rendered="#{configOptionApplicationController.getBooleanValueByKey('Sites are Managed',true)}" >

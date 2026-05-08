@@ -39,13 +39,6 @@
                                     <p:panelGrid layout="tabular" columns="2" class="w-100">
                                         <f:facet name="header">
                                             <p:outputLabel value="Shift" class="font-weight-bold" style="float:left;"/>
-                                            <p:commandButton 
-                                                value="Mark Shift Handover Complete"
-                                                action="#{financialTransactionController.completeHandover()}"
-                                                icon="pi pi-check-circle"
-                                                style="float: right;"
-                                                styleClass="ui-button-success float-right"
-                                                ajax="false" />
                                         </f:facet>
                                         <!-- User with Icon -->
                                         <h:panelGroup>
@@ -634,7 +627,8 @@
                                     </p:column>
 
                                     <p:column headerText="Institution" >
-                                        <h:outputText value="#{summary.department.institution.name}" />
+                                        <h:outputText value="#{summary.department.institution.name}" rendered="#{summary.paymentHandover == null or summary.paymentHandover.name() != 'FLOATS'}" />
+                                        <h:outputText value="Shortage Bill" rendered="#{summary.paymentHandover ne null and summary.paymentHandover.name() == 'FLOATS'}" style="color:#dc3545; font-style:italic;" />
                                     </p:column>
 
                                     <p:column headerText="Site" >
