@@ -1473,7 +1473,7 @@
                                                     value="Mark Foreigner" 
                                                     class="mx-2"
                                                     action="#{opdBillController.markAsForeigner}" 
-                                                    rendered="#{!opdBillController.foreigner}" 
+                                                    rendered="#{!opdBillController.patient.person.foreigner}" 
                                                     process="@this" 
                                                     update="gpLocalForeign :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} tblBillItem paymentDetails" 
                                                     >
@@ -1482,7 +1482,7 @@
                                                     value="Mark Local" 
                                                     class="mx-2"
                                                     action="#{opdBillController.markAsLocal}" 
-                                                    rendered="#{opdBillController.foreigner}" 
+                                                    rendered="#{opdBillController.patient.person.foreigner}" 
                                                     process="@this" 
                                                     update="gpLocalForeign :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} tblBillItem paymentDetails" 
                                                     >
