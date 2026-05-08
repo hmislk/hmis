@@ -383,7 +383,7 @@ public class StaffPaymentBillController implements Serializable {
 
         if(patientPhn != null && !patientPhn.trim().equals("")){
             jpql += " and bf.bill.patient.phn like :phn ";
-            params.put("phn", "%" + patientPhn + "%");
+            params.put("phn", "%" + patientPhn.trim() + "%");
         }
         
         params.put("btcs", btcs);
