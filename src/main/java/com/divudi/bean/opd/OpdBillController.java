@@ -2149,6 +2149,11 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             if (getPatient().getPhn() == null || getPatient().getPhn().trim().equals("")) {
                 getPatient().setPhn(applicationController.createNewPersonalHealthNumber(getSessionController().getInstitution()));
             }
+            
+            if(isForeigner()){
+                System.out.println("Patient is Foreigner.");
+                getPatient().getPerson().setForeigner(true);
+            }
 
             getPatient().setCreatedInstitution(getSessionController().getInstitution());
             getPatient().setCreater(getSessionController().getLoggedUser());
@@ -3925,7 +3930,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         if (paymentMethod == null) {
             return;
         }
-
+        
         double billDiscount = 0.0;
         double billGross = 0.0;
         double billNet = 0.0;
