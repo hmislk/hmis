@@ -106,20 +106,30 @@ jobs:
           "
 
           # Deploy the WAR using asadmin
+          # Use --detach so the asadmin client does not block waiting for EclipseLink
+          # deploy-on-startup to finish (which previously caused the 600 s client
+          # timeout to fire even though Payara was still initialising normally).
+          # After submitting the detached deploy, poll list-applications for up to
+          # 15 minutes so the CI/CD still fails loudly if the deploy truly fails.
           ssh -i private_key.pem -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "
             echo 'AS_ADMIN_PASSWORD=$PAYARA_ADMIN_PASS' > /tmp/payara-admin-pass.txt
             /opt/payara5/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt undeploy $APP_NAME || true
-            /opt/payara5/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt deploy --force=true --contextroot $APP_NAME $WAR_DIR/$WAR_NAME
-            rm /tmp/payara-admin-pass.txt
-          "
-
-          # Validate if the application is running
-          ssh -i private_key.pem -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "
-            echo 'AS_ADMIN_PASSWORD=$PAYARA_ADMIN_PASS' > /tmp/payara-admin-pass.txt
-            if /opt/payara5/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt list-applications | grep -q '$APP_NAME'; then
-              echo 'Application is running.'
-            else
-              echo 'Application failed to start.'
+            /opt/payara5/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt --detach deploy --contextroot $APP_NAME $WAR_DIR/$WAR_NAME
+            echo 'Deploy submitted. Polling for application start (up to 15 min)...'
+            DEPLOYED=false
+            for i in \$(seq 1 30); do
+              sleep 30
+              if /opt/payara5/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt list-applications | grep -q '^$APP_NAME '; then
+                echo 'Application is running.'
+                DEPLOYED=true
+                break
+              fi
+              echo \"  Still waiting... (\$i/30)\"
+            done
+            if [ \"\$DEPLOYED\" = 'false' ]; then
+              echo 'Application failed to start within 15 minutes.'
+              rm /tmp/payara-admin-pass.txt
+              exit 1
             fi
             rm /tmp/payara-admin-pass.txt
           "
