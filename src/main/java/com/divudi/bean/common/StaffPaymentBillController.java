@@ -380,11 +380,8 @@ public class StaffPaymentBillController implements Serializable {
         } else {
             jpql += " and bf.staff is not null ";
         }
-        
-        System.out.println("patientPhn = " + patientPhn);
-        
+
         if(patientPhn != null && !patientPhn.trim().equals("")){
-            System.out.println("patientPhn != null || !patientPhn.trim().isEmpty() = " );
             jpql += " and bf.bill.patient.phn like :phn ";
             params.put("phn", "%" + patientPhn + "%");
         }
