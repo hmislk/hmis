@@ -2150,10 +2150,8 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                 getPatient().setPhn(applicationController.createNewPersonalHealthNumber(getSessionController().getInstitution()));
             }
             
-            if(isForeigner()){
-                System.out.println("Patient is Foreigner.");
-                getPatient().getPerson().setForeigner(true);
-            }
+            getPatient().getPerson().setForeigner(true);
+            
 
             getPatient().setCreatedInstitution(getSessionController().getInstitution());
             getPatient().setCreater(getSessionController().getLoggedUser());
@@ -3931,6 +3929,8 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             return;
         }
         
+        foreigner = getPatient().getPerson().isForeigner();
+        
         double billDiscount = 0.0;
         double billGross = 0.0;
         double billNet = 0.0;
@@ -4051,12 +4051,20 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     }
 
     public void markAsForeigner() {
-        setForeigner(true);
+        if(patient == null){
+            JsfUtil.addErrorMessage("Need to Add Patient first ..! ");
+            return;
+        }
+        getPatient().getPerson().setForeigner(true);
         calTotals();
     }
 
     public void markAsLocal() {
-        setForeigner(false);
+        if(patient == null){
+            JsfUtil.addErrorMessage("Need to Add Patient first ..! ");
+            return;
+        }
+        getPatient().getPerson().setForeigner(false);
         calTotals();
     }
 
