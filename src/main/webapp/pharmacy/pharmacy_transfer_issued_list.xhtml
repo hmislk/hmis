@@ -109,7 +109,7 @@
                                     <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{p}"/>
                                 </p:commandButton>
 
-                                <p:commandButton 
+                                <p:commandButton
                                     id="btnToReceive"
                                     ajax="false"
                                     value="Receive"
@@ -117,6 +117,16 @@
                                     action="#{transferReceiveController.navigateToRecieveRequest()}"
                                     disabled="#{p.cancelled or p.fullyIssued}">
                                     <f:setPropertyActionListener target="#{transferReceiveController.issuedBill}" value="#{p}"/>
+                                </p:commandButton>
+
+                                <p:commandButton
+                                    id="btnToReceiveFast"
+                                    ajax="false"
+                                    value="Fast Receive"
+                                    class="ui-button-success mx-2"
+                                    action="#{transferReceiveNativeSqlController.navigateToReceiveRequestNative()}"
+                                    disabled="#{p.cancelled or p.fullyIssued}">
+                                    <f:setPropertyActionListener target="#{transferReceiveNativeSqlController.issuedBill}" value="#{p}"/>
                                 </p:commandButton>
 
                             </p:column>
