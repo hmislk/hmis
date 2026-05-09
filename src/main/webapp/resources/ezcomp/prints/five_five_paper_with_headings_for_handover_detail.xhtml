@@ -375,6 +375,12 @@
                         <h:outputText value="Shift Shortage"
                             rendered="#{summary.paymentHandover ne null and summary.paymentHandover.name() eq 'FLOATS'}"
                             style="color:#dc3545; font-style:italic;" />
+                        <h:outputText value="Float Sent (Cash)"
+                            rendered="#{summary.floatRow and summary.paymentHandover ne null and summary.paymentHandover.name() eq 'FLOAT_OUT'}"
+                            style="color: red; font-weight: bold;" />
+                        <h:outputText value="Float Received (Cash)"
+                            rendered="#{summary.floatRow and summary.paymentHandover ne null and summary.paymentHandover.name() eq 'FLOAT_IN'}"
+                            style="color: green; font-weight: bold;" />
                     </p:column>
 
                     <p:column headerText="Site" rendered="#{configOptionApplicationController.getBooleanValueByKey('Sites are Managed',true)}">
@@ -396,7 +402,7 @@
                     </p:column>
 
                     <p:column class="text-end" headerText="Cash" rendered="#{cc.attrs.bundle.hasCashTransaction}">
-                        <h:outputText value="#{summary.cashHandoverValue}" rendered="#{!summary.floatRow}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                        <h:outputText value="#{summary.cashHandoverValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
                         <f:facet name="footer"><h:outputText value="#{cc.attrs.bundle.cashHandoverValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></f:facet>
                     </p:column>
                     <p:column class="text-end" headerText="Card" rendered="#{cc.attrs.bundle.hasCardTransaction}">
@@ -452,7 +458,7 @@
                         <f:facet name="footer"><h:outputText value="#{cc.attrs.bundle.onCallValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></f:facet>
                     </p:column>
                     <p:column class="text-end" headerText="Total">
-                        <h:outputText rendered="#{!summary.floatRow}"
+                        <h:outputText
                             value="#{summary.cashHandoverValue + summary.cardHandoverValue + summary.creditHandoverValue + summary.staffWelfareHandoverValue + summary.staffHandoverValue + summary.voucherHandoverValue + summary.iouHandoverValue + summary.agentHandoverValue + summary.chequeHandoverValue + summary.slipHandoverValue + summary.ewalletHandoverValue + summary.patientPointsHandoverValue + summary.onlineSettlementHandoverValue + summary.onCallHandoverValue}">
                             <f:convertNumber pattern="#,##0.00"/>
                         </h:outputText>
