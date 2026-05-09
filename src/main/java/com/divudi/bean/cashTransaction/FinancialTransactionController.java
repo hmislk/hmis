@@ -4436,6 +4436,7 @@ public class FinancialTransactionController implements Serializable {
         btas.add(BillTypeAtomic.IOU_CASH_ISSUE);
         btas.add(BillTypeAtomic.IOU_SETTLE);
         btas.add(BillTypeAtomic.IOU_TO_CASH_CONVERSION);
+        btas.add(BillTypeAtomic.IOU_TO_CASH_CONVERSION_CANCELLED);
         Map<String, Object> m = new HashMap<>();
 
         StringBuilder jpqlBuilder = new StringBuilder("SELECT p ")
@@ -4488,6 +4489,7 @@ public class FinancialTransactionController implements Serializable {
         btas.add(BillTypeAtomic.IOU_CASH_ISSUE);
         btas.add(BillTypeAtomic.IOU_SETTLE);
         btas.add(BillTypeAtomic.IOU_TO_CASH_CONVERSION);
+        btas.add(BillTypeAtomic.IOU_TO_CASH_CONVERSION_CANCELLED);
         Map<String, Object> m = new HashMap<>();
 
         StringBuilder jpqlBuilder = new StringBuilder("SELECT p ")
@@ -4540,6 +4542,7 @@ public class FinancialTransactionController implements Serializable {
         btas.add(BillTypeAtomic.IOU_CASH_ISSUE);
         btas.add(BillTypeAtomic.IOU_SETTLE);
         btas.add(BillTypeAtomic.IOU_TO_CASH_CONVERSION);
+        btas.add(BillTypeAtomic.IOU_TO_CASH_CONVERSION_CANCELLED);
         Map<String, Object> m = new HashMap<>();
 
         StringBuilder jpqlBuilder = new StringBuilder("SELECT p ")
