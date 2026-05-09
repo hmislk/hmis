@@ -206,6 +206,7 @@ public class TransferReceiveNativeSqlService {
             dto.setRate(ratePerPack);
             dto.setNetRate(ratePerPack);
             dto.setIssuedQty(issuedUnits);
+            dto.setRemainingUnits(remaining);
             dto.setReceivingQty(BigDecimal.valueOf(remainingPacks));
             // value = abs(grossRate × remainingPacks) — positive display value
             dto.setValue(grossRate.multiply(BigDecimal.valueOf(remainingPacks)).abs().doubleValue());

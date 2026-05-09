@@ -30,8 +30,11 @@ public class TransferReceiveItemRowDto implements Serializable {
     private double rate;
     private double netRate;
 
-    /** Remaining issued qty in units (display only). */
+    /** Total issued qty in units (display only). */
     private double issuedQty;
+
+    /** Remaining qty in units after subtracting all prior receives. Used by over-receive guard. */
+    private double remainingUnits;
 
     /** User-editable quantity in packs. */
     private BigDecimal receivingQty;
@@ -131,6 +134,14 @@ public class TransferReceiveItemRowDto implements Serializable {
 
     public void setIssuedQty(double issuedQty) {
         this.issuedQty = issuedQty;
+    }
+
+    public double getRemainingUnits() {
+        return remainingUnits;
+    }
+
+    public void setRemainingUnits(double remainingUnits) {
+        this.remainingUnits = remainingUnits;
     }
 
     public BigDecimal getReceivingQty() {

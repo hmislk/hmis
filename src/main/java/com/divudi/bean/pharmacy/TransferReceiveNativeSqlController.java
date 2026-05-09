@@ -547,9 +547,8 @@ public class TransferReceiveNativeSqlController implements Serializable {
                 continue;
             }
             double receivingUnits = item.getReceivingQty().doubleValue() * item.getUnitsPerPack();
-            // issuedQty is already the remaining qty loaded from native service
-            // but it was computed at load time; we allow the user to receive up to issuedQty
-            if (receivingUnits > item.getIssuedQty() + 0.001) {
+            // remainingUnits = issuedUnits minus all prior receives (computed at page-load time)
+            if (receivingUnits > item.getRemainingUnits() + 0.001) {
                 return true;
             }
         }
