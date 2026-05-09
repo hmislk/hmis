@@ -5818,7 +5818,8 @@ public class FinancialTransactionController implements Serializable {
 
         boolean requireCollectionHandoverMatch = configOptionApplicationController.getBooleanValueByKey("Require Collection and Handover Values to Match", false);
         if (requireCollectionHandoverMatch) {
-            Double maximumAllowedDifferenceForHandoverTotal = configOptionApplicationController.getDoubleValueByKey("Maximum Allowed Difference for Handover Total", 0.01);
+            Double configuredMaxDiff = configOptionApplicationController.getDoubleValueByKey("Maximum Allowed Difference for Handover Total", 0.01);
+            double maximumAllowedDifferenceForHandoverTotal = (configuredMaxDiff == null) ? 0.01 : Math.max(0.0, configuredMaxDiff);
             double totalCollected = bundle.getTotal() != null ? bundle.getTotal() : 0.0;
             double totalHandedOver = bundle.getTotalOut() != null ? bundle.getTotalOut() : 0.0;
             if (Math.abs(totalCollected - totalHandedOver) > maximumAllowedDifferenceForHandoverTotal) {
