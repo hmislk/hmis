@@ -766,6 +766,7 @@ public class PharmacyWholeSaleController2 implements Serializable, ControllerWit
             JsfUtil.addErrorMessage("Item?");
             return;
         }
+        stock = stockFacade.find(stock.getId());
         if (getQty() == null) {
             errorMessage = "Quentity?";
             JsfUtil.addErrorMessage("Quentity?");
@@ -1437,6 +1438,7 @@ public class PharmacyWholeSaleController2 implements Serializable, ControllerWit
             JsfUtil.addErrorMessage("Please Select Stock");
             return;
         }
+        stock = stockFacade.find(stock.getId());
 
         if (getStock().getItemBatch() != null
                 && getStock().getItemBatch().getDateOfExpire() != null
