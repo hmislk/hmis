@@ -122,6 +122,16 @@
                                     <f:setPropertyActionListener target="#{transferReceiveController.issuedBillId}" value="#{p.billId}"/>
                                 </p:commandButton>
 
+                                <p:commandButton
+                                    id="btnToReceiveFast"
+                                    ajax="false"
+                                    value="Fast Receive"
+                                    class="ui-button-success mx-2"
+                                    action="#{transferReceiveNativeSqlController.navigateToReceiveRequestNative()}"
+                                    disabled="#{p.cancelled or p.fullyIssued}">
+                                    <f:setPropertyActionListener target="#{transferReceiveNativeSqlController.issuedBillId}" value="#{p.billId}"/>
+                                </p:commandButton>
+
                             </p:column>
 
                             <p:column headerText="Received" style="text-align: center">

@@ -8294,6 +8294,9 @@ public class PharmacyController implements Serializable {
         btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY);
         btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS);
 
+        boolean listOnlyDepartmentTransactions = configOptionApplicationController.getBooleanValueByKey(
+                "Pharmacy History Lists Only Department Transactions for Sales", true);
+
         String jpql = "SELECT new com.divudi.core.data.dto.PharmacySaleByBillTypeDTO("
                 + "i.bill.billTypeAtomic, "
                 + "sum(i.pharmaceuticalBillItem.qty)) "
@@ -8301,16 +8304,20 @@ public class PharmacyController implements Serializable {
                 + "WHERE (i.bill.retired is null or i.bill.retired=false) "
                 + "AND i.item in :ris "
                 + "AND i.bill.billTypeAtomic in :btas "
-                + "AND i.createdAt between :frm and :to "
-                + "AND i.bill.department=:dep "
-                + "GROUP BY i.bill.billTypeAtomic";
+                + "AND i.createdAt between :frm and :to ";
 
         Map<String, Object> m = new HashMap<>();
         m.put("ris", relatedAmpAndAmpps);
         m.put("frm", getFromDate());
         m.put("to", getToDate());
         m.put("btas", btas);
-        m.put("dep", sessionController.getDepartment());
+
+        if (listOnlyDepartmentTransactions) {
+            jpql += "AND i.bill.department=:dep ";
+            m.put("dep", sessionController.getDepartment());
+        }
+
+        jpql += "GROUP BY i.bill.billTypeAtomic";
 
         salesByBillType = (List<PharmacySaleByBillTypeDTO>) getBillItemFacade().findLightsByJpql(jpql, m, TemporalType.TIMESTAMP);
     }

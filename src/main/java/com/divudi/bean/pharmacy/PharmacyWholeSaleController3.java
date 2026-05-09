@@ -794,6 +794,11 @@ public class PharmacyWholeSaleController3 implements Serializable, ControllerWit
             return;
         }
 
+        if (getStock().getItemBatch() == null) {
+            errorMessage = "Item batch not found for selected stock";
+            JsfUtil.addErrorMessage("Item batch not found for selected stock");
+            return;
+        }
         billItem.getPharmaceuticalBillItem().setQtyInUnit(0 - qty);
         billItem.getPharmaceuticalBillItem().setStock(stock);
         billItem.getPharmaceuticalBillItem().setItemBatch(getStock().getItemBatch());
@@ -1439,7 +1444,13 @@ public class PharmacyWholeSaleController3 implements Serializable, ControllerWit
             return;
         }
 
-        if (getStock().getItemBatch().getDateOfExpire().before(CommonFunctions.getCurrentDateTime())) {
+        if (getStock().getItemBatch() == null) {
+            errorMessage = "Item batch not found for selected stock";
+            JsfUtil.addErrorMessage("Item batch not found for selected stock");
+            return;
+        }
+        if (getStock().getItemBatch().getDateOfExpire() != null
+                && getStock().getItemBatch().getDateOfExpire().before(CommonFunctions.getCurrentDateTime())) {
             JsfUtil.addErrorMessage("Please not select Expired Items");
             return;
         }
