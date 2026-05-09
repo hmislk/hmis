@@ -216,6 +216,20 @@ public class TransferReceiveNativeSqlService {
     }
 
     /**
+     * Retires a pre-saved PHARMACY_RECEIVE_PRE bill after it has been superseded
+     * by a full PHARMACY_RECEIVE settlement in settleApprove().
+     * Sets retired=1 so the bill is hidden from list queries.
+     */
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    public void retirePreBill(long preBillId, long retirerId) {
+        em.createNativeQuery("UPDATE " + billTable()
+                + " SET retired=1, retiredAt=NOW(), retirer_ID=? WHERE ID=? AND retired=0")
+                .setParameter(1, retirerId)
+                .setParameter(2, preBillId)
+                .executeUpdate();
+    }
+
+    /**
      * Checks that each item's source stock (staffStockId) holds at least the
      * units being requested before settlement begins.
      *

@@ -21,6 +21,7 @@ import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.WebUser;
 import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.ItemFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.ejb.BillNumberGenerator;
@@ -30,7 +31,12 @@ import com.divudi.service.pharmacy.TransferReceiveNativeSqlService;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.persistence.TemporalType;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
@@ -52,6 +58,7 @@ import javax.inject.Named;
 public class TransferReceiveNativeSqlController implements Serializable {
 
     private static final long serialVersionUID = 1L;
+    private static final Logger LOGGER = Logger.getLogger(TransferReceiveNativeSqlController.class.getName());
 
     // ---- State ----
     private Bill issuedBill;
@@ -76,6 +83,9 @@ public class TransferReceiveNativeSqlController implements Serializable {
 
     @EJB
     private BillFacade billFacade;
+
+    @EJB
+    private ItemFacade itemFacade;
 
     @EJB
     private BillNumberGenerator billNumberBean;
@@ -134,6 +144,8 @@ public class TransferReceiveNativeSqlController implements Serializable {
             JsfUtil.addErrorMessage("No items remaining to receive.");
             return null;
         }
+
+        resolveAmpItemIds(itemRowList);
 
         return "/pharmacy/pharmacy_transfer_receive_native?faces-redirect=true";
     }
@@ -233,6 +245,7 @@ public class TransferReceiveNativeSqlController implements Serializable {
             return;
         }
 
+        long preBillId = receivedBillId; // capture before overwrite
         Bill bill = buildReceiveBillHeader(BillTypeAtomic.PHARMACY_RECEIVE);
         bill.setApproveAt(new Date());
         bill.setApproveUser(sessionController.getLoggedUser());
@@ -247,6 +260,16 @@ public class TransferReceiveNativeSqlController implements Serializable {
         } catch (RuntimeException ex) {
             JsfUtil.addErrorMessage("Settlement failed: " + ex.getMessage());
             return;
+        }
+
+        // Retire the pre-saved PHARMACY_RECEIVE_PRE bill — it has been superseded
+        // by the new PHARMACY_RECEIVE bill created above. Without this, the PRE bill
+        // remains as an orphan and would appear in list queries.
+        try {
+            transferReceiveNativeSqlService.retirePreBill(preBillId, sessionController.getLoggedUser().getId());
+        } catch (Exception ex) {
+            LOGGER.log(Level.WARNING, "Could not retire pre-bill id={0}: {1}",
+                    new Object[]{preBillId, ex.getMessage()});
         }
 
         receivedBillId = bill.getId();
@@ -704,6 +727,31 @@ public class TransferReceiveNativeSqlController implements Serializable {
         String headerTemplate = configOptionApplicationController
                 .getLongTextValueByKey("Transfer Receive Note Header");
         dto.setTemplateHeader(fillHeaderDataFromPrintDto(headerTemplate));
+    }
+
+    private void resolveAmpItemIds(List<TransferReceiveItemRowDto> items) {
+        if (items == null) {
+            return;
+        }
+        for (TransferReceiveItemRowDto item : items) {
+            if (item.getItemId() == null) {
+                continue;
+            }
+            try {
+                Map<String, Object> params = new HashMap<>();
+                params.put("id", item.getItemId());
+                List<?> result = itemFacade.findLightsByJpql(
+                        "SELECT i.amp.id FROM Item i WHERE i.id = :id AND TYPE(i) = Ampp",
+                        params, TemporalType.DATE, 1);
+                if (result != null && !result.isEmpty() && result.get(0) != null) {
+                    item.setAmpItemId(((Number) result.get(0)).longValue());
+                }
+                // non-Ampp items: ampItemId already equals itemId — no change needed
+            } catch (Exception e) {
+                LOGGER.log(Level.WARNING, "Could not resolve AMP for itemId={0}: {1}",
+                        new Object[]{item.getItemId(), e.getMessage()});
+            }
+        }
     }
 
     private static String safeStr(String s) {
