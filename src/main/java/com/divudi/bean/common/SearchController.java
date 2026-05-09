@@ -5029,19 +5029,17 @@ public class SearchController implements Serializable {
      * @return list of issue DTOs
      */
     public List<PharmacyTransferRequestIssueDTO> fetchIssuedBillDtos(Long requestId) {
-        String jpql = "select new com.divudi.core.data.dto.PharmacyTransferRequestIssueDTO("
-                + " b.id, "
-                + " b.deptId, "
-                + " b.createdAt, "
-                + " b.creater.webUserPerson.name, "
-                + " ts.person.name, "
-                + " b.netTotal)"
-                + " from Bill b "
-                + " left join b.toStaff ts"
-                + " where b.retired=false "
-                + " and b.cancelled=false "
-                + " and b.billTypeAtomic=:bta"
-                + " and (b.referenceBill.id=:rid or b.backwardReferenceBill.id=:rid)";
+        // LEFT JOINs are required: implicit path navigation (b.referenceBill.id) generates
+        // an inner join that silently excludes bills where referenceBill_ID is NULL
+        // (e.g. bills created via native SQL that only set backwardReferenceBill).
+        String jpql = "select new com.divudi.core.data.dto.PharmacyTransferRequestIssueDTO(b.id, b.deptId)"
+                + " from Bill b"
+                + " left join b.referenceBill ref"
+                + " left join b.backwardReferenceBill bref"
+                + " where b.retired = false"
+                + " and b.cancelled = false"
+                + " and b.billTypeAtomic = :bta"
+                + " and (ref.id = :rid or bref.id = :rid)";
         HashMap<String, Object> params = new HashMap<>();
         params.put("bta", BillTypeAtomic.PHARMACY_ISSUE);
         params.put("rid", requestId);

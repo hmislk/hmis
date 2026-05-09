@@ -1,0 +1,232 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/pharmacy/disbursement_index.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:ph="http://xmlns.jcp.org/jsf/composite/pharmacy">
+
+    <ui:define name="subcontent">
+
+        <!-- Admin Config Button (Admin Only) -->
+        <div class="d-flex justify-content-start mb-2">
+            <h:panelGroup rendered="#{webUserController.hasPrivilege('Admin')}">
+                <p:commandButton
+                    value="Config"
+                    icon="fa fa-cog"
+                    title="Page Configuration Management"
+                    action="#{pageAdminController.navigateToPageAdmin('pharmacy/pharmacy_transfer_issue_native')}"
+                    ajax="false"
+                    styleClass="ui-button-secondary ui-button-sm p-button-outlined"
+                    style="font-size: 0.8rem; padding: 0.25rem 0.5rem;">
+                </p:commandButton>
+            </h:panelGroup>
+        </div>
+
+        <h:form>
+
+            <!-- ============================================================
+                 INPUT PANEL — shown before settlement
+                 ============================================================ -->
+            <p:panel rendered="#{!transferIssueNativeSqlController.printPreview}">
+                <p:panel>
+                    <f:facet name="header">
+
+                        <p:commandButton
+                            id="btnIssue"
+                            value="Issue"
+                            icon="fas fa-check"
+                            style="float: right;"
+                            class="ui-button-success mx-2"
+                            action="#{transferIssueNativeSqlController.settle}"
+                            ajax="false">
+                        </p:commandButton>
+
+                        <h:panelGroup rendered="#{transferIssueNativeSqlController.requestedBill.comments ne null and not empty transferIssueNativeSqlController.requestedBill.comments}">
+                            <p:outputLabel class="mx-4 text-break" value="Note :  #{transferIssueNativeSqlController.requestedBill.comments}" />
+                        </h:panelGroup>
+                    </f:facet>
+
+                    <div class="row">
+                        <!-- Item List (col-9) -->
+                        <div class="col-9">
+                            <p:panel>
+                                <f:facet name="header">
+                                    <h:outputLabel styleClass="fas fa-list" />
+                                    <h:outputLabel value="Requested Items" class="mx-4" />
+                                </f:facet>
+                                <p:dataTable
+                                    styleClass="noBorder compact-table"
+                                    var="item"
+                                    value="#{transferIssueNativeSqlController.issueItems}"
+                                    id="itemList"
+                                    scrollable="true"
+                                    scrollHeight="250"
+                                    sortBy="#{item.serialNo}"
+                                    style="border: none !important; font-size: #{configOptionApplicationController.getShortTextValueByKey('Report Font Size of Item List in Pharmacy Disbursement Reports', '10pt')}!Important; line-height: 1.1 !important;">
+
+                                    <p:column headerText="Item Name" style="width:25px!important; margin: 0px; padding: 1px 2px; line-height: 1.1;">
+                                        <h:outputText id="itemName" value="#{item.itemName}" />
+                                    </p:column>
+
+                                    <p:column headerText="Batch" style="width:25px!important; margin: 0px; padding: 1px 2px; line-height: 1.1;">
+                                        <h:outputText value="#{item.batchNo}" />
+                                    </p:column>
+
+                                    <p:column headerText="D.O.E" style="width:25px!important; margin: 0px; padding: 1px 2px; line-height: 1.1;">
+                                        <h:outputText value="#{item.dateOfExpire}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
+                                        </h:outputText>
+                                    </p:column>
+
+                                    <p:column headerText="Req QTY" style="width:25px!important; margin: 0px; padding: 1px 2px; line-height: 1.1;">
+                                        <h:outputText value="#{item.requestedQty}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </p:column>
+
+                                    <p:column headerText="Already Issued" style="width:25px!important; margin: 0px; padding: 1px 2px; line-height: 1.1;">
+                                        <h:outputText value="#{item.alreadyIssuedQty}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </p:column>
+
+                                    <p:column headerText="Available Stock" style="width:25px!important; margin: 0px; padding: 1px 2px; line-height: 1.1;">
+                                        <h:outputText value="#{item.availableStock}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </p:column>
+
+                                    <p:column headerText="Issue QTY" style="width:25px!important; margin: 0px; padding: 1px 2px; line-height: 1.1;">
+                                        <p:inputText
+                                            autocomplete="off"
+                                            id="issuingQty"
+                                            value="#{item.issuingQty}"
+                                            onfocus="this.select()">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                            <p:ajax
+                                                event="keyup"
+                                                process="@this"
+                                                update="lineTotal :#{p:resolveFirstComponentWithId('txtIssuedNetTotal',view).clientId}"
+                                                listener="#{transferIssueNativeSqlController.onQuantityChangeForTransferIssue(item)}"/>
+                                        </p:inputText>
+                                    </p:column>
+
+                                    <p:column headerText="Rate"
+                                              rendered="#{webUserController.hasPrivilege('PharmacyTransferViewRates')}"
+                                              style="width:25px!important; margin: 0px; padding: 1px 2px; line-height: 1.1;">
+                                        <h:outputText value="#{item.grossRate}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </p:column>
+
+                                    <p:column headerText="Line Total"
+                                              id="lineTotal"
+                                              rendered="#{webUserController.hasPrivilege('PharmacyTransferViewRates')}"
+                                              style="width:25px!important; margin: 0px; padding: 1px 2px; line-height: 1.1;">
+                                        <h:outputText value="#{item.lineTotal}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </p:column>
+
+                                    <p:column headerText="Remove" style="width:25px!important; margin: 0px; padding: 1px 2px; line-height: 1.1;">
+                                        <p:commandButton
+                                            icon="fas fa-trash"
+                                            class="ui-button-danger ui-button-icon-only"
+                                            actionListener="#{transferIssueNativeSqlController.remove(item)}"
+                                            update="itemList :#{p:resolveFirstComponentWithId('txtIssuedNetTotal',view).clientId}"
+                                            process="@this"
+                                            title="Remove item"/>
+                                    </p:column>
+
+                                </p:dataTable>
+                            </p:panel>
+                        </div>
+
+                        <!-- Bill Details (col-3) -->
+                        <div class="col-3">
+                            <p:panel id="panelBillDetails" header="Bill Details">
+                                <p:panelGrid columns="2">
+
+                                    <h:outputLabel value="From Department" />
+                                    <h:outputLabel value="#{sessionController.department.name}" />
+
+                                    <h:outputLabel value="To Department" />
+                                    <h:outputLabel value="#{transferIssueNativeSqlController.requestedBill.fromDepartment.name}" />
+
+                                    <h:outputLabel value="Staff" />
+                                    <p:autoComplete
+                                        id="staffAutocomplete"
+                                        value="#{transferIssueNativeSqlController.issuedBill.toStaff}"
+                                        completeMethod="#{staffController.completeStaffWithoutDoctors}"
+                                        var="staff"
+                                        itemLabel="#{staff.person.name}"
+                                        itemValue="#{staff}"
+                                        forceSelection="true"
+                                        class="w-100">
+                                        <p:column headerText="Name">
+                                            <h:outputText value="#{staff.person.nameWithTitle}" />
+                                        </p:column>
+                                        <p:column headerText="Code">
+                                            <h:outputText value="#{staff.code}" />
+                                        </p:column>
+                                    </p:autoComplete>
+
+                                    <h:outputLabel value="Issuing Value"
+                                                   rendered="#{webUserController.hasPrivilege('PharmacyTransferViewRates')}" />
+                                    <h:outputLabel id="txtIssuedNetTotal"
+                                                   value="#{transferIssueNativeSqlController.displayIssuedNetTotal}"
+                                                   rendered="#{webUserController.hasPrivilege('PharmacyTransferViewRates')}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+
+                                </p:panelGrid>
+                            </p:panel>
+                        </div>
+                    </div>
+
+                </p:panel>
+            </p:panel>
+
+            <!-- ============================================================
+                 PRINT PREVIEW — shown after successful settlement
+                 ============================================================ -->
+            <p:panel rendered="#{transferIssueNativeSqlController.printPreview}">
+                <div class="d-flex justify-content-between mb-2">
+                    <p:commandButton
+                        ajax="false"
+                        icon="fas fa-list"
+                        class="ui-button-warning"
+                        action="#{transferIssueNativeSqlController.navigateBackToRequestList()}"
+                        actionListener="#{transferIssueNativeSqlController.makeNull()}"
+                        value="Request List"/>
+
+                    <div class="d-flex">
+                        <p:commandButton
+                            value="Print"
+                            icon="fas fa-print"
+                            class="ui-button-info m-1"
+                            ajax="false"
+                            action="#">
+                            <p:printer target="gpIssueBillPreview" />
+                        </p:commandButton>
+                    </div>
+                </div>
+
+                <h:panelGroup id="gpIssueBillPreview">
+
+                    <h:panelGroup
+                        rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Transfer Issue A4 Paper', false)}"
+                        styleClass="noBorder">
+                        <ph:transferIssueNativeA4 dto="#{transferIssueNativeSqlController.printDto}" />
+                    </h:panelGroup>
+
+                </h:panelGroup>
+            </p:panel>
+
+        </h:form>
+
+    </ui:define>
+
+</ui:composition>
