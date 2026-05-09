@@ -454,8 +454,6 @@ public class RequestController implements Serializable {
     }
 
     public void createRequestforPettyCashBillCancellation(Bill pettyCashBill) {
-        System.out.println("pettyCashBill = " + pettyCashBill);
-
         if (pettyCashBill == null) {
             JsfUtil.addErrorMessage("Bill not found for Create Request ");
             return;
@@ -642,13 +640,10 @@ public class RequestController implements Serializable {
 
         Drawer loggedUserDrawer = drawerController.getUsersDrawer(sessionController.getLoggedUser());
 
-        System.out.println("loggedUserDrawer = " + loggedUserDrawer);
-
         if (loggedUserDrawer == null) {
             JsfUtil.addErrorMessage("Your Drawer have a Error.");
             return "";
         }
-        System.out.println("loggedUserDrawer.getCashInHandValue() = " + loggedUserDrawer.getCashInHandValue());
 
         if (loggedUserDrawer != null && (loggedUserDrawer.getCashInHandValue() == null || loggedUserDrawer.getCashInHandValue() == 0)) {
             JsfUtil.addErrorMessage("There is no cash in your drawer.");
