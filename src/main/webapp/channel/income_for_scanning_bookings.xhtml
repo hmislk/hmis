@@ -223,7 +223,7 @@
 
                             <p:column width="9em" headerText="Item" style=" text-align: center;">
                                 <ui:repeat value="#{row.bill.billItems}" var="i">
-                                    <h:panelGroup rendered="#{i.item.clazz ne 'ServiceSession'}" >
+                                    <h:panelGroup rendered="#{i.item.name ne row.bill.singleBillSession.sessionInstance.name}" >
                                         <p:outputLabel value="#{i.item.name}/ " />
                                         <br/>
                                     </h:panelGroup>

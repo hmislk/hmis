@@ -1,0 +1,134 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="dto"/>
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+        <h:outputStylesheet library="css" name="pharmacyLetter.css"/>
+        <div style="width: 212mm; height: 275mm; padding-left: 0px">
+
+            <div class="institutionName">
+                <h:outputLabel value="Transfer Receive Note" />
+                <br />
+                <h:outputLabel value="***Cancelled***" rendered="#{cc.attrs.dto.cancelled}" />
+            </div>
+
+            <div>
+                <table class="table table-borderless">
+                    <tr style="line-height: 10px">
+                        <td width="120px">Location From</td>
+                        <td>:</td>
+                        <td width="250px"><h:outputLabel value="#{cc.attrs.dto.fromDepartmentName}" /></td>
+
+                        <td width="120px">Location To</td>
+                        <td>:</td>
+                        <td width="250px"><h:outputLabel value="#{cc.attrs.dto.toDepartmentName}" /></td>
+                    </tr>
+
+                    <tr style="line-height: 10px">
+                        <td width="120px">Issued By</td>
+                        <td>:</td>
+                        <td width="250px"><h:outputLabel value="#{cc.attrs.dto.issuedByName}" /></td>
+
+                        <td width="120px">Received By</td>
+                        <td>:</td>
+                        <td width="250px"><h:outputLabel value="#{cc.attrs.dto.receivedByName}"/></td>
+                    </tr>
+
+                    <tr style="line-height: 10px">
+                        <td width="120px">Issue No.</td>
+                        <td>:</td>
+                        <td width="250px"><h:outputLabel value="#{cc.attrs.dto.issueNo}" /></td>
+
+                        <td width="120px">Receive No.</td>
+                        <td>:</td>
+                        <td width="250px"><h:outputLabel value="#{cc.attrs.dto.receiveNo}" /></td>
+                    </tr>
+
+                    <tr style="line-height: 10px">
+                        <td width="120px">Issued Time</td>
+                        <td>:</td>
+                        <td width="250px">
+                            <h:outputLabel value="#{cc.attrs.dto.issuedAt}">
+                                <f:convertDateTime pattern="dd/MMM/yyyy HH:mm" />
+                            </h:outputLabel>
+                        </td>
+
+                        <td width="120px">Received Time</td>
+                        <td>:</td>
+                        <td width="250px">
+                            <h:outputLabel value="#{cc.attrs.dto.receivedAt}">
+                                <f:convertDateTime pattern="dd/MMM/yyyy HH:mm" />
+                            </h:outputLabel>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+            <div>
+                <table id="tblBis" class="simple-table">
+                    <thead>
+                        <tr>
+                            <th style="width:2em;">No</th>
+                            <th style="width:15em;">Item Name</th>
+                            <th style="width:5em;">Code</th>
+                            <th style="width:7em;">D O E</th>
+                            <th style="width:6em;">Received Qty</th>
+                            <th style="width:6em;">Issued Qty</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <ui:repeat value="#{cc.attrs.dto.items}" var="bip" varStatus="rowIndex">
+                            <tr>
+                                <td class="left-col">#{rowIndex.index + 1}</td>
+                                <td class="left-col">#{bip.itemName}</td>
+                                <td class="left-col">#{bip.itemCode}</td>
+                                <td class="right-col">
+                                    <h:outputText value="#{bip.dateOfExpire}">
+                                        <f:convertDateTime pattern="dd/MMM/yyyy" />
+                                    </h:outputText>
+                                </td>
+                                <td class="right-col">
+                                    <h:outputLabel value="#{bip.qty}">
+                                        <f:convertNumber />
+                                    </h:outputLabel>
+                                </td>
+                                <td class="right-col">
+                                    <h:outputLabel value="#{bip.issuedQty}">
+                                        <f:convertNumber />
+                                    </h:outputLabel>
+                                </td>
+                            </tr>
+                        </ui:repeat>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="row mt-3">
+                <div class="col-5">
+                    <h:outputLabel value="Printed By : &amp;nbsp;"/>
+                    <h:outputLabel value="#{sessionController.loggedUser.name}"/>
+                </div>
+                <div class="col-2"></div>
+                <div class="col-5" style="text-align: right;">
+                    <h:outputLabel style="text-align: right" value="Printed At : &amp;nbsp;"/>
+                    <h:outputLabel value="#{sessionController.currentDate}">
+                        <f:convertDateTime pattern="dd/MMM/yyyy HH:mm" />
+                    </h:outputLabel>
+                </div>
+            </div>
+
+        </div>
+    </cc:implementation>
+</html>
