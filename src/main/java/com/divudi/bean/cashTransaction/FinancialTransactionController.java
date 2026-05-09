@@ -5803,6 +5803,19 @@ public class FinancialTransactionController implements Serializable {
                 return null;
             }
         }
+
+        boolean requireCollectionHandoverMatch = configOptionApplicationController.getBooleanValueByKey("Require Collection and Handover Values to Match", false);
+        if (requireCollectionHandoverMatch) {
+            Double configuredMaxDiff = configOptionApplicationController.getDoubleValueByKey("Maximum Allowed Difference for Handover Total", 0.01);
+            double maximumAllowedDifferenceForHandoverTotal = (configuredMaxDiff == null) ? 0.01 : Math.max(0.0, configuredMaxDiff);
+            double totalCollected = bundle.getTotal() != null ? bundle.getTotal() : 0.0;
+            double totalHandedOver = bundle.getTotalOut() != null ? bundle.getTotalOut() : 0.0;
+            if (Math.abs(totalCollected - totalHandedOver) > maximumAllowedDifferenceForHandoverTotal) {
+                JsfUtil.addErrorMessage("Total Collected Value (" + totalCollected + ") and Total Handed Over Value (" + totalHandedOver + ") do not match. Cannot handover.");
+                return null;
+            }
+        }
+
         boolean shouldSelectAllCollectionsForHandover = configOptionApplicationController.getBooleanValueByKey("Should Select All Collections for Handover", false);
         boolean allBundlesSelected = true;
         boolean anyBundleSelected = false;
@@ -9743,6 +9756,18 @@ public class FinancialTransactionController implements Serializable {
         metadata.addConfigOption(new ConfigOptionInfo(
                 "Should Select All Collections for Handover",
                 "When enabled, all collected payments are automatically selected for handover. Default: false",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Require Collection and Handover Values to Match",
+                "When enabled, the handover is blocked if the Total Collected Value and Total Handed Over Value differ by more than the configured tolerance. Default: false",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Maximum Allowed Difference for Handover Total",
+                "Maximum allowed difference between total collected and total handed over (in currency units). Only used when 'Require Collection and Handover Values to Match' is enabled. Default: 0.01",
                 OptionScope.APPLICATION
         ));
 
