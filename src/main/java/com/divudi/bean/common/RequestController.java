@@ -446,10 +446,8 @@ public class RequestController implements Serializable {
                 b.setCurrentRequest(newlyRequest);
                 billFacade.edit(b);
             }
-
             setCurrentRequest(newlyRequest);
         }
-
         printPreview = true;
     }
 
@@ -498,7 +496,6 @@ public class RequestController implements Serializable {
 
             setCurrentRequest(newlyRequest);
         }
-
         printPreview = true;
     }
 
