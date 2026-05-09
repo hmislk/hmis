@@ -320,4 +320,4 @@ SELECT
 FROM INFORMATION_SCHEMA.TABLES
 WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @ps_table;
 
-SELECT 'Migration v2.1.17 completed — 23 indexes dropped' AS final_status;
+SELECT 'Migration v2.1.17 completed — 23 FK constraints and up to 23 indexes dropped (46 objects total)' AS final_status;
