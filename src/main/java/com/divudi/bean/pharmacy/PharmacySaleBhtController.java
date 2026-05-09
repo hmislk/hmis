@@ -1784,10 +1784,16 @@ public class PharmacySaleBhtController implements Serializable {
             JsfUtil.addErrorMessage("Item?");
             return;
         }
-        tmpStock = stockFacade.findWithItemBatch(tmpStock.getId());
-        if (getTmpStock().getItemBatch() != null
-                && getTmpStock().getItemBatch().getDateOfExpire() != null
-                && getTmpStock().getItemBatch().getDateOfExpire().before(CommonFunctions.getCurrentDateTime())) {
+        Stock loadedTmpStock = stockFacade.findWithItemBatch(tmpStock.getId());
+        if (loadedTmpStock == null) {
+            errorMessage = "Selected stock is no longer available.";
+            JsfUtil.addErrorMessage("Selected stock is no longer available.");
+            return;
+        }
+        tmpStock = loadedTmpStock;
+        if (tmpStock.getItemBatch() != null
+                && tmpStock.getItemBatch().getDateOfExpire() != null
+                && tmpStock.getItemBatch().getDateOfExpire().before(CommonFunctions.getCurrentDateTime())) {
             JsfUtil.addErrorMessage("Please not select Expired Items");
             return;
         }

@@ -766,7 +766,13 @@ public class PharmacyWholeSaleController1 implements Serializable, ControllerWit
             JsfUtil.addErrorMessage("Item?");
             return;
         }
-        stock = stockFacade.findWithItemBatch(stock.getId());
+        Stock loadedStock = stockFacade.findWithItemBatch(stock.getId());
+        if (loadedStock == null) {
+            errorMessage = "Selected stock is no longer available.";
+            JsfUtil.addErrorMessage("Selected stock is no longer available.");
+            return;
+        }
+        stock = loadedStock;
         if (getQty() == null) {
             errorMessage = "Quentity?";
             JsfUtil.addErrorMessage("Quentity?");
@@ -1439,11 +1445,17 @@ public class PharmacyWholeSaleController1 implements Serializable, ControllerWit
             JsfUtil.addErrorMessage("Please Select Stock");
             return;
         }
-        stock = stockFacade.findWithItemBatch(stock.getId());
+        Stock loadedStockForBill = stockFacade.findWithItemBatch(stock.getId());
+        if (loadedStockForBill == null) {
+            errorMessage = "Selected stock is no longer available.";
+            JsfUtil.addErrorMessage("Selected stock is no longer available.");
+            return;
+        }
+        stock = loadedStockForBill;
 
-        if (getStock().getItemBatch() != null
-                && getStock().getItemBatch().getDateOfExpire() != null
-                && getStock().getItemBatch().getDateOfExpire().before(CommonFunctions.getCurrentDateTime())) {
+        if (stock.getItemBatch() != null
+                && stock.getItemBatch().getDateOfExpire() != null
+                && stock.getItemBatch().getDateOfExpire().before(CommonFunctions.getCurrentDateTime())) {
             JsfUtil.addErrorMessage("Please not select Expired Items");
             return;
         }
