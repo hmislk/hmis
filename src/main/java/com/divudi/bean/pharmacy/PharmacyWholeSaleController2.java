@@ -766,6 +766,13 @@ public class PharmacyWholeSaleController2 implements Serializable, ControllerWit
             JsfUtil.addErrorMessage("Item?");
             return;
         }
+        Stock loadedStock = stockFacade.findWithItemBatch(stock.getId());
+        if (loadedStock == null) {
+            errorMessage = "Selected stock is no longer available.";
+            JsfUtil.addErrorMessage("Selected stock is no longer available.");
+            return;
+        }
+        stock = loadedStock;
         if (getQty() == null) {
             errorMessage = "Quentity?";
             JsfUtil.addErrorMessage("Quentity?");
@@ -793,11 +800,6 @@ public class PharmacyWholeSaleController2 implements Serializable, ControllerWit
             return;
         }
 
-        if (getStock().getItemBatch() == null) {
-            errorMessage = "Item batch not found for selected stock";
-            JsfUtil.addErrorMessage("Item batch not found for selected stock");
-            return;
-        }
         billItem.getPharmaceuticalBillItem().setQtyInUnit(0 - qty);
         billItem.getPharmaceuticalBillItem().setStock(stock);
         billItem.getPharmaceuticalBillItem().setItemBatch(getStock().getItemBatch());
@@ -1442,14 +1444,17 @@ public class PharmacyWholeSaleController2 implements Serializable, ControllerWit
             JsfUtil.addErrorMessage("Please Select Stock");
             return;
         }
-
-        if (getStock().getItemBatch() == null) {
-            errorMessage = "Item batch not found for selected stock";
-            JsfUtil.addErrorMessage("Item batch not found for selected stock");
+        Stock loadedStockForBill = stockFacade.findWithItemBatch(stock.getId());
+        if (loadedStockForBill == null) {
+            errorMessage = "Selected stock is no longer available.";
+            JsfUtil.addErrorMessage("Selected stock is no longer available.");
             return;
         }
-        if (getStock().getItemBatch().getDateOfExpire() != null
-                && getStock().getItemBatch().getDateOfExpire().before(CommonFunctions.getCurrentDateTime())) {
+        stock = loadedStockForBill;
+
+        if (stock.getItemBatch() != null
+                && stock.getItemBatch().getDateOfExpire() != null
+                && stock.getItemBatch().getDateOfExpire().before(CommonFunctions.getCurrentDateTime())) {
             JsfUtil.addErrorMessage("Please not select Expired Items");
             return;
         }
