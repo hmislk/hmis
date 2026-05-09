@@ -502,7 +502,7 @@ public class TransferReceiveNativeSqlService {
             double ratePerPack = grossRate.doubleValue();
             pi.setRate(ratePerPack);
             pi.setNetRate(ratePerPack);
-            double lineNetValue = grossRate.multiply(BigDecimal.valueOf(packs)).negate().doubleValue();
+            double lineNetValue = grossRate.multiply(BigDecimal.valueOf(packs)).doubleValue();
             pi.setNetValue(lineNetValue);
             pi.setPurchaseRate(src.getPurchaseRate());
             pi.setRetailRate(src.getRetailRate());
@@ -510,7 +510,7 @@ public class TransferReceiveNativeSqlService {
             BigDecimal qtyByUnits = BigDecimal.valueOf(units);
             pi.setValueAtPurchaseRate(BigDecimal.valueOf(src.getPurchaseRate()).multiply(qtyByUnits));
             pi.setValueAtRetailRate(BigDecimal.valueOf(src.getRetailRate()).multiply(qtyByUnits));
-            pi.setLineGrossTotal(grossRate.multiply(BigDecimal.valueOf(packs)).negate());
+            pi.setLineGrossTotal(grossRate.multiply(BigDecimal.valueOf(packs)));
             printItems.add(pi);
         }
         printDto.setItems(printItems);
