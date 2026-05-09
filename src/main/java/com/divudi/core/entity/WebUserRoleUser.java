@@ -44,20 +44,6 @@ public class WebUserRoleUser implements Serializable {
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date retiredAt;
     private String retireComments;
-    //Editer Properties
-    @ManyToOne
-
-    private WebUser editer;
-
-    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
-    private Date editedAt;
-
-    //Last Update Properties
-    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
-    private Date lastUpdateAt;
-    @ManyToOne
-    private WebUser lastUpdater;
-
     @Transient
     private Boolean needUpdateUserRole;
 
@@ -151,22 +137,6 @@ public class WebUserRoleUser implements Serializable {
         this.retireComments = retireComments;
     }
 
-    public WebUser getEditer() {
-        return editer;
-    }
-
-    public void setEditer(WebUser editer) {
-        this.editer = editer;
-    }
-
-    public Date getEditedAt() {
-        return editedAt;
-    }
-
-    public void setEditedAt(Date editedAt) {
-        this.editedAt = editedAt;
-    }
-
     public WebUserRole getWebUserRole() {
         return webUserRole;
     }
@@ -184,33 +154,10 @@ public class WebUserRoleUser implements Serializable {
     }
 
     public Boolean getNeedUpdateUserRole() {
-        if (webUserRole == null || webUserRole.getLastUpdateAt() == null) {
-            return false;
-        }
-        if (editedAt == null) {
-            return true;
-        }
-        needUpdateUserRole =  webUserRole.getLastUpdateAt().after(editedAt);
-        return needUpdateUserRole;
+        return webUserRole != null;
     }
 
     public void setNeedUpdateUserRole(Boolean needUpdateUserRole) {
         this.needUpdateUserRole = needUpdateUserRole;
-    }
-
-    public Date getLastUpdateAt() {
-        return lastUpdateAt;
-    }
-
-    public void setLastUpdateAt(Date lastUpdateAt) {
-        this.lastUpdateAt = lastUpdateAt;
-    }
-
-    public WebUser getLastUpdater() {
-        return lastUpdater;
-    }
-
-    public void setLastUpdater(WebUser lastUpdater) {
-        this.lastUpdater = lastUpdater;
     }
 }
