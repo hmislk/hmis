@@ -1784,12 +1784,8 @@ public class PharmacySaleBhtController implements Serializable {
             JsfUtil.addErrorMessage("Item?");
             return;
         }
-        if (getTmpStock().getItemBatch() == null) {
-            errorMessage = "Item batch not found for selected stock";
-            JsfUtil.addErrorMessage("Item batch not found for selected stock");
-            return;
-        }
-        if (getTmpStock().getItemBatch().getDateOfExpire() != null
+        if (getTmpStock().getItemBatch() != null
+                && getTmpStock().getItemBatch().getDateOfExpire() != null
                 && getTmpStock().getItemBatch().getDateOfExpire().before(CommonFunctions.getCurrentDateTime())) {
             JsfUtil.addErrorMessage("Please not select Expired Items");
             return;
