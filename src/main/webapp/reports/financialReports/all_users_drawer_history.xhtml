@@ -187,7 +187,7 @@
                             </p:column>
 
                             <p:column style="padding: 1px;" width="10em">
-                                <h:outputText value="#{drawerentry.payment.bill.billTypeAtomic.billFinanceType}" />
+                                <h:outputText value="#{drawerentry.bill.billTypeAtomic.billFinanceType.label}" />
                             </p:column>
 
                             <p:column style="padding: 6px;" width="12em">
@@ -195,7 +195,7 @@
                             </p:column>
 
                             <p:column style="padding: 1px;" width="12em">
-                                <h:outputText value="#{drawerentry.bill.deptId}" />
+                                <h:outputText value="#{drawerentry.bill.referenceBill.deptId}" />
                             </p:column>
 
                             <p:column style="padding: 1px;" width="8em">
@@ -214,228 +214,228 @@
 
                             <!-- Cash columns -->
                             <p:column style="padding: 4px;" width="7em" rendered="#{userSettingsController.allUsersDrawerHistoryCashVisible}">
-                                <h:outputText value="#{drawerentry.beforeBalance}" styleClass="text-end d-block" rendered="#{drawerentry.payment.paymentMethod eq 'Cash'}">
+                                <h:outputText value="#{drawerentry.beforeBalance}" styleClass="text-end d-block" rendered="#{drawerentry.paymentMethod eq 'Cash'}">
                                     <f:convertNumber groupingUsed="true" minFractionDigits="2" maxFractionDigits="2"/>
                                 </h:outputText>
                             </p:column>
                             <p:column style="padding: 4px;" width="7em" rendered="#{userSettingsController.allUsersDrawerHistoryCashVisible}">
-                                <h:outputText value="#{drawerentry.payment.paidValue}" styleClass="text-end d-block" rendered="#{drawerentry.payment.paymentMethod eq 'Cash'}">
+                                <h:outputText value="#{drawerentry.transactionValue}" styleClass="text-end d-block" rendered="#{drawerentry.paymentMethod eq 'Cash'}">
                                     <f:convertNumber groupingUsed="true" minFractionDigits="2" maxFractionDigits="2"/>
                                 </h:outputText>
                             </p:column>
                             <p:column style="padding: 4px;" width="7em" rendered="#{userSettingsController.allUsersDrawerHistoryCashVisible}">
-                                <h:outputText value="#{drawerentry.afterBalance}" styleClass="text-end d-block" rendered="#{drawerentry.payment.paymentMethod eq 'Cash'}">
+                                <h:outputText value="#{drawerentry.afterBalance}" styleClass="text-end d-block" rendered="#{drawerentry.paymentMethod eq 'Cash'}">
                                     <f:convertNumber groupingUsed="true" minFractionDigits="2" maxFractionDigits="2"/>
                                 </h:outputText>
                             </p:column>
 
                             <!-- Credit Card columns -->
                             <p:column style="padding: 4px;" width="7em" rendered="#{userSettingsController.allUsersDrawerHistoryCardVisible}">
-                                <h:outputText value="#{drawerentry.beforeBalance}" styleClass="text-end d-block" rendered="#{drawerentry.payment.paymentMethod eq 'Card'}">
+                                <h:outputText value="#{drawerentry.beforeBalance}" styleClass="text-end d-block" rendered="#{drawerentry.paymentMethod eq 'Card'}">
                                     <f:convertNumber groupingUsed="true" minFractionDigits="2" maxFractionDigits="2"/>
                                 </h:outputText>
                             </p:column>
                             <p:column style="padding: 4px;" width="7em" rendered="#{userSettingsController.allUsersDrawerHistoryCardVisible}">
-                                <h:outputText value="#{drawerentry.payment.paidValue}" styleClass="text-end d-block" rendered="#{drawerentry.payment.paymentMethod eq 'Card'}">
+                                <h:outputText value="#{drawerentry.transactionValue}" styleClass="text-end d-block" rendered="#{drawerentry.paymentMethod eq 'Card'}">
                                     <f:convertNumber groupingUsed="true" minFractionDigits="2" maxFractionDigits="2"/>
                                 </h:outputText>
                             </p:column>
                             <p:column style="padding: 4px;" width="7em" rendered="#{userSettingsController.allUsersDrawerHistoryCardVisible}">
-                                <h:outputText value="#{drawerentry.afterBalance}" styleClass="text-end d-block" rendered="#{drawerentry.payment.paymentMethod eq 'Card'}">
+                                <h:outputText value="#{drawerentry.afterBalance}" styleClass="text-end d-block" rendered="#{drawerentry.paymentMethod eq 'Card'}">
                                     <f:convertNumber groupingUsed="true" minFractionDigits="2" maxFractionDigits="2"/>
                                 </h:outputText>
                             </p:column>
 
                             <!-- Cheque columns -->
                             <p:column style="padding: 4px;" width="7em" rendered="#{userSettingsController.allUsersDrawerHistoryChequeVisible}">
-                                <h:outputText value="#{drawerentry.beforeBalance}" styleClass="text-end d-block" rendered="#{drawerentry.payment.paymentMethod eq 'Cheque'}">
+                                <h:outputText value="#{drawerentry.beforeBalance}" styleClass="text-end d-block" rendered="#{drawerentry.paymentMethod eq 'Cheque'}">
                                     <f:convertNumber groupingUsed="true" minFractionDigits="2" maxFractionDigits="2"/>
                                 </h:outputText>
                             </p:column>
                             <p:column style="padding: 4px;" width="7em" rendered="#{userSettingsController.allUsersDrawerHistoryChequeVisible}">
-                                <h:outputText value="#{drawerentry.payment.paidValue}" styleClass="text-end d-block" rendered="#{drawerentry.payment.paymentMethod eq 'Cheque'}">
+                                <h:outputText value="#{drawerentry.transactionValue}" styleClass="text-end d-block" rendered="#{drawerentry.paymentMethod eq 'Cheque'}">
                                     <f:convertNumber groupingUsed="true" minFractionDigits="2" maxFractionDigits="2"/>
                                 </h:outputText>
                             </p:column>
                             <p:column style="padding: 4px;" width="7em" rendered="#{userSettingsController.allUsersDrawerHistoryChequeVisible}">
-                                <h:outputText value="#{drawerentry.afterBalance}" styleClass="text-end d-block" rendered="#{drawerentry.payment.paymentMethod eq 'Cheque'}">
+                                <h:outputText value="#{drawerentry.afterBalance}" styleClass="text-end d-block" rendered="#{drawerentry.paymentMethod eq 'Cheque'}">
                                     <f:convertNumber groupingUsed="true" minFractionDigits="2" maxFractionDigits="2"/>
                                 </h:outputText>
                             </p:column>
 
                             <!-- Slip columns -->
                             <p:column style="padding: 4px;" width="7em" rendered="#{userSettingsController.allUsersDrawerHistorySlipVisible}">
-                                <h:outputText value="#{drawerentry.beforeBalance}" styleClass="text-end d-block" rendered="#{drawerentry.payment.paymentMethod eq 'Slip'}">
+                                <h:outputText value="#{drawerentry.beforeBalance}" styleClass="text-end d-block" rendered="#{drawerentry.paymentMethod eq 'Slip'}">
                                     <f:convertNumber groupingUsed="true" minFractionDigits="2" maxFractionDigits="2"/>
                                 </h:outputText>
                             </p:column>
                             <p:column style="padding: 4px;" width="7em" rendered="#{userSettingsController.allUsersDrawerHistorySlipVisible}">
-                                <h:outputText value="#{drawerentry.payment.paidValue}" styleClass="text-end d-block" rendered="#{drawerentry.payment.paymentMethod eq 'Slip'}">
+                                <h:outputText value="#{drawerentry.transactionValue}" styleClass="text-end d-block" rendered="#{drawerentry.paymentMethod eq 'Slip'}">
                                     <f:convertNumber groupingUsed="true" minFractionDigits="2" maxFractionDigits="2"/>
                                 </h:outputText>
                             </p:column>
                             <p:column style="padding: 4px;" width="7em" rendered="#{userSettingsController.allUsersDrawerHistorySlipVisible}">
-                                <h:outputText value="#{drawerentry.afterBalance}" styleClass="text-end d-block" rendered="#{drawerentry.payment.paymentMethod eq 'Slip'}">
+                                <h:outputText value="#{drawerentry.afterBalance}" styleClass="text-end d-block" rendered="#{drawerentry.paymentMethod eq 'Slip'}">
                                     <f:convertNumber groupingUsed="true" minFractionDigits="2" maxFractionDigits="2"/>
                                 </h:outputText>
                             </p:column>
 
                             <!-- IOU columns -->
                             <p:column style="padding: 4px;" width="7em" rendered="#{userSettingsController.allUsersDrawerHistoryIouVisible}">
-                                <h:outputText value="#{drawerentry.beforeBalance}" styleClass="text-end d-block" rendered="#{drawerentry.payment.paymentMethod eq 'IOU'}">
+                                <h:outputText value="#{drawerentry.beforeBalance}" styleClass="text-end d-block" rendered="#{drawerentry.paymentMethod eq 'IOU'}">
                                     <f:convertNumber groupingUsed="true" minFractionDigits="2" maxFractionDigits="2"/>
                                 </h:outputText>
                             </p:column>
                             <p:column style="padding: 4px;" width="7em" rendered="#{userSettingsController.allUsersDrawerHistoryIouVisible}">
-                                <h:outputText value="#{drawerentry.payment.paidValue}" styleClass="text-end d-block" rendered="#{drawerentry.payment.paymentMethod eq 'IOU'}">
+                                <h:outputText value="#{drawerentry.transactionValue}" styleClass="text-end d-block" rendered="#{drawerentry.paymentMethod eq 'IOU'}">
                                     <f:convertNumber groupingUsed="true" minFractionDigits="2" maxFractionDigits="2"/>
                                 </h:outputText>
                             </p:column>
                             <p:column style="padding: 4px;" width="7em" rendered="#{userSettingsController.allUsersDrawerHistoryIouVisible}">
-                                <h:outputText value="#{drawerentry.afterBalance}" styleClass="text-end d-block" rendered="#{drawerentry.payment.paymentMethod eq 'IOU'}">
+                                <h:outputText value="#{drawerentry.afterBalance}" styleClass="text-end d-block" rendered="#{drawerentry.paymentMethod eq 'IOU'}">
                                     <f:convertNumber groupingUsed="true" minFractionDigits="2" maxFractionDigits="2"/>
                                 </h:outputText>
                             </p:column>
 
                             <!-- Credit columns -->
                             <p:column style="padding: 4px;" width="7em" rendered="#{userSettingsController.allUsersDrawerHistoryCreditVisible}">
-                                <h:outputText value="#{drawerentry.beforeBalance}" styleClass="text-end d-block" rendered="#{drawerentry.payment.paymentMethod eq 'Credit'}">
+                                <h:outputText value="#{drawerentry.beforeBalance}" styleClass="text-end d-block" rendered="#{drawerentry.paymentMethod eq 'Credit'}">
                                     <f:convertNumber groupingUsed="true" minFractionDigits="2" maxFractionDigits="2"/>
                                 </h:outputText>
                             </p:column>
                             <p:column style="padding: 4px;" width="7em" rendered="#{userSettingsController.allUsersDrawerHistoryCreditVisible}">
-                                <h:outputText value="#{drawerentry.payment.paidValue}" styleClass="text-end d-block" rendered="#{drawerentry.payment.paymentMethod eq 'Credit'}">
+                                <h:outputText value="#{drawerentry.transactionValue}" styleClass="text-end d-block" rendered="#{drawerentry.paymentMethod eq 'Credit'}">
                                     <f:convertNumber groupingUsed="true" minFractionDigits="2" maxFractionDigits="2"/>
                                 </h:outputText>
                             </p:column>
                             <p:column style="padding: 4px;" width="7em" rendered="#{userSettingsController.allUsersDrawerHistoryCreditVisible}">
-                                <h:outputText value="#{drawerentry.afterBalance}" styleClass="text-end d-block" rendered="#{drawerentry.payment.paymentMethod eq 'Credit'}">
+                                <h:outputText value="#{drawerentry.afterBalance}" styleClass="text-end d-block" rendered="#{drawerentry.paymentMethod eq 'Credit'}">
                                     <f:convertNumber groupingUsed="true" minFractionDigits="2" maxFractionDigits="2"/>
                                 </h:outputText>
                             </p:column>
 
                             <!-- eWallet columns -->
                             <p:column style="padding: 4px;" width="7em" rendered="#{userSettingsController.allUsersDrawerHistoryEwalletVisible}">
-                                <h:outputText value="#{drawerentry.beforeBalance}" styleClass="text-end d-block" rendered="#{drawerentry.payment.paymentMethod eq 'ewallet'}">
+                                <h:outputText value="#{drawerentry.beforeBalance}" styleClass="text-end d-block" rendered="#{drawerentry.paymentMethod eq 'ewallet'}">
                                     <f:convertNumber groupingUsed="true" minFractionDigits="2" maxFractionDigits="2"/>
                                 </h:outputText>
                             </p:column>
                             <p:column style="padding: 4px;" width="7em" rendered="#{userSettingsController.allUsersDrawerHistoryEwalletVisible}">
-                                <h:outputText value="#{drawerentry.payment.paidValue}" styleClass="text-end d-block" rendered="#{drawerentry.payment.paymentMethod eq 'ewallet'}">
+                                <h:outputText value="#{drawerentry.transactionValue}" styleClass="text-end d-block" rendered="#{drawerentry.paymentMethod eq 'ewallet'}">
                                     <f:convertNumber groupingUsed="true" minFractionDigits="2" maxFractionDigits="2"/>
                                 </h:outputText>
                             </p:column>
                             <p:column style="padding: 4px;" width="7em" rendered="#{userSettingsController.allUsersDrawerHistoryEwalletVisible}">
-                                <h:outputText value="#{drawerentry.afterBalance}" styleClass="text-end d-block" rendered="#{drawerentry.payment.paymentMethod eq 'ewallet'}">
+                                <h:outputText value="#{drawerentry.afterBalance}" styleClass="text-end d-block" rendered="#{drawerentry.paymentMethod eq 'ewallet'}">
                                     <f:convertNumber groupingUsed="true" minFractionDigits="2" maxFractionDigits="2"/>
                                 </h:outputText>
                             </p:column>
 
                             <!-- Agent columns -->
                             <p:column style="padding: 4px;" width="7em" rendered="#{userSettingsController.allUsersDrawerHistoryAgentVisible}">
-                                <h:outputText value="#{drawerentry.beforeBalance}" styleClass="text-end d-block" rendered="#{drawerentry.payment.paymentMethod eq 'Agent'}">
+                                <h:outputText value="#{drawerentry.beforeBalance}" styleClass="text-end d-block" rendered="#{drawerentry.paymentMethod eq 'Agent'}">
                                     <f:convertNumber groupingUsed="true" minFractionDigits="2" maxFractionDigits="2"/>
                                 </h:outputText>
                             </p:column>
                             <p:column style="padding: 4px;" width="7em" rendered="#{userSettingsController.allUsersDrawerHistoryAgentVisible}">
-                                <h:outputText value="#{drawerentry.payment.paidValue}" styleClass="text-end d-block" rendered="#{drawerentry.payment.paymentMethod eq 'Agent'}">
+                                <h:outputText value="#{drawerentry.transactionValue}" styleClass="text-end d-block" rendered="#{drawerentry.paymentMethod eq 'Agent'}">
                                     <f:convertNumber groupingUsed="true" minFractionDigits="2" maxFractionDigits="2"/>
                                 </h:outputText>
                             </p:column>
                             <p:column style="padding: 4px;" width="7em" rendered="#{userSettingsController.allUsersDrawerHistoryAgentVisible}">
-                                <h:outputText value="#{drawerentry.afterBalance}" styleClass="text-end d-block" rendered="#{drawerentry.payment.paymentMethod eq 'Agent'}">
+                                <h:outputText value="#{drawerentry.afterBalance}" styleClass="text-end d-block" rendered="#{drawerentry.paymentMethod eq 'Agent'}">
                                     <f:convertNumber groupingUsed="true" minFractionDigits="2" maxFractionDigits="2"/>
                                 </h:outputText>
                             </p:column>
 
                             <!-- Staff Welfare columns -->
                             <p:column style="padding: 4px;" width="7em" rendered="#{userSettingsController.allUsersDrawerHistoryStaffWelfareVisible}">
-                                <h:outputText value="#{drawerentry.beforeBalance}" styleClass="text-end d-block" rendered="#{drawerentry.payment.paymentMethod eq 'Staff_Welfare'}">
+                                <h:outputText value="#{drawerentry.beforeBalance}" styleClass="text-end d-block" rendered="#{drawerentry.paymentMethod eq 'Staff_Welfare'}">
                                     <f:convertNumber groupingUsed="true" minFractionDigits="2" maxFractionDigits="2"/>
                                 </h:outputText>
                             </p:column>
                             <p:column style="padding: 4px;" width="7em" rendered="#{userSettingsController.allUsersDrawerHistoryStaffWelfareVisible}">
-                                <h:outputText value="#{drawerentry.payment.paidValue}" styleClass="text-end d-block" rendered="#{drawerentry.payment.paymentMethod eq 'Staff_Welfare'}">
+                                <h:outputText value="#{drawerentry.transactionValue}" styleClass="text-end d-block" rendered="#{drawerentry.paymentMethod eq 'Staff_Welfare'}">
                                     <f:convertNumber groupingUsed="true" minFractionDigits="2" maxFractionDigits="2"/>
                                 </h:outputText>
                             </p:column>
                             <p:column style="padding: 4px;" width="7em" rendered="#{userSettingsController.allUsersDrawerHistoryStaffWelfareVisible}">
-                                <h:outputText value="#{drawerentry.afterBalance}" styleClass="text-end d-block" rendered="#{drawerentry.payment.paymentMethod eq 'Staff_Welfare'}">
+                                <h:outputText value="#{drawerentry.afterBalance}" styleClass="text-end d-block" rendered="#{drawerentry.paymentMethod eq 'Staff_Welfare'}">
                                     <f:convertNumber groupingUsed="true" minFractionDigits="2" maxFractionDigits="2"/>
                                 </h:outputText>
                             </p:column>
 
                             <!-- Voucher columns -->
                             <p:column style="padding: 4px;" width="7em" rendered="#{userSettingsController.allUsersDrawerHistoryVoucherVisible}">
-                                <h:outputText value="#{drawerentry.beforeBalance}" styleClass="text-end d-block" rendered="#{drawerentry.payment.paymentMethod eq 'Voucher'}">
+                                <h:outputText value="#{drawerentry.beforeBalance}" styleClass="text-end d-block" rendered="#{drawerentry.paymentMethod eq 'Voucher'}">
                                     <f:convertNumber groupingUsed="true" minFractionDigits="2" maxFractionDigits="2"/>
                                 </h:outputText>
                             </p:column>
                             <p:column style="padding: 4px;" width="7em" rendered="#{userSettingsController.allUsersDrawerHistoryVoucherVisible}">
-                                <h:outputText value="#{drawerentry.payment.paidValue}" styleClass="text-end d-block" rendered="#{drawerentry.payment.paymentMethod eq 'Voucher'}">
+                                <h:outputText value="#{drawerentry.transactionValue}" styleClass="text-end d-block" rendered="#{drawerentry.paymentMethod eq 'Voucher'}">
                                     <f:convertNumber groupingUsed="true" minFractionDigits="2" maxFractionDigits="2"/>
                                 </h:outputText>
                             </p:column>
                             <p:column style="padding: 4px;" width="7em" rendered="#{userSettingsController.allUsersDrawerHistoryVoucherVisible}">
-                                <h:outputText value="#{drawerentry.afterBalance}" styleClass="text-end d-block" rendered="#{drawerentry.payment.paymentMethod eq 'Voucher'}">
+                                <h:outputText value="#{drawerentry.afterBalance}" styleClass="text-end d-block" rendered="#{drawerentry.paymentMethod eq 'Voucher'}">
                                     <f:convertNumber groupingUsed="true" minFractionDigits="2" maxFractionDigits="2"/>
                                 </h:outputText>
                             </p:column>
 
                             <!-- Patient Deposit columns -->
                             <p:column style="padding: 4px;" width="7em" rendered="#{userSettingsController.allUsersDrawerHistoryPatientDepositVisible}">
-                                <h:outputText value="#{drawerentry.beforeBalance}" styleClass="text-end d-block" rendered="#{drawerentry.payment.paymentMethod eq 'PatientDeposit'}">
+                                <h:outputText value="#{drawerentry.beforeBalance}" styleClass="text-end d-block" rendered="#{drawerentry.paymentMethod eq 'PatientDeposit'}">
                                     <f:convertNumber groupingUsed="true" minFractionDigits="2" maxFractionDigits="2"/>
                                 </h:outputText>
                             </p:column>
                             <p:column style="padding: 4px;" width="7em" rendered="#{userSettingsController.allUsersDrawerHistoryPatientDepositVisible}">
-                                <h:outputText value="#{drawerentry.payment.paidValue}" styleClass="text-end d-block" rendered="#{drawerentry.payment.paymentMethod eq 'PatientDeposit'}">
+                                <h:outputText value="#{drawerentry.transactionValue}" styleClass="text-end d-block" rendered="#{drawerentry.paymentMethod eq 'PatientDeposit'}">
                                     <f:convertNumber groupingUsed="true" minFractionDigits="2" maxFractionDigits="2"/>
                                 </h:outputText>
                             </p:column>
                             <p:column style="padding: 4px;" width="7em" rendered="#{userSettingsController.allUsersDrawerHistoryPatientDepositVisible}">
-                                <h:outputText value="#{drawerentry.afterBalance}" styleClass="text-end d-block" rendered="#{drawerentry.payment.paymentMethod eq 'PatientDeposit'}">
+                                <h:outputText value="#{drawerentry.afterBalance}" styleClass="text-end d-block" rendered="#{drawerentry.paymentMethod eq 'PatientDeposit'}">
                                     <f:convertNumber groupingUsed="true" minFractionDigits="2" maxFractionDigits="2"/>
                                 </h:outputText>
                             </p:column>
 
                             <!-- Patient Points columns -->
                             <p:column style="padding: 4px;" width="7em" rendered="#{userSettingsController.allUsersDrawerHistoryPatientPointsVisible}">
-                                <h:outputText value="#{drawerentry.beforeBalance}" styleClass="text-end d-block" rendered="#{drawerentry.payment.paymentMethod eq 'PatientPoints'}">
+                                <h:outputText value="#{drawerentry.beforeBalance}" styleClass="text-end d-block" rendered="#{drawerentry.paymentMethod eq 'PatientPoints'}">
                                     <f:convertNumber groupingUsed="true" minFractionDigits="2" maxFractionDigits="2"/>
                                 </h:outputText>
                             </p:column>
                             <p:column style="padding: 4px;" width="7em" rendered="#{userSettingsController.allUsersDrawerHistoryPatientPointsVisible}">
-                                <h:outputText value="#{drawerentry.payment.paidValue}" styleClass="text-end d-block" rendered="#{drawerentry.payment.paymentMethod eq 'PatientPoints'}">
+                                <h:outputText value="#{drawerentry.transactionValue}" styleClass="text-end d-block" rendered="#{drawerentry.paymentMethod eq 'PatientPoints'}">
                                     <f:convertNumber groupingUsed="true" minFractionDigits="2" maxFractionDigits="2"/>
                                 </h:outputText>
                             </p:column>
                             <p:column style="padding: 4px;" width="7em" rendered="#{userSettingsController.allUsersDrawerHistoryPatientPointsVisible}">
-                                <h:outputText value="#{drawerentry.afterBalance}" styleClass="text-end d-block" rendered="#{drawerentry.payment.paymentMethod eq 'PatientPoints'}">
+                                <h:outputText value="#{drawerentry.afterBalance}" styleClass="text-end d-block" rendered="#{drawerentry.paymentMethod eq 'PatientPoints'}">
                                     <f:convertNumber groupingUsed="true" minFractionDigits="2" maxFractionDigits="2"/>
                                 </h:outputText>
                             </p:column>
 
                             <!-- Online Settlement columns -->
                             <p:column style="padding: 4px;" width="7em" rendered="#{userSettingsController.allUsersDrawerHistoryOnlineSettlementVisible}">
-                                <h:outputText value="#{drawerentry.beforeBalance}" styleClass="text-end d-block" rendered="#{drawerentry.payment.paymentMethod eq 'OnlineSettlement'}">
+                                <h:outputText value="#{drawerentry.beforeBalance}" styleClass="text-end d-block" rendered="#{drawerentry.paymentMethod eq 'OnlineSettlement'}">
                                     <f:convertNumber groupingUsed="true" minFractionDigits="2" maxFractionDigits="2"/>
                                 </h:outputText>
                             </p:column>
                             <p:column style="padding: 4px;" width="7em" rendered="#{userSettingsController.allUsersDrawerHistoryOnlineSettlementVisible}">
-                                <h:outputText value="#{drawerentry.payment.paidValue}" styleClass="text-end d-block" rendered="#{drawerentry.payment.paymentMethod eq 'OnlineSettlement'}">
+                                <h:outputText value="#{drawerentry.transactionValue}" styleClass="text-end d-block" rendered="#{drawerentry.paymentMethod eq 'OnlineSettlement'}">
                                     <f:convertNumber groupingUsed="true" minFractionDigits="2" maxFractionDigits="2"/>
                                 </h:outputText>
                             </p:column>
                             <p:column style="padding: 4px;" width="7em" rendered="#{userSettingsController.allUsersDrawerHistoryOnlineSettlementVisible}">
-                                <h:outputText value="#{drawerentry.afterBalance}" styleClass="text-end d-block" rendered="#{drawerentry.payment.paymentMethod eq 'OnlineSettlement'}">
+                                <h:outputText value="#{drawerentry.afterBalance}" styleClass="text-end d-block" rendered="#{drawerentry.paymentMethod eq 'OnlineSettlement'}">
                                     <f:convertNumber groupingUsed="true" minFractionDigits="2" maxFractionDigits="2"/>
                                 </h:outputText>
                             </p:column>
 
                             <!-- Total Transaction Value column -->
                             <p:column style="padding: 6px;" width="8em">
-                                <h:outputText value="#{drawerentry.payment.paidValue}" styleClass="text-end d-block">
+                                <h:outputText value="#{drawerentry.transactionValue}" styleClass="text-end d-block">
                                     <f:convertNumber groupingUsed="true" minFractionDigits="2" maxFractionDigits="2"/>
                                 </h:outputText>
                             </p:column>

@@ -138,6 +138,8 @@ public class StaffPaymentBillController implements Serializable {
     private List<BillFee> tblBillFees;
     private LazyDataModel<BillFee> dueBillFee;
     private boolean allowUserToSelectPayWithholdingTaxDuringProfessionalPayments;
+    
+    private String patientPhn;
 
     @PostConstruct
     public void init() {
@@ -265,6 +267,7 @@ public class StaffPaymentBillController implements Serializable {
         printPreview = false;
         paymentMethod = PaymentMethod.Cash;
         speciality = null;
+        patientPhn = null;
     }
 
     public StaffFacade getStaffFacade() {
@@ -378,6 +381,11 @@ public class StaffPaymentBillController implements Serializable {
             jpql += " and bf.staff is not null ";
         }
 
+        if(patientPhn != null && !patientPhn.trim().equals("")){
+            jpql += " and bf.bill.patient.phn like :phn ";
+            params.put("phn", "%" + patientPhn.trim() + "%");
+        }
+        
         params.put("btcs", btcs);
         params.put("bc", false);
         params.put("brfnd", false);
@@ -1372,6 +1380,14 @@ public class StaffPaymentBillController implements Serializable {
 
     public void setAllowUserToSelectPayWithholdingTaxDuringProfessionalPayments(boolean allowUserToSelectPayWithholdingTaxDuringProfessionalPayments) {
         this.allowUserToSelectPayWithholdingTaxDuringProfessionalPayments = allowUserToSelectPayWithholdingTaxDuringProfessionalPayments;
+    }
+
+    public String getPatientPhn() {
+        return patientPhn;
+    }
+
+    public void setPatientPhn(String patientPhn) {
+        this.patientPhn = patientPhn;
     }
 
 }

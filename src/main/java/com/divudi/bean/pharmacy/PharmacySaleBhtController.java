@@ -523,7 +523,8 @@ public class PharmacySaleBhtController implements Serializable {
             JsfUtil.addErrorMessage("Invalid stock - missing batch information");
             return;
         }
-        if (tempStock.getItemBatch().getDateOfExpire().before(CommonFunctions.getCurrentDateTime())) {
+        if (tempStock.getItemBatch().getDateOfExpire() != null
+                && tempStock.getItemBatch().getDateOfExpire().before(CommonFunctions.getCurrentDateTime())) {
             JsfUtil.addErrorMessage("Please not select Expired Items");
             return;
         }
@@ -1669,7 +1670,8 @@ public class PharmacySaleBhtController implements Serializable {
             JsfUtil.addErrorMessage("Please enter a Quantity?");
             return;
         }
-        if (selectedStockDto.getDateOfExpire().before(CommonFunctions.getCurrentDateTime())) {
+        if (selectedStockDto.getDateOfExpire() != null
+                && selectedStockDto.getDateOfExpire().before(CommonFunctions.getCurrentDateTime())) {
             JsfUtil.addErrorMessage("You are NOT allowed to select Expired Items");
             return;
         }
@@ -1782,7 +1784,13 @@ public class PharmacySaleBhtController implements Serializable {
             JsfUtil.addErrorMessage("Item?");
             return;
         }
-        if (getTmpStock().getItemBatch().getDateOfExpire().before(CommonFunctions.getCurrentDateTime())) {
+        if (getTmpStock().getItemBatch() == null) {
+            errorMessage = "Item batch not found for selected stock";
+            JsfUtil.addErrorMessage("Item batch not found for selected stock");
+            return;
+        }
+        if (getTmpStock().getItemBatch().getDateOfExpire() != null
+                && getTmpStock().getItemBatch().getDateOfExpire().before(CommonFunctions.getCurrentDateTime())) {
             JsfUtil.addErrorMessage("Please not select Expired Items");
             return;
         }
