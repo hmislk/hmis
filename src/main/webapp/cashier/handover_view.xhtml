@@ -1,0 +1,52 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:prints="http://xmlns.jcp.org/jsf/composite/ezcomp/prints"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="/cashier/index.xhtml">
+            <ui:define name="subcontent">
+                <h:form>
+                    <p:panel class="w-100 m-1">
+                        <f:facet name="header">
+                            <p:outputLabel value="View Handover" />
+                            <p:commandButton
+                                value="Print Summary"
+                                styleClass="ui-button-success mx-1"
+                                icon="pi pi-print"
+                                ajax="false"
+                                style="float: right;"
+                                action="#{financialTransactionController.navigateToHandoverViewPrintSummary()}">
+                            </p:commandButton>
+                            <p:commandButton
+                                value="Print Details"
+                                styleClass="ui-button-info mx-1"
+                                icon="pi pi-print"
+                                ajax="false"
+                                style="float: right;"
+                                action="#{financialTransactionController.navigateToHandoverViewPrintDetails()}">
+                            </p:commandButton>
+                            <p:commandButton
+                                value="Print Accept Bill"
+                                styleClass="ui-button-warning mx-1"
+                                icon="pi pi-print"
+                                ajax="false"
+                                style="float: right;"
+                                rendered="#{financialTransactionController.selectedBill ne null and financialTransactionController.selectedBill.completed and not financialTransactionController.selectedBill.cancelled}"
+                                action="#{financialTransactionController.navigateToHandoverAcceptBillReprintFromReport()}">
+                            </p:commandButton>
+                        </f:facet>
+
+                        <prints:five_five_paper_with_headings_for_handover_reprint
+                            bundle="#{financialTransactionController.bundle}"/>
+
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

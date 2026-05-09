@@ -2073,7 +2073,7 @@ public class FinancialTransactionController implements Serializable {
             }
         }
 
-        return "/cashier/handover_preview?faces-redirect=true";
+        return "/cashier/handover_view?faces-redirect=true";
     }
 
     public String navigateToHandoverAcceptBillReprintFromReport() {
@@ -6023,7 +6023,7 @@ public class FinancialTransactionController implements Serializable {
 
         createHandoverProofMissingBillIfNeeded(currentBill);
 
-        return "/cashier/handover_creation_bill_print?faces-redirect=true";
+        return "/cashier/handover_creation_print_summary?faces-redirect=true";
     }
 
     private void createHandoverProofMissingBillIfNeeded(Bill handoverCreateBill) {
@@ -7384,6 +7384,26 @@ public class FinancialTransactionController implements Serializable {
 
     public String navigateToHandoverReprint() {
         return "/cashier/handover_reprint?faces-redirect=true";
+    }
+
+    public String navigateToHandoverCreationPrintSummary() {
+        return "/cashier/handover_creation_print_summary?faces-redirect=true";
+    }
+
+    public String navigateToHandoverCreationPrintDetails() {
+        return "/cashier/handover_creation_print_details?faces-redirect=true";
+    }
+
+    public String navigateToHandoverView() {
+        return "/cashier/handover_view?faces-redirect=true";
+    }
+
+    public String navigateToHandoverViewPrintSummary() {
+        return "/cashier/handover_view_print_summary?faces-redirect=true";
+    }
+
+    public String navigateToHandoverViewPrintDetails() {
+        return "/cashier/handover_view_print_details?faces-redirect=true";
     }
 
     public String acceptHandoverBillAndWriteToCashbook() {
