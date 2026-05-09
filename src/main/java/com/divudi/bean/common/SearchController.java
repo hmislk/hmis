@@ -84,6 +84,8 @@ import com.divudi.core.data.dto.PharmacyPreBillSearchDTO;
 import com.divudi.core.data.dto.PharmacyTransferRequestIssueDTO;
 import com.divudi.core.data.dto.PharmacyTransferRequestListDTO;
 import com.divudi.core.data.dto.PharmacyPurchaseOrderDTO;
+import com.divudi.core.data.dto.PharmacyTransferIssuedListDTO;
+import com.divudi.core.data.dto.PharmacyTransferReceivedListDTO;
 import com.divudi.core.entity.AgentHistory;
 import com.divudi.core.entity.Category;
 import com.divudi.core.entity.Payment;
@@ -304,6 +306,8 @@ public class SearchController implements Serializable {
     private Map<Long, List<PharmacyPreBillSearchDTO>> returnBillsByParentBillId;
     // DTO list for pharmacy transfer requests
     private List<PharmacyTransferRequestListDTO> transferRequestDtos;
+    // DTO list for pharmacy transfer issued list (pharmacy_transfer_issued_list.xhtml)
+    private List<PharmacyTransferIssuedListDTO> transferIssuedListDtos = new ArrayList<>();
     // DTO lists for disposal issue search results
     private List<PharmacyItemPurchaseDTO> disposalIssueBillDtos;
     private List<PharmacyItemPurchaseDTO> disposalIssueBillItemDtos;
@@ -4142,42 +4146,106 @@ public class SearchController implements Serializable {
     }
 
     public void listTransferIssuesToReceiveForLoggedDepartment() {
-        String jpql;
+        fetchTransferIssuedListDtos(null);
+    }
+
+    public void listFullyReceivedTransferIssues() {
+        fetchTransferIssuedListDtos(Boolean.TRUE);
+    }
+
+    public void listYetToReceiveTransferIssues() {
+        fetchTransferIssuedListDtos(Boolean.FALSE);
+    }
+
+    private void fetchTransferIssuedListDtos(Boolean fullyIssuedFilter) {
         List<BillTypeAtomic> btas = new ArrayList<>();
         btas.add(BillTypeAtomic.PHARMACY_ISSUE);
         btas.add(BillTypeAtomic.PHARMACY_DIRECT_ISSUE);
-        HashMap params = new HashMap();
+        Map<String, Object> params = new HashMap<>();
         params.put("toDate", getToDate());
         params.put("fromDate", getFromDate());
-        params.put("dep", getSessionController().getDepartment());
+        params.put("toDep", getSessionController().getDepartment());
         params.put("bTp", btas);
 
-        jpql = "Select b "
-                + " From Bill b "
-                + " where b.retired=false "
-                + " and b.toDepartment=:dep "
-                + " and b.billTypeAtomic in :bTp "
-                + " and b.createdAt between :fromDate and :toDate ";
+        StringBuilder jpql = new StringBuilder();
+        jpql.append("SELECT NEW com.divudi.core.data.dto.PharmacyTransferIssuedListDTO(");
+        jpql.append("b.id, b.deptId, d.name, b.departmentType, wup.name, stfp.name, ");
+        jpql.append("b.createdAt, b.cancelled, b.fullyIssued, cbwup.name, cb.createdAt) ");
+        jpql.append("FROM Bill b ");
+        jpql.append("LEFT JOIN b.department d ");
+        jpql.append("LEFT JOIN b.creater wu ");
+        jpql.append("LEFT JOIN wu.webUserPerson wup ");
+        jpql.append("LEFT JOIN b.toStaff stf ");
+        jpql.append("LEFT JOIN stf.person stfp ");
+        jpql.append("LEFT JOIN b.cancelledBill cb ");
+        jpql.append("LEFT JOIN cb.creater cbwu ");
+        jpql.append("LEFT JOIN cbwu.webUserPerson cbwup ");
+        jpql.append("WHERE b.retired = false ");
+        jpql.append("AND b.toDepartment = :toDep ");
+        jpql.append("AND b.billTypeAtomic IN :bTp ");
+        jpql.append("AND b.createdAt BETWEEN :fromDate AND :toDate ");
 
-        if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
-            jpql += " and  ((b.deptId) like :billNo )";
+        if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().isEmpty()) {
+            jpql.append("AND UPPER(b.deptId) LIKE :billNo ");
             params.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
         }
-
-        if (getSearchKeyword().getStaffName() != null && !getSearchKeyword().getStaffName().trim().equals("")) {
-            jpql += " and  ((b.toStaff.person.name) like :stf )";
+        if (getSearchKeyword().getStaffName() != null && !getSearchKeyword().getStaffName().trim().isEmpty()) {
+            jpql.append("AND UPPER(stfp.name) LIKE :stf ");
             params.put("stf", "%" + getSearchKeyword().getStaffName().trim().toUpperCase() + "%");
         }
-
-        if (getSearchKeyword().getFromDepartment() != null && !getSearchKeyword().getFromDepartment().trim().equals("")) {
-            jpql += " and  (upper(b.fromDepartment.name) like :fDep )";
+        if (getSearchKeyword().getFromDepartment() != null && !getSearchKeyword().getFromDepartment().trim().isEmpty()) {
+            jpql.append("AND UPPER(d.name) LIKE :fDep ");
             params.put("fDep", "%" + getSearchKeyword().getFromDepartment().trim().toUpperCase() + "%");
         }
-        jpql += " order by b.createdAt desc  ";
-        bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP, 50);
-        for (Bill b : bills) {
-            b.setTmpRefBill(getPharmacyTransferReceivedBills(b));
+
+        if (fullyIssuedFilter != null) {
+            if (Boolean.TRUE.equals(fullyIssuedFilter)) {
+                jpql.append("AND b.fullyIssued = true ");
+            } else {
+                jpql.append("AND b.fullyIssued = false AND b.cancelled = false ");
+            }
         }
+
+        jpql.append("ORDER BY b.createdAt DESC ");
+
+        transferIssuedListDtos = (List<PharmacyTransferIssuedListDTO>) getBillFacade()
+                .findDTOsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+        if (transferIssuedListDtos == null) {
+            transferIssuedListDtos = new ArrayList<>();
+        }
+
+        if (!transferIssuedListDtos.isEmpty()) {
+            List<Long> issuedBillIds = transferIssuedListDtos.stream()
+                    .map(PharmacyTransferIssuedListDTO::getBillId)
+                    .collect(Collectors.toList());
+            List<PharmacyTransferReceivedListDTO> allReceived = fetchReceivedBillsForIssuedIds(issuedBillIds);
+            Map<Long, List<PharmacyTransferReceivedListDTO>> byIssued = allReceived.stream()
+                    .collect(Collectors.groupingBy(PharmacyTransferReceivedListDTO::getIssuedBillId));
+            for (PharmacyTransferIssuedListDTO dto : transferIssuedListDtos) {
+                dto.setReceivedBills(byIssued.getOrDefault(dto.getBillId(), new ArrayList<>()));
+            }
+        }
+    }
+
+    private List<PharmacyTransferReceivedListDTO> fetchReceivedBillsForIssuedIds(List<Long> issuedBillIds) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("btp", BillTypeAtomic.PHARMACY_RECEIVE);
+        params.put("issuedBillIds", issuedBillIds);
+        String jpql = "SELECT NEW com.divudi.core.data.dto.PharmacyTransferReceivedListDTO("
+                + "b.id, b.referenceBill.id, b.deptId, b.createdAt, b.cancelled, wup.name, b.netTotal, "
+                + "cbwup.name, cb.createdAt) "
+                + "FROM Bill b "
+                + "LEFT JOIN b.creater wu "
+                + "LEFT JOIN wu.webUserPerson wup "
+                + "LEFT JOIN b.cancelledBill cb "
+                + "LEFT JOIN cb.creater cbwu "
+                + "LEFT JOIN cbwu.webUserPerson cbwup "
+                + "WHERE b.retired = false "
+                + "AND b.billTypeAtomic = :btp "
+                + "AND b.referenceBill.id IN :issuedBillIds";
+        List<PharmacyTransferReceivedListDTO> result = (List<PharmacyTransferReceivedListDTO>)
+                getBillFacade().findDTOsByJpql(jpql, params);
+        return result != null ? result : new ArrayList<>();
     }
 
     public void createIssueReport1() {
@@ -22591,6 +22659,14 @@ public class SearchController implements Serializable {
 
     public void setTransferRequestDtos(List<PharmacyTransferRequestListDTO> transferRequestDtos) {
         this.transferRequestDtos = transferRequestDtos;
+    }
+
+    public List<PharmacyTransferIssuedListDTO> getTransferIssuedListDtos() {
+        return transferIssuedListDtos;
+    }
+
+    public void setTransferIssuedListDtos(List<PharmacyTransferIssuedListDTO> transferIssuedListDtos) {
+        this.transferIssuedListDtos = transferIssuedListDtos;
     }
 
     public List<PharmacyItemPurchaseDTO> getDisposalIssueBillDtos() {
