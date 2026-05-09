@@ -39,10 +39,26 @@
                     <div class="d-flex align-items-center my-2">
                         <p:commandButton ajax="false" id="btnRefresh" value="Process" action="#{channelReportController.processPatientAbsentReport()}" class="m-1 ui-button-warning" icon="fas fa-list">
                         </p:commandButton>
+
+                        <p:commandButton
+                            id="btnPdf"
+                            class="mx-1 ui-button-info"
+                            ajax="false"
+                            rendered="true"
+                            icon="fas fa-file-pdf"
+                            value="Export as PDF">
+                            <p:fileDownload value="#{channelReportController.patientAbsentReportAsPdf}" />
+                        </p:commandButton>
+
                         <p:commandButton ajax="false" value="Print Table" style="float: right; margin-left: 10px; margin-right: 10px " class="m-1 ui-button-danger" icon="fas fa-print" action="channel_report_absent_patients_print?faces-redirect=true" >
                         </p:commandButton>
-                        <p:commandButton ajax="false" value="Export to Excel" class="m-1 ui-button-success" icon="fas fa-file-excel" style="float: right;" >
-                            <p:dataExporter type="xlsx" target="tbl1" fileName="Patient Absent Report"  />
+                        
+                        <p:commandButton 
+                            class="ui-button-success mx-1"
+                            icon ="fas fa-file-excel"
+                            ajax="false"
+                            value="Export to Excel">
+                            <p:fileDownload value="#{channelReportController.patientAbsentReportAsExcel}" />
                         </p:commandButton>
                     </div>
 
@@ -120,7 +136,7 @@
 
                         <p:column style="text-align: center;" width="5em">
                             <f:facet name="header" >
-                                <p:outputLabel value="Appinment No" />
+                                <p:outputLabel value="Appointment No" />
                             </f:facet>
                             <p:outputLabel value="#{b.billSessionSerialNo}" style="font-weight: bold"/>                                    
                         </p:column>

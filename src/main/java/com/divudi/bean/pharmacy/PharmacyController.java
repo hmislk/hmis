@@ -55,7 +55,6 @@ import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
 
 import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFCellStyle;
 import org.apache.poi.xssf.usermodel.XSSFFont;
@@ -68,7 +67,6 @@ import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.List;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.logging.Level;
@@ -12795,7 +12793,11 @@ public class PharmacyController implements Serializable {
             Cell valueCell = row.createCell(pairCounter * 3 + 1);
             Object value = entry.getValue();
 
-            valueCell.setCellValue((value != null) ? value.toString() : "");
+            if (value instanceof Date) {
+                valueCell.setCellValue(new SimpleDateFormat("dd MMM yyyy hh:mm a").format(value));
+            } else {
+                valueCell.setCellValue((value != null) ? value.toString() : "");
+            } 
 
             pairCounter++;
 

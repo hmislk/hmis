@@ -1,3 +1,4 @@
+
 package com.divudi.bean.common;
 
 // <editor-fold defaultstate="collapsed" desc="Template">
@@ -23,6 +24,9 @@ import com.divudi.core.data.hr.ReportKeyWord;
 import com.divudi.core.data.reports.FinancialReport;
 import com.divudi.core.data.reports.CashierReports;
 import com.divudi.core.data.reports.ProfessionalPaymentReport;
+import com.divudi.core.data.reports.Report.ChannelBillSearch;
+import com.divudi.core.data.reports.Report.OnlineBookingCountReport;
+import com.divudi.core.data.reports.Report.OpdBillSearch;
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.core.entity.AuditEvent;
 import com.divudi.core.entity.Bill;
@@ -10623,12 +10627,15 @@ public class SearchController implements Serializable {
 
     }
 
+    private Map<String, Object> opdBillsSearchCriteria;
+
     public void searchOpdBills() {
         List<BillTypeAtomic> billTypesAtomics = new ArrayList<>();
         billTypesAtomics.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
         billTypesAtomics.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
         createTableByKeyword(billTypesAtomics, institution, department, fromInstitution, fromDepartment, toInstitution, toDepartment);
 
+        opdBillsSearchCriteria = getFiltersForOpdBillSearch();
     }
 
     public void searchOpdPackageBills() {
@@ -10671,6 +10678,8 @@ public class SearchController implements Serializable {
 
     }
 
+    private Map<String, Object> channelBillsSearchCriteria;
+
     public void searchChannelBills() {
         Date startTime = new Date();
         List<BillTypeAtomic> billTypesAtomics = new ArrayList<>();
@@ -10687,6 +10696,7 @@ public class SearchController implements Serializable {
         billTypesAtomics.add(BillTypeAtomic.CHANNEL_REFUND_WITH_PAYMENT);
         billTypesAtomics.add(BillTypeAtomic.CHANNEL_REFUND_WITH_PAYMENT_FOR_CREDIT_SETTLED_BOOKINGS);
         createTableByKeywordForChannelBills(billTypesAtomics, institution, department, fromInstitution, fromDepartment, toInstitution, toDepartment, staff, speciality);
+        channelBillsSearchCriteria = getFiltersForChannelBillSearch();
 
     }
 
@@ -23873,6 +23883,121 @@ public class SearchController implements Serializable {
         }
 
         return bt;
+    }
+
+    // Filters for Channel Income Report
+    private Map<String, Object> getFiltersForChannelBillSearch() {
+        Map<String, Object> params = new LinkedHashMap<>();
+
+        params.put("From Date", fromDate);
+        params.put("To Date", toDate);
+        if (searchKeyword != null) {
+            params.put("Bill No", searchKeyword.getBillNo() != null && !searchKeyword.getBillNo().trim().isEmpty() ? searchKeyword.getBillNo() : "All");
+            params.put("Name", searchKeyword.getPatientName() != null && !searchKeyword.getPatientName().trim().isEmpty() ? searchKeyword.getPatientName() : "All");
+            params.put("Phone", searchKeyword.getPatientPhone() != null && !searchKeyword.getPatientPhone().trim().isEmpty() ? searchKeyword.getPatientPhone() : "All");
+            params.put("Total", searchKeyword.getTotal() != null? searchKeyword.getTotal() : "All");
+            params.put("Net Total", searchKeyword.getNetTotal() != null ? searchKeyword.getNetTotal() : "All");
+        }
+        params.put("Consultant", staff != null && staff.getPerson() != null && staff.getPerson().getNameWithTitle() != null ? staff.getPerson().getNameWithTitle() : "All");
+        params.put("Speciality", speciality != null ? speciality.getName() : "All");
+
+        return params;
+    }
+
+    // Filters for Opd Bills Report
+    private Map<String, Object> getFiltersForOpdBillSearch() {
+        Map<String, Object> params = new LinkedHashMap<>();
+
+        params.put("From Date", fromDate);
+        params.put("To Date", toDate);
+        params.put("Logged Department Only", showLoggedDepartmentOnly);
+        if (searchKeyword != null) {
+            params.put("Bill No", searchKeyword.getBillNo() != null && !searchKeyword.getBillNo().trim().isEmpty() ? searchKeyword.getBillNo() : "All");
+            params.put("MRN No", searchKeyword.getCode() != null && !searchKeyword.getCode().trim().isEmpty() ? searchKeyword.getCode() : "All");
+            params.put("Name", searchKeyword.getPatientName() != null && !searchKeyword.getPatientName().trim().isEmpty() ? searchKeyword.getPatientName() : "All");
+            params.put("Phone", searchKeyword.getPatientPhone() != null && !searchKeyword.getPatientPhone().trim().isEmpty() ? searchKeyword.getPatientPhone() : "All");
+            params.put("Total", searchKeyword.getTotal() != null? searchKeyword.getTotal() : "All");
+            params.put("Net Total", searchKeyword.getNetTotal() != null ? searchKeyword.getNetTotal() : "All");
+        }
+        params.put("From Institution", fromInstitution != null ? fromInstitution.getName() : "All Institutions");
+        params.put("From Department", fromDepartment != null ? fromDepartment.getName() : "All Departments");
+        params.put("To Institution", toInstitution != null ? toInstitution.getName() : "All Institutions");
+        params.put("To Department", toDepartment != null ? toDepartment.getName() : "All Departments");
+
+        return params;
+    }
+
+    public ChannelBillSearch getChannelBillSearchReport() {
+        String fileName = "Channel_Bills";
+        String dates;
+        if (channelBillsSearchCriteria != null && channelBillsSearchCriteria.get("From Date") instanceof Date && channelBillsSearchCriteria.get("To Date") instanceof Date) {
+            dates = CommonFunctions.dateRangeForFileName((Date) channelBillsSearchCriteria.get("From Date"), (Date) channelBillsSearchCriteria.get("To Date"), sessionController.getApplicationPreference().getLongDateFormat());
+        } else {
+            dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
+        }
+
+        if (dates != null && !dates.isEmpty()) {
+            fileName += "_" + dates;
+        }
+        String institutionName = "";
+        String userName = "";
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            if (sessionController.getLoggedUser().getInstitution() != null && sessionController.getLoggedUser().getInstitution().getName() != null) {
+                institutionName = sessionController.getLoggedUser().getInstitution().getName();
+            }
+            if (sessionController.getLoggedUser().getName() != null) {
+                userName = sessionController.getLoggedUser().getName();
+            }
+        }
+
+        ChannelBillSearch oBReport = new ChannelBillSearch(fileName, institutionName, channelBillsSearchCriteria != null ? channelBillsSearchCriteria : getFiltersForChannelBillSearch(), bills, userName);
+
+        return oBReport;
+    }
+
+    public StreamedContent getChannelBillsAsExcel() {
+        if (bills == null || bills.isEmpty()) {
+            JsfUtil.addErrorMessage("Please generate the Channel Bills before exporting.");
+            return null;
+        }
+
+        return getChannelBillSearchReport().createExcelAsStream();
+    }
+
+    public OpdBillSearch getOpdBillSearchReport() {
+        String fileName = "OPD_Bills";
+        String dates;
+        if (opdBillsSearchCriteria != null && opdBillsSearchCriteria.get("From Date") instanceof Date && opdBillsSearchCriteria.get("To Date") instanceof Date) {
+            dates = CommonFunctions.dateRangeForFileName((Date) opdBillsSearchCriteria.get("From Date"), (Date) opdBillsSearchCriteria.get("To Date"), sessionController.getApplicationPreference().getLongDateFormat());
+        } else {
+            dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
+        }
+        if (dates != null && !dates.isEmpty()) {
+            fileName += "_" + dates;
+        }
+        String institutionName = "";
+        String userName = "";
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            if (sessionController.getLoggedUser().getInstitution() != null && sessionController.getLoggedUser().getInstitution().getName() != null) {
+                institutionName = sessionController.getLoggedUser().getInstitution().getName();
+            }
+            if (sessionController.getLoggedUser().getName() != null) {
+                userName = sessionController.getLoggedUser().getName();
+            }
+        }
+
+        OpdBillSearch oBReport = new OpdBillSearch(fileName, institutionName, opdBillsSearchCriteria != null ? opdBillsSearchCriteria : getFiltersForOpdBillSearch(), bills, userName);
+
+        return oBReport;
+    }
+
+    public StreamedContent getOpdBillsAsExcel() {
+        if (bills == null || bills.isEmpty()) {
+            JsfUtil.addErrorMessage("Please generate the OPD Bills before exporting.");
+            return null;
+        }
+
+        return getOpdBillSearchReport().createExcelAsStream();
     }
 
     public List<ChannelIncomeDTO> getAgentBookings() {
