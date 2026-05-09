@@ -1784,7 +1784,7 @@ public class PharmacySaleBhtController implements Serializable {
             JsfUtil.addErrorMessage("Item?");
             return;
         }
-        tmpStock = stockFacade.find(tmpStock.getId());
+        tmpStock = stockFacade.findWithItemBatch(tmpStock.getId());
         if (getTmpStock().getItemBatch() != null
                 && getTmpStock().getItemBatch().getDateOfExpire() != null
                 && getTmpStock().getItemBatch().getDateOfExpire().before(CommonFunctions.getCurrentDateTime())) {

@@ -1747,7 +1747,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             JsfUtil.addErrorMessage("Please select an Item Batch to Dispense ??");
             return addedQty;
         }
-        stock = stockFacade.find(stock.getId());
+        stock = stockFacade.findWithItemBatch(stock.getId());
         if (getStock().getItemBatch() != null
                 && getStock().getItemBatch().getDateOfExpire() != null
                 && getStock().getItemBatch().getDateOfExpire().before(CommonFunctions.getCurrentDateTime())) {
