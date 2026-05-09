@@ -430,6 +430,24 @@
                                     <print:A4_paper_without_headings bill="#{bill}" duplicate="false"/>
                                 </ui:repeat>
                             </h:panelGroup>
+
+                            <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'FiveFiveCustom3'}">
+                                <ui:repeat value="#{inwardSearch.bill.refundBills}" var="bill" rendered="#{!inwardSearch.bill.cancelled}">
+                                    <print:five_five_custom_3_inward bill="#{bill}" duplicate="false" payments="#{inwardSearch.bill.refundBills.size()}"/>
+                                </ui:repeat>
+                                <ui:repeat value="#{inwardSearch.bill.cancelledBill}" var="bill" rendered="#{inwardSearch.bill.cancelled}">
+                                    <print:five_five_custom_3_inward bill="#{bill}" duplicate="false" payments="#{inwardSearch.bill.cancelledBill.size()}"/>
+                                </ui:repeat>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'FiveEightInchPaper'}">
+                                <ui:repeat value="#{inwardSearch.bill.refundBills}" var="bill" rendered="#{!inwardSearch.bill.cancelled}">
+                                    <print:five_eight_opd_bill_inward bill="#{bill}" duplicate="false" payments="#{inwardSearch.bill.refundBills.size()}"/>
+                                </ui:repeat>
+                                <ui:repeat value="#{inwardSearch.bill.cancelledBill}" var="bill" rendered="#{inwardSearch.bill.cancelled}">
+                                    <print:five_eight_opd_bill_inward bill="#{bill}" duplicate="false" payments="#{inwardSearch.bill.cancelledBill.size()}"/>
+                                </ui:repeat>
+                            </h:panelGroup>
                         </p:panel>
                     </div>
 

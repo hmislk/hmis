@@ -908,13 +908,13 @@
                                                 <h:panelGroup id="gpBillPreview" >
 
                                                     <!-- FiveFivePaper: preference match, guarded to not render when another config key is active -->
-                                                    <h:panelGroup rendered="#{(sessionController.departmentPreference.inwardServiceBillPaperType eq 'FiveFivePaper'
+                                                    <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'FiveFivePaper'
                                                                                and not configOptionApplicationController.getBooleanValueByKey('Inward Servise Bill size is POS Paper')
                                                                                and not configOptionApplicationController.getBooleanValueByKey('Inward Servise Bill size is A4 Paper')
                                                                                and not configOptionApplicationController.getBooleanValueByKey('Inward Servise Bill size is A4Printed Paper')
                                                                                and not configOptionApplicationController.getBooleanValueByKey('Inward Servise Bill size is FiveFiveCustom3 Paper')
-                                                                               and not configOptionApplicationController.getBooleanValueByKey('Inward Servise Bill size is 5x8 inch Paper'))
-                                                                              or configOptionApplicationController.getBooleanValueByKey('Inward Servise Bill size is FiveFive paper')}" >
+                                                                               and not configOptionApplicationController.getBooleanValueByKey('Inward Servise Bill size is 5x8 inch Paper')
+                                                                               and not configOptionApplicationController.getBooleanValueByKey('Inward Servise Bill size is FiveFivePrinted paper')}" >
                                                         <ui:repeat value="#{billBhtController.bills}" var="ffb">
                                                             <div style="page-break-after: always;">
                                                                 <print:five_five_paper_with_headings_inward_service bill="#{ffb}"/>
