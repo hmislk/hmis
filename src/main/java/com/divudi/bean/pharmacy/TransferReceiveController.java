@@ -196,9 +196,11 @@ public class TransferReceiveController implements Serializable {
     }
 
     public void setIssuedBillId(Long billId) {
-        if (billId != null) {
-            this.issuedBill = billFacade.find(billId);
+        if (billId == null) {
+            this.issuedBill = null;
+            return;
         }
+        this.issuedBill = billFacade.find(billId);
     }
 
 //   public String navigateBackToRecieveList(){
