@@ -1785,6 +1785,7 @@ public class PharmacySaleBhtController implements Serializable {
             return;
         }
         if (getTmpStock().getItemBatch() == null) {
+            errorMessage = "Item batch not found for selected stock";
             JsfUtil.addErrorMessage("Item batch not found for selected stock");
             return;
         }

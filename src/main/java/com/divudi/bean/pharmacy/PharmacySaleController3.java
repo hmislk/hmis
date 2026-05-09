@@ -1320,6 +1320,7 @@ public class PharmacySaleController3 implements Serializable, ControllerWithPati
             return addedQty;
         }
         if (getStock().getItemBatch() == null) {
+            errorMessage = "Item batch not found for selected stock";
             JsfUtil.addErrorMessage("Item batch not found for selected stock");
             return addedQty;
         }

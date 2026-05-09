@@ -793,6 +793,11 @@ public class PharmacyWholeSaleController implements Serializable, ControllerWith
             return;
         }
 
+        if (getStock().getItemBatch() == null) {
+            errorMessage = "Item batch not found for selected stock";
+            JsfUtil.addErrorMessage("Item batch not found for selected stock");
+            return;
+        }
         billItem.getPharmaceuticalBillItem().setQtyInUnit(0 - qty);
         billItem.getPharmaceuticalBillItem().setStock(stock);
         billItem.getPharmaceuticalBillItem().setItemBatch(getStock().getItemBatch());
@@ -1547,6 +1552,7 @@ public class PharmacyWholeSaleController implements Serializable, ControllerWith
         }
 
         if (getStock().getItemBatch() == null) {
+            errorMessage = "Item batch not found for selected stock";
             JsfUtil.addErrorMessage("Item batch not found for selected stock");
             return;
         }
