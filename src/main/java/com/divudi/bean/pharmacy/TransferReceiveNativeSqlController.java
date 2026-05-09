@@ -178,6 +178,14 @@ public class TransferReceiveNativeSqlController implements Serializable {
             return;
         }
 
+        List<String> stockErrors = transferReceiveNativeSqlService.checkSourceStockSufficiency(itemRowList);
+        if (!stockErrors.isEmpty()) {
+            for (String msg : stockErrors) {
+                JsfUtil.addErrorMessage("Insufficient source stock — " + msg);
+            }
+            return;
+        }
+
         Bill bill = buildReceiveBillHeader(BillTypeAtomic.PHARMACY_RECEIVE);
         applyBillNumbers(bill);
 
@@ -214,6 +222,14 @@ public class TransferReceiveNativeSqlController implements Serializable {
 
         if (wouldCauseOverReceiving()) {
             JsfUtil.addErrorMessage("Cannot receive — quantities exceed remaining amounts!");
+            return;
+        }
+
+        List<String> stockErrors = transferReceiveNativeSqlService.checkSourceStockSufficiency(itemRowList);
+        if (!stockErrors.isEmpty()) {
+            for (String msg : stockErrors) {
+                JsfUtil.addErrorMessage("Insufficient source stock — " + msg);
+            }
             return;
         }
 

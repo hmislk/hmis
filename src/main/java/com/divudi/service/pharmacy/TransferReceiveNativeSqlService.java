@@ -216,6 +216,52 @@ public class TransferReceiveNativeSqlService {
     }
 
     /**
+     * Checks that each item's source stock (staffStockId) holds at least the
+     * units being requested before settlement begins.
+     *
+     * Returns a list of human-readable error strings — one per stock row that
+     * would go negative. An empty list means all stocks are sufficient.
+     *
+     * Call this before settle() so the user gets a clear message rather than
+     * a mid-transaction RuntimeException.
+     */
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    public List<String> checkSourceStockSufficiency(List<TransferReceiveItemRowDto> items) {
+        List<String> errors = new ArrayList<>();
+        if (items == null || items.isEmpty()) {
+            return errors;
+        }
+
+        // Aggregate required units by source stock ID
+        // (same stock row could appear in multiple items if batches share a stock entry)
+        Map<Long, Double> requiredByStock = new HashMap<>();
+        Map<Long, String> labelByStock = new HashMap<>();
+        for (TransferReceiveItemRowDto item : items) {
+            if (item.getReceivingQty() == null
+                    || item.getReceivingQty().compareTo(BigDecimal.ZERO) <= 0
+                    || item.getStaffStockId() == null) {
+                continue;
+            }
+            double units = item.getReceivingQty().doubleValue() * item.getUnitsPerPack();
+            long sid = item.getStaffStockId();
+            requiredByStock.merge(sid, units, Double::sum);
+            labelByStock.putIfAbsent(sid, item.getItemName() + " (batch " + item.getBatchNo() + ")");
+        }
+
+        for (Map.Entry<Long, Double> entry : requiredByStock.entrySet()) {
+            long stockId = entry.getKey();
+            double required = entry.getValue();
+            double available = fetchStockQty(stockId);
+            if (available < required - 0.001) {
+                errors.add(labelByStock.get(stockId)
+                        + ": needs " + required
+                        + " units, only " + available + " available in source stock");
+            }
+        }
+        return errors;
+    }
+
+    /**
      * Settles the transfer receive using native SQL for stock operations and BillItem inserts.
      * Replicates the logic from TransferReceiveController.settle() and fillData().
      *
