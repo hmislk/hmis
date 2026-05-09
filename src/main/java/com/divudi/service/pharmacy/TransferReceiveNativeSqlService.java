@@ -306,16 +306,7 @@ public class TransferReceiveNativeSqlService {
 
         long t0 = System.currentTimeMillis();
 
-        // Step 1: Persist bill header via JPA
-        bill.setBillItems(null);
-        em.persist(bill);
-        em.flush();
-        long billId = bill.getId();
-
-        LOGGER.log(Level.INFO, "[TRNativeSettle] Bill header persisted id={0} ms={1}",
-                new Object[]{billId, System.currentTimeMillis() - t0});
-
-        // Filter to items with positive receivingQty
+        // Filter to items with positive receivingQty before persisting anything
         List<TransferReceiveItemRowDto> itemsToProcess = new ArrayList<>();
         for (TransferReceiveItemRowDto item : items) {
             BigDecimal rqty = item.getReceivingQty();
@@ -325,14 +316,18 @@ public class TransferReceiveNativeSqlService {
         }
 
         if (itemsToProcess.isEmpty()) {
-            LOGGER.log(Level.WARNING, "[TRNativeSettle] No items with positive qty to process for bill {0}", billId);
-            // Return empty DTO; caller will show a validation message
-            TransferReceivePrintDto emptyDto = new TransferReceivePrintDto();
-            emptyDto.setReceiveNo(bill.getDeptId());
-            emptyDto.setReceivedAt(bill.getCreatedAt());
-            emptyDto.setItems(new ArrayList<>());
-            return emptyDto;
+            LOGGER.log(Level.WARNING, "[TRNativeSettle] No items with positive qty — rejecting before persist");
+            throw new RuntimeException("Nothing to receive — all quantities are zero.");
         }
+
+        // Step 1: Persist bill header via JPA
+        bill.setBillItems(null);
+        em.persist(bill);
+        em.flush();
+        long billId = bill.getId();
+
+        LOGGER.log(Level.INFO, "[TRNativeSettle] Bill header persisted id={0} ms={1}",
+                new Object[]{billId, System.currentTimeMillis() - t0});
 
         Date now = new Date();
         long createrId = (bill.getCreater() != null && bill.getCreater().getId() != null)
@@ -416,7 +411,7 @@ public class TransferReceiveNativeSqlService {
             long ampItemId = (item.getAmpItemId() != null) ? item.getAmpItemId() : item.getItemId();
 
             StockAggregateResult agg = computeAggregates(
-                    ampItemId, item.getItemBatchId(), receivingDeptId, receivingInstId,
+                    item.getItemId(), ampItemId, item.getItemBatchId(), receivingDeptId, receivingInstId,
                     postAddQty,
                     item.getBatchRetailRate(), item.getBatchPurchaseRate(),
                     item.getBatchCostRate() != null ? item.getBatchCostRate() : item.getBatchPurchaseRate());
@@ -678,7 +673,7 @@ public class TransferReceiveNativeSqlService {
     // -----------------------------------------------------------------------
 
     private StockAggregateResult computeAggregates(
-            long ampItemId, long itemBatchId,
+            long itemId, long ampItemId, long itemBatchId,
             long departmentId, long institutionId,
             double postAddStockQty,
             double retailRate, double purchaseRate, double costRate) {
@@ -739,7 +734,7 @@ public class TransferReceiveNativeSqlService {
                 .setParameter(6, institutionId)
                 .setParameter(7, departmentId)
                 .setParameter(8, institutionId)
-                .setParameter(9, ampItemId)
+                .setParameter(9, itemId)
                 .getSingleResult();
 
         r.setDepartmentItemStock(toDouble(itemRow[0]));

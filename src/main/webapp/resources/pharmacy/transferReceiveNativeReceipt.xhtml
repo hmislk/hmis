@@ -154,7 +154,7 @@
                                 </ui:fragment>
                                 <td class="item-qty">
                                     <h:outputLabel value="#{bip.qty}">
-                                        <f:convertNumber integerOnly="true" />
+                                        <f:convertNumber pattern="#,##0.##" />
                                     </h:outputLabel>
                                 </td>
                                 <ui:fragment rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Receive - Show Rate and Value', false) and webUserController.hasPrivilege('PharmacyTransferViewRates')}">

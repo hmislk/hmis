@@ -718,6 +718,13 @@ public class TransferReceiveNativeSqlController implements Serializable {
                     ? safeStr(loggedUser.getStaff().getCode()) : "");
         }
 
+        // Approved by details
+        if (bill.getApproveUser() != null) {
+            dto.setApprovedByName(bill.getApproveUser().getWebUserPerson() != null
+                    ? safeStr(bill.getApproveUser().getWebUserPerson().getName()) : "");
+            dto.setApprovedAt(bill.getApproveAt());
+        }
+
         // Footer and template from configuration
         dto.setFooterCss(configOptionApplicationController
                 .getLongTextValueByKey("Pharmacy Transfer Receive Bill Footer CSS"));
