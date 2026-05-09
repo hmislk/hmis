@@ -780,6 +780,14 @@ public class TransferReceiveNativeSqlController implements Serializable {
         this.issuedBill = issuedBill;
     }
 
+    public void setIssuedBillId(Long billId) {
+        if (billId == null) {
+            this.issuedBill = null;
+            return;
+        }
+        this.issuedBill = billFacade.find(billId);
+    }
+
     public Long getReceivedBillId() {
         return receivedBillId;
     }

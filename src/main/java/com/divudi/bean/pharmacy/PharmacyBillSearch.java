@@ -3879,6 +3879,7 @@ public class PharmacyBillSearch implements Serializable {
 
     }
 
+
     public List<BillEntry> getBillEntrys() {
         return billEntrys;
     }
