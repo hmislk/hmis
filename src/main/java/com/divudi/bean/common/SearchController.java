@@ -83,6 +83,7 @@ import com.divudi.core.data.dto.PharmacyItemPurchaseDTO;
 import com.divudi.core.data.dto.PharmacyPreBillSearchDTO;
 import com.divudi.core.data.dto.PharmacyTransferRequestIssueDTO;
 import com.divudi.core.data.dto.PharmacyTransferRequestListDTO;
+import com.divudi.core.data.dto.channel.ChannelIncomeDTO;
 import com.divudi.core.data.dto.PharmacyPurchaseOrderDTO;
 import com.divudi.core.data.dto.PharmacyTransferIssuedListDTO;
 import com.divudi.core.data.dto.PharmacyTransferReceivedListDTO;
@@ -20874,6 +20875,103 @@ public class SearchController implements Serializable {
         bundle.calculateTotalsWithCredit();
     }
 
+    private List<ChannelIncomeDTO> agentBookings;
+
+    public void processAgentChannelBookings() {
+        agentBookings = new ArrayList<>();
+
+        String jpql = "Select new com.divudi.core.data.dto.channel.ChannelIncomeDTO( "
+                + " b.id, b.createdAt, b.deptId, b.billTypeAtomic, "
+                + " COALESCE(pa.person.name, ''), pa.person.title, "
+                + " COALESCE(b.creater.name, ''), "
+                + " b.cancelled, b.refunded, "
+                + " COALESCE(b.hospitalFee, 0.0), COALESCE(b.staffFee, 0.0), COALESCE(b.total, 0.0), COALESCE(b.netTotal, 0.0), COALESCE(b.discount, 0.0), "
+                + " b.agentRefNo, cc.name, "
+                + " b.institution.name, b.department.name, ti.name, td.name "
+                + " ) "
+                + " FROM Bill b "
+                + " LEFT JOIN b.patient pa "
+                + " LEFT JOIN b.creditCompany cc "
+                + " LEFT JOIN b.toInstitution ti "
+                + " LEFT JOIN b.toDepartment td "
+                + " WHERE b.retired = :ret "
+                + " AND b.billTypeAtomic IN :bts ";
+
+        Map<String, Object> m = new HashMap<>();
+        m.put("ret", false);
+
+        List<BillTypeAtomic> bts = new ArrayList<>();
+        bts.add(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
+//        bts.add(BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT);
+//        bts.add(BillTypeAtomic.CHANNEL_REFUND_WITH_PAYMENT);
+        m.put("bts", bts);
+
+        jpql += " AND b.paymentMethod = :pm ";
+        m.put("pm", PaymentMethod.Agent);
+
+        if (creditCompany != null) {
+            jpql += " AND cc = :creditcom ";
+            m.put("creditcom", creditCompany);
+        }
+
+        if (institution != null) {
+            jpql += " AND b.institution = :ins ";
+            m.put("ins", institution);
+        }
+
+        if (site != null) {
+            jpql += " AND b.department.site = :site ";
+            m.put("site", site);
+        }
+
+        if (department != null) {
+            jpql += " AND b.department = :dept ";
+            m.put("dept", department);
+        }
+
+        if (toInstitution != null) {
+            jpql += " AND ti = :tins ";
+            m.put("tins", toInstitution);
+        }
+
+        if (toSite != null) {
+            jpql += " AND td.site = :tsite ";
+            m.put("tsite", toSite);
+        }
+
+        if (toDepartment != null) {
+            jpql += " AND td = :tdept ";
+            m.put("tdept", toDepartment);
+        }
+
+        if (webUser != null) {
+            jpql += " AND b.creater = :wu ";
+            m.put("wu", webUser);
+        }
+
+        jpql += " AND b.createdAt BETWEEN :fromDate AND :toDate ";
+        m.put("fromDate", getFromDate());
+        m.put("toDate", getToDate());
+
+        agentBookings = (List<ChannelIncomeDTO>) billFacade.findLightsByJpql(jpql, m, TemporalType.TIMESTAMP);
+
+        hosTotal = 0.0;
+        staffTotal = 0.0;
+        grossTotal = 0.0;
+        discountTotal = 0.0;
+        amountTotal = 0.0;
+
+        for (ChannelIncomeDTO b : agentBookings) {
+            if (!b.isCancelled() && !b.isRefunded()) {
+                hosTotal += b.getHosFee();
+                staffTotal += b.getDoctorFee();
+                grossTotal += (b.getGrossTotal());
+                discountTotal += b.getDiscount();
+                amountTotal += b.getPaymentFee();
+            }
+        }
+    }
+
     public void listAgentChannelBookings() {
         String jpql = "SELECT b "
                 + " FROM Bill b "
@@ -20953,6 +21051,7 @@ public class SearchController implements Serializable {
                 amountTotal += b.getNetTotal();
             }
         }
+
     }
 
     private String bookingType;
@@ -23774,6 +23873,14 @@ public class SearchController implements Serializable {
         }
 
         return bt;
+    }
+
+    public List<ChannelIncomeDTO> getAgentBookings() {
+        return this.agentBookings;
+    }
+
+    public void setAgentBookings(List<ChannelIncomeDTO> agentBookings) {
+        this.agentBookings = agentBookings;
     }
 
 }
