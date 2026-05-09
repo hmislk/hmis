@@ -394,7 +394,10 @@ public class IouBillController implements Serializable {
         List<Payment> iouReversals = new ArrayList<>();
         List<Payment> cashPayments = new ArrayList<>();
         for (Payment iouPayment : settlingIuos) {
-            // Create a reversed IOU payment (negative value) to balance out
+            // Create a reversed IOU payment (negative value) to balance out.
+            // This is a pure accounting offset — not a physical payment to hand over.
+            // Mark it handingOverStarted=true and cashbookEntryStated=true so it never
+            // surfaces in the shift handover or cashbook pages.
             Payment iouReversal = new Payment();
             iouReversal.setBill(current);
             iouReversal.setPaymentMethod(PaymentMethod.IOU);
@@ -404,6 +407,8 @@ public class IouBillController implements Serializable {
             iouReversal.setCreatedAt(new Date());
             iouReversal.setCreater(sessionController.getLoggedUser());
             iouReversal.setCurrentHolder(sessionController.getLoggedUser());
+            iouReversal.setHandingOverStarted(true);
+            iouReversal.setCashbookEntryStated(true);
             paymentController.save(iouReversal);
             iouReversals.add(iouReversal);
 
@@ -424,11 +429,14 @@ public class IouBillController implements Serializable {
         drawerController.updateDrawerForOuts(iouReversals);
         drawerController.updateDrawerForIns(cashPayments);
 
-        // Mark original IOU payments as processed by linking to the conversion bill
-        // Using cancelledBill reference (without setting cancelled=true) to indicate
-        // this IOU has been converted, keeping it visible in cashier summaries
+        // Mark original IOU payments as processed. The conversion bill takes over their
+        // accounting role: the -500 IOU reversal and +500 Cash handle the cashbook entry.
+        // Setting handingOverStarted=true and cashbookEntryStated=true prevents the original
+        // IOU from double-appearing in handover alongside the +500 Cash payment.
         for (Payment iouPayment : settlingIuos) {
             iouPayment.setCancelledBill(current);
+            iouPayment.setHandingOverStarted(true);
+            iouPayment.setCashbookEntryStated(true);
             paymentController.save(iouPayment);
         }
 
