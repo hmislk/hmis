@@ -113,8 +113,14 @@ jobs:
           # 15 minutes so the CI/CD still fails loudly if the deploy truly fails.
           ssh -i private_key.pem -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "
             echo 'AS_ADMIN_PASSWORD=$PAYARA_ADMIN_PASS' > /tmp/payara-admin-pass.txt
+            trap 'rm -f /tmp/payara-admin-pass.txt' EXIT
             /opt/payara5/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt undeploy $APP_NAME || true
-            /opt/payara5/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt --detach deploy --contextroot $APP_NAME $WAR_DIR/$WAR_NAME
+            /opt/payara5/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt --detach deploy --force=true --contextroot $APP_NAME $WAR_DIR/$WAR_NAME
+            DEPLOY_EXIT=\$?
+            if [ \"\$DEPLOY_EXIT\" != '0' ]; then
+              echo 'Deploy submission failed (asadmin exit code '\$DEPLOY_EXIT').'
+              exit \$DEPLOY_EXIT
+            fi
             echo 'Deploy submitted. Polling for application start (up to 15 min)...'
             DEPLOYED=false
             for i in \$(seq 1 30); do
@@ -128,10 +134,8 @@ jobs:
             done
             if [ \"\$DEPLOYED\" = 'false' ]; then
               echo 'Application failed to start within 15 minutes.'
-              rm /tmp/payara-admin-pass.txt
               exit 1
             fi
-            rm /tmp/payara-admin-pass.txt
           "
 
           # Check if the application is reachable
