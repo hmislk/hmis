@@ -896,7 +896,7 @@ public class RequestController implements Serializable {
             }
         }
 
-        JsfUtil.addSuccessMessage("Successfully Reject");
+        JsfUtil.addSuccessMessage("Request Process Completed.");
     }
 
     public void cancelRequestbyUser() {
