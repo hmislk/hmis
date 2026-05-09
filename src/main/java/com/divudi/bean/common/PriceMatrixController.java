@@ -457,8 +457,6 @@ public class PriceMatrixController implements Serializable {
 
     // OLD: Entity-based method (kept for backward compatibility)
     public PaymentSchemeDiscount getPaymentSchemeDiscount(PaymentMethod paymentMethod, PaymentScheme paymentScheme, Institution creditCompany, Item item) {
-        System.out.println("Start - getPaymentSchemeDiscount for Credit Company");
-
         if (paymentMethod == null) {
             System.out.println("Payment Method == Null ----> SKIPPED - No Payment Method selected");
             return null;
@@ -482,37 +480,17 @@ public class PriceMatrixController implements Serializable {
         }
 
         //Get Discount (Item + Credit Company)
-        System.out.println("1. Use = (Item + Credit Company)");
         paymentSchemeDiscount = fetchPaymentSchemeDiscount(paymentScheme, creditCompany, paymentMethod, item);
 
         if (paymentSchemeDiscount == null) {
-            System.out.println("Not Found Discount Scheme for (Item + Credit Company) ");
             //Get Discount (Category + Credit Company)
-            System.out.println("2. Use = (Category + Credit Company)");
             paymentSchemeDiscount = fetchPaymentSchemeDiscount(paymentScheme, creditCompany, paymentMethod, category);
 
             if (paymentSchemeDiscount == null) {
-                System.out.println("Not Found Discount Scheme for (Category + Credit Company) ");
                 //Get Discount (Parent Category + Credit Company)
-                System.out.println("3. Use = (Parent Category + Credit Company)");
                 paymentSchemeDiscount = fetchPaymentSchemeDiscount(paymentScheme, creditCompany, paymentMethod, category.getParentCategory());
-                
-                if(paymentSchemeDiscount == null){
-                    System.out.println("Found Discount Scheme for (Category + Credit Company) = " + paymentSchemeDiscount);
-                }
-            }else{
-                System.out.println("Found Discount Scheme for (Category + Credit Company) = " + paymentSchemeDiscount);
             }
-        }else{
-            System.out.println("Found Discount Scheme for (Item + Credit Company) = " + paymentSchemeDiscount);
         }
-
-        if(paymentSchemeDiscount == null){
-            System.out.println("Final ---> Not Found Discount Scheme " + item.getName());
-        }else{
-            System.out.println("Final ---> Found Discount Scheme for = " + item.getName() +" --->>> "+ paymentSchemeDiscount.getId());
-        }
-
         return paymentSchemeDiscount;
     }
 
