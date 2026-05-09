@@ -11,146 +11,190 @@
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
-                <h:form>
+                <h:form id="inwardBillCancelRequestForm">
+
+                    <p:growl id="growl" life="4000"/>
+
+                    <p:confirmDialog 
+                        global="true" 
+                        responsive="true" 
+                        width="780"
+                        showEffect="fade" 
+                        hideEffect="fade">
+                        <p:commandButton 
+                            style="width: 150px;"
+                            value="Yes" 
+                            type="button"
+                            styleClass="ui-confirmdialog-yes ui-button-danger"
+                            icon="fa fa-check">
+                        </p:commandButton>
+                        <p:commandButton 
+                            style="width: 150px;"
+                            value="No" 
+                            type="button"
+                            styleClass="ui-confirmdialog-no ui-button-secondary ui-button-outlined"
+                            icon="fa fa-times">
+                        </p:commandButton>
+                    </p:confirmDialog>
+
                     <h:panelGroup rendered="#{!requestController.printPreview}" styleClass="alignTop">
                         <p:panel>
                             <f:facet name="header">
-                                <div class="d-flex justify-content-between">
-                                    <p:outputLabel value="Bill Cancellation Request" class="mt-2"></p:outputLabel>
-                                    <p:commandButton 
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <p:outputLabel value="Bill Cancellation Request"
+                                                   styleClass="fs-5 fw-semibold m-0"/>
+                                    <p:commandButton
                                         ajax="false"
-                                        value="Back to List" 
+                                        value="Back to List"
                                         icon="fa fa-long-arrow-left"
                                         action="/lab/inward_search_service?faces-redirect=true"
-                                        class="ui-button-warning" >
+                                        title="Return to the inward bill search list"
+                                        styleClass="ui-button-warning">
                                     </p:commandButton>
                                 </div>
-
                             </f:facet>
 
-                            <div class="d-flex justify-content-end gap-5">
-
-                                <p:inputText
-                                    id="commentsMenu"
-                                    value="#{requestController.comment}"
-                                    placeholder="Reason of the Cancel"
-                                    style="float: right; width: 500px;"
-                                    >
-                                </p:inputText>
-
-                                <p:commandButton 
-                                    ajax="false"
-                                    value="Request to Cancel Bill" 
-                                    icon="fa fa-cancel"
-                                    style="float: right"
-                                    class="ui-button-danger" 
-                                    action="#{requestController.createRequestforInpatientServiceBill()}">
-                                </p:commandButton>
+                            <!-- Reason + Submit row -->
+                            <div class="d-flex justify-content-end">
+                                <div class="d-flex align-items-center gap-3 mb-3 flex-wrap">
+                                    <p:outputLabel for="commentsMenu"
+                                                   value="Reason for Cancellation"
+                                                   styleClass="fw-semibold m-0"/>
+                                    <p:inputText id="commentsMenu"
+                                                 value="#{requestController.comment}"
+                                                 placeholder="Enter the reason for cancelling this bill"
+                                                 style="width: 500px;"
+                                                 title="Reason for cancellation (required)"/>
+                                    <p:commandButton
+                                        ajax="false"
+                                        value="Request to Cancel Bill"
+                                        icon="fa fa-ban"
+                                        styleClass="ui-button-danger"
+                                        title="Submit a request to cancel this inward bill"
+                                        action="#{requestController.createRequestforInpatientServiceBill()}">
+                                        <p:confirm header="Confirm Cancellation Request"
+                                                   message="Submit a cancellation request for this inward bill?"
+                                                   icon="fa fa-exclamation-triangle"/>
+                                    </p:commandButton>
+                                </div>
                             </div>
 
-
                             <!-- Patient Details and Bill Details Panels -->
-                            <div class="row mt-3">
-                                <div class="col-6">
-                                    <p:panel>
+                            <div class="row g-3">
+                                <div class="col-12 col-lg-6">
+                                    <p:panel styleClass="h-100">
                                         <f:facet name="header">
-                                            <h:outputText styleClass="fas fa-id-card-alt"></h:outputText>
-                                            <h:outputLabel value="Patient Details" class="mx-2"></h:outputLabel>
+                                            <h:outputText styleClass="fas fa-id-card-alt me-2"/>
+                                            <h:outputText value="Patient Details" styleClass="fw-semibold"/>
                                         </f:facet>
                                         <in:bhtDetail admission="#{requestController.patientEncounter}"/>
                                     </p:panel>
-
                                 </div>
-                                <div class="col-6">
-                                    <p:panel>
+                                <div class="col-12 col-lg-6">
+                                    <p:panel styleClass="h-100">
                                         <f:facet name="header">
-                                            <h:outputText styleClass="fas fa-list-alt"></h:outputText>
-                                            <h:outputLabel value="Batch Bill Detail" class="mx-2"></h:outputLabel>
+                                            <h:outputText styleClass="fas fa-file-invoice me-2"/>
+                                            <h:outputText value="Batch Bill Detail" styleClass="fw-semibold"/>
                                         </f:facet>
-                                        <p:panelGrid columns="2">
-                                            <h:outputLabel value="Bill No :" ></h:outputLabel>
-                                            <h:outputLabel value="#{requestController.batchBill.deptId}" ></h:outputLabel>
-                                            <h:outputLabel value="Bill Type Atomic :" ></h:outputLabel>
-                                            <h:outputLabel value="#{requestController.batchBill.billTypeAtomic}" ></h:outputLabel>
-                                            <h:outputLabel value="Net Total :" ></h:outputLabel>
-                                            <h:outputLabel value="#{requestController.batchBill.netTotal}" >
-                                                <f:convertNumber pattern="#,##0.00" />
-                                            </h:outputLabel>
+                                        <p:panelGrid columns="2" layout="tabular" styleClass="w-100"
+                                                     columnClasses="fw-semibold,text-end">
+                                            <h:outputLabel value="Bill No"/>
+                                            <h:outputText value="#{requestController.batchBill.deptId}"
+                                                          style="display:block; text-align:right;"/>
+
+                                            <h:outputLabel value="Bill Type"/>
+                                            <h:outputText value="#{requestController.batchBill.billTypeAtomic}"
+                                                          style="display:block; text-align:right;"/>
+
+                                            <h:outputLabel value="Net Total"/>
+                                            <h:outputText value="#{requestController.batchBill.netTotal}"
+                                                          style="display:block; text-align:right; font-weight:600;">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
                                         </p:panelGrid>
                                     </p:panel>
                                 </div>
                             </div>
 
-                            <div class="row mt-3">
-                                <!-- Bill Item Detail Panel -->
-                                <p:panel>
-                                    <f:facet name="header">
-                                        <h:outputText styleClass="fas fa-list-alt"></h:outputText>
-                                        <h:outputLabel value="Cancelling Bills Details" class="mx-2"></h:outputLabel>
-                                    </f:facet>
-                                    <p:dataTable rowIndexVar="rowIndex" value="#{requestController.bills}" var="bill">
-                                        <p:column>
-                                            <f:facet name="header">Bill No</f:facet>
-                                            <h:outputLabel value="#{bill.deptId}"/>
-                                        </p:column>
-                                        <p:column>
-                                            <f:facet name="header">Billed For</f:facet>
-                                            <h:outputLabel value="#{bill.toDepartment.name}"/>
-                                        </p:column>
-                                        <p:column>
-                                            <f:facet name="header">Net Total</f:facet>
-                                            <h:outputLabel value="#{bill.netTotal}">
-                                                <f:convertNumber pattern="#,##0.00" />
-                                            </h:outputLabel>
-                                        </p:column>
-                                    </p:dataTable>
-                                </p:panel>
+                            <!-- Bill Item Detail Panel -->
+                            <div class="row g-3 mt-1">
+                                <div class="col-12">
+                                    <p:panel>
+                                        <f:facet name="header">
+                                            <h:outputText styleClass="fas fa-list-alt me-2"/>
+                                            <h:outputText value="Cancelling Bills Details" styleClass="fw-semibold"/>
+                                        </f:facet>
+                                        <p:dataTable id="cancellingBillsTable"
+                                                     rowIndexVar="rowIndex"
+                                                     value="#{requestController.bills}"
+                                                     var="bill"
+                                                     emptyMessage="No bills available for cancellation."
+                                                     styleClass="w-100"
+                                                     stripedRows="true">
+                                            <p:column headerText="#"
+                                                      style="width: 4rem; text-align:center;">
+                                                <h:outputText value="#{rowIndex + 1}"/>
+                                            </p:column>
+                                            <p:column headerText="Bill No">
+                                                <h:outputText value="#{bill.deptId}"/>
+                                            </p:column>
+                                            <p:column headerText="Billed For">
+                                                <h:outputText value="#{bill.toDepartment.name}"/>
+                                            </p:column>
+                                            <p:column headerText="Net Total"
+                                                      style="text-align:right;">
+                                                <h:outputText value="#{bill.netTotal}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </p:column>
+                                        </p:dataTable>
+                                    </p:panel>
+                                </div>
                             </div>
 
                         </p:panel>
                     </h:panelGroup>
 
                     <!-- Print Preview Panel -->
-                    <h:panelGroup rendered="#{requestController.printPreview}" >
+                    <h:panelGroup rendered="#{requestController.printPreview}">
                         <p:panel>
                             <f:facet name="header">
-                                <div class="d-flex justify-content-between">
-                                    <p:outputLabel value="Bill Cancellation Request Note" class="mt-2"></p:outputLabel>
-                                    <div class=" d-flex gap-2">
-                                        <p:commandButton 
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <p:outputLabel value="Bill Cancellation Request Note"
+                                                   styleClass="fs-5 fw-semibold m-0"/>
+                                    <div class="d-flex gap-2">
+                                        <p:commandButton
                                             ajax="false"
-                                            value="Print" 
+                                            value="Print"
                                             icon="fa fa-print"
-                                            class="ui-button-info" >
-                                            <p:printer target="printingView" />
+                                            styleClass="ui-button-success"
+                                            title="Print this cancellation request note">
+                                            <p:printer target="printingView"/>
                                         </p:commandButton>
 
-                                        <p:commandButton 
+                                        <p:commandButton
                                             ajax="false"
-                                            value="Back to List" 
+                                            value="Back to List"
                                             icon="fa fa-long-arrow-left"
                                             action="/lab/inward_search_service?faces-redirect=true"
-                                            class="ui-button-warning" >
-                                        </p:commandButton>
+                                            title="Return to the inward bill search list"
+                                            styleClass="ui-button-info ui-button-outlined"/>
                                     </div>
-
                                 </div>
                             </f:facet>
 
                             <div class="d-flex justify-content-center">
                                 <h:panelGroup id="printingView">
-                                    
-                                    <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveEightInchPaper'}" >
-                                        <request:five_eight_bill_cancel_request request="#{requestController.currentRequest}" />                        
-                                    </h:panelGroup>
-                                    
-                                </h:panelGroup>
 
+                                    <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveEightInchPaper'}">
+                                        <request:five_eight_bill_cancel_request request="#{requestController.currentRequest}"/>
+                                    </h:panelGroup>
+
+                                </h:panelGroup>
                             </div>
                         </p:panel>
-
                     </h:panelGroup>
-                </h:form>                
+                </h:form>
             </ui:define>
         </ui:composition>
     </h:body>
