@@ -542,7 +542,7 @@
                                                         event="blur"
                                                         process="txtDenoQtyHandover" 
                                                         listener="#{financialTransactionController.bundle.calculateTotalHandoverByDenominationQuantities()}"
-                                                        update=":#{p:resolveFirstComponentWithId('txtCashHandover',view).clientId} txtDenoVal :#{p:resolveFirstComponentWithId('tblCashier',view).clientId} " ></p:ajax>
+                                                        update=":#{p:resolveFirstComponentWithId('txtCashHandover',view).clientId} txtDenoVal :#{p:resolveFirstComponentWithId('tblCashier',view).clientId} :#{p:resolveFirstComponentWithId('tblAll',view).clientId}" ></p:ajax>
                                                 </p:inputText>  
                                             </p:column>
                                             <p:column >

@@ -1047,7 +1047,13 @@ public class OpticianSaleController implements Serializable, ControllerWithPatie
             JsfUtil.addErrorMessage("Please select an Item Batch to Dispense ??");
             return addedQty;
         }
-        if (getStock().getItemBatch().getDateOfExpire().before(CommonFunctions.getCurrentDateTime())) {
+        if (getStock().getItemBatch() == null) {
+            errorMessage = "Item batch not found for selected stock";
+            JsfUtil.addErrorMessage("Item batch not found for selected stock");
+            return addedQty;
+        }
+        if (getStock().getItemBatch().getDateOfExpire() != null
+                && getStock().getItemBatch().getDateOfExpire().before(CommonFunctions.getCurrentDateTime())) {
             JsfUtil.addErrorMessage("Please not select Expired Items");
             return addedQty;
         }

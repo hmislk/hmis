@@ -38,6 +38,7 @@ import com.divudi.core.facade.PatientInvestigationFacade;
 import com.divudi.core.facade.PersonFacade;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.lab.PatientInvestigationStatus;
 import com.divudi.core.entity.cashTransaction.Drawer;
 import com.divudi.core.facade.PaymentFacade;
@@ -167,7 +168,7 @@ public class InwardSearch implements Serializable {
                 return "inward_cancel_bill_payment?faces-redirect=true";
         }
     }
-    
+
     public void editBillDetails() {
         Bill editedBill = bill;
         if (bill == null) {
@@ -186,23 +187,27 @@ public class InwardSearch implements Serializable {
         JsfUtil.addSuccessMessage("Saved");
         referredBy = null;
     }
-    
+
     @Inject
     RequestController requestController;
     @Inject
     RequestService requestService;
-    
+
     private Doctor referredBy;
 
     private Request currentRequest;
-    
+
     public String navigateToCancelInpatientBill() {
         if (bill == null) {
             JsfUtil.addErrorMessage("No bill is selected");
             return "";
         }
 
-        if (configOptionApplicationController.getBooleanValueByKey("Mandatory permission to cancel bills.", false)) {
+        DepartmentType toBillDepartmentType = bill.getToDepartment().getDepartmentType();
+
+        boolean allowType = configOptionApplicationController.getBooleanValueByKey("Inward Billing - Mandatory permission to cancel " + toBillDepartmentType.getLabel() + " type bills", false);
+
+        if (configOptionApplicationController.getBooleanValueByKey("Mandatory permission to cancel bills.", false) && allowType) {
             currentRequest = requestService.findRequest(bill);
 
             if (currentRequest == null) {
@@ -838,19 +843,17 @@ public class InwardSearch implements Serializable {
             JsfUtil.addSuccessMessage("Cancelled");
 
             getBillBean().updateBatchBill(getBill().getForwardReferenceBill());
-            
+
             if (configOptionApplicationController.getBooleanValueByKey("Mandatory permission to cancel bills.", false)) {
-            Request billRequest = requestService.findRequest(getBill());
-            if (billRequest != null) {
-                
-                requestController.getBills().add(getBill());
-                requestController.complteRequest(billRequest);
-            } else {
-                JsfUtil.addErrorMessage("Related approval request not found to complete.");
+                Request billRequest = requestService.findRequest(getBill());
+                if (billRequest != null) {
+
+                    requestController.getBills().add(getBill());
+                    requestController.complteRequest(billRequest);
+                }
             }
-        }
-            
-        printPreview = true;
+
+            printPreview = true;
 
         } else {
             JsfUtil.addErrorMessage("No Bill to cancel");
