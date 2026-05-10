@@ -115,6 +115,12 @@
                                           rendered="#{financialTransactionController.selectedPaymentMethod eq 'Slip'}">
                                     <h:outputText value="#{row.payment.bank.name}" />
                                 </p:column>
+                                <p:column headerText="Slip Date"
+                                          rendered="#{financialTransactionController.selectedPaymentMethod eq 'Slip'}">
+                                    <h:outputText value="#{row.payment.chequeDate}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                    </h:outputText>
+                                </p:column>
 
                                 <!-- eWallet-specific columns -->
                                 <p:column headerText="eWallet Provider"
@@ -134,6 +140,10 @@
                                 <p:column headerText="Policy No"
                                           rendered="#{financialTransactionController.selectedPaymentMethod eq 'Credit'}">
                                     <h:outputText value="#{row.payment.policyNo}" />
+                                </p:column>
+                                <p:column headerText="Ref No"
+                                          rendered="#{financialTransactionController.selectedPaymentMethod eq 'Credit'}">
+                                    <h:outputText value="#{row.payment.referenceNo}" />
                                 </p:column>
 
                                 <!-- Staff Welfare-specific columns -->
