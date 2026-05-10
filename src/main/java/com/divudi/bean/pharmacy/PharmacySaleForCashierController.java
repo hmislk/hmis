@@ -3292,10 +3292,14 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         }
 
         for (BillItem tbi : list) {
-            if (execureOnEditActions(tbi)) {
-                // If any issue in Stock Bill Item will not save & not include for total
-                // continue;
-            }
+            // Stock validation is handled upstream by lockAndValidateStocks() before this
+            // method is called. Calling execureOnEditActions() here was redundant and caused
+            // a mid-loop side effect: onEditCalculation() → calculateBillItemsAndBillTotalsOfPreBill()
+            // recalculated the bill total before the current item was added to preBill.getBillItems(),
+            // which could leave preBill.total set to the sum of only the previously-added items.
+            // The final calculateRatesForAllBillItemsInPreBill() below corrects the total in most
+            // cases, but if it failed (e.g. stale proxy on a specific item) the wrong total
+            // remained. Removed to fix intermittent wrong bill total (Closes #20408).
 
             tbi.setInwardChargeType(InwardChargeType.Medicine);
             tbi.setBill(getPreBill());
