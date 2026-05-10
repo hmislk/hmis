@@ -137,7 +137,7 @@
                                             <!-- Table Body -->
                                             <tbody>
                                                 <!-- Cash Row (merged with Net Float when float is present) -->
-                                                <ui:fragment rendered="#{financialTransactionController.bundle.hasCashTransaction}">
+                                                <ui:fragment rendered="#{financialTransactionController.bundle.hasCashTransaction or financialTransactionController.bundle.cashFloatNetTotal != 0}">
                                                     <tr>
                                                         <td>
                                                             <h:outputText value="Cash including Float" rendered="#{financialTransactionController.bundle.cashFloatNetTotal != 0}" />

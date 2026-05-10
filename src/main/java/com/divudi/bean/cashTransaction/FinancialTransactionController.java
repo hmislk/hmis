@@ -4944,7 +4944,7 @@ public class FinancialTransactionController implements Serializable {
         List<ReportTemplateRowBundle> childList = new ArrayList<>(groupedBundles.values());
 
         double netCashFloat = cashFloatInAcc - cashFloatOutAcc;
-        if (netCashFloat != 0) {
+        if (Math.abs(netCashFloat) > 0.001) {
             ReportTemplateRowBundle netFloatBundle = new ReportTemplateRowBundle();
             netFloatBundle.setPaymentHandover(PaymentHandover.FLOAT_IN);
             netFloatBundle.setCashValue(netCashFloat);
