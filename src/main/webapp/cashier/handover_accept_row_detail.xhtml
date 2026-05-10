@@ -146,6 +146,13 @@
                                     <h:outputText value="#{row.payment.bank.name}"
                                                   rendered="#{row.payment.paymentMethod.name() eq 'Slip'}" />
                                 </p:column>
+                                <p:column headerText="Slip Date"
+                                          rendered="#{financialTransactionController.selectedBundle.hasSlipTransaction}">
+                                    <h:outputText value="#{row.payment.chequeDate}"
+                                                  rendered="#{row.payment.paymentMethod.name() eq 'Slip'}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                    </h:outputText>
+                                </p:column>
 
                                 <!-- eWallet-specific columns -->
                                 <p:column headerText="eWallet Provider"
@@ -168,6 +175,11 @@
                                 <p:column headerText="Policy No"
                                           rendered="#{financialTransactionController.selectedBundle.hasCreditTransaction}">
                                     <h:outputText value="#{row.payment.policyNo}"
+                                                  rendered="#{row.payment.paymentMethod.name() eq 'Credit'}" />
+                                </p:column>
+                                <p:column headerText="Ref No"
+                                          rendered="#{financialTransactionController.selectedBundle.hasCreditTransaction}">
+                                    <h:outputText value="#{row.payment.referenceNo}"
                                                   rendered="#{row.payment.paymentMethod.name() eq 'Credit'}" />
                                 </p:column>
 
