@@ -13,6 +13,8 @@ import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillFinanceDetails;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.BillItemFinanceDetails;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.pharmacy.Stock;
 import com.divudi.core.entity.pharmacy.StockHistory;
 import javax.ejb.Stateless;
@@ -639,6 +641,164 @@ public class TransferIssueNativeSqlService {
         return printDto;
     }
 
+    /**
+     * Loads a TransferIssuePrintDto from an existing settled issue bill.
+     * Used by BillSearch to display the print view without triggering the
+     * full entity-graph load (loadBillDetails) path.
+     */
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    public TransferIssuePrintDto loadPrintDtoByBillId(long billId) {
+        Bill bill = em.find(Bill.class, billId);
+        if (bill == null) {
+            return null;
+        }
+
+        TransferIssuePrintDto dto = new TransferIssuePrintDto();
+        dto.setIssueNo(safeStr(bill.getDeptId()));
+        dto.setIssuedAt(bill.getCreatedAt());
+        dto.setComments(safeStr(bill.getComments()));
+        dto.setNetTotal(Math.abs(bill.getNetTotal()));
+
+        Department fromDept = bill.getFromDepartment() != null ? bill.getFromDepartment() : bill.getDepartment();
+        if (fromDept != null) {
+            dto.setFromDepartmentName(safeStr(fromDept.getName()));
+            dto.setDepartmentPrintingName(fromDept.getPrintingName() != null
+                    ? fromDept.getPrintingName() : safeStr(fromDept.getName()));
+            dto.setDepartmentAddress(safeStr(fromDept.getAddress()));
+            dto.setDepartmentPhone1(safeStr(fromDept.getTelephone1()));
+            dto.setDepartmentPhone2(safeStr(fromDept.getTelephone2()));
+            dto.setDepartmentFax(safeStr(fromDept.getFax()));
+            dto.setDepartmentEmail(safeStr(fromDept.getEmail()));
+            Institution inst = fromDept.getInstitution();
+            if (inst != null) {
+                dto.setInstitutionName(safeStr(inst.getName()));
+                dto.setInstitutionAddress(safeStr(inst.getAddress()));
+                dto.setInstitutionPhone(safeStr(inst.getPhone()));
+                dto.setInstitutionFax(safeStr(inst.getFax()));
+                dto.setInstitutionEmail(safeStr(inst.getEmail()));
+            }
+        }
+
+        Department toDept = bill.getToDepartment();
+        if (toDept != null) {
+            dto.setToDepartmentName(safeStr(toDept.getName()));
+        }
+
+        if (bill.getCreater() != null) {
+            dto.setIssuedByName(bill.getCreater().getWebUserPerson() != null
+                    ? safeStr(bill.getCreater().getWebUserPerson().getName()) : "");
+            dto.setIssuedByStaffCode(bill.getCreater().getStaff() != null
+                    ? safeStr(bill.getCreater().getStaff().getCode()) : "");
+        }
+
+        if (bill.getToStaff() != null && bill.getToStaff().getPerson() != null) {
+            dto.setToStaffName(safeStr(bill.getToStaff().getPerson().getNameWithTitle()));
+            dto.setToStaffCode(safeStr(bill.getToStaff().getCode()));
+        }
+
+        Bill requestBill = bill.getBackwardReferenceBill();
+        if (requestBill != null) {
+            dto.setRequestNo(safeStr(requestBill.getDeptId()));
+            dto.setRequestedAt(requestBill.getCreatedAt());
+            if (toDept == null) {
+                Department reqFromDept = requestBill.getFromDepartment() != null
+                        ? requestBill.getFromDepartment() : requestBill.getDepartment();
+                if (reqFromDept != null) {
+                    dto.setToDepartmentName(safeStr(reqFromDept.getName()));
+                }
+            }
+        }
+
+        String sql = "SELECT COALESCE(bi.searialno, 0), i.name, COALESCE(i.code, ''),"
+                + " ib.batchNo, ib.dateOfExpire,"
+                + " ABS(pbi.qtypacks) AS qty, ABS(pbi.qty) AS qtyInUnits,"
+                + " ABS(bi.rate) AS rate, ABS(bi.netValue) AS netValue,"
+                + " COALESCE(ib.purcahseRate, 0), COALESCE(ib.retailsaleRate, 0),"
+                + " COALESCE(ib.costRate, 0)"
+                + " FROM " + billItemTable() + " bi"
+                + " JOIN " + pharmBillItemTable() + " pbi ON pbi.billItem_ID = bi.ID"
+                + " JOIN " + itemBatchTable() + " ib ON ib.ID = pbi.itemBatch_ID"
+                + " JOIN " + itemTable() + " i ON i.ID = bi.item_ID"
+                + " WHERE bi.bill_ID = ? AND (bi.retired IS NULL OR bi.retired = 0)"
+                + " ORDER BY COALESCE(bi.searialno, 0)";
+
+        @SuppressWarnings("unchecked")
+        List<Object[]> rows = em.createNativeQuery(sql)
+                .setParameter(1, billId)
+                .getResultList();
+
+        List<TransferIssueItemPrintDto> items = new ArrayList<>();
+        int serial = 1;
+        for (Object[] row : rows) {
+            TransferIssueItemPrintDto item = new TransferIssueItemPrintDto();
+            item.setSerialNo(serial++);
+            item.setItemName(row[1] != null ? row[1].toString() : "");
+            item.setItemCode(row[2] != null ? row[2].toString() : "");
+            item.setBatchNo(row[3] != null ? row[3].toString() : "");
+            item.setDateOfExpire(toUtilDate(row[4]));
+            double qty    = toDouble(row[5]);
+            double units  = toDouble(row[6]);
+            double rate   = toDouble(row[7]);
+            double net    = toDouble(row[8]);
+            double prRate = toDouble(row[9]);
+            double rrRate = toDouble(row[10]);
+            double crRate = toDouble(row[11]);
+            item.setQty(qty);
+            item.setQtyInUnits(units);
+            item.setRate(rate);
+            item.setNetRate(rate);
+            item.setNetValue(net);
+            item.setPurchaseRate(prRate);
+            item.setRetailRate(rrRate);
+            item.setCostRate(crRate);
+            BigDecimal unitsBd = BigDecimal.valueOf(units);
+            item.setValueAtPurchaseRate(BigDecimal.valueOf(prRate).multiply(unitsBd));
+            item.setValueAtRetailRate(BigDecimal.valueOf(rrRate).multiply(unitsBd));
+            item.setLineGrossTotal(BigDecimal.valueOf(rate).multiply(BigDecimal.valueOf(qty)));
+            items.add(item);
+        }
+        dto.setItems(items);
+        return dto;
+    }
+
+    /**
+     * Loads a Bill entity for the transfer request view page, eagerly initialising
+     * all lazy associations within the JTA transaction so that the JSF render phase
+     * (which runs without a JPA transaction) can access them on the detached entity.
+     */
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    public Bill loadRequestBillForView(long billId) {
+        Bill bill = em.find(Bill.class, billId);
+        if (bill == null) return null;
+        if (bill.getFromInstitution() != null) bill.getFromInstitution().getName();
+        Department fromDept = bill.getFromDepartment();
+        if (fromDept != null) {
+            fromDept.getName();
+            if (fromDept.getInstitution() != null) fromDept.getInstitution().getName();
+        }
+        if (bill.getToInstitution() != null) bill.getToInstitution().getName();
+        Department toDept = bill.getToDepartment();
+        if (toDept != null) {
+            toDept.getName();
+            if (toDept.getInstitution() != null) toDept.getInstitution().getName();
+        }
+        if (bill.getInstitution() != null) bill.getInstitution().getName();
+        if (bill.getCreater() != null && bill.getCreater().getWebUserPerson() != null) {
+            bill.getCreater().getWebUserPerson().getName();
+        }
+        if (bill.getApproveUser() != null && bill.getApproveUser().getWebUserPerson() != null) {
+            bill.getApproveUser().getWebUserPerson().getName();
+        }
+        if (bill.getForwardReferenceBills() != null) bill.getForwardReferenceBills().size();
+        if (bill.getBillItems() != null) {
+            for (BillItem bi : bill.getBillItems()) {
+                if (bi.getItem() != null) bi.getItem().getName();
+                bi.getPharmaceuticalBillItem();
+            }
+        }
+        return bill;
+    }
+
     // -----------------------------------------------------------------------
     // fullyIssued update
     // -----------------------------------------------------------------------
@@ -1078,6 +1238,10 @@ public class TransferIssueNativeSqlService {
         }
         // grossRate per pack = unitRate * unitsPerPack
         return BigDecimal.valueOf(unitRate * (packSize > 0 ? packSize : 1.0));
+    }
+
+    private static String safeStr(String s) {
+        return s != null ? s : "";
     }
 
     // -----------------------------------------------------------------------

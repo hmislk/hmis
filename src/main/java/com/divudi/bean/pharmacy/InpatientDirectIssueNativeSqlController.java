@@ -517,6 +517,23 @@ public class InpatientDirectIssueNativeSqlController implements Serializable {
     }
 
     // -----------------------------------------------------------------------
+    // View by bill ID (from BillSearch dispatcher)
+    // -----------------------------------------------------------------------
+
+    @SuppressWarnings("unchecked")
+    public String viewByBillId(Long billId) {
+        if (billId == null) return null;
+        resetAll();
+        Object[] result = nativeSqlService.loadViewDataByBillId(billId);
+        if (result == null) return null;
+        patientEncounter = (PatientEncounter) result[0];
+        printBill = (PrintBillData) result[1];
+        printBillItems = (List<BillItemData>) result[2];
+        billPreview = true;
+        return "/inward/pharmacy_bill_issue_bht_native?faces-redirect=true";
+    }
+
+    // -----------------------------------------------------------------------
     // Clear / reset
     // -----------------------------------------------------------------------
 

@@ -4232,14 +4232,8 @@ public class SearchController implements Serializable {
         params.put("btp", BillTypeAtomic.PHARMACY_RECEIVE);
         params.put("issuedBillIds", issuedBillIds);
         String jpql = "SELECT NEW com.divudi.core.data.dto.PharmacyTransferReceivedListDTO("
-                + "b.id, b.referenceBill.id, b.deptId, b.createdAt, b.cancelled, wup.name, b.netTotal, "
-                + "cbwup.name, cb.createdAt) "
+                + "b.id, b.referenceBill.id, b.deptId, b.cancelled) "
                 + "FROM Bill b "
-                + "LEFT JOIN b.creater wu "
-                + "LEFT JOIN wu.webUserPerson wup "
-                + "LEFT JOIN b.cancelledBill cb "
-                + "LEFT JOIN cb.creater cbwu "
-                + "LEFT JOIN cbwu.webUserPerson cbwup "
                 + "WHERE b.retired = false "
                 + "AND b.billTypeAtomic = :btp "
                 + "AND b.referenceBill.id IN :issuedBillIds";

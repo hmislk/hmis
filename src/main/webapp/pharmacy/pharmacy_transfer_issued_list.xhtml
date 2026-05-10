@@ -76,7 +76,11 @@
                             rowsPerPageTemplate="5,10,15"
                             >
                             <p:column headerText="Issue No" width="6em">
-                                <h:outputLabel value="#{p.deptId}"/>
+                                <p:commandLink
+                                    ajax="false"
+                                    value="#{p.deptId}"
+                                    styleClass="#{p.cancelled ? 'text-danger text-decoration-line-through' : ''}"
+                                    action="#{transferIssueNativeSqlController.viewByBillId(p.billId)}"/>
                             </p:column>
                             <p:column headerText="From Department" width="150px">
                                 <h:outputLabel value="#{p.fromDepartmentName}"/>
@@ -134,51 +138,17 @@
 
                             </p:column>
 
-                            <p:column headerText="Received" style="text-align: center">
-                                <p:dataTable var="b" value="#{p.receivedBills}">
-                                    <p:column  >
-                                        <h:outputLabel  value="#{b.deptId}"/>
-                                    </p:column>
-                                    <p:column >
-                                        <h:outputLabel value="#{b.createdAt}" >
-                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                        </h:outputLabel>
-                                        <br/>
-                                        <h:panelGroup rendered="#{b.cancelled}" >
-                                            <h:outputLabel style="color: red;" value="Cancelled At " />
-                                            <h:outputLabel style="color: red;" value="#{b.cancelledAt}" >
-                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                            </h:outputLabel>
-                                        </h:panelGroup>
-                                    </p:column>
-                                    <p:column >
-                                        <h:outputLabel value="#{b.createrName}" >
-                                        </h:outputLabel>
-                                        <br/>
-                                        <h:panelGroup rendered="#{b.cancelled}" >
-                                            <h:outputLabel style="color: red;" value="Cancelled By " />
-                                            <h:outputLabel style="color: red;" value="#{b.cancelledByName}" />
-                                        </h:panelGroup>
-                                    </p:column>
-                                    <p:column rendered="#{webUserController.hasPrivilege('PharmacyTransferViewRates')}">
-                                        <h:outputLabel value="#{b.netTotal}">
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputLabel>
-                                    </p:column>
-                                    <p:column>
-                                        <p:commandButton
-                                            class="m-1"
-                                            icon="fa fa-eye"
-                                            title="View Recieve Issue"
-                                            ajax="false"
-                                            action="#{transferReceiveController.navigateToReprintRecieveIssue()}"
-                                            disabled="#{b.issuedBillId == null}"
-                                            >
-                                            <f:setPropertyActionListener target="#{pharmacyBillSearch.billId}" value="#{b.billId}"/>
-                                        </p:commandButton>
-                                    </p:column>
-
-                                </p:dataTable>
+                            <p:column headerText="Received">
+                                <ui:repeat value="#{p.receivedBills}" var="b" varStatus="loop">
+                                    <p:commandLink
+                                        ajax="false"
+                                        value="#{b.deptId}"
+                                        styleClass="#{b.cancelled ? 'text-danger text-decoration-line-through' : ''}"
+                                        action="#{billSearch.navigateToViewBillByAtomicBillTypeBySelectedId}">
+                                        <f:setPropertyActionListener value="#{b.billId}" target="#{billSearch.selectedBillId}"/>
+                                    </p:commandLink>
+                                    <h:outputText value=", " rendered="#{!loop.last}"/>
+                                </ui:repeat>
                             </p:column>
 
                         </p:dataTable>

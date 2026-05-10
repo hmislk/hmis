@@ -166,6 +166,22 @@ public class TransferReceiveNativeSqlController implements Serializable {
         return "/pharmacy/pharmacy_transfer_receive_native_approval?faces-redirect=true";
     }
 
+    public String viewByBillId(Long billId) {
+        if (billId == null) return null;
+        makeNull();
+        printDto = transferReceiveNativeSqlService.loadPrintDtoByBillId(billId);
+        if (printDto == null) return null;
+        String headerTemplate = configOptionApplicationController
+                .getLongTextValueByKey("Transfer Receive Note Header");
+        printDto.setFooterCss(configOptionApplicationController
+                .getLongTextValueByKey("Pharmacy Transfer Receive Bill Footer CSS"));
+        printDto.setFooterText(configOptionApplicationController
+                .getLongTextValueByKey("Pharmacy Transfer Receive Bill Footer Text"));
+        printDto.setTemplateHeader(fillHeaderDataFromPrintDto(headerTemplate));
+        printPreview = true;
+        return "/pharmacy/pharmacy_transfer_receive_native?faces-redirect=true";
+    }
+
     // -----------------------------------------------------------------------
     // Core settlement
     // -----------------------------------------------------------------------
