@@ -3352,6 +3352,14 @@ public class SearchController implements Serializable {
             sql = sql.replace(" ORDER BY", " AND b.paymentMethod = :pay ORDER BY");
             m.put("pay", getPaymentMethod());
         }
+        if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().isEmpty()) {
+            sql = sql.replace(" ORDER BY", " AND b.netTotal = :netTotal ORDER BY");
+            m.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+        }
+        if (getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().isEmpty()) {
+            sql = sql.replace(" ORDER BY", " AND b.total LIKE :total ORDER BY");
+            m.put("total", "%" + getSearchKeyword().getTotal().trim().toUpperCase() + "%");
+        }
 
         try {
             if (maxNum) {

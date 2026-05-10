@@ -949,6 +949,7 @@ public class RetailSaleNativeSqlController implements Serializable, ControllerWi
 
     public void setPatient(Patient patient) {
         this.patient = patient;
+        allergyListOfPatient = null;
     }
 
     public Bill getPreBill() {
