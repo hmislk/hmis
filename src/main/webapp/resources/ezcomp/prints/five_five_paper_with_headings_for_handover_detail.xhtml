@@ -1,0 +1,536 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="bundle" type="com.divudi.core.data.ReportTemplateRowBundle" ></cc:attribute>
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+
+        <style >
+            .billDocument {
+                width: 100%;
+                margin: auto;
+                padding: 20px;
+                box-shadow: 0 0 10px rgba(0,0,0,0.1);
+                background-color: white;
+                font-family: 'Arial', sans-serif;
+                color: #333;
+            }
+
+            .billHeader {
+                border-bottom: 2px solid #ccc;
+                padding-bottom: 10px;
+                margin-bottom: 20px;
+            }
+
+            .institutionName {
+                font-size: 18px;
+                font-weight: bold;
+                text-align: center;
+                margin-bottom: 5px;
+            }
+
+            .institutionContact div {
+                text-align: center;
+                font-size: 14px;
+            }
+
+            .headingBillFiveFive {
+                text-align: center;
+                font-weight: bold;
+                font-size: 16px;
+                color: #444;
+                margin-top: 10px;
+            }
+
+            .billBody {
+                min-height: 200px;
+            }
+
+            .billFooter {
+                margin-top: 20px;
+                border-top: 2px solid #ccc;
+                padding-top: 10px;
+                text-align: center;
+                font-size: 12px;
+            }
+
+            .handoverDetails {
+                margin-top: 20px;
+                font-size: 12pt;
+            }
+
+            .handover-grid {
+                width: 100%;
+                border-collapse: collapse;
+            }
+
+            .handover-grid .labelColumn {
+                width: 35%;
+                vertical-align: top;
+                font-weight: bold;
+                padding: 5px;
+            }
+
+            .handover-grid .valueColumn {
+                width: 65%;
+                padding: 5px;
+            }
+
+            .handover-header {
+                font-size: 16pt;
+                font-weight: bold;
+                text-align: left;
+                padding-bottom: 10px;
+                margin-bottom: 10px;
+                border-bottom: 1px solid #ccc;
+            }
+
+            .inner-grid {
+                width: 100%;
+                margin-top: 5px;
+            }
+
+            .inner-grid .labelColumn,
+            .inner-grid .valueColumn {
+                width: 50%;
+                padding: 3px;
+            }
+
+            .ui-badge {
+                display: inline-block;
+                padding: 4px 8px;
+                font-size: 10pt;
+                color: #fff;
+                background-color: #007bff;
+                border-radius: 10px;
+            }
+
+            .ui-badge-danger {
+                background-color: #dc3545;
+            }
+
+            .ui-badge-primary {
+                background-color: #007bff;
+            }
+
+            .handover-icon {
+                margin-right: 5px;
+            }
+
+            .handover-label {
+                font-weight: bold;
+            }
+
+            @media print {
+                .pi {
+                    color: black !important;
+                }
+                .ui-badge {
+                    color: black !important;
+                    background-color: lightgray !important;
+                }
+            }
+        </style>
+
+        <div class="billDocument w-100">
+            <!-- Bill Header -->
+            <div class="billHeader col-12" >
+                <div class="institutionName">
+                    <h:outputLabel value="#{cc.attrs.bundle.fromUser.institution.name}" />
+                </div>
+                <div class="institutionContact">
+                    <div>
+                        <h:outputLabel value="#{cc.attrs.bundle.fromUser.institution.address}" />
+                    </div>
+                    <div>
+                        <h:outputLabel value="#{cc.attrs.bundle.fromUser.department.name}" />
+                    </div>
+                </div>
+                <div class="headingBillFiveFive" style="text-align: center; font-weight: bold;">
+                    <h:outputLabel value="HAND OVER RECEIPT - DETAILED" />
+                </div>
+            </div>
+
+            <!-- Bill Body -->
+            <div class="billBody">
+
+                <div class="row" >
+
+                    <div class="col-6" >
+                        <h:panelGrid columns="2" styleClass="handover-grid" columnClasses="labelColumn,valueColumn">
+
+                            <h:outputText value="From User:" styleClass="handover-label" style="font-weight: normal"/>
+                            <h:outputText value="#{cc.attrs.bundle.user.webUserPerson.nameWithTitle}" styleClass="handover-value" />
+
+                            <h:outputText value="To User:" styleClass="handover-label" style="font-weight: normal"/>
+                            <h:outputText value="#{cc.attrs.bundle.toUser.webUserPerson.nameWithTitle}" styleClass="handover-value" />
+
+                            <h:outputText value="Shift Start Bill ID:" styleClass="handover-label" style="font-weight: normal"/>
+                            <h:outputText value="#{cc.attrs.bundle.startBill.deptId}" styleClass="handover-value" />
+
+                            <h:outputText value="Shift Started At:" styleClass="handover-label" style="font-weight: normal" />
+                            <h:outputText value="#{cc.attrs.bundle.startBill.createdAt}">
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                            </h:outputText>
+
+                            <h:outputText value="Handover Bill ID:" styleClass="handover-label" style="font-weight: normal"/>
+                            <h:outputText value="#{cc.attrs.bundle.handoverBill.deptId}" styleClass="handover-value" />
+
+                            <h:outputText value="Handover At:" styleClass="handover-label" style="font-weight: normal" />
+                            <h:outputText value="#{cc.attrs.bundle.handoverBill.createdAt}">
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                            </h:outputText>
+
+                            <h:outputText  rendered="#{cc.attrs.bundle.endBill ne null}" value="Shift End Bill ID:" styleClass="handover-label" />
+                            <h:outputText  rendered="#{cc.attrs.bundle.endBill ne null}" value="#{cc.attrs.bundle.endBill.deptId}" styleClass="handover-value" />
+
+                            <h:outputText  rendered="#{cc.attrs.bundle.endBill ne null}" value="Shift Ended At:" styleClass="handover-label" />
+                            <h:outputText  rendered="#{cc.attrs.bundle.endBill ne null}" value="#{cc.attrs.bundle.endBill.createdAt}">
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                            </h:outputText>
+
+                        </h:panelGrid>
+                    </div>
+                    <div class="col-6" >
+                        <h:panelGroup >
+
+                            <h:panelGroup>
+                                <table class="table table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>Payment Method</th>
+                                            <th class="text-end">Collected</th>
+                                            <th class="text-end">Handing Over</th>
+                                            <th class="text-end">Difference</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <h:panelGroup rendered="#{cc.attrs.bundle.hasCashTransaction}">
+                                            <tr>
+                                                <td>Cash Including Floats</td>
+                                                <td class="text-end"><h:outputText value="#{cc.attrs.bundle.cashValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                                <td class="text-end"><h:outputText value="#{cc.attrs.bundle.cashHandoverValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                                <td class="text-end"><h:outputText value="#{cc.attrs.bundle.cashValue - cc.attrs.bundle.cashHandoverValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                            </tr>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{cc.attrs.bundle.hasCardTransaction}">
+                                            <tr>
+                                                <td>Card</td>
+                                                <td class="text-end"><h:outputText value="#{cc.attrs.bundle.cardValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                                <td class="text-end"><h:outputText value="#{cc.attrs.bundle.cardHandoverValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                                <td class="text-end"><h:outputText value="#{cc.attrs.bundle.cardValue - cc.attrs.bundle.cardHandoverValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                            </tr>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{cc.attrs.bundle.hasChequeTransaction}">
+                                            <tr>
+                                                <td>Cheque</td>
+                                                <td class="text-end"><h:outputText value="#{cc.attrs.bundle.chequeValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                                <td class="text-end"><h:outputText value="#{cc.attrs.bundle.chequeHandoverValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                                <td class="text-end"><h:outputText value="#{cc.attrs.bundle.chequeValue - cc.attrs.bundle.chequeHandoverValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                            </tr>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{cc.attrs.bundle.hasVoucherTransaction}">
+                                            <tr>
+                                                <td>Voucher</td>
+                                                <td class="text-end"><h:outputText value="#{cc.attrs.bundle.voucherValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                                <td class="text-end"><h:outputText value="#{cc.attrs.bundle.voucherHandoverValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                                <td class="text-end"><h:outputText value="#{cc.attrs.bundle.voucherValue - cc.attrs.bundle.voucherHandoverValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                            </tr>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{cc.attrs.bundle.hasIouTransaction}">
+                                            <tr>
+                                                <td>IOU</td>
+                                                <td class="text-end"><h:outputText value="#{cc.attrs.bundle.iouValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                                <td class="text-end"><h:outputText value="#{cc.attrs.bundle.iouHandoverValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                                <td class="text-end"><h:outputText value="#{cc.attrs.bundle.iouValue - cc.attrs.bundle.iouHandoverValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                            </tr>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{cc.attrs.bundle.hasEWalletTransaction}">
+                                            <tr>
+                                                <td>eWallet</td>
+                                                <td class="text-end"><h:outputText value="#{cc.attrs.bundle.ewalletValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                                <td class="text-end"><h:outputText value="#{cc.attrs.bundle.ewalletHandoverValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                                <td class="text-end"><h:outputText value="#{cc.attrs.bundle.ewalletValue - cc.attrs.bundle.ewalletHandoverValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                            </tr>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{cc.attrs.bundle.hasStaffWelfareTransaction}">
+                                            <tr>
+                                                <td>Staff Welfare</td>
+                                                <td class="text-end"><h:outputText value="#{cc.attrs.bundle.staffWelfareValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                                <td class="text-end"><h:outputText value="#{cc.attrs.bundle.staffWelfareHandoverValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                                <td class="text-end"><h:outputText value="#{cc.attrs.bundle.staffWelfareValue - cc.attrs.bundle.staffWelfareHandoverValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                            </tr>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{cc.attrs.bundle.hasPatientPointsTransaction}">
+                                            <tr>
+                                                <td>Patient Points</td>
+                                                <td class="text-end"><h:outputText value="#{cc.attrs.bundle.patientPointsValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                                <td class="text-end"><h:outputText value="#{cc.attrs.bundle.patientPointsHandoverValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                                <td class="text-end"><h:outputText value="#{cc.attrs.bundle.patientPointsValue - cc.attrs.bundle.patientPointsHandoverValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                            </tr>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{cc.attrs.bundle.hasOnlineSettlementTransaction}">
+                                            <tr>
+                                                <td>Online Settlement</td>
+                                                <td class="text-end"><h:outputText value="#{cc.attrs.bundle.onlineSettlementValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                                <td class="text-end"><h:outputText value="#{cc.attrs.bundle.onlineSettlementHandoverValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                                <td class="text-end"><h:outputText value="#{cc.attrs.bundle.onlineSettlementValue - cc.attrs.bundle.onlineSettlementHandoverValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                            </tr>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{cc.attrs.bundle.hasOnCallTransaction}">
+                                            <tr>
+                                                <td>On Call</td>
+                                                <td class="text-end"><h:outputText value="#{cc.attrs.bundle.onCallValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                                <td class="text-end"><h:outputText value="#{cc.attrs.bundle.onCallHandoverValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                                <td class="text-end"><h:outputText value="#{cc.attrs.bundle.onCallValue - cc.attrs.bundle.onCallHandoverValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                            </tr>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{cc.attrs.bundle.hasSlipTransaction}">
+                                            <tr>
+                                                <td>SLIP</td>
+                                                <td class="text-end"><h:outputText value="#{cc.attrs.bundle.slipValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                                <td class="text-end"><h:outputText value="#{cc.attrs.bundle.slipHandoverValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                                <td class="text-end"><h:outputText value="#{cc.attrs.bundle.slipValue - cc.attrs.bundle.slipHandoverValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                            </tr>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{cc.attrs.bundle.hasAgentTransaction}">
+                                            <tr>
+                                                <td>Agent Value</td>
+                                                <td class="text-end"><h:outputText value="#{cc.attrs.bundle.agentValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                                <td class="text-end"><h:outputText value="#{cc.attrs.bundle.agentHandoverValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                                <td class="text-end"><h:outputText value="#{cc.attrs.bundle.agentValue - cc.attrs.bundle.agentHandoverValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                            </tr>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{cc.attrs.bundle.hasCreditTransaction}">
+                                            <tr>
+                                                <td>Credit Value</td>
+                                                <td class="text-end"><h:outputText value="#{cc.attrs.bundle.creditValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                                <td class="text-end"><h:outputText value="#{cc.attrs.bundle.creditHandoverValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                                <td class="text-end"><h:outputText value="#{cc.attrs.bundle.creditValue - cc.attrs.bundle.creditHandoverValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                            </tr>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{cc.attrs.bundle.hasStaffTransaction}">
+                                            <tr>
+                                                <td>Staff Value</td>
+                                                <td class="text-end"><h:outputText value="#{cc.attrs.bundle.staffValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                                <td class="text-end"><h:outputText value="#{cc.attrs.bundle.staffHandoverValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                                <td class="text-end"><h:outputText value="#{cc.attrs.bundle.staffValue - cc.attrs.bundle.staffHandoverValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                            </tr>
+                                        </h:panelGroup>
+                                        <tr style="font-weight: bold; background-color: #f0f0f0;">
+                                            <td>Total</td>
+                                            <td class="text-end">
+                                                <h:outputText value="#{cc.attrs.bundle.cashValue + cc.attrs.bundle.cardValue + cc.attrs.bundle.chequeValue + cc.attrs.bundle.slipValue + cc.attrs.bundle.ewalletValue + cc.attrs.bundle.staffValue + cc.attrs.bundle.creditValue + cc.attrs.bundle.staffWelfareValue + cc.attrs.bundle.voucherValue + cc.attrs.bundle.iouValue + cc.attrs.bundle.agentValue + cc.attrs.bundle.patientPointsValue + cc.attrs.bundle.onlineSettlementValue + cc.attrs.bundle.onCallValue}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </td>
+                                            <td class="text-end">
+                                                <h:outputText value="#{cc.attrs.bundle.cashHandoverValue + cc.attrs.bundle.cardHandoverValue + cc.attrs.bundle.chequeHandoverValue + cc.attrs.bundle.slipHandoverValue + cc.attrs.bundle.ewalletHandoverValue + cc.attrs.bundle.staffHandoverValue + cc.attrs.bundle.creditHandoverValue + cc.attrs.bundle.staffWelfareHandoverValue + cc.attrs.bundle.voucherHandoverValue + cc.attrs.bundle.iouHandoverValue + cc.attrs.bundle.agentHandoverValue + cc.attrs.bundle.patientPointsHandoverValue + cc.attrs.bundle.onlineSettlementHandoverValue + cc.attrs.bundle.onCallHandoverValue}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </td>
+                                            <td class="text-end">
+                                                <h:outputText value="#{(cc.attrs.bundle.cashValue + cc.attrs.bundle.cardValue + cc.attrs.bundle.chequeValue + cc.attrs.bundle.slipValue + cc.attrs.bundle.ewalletValue + cc.attrs.bundle.staffValue + cc.attrs.bundle.creditValue + cc.attrs.bundle.staffWelfareValue + cc.attrs.bundle.voucherValue + cc.attrs.bundle.iouValue + cc.attrs.bundle.agentValue + cc.attrs.bundle.patientPointsValue + cc.attrs.bundle.onlineSettlementValue + cc.attrs.bundle.onCallValue) - (cc.attrs.bundle.cashHandoverValue + cc.attrs.bundle.cardHandoverValue + cc.attrs.bundle.chequeHandoverValue + cc.attrs.bundle.slipHandoverValue + cc.attrs.bundle.ewalletHandoverValue + cc.attrs.bundle.staffHandoverValue + cc.attrs.bundle.creditHandoverValue + cc.attrs.bundle.staffWelfareHandoverValue + cc.attrs.bundle.voucherHandoverValue + cc.attrs.bundle.iouHandoverValue + cc.attrs.bundle.agentHandoverValue + cc.attrs.bundle.patientPointsHandoverValue + cc.attrs.bundle.onlineSettlementHandoverValue + cc.attrs.bundle.onCallHandoverValue)}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </h:panelGroup>
+
+                        </h:panelGroup>
+                    </div>
+
+                </div>
+
+                <hr/>
+
+                <div class="handoverDetails my-3">
+                </div>
+
+                <hr/>
+
+                <!-- Department / User summary — float aggregate rows excluded -->
+                <p:dataTable
+                    style="padding: 0px!important; margin: 0px!important; font-size: #{pharmacySummaryReportController.fontSizeForPrinting}!important;"
+                    styleClass="ui-datatable-borderless ui-datatable-sm compact-datatable"
+                    emptyMessage="No Financial Transactions to Handover"
+                    value="#{cc.attrs.bundle.selectedBundles}"
+                    var="summary">
+
+                    <p:column headerText="Institution / Type" style="font-weight: normal">
+                        <h:outputText value="#{summary.department.institution.name}"
+                            rendered="#{!summary.floatRow and (summary.paymentHandover == null or summary.paymentHandover.name() != 'FLOATS')}" />
+                        <h:outputText value="Shift Shortage"
+                            rendered="#{summary.paymentHandover ne null and summary.paymentHandover.name() eq 'FLOATS'}"
+                            style="color:#dc3545; font-style:italic;" />
+                        <h:outputText value="Float Sent (Cash)"
+                            rendered="#{summary.floatRow and summary.paymentHandover ne null and summary.paymentHandover.name() eq 'FLOAT_OUT'}"
+                            style="color: red; font-weight: bold;" />
+                        <h:outputText value="Float Received (Cash)"
+                            rendered="#{summary.floatRow and summary.paymentHandover ne null and summary.paymentHandover.name() eq 'FLOAT_IN'}"
+                            style="color: green; font-weight: bold;" />
+                    </p:column>
+
+                    <p:column headerText="Site" rendered="#{configOptionApplicationController.getBooleanValueByKey('Sites are Managed',true)}">
+                        <h:outputText value="#{summary.department.site.name}" rendered="#{!summary.floatRow}" />
+                    </p:column>
+
+                    <p:column headerText="Department">
+                        <h:outputText value="#{summary.department.name}" rendered="#{!summary.floatRow}" />
+                    </p:column>
+
+                    <p:column headerText="User">
+                        <h:outputText value="#{summary.user.webUserPerson.nameWithTitle}" rendered="#{!summary.floatRow}" />
+                    </p:column>
+
+                    <p:column headerText="Date">
+                        <h:outputText value="#{summary.date}" rendered="#{!summary.floatRow}">
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                        </h:outputText>
+                    </p:column>
+
+                    <p:column class="text-end" headerText="Cash" rendered="#{cc.attrs.bundle.hasCashTransaction}">
+                        <h:outputText value="#{summary.cashHandoverValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                        <f:facet name="footer"><h:outputText value="#{cc.attrs.bundle.cashHandoverValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></f:facet>
+                    </p:column>
+                    <p:column class="text-end" headerText="Card" rendered="#{cc.attrs.bundle.hasCardTransaction}">
+                        <h:outputText value="#{summary.cardHandoverValue}" rendered="#{!summary.floatRow}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                        <f:facet name="footer"><h:outputText value="#{cc.attrs.bundle.cardHandoverValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></f:facet>
+                    </p:column>
+                    <p:column class="text-end" headerText="Credit" rendered="#{cc.attrs.bundle.hasCreditTransaction}">
+                        <h:outputText value="#{summary.creditHandoverValue}" rendered="#{!summary.floatRow}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                        <f:facet name="footer"><h:outputText value="#{cc.attrs.bundle.creditHandoverValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></f:facet>
+                    </p:column>
+                    <p:column class="text-end" headerText="Staff" rendered="#{cc.attrs.bundle.hasStaffTransaction}">
+                        <h:outputText value="#{summary.staffHandoverValue}" rendered="#{!summary.floatRow}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                        <f:facet name="footer"><h:outputText value="#{cc.attrs.bundle.staffHandoverValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></f:facet>
+                    </p:column>
+                    <p:column class="text-end" headerText="Staff Welfare" rendered="#{cc.attrs.bundle.hasStaffWelfareTransaction}">
+                        <h:outputText value="#{summary.staffWelfareHandoverValue}" rendered="#{!summary.floatRow}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                        <f:facet name="footer"><h:outputText value="#{cc.attrs.bundle.staffWelfareHandoverValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></f:facet>
+                    </p:column>
+                    <p:column class="text-end" headerText="Voucher" rendered="#{cc.attrs.bundle.hasVoucherTransaction}">
+                        <h:outputText value="#{summary.voucherValue}" rendered="#{!summary.floatRow}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                        <f:facet name="footer"><h:outputText value="#{cc.attrs.bundle.voucherValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></f:facet>
+                    </p:column>
+                    <p:column class="text-end" headerText="IOU" rendered="#{cc.attrs.bundle.hasIouTransaction}">
+                        <h:outputText value="#{summary.iouValue}" rendered="#{!summary.floatRow}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                        <f:facet name="footer"><h:outputText value="#{cc.attrs.bundle.iouValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></f:facet>
+                    </p:column>
+                    <p:column class="text-end" headerText="Agent" rendered="#{cc.attrs.bundle.hasAgentTransaction}">
+                        <h:outputText value="#{summary.agentValue}" rendered="#{!summary.floatRow}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                        <f:facet name="footer"><h:outputText value="#{cc.attrs.bundle.agentValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></f:facet>
+                    </p:column>
+                    <p:column class="text-end" headerText="Cheque" rendered="#{cc.attrs.bundle.hasChequeTransaction}">
+                        <h:outputText value="#{summary.chequeValue}" rendered="#{!summary.floatRow}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                        <f:facet name="footer"><h:outputText value="#{cc.attrs.bundle.chequeValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></f:facet>
+                    </p:column>
+                    <p:column class="text-end" headerText="Slip" rendered="#{cc.attrs.bundle.hasSlipTransaction}">
+                        <h:outputText value="#{summary.slipValue}" rendered="#{!summary.floatRow}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                        <f:facet name="footer"><h:outputText value="#{cc.attrs.bundle.slipValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></f:facet>
+                    </p:column>
+                    <p:column class="text-end" headerText="eWallet" rendered="#{cc.attrs.bundle.hasEWalletTransaction}">
+                        <h:outputText value="#{summary.ewalletValue}" rendered="#{!summary.floatRow}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                        <f:facet name="footer"><h:outputText value="#{cc.attrs.bundle.ewalletValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></f:facet>
+                    </p:column>
+                    <p:column class="text-end" headerText="Pt Points" rendered="#{cc.attrs.bundle.hasPatientPointsTransaction}">
+                        <h:outputText value="#{summary.patientPointsValue}" rendered="#{!summary.floatRow}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                        <f:facet name="footer"><h:outputText value="#{cc.attrs.bundle.patientPointsValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></f:facet>
+                    </p:column>
+                    <p:column class="text-end" headerText="Online" rendered="#{cc.attrs.bundle.hasOnlineSettlementTransaction}">
+                        <h:outputText value="#{summary.onlineSettlementValue}" rendered="#{!summary.floatRow}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                        <f:facet name="footer"><h:outputText value="#{cc.attrs.bundle.onlineSettlementValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></f:facet>
+                    </p:column>
+                    <p:column class="text-end" headerText="On Call" rendered="#{cc.attrs.bundle.hasOnCallTransaction}">
+                        <h:outputText value="#{summary.onCallValue}" rendered="#{!summary.floatRow}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                        <f:facet name="footer"><h:outputText value="#{cc.attrs.bundle.onCallValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></f:facet>
+                    </p:column>
+                    <p:column class="text-end" headerText="Total">
+                        <h:outputText
+                            value="#{summary.cashHandoverValue + summary.cardHandoverValue + summary.creditHandoverValue + summary.staffWelfareHandoverValue + summary.staffHandoverValue + summary.voucherHandoverValue + summary.iouHandoverValue + summary.agentHandoverValue + summary.chequeHandoverValue + summary.slipHandoverValue + summary.ewalletHandoverValue + summary.patientPointsHandoverValue + summary.onlineSettlementHandoverValue + summary.onCallHandoverValue}">
+                            <f:convertNumber pattern="#,##0.00"/>
+                        </h:outputText>
+                        <f:facet name="footer">
+                            <h:outputText value="#{cc.attrs.bundle.cashHandoverValue + cc.attrs.bundle.cardHandoverValue + cc.attrs.bundle.creditHandoverValue + cc.attrs.bundle.staffWelfareHandoverValue + cc.attrs.bundle.staffHandoverValue + cc.attrs.bundle.voucherHandoverValue + cc.attrs.bundle.iouHandoverValue + cc.attrs.bundle.agentHandoverValue + cc.attrs.bundle.chequeHandoverValue + cc.attrs.bundle.slipHandoverValue + cc.attrs.bundle.ewalletHandoverValue + cc.attrs.bundle.patientPointsHandoverValue + cc.attrs.bundle.onlineSettlementHandoverValue + cc.attrs.bundle.onCallHandoverValue}">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputText>
+                        </f:facet>
+                    </p:column>
+
+                </p:dataTable>
+
+                <!-- Float transactions — individual rows from reportTemplateRows -->
+                <h:panelGroup rendered="#{not empty cc.attrs.bundle.reportTemplateRows}">
+                    <hr/>
+                    <div style="font-weight: bold; margin: 8px 0 4px 0;">Float Transactions</div>
+                    <table class="table table-bordered table-sm">
+                        <thead>
+                            <tr>
+                                <th>Date / Time</th>
+                                <th>Direction</th>
+                                <th>From User</th>
+                                <th>To User</th>
+                                <th class="text-end">Amount</th>
+                                <th>Reference / Comments</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <ui:repeat value="#{cc.attrs.bundle.reportTemplateRows}" var="floatRow">
+                                <tr>
+                                    <td>
+                                        <h:outputText value="#{floatRow.payment.createdAt}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                        </h:outputText>
+                                    </td>
+                                    <td>
+                                        <h:outputText
+                                            value="Float Sent"
+                                            rendered="#{floatRow.payment.bill.billTypeAtomic ne null and floatRow.payment.bill.billTypeAtomic.name() eq 'FUND_TRANSFER_BILL'}"
+                                            style="color: red; font-weight: bold;" />
+                                        <h:outputText
+                                            value="Float Received"
+                                            rendered="#{floatRow.payment.bill.billTypeAtomic ne null and floatRow.payment.bill.billTypeAtomic.name() eq 'FUND_TRANSFER_RECEIVED_BILL'}"
+                                            style="color: green; font-weight: bold;" />
+                                    </td>
+                                    <td>
+                                        <h:outputText value="#{floatRow.payment.creater.webUserPerson.nameWithTitle}" />
+                                    </td>
+                                    <td>
+                                        <h:outputText value="#{floatRow.payment.floatRecipient.webUserPerson.nameWithTitle}" />
+                                    </td>
+                                    <td class="text-end">
+                                        <h:outputText value="#{floatRow.payment.paidValue}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </td>
+                                    <td>
+                                        <h:outputText value="#{floatRow.payment.comments}" />
+                                    </td>
+                                </tr>
+                            </ui:repeat>
+                        </tbody>
+                    </table>
+                </h:panelGroup>
+
+            </div>
+
+            <!-- Bill Footer -->
+            <div class="billFooter">
+                <!-- Contents for the footer will be added here later -->
+            </div>
+        </div>
+
+    </cc:implementation>
+</html>

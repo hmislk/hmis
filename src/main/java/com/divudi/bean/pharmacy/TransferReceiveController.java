@@ -195,6 +195,14 @@ public class TransferReceiveController implements Serializable {
         this.issuedBill = issuedBill;
     }
 
+    public void setIssuedBillId(Long billId) {
+        if (billId == null) {
+            this.issuedBill = null;
+            return;
+        }
+        this.issuedBill = billFacade.find(billId);
+    }
+
 //   public String navigateBackToRecieveList(){
 //        return "/pharmacy/pharmacy_transfer_issued_list?faces-redirect=true";
 //    }

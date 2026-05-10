@@ -2073,7 +2073,7 @@ public class FinancialTransactionController implements Serializable {
             }
         }
 
-        return "/cashier/handover_preview?faces-redirect=true";
+        return "/cashier/handover_view?faces-redirect=true";
     }
 
     public String navigateToHandoverAcceptBillReprintFromReport() {
@@ -2846,6 +2846,25 @@ public class FinancialTransactionController implements Serializable {
             return;
         }
         currentPayment.setPaymentMethod(PaymentMethod.Cash);
+
+        if (configOptionApplicationController.getBooleanValueByKey("Enable Drawer Manegment", true)) {
+            Drawer drawer = sessionController.getLoggedUserDrawer() != null
+                    ? drawerFacade.find(sessionController.getLoggedUserDrawer().getId())
+                    : null;
+            double drawerBalance = (drawer != null && drawer.getCashInHandValue() != null)
+                    ? drawer.getCashInHandValue() : 0.0;
+            double cumulativeCash = Math.abs(currentPayment.getPaidValue());
+            for (Payment p : getCurrentBillPayments()) {
+                if (p.getPaymentMethod() == PaymentMethod.Cash) {
+                    cumulativeCash += Math.abs(p.getPaidValue());
+                }
+            }
+            if (cumulativeCash > drawerBalance) {
+                JsfUtil.addErrorMessage("Transfer amount cannot exceed available drawer balance (" + drawerBalance + ").");
+                return;
+            }
+        }
+
         getCurrentBillPayments().add(currentPayment);
         calculateFundTransferBillTotal();
         currentPayment = null;
@@ -3184,6 +3203,25 @@ public class FinancialTransactionController implements Serializable {
             floatTransferStarted = false;
             JsfUtil.addErrorMessage("At least one float must be added before settlement");
             return "";
+        }
+
+        if (configOptionApplicationController.getBooleanValueByKey("Enable Drawer Manegment", true)) {
+            Drawer drawer = sessionController.getLoggedUserDrawer() != null
+                    ? drawerFacade.find(sessionController.getLoggedUserDrawer().getId())
+                    : null;
+            double drawerBalance = (drawer != null && drawer.getCashInHandValue() != null)
+                    ? drawer.getCashInHandValue() : 0.0;
+            double totalCash = 0.0;
+            for (Payment p : getCurrentBillPayments()) {
+                if (p.getPaymentMethod() == PaymentMethod.Cash) {
+                    totalCash += Math.abs(p.getPaidValue());
+                }
+            }
+            if (totalCash > drawerBalance) {
+                floatTransferStarted = false;
+                JsfUtil.addErrorMessage("Transfer amount cannot exceed available drawer balance (" + drawerBalance + ").");
+                return "";
+            }
         }
 
         // Check for pending transactions before allowing fund transfer creation
@@ -4308,7 +4346,7 @@ public class FinancialTransactionController implements Serializable {
 
     public String navigateToViewIndividualShiftForHandover(ReportTemplateRowBundle childBundle) {
         selectedBundle = childBundle;
-        return null;
+        return "/cashier/handover_accept_row_detail?faces-redirect=true";
     }
 
     public String navigateToAddExcessForShiftForHandover() {
@@ -4905,24 +4943,16 @@ public class FinancialTransactionController implements Serializable {
 
         List<ReportTemplateRowBundle> childList = new ArrayList<>(groupedBundles.values());
 
-        if (cashFloatOutAcc > 0) {
-            ReportTemplateRowBundle floatOutBundle = new ReportTemplateRowBundle();
-            floatOutBundle.setPaymentHandover(PaymentHandover.FLOAT_OUT);
-            floatOutBundle.setCashValue(-cashFloatOutAcc);
-            floatOutBundle.setCashHandoverValue(-cashFloatOutAcc);
-            floatOutBundle.setHasCashTransaction(true);
-            floatOutBundle.setSelected(true);
-            childList.add(floatOutBundle);
-        }
-
-        if (cashFloatInAcc > 0) {
-            ReportTemplateRowBundle floatInBundle = new ReportTemplateRowBundle();
-            floatInBundle.setPaymentHandover(PaymentHandover.FLOAT_IN);
-            floatInBundle.setCashValue(cashFloatInAcc);
-            floatInBundle.setCashHandoverValue(cashFloatInAcc);
-            floatInBundle.setHasCashTransaction(true);
-            floatInBundle.setSelected(true);
-            childList.add(floatInBundle);
+        double netCashFloat = cashFloatInAcc - cashFloatOutAcc;
+        if (Math.abs(netCashFloat) > 0.001) {
+            ReportTemplateRowBundle netFloatBundle = new ReportTemplateRowBundle();
+            netFloatBundle.setPaymentHandover(PaymentHandover.FLOAT_IN);
+            netFloatBundle.setCashValue(netCashFloat);
+            netFloatBundle.setCashHandoverValue(netCashFloat);
+            netFloatBundle.setTotal(netCashFloat);
+            netFloatBundle.setHasCashTransaction(true);
+            netFloatBundle.setSelected(true);
+            childList.add(netFloatBundle);
         }
 
         ReportTemplateRowBundle bundleToHoldDeptUserDayBundle = new ReportTemplateRowBundle();
@@ -5765,6 +5795,19 @@ public class FinancialTransactionController implements Serializable {
                 return null;
             }
         }
+
+        boolean requireCollectionHandoverMatch = configOptionApplicationController.getBooleanValueByKey("Require Collection and Handover Values to Match", false);
+        if (requireCollectionHandoverMatch) {
+            Double configuredMaxDiff = configOptionApplicationController.getDoubleValueByKey("Maximum Allowed Difference for Handover Total", 0.01);
+            double maximumAllowedDifferenceForHandoverTotal = (configuredMaxDiff == null) ? 0.01 : Math.max(0.0, configuredMaxDiff);
+            double totalCollected = bundle.getTotal() != null ? bundle.getTotal() : 0.0;
+            double totalHandedOver = bundle.getTotalOut() != null ? bundle.getTotalOut() : 0.0;
+            if (Math.abs(totalCollected - totalHandedOver) > maximumAllowedDifferenceForHandoverTotal) {
+                JsfUtil.addErrorMessage("Total Collected Value (" + totalCollected + ") and Total Handed Over Value (" + totalHandedOver + ") do not match. Cannot handover.");
+                return null;
+            }
+        }
+
         boolean shouldSelectAllCollectionsForHandover = configOptionApplicationController.getBooleanValueByKey("Should Select All Collections for Handover", false);
         boolean allBundlesSelected = true;
         boolean anyBundleSelected = false;
@@ -5968,9 +6011,11 @@ public class FinancialTransactionController implements Serializable {
             }
         }
 
+        bundle.setCashHandoverValue(bundle.getDenominatorValue());
+
         createHandoverProofMissingBillIfNeeded(currentBill);
 
-        return "/cashier/handover_creation_bill_print?faces-redirect=true";
+        return "/cashier/handover_creation_print_summary?faces-redirect=true";
     }
 
     private void createHandoverProofMissingBillIfNeeded(Bill handoverCreateBill) {
@@ -7331,6 +7376,26 @@ public class FinancialTransactionController implements Serializable {
 
     public String navigateToHandoverReprint() {
         return "/cashier/handover_reprint?faces-redirect=true";
+    }
+
+    public String navigateToHandoverCreationPrintSummary() {
+        return "/cashier/handover_creation_print_summary?faces-redirect=true";
+    }
+
+    public String navigateToHandoverCreationPrintDetails() {
+        return "/cashier/handover_creation_print_details?faces-redirect=true";
+    }
+
+    public String navigateToHandoverView() {
+        return "/cashier/handover_view?faces-redirect=true";
+    }
+
+    public String navigateToHandoverViewPrintSummary() {
+        return "/cashier/handover_view_print_summary?faces-redirect=true";
+    }
+
+    public String navigateToHandoverViewPrintDetails() {
+        return "/cashier/handover_view_print_details?faces-redirect=true";
     }
 
     public String acceptHandoverBillAndWriteToCashbook() {
@@ -9703,6 +9768,18 @@ public class FinancialTransactionController implements Serializable {
         metadata.addConfigOption(new ConfigOptionInfo(
                 "Should Select All Collections for Handover",
                 "When enabled, all collected payments are automatically selected for handover. Default: false",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Require Collection and Handover Values to Match",
+                "When enabled, the handover is blocked if the Total Collected Value and Total Handed Over Value differ by more than the configured tolerance. Default: false",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Maximum Allowed Difference for Handover Total",
+                "Maximum allowed difference between total collected and total handed over (in currency units). Only used when 'Require Collection and Handover Values to Match' is enabled. Default: 0.01",
                 OptionScope.APPLICATION
         ));
 

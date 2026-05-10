@@ -153,115 +153,115 @@
                             </p:column>
 
                             <p:column headerText="Cash" style="width:8em; text-align:right;">
-                                <h:outputText rendered="#{drawerentry.paymentMethod eq 'Cash'}" value="#{drawerentry.payment.paidValue}">
+                                <h:outputText rendered="#{drawerentry.paymentMethod eq 'Cash'}" value="#{drawerentry.transactionValue}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </p:column>
 
                             <p:column headerText="Card" style="width:8em; text-align:right;">
-                                <h:outputText rendered="#{drawerentry.paymentMethod eq 'Card'}" value="#{drawerentry.payment.paidValue}">
+                                <h:outputText rendered="#{drawerentry.paymentMethod eq 'Card'}" value="#{drawerentry.transactionValue}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </p:column>
 
                             <p:column headerText="Cheque" style="width:8em; text-align:right;">
-                                <h:outputText rendered="#{drawerentry.paymentMethod eq 'Cheque'}" value="#{drawerentry.payment.paidValue}">
+                                <h:outputText rendered="#{drawerentry.paymentMethod eq 'Cheque'}" value="#{drawerentry.transactionValue}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </p:column>
 
                             <p:column headerText="e-Wallet" style="width:8em; text-align:right;">
-                                <h:outputText rendered="#{drawerentry.paymentMethod eq 'ewallet'}" value="#{drawerentry.payment.paidValue}">
+                                <h:outputText rendered="#{drawerentry.paymentMethod eq 'ewallet'}" value="#{drawerentry.transactionValue}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </p:column>
 
                             <p:column headerText="Slip" style="width:8em; text-align:right;">
-                                <h:outputText rendered="#{drawerentry.paymentMethod eq 'Slip'}" value="#{drawerentry.payment.paidValue}">
+                                <h:outputText rendered="#{drawerentry.paymentMethod eq 'Slip'}" value="#{drawerentry.transactionValue}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </p:column>
 
                             <p:column headerText="Agent" style="width:8em; text-align:right;">
-                                <h:outputText rendered="#{drawerentry.paymentMethod eq 'Agent'}" value="#{drawerentry.payment.paidValue}">
+                                <h:outputText rendered="#{drawerentry.paymentMethod eq 'Agent'}" value="#{drawerentry.transactionValue}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </p:column>
 
                             <p:column headerText="IOU" style="width:8em; text-align:right;">
-                                <h:outputText rendered="#{drawerentry.paymentMethod eq 'IOU'}" value="#{drawerentry.payment.paidValue}">
+                                <h:outputText rendered="#{drawerentry.paymentMethod eq 'IOU'}" value="#{drawerentry.transactionValue}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </p:column>
 
                             <p:column headerText="Staff Credit" style="width:8em; text-align:right;">
-                                <h:outputText rendered="#{drawerentry.paymentMethod eq 'Staff'}" value="#{drawerentry.payment.paidValue}">
+                                <h:outputText rendered="#{drawerentry.paymentMethod eq 'Staff'}" value="#{drawerentry.transactionValue}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </p:column>
 
                             <p:column headerText="Credit" style="width:8em; text-align:right;">
-                                <h:outputText rendered="#{drawerentry.paymentMethod eq 'Credit'}" value="#{drawerentry.payment.paidValue}">
+                                <h:outputText rendered="#{drawerentry.paymentMethod eq 'Credit'}" value="#{drawerentry.transactionValue}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </p:column>
 
                             <p:column headerText="Staff Welfare" style="width:8em; text-align:right;">
-                                <h:outputText rendered="#{drawerentry.paymentMethod eq 'Staff_Welfare'}" value="#{drawerentry.payment.paidValue}">
+                                <h:outputText rendered="#{drawerentry.paymentMethod eq 'Staff_Welfare'}" value="#{drawerentry.transactionValue}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </p:column>
 
                             <p:column headerText="Patient Deposit" style="width:9em; text-align:right;">
-                                <h:outputText rendered="#{drawerentry.paymentMethod eq 'PatientDeposit'}" value="#{drawerentry.payment.paidValue}">
+                                <h:outputText rendered="#{drawerentry.paymentMethod eq 'PatientDeposit'}" value="#{drawerentry.transactionValue}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </p:column>
 
                             <p:column headerText="Patient Points" style="width:9em; text-align:right;">
-                                <h:outputText rendered="#{drawerentry.paymentMethod eq 'PatientPoints'}" value="#{drawerentry.payment.paidValue}">
+                                <h:outputText rendered="#{drawerentry.paymentMethod eq 'PatientPoints'}" value="#{drawerentry.transactionValue}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </p:column>
 
                             <p:column headerText="Online Settlement" style="width:10em; text-align:right;">
-                                <h:outputText rendered="#{drawerentry.paymentMethod eq 'OnlineSettlement'}" value="#{drawerentry.payment.paidValue}">
+                                <h:outputText rendered="#{drawerentry.paymentMethod eq 'OnlineSettlement'}" value="#{drawerentry.transactionValue}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </p:column>
 
                             <p:column headerText="Multiple" style="width:8em; text-align:right;">
-                                <h:outputText rendered="#{drawerentry.paymentMethod eq 'MultiplePaymentMethods'}" value="#{drawerentry.payment.paidValue}">
+                                <h:outputText rendered="#{drawerentry.paymentMethod eq 'MultiplePaymentMethods'}" value="#{drawerentry.transactionValue}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </p:column>
 
                             <p:column headerText="Voucher" style="width:8em; text-align:right;">
-                                <h:outputText rendered="#{drawerentry.paymentMethod eq 'Voucher'}" value="#{drawerentry.payment.paidValue}">
+                                <h:outputText rendered="#{drawerentry.paymentMethod eq 'Voucher'}" value="#{drawerentry.transactionValue}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </p:column>
 
                             <p:column headerText="You Owe Me" style="width:8em; text-align:right;">
-                                <h:outputText rendered="#{drawerentry.paymentMethod eq 'YouOweMe'}" value="#{drawerentry.payment.paidValue}">
+                                <h:outputText rendered="#{drawerentry.paymentMethod eq 'YouOweMe'}" value="#{drawerentry.transactionValue}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </p:column>
 
                             <p:column headerText="Online Booking" style="width:9em; text-align:right;">
-                                <h:outputText rendered="#{drawerentry.paymentMethod eq 'OnlineBookingAgent'}" value="#{drawerentry.payment.paidValue}">
+                                <h:outputText rendered="#{drawerentry.paymentMethod eq 'OnlineBookingAgent'}" value="#{drawerentry.transactionValue}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </p:column>
 
                             <p:column headerText="On Call" style="width:8em; text-align:right;">
-                                <h:outputText rendered="#{drawerentry.paymentMethod eq 'OnCall'}" value="#{drawerentry.payment.paidValue}">
+                                <h:outputText rendered="#{drawerentry.paymentMethod eq 'OnCall'}" value="#{drawerentry.transactionValue}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </p:column>
 
                             <p:column headerText="None" style="width:8em; text-align:right;">
-                                <h:outputText rendered="#{drawerentry.paymentMethod eq 'None'}" value="#{drawerentry.payment.paidValue}">
+                                <h:outputText rendered="#{drawerentry.paymentMethod eq 'None'}" value="#{drawerentry.transactionValue}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </p:column>
