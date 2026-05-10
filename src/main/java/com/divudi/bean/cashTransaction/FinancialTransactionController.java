@@ -2675,6 +2675,21 @@ public class FinancialTransactionController implements Serializable {
         }
         freshBill.setCancelled(true);
         billController.save(freshBill);
+
+        Map<String, Object> denoParams = new HashMap<>();
+        denoParams.put("ret", false);
+        denoParams.put("refBill", freshBill);
+        denoParams.put("btype", BillTypeAtomic.FUND_TRANSFER_REQUEST_DENOMINATION_BILL);
+        List<Bill> denoBills = billFacade.findByJpql(
+                "select b from Bill b where b.retired=:ret and b.referenceBill=:refBill and b.billTypeAtomic=:btype",
+                denoParams, TemporalType.TIMESTAMP);
+        if (denoBills != null) {
+            for (Bill denoBill : denoBills) {
+                denoBill.setCancelled(true);
+                billController.save(denoBill);
+            }
+        }
+
         fillMyFundTransferRequests();
         return "/cashier/fund_transfer_my_requests?faces-redirect=true";
     }
@@ -3303,6 +3318,21 @@ public class FinancialTransactionController implements Serializable {
             if (totalCash > drawerBalance) {
                 floatTransferStarted = false;
                 JsfUtil.addErrorMessage("Transfer amount cannot exceed available drawer balance (" + drawerBalance + ").");
+                return "";
+            }
+        }
+
+        if (hasFundTransferDenominationEntries()) {
+            calculateFundTransferDenominationTotal();
+            double cashTotal = 0.0;
+            for (Payment p : getCurrentBillPayments()) {
+                if (p.getPaymentMethod() == PaymentMethod.Cash) {
+                    cashTotal += Math.abs(p.getPaidValue());
+                }
+            }
+            if (Math.abs(fundTransferDenominationTotal - cashTotal) > 0.001) {
+                floatTransferStarted = false;
+                JsfUtil.addErrorMessage("Denomination total (" + fundTransferDenominationTotal + ") does not match the cash payment total (" + cashTotal + "). Please correct the denominations.");
                 return "";
             }
         }
@@ -6821,6 +6851,20 @@ public class FinancialTransactionController implements Serializable {
         fundTransferBillToCancel.setCancelledBill(fundTransferCancellationBill);
         billController.save(fundTransferBillToCancel);
 
+        Map<String, Object> cancelDenoParams = new HashMap<>();
+        cancelDenoParams.put("ret", false);
+        cancelDenoParams.put("refBill", fundTransferBillToCancel);
+        cancelDenoParams.put("btype", BillTypeAtomic.FUND_TRANSFER_DENOMINATION_BILL);
+        List<Bill> cancelDenoBills = billFacade.findByJpql(
+                "select b from Bill b where b.retired=:ret and b.referenceBill=:refBill and b.billTypeAtomic=:btype",
+                cancelDenoParams, TemporalType.TIMESTAMP);
+        if (cancelDenoBills != null) {
+            for (Bill denoBill : cancelDenoBills) {
+                denoBill.setCancelled(true);
+                billController.save(denoBill);
+            }
+        }
+
         currentBill = fundTransferCancellationBill;
         currentBillPayments = cancellationPayments;
 
@@ -7011,6 +7055,20 @@ public class FinancialTransactionController implements Serializable {
         fundTransferBillToDecline.setCancelled(true);
         fundTransferBillToDecline.setCancelledBill(declineBill);
         billController.save(fundTransferBillToDecline);
+
+        Map<String, Object> declineDenoParams = new HashMap<>();
+        declineDenoParams.put("ret", false);
+        declineDenoParams.put("refBill", fundTransferBillToDecline);
+        declineDenoParams.put("btype", BillTypeAtomic.FUND_TRANSFER_DENOMINATION_BILL);
+        List<Bill> declineDenoBills = billFacade.findByJpql(
+                "select b from Bill b where b.retired=:ret and b.referenceBill=:refBill and b.billTypeAtomic=:btype",
+                declineDenoParams, TemporalType.TIMESTAMP);
+        if (declineDenoBills != null) {
+            for (Bill denoBill : declineDenoBills) {
+                denoBill.setCancelled(true);
+                billController.save(denoBill);
+            }
+        }
 
         JsfUtil.addSuccessMessage("Float transfer declined successfully");
         return "/cashier/fund_transfer_bills_for_me_to_receive?faces-redirect=true";

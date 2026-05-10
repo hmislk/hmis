@@ -82,11 +82,12 @@
                                     </f:facet>
 
                                     <p:dataTable
+                                        id="tblDenoRequest"
                                         value="#{financialTransactionController.fundTransferDenominationTransactions}"
                                         var="deno"
                                         emptyMessage="No denominations configured">
                                         <p:column headerText="Denomination">
-                                            <p:outputLabel value="#{deno.denomination.displayName}"/>
+                                            <h:outputText value="#{deno.denomination.displayName}"/>
                                         </p:column>
                                         <p:column headerText="Quantity">
                                             <p:inputText
@@ -103,12 +104,12 @@
                                             </p:inputText>
                                         </p:column>
                                         <p:column headerText="Value" styleClass="text-end">
-                                            <p:outputLabel
+                                            <h:outputText
                                                 id="txtDenoVal"
                                                 class="w-100 text-end"
                                                 value="#{deno.denominationValue eq null ? 0.00 : deno.denominationValue}">
                                                 <f:convertNumber pattern="#,##0.00"/>
-                                            </p:outputLabel>
+                                            </h:outputText>
                                         </p:column>
                                     </p:dataTable>
 
@@ -128,7 +129,7 @@
                                             icon="fa fa-arrow-left"
                                             styleClass="ui-button-info"
                                             title="Copy denomination total to Requested Amount"
-                                            process="@this"
+                                            process="@this tblDenoRequest"
                                             update="txtAmount txtDenoTotal">
                                             <f:setPropertyActionListener
                                                 target="#{financialTransactionController.currentBill.netTotal}"

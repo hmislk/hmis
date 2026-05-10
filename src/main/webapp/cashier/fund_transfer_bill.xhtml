@@ -134,6 +134,7 @@
                                     </div>
 
                                     <p:dataTable
+                                        id="tblDenoTransfer"
                                         value="#{financialTransactionController.fundTransferDenominationTransactions}"
                                         var="deno"
                                         emptyMessage="No denominations configured"
@@ -182,7 +183,7 @@
                                                 icon="fa fa-arrow-up"
                                                 styleClass="ui-button-info w-100"
                                                 title="Copy denomination total to Cash Amount"
-                                                process="@this"
+                                                process="@this tblDenoTransfer"
                                                 update="txtValue txtDenoTotalTransfer">
                                                 <f:setPropertyActionListener
                                                     target="#{financialTransactionController.currentPayment.paidValue}"
