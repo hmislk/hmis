@@ -65,9 +65,9 @@ public class RetailSaleNativeSqlService {
     // -----------------------------------------------------------------------
 
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
-    public void settle(Bill bill, List<BillItemData> items,
-                       PaymentMethod paymentMethod, PaymentMethodData paymentMethodData,
-                       PaymentScheme paymentScheme) {
+    public Payment settle(Bill bill, List<BillItemData> items,
+                          PaymentMethod paymentMethod, PaymentMethodData paymentMethodData,
+                          PaymentScheme paymentScheme) {
         if (items == null || items.isEmpty()) {
             throw new IllegalArgumentException("No items to settle");
         }
@@ -179,19 +179,21 @@ public class RetailSaleNativeSqlService {
                 .executeUpdate();
 
         // Step 6: Insert Payment record
-        insertPayment(bill, billId, billTotals[1], paymentMethod, paymentMethodData, paymentScheme);
+        Payment payment = insertPayment(bill, billId, billTotals[1], paymentMethod, paymentMethodData, paymentScheme);
 
         LOGGER.log(Level.INFO, "[RetailNativeSettle] DONE items={0} ms={1}",
                 new Object[]{items.size(), System.currentTimeMillis() - t0});
+
+        return payment;
     }
 
     // -----------------------------------------------------------------------
     // Payment
     // -----------------------------------------------------------------------
 
-    private void insertPayment(Bill bill, long billId, double netTotal,
-                                PaymentMethod paymentMethod, PaymentMethodData pmd,
-                                PaymentScheme paymentScheme) {
+    private Payment insertPayment(Bill bill, long billId, double netTotal,
+                                   PaymentMethod paymentMethod, PaymentMethodData pmd,
+                                   PaymentScheme paymentScheme) {
         Payment p = new Payment();
         p.setBill(em.getReference(Bill.class, billId));
         p.setInstitution(bill.getInstitution());
@@ -263,6 +265,7 @@ public class RetailSaleNativeSqlService {
 
         em.persist(p);
         em.flush();
+        return p;
     }
 
     // -----------------------------------------------------------------------
