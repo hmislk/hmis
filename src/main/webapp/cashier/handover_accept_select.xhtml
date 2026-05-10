@@ -90,6 +90,76 @@
                                     <h:outputText value="#{row.payment.creditCardRefNo}" />
                                 </p:column>
 
+                                <!-- Cheque-specific columns -->
+                                <p:column headerText="Cheque No"
+                                          rendered="#{financialTransactionController.selectedPaymentMethod eq 'Cheque'}">
+                                    <h:outputText value="#{row.payment.chequeRefNo}" />
+                                </p:column>
+                                <p:column headerText="Cheque Date"
+                                          rendered="#{financialTransactionController.selectedPaymentMethod eq 'Cheque'}">
+                                    <h:outputText value="#{row.payment.chequeDate}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="Bank"
+                                          rendered="#{financialTransactionController.selectedPaymentMethod eq 'Cheque'}">
+                                    <h:outputText value="#{row.payment.bank.name}" />
+                                </p:column>
+
+                                <!-- Slip-specific columns -->
+                                <p:column headerText="Slip No"
+                                          rendered="#{financialTransactionController.selectedPaymentMethod eq 'Slip'}">
+                                    <h:outputText value="#{row.payment.referenceNo}" />
+                                </p:column>
+                                <p:column headerText="Bank / Institution"
+                                          rendered="#{financialTransactionController.selectedPaymentMethod eq 'Slip'}">
+                                    <h:outputText value="#{row.payment.bank.name}" />
+                                </p:column>
+                                <p:column headerText="Slip Date"
+                                          rendered="#{financialTransactionController.selectedPaymentMethod eq 'Slip'}">
+                                    <h:outputText value="#{row.payment.chequeDate}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                    </h:outputText>
+                                </p:column>
+
+                                <!-- eWallet-specific columns -->
+                                <p:column headerText="eWallet Provider"
+                                          rendered="#{financialTransactionController.selectedPaymentMethod eq 'ewallet'}">
+                                    <h:outputText value="#{row.payment.bank.name}" />
+                                </p:column>
+                                <p:column headerText="Transaction Ref"
+                                          rendered="#{financialTransactionController.selectedPaymentMethod eq 'ewallet'}">
+                                    <h:outputText value="#{row.payment.referenceNo}" />
+                                </p:column>
+
+                                <!-- Credit-specific columns -->
+                                <p:column headerText="Company"
+                                          rendered="#{financialTransactionController.selectedPaymentMethod eq 'Credit'}">
+                                    <h:outputText value="#{row.payment.creditCompany.name}" />
+                                </p:column>
+                                <p:column headerText="Policy No"
+                                          rendered="#{financialTransactionController.selectedPaymentMethod eq 'Credit'}">
+                                    <h:outputText value="#{row.payment.policyNo}" />
+                                </p:column>
+                                <p:column headerText="Ref No"
+                                          rendered="#{financialTransactionController.selectedPaymentMethod eq 'Credit'}">
+                                    <h:outputText value="#{row.payment.referenceNo}" />
+                                </p:column>
+
+                                <!-- Staff Welfare-specific columns -->
+                                <p:column headerText="Staff Name"
+                                          rendered="#{financialTransactionController.selectedPaymentMethod eq 'Staff_Welfare'}">
+                                    <h:outputText value="#{row.payment.bill.toStaff.person.name}" />
+                                </p:column>
+                                <p:column headerText="Staff No"
+                                          rendered="#{financialTransactionController.selectedPaymentMethod eq 'Staff_Welfare'}">
+                                    <h:outputText value="#{row.payment.bill.toStaff.code}" />
+                                </p:column>
+                                <p:column headerText="EPF No"
+                                          rendered="#{financialTransactionController.selectedPaymentMethod eq 'Staff_Welfare'}">
+                                    <h:outputText value="#{row.payment.bill.toStaff.epfNo}" />
+                                </p:column>
+
                                 <p:column headerText="Value" class="text-end">
                                     <h:outputText value="#{row.payment.paidValue}">
                                         <f:convertNumber pattern="#,##0.00" />

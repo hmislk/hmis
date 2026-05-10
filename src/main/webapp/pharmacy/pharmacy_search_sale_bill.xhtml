@@ -75,31 +75,33 @@
                                                                         </f:facet>-->
 
                                     <p:column headerText="Bill No" width="8em">
-                                        <p:commandLink 
-                                            id="billNo" 
-                                            ajax="false" 
+                                        <p:commandLink
+                                            id="billNo"
+                                            ajax="false"
                                             style="font-weight: bold"
                                             title="View Sale Bill"
-                                            value="#{bill.deptId}" 
-                                            disabled="#{bill.referenceBill eq null}"
+                                            value="#{bill.deptId}"
+                                            disabled="#{bill.referenceBill eq null and bill.billTypeAtomic.name() ne 'PHARMACY_RETAIL_SALE'}"
                                             action="#{pharmacyBillSearch.navigatePharmacyReprintRetailBill()}">
-                                            <f:setPropertyActionListener value="#{bill.referenceBill}" target="#{pharmacyBillSearch.bill}"/>  
+                                            <f:setPropertyActionListener
+                                                value="#{bill.billTypeAtomic.name() eq 'PHARMACY_RETAIL_SALE' ? bill : bill.referenceBill}"
+                                                target="#{pharmacyBillSearch.bill}"/>
                                         </p:commandLink>
                                         <p:commandLink
                                             ajax="false"
                                             action="#{pharmacyBillSearch.navigatePharmacyReturnRetailBill}"
                                             title="View Refund Bills"
                                             rendered="#{not empty bill.referenceBill.returnPreBills}"
-                                            > 
-                                            
+                                            >
+
                                             <p:badge rendered="#{not empty bill.referenceBill.returnPreBills}" value="Refunded" severity="warning"></p:badge>
-                                            <f:setPropertyActionListener value="#{bill.deptId}" target="#{searchController.searchKeyword.refBillNo}"/> 
+                                            <f:setPropertyActionListener value="#{bill.deptId}" target="#{searchController.searchKeyword.refBillNo}"/>
                                         </p:commandLink>
                                     </p:column>
 
                                     <p:column headerText="Paid/Not">
-                                        <h:outputLabel value="PAID" rendered="#{bill.referenceBill ne null}" style="color: green;"/>
-                                        <h:outputLabel value="NOT PAID" rendered="#{bill.referenceBill eq null}" style="color: red;"/>
+                                        <h:outputLabel value="PAID" rendered="#{bill.referenceBill ne null or bill.billTypeAtomic.name() eq 'PHARMACY_RETAIL_SALE'}" style="color: green;"/>
+                                        <h:outputLabel value="NOT PAID" rendered="#{bill.referenceBill eq null and bill.billTypeAtomic.name() ne 'PHARMACY_RETAIL_SALE'}" style="color: red;"/>
                                     </p:column>
 
                                     <p:column headerText="Department"  >                                
