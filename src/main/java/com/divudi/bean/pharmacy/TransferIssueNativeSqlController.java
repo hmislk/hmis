@@ -159,15 +159,18 @@ public class TransferIssueNativeSqlController implements Serializable {
 
         // Validate that the total issuing qty per request bill item does not exceed
         // the remaining requested qty (requestedQty - alreadyIssuedQty).
-        // Negative quantities are excluded from the sum — they are skipped at settlement
-        // anyway, but including them could mask a positive over-issue on another row.
+        // Negative quantities are explicitly excluded from the sum. If they were included,
+        // a user could enter qty=+100 on one batch row and qty=-60 on another row of the
+        // same item, keeping the sum at 40 (under the limit) while settlement still issues
+        // 100 units from the first row. Skipping negatives prevents that bypass.
+        // The service's itemsToProcess filter (issuingQty > 0) is a second safety layer.
         Map<Long, Double> issuingByReqItem = new LinkedHashMap<>();
         Map<Long, String> nameByReqItem    = new LinkedHashMap<>();
         Map<Long, Double> maxByReqItem     = new LinkedHashMap<>();
         for (TransferIssueItemRowDto item : issueItems) {
             long reqId   = item.getRequestedBillItemId();
             double qty   = item.getIssuingQty() != null ? item.getIssuingQty().doubleValue() : 0.0;
-            if (qty <= 0) continue;
+            if (qty <= 0) continue; // negative/zero qty excluded — see comment above
             double max   = item.getRequestedQty() - item.getAlreadyIssuedQty();
             issuingByReqItem.merge(reqId, qty, Double::sum);
             nameByReqItem.putIfAbsent(reqId, item.getItemName());
@@ -197,6 +200,11 @@ public class TransferIssueNativeSqlController implements Serializable {
         buildIssueBillHeader();
         applyBillNumbers(issuedBill);
 
+        // Staff is intentionally optional. Departments may issue to a ward or location
+        // rather than a named individual. When staffId is null the service still deducts
+        // dept stock and records StockHistory but skips the staff-stock credit step.
+        // If staff enforcement is required in future, add a guard here:
+        //   if (issuedBill.getToStaff() == null) { JsfUtil.addErrorMessage("..."); return; }
         Long staffId = null;
         if (issuedBill.getToStaff() != null) {
             staffId = issuedBill.getToStaff().getId();
