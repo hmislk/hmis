@@ -4346,7 +4346,7 @@ public class FinancialTransactionController implements Serializable {
 
     public String navigateToViewIndividualShiftForHandover(ReportTemplateRowBundle childBundle) {
         selectedBundle = childBundle;
-        return null;
+        return "/cashier/handover_accept_row_detail?faces-redirect=true";
     }
 
     public String navigateToAddExcessForShiftForHandover() {
@@ -4943,24 +4943,16 @@ public class FinancialTransactionController implements Serializable {
 
         List<ReportTemplateRowBundle> childList = new ArrayList<>(groupedBundles.values());
 
-        if (cashFloatOutAcc > 0) {
-            ReportTemplateRowBundle floatOutBundle = new ReportTemplateRowBundle();
-            floatOutBundle.setPaymentHandover(PaymentHandover.FLOAT_OUT);
-            floatOutBundle.setCashValue(-cashFloatOutAcc);
-            floatOutBundle.setCashHandoverValue(-cashFloatOutAcc);
-            floatOutBundle.setHasCashTransaction(true);
-            floatOutBundle.setSelected(true);
-            childList.add(floatOutBundle);
-        }
-
-        if (cashFloatInAcc > 0) {
-            ReportTemplateRowBundle floatInBundle = new ReportTemplateRowBundle();
-            floatInBundle.setPaymentHandover(PaymentHandover.FLOAT_IN);
-            floatInBundle.setCashValue(cashFloatInAcc);
-            floatInBundle.setCashHandoverValue(cashFloatInAcc);
-            floatInBundle.setHasCashTransaction(true);
-            floatInBundle.setSelected(true);
-            childList.add(floatInBundle);
+        double netCashFloat = cashFloatInAcc - cashFloatOutAcc;
+        if (netCashFloat != 0) {
+            ReportTemplateRowBundle netFloatBundle = new ReportTemplateRowBundle();
+            netFloatBundle.setPaymentHandover(PaymentHandover.FLOAT_IN);
+            netFloatBundle.setCashValue(netCashFloat);
+            netFloatBundle.setCashHandoverValue(netCashFloat);
+            netFloatBundle.setTotal(netCashFloat);
+            netFloatBundle.setHasCashTransaction(true);
+            netFloatBundle.setSelected(true);
+            childList.add(netFloatBundle);
         }
 
         ReportTemplateRowBundle bundleToHoldDeptUserDayBundle = new ReportTemplateRowBundle();

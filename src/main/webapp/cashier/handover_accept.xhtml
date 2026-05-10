@@ -136,24 +136,15 @@
                                             </thead>
                                             <!-- Table Body -->
                                             <tbody>
-                                                <!-- Cash Row -->
+                                                <!-- Cash Row (merged with Net Float when float is present) -->
                                                 <ui:fragment rendered="#{financialTransactionController.bundle.hasCashTransaction}">
                                                     <tr>
-                                                        <td>Cash</td>
-                                                        <td class="text-end">
-                                                            <h:outputText value="#{financialTransactionController.bundle.cashValue}">
-                                                                <f:convertNumber pattern="#,##0.00" />
-                                                            </h:outputText>
+                                                        <td>
+                                                            <h:outputText value="Cash including Float" rendered="#{financialTransactionController.bundle.cashFloatNetTotal != 0}" />
+                                                            <h:outputText value="Cash" rendered="#{financialTransactionController.bundle.cashFloatNetTotal == 0}" />
                                                         </td>
-                                                    </tr>
-                                                </ui:fragment>
-
-                                                <!-- Net Float (Cash) row — only when there is a net float -->
-                                                <ui:fragment rendered="#{financialTransactionController.bundle.cashFloatNetTotal != 0}">
-                                                    <tr>
-                                                        <td><em>Net Float (Cash)</em></td>
                                                         <td class="text-end">
-                                                            <h:outputText value="#{financialTransactionController.bundle.cashFloatNetTotal}">
+                                                            <h:outputText value="#{financialTransactionController.bundle.cashValue + financialTransactionController.bundle.cashFloatNetTotal}">
                                                                 <f:convertNumber pattern="#,##0.00" />
                                                             </h:outputText>
                                                         </td>
@@ -744,7 +735,7 @@
 
                                         <p:column headerText="Total"
                                                   class="text-end">
-                                            <h:outputText value="#{summary.total}">
+                                            <h:outputText value="#{summary.floatRow ? summary.cashValue : (summary.total != null ? summary.total : 0)}">
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </h:outputText>
                                             <f:facet name="footer">
