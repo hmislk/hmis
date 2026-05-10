@@ -783,6 +783,7 @@ public class TransferIssueNativeSqlService {
             if (toDept.getInstitution() != null) toDept.getInstitution().getName();
         }
         if (bill.getInstitution() != null) bill.getInstitution().getName();
+        if (bill.getDepartment() != null) bill.getDepartment().getName();
         if (bill.getCreater() != null && bill.getCreater().getWebUserPerson() != null) {
             bill.getCreater().getWebUserPerson().getName();
         }

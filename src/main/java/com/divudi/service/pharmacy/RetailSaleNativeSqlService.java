@@ -683,7 +683,15 @@ public class RetailSaleNativeSqlService {
                     ? bill.getPaymentScheme().getPrintingName() : safeStr(bill.getPaymentScheme().getName()));
         }
         pbd.setComment(safeStr(bill.getComments()));
-        pbd.setNetTotal(Math.abs(bill.getNetTotal()));
+        double net = Math.abs(bill.getNetTotal());
+        double gross = bill.getTotal() > 0 ? bill.getTotal() : net;
+        double disc = Math.max(0, gross - net);
+        pbd.setNetTotal(net);
+        pbd.setTotal(gross);
+        pbd.setDiscount(disc);
+        pbd.setDiscountPercentPharmacy(gross > 0 ? (disc / gross) * 100.0 : 0.0);
+        pbd.setCashPaid(bill.getCashPaid());
+        pbd.setBalance(bill.getCashPaid() - net);
 
         String sql = "SELECT i.name, ABS(bi.qty), COALESCE(bi.rate, bi.netRate, 0),"
                 + " ABS(bi.netRate), ABS(bi.netValue), ABS(bi.grossValue), ib.dateOfExpire"
