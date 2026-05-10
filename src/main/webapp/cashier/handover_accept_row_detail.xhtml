@@ -1,0 +1,392 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+
+        <ui:composition template="/cashier/index.xhtml">
+
+            <ui:define name="subcontent">
+                <h:form>
+                    <p:panel class="m-1 p-1 container-flex">
+                        <f:facet name="header">
+                            <div class="row align-items-center">
+                                <div class="col">
+                                    <i class="pi pi-list" style="margin-right:5px;"></i>
+                                    <!-- Title differs for float/shortage vs normal rows -->
+                                    <h:outputText
+                                        value="Net Float (Cash) — Payments"
+                                        rendered="#{financialTransactionController.selectedBundle.floatRow and financialTransactionController.selectedBundle.paymentHandover ne null and financialTransactionController.selectedBundle.paymentHandover.name() eq 'FLOAT_IN'}" />
+                                    <h:outputText
+                                        value="Shift Shortage — Payments"
+                                        rendered="#{financialTransactionController.selectedBundle.paymentHandover ne null and financialTransactionController.selectedBundle.paymentHandover.name() eq 'FLOATS'}" />
+                                    <h:outputText
+                                        value="Row Payments"
+                                        rendered="#{!financialTransactionController.selectedBundle.floatRow and (financialTransactionController.selectedBundle.paymentHandover == null or financialTransactionController.selectedBundle.paymentHandover.name() eq 'NONE')}" />
+                                    <span class="mx-2 text-muted"
+                                          style="display: inline;">
+                                        <h:outputText
+                                            value=" — #{financialTransactionController.selectedBundle.department.name}"
+                                            rendered="#{!financialTransactionController.selectedBundle.floatRow and financialTransactionController.selectedBundle.department ne null}" />
+                                        <h:outputText
+                                            value="#{financialTransactionController.selectedBundle.date}"
+                                            rendered="#{!financialTransactionController.selectedBundle.floatRow and financialTransactionController.selectedBundle.date ne null}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                        </h:outputText>
+                                    </span>
+                                </div>
+                                <div class="col-auto">
+                                    <p:commandButton
+                                        value="Back"
+                                        class="m-1 ui-button-secondary"
+                                        icon="pi pi-arrow-left"
+                                        action="#{financialTransactionController.navigateBackToPaymentHandoverAccept()}"
+                                        ajax="false">
+                                    </p:commandButton>
+                                </div>
+                            </div>
+                        </f:facet>
+
+                        <!-- Net Float row: synthetic, no payment records -->
+                        <h:panelGroup rendered="#{financialTransactionController.selectedBundle.floatRow}">
+                            <div class="alert alert-info m-2">
+                                This row represents the net cash float received from other cashiers.
+                                No individual payment records are associated with this entry.
+                            </div>
+                            <table class="table table-bordered table-sm w-100">
+                                <thead class="thead-dark">
+                                    <tr>
+                                        <th>Description</th>
+                                        <th class="text-end">Value</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Net Float (Cash)</td>
+                                        <td class="text-end">
+                                            <h:outputText value="#{financialTransactionController.selectedBundle.cashValue}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </h:panelGroup>
+
+                        <!-- Normal and shortage rows: list all payment records -->
+                        <h:panelGroup rendered="#{!financialTransactionController.selectedBundle.floatRow}">
+                            <p:dataTable
+                                value="#{financialTransactionController.selectedBundle.reportTemplateRows}"
+                                var="row"
+                                emptyMessage="No payment records found for this row"
+                                sortBy="#{row.payment.paymentMethod}"
+                                paginator="true"
+                                paginatorAlwaysVisible="false"
+                                rows="50"
+                                paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                currentPageReportTemplate="(Page {currentPage} of {totalPages})">
+
+                                <p:column headerText="Bill No" sortBy="#{row.payment.bill.deptId}">
+                                    <h:outputText value="#{row.payment.bill.deptId}" />
+                                </p:column>
+
+                                <p:column headerText="Date" sortBy="#{row.payment.createdAt}">
+                                    <h:outputText value="#{row.payment.createdAt}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                    </h:outputText>
+                                </p:column>
+
+                                <p:column headerText="Payment Method" sortBy="#{row.payment.paymentMethod}">
+                                    <h:outputText value="#{row.payment.paymentMethod.label}" />
+                                </p:column>
+
+                                <p:column headerText="Bank"
+                                          rendered="#{financialTransactionController.selectedBundle.hasCardTransaction}">
+                                    <h:outputText value="#{row.payment.bank.name}"
+                                                  rendered="#{row.payment.paymentMethod.name() eq 'Card'}" />
+                                </p:column>
+
+                                <p:column headerText="Ref No"
+                                          rendered="#{financialTransactionController.selectedBundle.hasCardTransaction}">
+                                    <h:outputText value="#{row.payment.creditCardRefNo}"
+                                                  rendered="#{row.payment.paymentMethod.name() eq 'Card'}" />
+                                </p:column>
+
+                                <!-- Cheque-specific columns -->
+                                <p:column headerText="Cheque No"
+                                          rendered="#{financialTransactionController.selectedBundle.hasChequeTransaction}">
+                                    <h:outputText value="#{row.payment.chequeRefNo}"
+                                                  rendered="#{row.payment.paymentMethod.name() eq 'Cheque'}" />
+                                </p:column>
+                                <p:column headerText="Cheque Date"
+                                          rendered="#{financialTransactionController.selectedBundle.hasChequeTransaction}">
+                                    <h:outputText value="#{row.payment.chequeDate}"
+                                                  rendered="#{row.payment.paymentMethod.name() eq 'Cheque'}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="Bank"
+                                          rendered="#{financialTransactionController.selectedBundle.hasChequeTransaction}">
+                                    <h:outputText value="#{row.payment.bank.name}"
+                                                  rendered="#{row.payment.paymentMethod.name() eq 'Cheque'}" />
+                                </p:column>
+
+                                <!-- Slip-specific columns -->
+                                <p:column headerText="Slip No"
+                                          rendered="#{financialTransactionController.selectedBundle.hasSlipTransaction}">
+                                    <h:outputText value="#{row.payment.referenceNo}"
+                                                  rendered="#{row.payment.paymentMethod.name() eq 'Slip'}" />
+                                </p:column>
+                                <p:column headerText="Bank / Institution"
+                                          rendered="#{financialTransactionController.selectedBundle.hasSlipTransaction}">
+                                    <h:outputText value="#{row.payment.bank.name}"
+                                                  rendered="#{row.payment.paymentMethod.name() eq 'Slip'}" />
+                                </p:column>
+                                <p:column headerText="Slip Date"
+                                          rendered="#{financialTransactionController.selectedBundle.hasSlipTransaction}">
+                                    <h:outputText value="#{row.payment.chequeDate}"
+                                                  rendered="#{row.payment.paymentMethod.name() eq 'Slip'}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                    </h:outputText>
+                                </p:column>
+
+                                <!-- eWallet-specific columns -->
+                                <p:column headerText="eWallet Provider"
+                                          rendered="#{financialTransactionController.selectedBundle.hasEWalletTransaction}">
+                                    <h:outputText value="#{row.payment.bank.name}"
+                                                  rendered="#{row.payment.paymentMethod.name() eq 'ewallet'}" />
+                                </p:column>
+                                <p:column headerText="Transaction Ref"
+                                          rendered="#{financialTransactionController.selectedBundle.hasEWalletTransaction}">
+                                    <h:outputText value="#{row.payment.referenceNo}"
+                                                  rendered="#{row.payment.paymentMethod.name() eq 'ewallet'}" />
+                                </p:column>
+
+                                <!-- Credit-specific columns -->
+                                <p:column headerText="Company"
+                                          rendered="#{financialTransactionController.selectedBundle.hasCreditTransaction}">
+                                    <h:outputText value="#{row.payment.creditCompany.name}"
+                                                  rendered="#{row.payment.paymentMethod.name() eq 'Credit'}" />
+                                </p:column>
+                                <p:column headerText="Policy No"
+                                          rendered="#{financialTransactionController.selectedBundle.hasCreditTransaction}">
+                                    <h:outputText value="#{row.payment.policyNo}"
+                                                  rendered="#{row.payment.paymentMethod.name() eq 'Credit'}" />
+                                </p:column>
+                                <p:column headerText="Ref No"
+                                          rendered="#{financialTransactionController.selectedBundle.hasCreditTransaction}">
+                                    <h:outputText value="#{row.payment.referenceNo}"
+                                                  rendered="#{row.payment.paymentMethod.name() eq 'Credit'}" />
+                                </p:column>
+
+                                <!-- Staff Welfare-specific columns -->
+                                <p:column headerText="Staff Name"
+                                          rendered="#{financialTransactionController.selectedBundle.hasStaffWelfareTransaction}">
+                                    <h:outputText value="#{row.payment.bill.toStaff.person.name}"
+                                                  rendered="#{row.payment.paymentMethod.name() eq 'Staff_Welfare'}" />
+                                </p:column>
+                                <p:column headerText="Staff No"
+                                          rendered="#{financialTransactionController.selectedBundle.hasStaffWelfareTransaction}">
+                                    <h:outputText value="#{row.payment.bill.toStaff.code}"
+                                                  rendered="#{row.payment.paymentMethod.name() eq 'Staff_Welfare'}" />
+                                </p:column>
+                                <p:column headerText="EPF No"
+                                          rendered="#{financialTransactionController.selectedBundle.hasStaffWelfareTransaction}">
+                                    <h:outputText value="#{row.payment.bill.toStaff.epfNo}"
+                                                  rendered="#{row.payment.paymentMethod.name() eq 'Staff_Welfare'}" />
+                                </p:column>
+
+                                <p:column headerText="Value" class="text-end" sortBy="#{row.payment.paidValue}">
+                                    <h:outputText value="#{row.payment.paidValue}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </p:column>
+
+                            </p:dataTable>
+
+                            <!-- Summary totals by payment method -->
+                            <p:panel class="m-2" header="Summary">
+                                <table class="table table-bordered table-sm w-50">
+                                    <thead class="thead-dark">
+                                        <tr>
+                                            <th>Payment Method</th>
+                                            <th class="text-end">Total</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <ui:fragment rendered="#{financialTransactionController.selectedBundle.hasCashTransaction}">
+                                            <tr>
+                                                <td>Cash</td>
+                                                <td class="text-end">
+                                                    <h:outputText value="#{financialTransactionController.selectedBundle.cashValue}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </td>
+                                            </tr>
+                                        </ui:fragment>
+                                        <ui:fragment rendered="#{financialTransactionController.selectedBundle.hasCardTransaction}">
+                                            <tr>
+                                                <td>Card</td>
+                                                <td class="text-end">
+                                                    <h:outputText value="#{financialTransactionController.selectedBundle.cardValue}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </td>
+                                            </tr>
+                                        </ui:fragment>
+                                        <ui:fragment rendered="#{financialTransactionController.selectedBundle.hasChequeTransaction}">
+                                            <tr>
+                                                <td>Cheque</td>
+                                                <td class="text-end">
+                                                    <h:outputText value="#{financialTransactionController.selectedBundle.chequeValue}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </td>
+                                            </tr>
+                                        </ui:fragment>
+                                        <ui:fragment rendered="#{financialTransactionController.selectedBundle.hasSlipTransaction}">
+                                            <tr>
+                                                <td>Slip</td>
+                                                <td class="text-end">
+                                                    <h:outputText value="#{financialTransactionController.selectedBundle.slipValue}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </td>
+                                            </tr>
+                                        </ui:fragment>
+                                        <ui:fragment rendered="#{financialTransactionController.selectedBundle.hasEWalletTransaction}">
+                                            <tr>
+                                                <td>eWallet</td>
+                                                <td class="text-end">
+                                                    <h:outputText value="#{financialTransactionController.selectedBundle.ewalletValue}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </td>
+                                            </tr>
+                                        </ui:fragment>
+                                        <ui:fragment rendered="#{financialTransactionController.selectedBundle.hasCreditTransaction}">
+                                            <tr>
+                                                <td>Credit</td>
+                                                <td class="text-end">
+                                                    <h:outputText value="#{financialTransactionController.selectedBundle.creditValue}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </td>
+                                            </tr>
+                                        </ui:fragment>
+                                        <ui:fragment rendered="#{financialTransactionController.selectedBundle.hasStaffWelfareTransaction}">
+                                            <tr>
+                                                <td>Staff Welfare</td>
+                                                <td class="text-end">
+                                                    <h:outputText value="#{financialTransactionController.selectedBundle.staffWelfareValue}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </td>
+                                            </tr>
+                                        </ui:fragment>
+                                        <ui:fragment rendered="#{financialTransactionController.selectedBundle.hasStaffTransaction}">
+                                            <tr>
+                                                <td>Staff</td>
+                                                <td class="text-end">
+                                                    <h:outputText value="#{financialTransactionController.selectedBundle.staffValue}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </td>
+                                            </tr>
+                                        </ui:fragment>
+                                        <ui:fragment rendered="#{financialTransactionController.selectedBundle.hasVoucherTransaction}">
+                                            <tr>
+                                                <td>Voucher</td>
+                                                <td class="text-end">
+                                                    <h:outputText value="#{financialTransactionController.selectedBundle.voucherValue}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </td>
+                                            </tr>
+                                        </ui:fragment>
+                                        <ui:fragment rendered="#{financialTransactionController.selectedBundle.hasIouTransaction}">
+                                            <tr>
+                                                <td>IOU</td>
+                                                <td class="text-end">
+                                                    <h:outputText value="#{financialTransactionController.selectedBundle.iouValue}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </td>
+                                            </tr>
+                                        </ui:fragment>
+                                        <ui:fragment rendered="#{financialTransactionController.selectedBundle.hasOnlineSettlementTransaction}">
+                                            <tr>
+                                                <td>Online Settlement</td>
+                                                <td class="text-end">
+                                                    <h:outputText value="#{financialTransactionController.selectedBundle.onlineSettlementValue}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </td>
+                                            </tr>
+                                        </ui:fragment>
+                                        <ui:fragment rendered="#{financialTransactionController.selectedBundle.hasMultiplePaymentMethodsTransaction}">
+                                            <tr>
+                                                <td>Multiple Payment Methods</td>
+                                                <td class="text-end">
+                                                    <h:outputText value="#{financialTransactionController.selectedBundle.multiplePaymentMethodsValue}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </td>
+                                            </tr>
+                                        </ui:fragment>
+                                        <ui:fragment rendered="#{financialTransactionController.selectedBundle.hasAgentTransaction}">
+                                            <tr>
+                                                <td>Agent</td>
+                                                <td class="text-end">
+                                                    <h:outputText value="#{financialTransactionController.selectedBundle.agentValue}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </td>
+                                            </tr>
+                                        </ui:fragment>
+                                        <ui:fragment rendered="#{financialTransactionController.selectedBundle.hasPatientDepositTransaction}">
+                                            <tr>
+                                                <td>Patient Deposit</td>
+                                                <td class="text-end">
+                                                    <h:outputText value="#{financialTransactionController.selectedBundle.patientDepositValue}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </td>
+                                            </tr>
+                                        </ui:fragment>
+                                        <ui:fragment rendered="#{financialTransactionController.selectedBundle.hasPatientPointsTransaction}">
+                                            <tr>
+                                                <td>Patient Points</td>
+                                                <td class="text-end">
+                                                    <h:outputText value="#{financialTransactionController.selectedBundle.patientPointsValue}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </td>
+                                            </tr>
+                                        </ui:fragment>
+                                    </tbody>
+                                    <tfoot>
+                                        <tr class="fw-bold">
+                                            <td>Total</td>
+                                            <td class="text-end">
+                                                <h:outputText value="#{financialTransactionController.selectedBundle.total != null ? financialTransactionController.selectedBundle.total : 0}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputText>
+                                            </td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </p:panel>
+                        </h:panelGroup>
+
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>
