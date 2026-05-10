@@ -19,54 +19,127 @@
                             <p:outputLabel value="Request Float Transfer" class="mx-2 mt-2"/>
                         </f:facet>
 
-                        <p:panelGrid columns="2" class="w-100">
+                        <div class="row">
 
-                            <p:outputLabel value="Request Float From" for="acFromUser"/>
-                            <p:autoComplete
-                                completeMethod="#{webUserController.completeUser}"
-                                class="mx-2 w-100"
-                                id="acFromUser"
-                                value="#{financialTransactionController.currentBill.toWebUser}"
-                                var="s"
-                                scrollHeight="450"
-                                inputStyleClass="w-100"
-                                itemLabel="#{s.webUserPerson.nameWithTitle}"
-                                itemValue="#{s}">
-                                <p:column headerText="Username">
-                                    <h:outputText value="#{s.name}" />
-                                </p:column>
-                                <p:column headerText="Person Name">
-                                    <h:outputText value="#{s.webUserPerson.nameWithTitle}" />
-                                </p:column>
-                                <p:column headerText="Code">
-                                    <h:outputText value="#{s.code}" />
-                                </p:column>
-                            </p:autoComplete>
+                            <!-- Left: request details -->
+                            <div class="col-md-6">
+                                <p:panelGrid columns="2" class="w-100">
 
-                            <p:outputLabel value="Requested Amount" for="txtAmount"/>
-                            <p:inputText
-                                id="txtAmount"
-                                class="mx-2 text-end"
-                                onfocus="this.select();"
-                                value="#{financialTransactionController.currentBill.netTotal}"/>
+                                    <p:outputLabel value="Request Float From" for="acFromUser"/>
+                                    <p:autoComplete
+                                        completeMethod="#{webUserController.completeUser}"
+                                        class="mx-2 w-100"
+                                        id="acFromUser"
+                                        value="#{financialTransactionController.currentBill.toWebUser}"
+                                        var="s"
+                                        scrollHeight="450"
+                                        inputStyleClass="w-100"
+                                        itemLabel="#{s.webUserPerson.nameWithTitle}"
+                                        itemValue="#{s}">
+                                        <p:column headerText="Username">
+                                            <h:outputText value="#{s.name}" />
+                                        </p:column>
+                                        <p:column headerText="Person Name">
+                                            <h:outputText value="#{s.webUserPerson.nameWithTitle}" />
+                                        </p:column>
+                                        <p:column headerText="Code">
+                                            <h:outputText value="#{s.code}" />
+                                        </p:column>
+                                    </p:autoComplete>
 
-                            <p:outputLabel value="Comments" for="txtComments"/>
-                            <p:inputTextarea
-                                id="txtComments"
-                                class="mx-2 w-100"
-                                value="#{financialTransactionController.currentBill.comments}"/>
+                                    <p:outputLabel value="Requested Amount" for="txtAmount"/>
+                                    <p:inputText
+                                        id="txtAmount"
+                                        class="mx-2 text-end"
+                                        onfocus="this.select();"
+                                        value="#{financialTransactionController.currentBill.netTotal}"/>
 
-                            <p:spacer/>
-                            <p:commandButton
-                                icon="fa fa-paper-plane"
-                                class="ui-button-success"
-                                value="Submit Request"
-                                title="Submit float transfer request"
-                                ajax="false"
-                                rendered="#{webUserController.hasPrivilege('RequestFundTransfer')}"
-                                action="#{financialTransactionController.settleFloatTransferRequest()}"/>
+                                    <p:outputLabel value="Comments" for="txtComments"/>
+                                    <p:inputTextarea
+                                        id="txtComments"
+                                        class="mx-2 w-100"
+                                        value="#{financialTransactionController.currentBill.comments}"/>
 
-                        </p:panelGrid>
+                                    <p:spacer/>
+                                    <p:commandButton
+                                        icon="fa fa-paper-plane"
+                                        class="ui-button-success"
+                                        value="Submit Request"
+                                        title="Submit float transfer request"
+                                        ajax="false"
+                                        rendered="#{webUserController.hasPrivilege('RequestFundTransfer')}"
+                                        action="#{financialTransactionController.settleFloatTransferRequest()}"/>
+
+                                </p:panelGrid>
+                            </div>
+
+                            <!-- Right: denomination breakdown -->
+                            <div class="col-md-6">
+                                <p:panel>
+                                    <f:facet name="header">
+                                        <i class="fa fa-coins me-2"/>
+                                        <h:outputText value="Denomination Breakdown"/>
+                                    </f:facet>
+
+                                    <p:dataTable
+                                        value="#{financialTransactionController.fundTransferDenominationTransactions}"
+                                        var="deno"
+                                        emptyMessage="No denominations configured">
+                                        <p:column headerText="Denomination">
+                                            <p:outputLabel value="#{deno.denomination.displayName}"/>
+                                        </p:column>
+                                        <p:column headerText="Quantity">
+                                            <p:inputText
+                                                class="text-end w-100"
+                                                id="txtDenoQty"
+                                                value="#{deno.denominationQty}"
+                                                onfocus="this.select()">
+                                                <f:convertNumber integerOnly="true"/>
+                                                <p:ajax
+                                                    event="blur"
+                                                    process="txtDenoQty"
+                                                    listener="#{financialTransactionController.calculateFundTransferDenominationTotal()}"
+                                                    update="txtDenoVal txtDenoTotal"/>
+                                            </p:inputText>
+                                        </p:column>
+                                        <p:column headerText="Value" styleClass="text-end">
+                                            <p:outputLabel
+                                                id="txtDenoVal"
+                                                class="w-100 text-end"
+                                                value="#{deno.denominationValue eq null ? 0.00 : deno.denominationValue}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </p:outputLabel>
+                                        </p:column>
+                                    </p:dataTable>
+
+                                    <div class="d-flex justify-content-between align-items-center mt-2">
+                                        <h:outputText value="Denomination Total: "/>
+                                        <h:outputText
+                                            id="txtDenoTotal"
+                                            styleClass="fw-bold"
+                                            value="#{financialTransactionController.fundTransferDenominationTotal}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </div>
+
+                                    <div class="text-end mt-2">
+                                        <p:commandButton
+                                            value="Use Denomination Total"
+                                            icon="fa fa-arrow-left"
+                                            styleClass="ui-button-info"
+                                            title="Copy denomination total to Requested Amount"
+                                            process="@this"
+                                            update="txtAmount txtDenoTotal">
+                                            <f:setPropertyActionListener
+                                                target="#{financialTransactionController.currentBill.netTotal}"
+                                                value="#{financialTransactionController.fundTransferDenominationTotal}"/>
+                                        </p:commandButton>
+                                    </div>
+
+                                </p:panel>
+                            </div>
+
+                        </div>
 
                     </p:panel>
 

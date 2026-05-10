@@ -276,6 +276,9 @@ public class FinancialTransactionController implements Serializable {
     private DenominationTransaction dt;
     private double totalCashFund;
 
+    private List<DenominationTransaction> fundTransferDenominationTransactions;
+    private double fundTransferDenominationTotal;
+
     boolean floatTransferStarted = false;
 
     private List<Payment> fundTransferAvailablePayments;
@@ -2429,11 +2432,45 @@ public class FinancialTransactionController implements Serializable {
         }
     }
 
+    public void calculateFundTransferDenominationTotal() {
+        fundTransferDenominationTotal = 0.0;
+        if (fundTransferDenominationTransactions == null || fundTransferDenominationTransactions.isEmpty()) {
+            return;
+        }
+        for (DenominationTransaction d : fundTransferDenominationTransactions) {
+            if (d == null || d.getDenomination() == null || d.getDenomination().getDenominationValue() == null) {
+                continue;
+            }
+            if (d.getDenominationQty() == null) {
+                d.setDenominationQty(0L);
+                d.setDenominationValue(null);
+            } else {
+                double dv = d.getDenomination().getDenominationValue() * d.getDenominationQty();
+                d.setDenominationValue(dv);
+                fundTransferDenominationTotal += dv;
+            }
+        }
+    }
+
+    private boolean hasFundTransferDenominationEntries() {
+        if (fundTransferDenominationTransactions == null) {
+            return false;
+        }
+        for (DenominationTransaction d : fundTransferDenominationTransactions) {
+            if (d.getDenominationQty() != null && d.getDenominationQty() > 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private void prepareToAddNewFundTransferBill() {
         currentBill = new Bill();
         currentBill.setBillType(BillType.FundTransferBill);
         currentBill.setBillTypeAtomic(BillTypeAtomic.FUND_TRANSFER_BILL);
         currentBill.setBillClassType(BillClassType.Bill);
+        fundTransferDenominationTransactions = denominationTransactionController.createDefaultDenominationTransaction();
+        fundTransferDenominationTotal = 0.0;
     }
 
     public void ensureFundTransferBillInitialized() {
@@ -2449,6 +2486,8 @@ public class FinancialTransactionController implements Serializable {
         currentBill.setBillType(BillType.FundTransferRequestBill);
         currentBill.setBillTypeAtomic(BillTypeAtomic.FUND_TRANSFER_REQUEST);
         currentBill.setBillClassType(BillClassType.Bill);
+        fundTransferDenominationTransactions = denominationTransactionController.createDefaultDenominationTransaction();
+        fundTransferDenominationTotal = 0.0;
     }
 
     public void ensureFundTransferRequestBillInitialized() {
@@ -2545,6 +2584,14 @@ public class FinancialTransactionController implements Serializable {
             JsfUtil.addErrorMessage("Requested amount must be greater than zero");
             return "";
         }
+        if (hasFundTransferDenominationEntries()) {
+            calculateFundTransferDenominationTotal();
+            if (Math.abs(fundTransferDenominationTotal - currentBill.getNetTotal()) > 0.001) {
+                floatRequestStarted = false;
+                JsfUtil.addErrorMessage("Denomination total (" + fundTransferDenominationTotal + ") does not match the requested amount (" + currentBill.getNetTotal() + "). Please correct the denominations or update the requested amount.");
+                return "";
+            }
+        }
         try {
             String deptId = billNumberGenerator.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.FUND_TRANSFER_REQUEST);
             currentBill.setFromWebUser(sessionController.getLoggedUser());
@@ -2564,6 +2611,34 @@ public class FinancialTransactionController implements Serializable {
             currentBill.setTotal(currentBill.getNetTotal());
             currentBill.setBalance(currentBill.getNetTotal());
             billController.save(currentBill);
+            if (hasFundTransferDenominationEntries()) {
+                Bill denoBill = new Bill();
+                denoBill.setBillTypeAtomic(BillTypeAtomic.FUND_TRANSFER_REQUEST_DENOMINATION_BILL);
+                denoBill.setBillType(BillType.FundTransferRequestBill);
+                denoBill.setBillClassType(BillClassType.Bill);
+                denoBill.setReferenceBill(currentBill);
+                denoBill.setDepartment(currentBill.getDepartment());
+                denoBill.setInstitution(currentBill.getInstitution());
+                denoBill.setStaff(currentBill.getStaff());
+                denoBill.setFromWebUser(currentBill.getFromWebUser());
+                denoBill.setToWebUser(currentBill.getToWebUser());
+                denoBill.setBillDate(currentBill.getBillDate());
+                denoBill.setBillTime(currentBill.getBillTime());
+                billController.save(denoBill);
+                double denoTotal = 0.0;
+                for (DenominationTransaction d : fundTransferDenominationTransactions) {
+                    if (d.getDenominationQty() != null && d.getDenominationQty() > 0) {
+                        d.setBill(denoBill);
+                        denominationTransactionController.save(d);
+                        if (d.getDenominationValue() != null) {
+                            denoTotal += d.getDenominationValue();
+                        }
+                    }
+                }
+                denoBill.setTotal(denoTotal);
+                denoBill.setNetTotal(denoTotal);
+                billController.save(denoBill);
+            }
             notificationController.createNotification(currentBill);
         } finally {
             floatRequestStarted = false;
@@ -2846,6 +2921,14 @@ public class FinancialTransactionController implements Serializable {
             return;
         }
         currentPayment.setPaymentMethod(PaymentMethod.Cash);
+
+        if (hasFundTransferDenominationEntries()) {
+            calculateFundTransferDenominationTotal();
+            if (Math.abs(fundTransferDenominationTotal - currentPayment.getPaidValue()) > 0.001) {
+                JsfUtil.addErrorMessage("Denomination total (" + fundTransferDenominationTotal + ") does not match the entered cash amount (" + currentPayment.getPaidValue() + "). Please correct the denominations or update the cash amount.");
+                return;
+            }
+        }
 
         if (configOptionApplicationController.getBooleanValueByKey("Enable Drawer Manegment", true)) {
             Drawer drawer = sessionController.getLoggedUserDrawer() != null
@@ -3316,6 +3399,36 @@ public class FinancialTransactionController implements Serializable {
         billController.save(currentBill);
         currentBill.getPayments().addAll(currentBillPayments);
         billController.save(currentBill);
+
+        if (hasFundTransferDenominationEntries()) {
+            Bill denoBill = new Bill();
+            denoBill.setBillTypeAtomic(BillTypeAtomic.FUND_TRANSFER_DENOMINATION_BILL);
+            denoBill.setBillType(BillType.FundTransferBill);
+            denoBill.setBillClassType(BillClassType.Bill);
+            denoBill.setReferenceBill(currentBill);
+            denoBill.setDepartment(currentBill.getDepartment());
+            denoBill.setInstitution(currentBill.getInstitution());
+            denoBill.setStaff(currentBill.getStaff());
+            denoBill.setFromWebUser(currentBill.getFromWebUser());
+            denoBill.setToWebUser(currentBill.getToWebUser());
+            denoBill.setBillDate(currentBill.getBillDate());
+            denoBill.setBillTime(currentBill.getBillTime());
+            billController.save(denoBill);
+            double denoTotal = 0.0;
+            for (DenominationTransaction d : fundTransferDenominationTransactions) {
+                if (d.getDenominationQty() != null && d.getDenominationQty() > 0) {
+                    d.setBill(denoBill);
+                    denominationTransactionController.save(d);
+                    if (d.getDenominationValue() != null) {
+                        denoTotal += d.getDenominationValue();
+                    }
+                }
+            }
+            denoBill.setTotal(denoTotal);
+            denoBill.setNetTotal(denoTotal);
+            billController.save(denoBill);
+        }
+
         // If this transfer was initiated from a float transfer request, handle partial/full fulfillment
         if (selectedFundTransferRequest != null) {
             Bill freshRequest = billFacade.find(selectedFundTransferRequest.getId());
@@ -9635,6 +9748,22 @@ public class FinancialTransactionController implements Serializable {
 
     public void setDenominationTransactions(List<DenominationTransaction> denominationTransactions) {
         this.denominationTransactions = denominationTransactions;
+    }
+
+    public List<DenominationTransaction> getFundTransferDenominationTransactions() {
+        return fundTransferDenominationTransactions;
+    }
+
+    public void setFundTransferDenominationTransactions(List<DenominationTransaction> fundTransferDenominationTransactions) {
+        this.fundTransferDenominationTransactions = fundTransferDenominationTransactions;
+    }
+
+    public double getFundTransferDenominationTotal() {
+        return fundTransferDenominationTotal;
+    }
+
+    public void setFundTransferDenominationTotal(double fundTransferDenominationTotal) {
+        this.fundTransferDenominationTotal = fundTransferDenominationTotal;
     }
 
     public DenominationTransaction getDt() {

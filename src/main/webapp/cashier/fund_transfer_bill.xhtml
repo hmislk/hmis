@@ -122,15 +122,72 @@
                                         <i class="fa fa-money-bill-wave me-2"/>
                                         <h:outputText value="Add Cash to Transfer"/>
                                     </f:facet>
+
+                                    <div class="mb-3">
+                                        <p:outputLabel for="txtValue" value="Cash Amount" styleClass="fw-medium mb-1 d-block"/>
+                                        <p:inputText
+                                            id="txtValue"
+                                            styleClass="w-100 text-end"
+                                            onfocus="this.select();"
+                                            value="#{financialTransactionController.currentPayment.paidValue}">
+                                        </p:inputText>
+                                    </div>
+
+                                    <p:dataTable
+                                        value="#{financialTransactionController.fundTransferDenominationTransactions}"
+                                        var="deno"
+                                        emptyMessage="No denominations configured"
+                                        styleClass="mb-2">
+                                        <p:column headerText="Denomination">
+                                            <p:outputLabel value="#{deno.denomination.displayName}"/>
+                                        </p:column>
+                                        <p:column headerText="Quantity">
+                                            <p:inputText
+                                                class="text-end w-100"
+                                                id="txtDenoQtyTransfer"
+                                                value="#{deno.denominationQty}"
+                                                onfocus="this.select()">
+                                                <f:convertNumber integerOnly="true"/>
+                                                <p:ajax
+                                                    event="blur"
+                                                    process="txtDenoQtyTransfer"
+                                                    listener="#{financialTransactionController.calculateFundTransferDenominationTotal()}"
+                                                    update="txtDenoValTransfer txtDenoTotalTransfer"/>
+                                            </p:inputText>
+                                        </p:column>
+                                        <p:column headerText="Value" styleClass="text-end">
+                                            <p:outputLabel
+                                                id="txtDenoValTransfer"
+                                                class="w-100 text-end"
+                                                value="#{deno.denominationValue eq null ? 0.00 : deno.denominationValue}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </p:outputLabel>
+                                        </p:column>
+                                    </p:dataTable>
+
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <h:outputText value="Denomination Total: "/>
+                                        <h:outputText
+                                            id="txtDenoTotalTransfer"
+                                            styleClass="fw-bold"
+                                            value="#{financialTransactionController.fundTransferDenominationTotal}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </div>
+
                                     <div class="row align-items-end g-2">
                                         <div class="col-7">
-                                            <p:outputLabel for="txtValue" value="Cash Amount" styleClass="fw-medium mb-1 d-block"/>
-                                            <p:inputText
-                                                id="txtValue"
-                                                styleClass="w-100 text-end"
-                                                onfocus="this.select();"
-                                                value="#{financialTransactionController.currentPayment.paidValue}">
-                                            </p:inputText>
+                                            <p:commandButton
+                                                value="Use Denomination Total"
+                                                icon="fa fa-arrow-up"
+                                                styleClass="ui-button-info w-100"
+                                                title="Copy denomination total to Cash Amount"
+                                                process="@this"
+                                                update="txtValue txtDenoTotalTransfer">
+                                                <f:setPropertyActionListener
+                                                    target="#{financialTransactionController.currentPayment.paidValue}"
+                                                    value="#{financialTransactionController.fundTransferDenominationTotal}"/>
+                                            </p:commandButton>
                                         </div>
                                         <div class="col-5">
                                             <p:commandButton
@@ -144,6 +201,7 @@
                                             </p:commandButton>
                                         </div>
                                     </div>
+
                                 </p:panel>
                             </div>
                         </div>
