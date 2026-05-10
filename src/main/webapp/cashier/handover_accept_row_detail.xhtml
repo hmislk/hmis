@@ -116,6 +116,78 @@
                                                   rendered="#{row.payment.paymentMethod.name() eq 'Card'}" />
                                 </p:column>
 
+                                <!-- Cheque-specific columns -->
+                                <p:column headerText="Cheque No"
+                                          rendered="#{financialTransactionController.selectedBundle.hasChequeTransaction}">
+                                    <h:outputText value="#{row.payment.chequeRefNo}"
+                                                  rendered="#{row.payment.paymentMethod.name() eq 'Cheque'}" />
+                                </p:column>
+                                <p:column headerText="Cheque Date"
+                                          rendered="#{financialTransactionController.selectedBundle.hasChequeTransaction}">
+                                    <h:outputText value="#{row.payment.chequeDate}"
+                                                  rendered="#{row.payment.paymentMethod.name() eq 'Cheque'}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="Bank"
+                                          rendered="#{financialTransactionController.selectedBundle.hasChequeTransaction}">
+                                    <h:outputText value="#{row.payment.bank.name}"
+                                                  rendered="#{row.payment.paymentMethod.name() eq 'Cheque'}" />
+                                </p:column>
+
+                                <!-- Slip-specific columns -->
+                                <p:column headerText="Slip No"
+                                          rendered="#{financialTransactionController.selectedBundle.hasSlipTransaction}">
+                                    <h:outputText value="#{row.payment.referenceNo}"
+                                                  rendered="#{row.payment.paymentMethod.name() eq 'Slip'}" />
+                                </p:column>
+                                <p:column headerText="Bank / Institution"
+                                          rendered="#{financialTransactionController.selectedBundle.hasSlipTransaction}">
+                                    <h:outputText value="#{row.payment.bank.name}"
+                                                  rendered="#{row.payment.paymentMethod.name() eq 'Slip'}" />
+                                </p:column>
+
+                                <!-- eWallet-specific columns -->
+                                <p:column headerText="eWallet Provider"
+                                          rendered="#{financialTransactionController.selectedBundle.hasEWalletTransaction}">
+                                    <h:outputText value="#{row.payment.bank.name}"
+                                                  rendered="#{row.payment.paymentMethod.name() eq 'ewallet'}" />
+                                </p:column>
+                                <p:column headerText="Transaction Ref"
+                                          rendered="#{financialTransactionController.selectedBundle.hasEWalletTransaction}">
+                                    <h:outputText value="#{row.payment.referenceNo}"
+                                                  rendered="#{row.payment.paymentMethod.name() eq 'ewallet'}" />
+                                </p:column>
+
+                                <!-- Credit-specific columns -->
+                                <p:column headerText="Company"
+                                          rendered="#{financialTransactionController.selectedBundle.hasCreditTransaction}">
+                                    <h:outputText value="#{row.payment.creditCompany.name}"
+                                                  rendered="#{row.payment.paymentMethod.name() eq 'Credit'}" />
+                                </p:column>
+                                <p:column headerText="Policy No"
+                                          rendered="#{financialTransactionController.selectedBundle.hasCreditTransaction}">
+                                    <h:outputText value="#{row.payment.policyNo}"
+                                                  rendered="#{row.payment.paymentMethod.name() eq 'Credit'}" />
+                                </p:column>
+
+                                <!-- Staff Welfare-specific columns -->
+                                <p:column headerText="Staff Name"
+                                          rendered="#{financialTransactionController.selectedBundle.hasStaffWelfareTransaction}">
+                                    <h:outputText value="#{row.payment.bill.toStaff.person.name}"
+                                                  rendered="#{row.payment.paymentMethod.name() eq 'Staff_Welfare'}" />
+                                </p:column>
+                                <p:column headerText="Staff No"
+                                          rendered="#{financialTransactionController.selectedBundle.hasStaffWelfareTransaction}">
+                                    <h:outputText value="#{row.payment.bill.toStaff.code}"
+                                                  rendered="#{row.payment.paymentMethod.name() eq 'Staff_Welfare'}" />
+                                </p:column>
+                                <p:column headerText="EPF No"
+                                          rendered="#{financialTransactionController.selectedBundle.hasStaffWelfareTransaction}">
+                                    <h:outputText value="#{row.payment.bill.toStaff.epfNo}"
+                                                  rendered="#{row.payment.paymentMethod.name() eq 'Staff_Welfare'}" />
+                                </p:column>
+
                                 <p:column headerText="Value" class="text-end" sortBy="#{row.payment.paidValue}">
                                     <h:outputText value="#{row.payment.paidValue}">
                                         <f:convertNumber pattern="#,##0.00" />
