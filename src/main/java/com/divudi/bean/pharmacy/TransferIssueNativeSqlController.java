@@ -159,12 +159,15 @@ public class TransferIssueNativeSqlController implements Serializable {
 
         // Validate that the total issuing qty per request bill item does not exceed
         // the remaining requested qty (requestedQty - alreadyIssuedQty).
+        // Negative quantities are excluded from the sum — they are skipped at settlement
+        // anyway, but including them could mask a positive over-issue on another row.
         Map<Long, Double> issuingByReqItem = new LinkedHashMap<>();
         Map<Long, String> nameByReqItem    = new LinkedHashMap<>();
         Map<Long, Double> maxByReqItem     = new LinkedHashMap<>();
         for (TransferIssueItemRowDto item : issueItems) {
             long reqId   = item.getRequestedBillItemId();
             double qty   = item.getIssuingQty() != null ? item.getIssuingQty().doubleValue() : 0.0;
+            if (qty <= 0) continue;
             double max   = item.getRequestedQty() - item.getAlreadyIssuedQty();
             issuingByReqItem.merge(reqId, qty, Double::sum);
             nameByReqItem.putIfAbsent(reqId, item.getItemName());
@@ -207,6 +210,11 @@ public class TransferIssueNativeSqlController implements Serializable {
                     sessionController.getInstitution().getId(),
                     staffId);
         } catch (RuntimeException ex) {
+            // Reinitialise the bill so a retry gets a fresh entity rather than a
+            // detached one with a stale JPA-generated ID from the failed flush.
+            com.divudi.core.entity.Staff prevStaff = issuedBill.getToStaff();
+            issuedBill = new com.divudi.core.entity.BilledBill();
+            issuedBill.setToStaff(prevStaff);
             JsfUtil.addErrorMessage("Settlement failed: " + ex.getMessage());
             return;
         }
@@ -325,6 +333,7 @@ public class TransferIssueNativeSqlController implements Serializable {
         issuedBill.setBillType(BillType.PharmacyTransferIssue);
         issuedBill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_ISSUE);
         issuedBill.setBackwardReferenceBill(requestedBill);
+        issuedBill.setReferenceBill(requestedBill);
         issuedBill.setFromInstitution(sessionController.getInstitution());
         issuedBill.setFromDepartment(sessionController.getDepartment());
         issuedBill.setToInstitution(requestedBill.getFromInstitution() != null
@@ -447,6 +456,15 @@ public class TransferIssueNativeSqlController implements Serializable {
                 .getLongTextValueByKey("Pharmacy Transfer Issue Bill Footer CSS"));
         dto.setFooterText(configOptionApplicationController
                 .getLongTextValueByKey("Pharmacy Transfer Issue Bill Footer Text"));
+    }
+
+    /** Safe getter for the to-department name: falls back to bill.department if fromDepartment is null. */
+    public String getRequestedBillToDepartmentName() {
+        if (requestedBill == null) return "";
+        com.divudi.core.entity.Department dept = requestedBill.getFromDepartment() != null
+                ? requestedBill.getFromDepartment()
+                : requestedBill.getDepartment();
+        return dept != null ? safeStr(dept.getName()) : "";
     }
 
     private static String safeStr(String s) {

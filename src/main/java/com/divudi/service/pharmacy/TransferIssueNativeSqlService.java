@@ -437,8 +437,9 @@ public class TransferIssueNativeSqlService {
                 + " (bill_ID, item_ID, qty, descreption, netValue, grossValue, rate, netRate,"
                 + " createdAt, creater_ID, retired, refunded, billItemRefunded,"
                 + " consideredForCosting, inwardChargeType,"
+                + " discount, vat, vatPlusNetValue, remainingQty, searialno,"
                 + " referanceBillItem_ID)"
-                + " VALUES (?,?,?,?,?,?,?,?,?,?,0,0,0,1,'Medicine',?)")
+                + " VALUES (?,?,?,?,?,?,?,?,?,?,0,0,0,1,'Medicine',0,0,0,0,?,?)")
                 .setParameter(1, billId)
                 .setParameter(2, item.getItemId())
                 .setParameter(3, -packs)
@@ -449,7 +450,8 @@ public class TransferIssueNativeSqlService {
                 .setParameter(8, grossRate.doubleValue())
                 .setParameter(9, new Timestamp(now.getTime()))
                 .setParameter(10, createrId)
-                .setParameter(11, item.getRequestedBillItemId())
+                .setParameter(11, i)
+                .setParameter(12, item.getRequestedBillItemId())
                 .executeUpdate();
             processedBiIds[i] = ((Number) em.createNativeQuery("SELECT LAST_INSERT_ID()").getSingleResult()).longValue();
 
@@ -459,23 +461,26 @@ public class TransferIssueNativeSqlService {
                     : null;
             staffStockIds[i] = staffStockId != null ? staffStockId : -1L;
 
-            // PharmaceuticalBillItem: qty negative (stock-out), stock_ID = dept stock, staffStock_ID = staff stock (null if no staff)
+            // PharmaceuticalBillItem: qty = units (negative, stock-out); qtypacks = packs (negative)
             em.createNativeQuery(
                 "INSERT INTO " + pharmBillItemTable()
-                + " (billItem_ID, itemBatch_ID, stock_ID, staffStock_ID, qty, stringValue,"
-                + " costRate, purchaseRate, retailRate, wholesaleRate, doe)"
-                + " VALUES (?,?,?,?,?,?,?,?,?,?,?)")
+                + " (billItem_ID, itemBatch_ID, stock_ID, staffStock_ID,"
+                + " qty, qtypacks, stringValue,"
+                + " costRate, purchaseRate, retailRate, wholesaleRate, doe,"
+                + " remainingQty, remainingQtyPack)"
+                + " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,0,0)")
                 .setParameter(1, processedBiIds[i])
                 .setParameter(2, item.getItemBatchId())
                 .setParameter(3, item.getDeptStockId())
                 .setParameter(4, staffStockId)
                 .setParameter(5, -units)
-                .setParameter(6, item.getItemName())
-                .setParameter(7, item.getCostRate())
-                .setParameter(8, item.getPurchaseRate())
-                .setParameter(9, item.getRetailRate())
-                .setParameter(10, item.getWholesaleRate())
-                .setParameter(11, item.getDateOfExpire() != null
+                .setParameter(6, -packs)
+                .setParameter(7, item.getItemName())
+                .setParameter(8, item.getCostRate())
+                .setParameter(9, item.getPurchaseRate())
+                .setParameter(10, item.getRetailRate())
+                .setParameter(11, item.getWholesaleRate())
+                .setParameter(12, item.getDateOfExpire() != null
                         ? new Timestamp(item.getDateOfExpire().getTime()) : null)
                 .executeUpdate();
             processedPbIds[i] = ((Number) em.createNativeQuery("SELECT LAST_INSERT_ID()").getSingleResult()).longValue();
@@ -561,17 +566,25 @@ public class TransferIssueNativeSqlService {
             }
         }
 
-        // Step 9: Update remainingQty on each requested BillItem.
+        // Step 9: Update remainingQty on each requested BillItem atomically.
+        // The WHERE clause guards against concurrent over-issue: if another transaction
+        // already consumed the remaining qty, updateCount=0 and we abort.
         // Note: issuedPhamaceuticalItemQty is @Transient and has no DB column — do NOT update it.
         for (TransferIssueItemRowDto item : itemsToProcess) {
             double packs = item.getIssuingQty().doubleValue();
-            em.createNativeQuery(
+            int updated = em.createNativeQuery(
                 "UPDATE " + billItemTable()
                 + " SET remainingQty = GREATEST(0, COALESCE(remainingQty, qty) - ?)"
-                + " WHERE ID = ?")
+                + " WHERE ID = ? AND COALESCE(remainingQty, qty) >= ?")
                 .setParameter(1, packs)
                 .setParameter(2, item.getRequestedBillItemId())
+                .setParameter(3, packs - 0.001)
                 .executeUpdate();
+            if (updated == 0) {
+                throw new RuntimeException(
+                    "Concurrent modification: insufficient remaining qty for " + item.getItemName()
+                    + ". Please reload the request and retry.");
+            }
         }
 
         // Step 10: Update fullyIssued on requested bill if all items are now issued
@@ -672,12 +685,37 @@ public class TransferIssueNativeSqlService {
     }
 
     /**
-     * Finds an existing (non-retired) stock record for the given staff + itemBatch.
-     * Creates one if not found (INSERT SELECT to populate item name/barcode from batch data).
-     * Returns the staff stock ID — does NOT increment qty yet; the caller does that separately
-     * after deducting dept stock so PBI can reference the staffStockId.
+     * Finds or creates a staff stock record for the given staff + itemBatch atomically.
+     * Uses INSERT IGNORE so concurrent calls for the same (staff_ID, itemBatch_ID) pair
+     * are safe: only one row is created even if two transactions race.
+     * Returns the staff stock ID — does NOT increment qty yet.
      */
     private long findOrCreateStaffStock(long staffId, long itemBatchId, double initialQty) {
+        // Attempt atomic insert; duplicate (staff_ID, itemBatch_ID) is silently ignored.
+        em.createNativeQuery(
+            "INSERT IGNORE INTO " + stockTable()
+            + " (staff_ID, itemBatch_ID, stock, retired,"
+            + " itemName, barcode, longCode, dateOfExpire, retailsaleRate)"
+            + " SELECT ?, ib.ID, 0, 0,"
+            + "   COALESCE(i.name, 'UNKNOWN'),"
+            + "   COALESCE(i.barcode, ''),"
+            + "   0,"
+            + "   ib.dateOfExpire,"
+            + "   ib.retailsaleRate"
+            + " FROM " + itemBatchTable() + " ib"
+            + " JOIN " + itemTable() + " i ON i.ID = ib.item_ID"
+            + " WHERE ib.ID = ?"
+            + "   AND NOT EXISTS ("
+            + "     SELECT 1 FROM " + stockTable() + " s2"
+            + "     WHERE s2.staff_ID=? AND s2.itemBatch_ID=?"
+            + "       AND (s2.retired IS NULL OR s2.retired=0))")
+            .setParameter(1, staffId)
+            .setParameter(2, itemBatchId)
+            .setParameter(3, staffId)
+            .setParameter(4, itemBatchId)
+            .executeUpdate();
+
+        // Always re-select — works whether we just inserted or the row already existed.
         @SuppressWarnings("unchecked")
         List<Object> found = em.createNativeQuery(
                 "SELECT ID FROM " + stockTable()
@@ -687,30 +725,12 @@ public class TransferIssueNativeSqlService {
                 .setParameter(2, itemBatchId)
                 .getResultList();
 
-        if (!found.isEmpty()) {
-            // Return existing staff stock ID; caller will update qty after dept deduction
-            return ((Number) found.get(0)).longValue();
+        if (found.isEmpty()) {
+            throw new RuntimeException(
+                "Could not find or create staff stock for staffId=" + staffId
+                + " itemBatchId=" + itemBatchId);
         }
-
-        // Create new staff stock row, pulling item metadata from ItemBatch + Item
-        em.createNativeQuery(
-            "INSERT INTO " + stockTable()
-            + " (staff_ID, itemBatch_ID, stock, retired,"
-            + " itemName, barcode, longCode, dateOfExpire, retailsaleRate)"
-            + " SELECT ?, ib.ID, 0, 0,"
-            + "   COALESCE(i.name, 'UNKNOWN'),"
-            + "   COALESCE(i.barcode, ''),"
-            + "   COALESCE(CAST(i.code AS UNSIGNED), 0),"
-            + "   ib.dateOfExpire,"
-            + "   ib.retailsaleRate"
-            + " FROM " + itemBatchTable() + " ib"
-            + " JOIN " + itemTable() + " i ON i.ID = ib.item_ID"
-            + " WHERE ib.ID = ?")
-            .setParameter(1, staffId)
-            .setParameter(2, itemBatchId)
-            .executeUpdate();
-
-        return ((Number) em.createNativeQuery("SELECT LAST_INSERT_ID()").getSingleResult()).longValue();
+        return ((Number) found.get(0)).longValue();
     }
 
     private double fetchStockQty(long stockId) {
@@ -1010,18 +1030,20 @@ public class TransferIssueNativeSqlService {
             billNetTotal         = billNetTotal.add(grossRate.multiply(packs));
         }
 
-        // BillFinanceDetails — positive netTotal for issue (revenue)
+        // BillFinanceDetails — netTotal positive (revenue); purchase/retail/cost/wholesale
+        // negative (stock-out = loss of inventory value), matching the sign convention of
+        // the existing JPA-based transfer issue controller.
         Bill billRef = em.getReference(Bill.class, billId);
         BillFinanceDetails bfd = new BillFinanceDetails();
         bfd.setBill(billRef);
         bfd.setCreatedAt(new Date());
-        bfd.setNetTotal(billNetTotal);     // positive for issue
+        bfd.setNetTotal(billNetTotal);
         bfd.setGrossTotal(billNetTotal);
-        bfd.setTotalCostValue(totalCostValue);
-        bfd.setTotalPurchaseValue(totalPurchaseValue);
-        bfd.setTotalRetailSaleValue(totalRetailSaleValue);
-        bfd.setTotalWholesaleValue(totalWholesaleValue);
-        bfd.setTotalQuantity(totalQuantity);
+        bfd.setTotalCostValue(totalCostValue.negate());
+        bfd.setTotalPurchaseValue(totalPurchaseValue.negate());
+        bfd.setTotalRetailSaleValue(totalRetailSaleValue.negate());
+        bfd.setTotalWholesaleValue(totalWholesaleValue.negate());
+        bfd.setTotalQuantity(totalQuantity.negate());
         bfd.setTotalFreeQuantity(BigDecimal.ZERO);
         em.persist(bfd);
         em.flush();
