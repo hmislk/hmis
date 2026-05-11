@@ -167,10 +167,16 @@ public class TransferReceiveNativeSqlController implements Serializable {
     }
 
     public String viewByBillId(Long billId) {
-        if (billId == null) return null;
+        if (billId == null) {
+            JsfUtil.addErrorMessage("No Bill Selected");
+            return null;
+        }
         makeNull();
         printDto = transferReceiveNativeSqlService.loadPrintDtoByBillId(billId);
-        if (printDto == null) return null;
+        if (printDto == null) {
+            JsfUtil.addErrorMessage("Bill not found");
+            return null;
+        }
         String headerTemplate = configOptionApplicationController
                 .getLongTextValueByKey("Transfer Receive Note Header");
         printDto.setFooterCss(configOptionApplicationController

@@ -4916,6 +4916,10 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
             JsfUtil.addErrorMessage("No Bill type");
             return null;
         }
+        if (bill.getId() == null) {
+            JsfUtil.addErrorMessage("Bill ID is required");
+            return null;
+        }
         switch (bill.getBillTypeAtomic()) {
             case PHARMACY_ISSUE:
                 return transferIssueNativeSqlController.viewByBillId(bill.getId());

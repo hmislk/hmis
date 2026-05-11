@@ -151,10 +151,16 @@ public class RetailSaleNativeSqlController implements Serializable, ControllerWi
 
     @SuppressWarnings("unchecked")
     public String viewByBillId(Long billId) {
-        if (billId == null) return null;
+        if (billId == null) {
+            JsfUtil.addErrorMessage("No Bill Selected");
+            return null;
+        }
         resetAll();
         Object[] result = nativeSqlService.loadViewDataByBillId(billId);
-        if (result == null) return null;
+        if (result == null) {
+            JsfUtil.addErrorMessage("Bill not found");
+            return null;
+        }
         printBill = (PrintBillData) result[0];
         printBillItems = (List<BillItemData>) result[1];
         billPreview = true;

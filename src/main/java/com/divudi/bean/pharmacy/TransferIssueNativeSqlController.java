@@ -138,10 +138,16 @@ public class TransferIssueNativeSqlController implements Serializable {
     }
 
     public String viewByBillId(Long billId) {
-        if (billId == null) return null;
+        if (billId == null) {
+            JsfUtil.addErrorMessage("No Bill Selected");
+            return null;
+        }
         makeNull();
         printDto = transferIssueNativeSqlService.loadPrintDtoByBillId(billId);
-        if (printDto == null) return null;
+        if (printDto == null) {
+            JsfUtil.addErrorMessage("Bill not found");
+            return null;
+        }
         printDto.setFooterCss(configOptionApplicationController
                 .getLongTextValueByKey("Pharmacy Transfer Issue Bill Footer CSS"));
         printDto.setFooterText(configOptionApplicationController

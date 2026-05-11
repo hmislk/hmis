@@ -522,10 +522,16 @@ public class InpatientDirectIssueNativeSqlController implements Serializable {
 
     @SuppressWarnings("unchecked")
     public String viewByBillId(Long billId) {
-        if (billId == null) return null;
+        if (billId == null) {
+            JsfUtil.addErrorMessage("No Bill Selected");
+            return null;
+        }
         resetAll();
         Object[] result = nativeSqlService.loadViewDataByBillId(billId);
-        if (result == null) return null;
+        if (result == null) {
+            JsfUtil.addErrorMessage("Bill not found");
+            return null;
+        }
         patientEncounter = (PatientEncounter) result[0];
         printBill = (PrintBillData) result[1];
         printBillItems = (List<BillItemData>) result[2];

@@ -306,7 +306,10 @@ public class PharmacyBillSearch implements Serializable {
     }
 
     public String viewRequestByBillId(Long billId) {
-        if (billId == null) return null;
+        if (billId == null) {
+            JsfUtil.addErrorMessage("No Bill Selected");
+            return null;
+        }
         bill = transferIssueNativeSqlService.loadRequestBillForView(billId);
         if (bill == null) {
             JsfUtil.addErrorMessage("Bill not found");
