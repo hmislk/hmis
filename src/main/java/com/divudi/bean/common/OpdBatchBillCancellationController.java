@@ -1143,8 +1143,8 @@ public class OpdBatchBillCancellationController implements Serializable, Control
         hash.put("val", 0.1);
         hash.put("company", institution);
         hash.put("ins", getSessionController().getInstitution());
-      //hash.put("dep", getSessionController().getDepartment());
-      //hash.put("pm", PaymentMethod.Credit);
+        //hash.put("dep", getSessionController().getDepartment());
+        //hash.put("pm", PaymentMethod.Credit);
         List<Bill> bill = getFacade().findByJpql(sql, hash);
 
         if (bill == null) {
@@ -1958,7 +1958,24 @@ public class OpdBatchBillCancellationController implements Serializable, Control
             return "";
         }
 
-        if (configOptionApplicationController.getBooleanValueByKey("Mandatory permission to cancel bills.", false)) {
+        boolean needPermissionToCancel = false;
+
+        for (Bill b : bills) {
+            DepartmentType toBillDepartmentType = DepartmentType.Other;
+            
+            if(b.getToDepartment() != null && b.getToDepartment().getDepartmentType() != null){
+                toBillDepartmentType = b.getToDepartment().getDepartmentType();
+            }
+
+            boolean allowType = configOptionApplicationController.getBooleanValueByKey("OPD Billing - Mandatory permission to cancel " + toBillDepartmentType.getLabel() + " type bills", false);
+
+            if (allowType == true) {
+                needPermissionToCancel = true;
+                continue;
+            }
+        }
+
+        if (configOptionApplicationController.getBooleanValueByKey("Mandatory permission to cancel bills.", false) && needPermissionToCancel) {
             currentRequest = requestService.findRequest(batchBill);
 
             if (currentRequest == null) {
@@ -2278,9 +2295,10 @@ public class OpdBatchBillCancellationController implements Serializable, Control
     }
 
     /**
-     * Creates a deep copy of the current paymentMethodData to store as originalPaymentMethodData.
-     * This allows restoration of original payment details if user changes payment method and then
-     * switches back to the original payment method.
+     * Creates a deep copy of the current paymentMethodData to store as
+     * originalPaymentMethodData. This allows restoration of original payment
+     * details if user changes payment method and then switches back to the
+     * original payment method.
      */
     private void captureOriginalPaymentMethodData() {
         if (paymentMethodData == null) {
@@ -2292,8 +2310,9 @@ public class OpdBatchBillCancellationController implements Serializable, Control
     }
 
     /**
-     * Creates a deep copy of PaymentMethodData including all ComponentDetail objects.
-     * This ensures that modifications to the copy don't affect the original and vice versa.
+     * Creates a deep copy of PaymentMethodData including all ComponentDetail
+     * objects. This ensures that modifications to the copy don't affect the
+     * original and vice versa.
      */
     private PaymentMethodData deepCopyPaymentMethodData(PaymentMethodData source) {
         if (source == null) {
@@ -2345,14 +2364,15 @@ public class OpdBatchBillCancellationController implements Serializable, Control
     }
 
     /**
-     * Creates a deep copy of a ComponentDetail object including all its properties and
-     * nested ComponentDetail lists for multiple payment methods.
+     * Creates a deep copy of a ComponentDetail object including all its
+     * properties and nested ComponentDetail lists for multiple payment methods.
      *
-     * Note: This method intentionally does NOT deep copy the nested PaymentMethodData
-     * to avoid infinite recursion, since PaymentMethodData contains ComponentDetail
-     * objects which in turn can have PaymentMethodData. The nested PaymentMethodData
-     * in ComponentDetail is used for multiple payment methods and is handled separately
-     * through the multiplePaymentMethodComponentDetails list.
+     * Note: This method intentionally does NOT deep copy the nested
+     * PaymentMethodData to avoid infinite recursion, since PaymentMethodData
+     * contains ComponentDetail objects which in turn can have
+     * PaymentMethodData. The nested PaymentMethodData in ComponentDetail is
+     * used for multiple payment methods and is handled separately through the
+     * multiplePaymentMethodComponentDetails list.
      */
     private ComponentDetail deepCopyComponentDetail(ComponentDetail source) {
         if (source == null) {
@@ -2378,7 +2398,6 @@ public class OpdBatchBillCancellationController implements Serializable, Control
         // Note: We intentionally skip deep copying paymentMethodData here to avoid
         // infinite recursion. The ComponentDetail's paymentMethodData is only used
         // for nested multiple payment methods, which are handled below.
-
         // Deep copy multiple payment method component details
         if (source.getMultiplePaymentMethodComponentDetails() != null
                 && !source.getMultiplePaymentMethodComponentDetails().isEmpty()) {
@@ -3860,7 +3879,6 @@ public class OpdBatchBillCancellationController implements Serializable, Control
         if (omitPaymentGeneratedBills != null && omitPaymentGeneratedBills) {
             jpql += " AND (b.paymentGenerated = false OR b.paymentGenerated = 0 OR b.paymentGenerated IS NULL)";
         }
-        
 
         return getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
@@ -5877,10 +5895,9 @@ public class OpdBatchBillCancellationController implements Serializable, Control
     }
 
     // ============= Original Payment Details Methods =============
-
     /**
-     * Load and store original payment details from batch bill
-     * This ensures payment details are available throughout the cancellation process
+     * Load and store original payment details from batch bill This ensures
+     * payment details are available throughout the cancellation process
      */
     public void loadOriginalPaymentDetails() {
         System.out.println("=== loadOriginalPaymentDetails() CALLED (Batch Bill) ===");
@@ -5953,11 +5970,13 @@ public class OpdBatchBillCancellationController implements Serializable, Control
     /**
      * Get the actual payment method from Payment entity.
      *
-     * The payment method is ALWAYS stored correctly in the Payment.paymentMethod field.
+     * The payment method is ALWAYS stored correctly in the
+     * Payment.paymentMethod field.
      *
      * Note: Even for bills with bill.paymentMethod = 'MultiplePaymentMethods',
-     * each individual Payment record stores its actual method (Cash, Card, Cheque, etc.)
-     * This was verified in production database - NO Payment records have paymentMethod = 'MultiplePaymentMethods'.
+     * each individual Payment record stores its actual method (Cash, Card,
+     * Cheque, etc.) This was verified in production database - NO Payment
+     * records have paymentMethod = 'MultiplePaymentMethods'.
      *
      * @param payment The payment entity
      * @return The actual payment method stored in the database
@@ -6040,7 +6059,6 @@ public class OpdBatchBillCancellationController implements Serializable, Control
     }
 
     // ======== Getter and Setter Methods for Original Payment Details ========
-
     /**
      * Get stored original payment details loaded during navigation
      *
@@ -6080,10 +6098,10 @@ public class OpdBatchBillCancellationController implements Serializable, Control
     }
 
     // ============= Payment Data Copy Methods =============
-
     /**
-     * Copy payment method data from an original payment component detail
-     * Used by UI payment pickers to populate fields when user selects an original payment
+     * Copy payment method data from an original payment component detail Used
+     * by UI payment pickers to populate fields when user selects an original
+     * payment
      *
      * @param originalPm The original payment component detail to copy from
      */
