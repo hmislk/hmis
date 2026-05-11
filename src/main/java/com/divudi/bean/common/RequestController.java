@@ -462,6 +462,54 @@ public class RequestController implements Serializable {
         }
         printPreview = true;
     }
+    
+    
+    public void createRequestforCCBill() {
+        if (batchBill == null) {
+            JsfUtil.addErrorMessage("Bill not found for Create Request ");
+            return;
+        }
+        if (comment == null || comment.trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Comment is mandatory.");
+            return;
+        }
+
+        if (!batchBill.getDepartment().getId().equals(sessionController.getDepartment().getId())) {
+            JsfUtil.addErrorMessage("You must log in to " + batchBill.getDepartment().getName() + " to cancel this bill.");
+            return;
+        }
+
+        Request req = requestService.findRequest(batchBill);
+
+        if (req != null) {
+            JsfUtil.addErrorMessage("There is already a " + req.getRequestType().getDisplayName() + " requesr for this bill.");
+            return;
+        } else {
+            Request newlyRequest = new Request();
+
+            newlyRequest.setBill(batchBill);
+            newlyRequest.setRequester(sessionController.getLoggedUser());
+            newlyRequest.setRequestAt(new Date());
+            newlyRequest.setRequestReason(comment);
+            newlyRequest.setRequestType(RequestType.BILL_CANCELLATION);
+            newlyRequest.setStatus(RequestStatus.PENDING);
+
+            newlyRequest.setInstitution(sessionController.getInstitution());
+            newlyRequest.setDepartment(sessionController.getDepartment());
+
+            String reqNo = billNumberGenerator.departmentRequestNumberGeneratorYearly(sessionController.getDepartment(), RequestType.BILL_CANCELLATION);
+            newlyRequest.setRequestNo(reqNo);
+
+            requestService.save(newlyRequest, sessionController.getLoggedUser());
+
+            //Update Batch Bill
+            batchBill.setCurrentRequest(newlyRequest);
+            billFacade.edit(batchBill);
+
+            setCurrentRequest(newlyRequest);
+        }
+        printPreview = true;
+    }
 
     public void createRequestforPettyCashBillCancellation(Bill pettyCashBill) {
         if (pettyCashBill == null) {
