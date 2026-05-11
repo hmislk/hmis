@@ -2098,18 +2098,16 @@ public class HrReportController implements Serializable {
                 + " from StaffShift ss "
                 + " where ss.retired=false"
                 + " and ss.staff=:stf "
-                + " and ((ss.startRecord.recordTimeStamp is not null "
-                + " and ss.endRecord.recordTimeStamp is not null)) "
-                //                + " or (ss.leaveType is not null) ) "
+                + " and ("
+                + "   (ss.startRecord.recordTimeStamp is not null "
+                + "   and ss.endRecord.recordTimeStamp is not null)"
+                + "   or ss.leaveType is not null"
+                + " )"
                 + " and ss.shiftDate between :frm  and :to ";
         hm.put("frm", fromDate);
         hm.put("to", toDate);
         hm.put("stf", staff);
 
-//        if (getReportKeyWord().getStaff() != null) {
-//            sql += " and ss.staff=:stf ";
-//            hm.put("stf", getReportKeyWord().getStaff());
-//        }
         if (getReportKeyWord().getDepartment() != null) {
             sql += " and ss.staff.workingDepartment=:dep ";
             hm.put("dep", getReportKeyWord().getDepartment());
@@ -2135,7 +2133,6 @@ public class HrReportController implements Serializable {
             hm.put("rs", getReportKeyWord().getRoster());
         }
 
-//        sql += " group by FUNC('Date',ss.shiftDate)";
         return staffFacade.findLongByJpql(sql, hm, TemporalType.DATE);
     }
 
