@@ -3167,6 +3167,13 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
                 cancellationBill);
 
 //        drawerController.updateDrawerForOuts(p);
+        if (configOptionApplicationController.getBooleanValueByKey("Mandatory permission to cancel bills.", false)) {
+            Request billRequest = requestService.findRequest(bill);
+            if (billRequest != null) {
+                requestController.getBills().add(bill);
+                requestController.complteRequest(billRequest);
+            }
+        }
         bill = billFacade.find(bill.getId());
         printPreview = true;
         comment = null;
@@ -6153,13 +6160,12 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
         printPreview = false;
         return "/collecting_centre/bill_refund?faces-redirect=true";
     }
-    
+
     Request currentRequest;
-    @Inject 
+    @Inject
     RequestController requestController1;
     @Inject
     RequestService requestService;
-
 
     public String navigateToCancelCollectingCentreBill() {
         if (bill == null) {
@@ -6171,7 +6177,7 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
         boolean needPermissionToCancelCCBill = configOptionApplicationController.getBooleanValueByKey("CC Billing - Mandatory permission to cancel bills.", false);
 
         System.out.println("needPermissionToCancelCCBill = " + needPermissionToCancelCCBill);
-        
+
         if (configOptionApplicationController.getBooleanValueByKey("Mandatory permission to cancel bills.", false) && needPermissionToCancelCCBill) {
             System.out.println("need Permission ToCancel CC Bill");
             currentRequest = requestService.findRequest(bill);
@@ -6188,7 +6194,12 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
                         requestController.setCurrentRequest(currentRequest);
                         return "/common/request/request_status?faces-redirect=true";
                     case APPROVED:
-                        
+                        setBill(currentRequest.getBill());
+                        ccBillCancellingStarted.set(false);
+                        paymentMethod = currentRequest.getBill().getPaymentMethod();
+                        comment = currentRequest.getRequestReason();
+                        printPreview = false;
+
                         return "/collecting_centre/bill_cancel?faces-redirect=true";
                     default:
                         return "";
@@ -6197,15 +6208,10 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
         } else {
             ccBillCancellingStarted.set(false);
             paymentMethod = bill.getPaymentMethod();
-//        createBillItemsAndBillFees();
-//        boolean flag = billController.checkBillValues(bill);
-//        bill.setTransError(flag);
             printPreview = false;
             return "/collecting_centre/bill_cancel?faces-redirect=true";
         }
     }
-    
-    
 
     public List<BillEntry> getBillEntrys() {
         return billEntrys;
