@@ -13,6 +13,8 @@ import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillFinanceDetails;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.BillItemFinanceDetails;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.pharmacy.Stock;
 import com.divudi.core.entity.pharmacy.StockHistory;
 import javax.ejb.Stateless;
@@ -515,6 +517,137 @@ public class TransferReceiveNativeSqlService {
         }
         printDto.setItems(printItems);
         return printDto;
+    }
+
+    /**
+     * Loads a TransferReceivePrintDto from an existing settled receive bill.
+     * Used by BillSearch to display the print view without triggering the
+     * full entity-graph load (loadBillDetails) path.
+     */
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    public TransferReceivePrintDto loadPrintDtoByBillId(long billId) {
+        Bill bill = em.find(Bill.class, billId);
+        if (bill == null) {
+            return null;
+        }
+
+        TransferReceivePrintDto dto = new TransferReceivePrintDto();
+        dto.setReceiveNo(safeStr(bill.getDeptId()));
+        dto.setReceivedAt(bill.getCreatedAt());
+        dto.setComments(safeStr(bill.getComments()));
+        dto.setNetTotal(Math.abs(bill.getNetTotal()));
+
+        Department dept = bill.getDepartment() != null ? bill.getDepartment() : bill.getToDepartment();
+        if (dept != null) {
+            dto.setToDepartmentName(safeStr(dept.getName()));
+            dto.setDepartmentPrintingName(dept.getPrintingName() != null
+                    ? dept.getPrintingName() : safeStr(dept.getName()));
+            dto.setDepartmentAddress(safeStr(dept.getAddress()));
+            dto.setDepartmentPhone1(safeStr(dept.getTelephone1()));
+            dto.setDepartmentPhone2(safeStr(dept.getTelephone2()));
+            dto.setDepartmentFax(safeStr(dept.getFax()));
+            dto.setDepartmentEmail(safeStr(dept.getEmail()));
+            String phones = safeStr(dept.getTelephone1());
+            String p2 = safeStr(dept.getTelephone2());
+            if (!p2.isEmpty()) phones += " / " + p2;
+            dto.setInstitutionPhone(phones);
+            Institution inst = dept.getInstitution();
+            if (inst != null) {
+                dto.setInstitutionName(safeStr(inst.getName()));
+                dto.setInstitutionAddress(safeStr(inst.getAddress()));
+                dto.setInstitutionFax(safeStr(inst.getFax()));
+                dto.setInstitutionEmail(safeStr(inst.getEmail()));
+            }
+        }
+
+        if (bill.getCreater() != null) {
+            dto.setReceivedByName(bill.getCreater().getWebUserPerson() != null
+                    ? safeStr(bill.getCreater().getWebUserPerson().getName()) : "");
+            dto.setReceivedByStaffCode(bill.getCreater().getStaff() != null
+                    ? safeStr(bill.getCreater().getStaff().getCode()) : "");
+        }
+
+        if (bill.getApproveUser() != null) {
+            dto.setApprovedByName(bill.getApproveUser().getWebUserPerson() != null
+                    ? safeStr(bill.getApproveUser().getWebUserPerson().getName()) : "");
+            dto.setApprovedAt(bill.getApproveAt());
+        }
+
+        Bill issueBill = bill.getBackwardReferenceBill();
+        if (issueBill != null) {
+            dto.setIssueNo(safeStr(issueBill.getDeptId()));
+            dto.setIssuedAt(issueBill.getCreatedAt());
+            dto.setIssuedNetTotal(Math.abs(issueBill.getNetTotal()));
+            Department fromDept = issueBill.getFromDepartment() != null
+                    ? issueBill.getFromDepartment() : issueBill.getDepartment();
+            if (fromDept != null) {
+                dto.setFromDepartmentName(safeStr(fromDept.getName()));
+            }
+            if (issueBill.getCreater() != null) {
+                dto.setIssuedByName(issueBill.getCreater().getWebUserPerson() != null
+                        ? safeStr(issueBill.getCreater().getWebUserPerson().getName()) : "");
+            }
+            if (issueBill.getToStaff() != null && issueBill.getToStaff().getPerson() != null) {
+                dto.setTransporterName(safeStr(issueBill.getToStaff().getPerson().getNameWithTitle()));
+            }
+        }
+
+        String sql = "SELECT COALESCE(bi.searialNo, 0), i.name, COALESCE(i.code, ''),"
+                + " ib.batchNo, ib.dateOfExpire,"
+                + " ABS(bi.qty) AS qty, ABS(pbi.qty) AS qtyInUnits,"
+                + " ABS(bi.rate) AS rate, ABS(bi.netValue) AS netValue,"
+                + " COALESCE(ib.purcahseRate, 0), COALESCE(ib.retailsaleRate, 0),"
+                + " COALESCE(ib.costRate, 0)"
+                + " FROM " + billItemTable() + " bi"
+                + " JOIN " + pharmBillItemTable() + " pbi ON pbi.billItem_ID = bi.ID"
+                + " JOIN " + itemBatchTable() + " ib ON ib.ID = pbi.itemBatch_ID"
+                + " JOIN " + itemTable() + " i ON i.ID = bi.item_ID"
+                + " WHERE bi.bill_ID = ? AND (bi.retired IS NULL OR bi.retired = 0)"
+                + " ORDER BY COALESCE(bi.searialNo, 0), bi.ID";
+
+        @SuppressWarnings("unchecked")
+        List<Object[]> rows = em.createNativeQuery(sql)
+                .setParameter(1, billId)
+                .getResultList();
+
+        List<TransferReceiveItemPrintDto> items = new ArrayList<>();
+        int serial = 1;
+        for (Object[] row : rows) {
+            TransferReceiveItemPrintDto item = new TransferReceiveItemPrintDto();
+            item.setSerialNo(serial++);
+            item.setItemName(row[1] != null ? row[1].toString() : "");
+            item.setItemCode(row[2] != null ? row[2].toString() : "");
+            item.setBatchNo(row[3] != null ? row[3].toString() : "");
+            item.setDateOfExpire(row[4] instanceof java.sql.Date
+                    ? new Date(((java.sql.Date) row[4]).getTime())
+                    : (row[4] instanceof Date ? (Date) row[4] : null));
+            double qty    = toDouble(row[5]);
+            double units  = toDouble(row[6]);
+            double rate   = toDouble(row[7]);
+            double net    = toDouble(row[8]);
+            double prRate = toDouble(row[9]);
+            double rrRate = toDouble(row[10]);
+            double crRate = toDouble(row[11]);
+            item.setQty(qty);
+            item.setQtyInUnits(units);
+            item.setRate(rate);
+            item.setNetRate(rate);
+            item.setNetValue(net);
+            item.setPurchaseRate(prRate);
+            item.setRetailRate(rrRate);
+            item.setCostRate(crRate);
+            BigDecimal unitsBd = BigDecimal.valueOf(units);
+            item.setValueAtPurchaseRate(BigDecimal.valueOf(prRate).multiply(unitsBd));
+            item.setValueAtRetailRate(BigDecimal.valueOf(rrRate).multiply(unitsBd));
+            item.setLineGrossTotal(BigDecimal.valueOf(rate).multiply(BigDecimal.valueOf(qty)));
+            items.add(item);
+        }
+        dto.setItems(items);
+        return dto;
+    }
+
+    private static String safeStr(String s) {
+        return s != null ? s : "";
     }
 
     // -----------------------------------------------------------------------

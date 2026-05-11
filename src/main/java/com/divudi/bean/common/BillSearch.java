@@ -127,6 +127,10 @@ import com.divudi.bean.pharmacy.PharmacySaleController;
 import com.divudi.bean.pharmacy.PharmacySaleForCashierController;
 import com.divudi.bean.pharmacy.PreReturnController;
 import com.divudi.bean.pharmacy.SaleReturnController;
+import com.divudi.bean.pharmacy.TransferIssueNativeSqlController;
+import com.divudi.bean.pharmacy.TransferReceiveNativeSqlController;
+import com.divudi.bean.pharmacy.InpatientDirectIssueNativeSqlController;
+import com.divudi.bean.pharmacy.RetailSaleNativeSqlController;
 import static com.divudi.core.data.BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER;
 import static com.divudi.core.data.BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER;
 import static com.divudi.core.data.BillTypeAtomic.PHARMACY_TRANSFER_REQUEST_PRE;
@@ -312,6 +316,14 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
     BillReturnController billReturnController;
     @Inject
     RequestController requestController;
+    @Inject
+    TransferIssueNativeSqlController transferIssueNativeSqlController;
+    @Inject
+    TransferReceiveNativeSqlController transferReceiveNativeSqlController;
+    @Inject
+    InpatientDirectIssueNativeSqlController inpatientDirectIssueNativeSqlController;
+    @Inject
+    RetailSaleNativeSqlController retailSaleNativeSqlController;
     /**
      * Class Variables
      */
@@ -4896,6 +4908,36 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
     }
 
     public String navigateToViewBillByAtomicBillType() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("No Bill is Selected");
+            return null;
+        }
+        if (bill.getBillTypeAtomic() == null) {
+            JsfUtil.addErrorMessage("No Bill type");
+            return null;
+        }
+        if (bill.getId() == null) {
+            JsfUtil.addErrorMessage("Bill ID is required");
+            return null;
+        }
+        switch (bill.getBillTypeAtomic()) {
+            case PHARMACY_ISSUE:
+                return transferIssueNativeSqlController.viewByBillId(bill.getId());
+            case PHARMACY_RECEIVE:
+                return transferReceiveNativeSqlController.viewByBillId(bill.getId());
+            case DIRECT_ISSUE_INWARD_MEDICINE:
+                return inpatientDirectIssueNativeSqlController.viewByBillId(bill.getId());
+            case PHARMACY_RETAIL_SALE:
+                return retailSaleNativeSqlController.viewByBillId(bill.getId());
+            case PHARMACY_TRANSFER_REQUEST_PRE:
+            case PHARMACY_TRANSFER_REQUEST:
+                return pharmacyBillSearch.viewRequestByBillId(bill.getId());
+            default:
+                return navigateToViewBillByAtomicBillTypeEntityBased();
+        }
+    }
+
+    public String navigateToViewBillByAtomicBillTypeEntityBased() {
         if (bill == null) {
             JsfUtil.addErrorMessage("No Bill is Selected");
             return null;

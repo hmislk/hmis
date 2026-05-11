@@ -8,15 +8,21 @@ package com.divudi.service.pharmacy;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.dataStructure.PaymentMethodData;
 import com.divudi.core.data.dto.BillItemData;
+import com.divudi.core.data.dto.PrintBillData;
 import com.divudi.core.data.dto.StockAggregateResult;
 import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BilledBill;
 import com.divudi.core.entity.BillFinanceDetails;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.BillItemFinanceDetails;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Payment;
 import com.divudi.core.entity.PaymentScheme;
+import com.divudi.core.entity.PreBill;
 import com.divudi.core.entity.pharmacy.Stock;
 import com.divudi.core.entity.pharmacy.StockHistory;
+import java.util.ArrayList;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
@@ -60,12 +66,13 @@ public class RetailSaleNativeSqlService {
     private volatile String tBill = null;
     private volatile String tBillItem = null;
     private volatile String tPharmBillItem = null;
+    private volatile String tItem = null;
     // -----------------------------------------------------------------------
     // Public API
     // -----------------------------------------------------------------------
 
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
-    public Payment settle(Bill bill, List<BillItemData> items,
+    public Payment settle(PreBill preBill, BilledBill saleBill, List<BillItemData> items,
                           PaymentMethod paymentMethod, PaymentMethodData paymentMethodData,
                           PaymentScheme paymentScheme) {
         if (items == null || items.isEmpty()) {
@@ -74,16 +81,81 @@ public class RetailSaleNativeSqlService {
 
         long t0 = System.currentTimeMillis();
 
-        // Step 1: Persist bill header via JPA (gets DTYPE + IDENTITY ID).
-        bill.setBillItems(null);
-        em.persist(bill);
+        // Step 1a: Persist PreBill first (bill items will reference its ID).
+        preBill.setBillItems(null);
+        em.persist(preBill);
         em.flush();
-        long billId = bill.getId();
+        long preBillId = preBill.getId();
 
-        LOGGER.log(Level.INFO, "[RetailNativeSettle] Bill header persisted id={0} ms={1}",
-                new Object[]{billId, System.currentTimeMillis() - t0});
+        // Step 1b: Persist BilledBill (payment will reference its ID).
+        saleBill.setBillItems(null);
+        saleBill.setReferenceBill(preBill);
+        em.persist(saleBill);
+        em.flush();
+        long billId = saleBill.getId();
 
-        // Step 2: Native INSERT BillItem + PharmaceuticalBillItem per line item
+        // Step 1c: Cross-link PreBill → BilledBill via JPA so the L2 cache stays coherent.
+        preBill.setReferenceBill(saleBill);
+        em.merge(preBill);
+        em.flush();
+
+        LOGGER.log(Level.INFO, "[RetailNativeSettle] PreBill id={0} BilledBill id={1} ms={2}",
+                new Object[]{preBillId, billId, System.currentTimeMillis() - t0});
+
+        // Step 2a: Native INSERT BillItem + bare PBI on PreBill (rates only, no cost values — matches old flow PreBill pattern)
+        long[] biPreIds = new long[items.size()];
+        long[] pbPreIds = new long[items.size()];
+
+        for (int i = 0; i < items.size(); i++) {
+            BillItemData d = items.get(i);
+            Date createdAt = d.getCreatedAt() != null ? d.getCreatedAt() : new Date();
+
+            double absQty       = Math.abs(d.getQty());
+            double absNetValue  = Math.abs(d.getNetValue());
+            double absGrossValue = Math.abs(d.getGrossValue());
+            double netRate      = absQty > 0 ? absNetValue / absQty : 0.0;
+
+            em.createNativeQuery(
+                "INSERT INTO " + billItemTable()
+                + " (bill_ID, item_ID, qty, descreption, netValue, grossValue, netRate,"
+                + " createdAt, creater_ID, retired, refunded, billItemRefunded,"
+                + " consideredForCosting, inwardChargeType)"
+                + " VALUES (?,?,?,?,?,?,?,?,?,0,0,0,1,'Medicine')")
+                .setParameter(1, preBillId)
+                .setParameter(2, d.getItemId())
+                .setParameter(3, absQty)
+                .setParameter(4, d.getDescription())
+                .setParameter(5, absNetValue)
+                .setParameter(6, absGrossValue)
+                .setParameter(7, netRate)
+                .setParameter(8, new Timestamp(createdAt.getTime()))
+                .setParameter(9, d.getCreaterId())
+                .executeUpdate();
+            biPreIds[i] = ((Number) em.createNativeQuery("SELECT LAST_INSERT_ID()").getSingleResult()).longValue();
+
+            // PreBill PBI: rates only, cost/retail/purchase values are 0 (matches old flow)
+            em.createNativeQuery(
+                "INSERT INTO " + pharmBillItemTable()
+                + " (billItem_ID, itemBatch_ID, stock_ID, qty, stringValue,"
+                + " costRate, purchaseRate, retailRate, wholesaleRate, doe, description,"
+                + " costValue, retailValue, purchaseValue)"
+                + " VALUES (?,?,?,?,?,?,?,?,?,?,?,0,0,0)")
+                .setParameter(1, biPreIds[i])
+                .setParameter(2, d.getItemBatchId())
+                .setParameter(3, d.getStockId())
+                .setParameter(4, d.getPbiQty())
+                .setParameter(5, d.getStringValue())
+                .setParameter(6, d.getCostRate())
+                .setParameter(7, d.getPurchaseRate())
+                .setParameter(8, d.getRetailRate())
+                .setParameter(9, d.getWholesaleRate())
+                .setParameter(10, d.getDoe() != null ? new Timestamp(d.getDoe().getTime()) : null)
+                .setParameter(11, d.getDescription())
+                .executeUpdate();
+            pbPreIds[i] = ((Number) em.createNativeQuery("SELECT LAST_INSERT_ID()").getSingleResult()).longValue();
+        }
+
+        // Step 2b: Native INSERT BillItem + populated PBI on BilledBill (matches old flow BilledBill pattern)
         long[] biIds = new long[items.size()];
         long[] pbIds = new long[items.size()];
 
@@ -114,6 +186,7 @@ public class RetailSaleNativeSqlService {
                 .executeUpdate();
             biIds[i] = ((Number) em.createNativeQuery("SELECT LAST_INSERT_ID()").getSingleResult()).longValue();
 
+            // BilledBill PBI: fully populated (matches old flow BilledBill PBI)
             em.createNativeQuery(
                 "INSERT INTO " + pharmBillItemTable()
                 + " (billItem_ID, itemBatch_ID, stock_ID, qty, stringValue,"
@@ -136,7 +209,7 @@ public class RetailSaleNativeSqlService {
 
         LOGGER.log(Level.INFO, "[RetailNativeSettle] BillItem+PBI inserted ms={0}", System.currentTimeMillis() - t0);
 
-        // Step 3: Per-item: atomic stock deduction + aggregates + StockHistory
+        // Step 3: Per-item: atomic stock deduction + aggregates + StockHistory (linked to PreBill PBI — matches old flow)
         for (int i = 0; i < items.size(); i++) {
             BillItemData item = items.get(i);
             double qty = Math.abs(item.getQty());
@@ -155,7 +228,7 @@ public class RetailSaleNativeSqlService {
                     item.getBatchRetailRate(), item.getBatchPurchaseRate(),
                     item.getBatchCostRate() != null ? item.getBatchCostRate() : item.getBatchPurchaseRate());
 
-            insertStockHistory(pbIds[i], item, agg, ampItemId, itemBatchId, departmentId, institutionId);
+            insertStockHistory(pbPreIds[i], item, agg, ampItemId, itemBatchId, departmentId, institutionId);
         }
 
         // Evict natively-written entity classes from EclipseLink L2 cache
@@ -164,22 +237,25 @@ public class RetailSaleNativeSqlService {
         cache.evict(Stock.class);
         cache.evict(BillItem.class);
         cache.evict(Bill.class);
+        cache.evict(PreBill.class);
+        cache.evict(BilledBill.class);
 
         LOGGER.log(Level.INFO, "[RetailNativeSettle] Stock deducted + history inserted ms={0}", System.currentTimeMillis() - t0);
 
-        // Step 4: Finance details (JPA IDENTITY PKs — one BillItemFinanceDetails per line)
+        // Step 4: Finance details on BilledBill (BIFD on BilledBill items, BFD on BilledBill — matches old flow)
         double[] billTotals = insertFinanceDetails(billId, biIds, pbIds, items);
 
-        // Step 5: Update bill-level totals
+        // Step 5: Update totals on both bills
         em.createNativeQuery(
-                "UPDATE " + billTable() + " SET total=?, netTotal=? WHERE ID=?")
+                "UPDATE " + billTable() + " SET total=?, netTotal=? WHERE ID=? OR ID=?")
                 .setParameter(1, billTotals[0])
                 .setParameter(2, billTotals[1])
-                .setParameter(3, billId)
+                .setParameter(3, preBillId)
+                .setParameter(4, billId)
                 .executeUpdate();
 
-        // Step 6: Insert Payment record
-        Payment payment = insertPayment(bill, billId, billTotals[1], paymentMethod, paymentMethodData, paymentScheme);
+        // Step 6: Insert Payment record against BilledBill
+        Payment payment = insertPayment(saleBill, billId, billTotals[1], paymentMethod, paymentMethodData, paymentScheme);
 
         LOGGER.log(Level.INFO, "[RetailNativeSettle] DONE items={0} ms={1}",
                 new Object[]{items.size(), System.currentTimeMillis() - t0});
@@ -560,12 +636,12 @@ public class RetailSaleNativeSqlService {
         bfd.setCreatedAt(new Date());
         bfd.setNetTotal(billNetTotal);
         bfd.setGrossTotal(billNetTotal);
-        bfd.setTotalCostValue(totalCostValue);
-        bfd.setTotalPurchaseValue(totalPurchaseValue);
-        bfd.setTotalRetailSaleValue(totalRetailSaleValue);
-        bfd.setTotalWholesaleValue(totalWholesaleValue);
-        bfd.setTotalQuantity(totalQuantity);
-        bfd.setTotalFreeQuantity(totalFreeQuantity);
+        bfd.setTotalCostValue(totalCostValue.negate());
+        bfd.setTotalPurchaseValue(totalPurchaseValue.negate());
+        bfd.setTotalRetailSaleValue(totalRetailSaleValue.negate());
+        bfd.setTotalWholesaleValue(totalWholesaleValue.negate());
+        bfd.setTotalQuantity(totalQuantity.negate());
+        bfd.setTotalFreeQuantity(totalFreeQuantity.negate());
         em.persist(bfd);
         em.flush();
 
@@ -623,5 +699,107 @@ public class RetailSaleNativeSqlService {
     private String pharmBillItemTable() {
         if (tPharmBillItem == null) tPharmBillItem = resolveTable("PHARMACEUTICALBILLITEM");
         return tPharmBillItem;
+    }
+
+    private String itemTable() {
+        if (tItem == null) tItem = resolveTable("ITEM");
+        return tItem;
+    }
+
+    private static String safeStr(String s) {
+        return s != null ? s : "";
+    }
+
+    /**
+     * Loads view data for an existing settled retail sale bill.
+     * Returns Object[]{PrintBillData, List&lt;BillItemData&gt;}.
+     * Used by RetailSaleNativeSqlController.viewByBillId to display
+     * the print preview without triggering a full entity-graph load.
+     */
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    public Object[] loadViewDataByBillId(long billId) {
+        Bill bill = em.find(Bill.class, billId);
+        if (bill == null) {
+            return null;
+        }
+
+        PrintBillData pbd = new PrintBillData();
+        Department dept = bill.getDepartment();
+        if (dept != null) {
+            pbd.setDepartmentName(safeStr(dept.getName()));
+            pbd.setDepartmentPrintingName(dept.getPrintingName() != null
+                    ? dept.getPrintingName() : safeStr(dept.getName()));
+            pbd.setDepartmentTelephone1(safeStr(dept.getTelephone1()));
+            pbd.setDepartmentAddress(safeStr(dept.getAddress()));
+            Institution inst = dept.getInstitution();
+            if (inst != null) {
+                pbd.setInstitutionName(safeStr(inst.getName()));
+                pbd.setInstitutionAddress(safeStr(inst.getAddress()));
+                pbd.setInstitutionEmail(safeStr(inst.getEmail()));
+                pbd.setInstitutionWeb(safeStr(inst.getWeb()));
+            }
+        }
+        pbd.setBillNo(safeStr(bill.getDeptId()));
+        pbd.setCreatedAt(bill.getCreatedAt());
+        if (bill.getCreater() != null) {
+            pbd.setCreatorName(safeStr(bill.getCreater().getName()));
+        }
+        if (bill.getPatient() != null && bill.getPatient().getPerson() != null) {
+            pbd.setPatientName(safeStr(bill.getPatient().getPerson().getNameWithTitle()));
+            pbd.setPatientPhone(safeStr(bill.getPatient().getPerson().getPhone()));
+            pbd.setPatientPhn(safeStr(bill.getPatient().getPhn()));
+        }
+        if (bill.getPaymentMethod() != null) {
+            pbd.setPaymentMethodLabel(bill.getPaymentMethod().getLabel());
+        }
+        if (bill.getPaymentScheme() != null) {
+            pbd.setPaymentSchemePrintingName(bill.getPaymentScheme().getPrintingName() != null
+                    ? bill.getPaymentScheme().getPrintingName() : safeStr(bill.getPaymentScheme().getName()));
+        }
+        pbd.setComment(safeStr(bill.getComments()));
+        double net = Math.abs(bill.getNetTotal());
+        double gross = bill.getTotal() > 0 ? bill.getTotal() : net;
+        double disc = Math.max(0, gross - net);
+        pbd.setNetTotal(net);
+        pbd.setTotal(gross);
+        pbd.setDiscount(disc);
+        pbd.setDiscountPercentPharmacy(gross > 0 ? (disc / gross) * 100.0 : 0.0);
+        pbd.setCashPaid(bill.getCashPaid());
+        pbd.setBalance(bill.getCashPaid() - net);
+
+        // Items are on the BilledBill. For legacy plain-Bill records (pre two-bill structure)
+        // or PreBill IDs passed in, fall back to referenceBill if the bill has no items.
+        long itemsBillId = billId;
+
+        String sql = "SELECT i.name, ABS(bi.qty), COALESCE(bi.rate, bi.netRate, 0),"
+                + " ABS(bi.netRate), ABS(bi.netValue), ABS(bi.grossValue), ib.dateOfExpire"
+                + " FROM " + billItemTable() + " bi"
+                + " JOIN " + pharmBillItemTable() + " pbi ON pbi.billItem_ID = bi.ID"
+                + " JOIN " + itemBatchTable() + " ib ON ib.ID = pbi.itemBatch_ID"
+                + " JOIN " + itemTable() + " i ON i.ID = bi.item_ID"
+                + " WHERE bi.bill_ID = ? AND (bi.retired IS NULL OR bi.retired = 0)"
+                + " ORDER BY bi.ID";
+
+        @SuppressWarnings("unchecked")
+        List<Object[]> rows = em.createNativeQuery(sql)
+                .setParameter(1, itemsBillId)
+                .getResultList();
+
+        List<BillItemData> itemList = new ArrayList<>();
+        for (Object[] row : rows) {
+            BillItemData bid = new BillItemData();
+            bid.setItemName(row[0] != null ? row[0].toString() : "");
+            bid.setQty(toDouble(row[1]));
+            bid.setRate(toDouble(row[2]));
+            bid.setNetRate(toDouble(row[3]));
+            bid.setNetValue(toDouble(row[4]));
+            bid.setGrossValue(toDouble(row[5]));
+            bid.setDoe(row[6] instanceof java.sql.Date
+                    ? new java.util.Date(((java.sql.Date) row[6]).getTime())
+                    : (row[6] instanceof java.util.Date ? (java.util.Date) row[6] : null));
+            itemList.add(bid);
+        }
+
+        return new Object[]{pbd, itemList};
     }
 }
