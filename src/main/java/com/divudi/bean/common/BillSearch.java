@@ -134,12 +134,15 @@ import com.divudi.bean.pharmacy.RetailSaleNativeSqlController;
 import static com.divudi.core.data.BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER;
 import static com.divudi.core.data.BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER;
 import static com.divudi.core.data.BillTypeAtomic.PHARMACY_TRANSFER_REQUEST_PRE;
+import com.divudi.core.data.DepartmentType;
+import com.divudi.core.entity.Request;
 import com.divudi.core.entity.lab.Investigation;
 import com.divudi.core.entity.lab.PatientReport;
 import com.divudi.core.entity.lab.PatientSample;
 import com.divudi.core.entity.lab.PatientSampleComponant;
 import com.divudi.core.facade.PatientInvestigationFacade;
 import com.divudi.core.facade.PatientSampleComponantFacade;
+import com.divudi.service.RequestService;
 
 import org.primefaces.event.RowEditEvent;
 import org.primefaces.model.LazyDataModel;
@@ -546,7 +549,6 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
         return "bill_payment_opd?faces-redirect=true";
     }
 
-    
     @Deprecated // Use #{opdBillCancellationController.navigateToCancelBillView()}
     public String navigateToCancelBillView() {
         if (bill == null) {
@@ -1934,90 +1936,91 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
 
     /**
      * Called when user changes payment method in individual bill cancellation
-     * form. If user selects the original payment method, restores original payment details.
-     * Otherwise, creates new payment data for the selected method.
+     * form. If user selects the original payment method, restores original
+     * payment details. Otherwise, creates new payment data for the selected
+     * method.
      */
     public void onPaymentMethodChange() {
         try {
             System.out.println("onPaymentMethodChange: Method started");
             System.out.println("onPaymentMethodChange: Payment method changed to " + this.paymentMethod);
 
-        // Check if user selected the original payment method - if so, restore original details
-        if (billPayments != null && !billPayments.isEmpty()) {
-            Payment originalPayment = billPayments.get(0);
-            if (paymentMethod == originalPayment.getPaymentMethod()) {
-                // User switched back to original payment method - restore original details
-                paymentMethodData = new PaymentMethodData();
-                initializePaymentDataFromOriginalPayments(billPayments);
-                System.out.println("onPaymentMethodChange: Used billPayments for original payment method");
-                return;
-            }
-        } else if (originalPaymentDetails != null && !originalPaymentDetails.isEmpty()) {
-            // Check stored original payment details when billPayments is not available
-            for (ComponentDetail originalDetail : originalPaymentDetails) {
-                if (paymentMethod == originalDetail.getPaymentMethod()) {
-                    // User selected a payment method that was used in original bill
+            // Check if user selected the original payment method - if so, restore original details
+            if (billPayments != null && !billPayments.isEmpty()) {
+                Payment originalPayment = billPayments.get(0);
+                if (paymentMethod == originalPayment.getPaymentMethod()) {
+                    // User switched back to original payment method - restore original details
                     paymentMethodData = new PaymentMethodData();
-                    initializePaymentMethodData();
-                    System.out.println("onPaymentMethodChange: Used stored payment details for original payment method");
+                    initializePaymentDataFromOriginalPayments(billPayments);
+                    System.out.println("onPaymentMethodChange: Used billPayments for original payment method");
                     return;
                 }
-            }
-        }
-
-        // User selected a different payment method - create new payment data
-        paymentMethodData = new PaymentMethodData();
-
-        // Initialize basic payment data based on newly selected payment method
-        if (paymentMethod != null && getBill() != null) {
-            double netTotal = Math.abs(getBill().getNetTotal());
-
-            switch (paymentMethod) {
-                case Cash:
-                    paymentMethodData.getCash().setTotalValue(netTotal);
-                    break;
-                case Card:
-                    paymentMethodData.getCreditCard().setTotalValue(netTotal);
-                    break;
-                case Cheque:
-                    paymentMethodData.getCheque().setTotalValue(netTotal);
-                    break;
-                case Slip:
-                    paymentMethodData.getSlip().setTotalValue(netTotal);
-                    break;
-                case ewallet:
-                    paymentMethodData.getEwallet().setTotalValue(netTotal);
-                    break;
-                case Staff_Welfare:
-                    paymentMethodData.getStaffWelfare().setTotalValue(netTotal);
-                    // Note: toStaff property may need to be set separately in UI
-                    break;
-                case Staff:
-                case OnCall:
-                    paymentMethodData.getStaffCredit().setTotalValue(netTotal);
-                    // Note: toStaff property may need to be set separately in UI
-                    break;
-                case Credit:
-                    paymentMethodData.getCredit().setTotalValue(netTotal);
-                    // Note: creditCompany property may need to be set separately in UI
-                    break;
-                case PatientDeposit:
-                    paymentMethodData.getPatient_deposit().setTotalValue(netTotal);
-                    if (getBill().getPatient() != null) {
-                        paymentMethodData.getPatient_deposit().setPatient(getBill().getPatient());
+            } else if (originalPaymentDetails != null && !originalPaymentDetails.isEmpty()) {
+                // Check stored original payment details when billPayments is not available
+                for (ComponentDetail originalDetail : originalPaymentDetails) {
+                    if (paymentMethod == originalDetail.getPaymentMethod()) {
+                        // User selected a payment method that was used in original bill
+                        paymentMethodData = new PaymentMethodData();
+                        initializePaymentMethodData();
+                        System.out.println("onPaymentMethodChange: Used stored payment details for original payment method");
+                        return;
                     }
-                    break;
-                case MultiplePaymentMethods:
-                    // For multiple payments, clear the component details
-                    paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().clear();
-                    break;
-                default:
-                    // For other payment methods, just initialize with net total
-                    break;
+                }
             }
-            System.out.println("onPaymentMethodChange: Created new payment data with net total for " + paymentMethod);
-        }
-        System.out.println("onPaymentMethodChange: Method completed successfully");
+
+            // User selected a different payment method - create new payment data
+            paymentMethodData = new PaymentMethodData();
+
+            // Initialize basic payment data based on newly selected payment method
+            if (paymentMethod != null && getBill() != null) {
+                double netTotal = Math.abs(getBill().getNetTotal());
+
+                switch (paymentMethod) {
+                    case Cash:
+                        paymentMethodData.getCash().setTotalValue(netTotal);
+                        break;
+                    case Card:
+                        paymentMethodData.getCreditCard().setTotalValue(netTotal);
+                        break;
+                    case Cheque:
+                        paymentMethodData.getCheque().setTotalValue(netTotal);
+                        break;
+                    case Slip:
+                        paymentMethodData.getSlip().setTotalValue(netTotal);
+                        break;
+                    case ewallet:
+                        paymentMethodData.getEwallet().setTotalValue(netTotal);
+                        break;
+                    case Staff_Welfare:
+                        paymentMethodData.getStaffWelfare().setTotalValue(netTotal);
+                        // Note: toStaff property may need to be set separately in UI
+                        break;
+                    case Staff:
+                    case OnCall:
+                        paymentMethodData.getStaffCredit().setTotalValue(netTotal);
+                        // Note: toStaff property may need to be set separately in UI
+                        break;
+                    case Credit:
+                        paymentMethodData.getCredit().setTotalValue(netTotal);
+                        // Note: creditCompany property may need to be set separately in UI
+                        break;
+                    case PatientDeposit:
+                        paymentMethodData.getPatient_deposit().setTotalValue(netTotal);
+                        if (getBill().getPatient() != null) {
+                            paymentMethodData.getPatient_deposit().setPatient(getBill().getPatient());
+                        }
+                        break;
+                    case MultiplePaymentMethods:
+                        // For multiple payments, clear the component details
+                        paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().clear();
+                        break;
+                    default:
+                        // For other payment methods, just initialize with net total
+                        break;
+                }
+                System.out.println("onPaymentMethodChange: Created new payment data with net total for " + paymentMethod);
+            }
+            System.out.println("onPaymentMethodChange: Method completed successfully");
         } catch (Exception e) {
             System.err.println("onPaymentMethodChange: ERROR - " + e.getMessage());
             e.printStackTrace();
@@ -4027,8 +4030,9 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
     }
 
     /**
-     * Applies refund sign (negative values) to all payment method data.
-     * This ensures that payment records for refunds/cancellations are stored with negative amounts.
+     * Applies refund sign (negative values) to all payment method data. This
+     * ensures that payment records for refunds/cancellations are stored with
+     * negative amounts.
      */
     private void applyRefundSignToPaymentData() {
         if (paymentMethodData == null) {
@@ -4038,7 +4042,7 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
         // Handle multiple payment methods
         if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
             if (paymentMethodData.getPaymentMethodMultiple() != null
-                && paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails() != null) {
+                    && paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails() != null) {
                 for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
                     if (cd.getPaymentMethodData() != null) {
                         applyRefundSignToSinglePaymentMethodData(cd.getPaymentMethodData());
@@ -6149,20 +6153,59 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
         printPreview = false;
         return "/collecting_centre/bill_refund?faces-redirect=true";
     }
+    
+    Request currentRequest;
+    @Inject 
+    RequestController requestController1;
+    @Inject
+    RequestService requestService;
+
 
     public String navigateToCancelCollectingCentreBill() {
         if (bill == null) {
             JsfUtil.addErrorMessage("Nothing to cancel");
             return "";
         }
-        ccBillCancellingStarted.set(false);
-        paymentMethod = bill.getPaymentMethod();
+
+        System.out.println("Bill = " + bill + " ------> " + bill.getDeptId());
+        boolean needPermissionToCancelCCBill = configOptionApplicationController.getBooleanValueByKey("CC Billing - Mandatory permission to cancel bills.", false);
+
+        System.out.println("needPermissionToCancelCCBill = " + needPermissionToCancelCCBill);
+        
+        if (configOptionApplicationController.getBooleanValueByKey("Mandatory permission to cancel bills.", false) && needPermissionToCancelCCBill) {
+            System.out.println("need Permission ToCancel CC Bill");
+            currentRequest = requestService.findRequest(bill);
+
+            if (currentRequest == null) {
+                System.out.println("Request = Null");
+                return requestController.navigateToCreateRequest(bill);
+            } else {
+                switch (currentRequest.getStatus()) {
+                    case PENDING:
+                        requestController.setCurrentRequest(currentRequest);
+                        return "/common/request/request_status?faces-redirect=true";
+                    case UNDER_REVIEW:
+                        requestController.setCurrentRequest(currentRequest);
+                        return "/common/request/request_status?faces-redirect=true";
+                    case APPROVED:
+                        
+                        return "/collecting_centre/bill_cancel?faces-redirect=true";
+                    default:
+                        return "";
+                }
+            }
+        } else {
+            ccBillCancellingStarted.set(false);
+            paymentMethod = bill.getPaymentMethod();
 //        createBillItemsAndBillFees();
 //        boolean flag = billController.checkBillValues(bill);
 //        bill.setTransError(flag);
-        printPreview = false;
-        return "/collecting_centre/bill_cancel?faces-redirect=true";
+            printPreview = false;
+            return "/collecting_centre/bill_cancel?faces-redirect=true";
+        }
     }
+    
+    
 
     public List<BillEntry> getBillEntrys() {
         return billEntrys;
@@ -7346,11 +7389,11 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
     public PaymentMethodData getPaymentMethodData() {
         // If we're viewing a bill that was paid with multiple payment methods,
         // and we have stored original payment data, use that for the "Original Payment Details" section
-        if (this.bill != null &&
-            this.bill.getPaymentMethod() == PaymentMethod.MultiplePaymentMethods &&
-            originalPaymentMethodData != null &&
-            originalPaymentMethodData.getPaymentMethodMultiple() != null &&
-            !originalPaymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().isEmpty()) {
+        if (this.bill != null
+                && this.bill.getPaymentMethod() == PaymentMethod.MultiplePaymentMethods
+                && originalPaymentMethodData != null
+                && originalPaymentMethodData.getPaymentMethodMultiple() != null
+                && !originalPaymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().isEmpty()) {
             return originalPaymentMethodData;
         }
 
@@ -7366,8 +7409,8 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
     }
 
     /**
-     * Initialize payment method data for newly selected payment method
-     * Uses stored original payment details if available
+     * Initialize payment method data for newly selected payment method Uses
+     * stored original payment details if available
      */
     private void initializePaymentMethodData() {
         try {
@@ -8055,12 +8098,13 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
     }
 
     // ======== Payment Method Data Picker Methods for Bill Cancellation ========
-
     /**
-     * Copies payment method data from original bill's multiple payment method component
-     * to the current bill's payment method data for cancellation purposes.
+     * Copies payment method data from original bill's multiple payment method
+     * component to the current bill's payment method data for cancellation
+     * purposes.
      *
-     * @param originalPm The original payment method component detail to copy from
+     * @param originalPm The original payment method component detail to copy
+     * from
      */
     public void copyPaymentMethodData(ComponentDetail originalPm) {
         if (originalPm == null) {
@@ -8204,7 +8248,8 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
     }
 
     /**
-     * Helper method to get original payment methods by type from stored payment details
+     * Helper method to get original payment methods by type from stored payment
+     * details
      */
     private List<ComponentDetail> getOriginalPaymentsByMethod(PaymentMethod paymentMethod) {
         List<ComponentDetail> filteredPayments = new ArrayList<>();
@@ -8229,8 +8274,9 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
     }
 
     /**
-     * Load and store original payment details during navigation from bill_reprint.xhtml
-     * This ensures payment details are available throughout the cancellation process
+     * Load and store original payment details during navigation from
+     * bill_reprint.xhtml This ensures payment details are available throughout
+     * the cancellation process
      */
     public void loadOriginalPaymentDetails() {
         originalPaymentDetails = new ArrayList<>();
@@ -8261,10 +8307,10 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
                         cd.setInstitution(bankOrInstitution);
 
                         originalPaymentDetails.add(cd);
-                        System.out.println("  Stored: " + payment.getPaymentMethod() +
-                                         ", Amount: " + payment.getPaidValue() +
-                                         ", Ref: " + payment.getReferenceNo() +
-                                         ", Bank/Institution: " + (bankOrInstitution != null ? bankOrInstitution.getName() : "null"));
+                        System.out.println("  Stored: " + payment.getPaymentMethod()
+                                + ", Amount: " + payment.getPaidValue()
+                                + ", Ref: " + payment.getReferenceNo()
+                                + ", Bank/Institution: " + (bankOrInstitution != null ? bankOrInstitution.getName() : "null"));
                     }
                 }
 
@@ -8298,10 +8344,7 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
         return !getOriginalPaymentsByMethod(paymentMethod).isEmpty();
     }
 
-
-
     // ======== Getter and Setter Methods for Original Payment Details ========
-
     /**
      * Get stored original payment details loaded during navigation
      */
@@ -8331,6 +8374,5 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
     public void setOriginalPaymentMethodData(PaymentMethodData originalPaymentMethodData) {
         this.originalPaymentMethodData = originalPaymentMethodData;
     }
-
 
 }
