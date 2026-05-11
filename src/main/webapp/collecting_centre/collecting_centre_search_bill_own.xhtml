@@ -120,6 +120,10 @@
                                     <p:column headerText="Status" width="8em;" class="text-center" style="padding: 8px;">
                                         <p:badge rendered="#{bill.cancelled}" value="Cancelled" severity="danger" styleClass="mr-2"></p:badge>
                                         <p:badge rendered="#{bill.refunded}" value="Refunded" severity="warning" styleClass="mr-2"></p:badge>
+                                        
+                                        <h:panelGroup rendered="#{bill.currentRequest ne null}">
+                                            <p:badge value="Request #{bill.currentRequest.status.label}" severity="warning" styleClass="mr-2"></p:badge>
+                                        </h:panelGroup>
                                     </p:column>
 
                                     <p:column headerText="Gross Value" width="8em;" class="text-end" style="padding: 8px;">
