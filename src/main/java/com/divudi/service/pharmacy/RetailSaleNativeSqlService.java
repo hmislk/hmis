@@ -8,15 +8,19 @@ package com.divudi.service.pharmacy;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.dataStructure.PaymentMethodData;
 import com.divudi.core.data.dto.BillItemData;
+import com.divudi.core.data.dto.PrintBillData;
 import com.divudi.core.data.dto.StockAggregateResult;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillFinanceDetails;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.BillItemFinanceDetails;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Payment;
 import com.divudi.core.entity.PaymentScheme;
 import com.divudi.core.entity.pharmacy.Stock;
 import com.divudi.core.entity.pharmacy.StockHistory;
+import java.util.ArrayList;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
@@ -60,6 +64,7 @@ public class RetailSaleNativeSqlService {
     private volatile String tBill = null;
     private volatile String tBillItem = null;
     private volatile String tPharmBillItem = null;
+    private volatile String tItem = null;
     // -----------------------------------------------------------------------
     // Public API
     // -----------------------------------------------------------------------
@@ -623,5 +628,103 @@ public class RetailSaleNativeSqlService {
     private String pharmBillItemTable() {
         if (tPharmBillItem == null) tPharmBillItem = resolveTable("PHARMACEUTICALBILLITEM");
         return tPharmBillItem;
+    }
+
+    private String itemTable() {
+        if (tItem == null) tItem = resolveTable("ITEM");
+        return tItem;
+    }
+
+    private static String safeStr(String s) {
+        return s != null ? s : "";
+    }
+
+    /**
+     * Loads view data for an existing settled retail sale bill.
+     * Returns Object[]{PrintBillData, List&lt;BillItemData&gt;}.
+     * Used by RetailSaleNativeSqlController.viewByBillId to display
+     * the print preview without triggering a full entity-graph load.
+     */
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    public Object[] loadViewDataByBillId(long billId) {
+        Bill bill = em.find(Bill.class, billId);
+        if (bill == null) {
+            return null;
+        }
+
+        PrintBillData pbd = new PrintBillData();
+        Department dept = bill.getDepartment();
+        if (dept != null) {
+            pbd.setDepartmentName(safeStr(dept.getName()));
+            pbd.setDepartmentPrintingName(dept.getPrintingName() != null
+                    ? dept.getPrintingName() : safeStr(dept.getName()));
+            pbd.setDepartmentTelephone1(safeStr(dept.getTelephone1()));
+            pbd.setDepartmentAddress(safeStr(dept.getAddress()));
+            Institution inst = dept.getInstitution();
+            if (inst != null) {
+                pbd.setInstitutionName(safeStr(inst.getName()));
+                pbd.setInstitutionAddress(safeStr(inst.getAddress()));
+                pbd.setInstitutionEmail(safeStr(inst.getEmail()));
+                pbd.setInstitutionWeb(safeStr(inst.getWeb()));
+            }
+        }
+        pbd.setBillNo(safeStr(bill.getDeptId()));
+        pbd.setCreatedAt(bill.getCreatedAt());
+        if (bill.getCreater() != null) {
+            pbd.setCreatorName(safeStr(bill.getCreater().getName()));
+        }
+        if (bill.getPatient() != null && bill.getPatient().getPerson() != null) {
+            pbd.setPatientName(safeStr(bill.getPatient().getPerson().getNameWithTitle()));
+            pbd.setPatientPhone(safeStr(bill.getPatient().getPerson().getPhone()));
+            pbd.setPatientPhn(safeStr(bill.getPatient().getPhn()));
+        }
+        if (bill.getPaymentMethod() != null) {
+            pbd.setPaymentMethodLabel(bill.getPaymentMethod().getLabel());
+        }
+        if (bill.getPaymentScheme() != null) {
+            pbd.setPaymentSchemePrintingName(bill.getPaymentScheme().getPrintingName() != null
+                    ? bill.getPaymentScheme().getPrintingName() : safeStr(bill.getPaymentScheme().getName()));
+        }
+        pbd.setComment(safeStr(bill.getComments()));
+        double net = Math.abs(bill.getNetTotal());
+        double gross = bill.getTotal() > 0 ? bill.getTotal() : net;
+        double disc = Math.max(0, gross - net);
+        pbd.setNetTotal(net);
+        pbd.setTotal(gross);
+        pbd.setDiscount(disc);
+        pbd.setDiscountPercentPharmacy(gross > 0 ? (disc / gross) * 100.0 : 0.0);
+        pbd.setCashPaid(bill.getCashPaid());
+        pbd.setBalance(bill.getCashPaid() - net);
+
+        String sql = "SELECT i.name, ABS(bi.qty), COALESCE(bi.rate, bi.netRate, 0),"
+                + " ABS(bi.netRate), ABS(bi.netValue), ABS(bi.grossValue), ib.dateOfExpire"
+                + " FROM " + billItemTable() + " bi"
+                + " JOIN " + pharmBillItemTable() + " pbi ON pbi.billItem_ID = bi.ID"
+                + " JOIN " + itemBatchTable() + " ib ON ib.ID = pbi.itemBatch_ID"
+                + " JOIN " + itemTable() + " i ON i.ID = bi.item_ID"
+                + " WHERE bi.bill_ID = ? AND (bi.retired IS NULL OR bi.retired = 0)"
+                + " ORDER BY bi.ID";
+
+        @SuppressWarnings("unchecked")
+        List<Object[]> rows = em.createNativeQuery(sql)
+                .setParameter(1, billId)
+                .getResultList();
+
+        List<BillItemData> itemList = new ArrayList<>();
+        for (Object[] row : rows) {
+            BillItemData bid = new BillItemData();
+            bid.setItemName(row[0] != null ? row[0].toString() : "");
+            bid.setQty(toDouble(row[1]));
+            bid.setRate(toDouble(row[2]));
+            bid.setNetRate(toDouble(row[3]));
+            bid.setNetValue(toDouble(row[4]));
+            bid.setGrossValue(toDouble(row[5]));
+            bid.setDoe(row[6] instanceof java.sql.Date
+                    ? new java.util.Date(((java.sql.Date) row[6]).getTime())
+                    : (row[6] instanceof java.util.Date ? (java.util.Date) row[6] : null));
+            itemList.add(bid);
+        }
+
+        return new Object[]{pbd, itemList};
     }
 }

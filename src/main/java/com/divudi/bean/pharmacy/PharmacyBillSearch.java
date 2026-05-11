@@ -58,6 +58,7 @@ import com.divudi.core.entity.PreBill;
 import com.divudi.core.entity.StockBill;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.service.BillService;
+import com.divudi.service.pharmacy.TransferIssueNativeSqlService;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -121,6 +122,8 @@ public class PharmacyBillSearch implements Serializable {
     private EmailFacade emailFacade;
     @EJB
     private EmailManagerEjb emailManagerEjb;
+    @EJB
+    private TransferIssueNativeSqlService transferIssueNativeSqlService;
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Controllers">
     @Inject
@@ -299,7 +302,15 @@ public class PharmacyBillSearch implements Serializable {
             JsfUtil.addErrorMessage("No Bill Selected");
             return null;
         }
-        bill = billService.reloadBill(billId);
+        return viewRequestByBillId(billId);
+    }
+
+    public String viewRequestByBillId(Long billId) {
+        if (billId == null) {
+            JsfUtil.addErrorMessage("No Bill Selected");
+            return null;
+        }
+        bill = transferIssueNativeSqlService.loadRequestBillForView(billId);
         if (bill == null) {
             JsfUtil.addErrorMessage("Bill not found");
             return null;

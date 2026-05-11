@@ -137,6 +137,25 @@ public class TransferIssueNativeSqlController implements Serializable {
         return "/pharmacy/pharmacy_transfer_request_list?faces-redirect=true";
     }
 
+    public String viewByBillId(Long billId) {
+        if (billId == null) {
+            JsfUtil.addErrorMessage("No Bill Selected");
+            return null;
+        }
+        makeNull();
+        printDto = transferIssueNativeSqlService.loadPrintDtoByBillId(billId);
+        if (printDto == null) {
+            JsfUtil.addErrorMessage("Bill not found");
+            return null;
+        }
+        printDto.setFooterCss(configOptionApplicationController
+                .getLongTextValueByKey("Pharmacy Transfer Issue Bill Footer CSS"));
+        printDto.setFooterText(configOptionApplicationController
+                .getLongTextValueByKey("Pharmacy Transfer Issue Bill Footer Text"));
+        printPreview = true;
+        return "/pharmacy/pharmacy_transfer_issue_native?faces-redirect=true";
+    }
+
     // -----------------------------------------------------------------------
     // Core settlement
     // -----------------------------------------------------------------------
