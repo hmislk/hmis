@@ -157,8 +157,8 @@
                                 class="mx-1 ui-button-info"
                                 style="width: 150px"
                                 ajax="false" 
-                                value="Print">
-                                <p:printer target="tblData" />
+                                value="Print"
+                                action="collection_center_recipt_report_view?faces-redirect=true">
                             </p:commandButton>
                             <p:commandButton 
                                 class="m-2 ui-button-success" 
@@ -178,8 +178,8 @@
                                 icon="fa-solid fa-file-pdf"
                                 style="width: 150px"
                                 ajax="false" 
-                                onclick="generatePDF()"
-                                value="PDF">
+                                value="PDF"
+                                action="#{reportController.exportCollectionCenterReciptReportToPDF()}">
                             </p:commandButton>
 
                         </h:panelGrid>
@@ -242,6 +242,10 @@
                             </p:column>
                             <p:column headerText="Agent Name" >
                                 <h:outputText value="#{row.bill.fromInstitution.name}" ></h:outputText>
+                                <f:facet name="footer" >
+                                    <h:outputLabel value="Total" >
+                                    </h:outputLabel>
+                                </f:facet>
                             </p:column>
                             <p:column headerText="Amount" class="text-end" sortBy="#{row.bill.total}">
                                 <h:outputText value="#{row.bill.total}" >
@@ -257,65 +261,6 @@
                                 <h:outputText value="#{row.bill.comments}" ></h:outputText>
                             </p:column>
                         </p:dataTable>
-
-                        <table id="tbl" style="display: none;">
-                            <thead>
-                                <tr>
-                                    <th style="width: 3em;">S. No</th>
-                                    <th>Bill No</th>
-                                    <th>Billed at</th>
-                                    <th>Billed By</th>
-                                    <th>Payment Method</th>
-                                    <th>Agent Code</th>
-                                    <th>Agent Name</th>
-                                    <th>Amount</th>
-                                    <th>Comments</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <ui:repeat value="#{reportController.bundle.reportTemplateRows}" var="row" varStatus="status">
-                                    <tr>
-                                        <td>#{status.index + 1}</td>
-                                        <td>
-                                            #{row.bill.referenceNumber}
-                                        </td>
-                                        <td>
-                                            <h:outputText value="#{row.bill.createdAt}">
-                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
-                                            </h:outputText>
-                                        </td>
-                                        <td>#{row.bill.creater.name}</td>
-                                        <td>#{row.bill.paymentMethod}</td>
-                                        <td>#{row.bill.fromInstitution.code}</td>
-                                        <td>#{row.bill.fromInstitution.name}</td>
-                                        <td>#{row.bill.total}</td>
-                                        <td>#{row.bill.comments}</td>
-                                    </tr>
-                                </ui:repeat>
-                            </tbody>
-                            <tfoot>
-                                <tr>
-                                    <th colspan="7">Total</th>
-                                    <th>
-                                        <h:outputLabel value="#{reportController.bundle.total}" >
-                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                        </h:outputLabel>
-                                    </th>
-                                    <th></th>
-                                </tr>
-                            </tfoot>
-                        </table>
-
-
-                        <script>
-                                    function generatePDF() {
-                                        const {jsPDF} = window.jspdf;
-                                        const doc = new jsPDF();
-                                        doc.autoTable({html: '#tbl'});
-                                        doc.save('collecting_center_receipt_report.pdf');
-                                    }
-                        </script>
-
                     </p:panel>
                 </h:form>
 

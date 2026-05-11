@@ -1046,6 +1046,7 @@ public class ChannelBean {
         newSs.setStaff(ss.getStaff());
         newSs.setRoomNo(ss.getRoomNo());
         newSs.setSessionNumberGenerator(saveSessionNumber(ss));
+        newSs.setReserveNumbers(ss.getReserveNumbers());
         try {
             sessionInstanceFacade.create(newSs);
         } catch (Exception e) {

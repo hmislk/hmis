@@ -201,5 +201,36 @@ public class ChannelAbsentPatientsDTO {
     public void setRefundedDeptId(String refundedDeptId) {
         this.refundedDeptId = refundedDeptId;
     }
+
+    public String getChannelReceiptNumber() {
+        String rcptNumber = "";
+        if (deptId != null) {
+            rcptNumber = deptId;
+        }
+        if (cancelled) {
+            rcptNumber += "\n(Cancelled - " + (cancelledDeptId != null ? cancelledDeptId : "") + ")";
+        }
+        if (refunded) {
+            rcptNumber += "\n(Refunded - " + (refundedDeptId != null ? refundedDeptId : "") + ")";
+        }
+        if (billTypeAtomic == BillTypeAtomic.CHANNEL_REFUND_WITH_PAYMENT) {
+            rcptNumber += "\n(Refund Bill)";
+        }
+        if (billTypeAtomic == BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT || billTypeAtomic == BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING) {
+            rcptNumber += "\n(Cancel Bill)";
+        }
+
+        return rcptNumber;
+    }
+
+    public String getBookingType() {
+        String bkType = "";
+        if (billTypeAtomic == BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT || billTypeAtomic == BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING) {
+            bkType = "Online Booking";
+        } else {
+            bkType = "System Booking";
+        }
+        return bkType;
+    }
 }
 

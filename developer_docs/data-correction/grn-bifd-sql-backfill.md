@@ -23,18 +23,25 @@ Source data for the correction comes from:
 
 ---
 
+## ID Generation — AUTO_INCREMENT (all deployments as of v2.2.0)
+
+All entity tables use `AUTO_INCREMENT` primary keys. There is no longer any need to:
+- Stop Payara before running the script
+- Check or bump the `SEQUENCE` table
+- Pre-assign IDs manually
+
+MySQL assigns IDs automatically. For a single `INSERT ... SELECT` statement, MySQL assigns
+consecutive IDs and `LAST_INSERT_ID()` returns the **first** ID in that batch. The link-back
+`UPDATE` uses `LAST_INSERT_ID() + rownum - 1` to reconstruct the mapping.
+
+> **Note:** The `SEQUENCE` / `SEQ_GEN` table still exists in older databases but is no longer
+> updated by EclipseLink. It can be ignored for this procedure.
+
+---
+
 ## Prerequisites
 
-### 1. Stop local Payara (if running)
-
-EclipseLink uses a single shared `SEQ_GEN` sequence table for **all** entity ID generation.
-If Payara is running, it will compete for IDs and cause duplicate key errors.
-
-- **Local Payara:** Stop it before running this script.
-- **Production Payara (remote):** Cannot be stopped. Use the ID-bumping technique below to
-  stay ahead of its ID allocation.
-
-### 2. Check what needs fixing
+### Check what needs fixing
 
 ```sql
 SELECT
@@ -55,28 +62,6 @@ GROUP BY month, b.BILLTYPEATOMIC
 ORDER BY month DESC, b.BILLTYPEATOMIC;
 ```
 
-### 3. Reserve a block of IDs
-
-Check the current sequence and max IDs in use:
-
-```sql
-SELECT SEQ_COUNT FROM SEQUENCE WHERE SEQ_NAME = 'SEQ_GEN';
-SELECT MAX(ID) AS max_bifd FROM BillItemFinanceDetails;
-SELECT MAX(ID) AS max_bfd  FROM BillFinanceDetails;
-```
-
-Bump `SEQ_GEN` well ahead of the current max to reserve a safe block. Allow ~1.5× the number
-of rows you need (BIFD rows + BFD rows + margin for production Payara activity):
-
-```sql
--- Example: bumping by 2000 to cover ~1300 rows with margin
-UPDATE SEQUENCE SET SEQ_COUNT = <current_value> + 2000 WHERE SEQ_NAME = 'SEQ_GEN';
-```
-
-> **Why bump by extra?** Production Payara pre-allocates ID blocks of 50 in memory. Even after
-> bumping SEQ_GEN, it may use IDs up to ~50 beyond its last allocated block before re-reading
-> the sequence. Bumping by 1.5–2× the needed count ensures you stay ahead.
-
 ---
 
 ## Sign Convention
@@ -94,28 +79,26 @@ This matches the Java implementation in
 
 ---
 
-## SQL Template (one month at a time)
+## SQL Template (one month or date range at a time)
 
-Process one month at a time and verify before moving to the next. Replace the date range and
-starting ID values as needed.
+Process one period at a time and verify before moving to the next. Replace the date range
+as needed.
 
 ```sql
 -- =============================================================================
--- GRN BIFD + BFD Backfill - <MONTH YEAR> (e.g. 2025-07-01 to 2025-08-01)
--- BIFD IDs start at: <BIFD_START>   (= SEQ_GEN value before bump + 1)
--- BFD  IDs start at: <BFD_START>    (= BIFD_START + estimated item count + 1)
--- Run while local Payara is STOPPED
+-- GRN BIFD + BFD Backfill - <PERIOD> (e.g. 2026-01-01 to 2026-06-01)
+-- All IDs are assigned by MySQL AUTO_INCREMENT — no manual ID management needed.
+-- Safe to run while Payara is running.
 -- =============================================================================
 
 SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED;
 SET @now = NOW();
 
--- ── STEP 1: Build work table with pre-assigned IDs ───────────────────────────
+-- ── STEP 1: Build work table ──────────────────────────────────────────────────
 DROP TEMPORARY TABLE IF EXISTS tmp_bifd_work;
 CREATE TEMPORARY TABLE tmp_bifd_work AS
 SELECT
     (@rownum := @rownum + 1)            AS rownum,
-    (<BIFD_START> + @rownum)            AS new_bifd_id,   -- <-- adjust BIFD_START
     bi.ID                               AS bill_item_id,
     b.ID                                AS bill_id,
     b.BILLFINANCEDETAILS_ID             AS existing_bfd_id,
@@ -148,21 +131,17 @@ WHERE b.BILLTYPEATOMIC IN (
     'PHARMACY_DIRECT_PURCHASE', 'PHARMACY_DIRECT_PURCHASE_CANCELLED'
 )
 AND b.RETIRED = 0 AND bi.RETIRED = 0
-AND b.CREATEDAT >= '<FROM_DATE>'   -- e.g. '2025-07-01'
-AND b.CREATEDAT <  '<TO_DATE>'     -- e.g. '2025-08-01'
+AND b.CREATEDAT >= '<FROM_DATE>'   -- e.g. '2026-01-01'
+AND b.CREATEDAT <  '<TO_DATE>'     -- e.g. '2026-06-01'
 AND bi.BILLITEMFINANCEDETAILS_ID IS NULL
 ORDER BY bi.ID;
 
--- Verify ID range before inserting
-SELECT COUNT(*) AS items_to_insert,
-       MIN(new_bifd_id) AS id_from,
-       MAX(new_bifd_id) AS id_to
-FROM tmp_bifd_work;
--- ⚠️ Check that id_to < SEQ_GEN bumped value and no overlap with existing IDs
+-- Verify count before inserting
+SELECT COUNT(*) AS items_to_insert FROM tmp_bifd_work;
 
--- ── STEP 2: INSERT BillItemFinanceDetails ────────────────────────────────────
+-- ── STEP 2: INSERT BillItemFinanceDetails (AUTO_INCREMENT assigns IDs) ────────
 INSERT INTO BillItemFinanceDetails (
-    ID, CREATEDAT, UNITSPERPACK,
+    CREATEDAT, UNITSPERPACK,
     QUANTITY, FREEQUANTITY, QUANTITYBYUNITS, TOTALQUANTITYBYUNITS,
     GROSSRATE, LINEGROSSRATE, RETAILSALERATE, RETAILSALERATEPERUNIT,
     PURCHASERATE, COSTRATE, LINEDISCOUNTRATE,
@@ -170,7 +149,7 @@ INSERT INTO BillItemFinanceDetails (
     VALUEATRETAILRATE, VALUEATPURCHASERATE, VALUEATCOSTRATE
 )
 SELECT
-    new_bifd_id, @now, 1.0,
+    @now, 1.0,
     qty, free_qty, qty, total_qty,
     purchase_rate, purchase_rate, retail_rate, retail_rate,
     purchase_rate, cost_rate,
@@ -184,19 +163,24 @@ SELECT
     factor * retail_rate   * qty,
     factor * purchase_rate * qty,
     factor * cost_rate     * total_qty
-FROM tmp_bifd_work;
+FROM tmp_bifd_work
+ORDER BY rownum;   -- ← must match the order in tmp_bifd_work
 
 SELECT ROW_COUNT() AS bifd_inserted;
 
--- ── STEP 3: Link BIFD to BillItem ────────────────────────────────────────────
+-- Capture the first AUTO_INCREMENT ID assigned by the INSERT above
+SET @first_bifd_id = LAST_INSERT_ID();
+
+-- ── STEP 3: Link BIFD to BillItem ─────────────────────────────────────────────
+-- Each inserted row's ID = @first_bifd_id + rownum - 1 (consecutive, same order)
 UPDATE BillItem bi
 JOIN tmp_bifd_work w ON w.bill_item_id = bi.ID
-SET bi.BILLITEMFINANCEDETAILS_ID = w.new_bifd_id
+SET bi.BILLITEMFINANCEDETAILS_ID = @first_bifd_id + w.rownum - 1
 WHERE bi.BILLITEMFINANCEDETAILS_ID IS NULL;
 
 SELECT ROW_COUNT() AS billitems_linked;
 
--- ── STEP 4: Per-bill totals ───────────────────────────────────────────────────
+-- ── STEP 4: Per-bill totals ────────────────────────────────────────────────────
 DROP TEMPORARY TABLE IF EXISTS tmp_bill_totals;
 CREATE TEMPORARY TABLE tmp_bill_totals AS
 SELECT
@@ -207,15 +191,11 @@ SELECT
 FROM tmp_bifd_work
 GROUP BY bill_id, existing_bfd_id;
 
--- Materialise count into variable to avoid "can't reopen temp table" MySQL error
-SELECT COUNT(*) INTO @null_bfd_count FROM tmp_bill_totals WHERE existing_bfd_id IS NULL;
-
--- ── STEP 5: INSERT new BFD rows for bills that had none ──────────────────────
+-- ── STEP 5: INSERT new BFD rows for bills that had none ───────────────────────
 DROP TEMPORARY TABLE IF EXISTS tmp_new_bfd;
 CREATE TEMPORARY TABLE tmp_new_bfd AS
 SELECT
-    (@bfd_row := @bfd_row + 1)   AS bfd_rownum,
-    (<BFD_START> + @bfd_row)     AS new_bfd_id,   -- <-- adjust BFD_START
+    (@bfd_row := @bfd_row + 1)  AS bfd_rownum,
     t.bill_id,
     t.total_sale_value,
     t.total_purchase_value,
@@ -224,29 +204,29 @@ FROM (SELECT @bfd_row := 0) r,
      tmp_bill_totals t
 WHERE t.existing_bfd_id IS NULL;
 
-SELECT COUNT(*) AS new_bfd_count,
-       MIN(new_bfd_id) AS id_from,
-       MAX(new_bfd_id) AS id_to
-FROM tmp_new_bfd;
+SELECT COUNT(*) AS new_bfd_count FROM tmp_new_bfd;
 
 INSERT INTO BillFinanceDetails (
-    ID, CREATEDAT,
+    CREATEDAT,
     TOTALRETAILSALEVALUE, TOTALPURCHASEVALUE, TOTALCOSTVALUE, BILLGROSSTOTAL
 )
-SELECT new_bfd_id, @now,
+SELECT @now,
        total_sale_value, total_purchase_value, total_cost_value, total_purchase_value
-FROM tmp_new_bfd;
+FROM tmp_new_bfd
+ORDER BY bfd_rownum;
 
 SELECT ROW_COUNT() AS bfd_inserted;
 
+SET @first_bfd_id = LAST_INSERT_ID();
+
 UPDATE Bill b
 JOIN tmp_new_bfd n ON n.bill_id = b.ID
-SET b.BILLFINANCEDETAILS_ID = n.new_bfd_id
+SET b.BILLFINANCEDETAILS_ID = @first_bfd_id + n.bfd_rownum - 1
 WHERE b.BILLFINANCEDETAILS_ID IS NULL;
 
 SELECT ROW_COUNT() AS bills_linked_to_new_bfd;
 
--- ── STEP 6: UPDATE existing BFD rows if any ──────────────────────────────────
+-- ── STEP 6: UPDATE existing BFD rows if any ───────────────────────────────────
 UPDATE BillFinanceDetails bfd
 JOIN tmp_bill_totals t ON t.existing_bfd_id = bfd.ID
 SET
@@ -258,7 +238,7 @@ WHERE t.existing_bfd_id IS NOT NULL;
 
 SELECT ROW_COUNT() AS existing_bfd_updated;
 
--- ── STEP 7: Verify ───────────────────────────────────────────────────────────
+-- ── STEP 7: Verify ────────────────────────────────────────────────────────────
 SELECT COUNT(*) AS remaining_missing_bifd
 FROM BillItem bi JOIN Bill b ON b.ID = bi.BILL_ID
 WHERE b.BILLTYPEATOMIC IN (
@@ -283,36 +263,13 @@ DROP TEMPORARY TABLE IF EXISTS tmp_new_bfd;
 ## Running the Script
 
 ```bash
-mysql -h 127.0.0.1 -P 3336 -u hmis_admin -p<password> <dbname> < backfill_month.sql
+mysql -h 127.0.0.1 -P 3346 -u hmis_admin -p<password> <dbname> < backfill_month.sql
 ```
 
-Check the output after each month:
+Check the output after each period:
 - `bifd_inserted` should equal `items_to_insert`
 - `billitems_linked` should equal `bifd_inserted`
 - `remaining_missing_bifd` should be 0 (any non-zero items are orphans with no source data)
-
----
-
-## Handling ID Collisions
-
-If you get `ERROR 1062: Duplicate entry '...' for key 'PRIMARY'`, production Payara has
-consumed IDs inside your reserved block. Fix:
-
-```sql
--- 1. Check current state
-SELECT SEQ_COUNT FROM SEQUENCE WHERE SEQ_NAME = 'SEQ_GEN';
-SELECT MAX(ID) AS max_bifd FROM BillItemFinanceDetails;
-SELECT MAX(ID) AS max_bfd  FROM BillFinanceDetails;
-
--- 2. Bump SEQ_GEN well ahead (use a large gap if production is active)
-UPDATE SEQUENCE SET SEQ_COUNT = <max_bifd or max_bfd> + 2000
-WHERE SEQ_NAME = 'SEQ_GEN';
-
--- 3. Re-run the script with BIFD_START = current max_bifd + 1
-```
-
-The query in Step 2 (`AND bi.BILLITEMFINANCEDETAILS_ID IS NULL`) is **idempotent** — already
-fixed items are automatically excluded, so re-running is safe.
 
 ---
 
@@ -352,3 +309,6 @@ These are historical data integrity issues and can be reported but not corrected
 - The existing admin page function (`addFinancialDetailsForPharmacyGRNsFromBillItemData`) does
   the same calculation but processes bills one at a time via JPA, making it extremely slow for
   large backlogs. Use this SQL method or the REST API instead.
+- `BillItemFacade.allocateSequenceBlock()` is used by the stock-take bulk INSERT path and
+  still functions (it syncs the SEQ_COUNT to the current AUTO_INCREMENT max before advancing
+  it). It is not needed for this backfill procedure.
