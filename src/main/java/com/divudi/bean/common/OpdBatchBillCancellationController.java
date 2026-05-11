@@ -1962,23 +1962,16 @@ public class OpdBatchBillCancellationController implements Serializable, Control
 
         for (Bill b : bills) {
             DepartmentType toBillDepartmentType = b.getToDepartment().getDepartmentType();
-
             if (toBillDepartmentType == null) {
-                System.out.println("To Bill Department Type is Null. Now Assign Other Department Type to it.");
                 toBillDepartmentType = DepartmentType.Other;
             }
-
             boolean allowType = configOptionApplicationController.getBooleanValueByKey("OPD Billing - Mandatory permission to cancel " + toBillDepartmentType.getLabel() + " type bills", false);
-
-            System.out.println(b.getDeptId() + " --> " + toBillDepartmentType.getLabel() + " --> " + allowType);
 
             if (allowType == true) {
                 needPermissionToCancel = true;
                 continue;
             }
         }
-
-        System.out.println("Need Permission to Cancel = " + needPermissionToCancel);
 
         if (configOptionApplicationController.getBooleanValueByKey("Mandatory permission to cancel bills.", false) && needPermissionToCancel) {
             currentRequest = requestService.findRequest(batchBill);
