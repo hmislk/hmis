@@ -464,8 +464,13 @@ public class RetailSaleNativeSqlController implements Serializable, ControllerWi
         pb.setTotal(netTot);
         pb.setNetTotal(netTot);
         pb.setGrantTotal(netTot);
-        pb.setBalance(0.0);
-        pb.setPaidAmount(netTot);
+        if (paymentMethod == PaymentMethod.Credit || paymentMethod == PaymentMethod.Staff) {
+            pb.setBalance(netTot);
+            pb.setPaidAmount(0.0);
+        } else {
+            pb.setBalance(0.0);
+            pb.setPaidAmount(netTot);
+        }
 
         if (getPreBill().getReferredBy() != null) {
             pb.setReferredBy(getPreBill().getReferredBy());
