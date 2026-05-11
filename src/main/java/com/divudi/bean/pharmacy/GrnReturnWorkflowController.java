@@ -30,6 +30,8 @@ import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.ItemFacade;
 import com.divudi.core.facade.PharmaceuticalBillItemFacade;
+import com.divudi.core.facade.StockFacade;
+import com.divudi.core.entity.pharmacy.Stock;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.service.BillService;
 import com.divudi.core.data.PaymentMethod;
@@ -83,6 +85,8 @@ public class GrnReturnWorkflowController implements Serializable {
     private BillItemFacade billItemFacade;
     @EJB
     private PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;
+    @EJB
+    private StockFacade stockFacade;
     @EJB
     private PharmacyBean pharmacyBean;
     @EJB
@@ -1039,6 +1043,52 @@ public class GrnReturnWorkflowController implements Serializable {
 
     // Stock handling - only at approval stage. Returns false (and shows an error) if any item fails.
     private boolean updateStock() {
+        // Phase 1: pre-deduction availability check — reads fresh DB stock for every
+        // item and accumulates total requested qty per stock record.  No mutations are
+        // made here, so a failure leaves the database completely unchanged.
+        Map<Long, Double> requestedByStockId = new HashMap<>();
+        Map<Long, String> itemNameByStockId = new HashMap<>();
+        for (BillItem bi : billItems) {
+            if (bi.isRetired()) {
+                continue;
+            }
+            PharmaceuticalBillItem phi = bi.getPharmaceuticalBillItem();
+            if (phi == null || phi.getStock() == null || phi.getStock().getId() == null) {
+                continue;
+            }
+            double absQty = Math.abs(phi.getQty()) + Math.abs(phi.getFreeQty());
+            if (absQty == 0) {
+                continue;
+            }
+            Long stockId = phi.getStock().getId();
+            requestedByStockId.merge(stockId, absQty, Double::sum);
+            itemNameByStockId.putIfAbsent(stockId,
+                    bi.getItem() != null ? bi.getItem().getName() : "Unknown");
+        }
+
+        boolean preCheckPassed = true;
+        for (Map.Entry<Long, Double> entry : requestedByStockId.entrySet()) {
+            Long stockId = entry.getKey();
+            double totalRequested = entry.getValue();
+            Stock freshStock = stockFacade.find(stockId);
+            double available = (freshStock != null && freshStock.getStock() != null)
+                    ? freshStock.getStock() : 0.0;
+            if (available < totalRequested) {
+                String itemName = itemNameByStockId.getOrDefault(stockId, "Unknown");
+                LOGGER.log(Level.WARNING,
+                        "Pre-deduction stock check failed for item: {0}, available: {1}, requested: {2}",
+                        new Object[]{itemName, available, totalRequested});
+                JsfUtil.addErrorMessage("Cannot approve: insufficient stock for \""
+                        + itemName + "\". Available: " + String.format("%.2f", available)
+                        + ", Requested: " + String.format("%.2f", totalRequested) + ".");
+                preCheckPassed = false;
+            }
+        }
+        if (!preCheckPassed) {
+            return false;
+        }
+
+        // Phase 2: all items passed the pre-check — proceed with deductions.
         for (BillItem bi : billItems) {
             if (bi.isRetired()) {
                 continue;
@@ -1063,9 +1113,12 @@ public class GrnReturnWorkflowController implements Serializable {
             );
 
             if (!returnFlag) {
+                // Pre-check passed but deductFromStock still failed — concurrent transaction
+                // drained the stock between our check and this deduction.
                 String itemName = bi.getItem() != null ? bi.getItem().getName() : "Unknown";
                 double available = phi.getStock() != null ? phi.getStock().getStock() : 0;
-                LOGGER.log(Level.WARNING, "Stock deduction failed for item: {0}, available: {1}, requested: {2}",
+                LOGGER.log(Level.WARNING,
+                        "Stock deduction failed after pre-check for item: {0}, available: {1}, requested: {2}",
                         new Object[]{itemName, available, absQty});
                 phi.setQty(Math.abs(phi.getQty()));
                 phi.setFreeQty(Math.abs(phi.getFreeQty()));
@@ -1080,7 +1133,6 @@ public class GrnReturnWorkflowController implements Serializable {
         if (currentBill != null && currentBill.getBillFinanceDetails() != null) {
             BillFinanceDetails bfd = currentBill.getBillFinanceDetails();
 
-            // Negate the purchase, cost, and retail values at bill level
             if (bfd.getTotalPurchaseValue() != null) {
                 bfd.setTotalPurchaseValue(bfd.getTotalPurchaseValue().abs().negate());
             }
@@ -1091,7 +1143,6 @@ public class GrnReturnWorkflowController implements Serializable {
                 bfd.setTotalRetailSaleValue(bfd.getTotalRetailSaleValue().abs().negate());
             }
 
-            // Save the updated bill with corrected finance details
             billFacade.edit(currentBill);
         }
         return true;
