@@ -204,6 +204,10 @@ public class InwardSearch implements Serializable {
         }
 
         DepartmentType toBillDepartmentType = bill.getToDepartment().getDepartmentType();
+        
+        if(toBillDepartmentType == null){
+            toBillDepartmentType = DepartmentType.Other;
+        }
 
         boolean allowType = configOptionApplicationController.getBooleanValueByKey("Inward Billing - Mandatory permission to cancel " + toBillDepartmentType.getLabel() + " type bills", false);
 
