@@ -411,7 +411,7 @@
                                 </h:outputText>
                             </p:column>
                             <p:column headerText="Net Salary" style="width: 7rem;">
-                                <h:outputText value="#{(i.transTotalDeduction-(i.noPayValueBasic+scc.noPayValueAllowance))+(i.transTotalAllowance+i.transEpfEtfDiductableSalary)}">
+                                <h:outputText value="#{(i.transTotalDeduction-(i.noPayValueBasic+i.noPayValueAllowance))+(i.transTotalAllowance+i.transEpfEtfDiductableSalary)}">
                                     <f:convertNumber pattern="0.00" />
                                 </h:outputText>
                             </p:column>
