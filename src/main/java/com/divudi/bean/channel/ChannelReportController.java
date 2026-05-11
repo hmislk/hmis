@@ -4,11 +4,23 @@
  */
 package com.divudi.bean.channel;
 
+import com.divudi.bean.channel.ChannelReportController.WrapperDtoForChannelFutureIncome;
+import com.divudi.bean.channel.ChannelReportTemplateController.AgentHistoryWithDate;
+import com.divudi.bean.channel.ChannelReportTemplateController.BookingCountSummryRow;
+import com.divudi.bean.channel.ChannelReportTemplateController.ChannelBillTotals;
+import com.divudi.bean.channel.ChannelReportTemplateController.ChannelReportColumnModel;
+import com.divudi.bean.channel.ChannelReportTemplateController.ChannelReportColumnModelBundle;
+import com.divudi.bean.channel.ChannelReportTemplateController.DepartmentBill;
+import com.divudi.bean.channel.ChannelReportTemplateController.DoctorPaymentSummeryRow;
+import com.divudi.bean.channel.ChannelReportTemplateController.DoctorPaymentSummeryRowSub;
+import com.divudi.bean.channel.ChannelReportTemplateController.FeetypeFee;
 import com.divudi.bean.channel.analytics.ReportTemplateController;
 import com.divudi.bean.common.ExcelController;
 import com.divudi.bean.common.InstitutionController;
 import com.divudi.bean.common.PdfController;
 import com.divudi.bean.common.ReportTimerController;
+import com.divudi.bean.common.SearchController;
+import com.divudi.bean.common.ServiceCategoryController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.pharmacy.PharmacyController;
 import com.divudi.core.data.BillClassType;
@@ -191,6 +203,8 @@ public class ChannelReportController implements Serializable {
     ExcelController excelController;
     @Inject
     PharmacyController pharmacyController;
+    @Inject
+    ServiceCategoryController serviceCategoryController;
 
     @EJB
     DepartmentFacade departmentFacade;
@@ -445,13 +459,41 @@ public class ChannelReportController implements Serializable {
     }
 
     public void generateChannelCategorywiseDetailsForShitEndFromChannelReportController(Long shiftStartBillId){
+        bookingsByShiftDto = null;
         categorywiseDetailsWrapperDTO = reportTemplateController.generateChannelCategorywiseDetailsForShitEnd(shiftStartBillId);
+    }
+
+    private WrapperDtoForChannelFutureIncome bookingsByShiftDto;
+
+    public WrapperDtoForChannelFutureIncome getBookingsByShiftDto() {
+        return bookingsByShiftDto;
+    }
+
+    public void setBookingsByShiftDto(WrapperDtoForChannelFutureIncome bookingsByShiftDto) {
+        this.bookingsByShiftDto = bookingsByShiftDto;
+    }
+
+    public void generateChannelBookingBillsForShitEndFromChannelReportController(Long shiftStartBillId){
+        categorywiseDetailsWrapperDTO = null;
+        bookingsByShiftDto = channelService.fetchAndGenerateChannelBookingBillsForShiftEnd(shiftStartBillId, categoryList, paymentMethods);
+    }
+
+    public void updateChannelBookingBillsForShitEndFromChannelReportController(){
+        if (bookingsByShiftDto == null) {
+            return;
+        }
+        if (bookingsByShiftDto.getShiftStartBillId() == null) {
+            return;
+        }
+        bookingsByShiftDto  = channelService.updateChannelBookingBillsForShitEnd(bookingsByShiftDto.getShiftStartBillId(), bookingsByShiftDto.getShiftEndBillId(), bookingsByShiftDto.getCashierId(), bookingsByShiftDto.getHospital(), categoryList, paymentMethods, bookingsByShiftDto.getShiftStartAt(), bookingsByShiftDto.getShiftEndAt(), bookingsByShiftDto.getCashierUserName());
+
     }
     
     
     public void listShiftStartBills() {
         
         categorywiseDetailsWrapperDTO = null;
+        bookingsByShiftDto = null;
         
         String jpql = "select b "
                 + " from Bill b "
@@ -832,6 +874,14 @@ public class ChannelReportController implements Serializable {
         private double allCancelAppoinments;
         private double allRefundAppoinments;
 
+        //shift details
+        private Date shiftStartAt;
+        private Date shiftEndAt;
+        private String cashierUserName;
+        private Long cashierId;
+        private Long shiftStartBillId;
+        private Long shiftEndBillId;
+
          // fee Totals
         private double allHosFeeTotal;
         private double allDoctorFeeTotal;
@@ -964,6 +1014,54 @@ public class ChannelReportController implements Serializable {
         public void setAllTotalAmount(double allTotalAmount) {
             this.allTotalAmount = allTotalAmount;
         }
+
+        public Date getShiftStartAt() {
+            return shiftStartAt;
+        }
+
+        public void setShiftStartAt(Date shiftStartAt) {
+            this.shiftStartAt = shiftStartAt;
+        }
+
+        public Date getShiftEndAt() {
+            return shiftEndAt;
+        }
+
+        public void setShiftEndAt(Date shiftEndAt) {
+            this.shiftEndAt = shiftEndAt;
+        }
+
+        public Long getShiftStartBillId() {
+            return shiftStartBillId;
+        }
+
+        public void setShiftStartBillId(Long shiftStart) {
+            this.shiftStartBillId = shiftStart;
+        }
+
+        public Long getShiftEndBillId() {
+            return shiftEndBillId;
+        }
+
+        public void setShiftEndBillId(Long shiftEnd) {
+            this.shiftEndBillId = shiftEnd;
+        }
+
+        public String getCashierUserName() {
+            return cashierUserName;
+        }
+
+        public void setCashierUserName(String cashierUserName) {
+            this.cashierUserName = cashierUserName;
+        }
+
+        public Long getCashierId() {
+            return cashierId;
+        }
+
+        public void setCashierId(Long cashierId) {
+            this.cashierId = cashierId;
+        }        
 
     }
 

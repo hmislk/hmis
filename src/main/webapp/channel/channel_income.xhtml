@@ -17,14 +17,25 @@
 
                         <div class="row">
                             <div class="col-md-12">
-                                <h:panelGrid columns="5" 
+                                <h:panelGrid columns="6" 
+                                             id="filterPanel"
                                              class="ui-fluid"
                                              style="width: 100%; table-layout: fixed;"
-                                             columnClasses="fp-col-label1, fp-col-input1, fp-col-space1, fp-col-label3, fp-col-input3">
+                                             columnClasses="fp-col-space1, fp-col-label1, fp-col-input1, fp-col-space1, fp-col-label3, fp-col-input3">
+
+                                    <p:selectBooleanButton 
+                                        onIcon="pi pi-check" 
+                                        offIcon="pi pi-times"
+                                        style="width: 100%; max-width: 30px;height: 100%; max-height: 30px; aspect-ratio: 1 / 1; display: flex; align-items: center; justify-content: center;"
+                                        value="#{searchController.filterChannelBillsByBilledDate}"
+                                        disabled="#{searchController.filterChannelBillsByBilledDate and !searchController.filterChannelBillsByAppointmentDate}">
+                                        <p:ajax event="change" update="filterPanel" />
+                                    </p:selectBooleanButton>
+
                                     <h:panelGroup layout="block" styleClass="form-group">
                                         <h:outputText value="&#xf073;"
                                                       styleClass="fa ml-5"/> <!-- FontAwesome calendar icon -->
-                                        <h:outputLabel value="From" for="fromDate" class="mx-3"/>
+                                        <h:outputLabel value="Billed From" for="fromDate" class="mx-3"/>
                                     </h:panelGroup>
                                     <p:calendar
                                         styleClass="w-100"
@@ -39,7 +50,7 @@
                                     <h:panelGroup layout="block" styleClass="form-group">
                                         <h:outputText value="&#xf073;"
                                                       styleClass="fa mr-2"/> <!-- FontAwesome calendar icon -->
-                                        <h:outputLabel value="To" for="toDate" class="mx-3"/>
+                                        <h:outputLabel value="Billed To" for="toDate" class="mx-3"/>
                                     </h:panelGroup>
                                     <p:calendar
                                         styleClass="w-100"
@@ -49,6 +60,46 @@
                                         navigator="false"
                                         pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
                                         />
+
+                                    <p:selectBooleanButton 
+                                        onIcon="pi pi-check" 
+                                        offIcon="pi pi-times"
+                                        style="width: 100%; max-width: 30px;height: 100%; max-height: 30px; aspect-ratio: 1 / 1; display: flex; align-items: center; justify-content: center;"
+                                        value="#{searchController.filterChannelBillsByAppointmentDate}"
+                                        disabled="#{!searchController.filterChannelBillsByBilledDate and searchController.filterChannelBillsByAppointmentDate}">
+                                        <p:ajax event="change" update="filterPanel" />
+                                    </p:selectBooleanButton>
+
+                                    <h:panelGroup layout="block" styleClass="form-group">
+                                        <h:outputText value="&#xf073;"
+                                                      styleClass="fa ml-5"/> <!-- FontAwesome calendar icon -->
+                                        <h:outputLabel value="Appointment From" for="fromDateAppt" class="mx-3"/>
+                                    </h:panelGroup>
+                                    <p:calendar
+                                        styleClass="w-100"
+                                        inputStyleClass="w-100 form-control"
+                                        id="fromDateAppt"
+                                        value="#{searchController.appointmentFromDate}"
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                        />
+
+                                    <p:spacer width="50"/>
+
+                                    <h:panelGroup layout="block" styleClass="form-group">
+                                        <h:outputText value="&#xf073;"
+                                                      styleClass="fa mr-2"/> <!-- FontAwesome calendar icon -->
+                                        <h:outputLabel value="Appointment To" for="toDateAppt" class="mx-3"/>
+                                    </h:panelGroup>
+                                    <p:calendar
+                                        styleClass="w-100"
+                                        inputStyleClass="w-100 form-control"
+                                        id="toDateAppt"
+                                        value="#{searchController.appointmentToDate}"
+                                        navigator="false"
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                        />
+
+                                    <p:spacer width="50"/>
 
                                     <h:panelGroup layout="block" styleClass="form-group">
                                         <h:outputText value="&#xf19c;"
@@ -85,6 +136,7 @@
                                             var="d" itemLabel="#{d.name}" itemValue="#{d}"/>
                                     </p:selectOneMenu>
 
+                                    <p:spacer width="50"/>
                                     <h:panelGroup layout="block" styleClass="form-group">
                                         <h:outputText value="&#xf2b9;" styleClass="fa mr-2"/>
                                         <h:outputLabel value="Speciality" for="acSpeciality" class="mx-3"/>
@@ -119,6 +171,7 @@
                                             itemValue="#{staff}"/>
                                     </p:selectOneMenu>
 
+                                    <p:spacer width="50"/>
                                     <h:panelGroup layout="block" styleClass="form-group">
                                         <h:outputText styleClass="fas fa-user mr-2"/>
                                         <h:outputLabel value="User" class="mx-3"/>
@@ -148,6 +201,26 @@
                                         <f:selectItem itemLabel="System Bookings (With Agent Bookings)"
                                                       itemValue="System Bookings"/>
                                         <f:selectItem itemLabel="Agent Bookings" itemValue="Agent Bookings"/>
+                                    </p:selectOneMenu>
+
+                                    <p:spacer width="50"/>
+
+                                    <h:panelGroup layout="block" styleClass="form-group">
+                                        <h:outputText styleClass="fa fa-money-bill-wave" /> 
+                                        <h:outputLabel value="Payment Method" class="mx-3"/>
+                                    </h:panelGroup>
+
+                                    
+                                    <p:selectOneMenu
+                                        class="w-100"
+                                        styleClass="w-100 form-control"
+                                        value="#{searchController.paymentMethod}">
+                                        <f:selectItem itemLabel="Select a Payment Method"/>
+                                        <f:selectItems 
+                                                        value="#{enumController.paymentMethodsForChannelSettling}"  
+                                                        var="pm"
+                                                        itemLabel="#{pm.label}"
+                                                        itemValue="#{pm}"/>
                                     </p:selectOneMenu>
 
                                 </h:panelGrid>
@@ -230,7 +303,7 @@
 
                             <p:column width="5em">
                                 <f:facet name="header">
-                                    <h:outputText value="Date &amp; Time"/>
+                                    <h:outputText value="Billed Date"/>
                                 </f:facet>
                                 <h:outputText value="#{row.bill.createdAt}">
                                     <f:convertDateTime
@@ -238,7 +311,17 @@
                                 </h:outputText>
                             </p:column>
 
-                            <p:column  filterMatchMode="contains" filterBy="#{row.bill.deptId}" width="8em">
+                            <p:column width="6em">
+                                <f:facet name="header">
+                                    <h:outputText value="Appointment Date"/>
+                                </f:facet>
+                                <h:outputText value="#{row.bill.singleBillSession.sessionInstance.sessionDate}">
+                                    <f:convertDateTime
+                                        pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column  filterMatchMode="contains" filterBy="#{row.bill.deptId}" width="10em">
                                 <f:facet name="header">
                                     <h:outputText value="Bill No"/>
                                 </f:facet>
@@ -316,13 +399,30 @@
                                 </h:outputText>
                             </p:column>
 
-                            <p:column style="text-align: center;" width="4em">
+                            <p:column style="text-align: center; white-space: normal !important; word-wrap: break-word !important;" width="8em" >
                                 <f:facet name="header">
                                     <h:outputText value="Payment Method"/>
                                 </f:facet>
-                                <h:outputText value="#{row.bill.paymentMethod}&nbsp;">
+                                <h:outputText value="#{row.bill.paymentMethod}&nbsp;" rendered="#{row.bill.billTypeAtomic ne 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT' and row.bill.billTypeAtomic ne 'CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING'}">
                                 </h:outputText>
-
+                                <h:outputText value="WEB" rendered="#{row.bill.billTypeAtomic eq 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT' or row.bill.billTypeAtomic eq 'CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING'}">
+                                </h:outputText>
+                                <h:panelGroup rendered="#{row.bill.billTypeAtomic eq 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}">
+                                    <br/>
+                                    <h:outputText value="(#{row.bill.referenceBill.onlineBooking.agency.name})">
+                                    </h:outputText>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{row.bill.billTypeAtomic eq 'CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING'}">
+                                    <br/>
+                                    <h:outputText value="(#{row.bill.billedBill.referenceBill.onlineBooking.agency.name})">
+                                    </h:outputText>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{row.bill.billType eq 'ChannelAgent' and row.bill.billTypeAtomic ne 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT' and row.bill.billTypeAtomic ne 'CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING'}">
+                                    <br/>
+                                    <h:outputText value="(#{row.bill.creditCompany.name})">
+                                    </h:outputText>
+                                </h:panelGroup>
+                                
                             </p:column>
 
                             <p:column class="text-end" width="5em">

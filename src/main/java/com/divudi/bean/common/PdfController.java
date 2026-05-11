@@ -3341,8 +3341,8 @@ public class PdfController {
         boolean includeBTA          = false;
         boolean includeDiscount     = false;
 
-        List<String> headers = new ArrayList<>(Arrays.asList("Serial", "Date", "Bill No"));
-        List<Float> colWidths = new ArrayList<>(Arrays.asList(2f, 3f, 5f));
+        List<String> headers = new ArrayList<>(Arrays.asList("Serial", "Billed Date", "Appointment Date", "Bill No"));
+        List<Float> colWidths = new ArrayList<>(Arrays.asList(2f, 3f, 3f, 5f));
 
         if (webUserController.hasPrivilege("Developers")) {
             includeBTA = true;
@@ -3458,19 +3458,19 @@ public class PdfController {
                     table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", b.getNetTotal())).setTextAlignment(TextAlignment.RIGHT).setFontSize(fontSize)));
                 }
             } else if (includeBTA && includeDiscount){
-                for (int i = 0; i < 12; i++) {
+                for (int i = 0; i < 13; i++) {
                     table.addCell(new Cell().add(new Paragraph("").setTextAlignment(TextAlignment.LEFT).setFontSize(fontSize)));
                 }
             } else if (includeBTA){
-                for (int i = 0; i < 10; i++) {
-                    table.addCell(new Cell().add(new Paragraph("").setTextAlignment(TextAlignment.LEFT).setFontSize(fontSize)));
-                }
-            } else if (includeDiscount){
                 for (int i = 0; i < 11; i++) {
                     table.addCell(new Cell().add(new Paragraph("").setTextAlignment(TextAlignment.LEFT).setFontSize(fontSize)));
                 }
+            } else if (includeDiscount){
+                for (int i = 0; i < 12; i++) {
+                    table.addCell(new Cell().add(new Paragraph("").setTextAlignment(TextAlignment.LEFT).setFontSize(fontSize)));
+                }
             } else {
-                for (int i = 0; i < 9; i++) {
+                for (int i = 0; i < 10; i++) {
                     table.addCell(new Cell().add(new Paragraph("").setTextAlignment(TextAlignment.LEFT).setFontSize(fontSize)));
                 }
             } 
@@ -3480,9 +3480,9 @@ public class PdfController {
         } 
 
         if (includeBTA) {
-            table.addCell(new Cell(1, 8).add(new Paragraph("")).setBackgroundColor(new DeviceRgb(192, 192, 192)));
+            table.addCell(new Cell(1, 9).add(new Paragraph("")).setBackgroundColor(new DeviceRgb(192, 192, 192)));
         } else {
-            table.addCell(new Cell(1, 7).add(new Paragraph("")).setBackgroundColor(new DeviceRgb(192, 192, 192)));
+            table.addCell(new Cell(1, 8).add(new Paragraph("")).setBackgroundColor(new DeviceRgb(192, 192, 192)));
         }
         table.addCell(new Cell().add(new Paragraph(bundle.getHospitalTotal() != null ? String.format("%,.2f", bundle.getHospitalTotal().doubleValue()) : "0.0").setFont(PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD))).setTextAlignment(TextAlignment.RIGHT).setFontSize(fontSize).setBackgroundColor(new DeviceRgb(192, 192, 192)));
         table.addCell(new Cell().add(new Paragraph(bundle.getStaffTotal() != null ? String.format("%,.2f", bundle.getStaffTotal().doubleValue()) : "0.0").setFont(PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD))).setTextAlignment(TextAlignment.RIGHT).setFontSize(fontSize).setBackgroundColor(new DeviceRgb(192, 192, 192)));

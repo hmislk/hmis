@@ -416,7 +416,8 @@ public class ChannelService {
                 + " bill.creater.id, "
                 + " bill.createdAt, "
                 + " rbill.createdAt,"
-                + " rbill.id "
+                + " rbill.id, "
+                + " bill.institution "
                 + " from Bill bill "
                 + " left join bill.referenceBill rbill"
                 + " where bill.id = :billId "
@@ -494,6 +495,115 @@ public class ChannelService {
 
     }
 
+    public ChannelReportController.WrapperDtoForChannelFutureIncome fetchChannelBookingBillsForShiftEnd(Long shiftStartBillId, Long shiftEndBillId, Long createrId, Institution hospital, List<Category> categoryList, List<PaymentMethod> paymentMethods) {
+        String sql = "select new com.divudi.bean.channel.ChannelReportController.ChannelIncomeDetailDto(bs.id, "
+                + "bill.id, "
+                + "bill.billTypeAtomic, "
+                + "session.sessionDate, "
+                + "bill.createdAt, "
+                + "bill.creater.name, "
+                + "person.name, "
+                + "person.phone, "
+                + "bill.paymentMethod, "
+                + "COALESCE(bill.staffFee, 0), "
+                + "COALESCE(bill.hospitalFee, 0), "
+                + "COALESCE(bill.netTotal, 0), "
+                + "bill.comments, "
+                + "bill.cancelled, "
+                + "bill.refunded ) "
+                + "from BillSession bs "
+                + "join bs.bill bill "
+                + "join bs.sessionInstance session "
+                + "join bill.patient patient "
+                + "left join patient.person person "
+                + "where bill.billTypeAtomic in :bta "
+                + "and bill.id > :shiftStartBillId "
+                + "and bill.billType <> :bt ";
+
+        List<BillTypeAtomic> btaList = new ArrayList<>();
+
+        btaList.add(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
+        btaList.add(BillTypeAtomic.CHANNEL_PAYMENT_FOR_BOOKING_BILL);
+        btaList.add(BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT);
+        btaList.add(BillTypeAtomic.CHANNEL_REFUND_WITH_PAYMENT);
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("bta", btaList);
+        params.put("bt", BillType.ChannelAgent);
+        params.put("shiftStartBillId", shiftStartBillId);
+
+        params.put("createrId", createrId);
+
+        if (shiftEndBillId != null) {
+            sql += "and bill.id < :shiftEndBillId ";
+            params.put("shiftEndBillId", shiftEndBillId);
+        }
+
+        if (hospital != null) {
+            sql += "and bill.institution = :ins ";
+            params.put("ins", hospital);
+        }
+
+        if (categoryList != null && !categoryList.isEmpty()) {
+            sql += "and session.originatingSession.category in :category ";
+            params.put("category", categoryList);
+        }
+
+        if (paymentMethods != null && !paymentMethods.isEmpty()) {
+            sql += "and bill.paymentMethod in :pm ";
+            params.put("pm", paymentMethods);
+        }
+
+        sql += "and bill.creater.id = :createrId "
+                + "order by bill.createdAt desc";
+
+        List<ChannelReportController.ChannelIncomeDetailDto> dtoList = (List<ChannelReportController.ChannelIncomeDetailDto>) billSessionFacade.findLightsByJpql(sql, params, TemporalType.TIMESTAMP);
+
+        if (dtoList == null || dtoList.isEmpty()) {
+            return null;
+        }
+
+        ChannelReportController.WrapperDtoForChannelFutureIncome wrapperDto = new ChannelReportController.WrapperDtoForChannelFutureIncome();
+        wrapperDto.setIncomeDtos(dtoList);
+        wrapperDto.setProcessDate(new Date());
+
+        List<ChannelReportController.ChannelIncomeSummeryDto> summeryDtoList = new ArrayList<>();
+
+        for (ChannelReportController.ChannelIncomeDetailDto dto : dtoList) {
+            if (summeryDtoList.isEmpty()) {
+                ChannelReportController.ChannelIncomeSummeryDto summery1 = new ChannelReportController.ChannelIncomeSummeryDto();
+                summery1.setAppoimentDate(dto.getAppoinmentDate());
+                summeryDtoList.add(summery1);
+                fillPaymentsDataToDto(summeryDtoList, dto);
+                continue;
+            } else {
+                fillPaymentsDataToDto(summeryDtoList, dto);
+            }
+
+        }
+        wrapperDto.setSummeryDtos(summeryDtoList);
+
+        for (ChannelReportController.ChannelIncomeSummeryDto summery : wrapperDto.getSummeryDtos()) {
+            wrapperDto.setAllCashTotal(wrapperDto.getAllCashTotal() + summery.getCashTotal());
+            wrapperDto.setAllCardTotal(wrapperDto.getAllCardTotal() + summery.getCardTotal());
+            wrapperDto.setAllCreditTotal(wrapperDto.getAllCreditTotal() + summery.getCreditTotal());
+            wrapperDto.setAllCancelTotal(wrapperDto.getAllCancelTotal() + summery.getCancelTotal());
+            wrapperDto.setAllRefundTotal(wrapperDto.getAllRefundTotal() + summery.getRefundTotal());
+            wrapperDto.setAllCancelAppoinments(wrapperDto.getAllCancelAppoinments() + summery.getTotalCancelAppoinments());
+            wrapperDto.setAllRefundAppoinments(wrapperDto.getAllRefundAppoinments() + summery.getTotalRefundAppoinments());
+            wrapperDto.setTotalValidAppoinments(wrapperDto.getTotalValidAppoinments() + summery.getTotalActiveAppoinments());
+
+            // fee total calculation
+            wrapperDto.setAllHosFeeTotal(wrapperDto.getAllHosFeeTotal() + summery.getTotalHosFee());
+            wrapperDto.setAllDoctorFeeTotal(wrapperDto.getAllDoctorFeeTotal() + summery.getTotalDocFee());
+            wrapperDto.setAllTotalAmount(wrapperDto.getAllTotalAmount() + summery.getTotalAmount());
+        }
+
+        return wrapperDto;
+
+    }
+    
+
     public ChannelServiceCategorywiseDetailsWrapperDTO fetchAndGenerateChannelCategorywiseDetailsForShiftEnd(Long shiftStartBillId) {
         if (shiftStartBillId == null) {
             return null;
@@ -554,6 +664,53 @@ public class ChannelService {
 
         return wrapperDto;
 
+    }
+
+    public ChannelReportController.WrapperDtoForChannelFutureIncome fetchAndGenerateChannelBookingBillsForShiftEnd(Long shiftStartBillId, List<Category> categoryList, List<PaymentMethod> paymentMethods) {
+        if (shiftStartBillId == null) {
+            return null;
+        }
+
+        Object[] billMetaData = fetchShiftEndBillDetails(shiftStartBillId);
+
+        if (billMetaData == null) {
+            return null;
+        }
+
+        String creatorName = (String) billMetaData[0];
+        Long creatorId = (Long) billMetaData[1];
+        Date shiftStartAt = (Date) billMetaData[2];
+        Date shiftEndAt = (Date) billMetaData[3];
+        Long shiftEndBillId = (Long) billMetaData[4];
+        Institution hospital = (Institution) billMetaData[5];
+
+        ChannelReportController.WrapperDtoForChannelFutureIncome  wrapperDto = fetchChannelBookingBillsForShiftEnd(shiftStartBillId, shiftEndBillId, creatorId, hospital, categoryList, paymentMethods);
+
+        wrapperDto.setShiftStartAt(shiftStartAt);
+        wrapperDto.setShiftEndAt(shiftEndAt);
+        wrapperDto.setCashierUserName(creatorName);
+        wrapperDto.setCashierId(creatorId);
+        wrapperDto.setShiftStartBillId(shiftStartBillId);
+        wrapperDto.setShiftEndBillId(shiftEndBillId);
+        wrapperDto.setHospital(hospital);
+
+        return wrapperDto;
+
+    }
+
+    public ChannelReportController.WrapperDtoForChannelFutureIncome updateChannelBookingBillsForShitEnd(Long shiftStartBillId, Long shiftEndBillId, Long createrId, Institution hospital, List<Category> categoryList, List<PaymentMethod> paymentMethods,
+                                                                                                Date shiftStartAt, Date shiftEndAt, String casherUserName) {
+        ChannelReportController.WrapperDtoForChannelFutureIncome tempDto = fetchChannelBookingBillsForShiftEnd(shiftStartBillId, shiftEndBillId, createrId, hospital, categoryList, paymentMethods);
+
+        tempDto.setShiftStartAt(shiftStartAt);
+        tempDto.setShiftEndAt(shiftEndAt);
+        tempDto.setCashierUserName(casherUserName);
+        tempDto.setCashierId(createrId);
+        tempDto.setShiftStartBillId(shiftStartBillId);
+        tempDto.setShiftEndBillId(shiftEndBillId);
+        tempDto.setHospital(hospital);
+
+        return tempDto;
     }
 
     public Map getForeignFeesForDoctorAndInstitutionFromServiceSession(ServiceSession ss) {
@@ -1643,7 +1800,6 @@ public class ChannelService {
     }
 
     public void fillPaymentsDataToDto(List<ChannelReportController.ChannelIncomeSummeryDto> summeryDtoList, ChannelReportController.ChannelIncomeDetailDto dto) {
-
         boolean availableSummery = false;
 
         for (ChannelReportController.ChannelIncomeSummeryDto summeryDto : summeryDtoList) {

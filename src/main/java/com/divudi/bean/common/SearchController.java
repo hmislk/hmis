@@ -118,6 +118,8 @@ import java.io.InputStream;
 import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -129,6 +131,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.ejb.EJB;
+import java.util.Locale;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.context.FacesContext;
 import javax.faces.model.SelectItem;
@@ -341,6 +344,9 @@ public class SearchController implements Serializable {
     private Bill selectedRequest;
     String settledBillType;
     private int activeIndexForDisbursement;
+
+    private Date appointmentFromDate;
+    private Date appointmentToDate;
 
     public String getSettledBillType() {
         return settledBillType;
@@ -1463,6 +1469,8 @@ public class SearchController implements Serializable {
         searchKeyword = null;
         printPreview = false;
         showLoggedDepartmentOnly = true;
+        filterChannelBillsByAppointmentDate = false;
+        filterChannelBillsByBilledDate = true;
         settledBillType = null;
         total = 0.0;
     }
@@ -1477,6 +1485,13 @@ public class SearchController implements Serializable {
         patientInvestigations = null;
         searchKeyword = null;
         return "/opd/search_opd_billd_of_logged_department?faces-redirect=true";
+    }
+
+    public String navigateToChannelIncomeReport() {
+        filterChannelBillsByAppointmentDate = false;
+        filterChannelBillsByBilledDate = true;
+
+        return "/channel/channel_income?faces-redirect=true";
     }
 
     public void makeListNull2() {
@@ -2911,6 +2926,22 @@ public class SearchController implements Serializable {
 
     public void setShowLoggedDepartmentOnly(boolean showLoggedDepartmentOnly) {
         this.showLoggedDepartmentOnly = showLoggedDepartmentOnly;
+    }
+
+    public boolean isFilterChannelBillsByAppointmentDate() {
+        return filterChannelBillsByAppointmentDate;
+    }
+
+    public void setFilterChannelBillsByAppointmentDate(boolean filterChannelBillsByAppointmentDate) {
+        this.filterChannelBillsByAppointmentDate = filterChannelBillsByAppointmentDate;
+    }
+
+    public boolean isFilterChannelBillsByBilledDate() {
+        return filterChannelBillsByBilledDate;
+    }
+
+    public void setFilterChannelBillsByBilledDate(boolean filterChannelBillsByBilledDate) {
+        this.filterChannelBillsByBilledDate = filterChannelBillsByBilledDate;
     }
 
     public List<PharmaceuticalBillItem> getPharmaceuticalBillItems() {
@@ -10735,8 +10766,9 @@ public class SearchController implements Serializable {
         payments = paymentFacade.findByJpql(jpql, params);
 
     }
-
     private Map<String, Object> channelBillsSearchCriteria;
+    private boolean filterChannelBillsByAppointmentDate;
+    private boolean filterChannelBillsByBilledDate;
 
     public void searchChannelBills() {
         Date startTime = new Date();
@@ -11763,8 +11795,13 @@ public class SearchController implements Serializable {
         sql = "select b "
                 + " from Bill b "
                 + " where b.billTypeAtomic in :billTypesAtomics "
-                + " and b.createdAt between :fromDate and :toDate "
                 + " and b.retired=false ";
+
+        if (filterChannelBillsByAppointmentDate) {
+            sql += " and b.singleBillSession.sessionInstance.sessionDate between :fromDate and :toDate ";
+        } else {
+            sql += " and b.createdAt between :fromDate and :toDate ";
+        }
 
         if (ins != null) {
             sql += " and b.institution=:ins ";
@@ -21125,6 +21162,11 @@ public class SearchController implements Serializable {
     private String bookingType;
 
     public void generateChannelIncome() {
+        if (!filterChannelBillsByAppointmentDate && !filterChannelBillsByBilledDate) {
+            JsfUtil.addErrorMessage("Please select atleast one date filter.");
+            return;
+        }
+
         Map<String, Object> parameters = new HashMap<>();
         String jpql = "SELECT new com.divudi.core.data.ReportTemplateRow("
                 + "bill, "
@@ -21210,10 +21252,17 @@ public class SearchController implements Serializable {
             parameters.put("pm", paymentMethod);
         }
 
-        jpql += "AND p.createdAt BETWEEN :fd AND :td ";
-        parameters.put("fd", fromDate);
-        parameters.put("td", toDate);
-
+        if (filterChannelBillsByBilledDate) {
+            jpql += "AND p.createdAt BETWEEN :fd AND :td ";
+            parameters.put("fd", fromDate);
+            parameters.put("td", toDate);
+        }
+        if (filterChannelBillsByAppointmentDate) {
+            jpql += "AND bill.singleBillSession.sessionInstance.sessionDate BETWEEN :fdAppt AND :tdAppt ";
+            parameters.put("fdAppt", appointmentFromDate);
+            parameters.put("tdAppt", appointmentToDate);
+        }
+        
         // Ensure proper grouping
         jpql += "GROUP BY bill";
 
@@ -22757,6 +22806,28 @@ public class SearchController implements Serializable {
     public void setFromDate(Date fromDate) {
         this.fromDate = fromDate;
     }
+    
+    public Date getAppointmentToDate() {
+        if (appointmentToDate == null) {
+            appointmentToDate = CommonFunctions.getEndOfDay(new Date());
+        }
+        return appointmentToDate;
+    }
+
+    public void setAppointmentToDate(Date toDate) {
+        this.appointmentToDate = toDate;
+    }
+
+    public Date getAppointmentFromDate() {
+        if (appointmentFromDate == null) {
+            appointmentFromDate = CommonFunctions.getStartOfDay(new Date());
+        }
+        return appointmentFromDate;
+    }
+
+    public void setAppointmentFromDate(Date fromDate) {
+        this.appointmentFromDate = fromDate;
+    }
 
     public SearchKeyword getSearchKeyword() {
         if (searchKeyword == null) {
@@ -23563,11 +23634,18 @@ public class SearchController implements Serializable {
         StreamedContent pdfSc = null;
         try {
             String fileName = "Channel_Income_Report";
-            String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
-            if (dates != null && !dates.isEmpty()) {
-                fileName += "_" + dates;
+            if (filterChannelBillsByBilledDate) {
+                String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
+                if (dates != null && !dates.isEmpty()) {
+                    fileName += "_" + dates;
+                }
+            } else if (filterChannelBillsByAppointmentDate) {
+                String dates = CommonFunctions.dateRangeForFileName(appointmentFromDate, appointmentToDate, sessionController.getApplicationPreference().getLongDateFormat());
+                if (dates != null && !dates.isEmpty()) {
+                    fileName += "_" + dates + "(Appt)";
+                }
             }
-
+            
             // set bundleName and bundleType
             bundle.setBundleType("channelIncome");
             bundle.setName("Channel Income Report");
@@ -23889,18 +23967,24 @@ public class SearchController implements Serializable {
     // Filters for Channel Income Report
     private Map<String, Object> getFiltersForChannelIncomeReport() {
         Map<String, Object> params = new LinkedHashMap<>();
-        String dateTimeFormat = sessionController.getApplicationPreference().getLongDateTimeFormat();
-        String formattedFromDate = fromDate != null ? new SimpleDateFormat(dateTimeFormat).format(fromDate) : "Not available";
-        String formattedToDate = toDate != null ? new SimpleDateFormat(dateTimeFormat).format(toDate) : "Not available";
+        SimpleDateFormat dateFormat = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
 
-        params.put("From Date", formattedFromDate);
-        params.put("To Date", formattedToDate);
+        if (filterChannelBillsByBilledDate) {
+            params.put("Billed From", dateFormat.format(fromDate));
+            params.put("Billed To", dateFormat.format(toDate));
+        }
+        if (filterChannelBillsByAppointmentDate) {
+            params.put("Appointment From", dateFormat.format(appointmentFromDate));
+            params.put("Appointment To", dateFormat.format(appointmentToDate));
+        }
+        
         params.put("Institution", institution != null ? institution.getName() : "All Institutions");
         params.put("Department", department != null ? department.getName() : "All Departments");
         params.put("Speciality", speciality != null ? speciality.getName() : "All");
         params.put("Doctor", staff != null && staff.getPerson() != null && staff.getPerson().getNameWithTitle() != null ? staff.getPerson().getNameWithTitle() : "All");
         params.put("User", webUser != null ? webUser.getName() : "All");
         params.put("Booking Type", getChannelIncomeBookingTypeAsString());
+        params.put("Payment Method", paymentMethod != null ? paymentMethod.getLabel() : "All");
 
         return params;
     }
@@ -23908,10 +23992,17 @@ public class SearchController implements Serializable {
     // Excel Export fileName : channel income
     public String getChannelIncomeReportFileName() {
         String fileName = "Channel_Income_Report";
-        String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
-        if (dates != null && !dates.isEmpty()) {
-            fileName += "_" + dates;
-        }
+        if (filterChannelBillsByBilledDate) {
+                String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
+                if (dates != null && !dates.isEmpty()) {
+                    fileName += "_" + dates;
+                }
+            } else if (filterChannelBillsByAppointmentDate) {
+                String dates = CommonFunctions.dateRangeForFileName(appointmentFromDate, appointmentToDate, sessionController.getApplicationPreference().getLongDateFormat());
+                if (dates != null && !dates.isEmpty()) {
+                    fileName += "_" + dates + "(Appt)";
+                }
+            }
         
         return fileName;
     }
@@ -24064,6 +24155,18 @@ public class SearchController implements Serializable {
 
     public void setAgentBookings(List<ChannelIncomeDTO> agentBookings) {
         this.agentBookings = agentBookings;
+    }
+
+    public boolean filterBySingleDate(Object value, Object filter, Locale locale) {
+        if (filter == null) return true;
+        if (value == null) return false;
+
+        java.time.LocalDate filterDate = (java.time.LocalDate) filter;
+        java.time.LocalDate rowDate = ((Date) value).toInstant()
+            .atZone(ZoneId.of("Asia/Colombo"))
+            .toLocalDate();
+
+        return rowDate.equals(filterDate);
     }
 
 }
