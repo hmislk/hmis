@@ -708,19 +708,6 @@
                                     onclick="PF('retailSaleNativeConfigDialog').show();" />
                             </div>
                             <div class="col-6 text-center">
-                                <p:commandButton
-                                    class="m-1"
-                                    icon="fas fa-file-invoice"
-                                    value="Sale 1"
-                                    ajax="false"
-                                    action="#{pharmacySaleController.toPharmacyRetailSale()}"
-                                    rendered="#{webUserController.hasPrivilege('PharmacySale')}" />
-                                <p:commandButton
-                                    class="m-1"
-                                    icon="fas fa-file-invoice"
-                                    value="Native Sale"
-                                    disabled="true"
-                                    rendered="#{webUserController.hasPrivilege('PharmacySale')}" />
                             </div>
                             <div class="col-3">
                                 <div class="float-end">

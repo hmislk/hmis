@@ -22,8 +22,10 @@ import com.divudi.core.data.dto.BillItemData;
 import com.divudi.core.data.dto.PrintBillData;
 import com.divudi.core.data.dto.StockDTO;
 import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BilledBill;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.Payment;
+import com.divudi.core.entity.PreBill;
 import com.divudi.core.entity.clinical.ClinicalFindingValue;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
@@ -379,8 +381,9 @@ public class RetailSaleNativeSqlController implements Serializable, ControllerWi
         // Save or update the patient record
         savePatientIfNeeded();
 
-        // Build bill header
-        Bill bill = buildBillHeader();
+        // Build pre-bill and sale bill (replicates the two-bill structure of the old flow)
+        PreBill preBillEntity = buildPreBill();
+        BilledBill saleBillEntity = buildSaleBill(preBillEntity);
 
         // Stamp dept/institution IDs on each item (needed by native service for StockHistory aggregates)
         long deptId = sessionController.getLoggedUser().getDepartment().getId();
@@ -391,10 +394,10 @@ public class RetailSaleNativeSqlController implements Serializable, ControllerWi
         }
 
         try {
-            Payment payment = nativeSqlService.settle(bill, billItemDataList, paymentMethod, getPaymentMethodData(), paymentScheme);
+            Payment payment = nativeSqlService.settle(preBillEntity, saleBillEntity, billItemDataList, paymentMethod, getPaymentMethodData(), paymentScheme);
             drawerController.updateDrawerForIns(payment);
 
-            buildPrintBill(bill);
+            buildPrintBill(saleBillEntity);
             clearBill();
             clearBillItem();
             billPreview = true;
@@ -433,72 +436,101 @@ public class RetailSaleNativeSqlController implements Serializable, ControllerWi
         }
     }
 
-    private Bill buildBillHeader() {
-        Bill b = preBill != null ? preBill : new Bill();
-
-        b.setBillType(BillType.PharmacySale);
-        b.setBillTypeAtomic(BillTypeAtomic.PHARMACY_RETAIL_SALE);
-
+    private PreBill buildPreBill() {
         String billNo = generateBillNumber();
-        b.setInsId(billNo);
-        b.setDeptId(billNo);
-
-        b.setDepartment(sessionController.getLoggedUser().getDepartment());
-        b.setInstitution(sessionController.getLoggedUser().getDepartment().getInstitution());
-        b.setPatient(patient);
-        b.setFromDepartment(sessionController.getLoggedUser().getDepartment());
-        b.setFromInstitution(sessionController.getLoggedUser().getDepartment().getInstitution());
-        b.setBillDate(new Date());
-        b.setBillTime(new Date());
-        b.setCreatedAt(Calendar.getInstance().getTime());
-        b.setCreater(sessionController.getLoggedUser());
-        b.setComments(comment);
-        b.setCashPaid(cashPaid);
-        b.setPaymentMethod(paymentMethod);
-        b.setPaymentScheme(paymentScheme);
-
-        if (paymentMethod == PaymentMethod.Credit && getPaymentMethodData().getCredit().getInstitution() != null) {
-            b.setToInstitution(getPaymentMethodData().getCredit().getInstitution());
-            b.setCreditCompany(getPaymentMethodData().getCredit().getInstitution());
-        }
-        if ((paymentMethod == PaymentMethod.Staff || paymentMethod == PaymentMethod.Staff_Welfare)
-                && toStaff != null) {
-            b.setToStaff(toStaff);
-        }
-
-        if (getPreBill().getReferredBy() != null) {
-            b.setReferredBy(getPreBill().getReferredBy());
-        }
 
         double netTot = 0.0;
         for (BillItemData bid : billItemDataList) {
             netTot += Math.abs(bid.getNetValue());
         }
-        b.setTotal(netTot);
-        b.setNetTotal(netTot);
-        b.setGrantTotal(netTot);
-        b.setBalance(paymentMethod == PaymentMethod.Credit ? netTot : 0.0);
-        b.setPaidAmount(paymentMethod == PaymentMethod.Credit ? 0.0 : netTot);
 
-        return b;
+        PreBill pb = new PreBill();
+        pb.setBillType(BillType.PharmacyPre);
+        pb.setBillTypeAtomic(BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE);
+        pb.setInsId(billNo);
+        pb.setDeptId(billNo);
+        pb.setDepartment(sessionController.getLoggedUser().getDepartment());
+        pb.setInstitution(sessionController.getLoggedUser().getDepartment().getInstitution());
+        pb.setPatient(patient);
+        pb.setFromDepartment(sessionController.getLoggedUser().getDepartment());
+        pb.setFromInstitution(sessionController.getLoggedUser().getDepartment().getInstitution());
+        pb.setBillDate(new Date());
+        pb.setBillTime(new Date());
+        pb.setCreatedAt(Calendar.getInstance().getTime());
+        pb.setCreater(sessionController.getLoggedUser());
+        pb.setComments(comment);
+        pb.setPaymentMethod(paymentMethod);
+        pb.setPaymentScheme(paymentScheme);
+        pb.setTotal(netTot);
+        pb.setNetTotal(netTot);
+        pb.setGrantTotal(netTot);
+        if (paymentMethod == PaymentMethod.Credit || paymentMethod == PaymentMethod.Staff) {
+            pb.setBalance(netTot);
+            pb.setPaidAmount(0.0);
+        } else {
+            pb.setBalance(0.0);
+            pb.setPaidAmount(netTot);
+        }
+
+        if (getPreBill().getReferredBy() != null) {
+            pb.setReferredBy(getPreBill().getReferredBy());
+        }
+        return pb;
+    }
+
+    private BilledBill buildSaleBill(PreBill pb) {
+        BilledBill sb = new BilledBill();
+        sb.setBillType(BillType.PharmacySale);
+        sb.setBillTypeAtomic(BillTypeAtomic.PHARMACY_RETAIL_SALE);
+        sb.setInsId(pb.getInsId());
+        sb.setDeptId(pb.getDeptId());
+        sb.setDepartment(pb.getDepartment());
+        sb.setInstitution(pb.getInstitution());
+        sb.setPatient(pb.getPatient());
+        sb.setFromDepartment(pb.getFromDepartment());
+        sb.setFromInstitution(pb.getFromInstitution());
+        sb.setBillDate(pb.getBillDate());
+        sb.setBillTime(pb.getBillTime());
+        sb.setCreatedAt(pb.getCreatedAt());
+        sb.setCreater(pb.getCreater());
+        sb.setComments(pb.getComments());
+        sb.setCashPaid(cashPaid);
+        sb.setPaymentMethod(paymentMethod);
+        sb.setPaymentScheme(paymentScheme);
+        sb.setTotal(pb.getTotal());
+        sb.setNetTotal(pb.getNetTotal());
+        sb.setGrantTotal(pb.getGrantTotal());
+        sb.setBalance(paymentMethod == PaymentMethod.Credit ? pb.getNetTotal() : 0.0);
+        sb.setPaidAmount(paymentMethod == PaymentMethod.Credit ? 0.0 : pb.getNetTotal());
+        sb.setReferredBy(pb.getReferredBy());
+
+        if (paymentMethod == PaymentMethod.Credit && getPaymentMethodData().getCredit().getInstitution() != null) {
+            sb.setToInstitution(getPaymentMethodData().getCredit().getInstitution());
+            sb.setCreditCompany(getPaymentMethodData().getCredit().getInstitution());
+        }
+        if ((paymentMethod == PaymentMethod.Staff || paymentMethod == PaymentMethod.Staff_Welfare)
+                && toStaff != null) {
+            sb.setToStaff(toStaff);
+        }
+        return sb;
     }
 
     private String generateBillNumber() {
         if (configOptionApplicationController.getBooleanValueByKey(
                 "Bill Number Generation Strategy for Pharmacy Sale Pre Bill - Prefix + Department Code + Institution Code + Year + Yearly Number", false)) {
             return billNumberGenerator.departmentBillNumberGeneratorYearlyWithPrefixDeptInsYearCount(
-                    sessionController.getDepartment(), BillTypeAtomic.PHARMACY_RETAIL_SALE);
+                    sessionController.getDepartment(), BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE);
         } else if (configOptionApplicationController.getBooleanValueByKey(
                 "Bill Number Generation Strategy for Pharmacy Sale Pre Bill - Prefix + Institution Code + Department Code + Year + Yearly Number", false)) {
             return billNumberGenerator.departmentBillNumberGeneratorYearlyWithPrefixInsDeptYearCount(
-                    sessionController.getDepartment(), BillTypeAtomic.PHARMACY_RETAIL_SALE);
+                    sessionController.getDepartment(), BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE);
         } else if (configOptionApplicationController.getBooleanValueByKey(
                 "Bill Number Generation Strategy for Pharmacy Sale Pre Bill - Prefix + Institution Code + Year + Yearly Number", false)) {
             return billNumberGenerator.institutionBillNumberGeneratorYearlyWithPrefixInsYearCount(
-                    sessionController.getDepartment(), BillTypeAtomic.PHARMACY_RETAIL_SALE);
+                    sessionController.getDepartment(), BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE);
         }
         return billNumberGenerator.departmentBillNumberGeneratorYearly(
-                sessionController.getDepartment(), BillTypeAtomic.PHARMACY_RETAIL_SALE);
+                sessionController.getDepartment(), BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE);
     }
 
     private void buildPrintBill(Bill bill) {
