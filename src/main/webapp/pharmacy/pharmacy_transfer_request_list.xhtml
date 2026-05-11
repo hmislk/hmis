@@ -111,52 +111,30 @@
                                     disabled="#{p.cancelled eq true or p.fullyIssued eq true}">
                                     <f:setPropertyActionListener target="#{transferIssueForRequestsController.requestedBillId}" value="#{p.billId}"/>
                                 </p:commandButton>
+
+                                <p:commandButton
+                                    id="btnToIssueFast"
+                                    ajax="false"
+                                    value="Fast Issue"
+                                    icon="fas fa-bolt"
+                                    class="ui-button-warning mx-2"
+                                    action="#{transferIssueNativeSqlController.navigateToIssueRequestNative()}"
+                                    disabled="#{p.cancelled eq true or p.fullyIssued eq true}">
+                                    <f:setPropertyActionListener target="#{transferIssueNativeSqlController.requestedBillId}" value="#{p.billId}"/>
+                                </p:commandButton>
                             </p:column>
 
-                            <p:column headerText="Issued" style="text-align: center;" >
-                                <p:dataTable var="b" value="#{p.issuedBills}" rowKey="#{b.billId}">
-                                    <p:column headerText="Issue No." >
-                                        <p:commandButton
-                                            id="btnViewIssueBill"
-                                            ajax="false"
-                                            value="#{b.deptId}"
-                                            class="ui-button-success ui-button-sm"
-                                            action="#{billSearch.navigateToViewBillByAtomicBillTypeBySelectedId}"
-                                            process="@this">
-                                            <f:setPropertyActionListener value="#{b.billId}" target="#{billSearch.selectedBillId}"/>
-                                        </p:commandButton>
-                                    </p:column>
-                                    <p:column headerText="Date/Time" >
-                                        <h:outputLabel value="#{b.createdAt}" >
-                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                        </h:outputLabel>
-                                        <br/>
-                                        <h:panelGroup rendered="#{b.cancelled}" >
-                                            <h:outputLabel style="color: red;" value="Cancelled at " />
-                                            <h:outputLabel style="color: red;" rendered="#{b.cancelled}"
-                                                           value="#{b.cancelledAt}" >
-                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                            </h:outputLabel>
-                                        </h:panelGroup>
-                                    </p:column>                             
-                                    <p:column headerText="Issued By" >
-                                        <h:outputLabel value="#{b.creatorName}"/>
-                                        <br/>
-                                        <h:panelGroup rendered="#{b.cancelled}" >
-                                            <h:outputLabel style="color: red;" value="Cancelled By " />
-                                            <h:outputLabel style="color: red;" rendered="#{b.cancelled}" value="#{b.cancellerName}" />
-                                        </h:panelGroup>
-                                    </p:column>
-                                    <p:column headerText="Issued To"  >                              
-                                        <h:outputLabel value="#{b.toStaffName}"/>                                   
-                                    </p:column> 
-                                    <p:column headerText="Total" >
-                                        <h:outputLabel value="#{b.netTotal}">
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputLabel>                                  
-                                    </p:column>
-
-                                </p:dataTable>
+                            <p:column headerText="Issued">
+                                <ui:repeat value="#{p.issuedBills}" var="b" varStatus="loop">
+                                    <p:commandLink
+                                        ajax="false"
+                                        value="#{b.deptId}"
+                                        styleClass="#{b.cancelled ? 'text-danger text-decoration-line-through' : ''}"
+                                        action="#{billSearch.navigateToViewBillByAtomicBillTypeBySelectedId}">
+                                        <f:setPropertyActionListener value="#{b.billId}" target="#{billSearch.selectedBillId}"/>
+                                    </p:commandLink>
+                                    <h:outputText value=", " rendered="#{!loop.last}"/>
+                                </ui:repeat>
                             </p:column>
                         </p:dataTable>
                     </div>

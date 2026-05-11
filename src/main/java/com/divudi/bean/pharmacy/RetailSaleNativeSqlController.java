@@ -5,6 +5,7 @@
  */
 package com.divudi.bean.pharmacy;
 
+import com.divudi.bean.cashTransaction.DrawerController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.ConfigOptionController;
 import com.divudi.bean.common.ControllerWithPatient;
@@ -22,6 +23,8 @@ import com.divudi.core.data.dto.PrintBillData;
 import com.divudi.core.data.dto.StockDTO;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.Payment;
+import com.divudi.core.entity.clinical.ClinicalFindingValue;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Item;
@@ -83,6 +86,8 @@ public class RetailSaleNativeSqlController implements Serializable, ControllerWi
     @Inject
     private SessionController sessionController;
     @Inject
+    private DrawerController drawerController;
+    @Inject
     private ConfigOptionApplicationController configOptionApplicationController;
     @Inject
     private ConfigOptionController configOptionController;
@@ -133,6 +138,7 @@ public class RetailSaleNativeSqlController implements Serializable, ControllerWi
     private PaymentMethodData paymentMethodData;
     private Staff toStaff;
     private Institution toInstitution;
+    private List<ClinicalFindingValue> allergyListOfPatient;
 
     @PostConstruct
     public void init() {
@@ -146,6 +152,24 @@ public class RetailSaleNativeSqlController implements Serializable, ControllerWi
     public String pharmacyRetailSaleNative() {
         resetAll();
         billSettlingStarted = false;
+        return "/pharmacy/pharmacy_bill_retail_sale_native?faces-redirect=true";
+    }
+
+    @SuppressWarnings("unchecked")
+    public String viewByBillId(Long billId) {
+        if (billId == null) {
+            JsfUtil.addErrorMessage("No Bill Selected");
+            return null;
+        }
+        resetAll();
+        Object[] result = nativeSqlService.loadViewDataByBillId(billId);
+        if (result == null) {
+            JsfUtil.addErrorMessage("Bill not found");
+            return null;
+        }
+        printBill = (PrintBillData) result[0];
+        printBillItems = (List<BillItemData>) result[1];
+        billPreview = true;
         return "/pharmacy/pharmacy_bill_retail_sale_native?faces-redirect=true";
     }
 
@@ -177,6 +201,21 @@ public class RetailSaleNativeSqlController implements Serializable, ControllerWi
             billSettlingStarted = false;
             JsfUtil.addErrorMessage("Please add items to the bill.");
             return null;
+        }
+
+        if (paymentMethod == PaymentMethod.Cash
+                && configOptionApplicationController.getBooleanValueByKey(
+                        "Need to Enter the Cash Tendered Amount to Settle Pharmacy Retail Bill", true)) {
+            if (cashPaid == 0.0) {
+                billSettlingStarted = false;
+                JsfUtil.addErrorMessage("Please enter the paid amount.");
+                return null;
+            }
+            if (cashPaid < getPreBill().getNetTotal()) {
+                billSettlingStarted = false;
+                JsfUtil.addErrorMessage("Tendered amount is less than net total.");
+                return null;
+            }
         }
 
         if ((getPatient().getMobileNumberStringTransient() == null
@@ -333,6 +372,10 @@ public class RetailSaleNativeSqlController implements Serializable, ControllerWi
             }
         }
 
+        // Ensure discounts reflect current payment scheme before building the bill
+        recalculateDiscountsForAll();
+        calTotal();
+
         // Save or update the patient record
         savePatientIfNeeded();
 
@@ -348,7 +391,8 @@ public class RetailSaleNativeSqlController implements Serializable, ControllerWi
         }
 
         try {
-            nativeSqlService.settle(bill, billItemDataList, paymentMethod, getPaymentMethodData(), paymentScheme);
+            Payment payment = nativeSqlService.settle(bill, billItemDataList, paymentMethod, getPaymentMethodData(), paymentScheme);
+            drawerController.updateDrawerForIns(payment);
 
             buildPrintBill(bill);
             clearBill();
@@ -560,6 +604,14 @@ public class RetailSaleNativeSqlController implements Serializable, ControllerWi
             JsfUtil.addErrorMessage("No sufficient stock available.");
             return;
         }
+        if (billItemDataList != null) {
+            for (BillItemData existing : billItemDataList) {
+                if (selectedStockId.equals(existing.getStockId())) {
+                    JsfUtil.addErrorMessage("This batch is already added to the bill. Edit the quantity instead.");
+                    return;
+                }
+            }
+        }
 
         double qty = intQty.doubleValue();
 
@@ -599,6 +651,17 @@ public class RetailSaleNativeSqlController implements Serializable, ControllerWi
         double discountValue = 0.0;
         try {
             Item itemRef = itemFacade.find(stockDto.getItemId());
+            if (configOptionApplicationController.getBooleanValueByKey("Check for Allergies during Dispensing", false)
+                    && patient != null && patient.getId() != null) {
+                if (allergyListOfPatient == null) {
+                    allergyListOfPatient = pharmacyService.getAllergyListForPatient(patient);
+                }
+                String allergyMsg = pharmacyService.getAllergyMessageForItem(patient, itemRef, allergyListOfPatient);
+                if (!allergyMsg.isEmpty()) {
+                    JsfUtil.addErrorMessage(allergyMsg);
+                    return;
+                }
+            }
             if (Boolean.TRUE.equals(itemRef.isDiscountAllowed())) {
                 Double pct = priceMatrixController.getPaymentSchemeDiscountPercent(
                         paymentMethod, paymentScheme, sessionController.getDepartment(), itemRef);
@@ -680,6 +743,19 @@ public class RetailSaleNativeSqlController implements Serializable, ControllerWi
             bid.setQty(0);
             JsfUtil.addErrorMessage("Quantity must be greater than zero.");
             return;
+        }
+        if (bid.getStockId() != null) {
+            try {
+                com.divudi.core.entity.pharmacy.Stock currentStock = stockFacade.find(bid.getStockId());
+                if (currentStock != null && currentStock.getStock() != null
+                        && bid.getQty() > currentStock.getStock()) {
+                    bid.setQty(currentStock.getStock());
+                    JsfUtil.addErrorMessage("Quantity cannot exceed available stock ("
+                            + currentStock.getStock().intValue() + "). Quantity has been set to the maximum available.");
+                }
+            } catch (Exception e) {
+                LOGGER.log(Level.WARNING, "Could not verify stock qty for stockId={0}", bid.getStockId());
+            }
         }
         double absQty = Math.abs(bid.getQty());
         double gross = absQty * bid.getRate();
@@ -784,7 +860,40 @@ public class RetailSaleNativeSqlController implements Serializable, ControllerWi
     }
 
     public void listnerForPaymentMethodChange() {
+        recalculateDiscountsForAll();
         calTotal();
+    }
+
+    public void recalculateDiscountsForAll() {
+        if (billItemDataList == null || billItemDataList.isEmpty()) {
+            return;
+        }
+        for (BillItemData bid : billItemDataList) {
+            if (bid.getItemId() == null) continue;
+            try {
+                Item itemRef = itemFacade.find(bid.getItemId());
+                if (itemRef == null) continue;
+                double grossValue = Math.abs(bid.getGrossValue());
+                double discountPct = 0.0;
+                double discountValue = 0.0;
+                if (Boolean.TRUE.equals(itemRef.isDiscountAllowed())) {
+                    Double pct = priceMatrixController.getPaymentSchemeDiscountPercent(
+                            paymentMethod, paymentScheme, sessionController.getDepartment(), itemRef);
+                    discountPct = pct != null ? pct : 0.0;
+                    discountValue = (discountPct / 100.0) * grossValue;
+                }
+                double netValue = grossValue - discountValue;
+                double qty = Math.abs(bid.getQty());
+                double netRate = qty > 0 ? netValue / qty : bid.getRate();
+                bid.setDiscountPercent(discountPct);
+                bid.setDiscountValue(discountValue);
+                bid.setNetValue(-netValue);
+                bid.setNetRate(netRate);
+            } catch (Exception e) {
+                LOGGER.log(Level.WARNING, "Discount recalc failed for itemId={0}: {1}",
+                        new Object[]{bid.getItemId(), e.getMessage()});
+            }
+        }
     }
 
     public void calculateDobFromAge() {
@@ -829,6 +938,7 @@ public class RetailSaleNativeSqlController implements Serializable, ControllerWi
         paymentMethodData = null;
         toStaff = null;
         toInstitution = null;
+        allergyListOfPatient = null;
     }
 
     private void clearBill() {
@@ -857,6 +967,7 @@ public class RetailSaleNativeSqlController implements Serializable, ControllerWi
 
     public void setPatient(Patient patient) {
         this.patient = patient;
+        allergyListOfPatient = null;
     }
 
     public Bill getPreBill() {
