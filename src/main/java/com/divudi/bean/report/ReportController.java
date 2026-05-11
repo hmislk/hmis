@@ -3889,6 +3889,102 @@ public class ReportController implements Serializable, ControllerWithReportFilte
 
         return filters;
     }
+    
+    // collection center receipt report pdf generation method
+    public void exportCollectionCenterReciptReportToPDF(){
+        if (bundle == null || bundle.getReportTemplateRows() == null || bundle.getReportTemplateRows().isEmpty()) {
+            JsfUtil.addErrorMessage("No data to export. Please process the report first.");
+            return;
+        }
+
+        com.itextpdf.text.Font bodyFontSmall = com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA, 8);
+        FacesContext context = FacesContext.getCurrentInstance();
+        ExternalContext externalContext = context.getExternalContext();
+        HttpServletResponse response = (HttpServletResponse) externalContext.getResponse();
+        response.reset();
+        String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
+
+        response.setContentType("application/pdf");
+        if (dates != null && !dates.isEmpty()) {
+            response.setHeader("Content-Disposition", "attachment; filename=Collection_center_receipt_report_" + dates + ".pdf");
+        } else {
+            response.setHeader("Content-Disposition", "attachment; filename=Collection_center_receipt_report.pdf");
+        }
+
+        SimpleDateFormat sdf = new SimpleDateFormat("dd MM yyyy hh:mm:ss a");
+        DecimalFormat df = new DecimalFormat("#,##0.##");
+        String institutionName = sessionController.getInstitution() != null ? sessionController.getInstitution().getName() : "";
+
+        try (OutputStream out = response.getOutputStream()) {
+            com.itextpdf.text.Document document = new com.itextpdf.text.Document(com.itextpdf.text.PageSize.A4.rotate());
+            com.itextpdf.text.pdf.PdfWriter.getInstance(document, out);
+            document.open();
+
+            if (institutionName != null && !institutionName.isEmpty()) {
+                document.add(new com.itextpdf.text.Paragraph(institutionName, com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA_BOLD, 18)));
+            }
+            document.add(new com.itextpdf.text.Paragraph("Collection Center Receipt Report", com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA_BOLD, 16)));
+            document.add(new com.itextpdf.text.Paragraph("Date: " + sdf.format(new Date()), com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA, 12)));
+            document.add(new com.itextpdf.text.Paragraph(" "));
+
+            int columnCount = 9;
+
+            Map<String, Object> filters = getFiltersForCollectionCenterReciptReport();
+            com.itextpdf.text.pdf.PdfPTable infoTable = pharmacyController.createInfoTablePdfExport(sdf, filters);
+            if (infoTable != null) {
+                document.add(infoTable);
+            }
+
+            com.itextpdf.text.pdf.PdfPTable table = new com.itextpdf.text.pdf.PdfPTable(columnCount);
+            table.setWidthPercentage(100);
+
+            float[] columnWidths;
+            String[] headers;
+
+            columnWidths = new float[]{0.5f, 3f, 2f, 2f, 1f, 1f, 3f, 2f, 2f};
+            headers = new String[]{"S. No.", "Bill No.", "Billed At", "Billed By", "Payment Method", "Agent Code", "Agent Name", "Amount", "Comments"};
+
+            table.setWidths(columnWidths);
+
+            for (String header : headers) {
+                com.itextpdf.text.pdf.PdfPCell cell = new com.itextpdf.text.pdf.PdfPCell(new com.itextpdf.text.Phrase(header, com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA_BOLD, 8)));
+                cell.setBackgroundColor(com.itextpdf.text.BaseColor.LIGHT_GRAY);
+                table.addCell(cell);
+            }
+            int indexRow = 1;
+            for (ReportTemplateRow row : bundle.getReportTemplateRows()) {
+                table.addCell(textCell(String.valueOf(indexRow), bodyFontSmall));
+                Bill b = row.getBill();
+                table.addCell(textCell(b.getDeptId() != null ? b.getDeptId() : "-" , bodyFontSmall));
+                table.addCell(textCell( b.getCreatedAt() != null ? sdf.format(b.getCreatedAt()) : "-", bodyFontSmall));
+                table.addCell(textCell(b.getCreater() != null ?  b.getCreater().getName() : "-", bodyFontSmall));
+                table.addCell(textCell(b.getPaymentMethod() != null ? b.getPaymentMethod().getLabel() : "-", bodyFontSmall));
+                table.addCell(textCell(b.getFromInstitution() != null ?  b.getFromInstitution().getCode() : "-", bodyFontSmall));
+                table.addCell(textCell(b.getFromInstitution() != null ? b.getFromInstitution().getName() : "-", bodyFontSmall));
+
+                table.addCell(numCell(b.getTotal(), bodyFontSmall));
+                table.addCell(textCell(b.getComments() != null ? b.getComments() : "-", bodyFontSmall));
+                indexRow++;
+
+            }
+            com.itextpdf.text.pdf.PdfPCell footerCell = new com.itextpdf.text.pdf.PdfPCell(new com.itextpdf.text.Phrase("Total", com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA_BOLD, 10)));
+            footerCell.setColspan(7);
+            footerCell.setBackgroundColor(com.itextpdf.text.BaseColor.LIGHT_GRAY);
+            footerCell.setHorizontalAlignment(Element.ALIGN_CENTER);
+            table.addCell(footerCell);
+            table.addCell(numCell(bundle.getTotal(), bodyFontSmall));
+            table.addCell(textCell("-", bodyFontSmall));
+            
+            document.add(table);
+            document.close();
+            context.responseComplete();
+
+        } catch (Exception e) {
+            Logger.getLogger(ReportController.class
+                    .getName()).log(Level.SEVERE, "Error exporting Collection center receipt report to PDF", e);
+        }
+    }
+    
 
     // PostProcessor for collection center recipt report excel export
     public void postProcessCollectionCenterReciptReportExcel(Object document) {

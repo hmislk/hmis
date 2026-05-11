@@ -199,7 +199,7 @@
                                             rowIndexVar="s"
                                             editable="true"
                                             class="w-100">
-                                            <p:ajax event="rowEdit" listener="#{retailSaleNativeSqlController.onEdit}" update="@this :#{p:resolveFirstComponentWithId('panelBillDetails', view).clientId}" />
+                                            <p:ajax event="rowEdit" listener="#{retailSaleNativeSqlController.onEdit}" update="@this :#{p:resolveFirstComponentWithId('panelBillDetails', view).clientId} :#{p:resolveFirstComponentWithId('panelError', view).clientId}" />
                                             <p:ajax event="rowEditCancel" listener="#{retailSaleNativeSqlController.onEditCancel}" update="@this :#{p:resolveFirstComponentWithId('panelBillDetails', view).clientId}" />
 
                                             <p:column headerText="No" style="width: 2em; padding: 6px;">
@@ -708,19 +708,6 @@
                                     onclick="PF('retailSaleNativeConfigDialog').show();" />
                             </div>
                             <div class="col-6 text-center">
-                                <p:commandButton
-                                    class="m-1"
-                                    icon="fas fa-file-invoice"
-                                    value="Sale 1"
-                                    action="pharmacy_bill_retail_sale?faces-redirect=true"
-                                    rendered="#{webUserController.hasPrivilege('PharmacySale')}"
-                                    actionListener="#{pharmacySaleController.pharmacyRetailSale()}" />
-                                <p:commandButton
-                                    class="m-1"
-                                    icon="fas fa-file-invoice"
-                                    value="Native Sale"
-                                    disabled="true"
-                                    rendered="#{webUserController.hasPrivilege('PharmacySale')}" />
                             </div>
                             <div class="col-3">
                                 <div class="float-end">
