@@ -18,6 +18,10 @@ public class PharmacyTransferReceivedListDTO implements Serializable {
     public PharmacyTransferReceivedListDTO() {
     }
 
+    public PharmacyTransferReceivedListDTO(Long billId, Long issuedBillId, String deptId, Boolean cancelled) {
+        this(billId, issuedBillId, deptId, null, cancelled, null, null, null, null);
+    }
+
     public PharmacyTransferReceivedListDTO(Long billId, Long issuedBillId, String deptId,
             Date createdAt, Boolean cancelled, String createrName, Double netTotal,
             String cancelledByName, Date cancelledAt) {

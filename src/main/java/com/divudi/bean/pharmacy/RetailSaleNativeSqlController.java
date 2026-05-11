@@ -155,6 +155,24 @@ public class RetailSaleNativeSqlController implements Serializable, ControllerWi
         return "/pharmacy/pharmacy_bill_retail_sale_native?faces-redirect=true";
     }
 
+    @SuppressWarnings("unchecked")
+    public String viewByBillId(Long billId) {
+        if (billId == null) {
+            JsfUtil.addErrorMessage("No Bill Selected");
+            return null;
+        }
+        resetAll();
+        Object[] result = nativeSqlService.loadViewDataByBillId(billId);
+        if (result == null) {
+            JsfUtil.addErrorMessage("Bill not found");
+            return null;
+        }
+        printBill = (PrintBillData) result[0];
+        printBillItems = (List<BillItemData>) result[1];
+        billPreview = true;
+        return "/pharmacy/pharmacy_bill_retail_sale_native?faces-redirect=true";
+    }
+
     // -----------------------------------------------------------------------
     // Settle
     // -----------------------------------------------------------------------
