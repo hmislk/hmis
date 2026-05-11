@@ -136,6 +136,8 @@ public class RequestController implements Serializable {
                 return "/opd/opd_batch_bill_print?faces-redirect=true";
             case INWARD_SERVICE_BILL:
                 return "/lab/inward_search_service?faces-redirect=true";
+            case CC_BILL:
+                return "/collecting_centre/view/cc_bill_view?faces-redirect=true";
             case PETTY_CASH_ISSUE:
                 return "/petty_cash_bill_search_own?faces-redirect=true";
             default:
@@ -316,6 +318,13 @@ public class RequestController implements Serializable {
                 break;
             case OPD_BILL_WITH_PAYMENT:
                 navigation = "";
+                break;
+            case CC_BILL:
+                patient = currentRequest.getBill().getPatient();
+                bills.add(currentRequest.getBill());
+                comment = null;
+
+                navigation = "/common/request/cc_bill_cancel_request_approvel?faces-redirect=true";
                 break;
             case PETTY_CASH_PRE:
                 bills.add(currentRequest.getBill());
