@@ -58,7 +58,7 @@
                         <!-- Cycle Selector -->
                         <p:panel header="Select Salary Cycle">
                             <div style="margin-bottom: 1rem;">
-                                <h:outputLabel value="Salary Cycle" style="display: block; margin-bottom: 4px;" />
+                                <h:outputText value="Salary Cycle" style="display: block; margin-bottom: 4px;" />
                                 <p:selectOneMenu
                                     id="advanced"
                                     value="#{staffSalaryController.salaryCycle}"
@@ -152,27 +152,27 @@
 
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                             <div>
-                                <h:outputLabel value="Employee" style="display: block; margin-bottom: 4px;" />
+                                <h:outputText value="Employee" style="display: block; margin-bottom: 4px;" />
                                 <hr:completeStaff value="#{staffController.reportKeyWord.staff}" />
                             </div>
                             <div>
-                                <h:outputLabel value="Institution" style="display: block; margin-bottom: 4px;" />
+                                <h:outputText value="Institution" style="display: block; margin-bottom: 4px;" />
                                 <hr:institution value="#{staffController.reportKeyWord.institution}" />
                             </div>
                             <div>
-                                <h:outputLabel value="Department" style="display: block; margin-bottom: 4px;" />
+                                <h:outputText value="Department" style="display: block; margin-bottom: 4px;" />
                                 <hr:department value="#{staffController.reportKeyWord.department}" />
                             </div>
                             <div>
-                                <h:outputLabel value="Staff Category" style="display: block; margin-bottom: 4px;" />
+                                <h:outputText value="Staff Category" style="display: block; margin-bottom: 4px;" />
                                 <hr:completeStaffCategory value="#{staffController.reportKeyWord.staffCategory}" />
                             </div>
                             <div>
-                                <h:outputLabel value="Designation" style="display: block; margin-bottom: 4px;" />
+                                <h:outputText value="Designation" style="display: block; margin-bottom: 4px;" />
                                 <hr:completeDesignation value="#{staffController.reportKeyWord.designation}" />
                             </div>
                             <div>
-                                <h:outputLabel value="Roster" style="display: block; margin-bottom: 4px;" />
+                                <h:outputText value="Roster" style="display: block; margin-bottom: 4px;" />
                                 <hr:completeRoster value="#{staffController.reportKeyWord.roster}" />
                             </div>
                         </div>
