@@ -678,6 +678,10 @@ public class StaffController implements Serializable {
             JsfUtil.addErrorMessage("Salary Cycle dates are incomplete.");
             return;
         }
+        if (cycle.getSalaryFromDate() == null || cycle.getSalaryToDate() == null) {
+            JsfUtil.addErrorMessage("Salary From/To dates are incomplete.");
+            return;
+        }
         for (Staff s : staffs) {
             s.setTransWorkedDays(
                 hrReportController.fetchWorkedDays(s,
