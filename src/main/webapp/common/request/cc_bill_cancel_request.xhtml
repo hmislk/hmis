@@ -45,7 +45,7 @@
                                         value="Request Cancel Bill"
                                         icon="fa fa-ban"
                                         class="ui-button-danger"
-                                        action="#{requestController.createRequestforOPDBatchBill()}">
+                                        action="#{requestController.createRequestforCCBill()}">
                                     </p:commandButton>
                                 </div>
                             </div>
@@ -69,6 +69,10 @@
                                             <h:outputLabel value="Batch Bill Detail" class="mx-2"></h:outputLabel>
                                         </f:facet>
                                         <p:panelGrid columns="2" styleClass="w-100" columnClasses="fw-semibold,text-end">
+                                            <h:outputLabel value="CC Code :"  style="font-size: 18px; font-weight: 700;"></h:outputLabel>
+                                            <h:outputLabel value="#{requestController.batchBill.collectingCentre.code}" style="font-size: 18px; font-weight: 700;" ></h:outputLabel>
+                                            <h:outputLabel value="Collecting Centre :" style="font-size: 18px; font-weight: 700;"></h:outputLabel>
+                                            <h:outputLabel value="#{requestController.batchBill.collectingCentre.name}" style="font-size: 18px; font-weight: 700;"></h:outputLabel>
                                             <h:outputLabel value="Bill No :" ></h:outputLabel>
                                             <h:outputLabel value="#{requestController.batchBill.deptId}" ></h:outputLabel>
                                             <h:outputLabel value="Bill Type Atomic :" ></h:outputLabel>
@@ -152,10 +156,8 @@
                             <div class="d-flex justify-content-center">
                                 <h:panelGroup id="printingView">
 
-                                    <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveEightInchPaper'}" >
-                                        <request:five_eight_bill_cancel_request request="#{requestController.currentRequest}" />
-                                    </h:panelGroup>
-
+                                    <request:five_eight_bill_cancel_request request="#{requestController.currentRequest}" />
+                                    
                                 </h:panelGroup>
 
                             </div>
