@@ -7,6 +7,7 @@ package com.divudi.bean.common;
 import com.divudi.bean.cashTransaction.CashBookEntryController;
 import com.divudi.bean.cashTransaction.DrawerController;
 import com.divudi.bean.cashTransaction.DrawerEntryController;
+import com.divudi.bean.channel.ChannelReportController;
 import com.divudi.bean.channel.ChannelSearchController;
 import com.divudi.bean.channel.analytics.ReportTemplateController;
 import com.divudi.bean.hr.StaffController;
@@ -25,6 +26,7 @@ import com.divudi.core.data.reports.FinancialReport;
 import com.divudi.core.data.reports.CashierReports;
 import com.divudi.core.data.reports.ProfessionalPaymentReport;
 import com.divudi.core.data.reports.Report.ChannelBillSearch;
+import com.divudi.core.data.reports.Report.ChannelIncomeReport;
 import com.divudi.core.data.reports.Report.OnlineBookingCountReport;
 import com.divudi.core.data.reports.Report.OpdBillSearch;
 import com.divudi.ejb.PharmacyBean;
@@ -21160,6 +21162,7 @@ public class SearchController implements Serializable {
     }
 
     private String bookingType;
+    private Map<String, Object> channelIncomeReportSC;
 
     public void generateChannelIncome() {
         if (!filterChannelBillsByAppointmentDate && !filterChannelBillsByBilledDate) {
@@ -21272,6 +21275,8 @@ public class SearchController implements Serializable {
         bundle.setReportTemplateRows(rs);
         bundle.createRowValuesFromBillForChannelBills();
         bundle.calculateTotals();
+
+        channelIncomeReportSC = getFiltersForChannelIncomeReport();
 
     }
 
@@ -23624,40 +23629,6 @@ public class SearchController implements Serializable {
         return pdfSc;
     }
 
-    // PDF Export: Channel Income Report
-    public StreamedContent getChannelIncomeReportAsPdf() {
-        if (bundle == null || bundle.getReportTemplateRows() == null || bundle.getReportTemplateRows().isEmpty()) {
-            JsfUtil.addErrorMessage("Please generate the Channel Income report before exporting.");
-            return null;
-        }
-
-        StreamedContent pdfSc = null;
-        try {
-            String fileName = "Channel_Income_Report";
-            if (filterChannelBillsByBilledDate) {
-                String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
-                if (dates != null && !dates.isEmpty()) {
-                    fileName += "_" + dates;
-                }
-            } else if (filterChannelBillsByAppointmentDate) {
-                String dates = CommonFunctions.dateRangeForFileName(appointmentFromDate, appointmentToDate, sessionController.getApplicationPreference().getLongDateFormat());
-                if (dates != null && !dates.isEmpty()) {
-                    fileName += "_" + dates + "(Appt)";
-                }
-            }
-            
-            // set bundleName and bundleType
-            bundle.setBundleType("channelIncome");
-            bundle.setName("Channel Income Report");
-            pdfSc = pdfController.createPdfForReportTemplateRows(bundle, PageSize.A4.rotate(), true, getFiltersForChannelIncomeReport(), fileName);
-        } catch (IOException e) {
-            logger.error("getChannelIncomeReportAsPdf: Error creating pdfSc via pdfController.createPdfForReportTemplateRows", e);
-            pdfSc = null;
-            JsfUtil.addErrorMessage("Failed to generate Channel Income PDF file. Please try again.");
-        }
-        return pdfSc;
-    }
-
     // Excel Export: wht Report
     public StreamedContent getWhtReportAsExcel() {
         if (bundle == null || bundle.getReportTemplateRows() == null || bundle.getReportTemplateRows().isEmpty()) {
@@ -23970,12 +23941,12 @@ public class SearchController implements Serializable {
         SimpleDateFormat dateFormat = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
 
         if (filterChannelBillsByBilledDate) {
-            params.put("Billed From", dateFormat.format(fromDate));
-            params.put("Billed To", dateFormat.format(toDate));
+            params.put("Billed From", fromDate);
+            params.put("Billed To", toDate);
         }
         if (filterChannelBillsByAppointmentDate) {
-            params.put("Appointment From", dateFormat.format(appointmentFromDate));
-            params.put("Appointment To", dateFormat.format(appointmentToDate));
+            params.put("Appointment From", appointmentFromDate);
+            params.put("Appointment To", appointmentToDate);
         }
         
         params.put("Institution", institution != null ? institution.getName() : "All Institutions");
@@ -24038,6 +24009,11 @@ public class SearchController implements Serializable {
     private Map<String, Object> getFiltersForChannelBillSearch() {
         Map<String, Object> params = new LinkedHashMap<>();
 
+        if (filterChannelBillsByAppointmentDate) {
+            params.put("Filtered By", "Appointment Date");
+        } else {
+            params.put("Filtered By", "Bill Date");
+        }
         params.put("From Date", fromDate);
         params.put("To Date", toDate);
         if (searchKeyword != null) {
@@ -24111,6 +24087,83 @@ public class SearchController implements Serializable {
         }
 
         return getChannelBillSearchReport().createExcelAsStream();
+    }
+
+    public ChannelIncomeReport getChannelIncomeReport() {
+        String fileName = "Channel_Income_Report";
+        String dates = "";
+        if (filterChannelBillsByBilledDate) {
+            if (channelIncomeReportSC != null && channelIncomeReportSC.get("Billed From") instanceof Date && channelIncomeReportSC.get("Billed To") instanceof Date) {
+                dates = CommonFunctions.dateRangeForFileName((Date) channelIncomeReportSC.get("Billed From"), (Date) channelIncomeReportSC.get("Billed To"), sessionController.getApplicationPreference().getLongDateFormat());
+            } else {
+                dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
+            }
+        } else if (filterChannelBillsByBilledDate) {
+            if (channelIncomeReportSC != null && channelIncomeReportSC.get("Appointment From") instanceof Date && channelIncomeReportSC.get("Appointment To") instanceof Date) {
+                dates = CommonFunctions.dateRangeForFileName((Date) channelIncomeReportSC.get("Appointment From"), (Date) channelIncomeReportSC.get("Appointment To"), sessionController.getApplicationPreference().getLongDateFormat()) + "(Appt)";
+            }
+        }
+
+        if (dates != null && !dates.isEmpty()) {
+            fileName += "_" + dates;
+        }
+        String institutionName = "";
+        String userName = "";
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            if (sessionController.getLoggedUser().getInstitution() != null && sessionController.getLoggedUser().getInstitution().getName() != null) {
+                institutionName = sessionController.getLoggedUser().getInstitution().getName();
+            }
+            if (sessionController.getLoggedUser().getName() != null) {
+                userName = sessionController.getLoggedUser().getName();
+            }
+        }
+
+        // PaymentsMethod Column boolean values
+        ChannelReportController.PaymentMethodFlags pmFlags = new ChannelReportController.PaymentMethodFlags();
+        pmFlags.setFlagsReportTemplateRowBundle(bundle);
+
+        ChannelIncomeReport incomeReport = new ChannelIncomeReport(fileName, institutionName, channelIncomeReportSC != null ? channelIncomeReportSC : getFiltersForChannelIncomeReport(), bundle.getReportTemplateRows(), configOptionApplicationController.getBooleanValueByKey("Add discount column to the channel income report", false), pmFlags, userName);
+        incomeReport.setColumnFooter(bundle.getHospitalTotal() != null ?  bundle.getHospitalTotal().doubleValue() : "0.0", "Hospital Fee");
+        incomeReport.setColumnFooter(bundle.getStaffTotal() != null ?  bundle.getStaffTotal().doubleValue() : "0.0", "Staff Fee");
+        incomeReport.setColumnFooter(bundle.getGrossTotal() != null ?  bundle.getGrossTotal().doubleValue() : "0.0", "Gross Total");
+
+        if (configOptionApplicationController.getBooleanValueByKey("Add discount column to the channel income report", false)) {
+            incomeReport.setColumnFooter(bundle.getDiscount() != null ?  bundle.getDiscount().doubleValue() : "0.0", "Discount");
+            incomeReport.setColumnFooter(bundle.getTotal() != null ?  bundle.getTotal().doubleValue() : "0.0", "Net Total");
+        }
+
+        if (pmFlags.hasCash) {incomeReport.setColumnFooter(bundle.getCashValue(), "Cash");}
+        if (pmFlags.hasCard) {incomeReport.setColumnFooter(bundle.getCardValue(), "Card");}
+        if (pmFlags.hasCredit) {incomeReport.setColumnFooter(bundle.getCreditValue(), "Credit");}
+        if (pmFlags.hasStaffWelfare) {incomeReport.setColumnFooter(bundle.getStaffWelfareValue(), "Staff Welfare");}
+        if (pmFlags.hasVoucher) {incomeReport.setColumnFooter(bundle.getVoucherValue(), "Voucher");}
+        if (pmFlags.hasIou) {incomeReport.setColumnFooter(bundle.getIouValue(), "IOU");}
+        if (pmFlags.hasAgent) {incomeReport.setColumnFooter(bundle.getAgentValue(), "Agent");}
+        if (pmFlags.hasCheque) {incomeReport.setColumnFooter(bundle.getChequeValue(), "Cheque");}
+        if (pmFlags.hasSlip) {incomeReport.setColumnFooter(bundle.getSlipValue(), "Slip");}
+        if (pmFlags.hasEWallet) {incomeReport.setColumnFooter(bundle.getEWalletValue(), "eWallet");}
+        if (pmFlags.hasPatientDeposit) {incomeReport.setColumnFooter(bundle.getPatientDepositValue(), "Patient Deposit");}
+        if (pmFlags.hasPatientPoints) {incomeReport.setColumnFooter(bundle.getPatientPointsValue(), "Patient Points");}
+        if (pmFlags.hasOnlineSettlement) {incomeReport.setColumnFooter(bundle.getOnlineSettlementValue(), "Online Settlement");}
+
+        return incomeReport;
+    }
+
+    public StreamedContent getChannelIncomeReportAsPdf() {
+        if (bundle == null || bundle.getReportTemplateRows() == null || bundle.getReportTemplateRows().isEmpty()) {
+            JsfUtil.addErrorMessage("Please generate the Channel Income report before exporting.");
+            return null;
+        }
+        return getChannelIncomeReport().createPdfAsStream();
+    }
+
+    public StreamedContent getChannelIncomeReportAsExcel() {
+        if (bundle == null || bundle.getReportTemplateRows() == null || bundle.getReportTemplateRows().isEmpty()) {
+            JsfUtil.addErrorMessage("Please generate the Channel Income report before exporting.");
+            return null;
+        }
+
+        return getChannelIncomeReport().createExcelAsStream();
     }
 
     public OpdBillSearch getOpdBillSearchReport() {

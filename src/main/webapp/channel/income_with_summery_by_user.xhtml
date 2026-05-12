@@ -121,12 +121,27 @@
 
                                     </p:selectCheckboxMenu>
 
+                                    <h:panelGroup layout="block" styleClass="form-group">
+                                        <h:outputText styleClass="fa fa-money-bill-wave" /> 
+                                        <h:outputLabel value="Payment Method" class="mx-3"/>
+                                    </h:panelGroup>
+
+                                    <p:selectCheckboxMenu value="#{channelReportController.paymentMethods}" label="Select Payment Methods"
+                                                            id="cmbPaymentMethod"
+                                                            filter="true"
+                                                            inputStyleClass="w-100 form-control"
+                                                            filterMatchMode="contains">
+                                        <f:selectItems value="#{enumController.paymentMethodsForChannelSettling}" var="method"
+                                                        itemLabel="#{method.label}" itemValue="#{method}" />
+
+                                     </p:selectCheckboxMenu>
+
                                 </h:panelGrid>
                             </div>
                         </div>
 
                         <div class="d-flex align-items-center my-2">
-                            <p:commandButton class="ui-button-warning mx-1" icon="fas fa-cogs" value="Process" action="#{channelReportController.fetchChannelIncomeSummeryByUserWise}" ajax="false" />
+                            <p:commandButton class="ui-button-warning mx-1" icon="fas fa-cogs" value="Process" action="#{channelReportController.c}" ajax="false" />
 
                             <p:commandButton 
                                 value="Export as PDF" 

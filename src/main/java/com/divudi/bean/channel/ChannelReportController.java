@@ -476,6 +476,7 @@ public class ChannelReportController implements Serializable {
     public void generateChannelBookingBillsForShitEndFromChannelReportController(Long shiftStartBillId){
         categorywiseDetailsWrapperDTO = null;
         bookingsByShiftDto = channelService.fetchAndGenerateChannelBookingBillsForShiftEnd(shiftStartBillId, categoryList, paymentMethods);
+        bookingsByShiftDto.setProcessedBy(sessionController.getLoggedUser().getWebUserPerson().getName());
     }
 
     public void updateChannelBookingBillsForShitEndFromChannelReportController(){
@@ -635,13 +636,14 @@ public class ChannelReportController implements Serializable {
 
         private boolean isCancelled;
         private String cancelledBillDeptId;
+        private Long cancelBillId;
 
         private boolean isRefunded;
         private String refundBillDeptId;
 
 
 
-        public ChannelIncomeDetailDto(long bsId, long billId, BillTypeAtomic billTypeAtomic, Date appoinmentDate, Date billedDate, String billedBy, String patientName, String patientPhone, PaymentMethod paymentMethod, double doctorFee, double hosFee, double totalAppoinmentFee, String remark, boolean isCancelled, boolean isRefunded) {
+        public ChannelIncomeDetailDto(long bsId, long billId, BillTypeAtomic billTypeAtomic, Date appoinmentDate, Date billedDate, String billedBy, String patientName, String patientPhone, PaymentMethod paymentMethod, double doctorFee, double hosFee, double totalAppoinmentFee, String remark, boolean isCancelled, boolean isRefunded, Long cancelBillId) {
             this.bsId = bsId;
             this.billId = billId;
             this.billTypeAtomic = billTypeAtomic;
@@ -657,6 +659,7 @@ public class ChannelReportController implements Serializable {
             this.remark = remark;
             this.isCancelled = isCancelled;
             this.isRefunded = isRefunded;
+            this.cancelBillId = cancelBillId != null ? cancelBillId : null;
         }
 
          // constructor for channel income card payments
@@ -791,6 +794,14 @@ public class ChannelReportController implements Serializable {
 
         public void setBillId(long billId) {
             this.billId = billId;
+        }
+
+        public Long getCancelBillId() {
+            return cancelBillId;
+        }
+
+        public void setCancelBillId(Long billId) {
+            this.cancelBillId = billId;
         }
 
         public Date getBilledDate() {
@@ -1211,7 +1222,7 @@ public class ChannelReportController implements Serializable {
             return;
         }
 
-        wrapperDto = channelService.fetchChannelIncomeByUser(fromDate, toDate, institution, webUser, categoryList, reportStatus, reportStatus);
+        wrapperDto = channelService.fetchChannelIncomeByUser(fromDate, toDate, institution, webUser, categoryList, reportStatus, reportStatus, paymentMethods);
 
         if (wrapperDto == null) {
             return;
@@ -5644,6 +5655,30 @@ public class ChannelReportController implements Serializable {
             }
             
             downloadingExcel = excelController.createExcelForChannelIncomeDailySummaryReport(wrapperDto, getFiltersForChannelIncomeDailySummaryReport(), fileName);
+        } catch (IOException e) {
+            logger.error("getChannelIncomeDailySummaryReportAsExcel: Error creating downloadingExcel via excelController.createExcelForChannelIncomeDailySummaryReport", e);
+            downloadingExcel = null;
+            JsfUtil.addErrorMessage("Failed to generate Channel Income Daily Summary Report Excel file. Please try again.");
+        }
+        return downloadingExcel;
+    }
+
+    // Excel Export: Channel Income Daily Summary Report
+    public StreamedContent getChannelSummaryCollectionReportAsExcel() {
+        if (bookingsByShiftDto == null || bookingsByShiftDto.getIncomeDtos() == null || bookingsByShiftDto.getIncomeDtos().isEmpty()) {
+            JsfUtil.addErrorMessage("Please generate the Summary Collection report before exporting.");
+            return null;
+        }
+
+        StreamedContent downloadingExcel = null;
+        try {
+            String fileName = "Summary_Collection_Report";
+            String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
+            if (dates != null && !dates.isEmpty()) {
+                fileName += "_" + dates;
+            }
+            
+            downloadingExcel = excelController.createExcelForChannelIncomeDailySummaryReport(bookingsByShiftDto, getFiltersForChannelIncomeDailySummaryReport(), fileName);
         } catch (IOException e) {
             logger.error("getChannelIncomeDailySummaryReportAsExcel: Error creating downloadingExcel via excelController.createExcelForChannelIncomeDailySummaryReport", e);
             downloadingExcel = null;

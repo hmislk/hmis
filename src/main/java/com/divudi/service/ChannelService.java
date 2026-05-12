@@ -510,12 +510,14 @@ public class ChannelService {
                 + "COALESCE(bill.netTotal, 0), "
                 + "bill.comments, "
                 + "bill.cancelled, "
-                + "bill.refunded ) "
+                + "bill.refunded, "
+                + "cb.id ) "
                 + "from BillSession bs "
                 + "join bs.bill bill "
                 + "join bs.sessionInstance session "
                 + "join bill.patient patient "
                 + "left join patient.person person "
+                + "left join bill.cancelledBill cb "
                 + "where bill.billTypeAtomic in :bta "
                 + "and bill.id > :shiftStartBillId "
                 + "and bill.billType <> :bt ";
@@ -568,16 +570,17 @@ public class ChannelService {
         wrapperDto.setProcessDate(new Date());
 
         List<ChannelReportController.ChannelIncomeSummeryDto> summeryDtoList = new ArrayList<>();
+        HashSet<Long> cancelledBillIds = new HashSet<>();
 
         for (ChannelReportController.ChannelIncomeDetailDto dto : dtoList) {
             if (summeryDtoList.isEmpty()) {
                 ChannelReportController.ChannelIncomeSummeryDto summery1 = new ChannelReportController.ChannelIncomeSummeryDto();
                 summery1.setAppoimentDate(dto.getAppoinmentDate());
                 summeryDtoList.add(summery1);
-                fillPaymentsDataToDto(summeryDtoList, dto);
+                fillPaymentsDataToDto(summeryDtoList, dto, cancelledBillIds);
                 continue;
             } else {
-                fillPaymentsDataToDto(summeryDtoList, dto);
+                fillPaymentsDataToDto(summeryDtoList, dto, cancelledBillIds);
             }
 
         }
@@ -1676,7 +1679,7 @@ public class ChannelService {
 
     }
 
-    public ChannelReportController.WrapperDtoForChannelFutureIncome fetchChannelIncomeByUser(Date fromDate, Date toDate, Institution institution, WebUser user, List<Category> categoryList, String reportStatus, String paidStatus) {
+    public ChannelReportController.WrapperDtoForChannelFutureIncome fetchChannelIncomeByUser(Date fromDate, Date toDate, Institution institution, WebUser user, List<Category> categoryList, String reportStatus, String paidStatus, List<PaymentMethod> paymentMethods) {
 
         String sql = "select new com.divudi.bean.channel.ChannelReportController.ChannelIncomeDetailDto(bs.id, "
                 + "bill.id, "
@@ -1692,12 +1695,14 @@ public class ChannelService {
                 + "COALESCE(bill.netTotal, 0), "
                 + "bill.comments, "
                 + "bill.cancelled, "
-                + "bill.refunded ) "
+                + "bill.refunded, "
+                + "cb.id ) "
                 + "from BillSession bs "
                 + "join bs.bill bill "
                 + "join bs.sessionInstance session "
                 + "join bill.patient patient "
                 + "left join patient.person person "
+                + "left join bill.cancelledBill cb "
                 + "where bs.createdAt between :fromDate and :todate "
                 + "and bill.billTypeAtomic in :bta "
                 + "and bill.billType <> :bt ";
@@ -1732,13 +1737,19 @@ public class ChannelService {
             params.put("category", categoryList);
         }
 
+        if (paymentMethods != null && !paymentMethods.isEmpty()) {
+            sql += "and bill.paymentMethod in :pm ";
+            params.put("pm", paymentMethods);
+        }
+
         sql += "order by bill.createdAt desc";
 
         List<ChannelReportController.ChannelIncomeDetailDto> dtoList = (List<ChannelReportController.ChannelIncomeDetailDto>) billSessionFacade.findLightsByJpql(sql, params, TemporalType.TIMESTAMP);
-
+        System.out.println("size: " + dtoList.size());
         if (dtoList == null || dtoList.isEmpty()) {
             return null;
         }
+        
 
         ChannelReportController.WrapperDtoForChannelFutureIncome wrapperDto = new ChannelReportController.WrapperDtoForChannelFutureIncome();
         wrapperDto.setIncomeDtos(dtoList);
@@ -1747,16 +1758,17 @@ public class ChannelService {
         if (reportStatus != null && reportStatus.equalsIgnoreCase("summery")) {
 
             List<ChannelReportController.ChannelIncomeSummeryDto> summeryDtoList = new ArrayList<>();
+            HashSet<Long> cancelledBillIds = new HashSet<>();
 
             for (ChannelReportController.ChannelIncomeDetailDto dto : dtoList) {
                 if (summeryDtoList.isEmpty()) {
                     ChannelReportController.ChannelIncomeSummeryDto summery1 = new ChannelReportController.ChannelIncomeSummeryDto();
                     summery1.setAppoimentDate(dto.getAppoinmentDate());
                     summeryDtoList.add(summery1);
-                    fillPaymentsDataToDto(summeryDtoList, dto);
+                    fillPaymentsDataToDto(summeryDtoList, dto, cancelledBillIds);
                     continue;
                 } else {
-                    fillPaymentsDataToDto(summeryDtoList, dto);
+                    fillPaymentsDataToDto(summeryDtoList, dto, cancelledBillIds);
                 }
 
             }
@@ -1799,7 +1811,7 @@ public class ChannelService {
 //        bs.getBill().getCreater();
     }
 
-    public void fillPaymentsDataToDto(List<ChannelReportController.ChannelIncomeSummeryDto> summeryDtoList, ChannelReportController.ChannelIncomeDetailDto dto) {
+    public void fillPaymentsDataToDto(List<ChannelReportController.ChannelIncomeSummeryDto> summeryDtoList, ChannelReportController.ChannelIncomeDetailDto dto, Set<Long> cancelledBillIds) {
         boolean availableSummery = false;
 
         for (ChannelReportController.ChannelIncomeSummeryDto summeryDto : summeryDtoList) {
@@ -1843,18 +1855,27 @@ public class ChannelService {
                         break;
                 }
                 if (dto.isIsCancelled()) {
-                    summeryDto.setTotalCancelAppoinments(summeryDto.getTotalCancelAppoinments() + 1);
-                    summeryDto.setTotalActiveAppoinments(summeryDto.getTotalActiveAppoinments() - 1);
-                    summeryDto.setCancelTotal(summeryDto.getCancelTotal() + dto.getTotalAppoinmentFee());
+                    if (!cancelledBillIds.contains(dto.getCancelBillId())) {
+                        System.out.println("BABUUUUSHKA");
+                        System.out.println("DEPTCAN: " + dto.getCancelBillId());
+                        summeryDto.setTotalActiveAppoinments(summeryDto.getTotalActiveAppoinments() + 1);
+                    }
                 } else if (dto.getBillTypeAtomic() == BillTypeAtomic.CHANNEL_REFUND_WITH_PAYMENT) {
                     summeryDto.setTotalActiveAppoinments(summeryDto.getTotalActiveAppoinments());
                     summeryDto.setTotalRefundAppoinments(summeryDto.getTotalRefundAppoinments() + 1);
+                    summeryDto.setRefundTotal(summeryDto.getRefundTotal() + dto.getTotalAppoinmentFee());
+                } else if (dto.getBillTypeAtomic() == BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT) {
+                    System.out.println("DEPT: " + dto.getBillDeptId());
+                    cancelledBillIds.add(dto.getBillId());
+                    summeryDto.setTotalActiveAppoinments(summeryDto.getTotalActiveAppoinments());
+                    summeryDto.setTotalCancelAppoinments(summeryDto.getTotalCancelAppoinments() + 1);
                     summeryDto.setRefundTotal(summeryDto.getRefundTotal() + dto.getTotalAppoinmentFee());
                 } else {
 
                     summeryDto.setTotalActiveAppoinments(summeryDto.getTotalActiveAppoinments() + 1);
 
                 }
+
                 summeryDto.setTotalDocFee(summeryDto.getTotalDocFee() + dto.getDoctorFee());
                 summeryDto.setTotalHosFee(summeryDto.getTotalHosFee() + dto.getHosFee());
                 summeryDto.setTotalAmount(summeryDto.getTotalAmount() + dto.getTotalAppoinmentFee());
@@ -1952,18 +1973,24 @@ public class ChannelService {
             }
 
             if (dto.isIsCancelled()) {
-                newSummery.setTotalCancelAppoinments(newSummery.getTotalCancelAppoinments() + 1);
-                newSummery.setTotalActiveAppoinments(newSummery.getTotalActiveAppoinments() - 1);
-                newSummery.setCancelTotal(newSummery.getCancelTotal() + dto.getTotalAppoinmentFee());
-            } else if (dto.isIsRefunded()) {
-                newSummery.setTotalActiveAppoinments(newSummery.getTotalActiveAppoinments() - 1);
+                if (!cancelledBillIds.contains(dto.getCancelBillId())) {
+                    newSummery.setTotalActiveAppoinments(newSummery.getTotalActiveAppoinments() + 1);
+                }
+            } else if (dto.getBillTypeAtomic() == BillTypeAtomic.CHANNEL_REFUND_WITH_PAYMENT) {
+                newSummery.setTotalActiveAppoinments(newSummery.getTotalActiveAppoinments());
                 newSummery.setTotalRefundAppoinments(newSummery.getTotalRefundAppoinments() + 1);
+                newSummery.setRefundTotal(newSummery.getRefundTotal() + dto.getTotalAppoinmentFee());
+            } else if (dto.getBillTypeAtomic() == BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT) {
+                cancelledBillIds.add(dto.getBillId());
+                newSummery.setTotalActiveAppoinments(newSummery.getTotalActiveAppoinments());
+                newSummery.setTotalCancelAppoinments(newSummery.getTotalCancelAppoinments() + 1);
                 newSummery.setRefundTotal(newSummery.getRefundTotal() + dto.getTotalAppoinmentFee());
             } else {
 
                 newSummery.setTotalActiveAppoinments(newSummery.getTotalActiveAppoinments() + 1);
 
             }
+
             newSummery.setTotalDocFee(dto.getDoctorFee());
             newSummery.setTotalHosFee(dto.getHosFee());
             newSummery.setTotalAmount(dto.getTotalAppoinmentFee());
