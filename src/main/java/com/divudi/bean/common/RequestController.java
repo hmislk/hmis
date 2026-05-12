@@ -375,6 +375,14 @@ public class RequestController implements Serializable {
 
                 navigation = "/common/request/bill_cancel_request_cancel?faces-redirect=true";
                 break;
+            case CC_BILL:
+                bills.add(currentRequest.getBill());
+                patient = currentRequest.getBill().getPatient();
+                comment = null;
+
+                navigation = "/common/request/cc_bill_canceation_request_cancel?faces-redirect=true";
+                break;
+
             case OPD_BILL_WITH_PAYMENT:
                 navigation = "";
                 break;
@@ -938,7 +946,7 @@ public class RequestController implements Serializable {
     public void complteRequest(Request req) {
         System.out.println("complteRequest(Request req) ---> ");
         System.out.println("requestController.getBills() = " + getBills());
-        
+
         req.setCompletedBy(sessionController.getLoggedUser());
         req.setCompletedAt(new Date());
         req.setStatus(RequestStatus.COMPLETED);
@@ -969,6 +977,11 @@ public class RequestController implements Serializable {
             JsfUtil.addErrorMessage("Bill not found for request Cancel");
             return;
         }
+        
+        if (comment.trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Comment is Missing...");
+            return;
+        }
 
         currentRequest.setCancelled(true);
         currentRequest.setCancelledAt(new Date());
@@ -982,12 +995,13 @@ public class RequestController implements Serializable {
             currentRequest.getBill().setCurrentRequest(null);
             billFacade.edit(currentRequest.getBill());
 
-            //Update Induvidual Bills of Batch Bil
-            if (bills != null) {
-                for (Bill b : bills) {
-                    b.setCurrentRequest(null);
-                    billFacade.edit(b);
-                }
+        }
+
+        //Update Induvidual Bills of Batch Bil
+        if (bills != null) {
+            for (Bill b : bills) {
+                b.setCurrentRequest(null);
+                billFacade.edit(b);
             }
         }
 
