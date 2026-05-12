@@ -44,6 +44,7 @@ import com.divudi.service.BillService;
 import com.itextpdf.text.BaseColor;
 import com.divudi.core.data.HistoryType;
 import com.divudi.core.data.dto.ExpiryItemListDto;
+import com.divudi.core.data.dto.DurationServiceReportDTO;
 import com.divudi.core.data.dto.PatientEncounterDto;
 import com.divudi.core.data.dto.PharmacySaleBhtBillDTO;
 import com.divudi.core.data.dto.PharmacySaleDepartmentDTO;
@@ -306,6 +307,14 @@ public class ReportController implements Serializable, ControllerWithReportFilte
     private AdmissionType admissionType;
     private List<AdmissionType> admissionTypes = new ArrayList<>();
     private List<RoomCategory> roomCategories;
+    private Department serviceDepartment;
+    private Department billedDepartment;
+    private Date serviceAddedFromDate;
+    private Date serviceAddedToDate;
+    private Date invoiceFromDate;
+    private Date invoiceToDate;
+    private String serviceGroup;
+    private List<DurationServiceReportDTO> durationServiceReportRows;
     private String bhtNo;
     private String patientName;
     private PatientEncounterDto patientEncounterDto;
@@ -4027,6 +4036,148 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         }
     }
 
+    public void createDurationServiceReport() {
+        if ("OP".equalsIgnoreCase(visitType)) {
+            durationServiceReportRows = new ArrayList<>();
+            return;
+        }
+
+        Map<String, Object> params = new HashMap<>();
+        StringBuilder jpql = new StringBuilder();
+
+        jpql.append("SELECT pi ")
+                .append("FROM PatientItem pi ")
+                .append("JOIN pi.patientEncounter pe ")
+                .append("LEFT JOIN pi.item timedItem ")
+                .append("LEFT JOIN pi.bill bill ")
+                .append("LEFT JOIN pe.finalBill finalBill ")
+                .append("LEFT JOIN pe.currentPatientRoom room ")
+                .append("LEFT JOIN room.roomFacilityCharge rfc ");
+
+        jpql.append("WHERE pi.retired = :ret ")
+                .append("AND timedItem.retired = :itemRet ")
+                .append("AND pe.retired = :peRet ");
+        params.put("ret", false);
+        params.put("itemRet", false);
+        params.put("peRet", false);
+
+        if (fromDate != null && toDate != null) {
+            jpql.append("AND pe.dateOfDischarge BETWEEN :fd AND :td ");
+            params.put("fd", fromDate);
+            params.put("td", toDate);
+        }
+        if (serviceAddedFromDate != null && serviceAddedToDate != null) {
+            jpql.append("AND pi.createdAt BETWEEN :serviceFd AND :serviceTd ");
+            params.put("serviceFd", serviceAddedFromDate);
+            params.put("serviceTd", serviceAddedToDate);
+        }
+        if (invoiceFromDate != null && invoiceToDate != null) {
+            jpql.append("AND (")
+                    .append("bill.createdAt BETWEEN :invoiceFd AND :invoiceTd ")
+                    .append("OR (bill.createdAt IS NULL AND finalBill.createdAt BETWEEN :invoiceFd AND :invoiceTd)")
+                    .append(") ");
+            params.put("invoiceFd", invoiceFromDate);
+            params.put("invoiceTd", invoiceToDate);
+        }
+        if (item != null) {
+            jpql.append("AND timedItem.id = :itemId ");
+            params.put("itemId", item.getId());
+        }
+        if (admissionTypes != null && !admissionTypes.isEmpty()) {
+            jpql.append("AND pe.admissionType IN :admissionTypes ");
+            params.put("admissionTypes", admissionTypes);
+        }
+        if (roomCategories != null && !roomCategories.isEmpty()) {
+            List<Long> roomCategoryIds = new ArrayList<>();
+            for (RoomCategory roomCategory : roomCategories) {
+                if (roomCategory != null && roomCategory.getId() != null) {
+                    roomCategoryIds.add(roomCategory.getId());
+                }
+            }
+            if (!roomCategoryIds.isEmpty()) {
+                jpql.append("AND rfc.roomCategory.id IN :roomCategoryIds ");
+                params.put("roomCategoryIds", roomCategoryIds);
+            }
+        }
+        if (serviceDepartment != null) {
+            jpql.append("AND serviceDept = :serviceDepartment ");
+            params.put("serviceDepartment", serviceDepartment);
+        }
+        if (billedDepartment != null) {
+            jpql.append("AND (bill.department = :billedDepartment ")
+                    .append("OR (bill.department IS NULL AND pe.department = :billedDepartment)) ");
+            params.put("billedDepartment", billedDepartment);
+        }
+        if (serviceGroup != null && !serviceGroup.trim().isEmpty()) {
+            jpql.append("AND LOWER(serviceCategory.name) LIKE :serviceGroup ");
+            params.put("serviceGroup", "%" + serviceGroup.trim().toLowerCase() + "%");
+        }
+
+        jpql.append("ORDER BY pe.dateOfDischarge, pe.bhtNo, timedItem.name, pi.fromTime ");
+        System.out.println("jpql = " + jpql);
+        System.out.println("params = " + params);
+        List<PatientItem> patientItems = (List<PatientItem>) billItemFacade.findLightsByJpql(
+                jpql.toString(), params, TemporalType.TIMESTAMP);
+        System.out.println("durationServicePatientItems = " + patientItems);
+
+        durationServiceReportRows = new ArrayList<>();
+        if (patientItems == null) {
+            return;
+        }
+
+        for (PatientItem patientItem : patientItems) {
+            durationServiceReportRows.add(toDurationServiceReportDto(patientItem));
+        }
+        System.out.println("durationServiceReportRows = " + durationServiceReportRows);
+    }
+
+    private DurationServiceReportDTO toDurationServiceReportDto(PatientItem patientItem) {
+        PatientEncounter encounter = patientItem != null ? patientItem.getPatientEncounter() : null;
+        Patient patient = encounter != null ? encounter.getPatient() : null;
+        Staff consultant = encounter != null ? encounter.getReferringConsultant() : null;
+        Item timedItem = patientItem != null ? patientItem.getItem() : null;
+        Bill bill = patientItem != null ? patientItem.getBill() : null;
+        Bill finalBill = encounter != null ? encounter.getFinalBill() : null;
+
+        Bill displayBill = bill != null ? bill : finalBill;
+        WebUser checkedBy = bill != null && bill.getCheckedBy() != null ? bill.getCheckedBy()
+                : finalBill != null ? finalBill.getCheckedBy() : null;
+        Date checkedAt = bill != null && bill.getCheckeAt() != null ? bill.getCheckeAt()
+                : finalBill != null ? finalBill.getCheckeAt() : null;
+        Date invoiceDate = displayBill != null ? displayBill.getCreatedAt() : null;
+
+        return new DurationServiceReportDTO(
+                patientItem != null ? patientItem.getId() : null,
+                encounter != null ? encounter.getBhtNo() : "",
+                patient != null ? patient.getPhn() : "",
+                personName(consultant != null ? consultant.getPerson() : null),
+                "",
+                timedItem != null && timedItem.getDepartment() != null ? timedItem.getDepartment().getName() : "",
+                timedItem != null ? timedItem.getName() : "",
+                timedItem != null && timedItem.getCategory() != null ? timedItem.getCategory().getName() : "",
+                patientItem != null ? patientItem.getFromTime() : null,
+                patientItem != null ? patientItem.getToTime() : null,
+                patientItem != null ? patientItem.getServiceValue() : 0.0,
+                patientItem != null ? patientItem.getDiscount() : 0.0,
+                patientItem != null ? patientItem.getAdjustedValue() : 0.0,
+                webUserName(patientItem != null ? patientItem.getCreater() : null),
+                webUserName(checkedBy),
+                checkedAt,
+                patientItem != null ? patientItem.getCreatedAt() : null,
+                invoiceDate);
+    }
+
+    private String personName(Person person) {
+        return person != null && person.getName() != null ? person.getName() : "";
+    }
+
+    private String webUserName(WebUser webUser) {
+        if (webUser == null) {
+            return "";
+        }
+        return personName(webUser.getWebUserPerson());
+    }
+
     private void createProfitMatrixSummaryReport() {
         Map<String, Object> params = new HashMap<>();
         StringBuilder jpql = new StringBuilder();
@@ -4863,6 +5014,73 @@ public class ReportController implements Serializable, ControllerWithReportFilte
 
     public void setRoomCategories(List<RoomCategory> roomCategories) {
         this.roomCategories = roomCategories;
+    }
+
+    public Department getServiceDepartment() {
+        return serviceDepartment;
+    }
+
+    public void setServiceDepartment(Department serviceDepartment) {
+        this.serviceDepartment = serviceDepartment;
+    }
+
+    public Department getBilledDepartment() {
+        return billedDepartment;
+    }
+
+    public void setBilledDepartment(Department billedDepartment) {
+        this.billedDepartment = billedDepartment;
+    }
+
+    public Date getServiceAddedFromDate() {
+        return serviceAddedFromDate;
+    }
+
+    public void setServiceAddedFromDate(Date serviceAddedFromDate) {
+        this.serviceAddedFromDate = serviceAddedFromDate;
+    }
+
+    public Date getServiceAddedToDate() {
+        return serviceAddedToDate;
+    }
+
+    public void setServiceAddedToDate(Date serviceAddedToDate) {
+        this.serviceAddedToDate = serviceAddedToDate;
+    }
+
+    public Date getInvoiceFromDate() {
+        return invoiceFromDate;
+    }
+
+    public void setInvoiceFromDate(Date invoiceFromDate) {
+        this.invoiceFromDate = invoiceFromDate;
+    }
+
+    public Date getInvoiceToDate() {
+        return invoiceToDate;
+    }
+
+    public void setInvoiceToDate(Date invoiceToDate) {
+        this.invoiceToDate = invoiceToDate;
+    }
+
+    public String getServiceGroup() {
+        return serviceGroup;
+    }
+
+    public void setServiceGroup(String serviceGroup) {
+        this.serviceGroup = serviceGroup;
+    }
+
+    public List<DurationServiceReportDTO> getDurationServiceReportRows() {
+        if (durationServiceReportRows == null) {
+            durationServiceReportRows = new ArrayList<>();
+        }
+        return durationServiceReportRows;
+    }
+
+    public void setDurationServiceReportRows(List<DurationServiceReportDTO> durationServiceReportRows) {
+        this.durationServiceReportRows = durationServiceReportRows;
     }
 
     public List<ProfitMatrixRowDTO> getProfitMatrixSummaryRows() {
