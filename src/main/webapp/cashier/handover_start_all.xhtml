@@ -109,7 +109,7 @@
                                             <i class="pi pi-dollar" style="margin-right:5px; color: #17a2b8;"></i>
                                             <p:outputLabel value="Total Handed over Value" />
                                         </h:panelGroup>
-                                        <p:outputLabel value="#{financialTransactionController.bundle.totalOut}">
+                                        <p:outputLabel id="lblHandoverTotal" value="#{financialTransactionController.bundle.handoverTotal}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </p:outputLabel>
                                     </p:panelGrid>
@@ -542,7 +542,7 @@
                                                         event="blur"
                                                         process="txtDenoQtyHandover" 
                                                         listener="#{financialTransactionController.bundle.calculateTotalHandoverByDenominationQuantities()}"
-                                                        update=":#{p:resolveFirstComponentWithId('txtCashHandover',view).clientId} txtDenoVal :#{p:resolveFirstComponentWithId('tblCashier',view).clientId} :#{p:resolveFirstComponentWithId('tblAll',view).clientId}" ></p:ajax>
+                                                        update=":#{p:resolveFirstComponentWithId('txtCashHandover',view).clientId} txtDenoVal :#{p:resolveFirstComponentWithId('tblCashier',view).clientId} :#{p:resolveFirstComponentWithId('tblAll',view).clientId} :#{p:resolveFirstComponentWithId('lblHandoverTotal',view).clientId}" ></p:ajax>
                                                 </p:inputText>  
                                             </p:column>
                                             <p:column >

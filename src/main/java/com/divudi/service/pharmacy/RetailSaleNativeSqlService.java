@@ -247,11 +247,12 @@ public class RetailSaleNativeSqlService {
 
         // Step 5: Update totals on both bills
         em.createNativeQuery(
-                "UPDATE " + billTable() + " SET total=?, netTotal=? WHERE ID=? OR ID=?")
+                "UPDATE " + billTable() + " SET total=?, netTotal=?, DISCOUNT=? WHERE ID=? OR ID=?")
                 .setParameter(1, billTotals[0])
                 .setParameter(2, billTotals[1])
-                .setParameter(3, preBillId)
-                .setParameter(4, billId)
+                .setParameter(3, billTotals[2])
+                .setParameter(4, preBillId)
+                .setParameter(5, billId)
                 .executeUpdate();
 
         // Step 6: Insert Payment record against BilledBill
@@ -540,6 +541,8 @@ public class RetailSaleNativeSqlService {
         BigDecimal totalQuantity = BigDecimal.ZERO;
         BigDecimal totalFreeQuantity = BigDecimal.ZERO;
         BigDecimal billNetTotal = BigDecimal.ZERO;
+        BigDecimal billGrossTotal = BigDecimal.ZERO;
+        BigDecimal billDiscount = BigDecimal.ZERO;
 
         for (int i = 0; i < items.size(); i++) {
             BillItemData item = items.get(i);
@@ -628,6 +631,8 @@ public class RetailSaleNativeSqlService {
             totalQuantity         = totalQuantity.add(qty);
             totalFreeQuantity     = totalFreeQuantity.add(freeQty);
             billNetTotal          = billNetTotal.add(netValue);
+            billGrossTotal        = billGrossTotal.add(grossValue);
+            billDiscount          = billDiscount.add(grossValue.subtract(netValue));
         }
 
         Bill billRef = em.getReference(Bill.class, billId);
@@ -635,7 +640,7 @@ public class RetailSaleNativeSqlService {
         bfd.setBill(billRef);
         bfd.setCreatedAt(new Date());
         bfd.setNetTotal(billNetTotal);
-        bfd.setGrossTotal(billNetTotal);
+        bfd.setGrossTotal(billGrossTotal);
         bfd.setTotalCostValue(totalCostValue.negate());
         bfd.setTotalPurchaseValue(totalPurchaseValue.negate());
         bfd.setTotalRetailSaleValue(totalRetailSaleValue.negate());
@@ -650,7 +655,7 @@ public class RetailSaleNativeSqlService {
                 .setParameter(2, billId)
                 .executeUpdate();
 
-        return new double[]{billNetTotal.doubleValue(), billNetTotal.doubleValue()};
+        return new double[]{billGrossTotal.doubleValue(), billNetTotal.doubleValue(), billDiscount.doubleValue()};
     }
 
     // -----------------------------------------------------------------------
