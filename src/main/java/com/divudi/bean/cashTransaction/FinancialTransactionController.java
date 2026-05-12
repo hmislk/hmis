@@ -151,6 +151,7 @@ public class FinancialTransactionController implements Serializable {
     private boolean handoverValuesCreated = false;
     private boolean shortageSubmitting = false;
     private boolean settlementSubmitting = false;
+    private boolean handoverSubmitting = false;
     private double shortageSettledSoFar;
     private double shortageOutstanding;
 
@@ -275,6 +276,9 @@ public class FinancialTransactionController implements Serializable {
     private List<DenominationTransaction> denominationTransactions;
     private DenominationTransaction dt;
     private double totalCashFund;
+
+    private List<DenominationTransaction> fundTransferDenominationTransactions;
+    private double fundTransferDenominationTotal;
 
     boolean floatTransferStarted = false;
 
@@ -1852,6 +1856,11 @@ public class FinancialTransactionController implements Serializable {
             }
 
             childBundle.calculateTotalsByPaymentsAndDenominations();
+            // Shortage component bills have negative cash — mark them so the accept page
+            // can display the "Shift Shortage" label in the Institution/Type column.
+            if (childBundle.getCashValue() < -0.001) {
+                childBundle.setPaymentHandover(PaymentHandover.FLOATS);
+            }
             bundle.getBundles().add(childBundle);
         }
 
@@ -1981,6 +1990,11 @@ public class FinancialTransactionController implements Serializable {
             }
 
             childBundle.calculateTotalsByPaymentsAndDenominations();
+            // Shortage component bills have negative cash — mark them so the reprint
+            // composite can display the "Shift Shortage" label in Institution/Type column.
+            if (childBundle.getCashValue() < -0.001) {
+                childBundle.setPaymentHandover(PaymentHandover.FLOATS);
+            }
             bundle.getBundles().add(childBundle);
         }
 
@@ -2006,6 +2020,29 @@ public class FinancialTransactionController implements Serializable {
         }
         // Restore totalOut so "Handingover Value" is correct on the print.
         bundle.setTotalOut(selectedBill.getNetTotal());
+
+        // Append synthetic FLOAT_OUT / FLOAT_IN child bundles so they appear in the
+        // drill-down table (selectedBundles). These mirror the bundles produced by
+        // generatePaymentBundleForHandovers() during creation, but are rebuilt here
+        // from the already-computed cashFloat totals since the transient value is not persisted.
+        if (bundle.getCashFloatOutTotal() > 0.001) {
+            ReportTemplateRowBundle floatOutBundle = new ReportTemplateRowBundle();
+            floatOutBundle.setPaymentHandover(PaymentHandover.FLOAT_OUT);
+            floatOutBundle.setCashValue(-bundle.getCashFloatOutTotal());
+            floatOutBundle.setCashHandoverValue(-bundle.getCashFloatOutTotal());
+            floatOutBundle.setHasCashTransaction(true);
+            floatOutBundle.setSelected(true);
+            bundle.getBundles().add(floatOutBundle);
+        }
+        if (bundle.getCashFloatInTotal() > 0.001) {
+            ReportTemplateRowBundle floatInBundle = new ReportTemplateRowBundle();
+            floatInBundle.setPaymentHandover(PaymentHandover.FLOAT_IN);
+            floatInBundle.setCashValue(bundle.getCashFloatInTotal());
+            floatInBundle.setCashHandoverValue(bundle.getCashFloatInTotal());
+            floatInBundle.setHasCashTransaction(true);
+            floatInBundle.setSelected(true);
+            bundle.getBundles().add(floatInBundle);
+        }
 
         // Fetch individual float transfer payments for this shift so the preview can
         // display them as detail rows. Float payments were marked handingOverStarted=true
@@ -2040,7 +2077,7 @@ public class FinancialTransactionController implements Serializable {
             }
         }
 
-        return "/cashier/handover_preview?faces-redirect=true";
+        return "/cashier/handover_view?faces-redirect=true";
     }
 
     public String navigateToHandoverAcceptBillReprintFromReport() {
@@ -2396,11 +2433,45 @@ public class FinancialTransactionController implements Serializable {
         }
     }
 
+    public void calculateFundTransferDenominationTotal() {
+        fundTransferDenominationTotal = 0.0;
+        if (fundTransferDenominationTransactions == null || fundTransferDenominationTransactions.isEmpty()) {
+            return;
+        }
+        for (DenominationTransaction d : fundTransferDenominationTransactions) {
+            if (d == null || d.getDenomination() == null || d.getDenomination().getDenominationValue() == null) {
+                continue;
+            }
+            if (d.getDenominationQty() == null) {
+                d.setDenominationQty(0L);
+                d.setDenominationValue(null);
+            } else {
+                double dv = d.getDenomination().getDenominationValue() * d.getDenominationQty();
+                d.setDenominationValue(dv);
+                fundTransferDenominationTotal += dv;
+            }
+        }
+    }
+
+    private boolean hasFundTransferDenominationEntries() {
+        if (fundTransferDenominationTransactions == null) {
+            return false;
+        }
+        for (DenominationTransaction d : fundTransferDenominationTransactions) {
+            if (d.getDenominationQty() != null && d.getDenominationQty() > 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private void prepareToAddNewFundTransferBill() {
         currentBill = new Bill();
         currentBill.setBillType(BillType.FundTransferBill);
         currentBill.setBillTypeAtomic(BillTypeAtomic.FUND_TRANSFER_BILL);
         currentBill.setBillClassType(BillClassType.Bill);
+        fundTransferDenominationTransactions = denominationTransactionController.createDefaultDenominationTransaction();
+        fundTransferDenominationTotal = 0.0;
     }
 
     public void ensureFundTransferBillInitialized() {
@@ -2416,6 +2487,8 @@ public class FinancialTransactionController implements Serializable {
         currentBill.setBillType(BillType.FundTransferRequestBill);
         currentBill.setBillTypeAtomic(BillTypeAtomic.FUND_TRANSFER_REQUEST);
         currentBill.setBillClassType(BillClassType.Bill);
+        fundTransferDenominationTransactions = denominationTransactionController.createDefaultDenominationTransaction();
+        fundTransferDenominationTotal = 0.0;
     }
 
     public void ensureFundTransferRequestBillInitialized() {
@@ -2480,6 +2553,38 @@ public class FinancialTransactionController implements Serializable {
         prepareToAddNewFundTransferBill();
         currentBill.setToWebUser(requestBill.getFromWebUser());
         currentBill.setComments(requestBill.getComments());
+        // Pre-populate denominations from the request so the issuer sees the
+        // requested breakdown by default (they may still adjust quantities).
+        Map<String, Object> reqDenoParams = new HashMap<>();
+        reqDenoParams.put("ret", false);
+        reqDenoParams.put("refBill", requestBill);
+        reqDenoParams.put("btype", BillTypeAtomic.FUND_TRANSFER_REQUEST_DENOMINATION_BILL);
+        List<Bill> reqDenoBills = billFacade.findByJpql(
+                "select b from Bill b where b.retired=:ret and b.referenceBill=:refBill and b.billTypeAtomic=:btype",
+                reqDenoParams, TemporalType.TIMESTAMP);
+        if (reqDenoBills != null && !reqDenoBills.isEmpty()) {
+            List<DenominationTransaction> savedDenos = billService.fetchDenominationTransactionFromBill(reqDenoBills.get(0));
+            if (savedDenos != null && !savedDenos.isEmpty()) {
+                Map<Long, Long> reqDenoQtyMap = new HashMap<>();
+                for (DenominationTransaction dt : savedDenos) {
+                    if (dt.getDenomination() != null && dt.getDenominationQty() != null) {
+                        reqDenoQtyMap.put(dt.getDenomination().getId(), dt.getDenominationQty());
+                    }
+                }
+                for (DenominationTransaction dt : fundTransferDenominationTransactions) {
+                    if (dt.getDenomination() != null) {
+                        Long savedQty = reqDenoQtyMap.get(dt.getDenomination().getId());
+                        if (savedQty != null && savedQty > 0) {
+                            dt.setDenominationQty(savedQty);
+                            if (dt.getDenomination().getDenominationValue() != null) {
+                                dt.setDenominationValue(savedQty * dt.getDenomination().getDenominationValue());
+                            }
+                        }
+                    }
+                }
+                calculateFundTransferDenominationTotal();
+            }
+        }
         floatTransferStarted = false;
         currentBillPayments = new ArrayList<>();
         return "/cashier/fund_transfer_bill?faces-redirect=true";
@@ -2512,6 +2617,14 @@ public class FinancialTransactionController implements Serializable {
             JsfUtil.addErrorMessage("Requested amount must be greater than zero");
             return "";
         }
+        if (hasFundTransferDenominationEntries()) {
+            calculateFundTransferDenominationTotal();
+            if (Math.abs(fundTransferDenominationTotal - currentBill.getNetTotal()) > 0.001) {
+                floatRequestStarted = false;
+                JsfUtil.addErrorMessage("Denomination total (" + fundTransferDenominationTotal + ") does not match the requested amount (" + currentBill.getNetTotal() + "). Please correct the denominations or update the requested amount.");
+                return "";
+            }
+        }
         try {
             String deptId = billNumberGenerator.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.FUND_TRANSFER_REQUEST);
             currentBill.setFromWebUser(sessionController.getLoggedUser());
@@ -2531,6 +2644,34 @@ public class FinancialTransactionController implements Serializable {
             currentBill.setTotal(currentBill.getNetTotal());
             currentBill.setBalance(currentBill.getNetTotal());
             billController.save(currentBill);
+            if (hasFundTransferDenominationEntries()) {
+                Bill denoBill = new Bill();
+                denoBill.setBillTypeAtomic(BillTypeAtomic.FUND_TRANSFER_REQUEST_DENOMINATION_BILL);
+                denoBill.setBillType(BillType.FundTransferRequestBill);
+                denoBill.setBillClassType(BillClassType.Bill);
+                denoBill.setReferenceBill(currentBill);
+                denoBill.setDepartment(currentBill.getDepartment());
+                denoBill.setInstitution(currentBill.getInstitution());
+                denoBill.setStaff(currentBill.getStaff());
+                denoBill.setFromWebUser(currentBill.getFromWebUser());
+                denoBill.setToWebUser(currentBill.getToWebUser());
+                denoBill.setBillDate(currentBill.getBillDate());
+                denoBill.setBillTime(currentBill.getBillTime());
+                billController.save(denoBill);
+                double denoTotal = 0.0;
+                for (DenominationTransaction d : fundTransferDenominationTransactions) {
+                    if (d.getDenominationQty() != null && d.getDenominationQty() > 0) {
+                        d.setBill(denoBill);
+                        denominationTransactionController.save(d);
+                        if (d.getDenominationValue() != null) {
+                            denoTotal += d.getDenominationValue();
+                        }
+                    }
+                }
+                denoBill.setTotal(denoTotal);
+                denoBill.setNetTotal(denoTotal);
+                billController.save(denoBill);
+            }
             notificationController.createNotification(currentBill);
         } finally {
             floatRequestStarted = false;
@@ -2567,6 +2708,21 @@ public class FinancialTransactionController implements Serializable {
         }
         freshBill.setCancelled(true);
         billController.save(freshBill);
+
+        Map<String, Object> denoParams = new HashMap<>();
+        denoParams.put("ret", false);
+        denoParams.put("refBill", freshBill);
+        denoParams.put("btype", BillTypeAtomic.FUND_TRANSFER_REQUEST_DENOMINATION_BILL);
+        List<Bill> denoBills = billFacade.findByJpql(
+                "select b from Bill b where b.retired=:ret and b.referenceBill=:refBill and b.billTypeAtomic=:btype",
+                denoParams, TemporalType.TIMESTAMP);
+        if (denoBills != null) {
+            for (Bill denoBill : denoBills) {
+                denoBill.setCancelled(true);
+                billController.save(denoBill);
+            }
+        }
+
         fillMyFundTransferRequests();
         return "/cashier/fund_transfer_my_requests?faces-redirect=true";
     }
@@ -2813,6 +2969,45 @@ public class FinancialTransactionController implements Serializable {
             return;
         }
         currentPayment.setPaymentMethod(PaymentMethod.Cash);
+
+        if (hasFundTransferDenominationEntries()) {
+            calculateFundTransferDenominationTotal();
+            if (Math.abs(fundTransferDenominationTotal - currentPayment.getPaidValue()) > 0.001) {
+                JsfUtil.addErrorMessage("Denomination total (" + fundTransferDenominationTotal + ") does not match the entered cash amount (" + currentPayment.getPaidValue() + "). Please correct the denominations or update the cash amount.");
+                return;
+            }
+        }
+
+        if (configOptionApplicationController.getBooleanValueByKey("Enable Drawer Manegment", true)) {
+            Drawer drawer = sessionController.getLoggedUserDrawer() != null
+                    ? drawerFacade.find(sessionController.getLoggedUserDrawer().getId())
+                    : null;
+            double drawerBalance = (drawer != null && drawer.getCashInHandValue() != null)
+                    ? drawer.getCashInHandValue() : 0.0;
+            double cumulativeCash = Math.abs(currentPayment.getPaidValue());
+            for (Payment p : getCurrentBillPayments()) {
+                if (p.getPaymentMethod() == PaymentMethod.Cash) {
+                    cumulativeCash += Math.abs(p.getPaidValue());
+                }
+            }
+            if (cumulativeCash > drawerBalance) {
+                JsfUtil.addErrorMessage("Transfer amount cannot exceed available drawer balance (" + drawerBalance + ").");
+                return;
+            }
+        }
+
+        if (selectedFundTransferRequest != null) {
+            double remaining = getRemainingAmountForRequest(selectedFundTransferRequest);
+            double alreadyAdded = 0.0;
+            for (Payment p : getCurrentBillPayments()) {
+                alreadyAdded += Math.abs(p.getPaidValue());
+            }
+            if (alreadyAdded + Math.abs(currentPayment.getPaidValue()) > remaining + 0.001) {
+                JsfUtil.addErrorMessage("Payment would exceed the remaining request balance of " + remaining + ".");
+                return;
+            }
+        }
+
         getCurrentBillPayments().add(currentPayment);
         calculateFundTransferBillTotal();
         currentPayment = null;
@@ -3153,6 +3348,40 @@ public class FinancialTransactionController implements Serializable {
             return "";
         }
 
+        if (configOptionApplicationController.getBooleanValueByKey("Enable Drawer Manegment", true)) {
+            Drawer drawer = sessionController.getLoggedUserDrawer() != null
+                    ? drawerFacade.find(sessionController.getLoggedUserDrawer().getId())
+                    : null;
+            double drawerBalance = (drawer != null && drawer.getCashInHandValue() != null)
+                    ? drawer.getCashInHandValue() : 0.0;
+            double totalCash = 0.0;
+            for (Payment p : getCurrentBillPayments()) {
+                if (p.getPaymentMethod() == PaymentMethod.Cash) {
+                    totalCash += Math.abs(p.getPaidValue());
+                }
+            }
+            if (totalCash > drawerBalance) {
+                floatTransferStarted = false;
+                JsfUtil.addErrorMessage("Transfer amount cannot exceed available drawer balance (" + drawerBalance + ").");
+                return "";
+            }
+        }
+
+        if (hasFundTransferDenominationEntries()) {
+            calculateFundTransferDenominationTotal();
+            double cashTotal = 0.0;
+            for (Payment p : getCurrentBillPayments()) {
+                if (p.getPaymentMethod() == PaymentMethod.Cash) {
+                    cashTotal += Math.abs(p.getPaidValue());
+                }
+            }
+            if (Math.abs(fundTransferDenominationTotal - cashTotal) > 0.001) {
+                floatTransferStarted = false;
+                JsfUtil.addErrorMessage("Denomination total (" + fundTransferDenominationTotal + ") does not match the cash payment total (" + cashTotal + "). Please correct the denominations.");
+                return "";
+            }
+        }
+
         // Check for pending transactions before allowing fund transfer creation
         boolean restrictFundTransferWhenIncomingFundTransfers = configOptionApplicationController
                 .getBooleanValueByKey("Restrict Fund Transfer When Incoming Fund Transfers Exist", false);
@@ -3218,6 +3447,7 @@ public class FinancialTransactionController implements Serializable {
             p.setBill(currentBill);
             p.setCreatedAt(new Date());
             p.setCreater(sessionController.getLoggedUser());
+            p.setFloatRecipient(currentBill.getToWebUser());
             p.setInstitution(null);
             p.setDepartment(null);
             p.setPaidValue(0 - Math.abs(p.getPaidValue()));
@@ -3245,6 +3475,36 @@ public class FinancialTransactionController implements Serializable {
         billController.save(currentBill);
         currentBill.getPayments().addAll(currentBillPayments);
         billController.save(currentBill);
+
+        if (hasFundTransferDenominationEntries()) {
+            Bill denoBill = new Bill();
+            denoBill.setBillTypeAtomic(BillTypeAtomic.FUND_TRANSFER_DENOMINATION_BILL);
+            denoBill.setBillType(BillType.FundTransferBill);
+            denoBill.setBillClassType(BillClassType.Bill);
+            denoBill.setReferenceBill(currentBill);
+            denoBill.setDepartment(currentBill.getDepartment());
+            denoBill.setInstitution(currentBill.getInstitution());
+            denoBill.setStaff(currentBill.getStaff());
+            denoBill.setFromWebUser(currentBill.getFromWebUser());
+            denoBill.setToWebUser(currentBill.getToWebUser());
+            denoBill.setBillDate(currentBill.getBillDate());
+            denoBill.setBillTime(currentBill.getBillTime());
+            billController.save(denoBill);
+            double denoTotal = 0.0;
+            for (DenominationTransaction d : fundTransferDenominationTransactions) {
+                if (d.getDenominationQty() != null && d.getDenominationQty() > 0) {
+                    d.setBill(denoBill);
+                    denominationTransactionController.save(d);
+                    if (d.getDenominationValue() != null) {
+                        denoTotal += d.getDenominationValue();
+                    }
+                }
+            }
+            denoBill.setTotal(denoTotal);
+            denoBill.setNetTotal(denoTotal);
+            billController.save(denoBill);
+        }
+
         // If this transfer was initiated from a float transfer request, handle partial/full fulfillment
         if (selectedFundTransferRequest != null) {
             Bill freshRequest = billFacade.find(selectedFundTransferRequest.getId());
@@ -4275,7 +4535,7 @@ public class FinancialTransactionController implements Serializable {
 
     public String navigateToViewIndividualShiftForHandover(ReportTemplateRowBundle childBundle) {
         selectedBundle = childBundle;
-        return null;
+        return "/cashier/handover_accept_row_detail?faces-redirect=true";
     }
 
     public String navigateToAddExcessForShiftForHandover() {
@@ -4872,24 +5132,16 @@ public class FinancialTransactionController implements Serializable {
 
         List<ReportTemplateRowBundle> childList = new ArrayList<>(groupedBundles.values());
 
-        if (cashFloatOutAcc > 0) {
-            ReportTemplateRowBundle floatOutBundle = new ReportTemplateRowBundle();
-            floatOutBundle.setPaymentHandover(PaymentHandover.FLOAT_OUT);
-            floatOutBundle.setCashValue(-cashFloatOutAcc);
-            floatOutBundle.setCashHandoverValue(-cashFloatOutAcc);
-            floatOutBundle.setHasCashTransaction(true);
-            floatOutBundle.setSelected(true);
-            childList.add(floatOutBundle);
-        }
-
-        if (cashFloatInAcc > 0) {
-            ReportTemplateRowBundle floatInBundle = new ReportTemplateRowBundle();
-            floatInBundle.setPaymentHandover(PaymentHandover.FLOAT_IN);
-            floatInBundle.setCashValue(cashFloatInAcc);
-            floatInBundle.setCashHandoverValue(cashFloatInAcc);
-            floatInBundle.setHasCashTransaction(true);
-            floatInBundle.setSelected(true);
-            childList.add(floatInBundle);
+        double netCashFloat = cashFloatInAcc - cashFloatOutAcc;
+        if (Math.abs(netCashFloat) > 0.001) {
+            ReportTemplateRowBundle netFloatBundle = new ReportTemplateRowBundle();
+            netFloatBundle.setPaymentHandover(PaymentHandover.FLOAT_IN);
+            netFloatBundle.setCashValue(netCashFloat);
+            netFloatBundle.setCashHandoverValue(netCashFloat);
+            netFloatBundle.setTotal(netCashFloat);
+            netFloatBundle.setHasCashTransaction(true);
+            netFloatBundle.setSelected(true);
+            childList.add(netFloatBundle);
         }
 
         ReportTemplateRowBundle bundleToHoldDeptUserDayBundle = new ReportTemplateRowBundle();
@@ -5679,41 +5931,18 @@ public class FinancialTransactionController implements Serializable {
         return "/cashier/shift_end_summery_bill_print?faces-redirect=true";
     }
 
-    public String completeHandover() {
-        if (bundle == null) {
-            JsfUtil.addErrorMessage("Error - Null Bundle");
-            return null;
-        }
-        if (bundle.getStartBill() == null) {
-            JsfUtil.addErrorMessage("No Start");
-            return null;
-        }
-        if (bundle.getStartBill().getReferenceBill() == null) {
-            JsfUtil.addErrorMessage("Shift NOT ended. Can not complete Handover");
-            return null;
-        }
-        if (bundle.getEndBill() == null) {
-            JsfUtil.addErrorMessage("Shift NOT ended. Can not complete Handover");
-            return null;
-        }
-
-        bundle.getStartBill().setCompleted(true);
-        bundle.getStartBill().setCompletedAt(new Date());
-        bundle.getStartBill().setCompletedBy(sessionController.getLoggedUser());
-
-        bundle.getEndBill().setCompleted(true);
-        bundle.getEndBill().setCompletedAt(new Date());
-        bundle.getEndBill().setCompletedBy(sessionController.getLoggedUser());
-
-        billController.save(bundle.getStartBill());
-        billController.save(bundle.getEndBill());
-
-        return navigateToMyShifts();
-    }
-
     public String settleHandoverStartBill() {
+        if (handoverSubmitting) {
+            return null;
+        }
+        handoverSubmitting = true;
+        try {
         if (user == null) {
             JsfUtil.addErrorMessage("Please select a user to handover the shift.");
+            return null;
+        }
+        if (user.equals(sessionController.getLoggedUser())) {
+            JsfUtil.addErrorMessage("Cannot handover to yourself. Please select a different user.");
             return null;
         }
         if (bundle == null) {
@@ -5755,35 +5984,31 @@ public class FinancialTransactionController implements Serializable {
             }
         }
 
-        boolean skipCashDiffValidation = configOptionApplicationController.getBooleanValueByKey("Skip Cash Difference Validation for Handover", false);
-        if (!skipCashDiffValidation) {
-            Double maximumAllowedCashDifferenceForHandover = configOptionApplicationController.getDoubleValueByKey("Maximum Allowed Cash Difference for Handover", 1.0);
-            double expectedCashHandover = bundle.getCashValue();
-            if (Math.abs(bundle.getDenominatorValue() - expectedCashHandover) > maximumAllowedCashDifferenceForHandover) {
-                JsfUtil.addErrorMessage("Cash Value Collected and the cash value Handing over are different. Cannot handover.");
-                return null;
-            }
-        }
-        boolean shouldSelectAllCollectionsForHandover = configOptionApplicationController.getBooleanValueByKey("Should Select All Collections for Handover", false);
-        boolean allBundlesSelected = true;
         boolean anyBundleSelected = false;
-
         for (ReportTemplateRowBundle b : bundle.getBundles()) {
             if (b.isSelected()) {
-                anyBundleSelected = true; // At least one bundle is selected
-            } else {
-                allBundlesSelected = false; // Found an unselected bundle, not all are selected
+                anyBundleSelected = true;
             }
         }
-
         if (!anyBundleSelected) {
             JsfUtil.addErrorMessage("No Payments to Handover");
-            return null; // Stop processing since no bundles are selected
+            return null;
         }
 
-        if (shouldSelectAllCollectionsForHandover && !allBundlesSelected) {
-            JsfUtil.addErrorMessage("All collections must be selected for handover");
-            return null; // Stop processing since not all bundles are selected when they must be
+        boolean allowHandoverWithUnmatchedBalance = configOptionApplicationController.getBooleanValueByKey("Allow Handover with Unmatched Balance", true);
+        if (!allowHandoverWithUnmatchedBalance) {
+            for (ReportTemplateRowBundle b : bundle.getBundles()) {
+                if (!b.isSelected()) {
+                    JsfUtil.addErrorMessage("All collections must be selected for handover.");
+                    return null;
+                }
+            }
+            double totalCollected = bundle.getTotal() != null ? bundle.getTotal() : 0.0;
+            double totalHandedOver = bundle.getHandoverTotal();
+            if (Math.abs(totalCollected - totalHandedOver) > 0.01) {
+                JsfUtil.addErrorMessage("Total Collected Value (" + totalCollected + ") and Total Handed Over Value (" + totalHandedOver + ") do not match. Cannot handover.");
+                return null;
+            }
         }
 
         bundle.setFromUser(sessionController.getLoggedUser());
@@ -5967,9 +6192,14 @@ public class FinancialTransactionController implements Serializable {
             }
         }
 
+        bundle.setCashHandoverValue(bundle.getDenominatorValue());
+
         createHandoverProofMissingBillIfNeeded(currentBill);
 
-        return "/cashier/handover_creation_bill_print?faces-redirect=true";
+        return "/cashier/handover_creation_print_summary?faces-redirect=true";
+        } finally {
+            handoverSubmitting = false;
+        }
     }
 
     private void createHandoverProofMissingBillIfNeeded(Bill handoverCreateBill) {
@@ -6662,6 +6892,20 @@ public class FinancialTransactionController implements Serializable {
         fundTransferBillToCancel.setCancelledBill(fundTransferCancellationBill);
         billController.save(fundTransferBillToCancel);
 
+        Map<String, Object> cancelDenoParams = new HashMap<>();
+        cancelDenoParams.put("ret", false);
+        cancelDenoParams.put("refBill", fundTransferBillToCancel);
+        cancelDenoParams.put("btype", BillTypeAtomic.FUND_TRANSFER_DENOMINATION_BILL);
+        List<Bill> cancelDenoBills = billFacade.findByJpql(
+                "select b from Bill b where b.retired=:ret and b.referenceBill=:refBill and b.billTypeAtomic=:btype",
+                cancelDenoParams, TemporalType.TIMESTAMP);
+        if (cancelDenoBills != null) {
+            for (Bill denoBill : cancelDenoBills) {
+                denoBill.setCancelled(true);
+                billController.save(denoBill);
+            }
+        }
+
         currentBill = fundTransferCancellationBill;
         currentBillPayments = cancellationPayments;
 
@@ -6852,6 +7096,20 @@ public class FinancialTransactionController implements Serializable {
         fundTransferBillToDecline.setCancelled(true);
         fundTransferBillToDecline.setCancelledBill(declineBill);
         billController.save(fundTransferBillToDecline);
+
+        Map<String, Object> declineDenoParams = new HashMap<>();
+        declineDenoParams.put("ret", false);
+        declineDenoParams.put("refBill", fundTransferBillToDecline);
+        declineDenoParams.put("btype", BillTypeAtomic.FUND_TRANSFER_DENOMINATION_BILL);
+        List<Bill> declineDenoBills = billFacade.findByJpql(
+                "select b from Bill b where b.retired=:ret and b.referenceBill=:refBill and b.billTypeAtomic=:btype",
+                declineDenoParams, TemporalType.TIMESTAMP);
+        if (declineDenoBills != null) {
+            for (Bill denoBill : declineDenoBills) {
+                denoBill.setCancelled(true);
+                billController.save(denoBill);
+            }
+        }
 
         JsfUtil.addSuccessMessage("Float transfer declined successfully");
         return "/cashier/fund_transfer_bills_for_me_to_receive?faces-redirect=true";
@@ -7332,6 +7590,26 @@ public class FinancialTransactionController implements Serializable {
         return "/cashier/handover_reprint?faces-redirect=true";
     }
 
+    public String navigateToHandoverCreationPrintSummary() {
+        return "/cashier/handover_creation_print_summary?faces-redirect=true";
+    }
+
+    public String navigateToHandoverCreationPrintDetails() {
+        return "/cashier/handover_creation_print_details?faces-redirect=true";
+    }
+
+    public String navigateToHandoverView() {
+        return "/cashier/handover_view?faces-redirect=true";
+    }
+
+    public String navigateToHandoverViewPrintSummary() {
+        return "/cashier/handover_view_print_summary?faces-redirect=true";
+    }
+
+    public String navigateToHandoverViewPrintDetails() {
+        return "/cashier/handover_view_print_details?faces-redirect=true";
+    }
+
     public String acceptHandoverBillAndWriteToCashbook() {
         if (bundle == null) {
             JsfUtil.addErrorMessage("Error - Null Bundle");
@@ -7386,6 +7664,10 @@ public class FinancialTransactionController implements Serializable {
         WebUser reciver = sessionController.getLoggedUser();
 
         for (ReportTemplateRowBundle shiftBundle : bundle.getBundles()) {
+
+            if (shiftBundle.isFloatRow() || shiftBundle.getDepartment() == null) {
+                continue;
+            }
 
             CashBook bundleCb = cashBookController.findAndSaveCashBookBySite(shiftBundle.getDepartment().getSite(), shiftBundle.getDepartment().getInstitution(), shiftBundle.getDepartment());
             String id = billNumberGenerator.departmentBillNumberGeneratorYearly(department, BillTypeAtomic.FUND_SHIFT_COMPONANT_HANDOVER_CREATE);
@@ -7896,8 +8178,11 @@ public class FinancialTransactionController implements Serializable {
         billController.save(currentBill);
         for (Payment p : currentBillPayments) {
             p.setBill(currentBill);
+            p.setCurrentHolder(sessionController.getLoggedUser());
             paymentController.save(p);
         }
+        // Reflect the excess in the cashier's drawer: positive cash inflow per payment.
+        drawerController.updateDrawer(currentBillPayments, sessionController.getLoggedUser());
         JsfUtil.addSuccessMessage("All shift excess records have been successfully settled.");
         return "/cashier/record_shift_excess_print?faces-redirect=true";  // Redirect to a summary page or another relevant page
     }
@@ -7961,13 +8246,17 @@ public class FinancialTransactionController implements Serializable {
                 p.setCurrentHolder(sessionController.getLoggedUser());
                 paymentController.save(p);
             }
-
-            JsfUtil.addSuccessMessage("All shift shortage records have been successfully recorded.");
-            return "/cashier/record_shift_shortage_print?faces-redirect=true";  // Redirect to a summary page
         } catch (Exception e) {
             JsfUtil.addErrorMessage("Error settling shift shortages: " + e.getMessage());
             return "";  // Optionally, redirect to an error page
         }
+        // Drawer update is intentionally outside the try/catch: a drawer failure
+        // must not be misreported as a save failure and must not trigger any
+        // compensating rollback (matching the convention used in fund-transfer,
+        // cancellation, and handover flows).
+        drawerController.updateDrawer(currentBillPayments, sessionController.getLoggedUser());
+        JsfUtil.addSuccessMessage("All shift shortage records have been successfully recorded.");
+        return "/cashier/record_shift_shortage_print?faces-redirect=true";  // Redirect to a summary page
     }
 
     public String recordAndSettleShiftShortage() {
@@ -8001,8 +8290,6 @@ public class FinancialTransactionController implements Serializable {
             currentPayment.setBill(currentBill);
             currentPayment.setCurrentHolder(sessionController.getLoggedUser());
             paymentController.save(currentPayment);
-            JsfUtil.addSuccessMessage("Shift shortage recorded successfully.");
-            return "/cashier/record_shift_shortage_print?faces-redirect=true";
         } catch (Exception e) {
             // If the bill was persisted but the payment failed, cancel the bill so it
             // does not appear as an unmatched record in shortage searches.
@@ -8018,6 +8305,12 @@ public class FinancialTransactionController implements Serializable {
         } finally {
             shortageSubmitting = false;
         }
+        // Drawer update is outside the save try/catch so a drawer failure does
+        // NOT trigger bill cancellation. paidValue is already negative for a
+        // shortage; this subtracts it from the cashier's cash drawer.
+        drawerController.updateDrawer(currentPayment, currentPayment.getPaidValue(), sessionController.getLoggedUser());
+        JsfUtil.addSuccessMessage("Shift shortage recorded successfully.");
+        return "/cashier/record_shift_shortage_print?faces-redirect=true";
     }
 
     public String navigateToCashierShiftBillSearchWithTodayResults() {
@@ -8164,8 +8457,6 @@ public class FinancialTransactionController implements Serializable {
                 billController.save(selectedBill);
             }
             computeShortageSettlementSummary(selectedBill);
-            JsfUtil.addSuccessMessage("Shortage settlement recorded successfully.");
-            return "/cashier/settle_shift_shortage_print?faces-redirect=true";
         } catch (Exception e) {
             if (currentBill != null && currentBill.getId() != null) {
                 try {
@@ -8179,6 +8470,12 @@ public class FinancialTransactionController implements Serializable {
         } finally {
             settlementSubmitting = false;
         }
+        // Drawer update is outside the save try/catch so a drawer failure does
+        // NOT cancel the settlement bill. Cashier is paying back, so cash flows
+        // into the drawer.
+        drawerController.updateDrawerForIns(currentPayment, sessionController.getLoggedUser());
+        JsfUtil.addSuccessMessage("Shortage settlement recorded successfully.");
+        return "/cashier/settle_shift_shortage_print?faces-redirect=true";
     }
 
     private Bill findOriginalShortageBill(Bill bill) {
@@ -9552,6 +9849,22 @@ public class FinancialTransactionController implements Serializable {
         this.denominationTransactions = denominationTransactions;
     }
 
+    public List<DenominationTransaction> getFundTransferDenominationTransactions() {
+        return fundTransferDenominationTransactions;
+    }
+
+    public void setFundTransferDenominationTransactions(List<DenominationTransaction> fundTransferDenominationTransactions) {
+        this.fundTransferDenominationTransactions = fundTransferDenominationTransactions;
+    }
+
+    public double getFundTransferDenominationTotal() {
+        return fundTransferDenominationTotal;
+    }
+
+    public void setFundTransferDenominationTotal(double fundTransferDenominationTotal) {
+        this.fundTransferDenominationTotal = fundTransferDenominationTotal;
+    }
+
     public DenominationTransaction getDt() {
         return dt;
     }
@@ -9675,14 +9988,8 @@ public class FinancialTransactionController implements Serializable {
 
         // Configuration Options - Cash Handling
         metadata.addConfigOption(new ConfigOptionInfo(
-                "Maximum Allowed Cash Difference for Handover",
-                "Maximum allowed difference between collected cash and handed over cash (in currency units). Default: 1.0",
-                OptionScope.APPLICATION
-        ));
-
-        metadata.addConfigOption(new ConfigOptionInfo(
-                "Should Select All Collections for Handover",
-                "When enabled, all collected payments are automatically selected for handover. Default: false",
+                "Allow Handover with Unmatched Balance",
+                "When enabled (default: true), handover proceeds regardless of balance differences or partial payment selection. When disabled, all collections must be selected and total handed over must match total collected within 0.01.",
                 OptionScope.APPLICATION
         ));
 
@@ -9981,14 +10288,8 @@ public class FinancialTransactionController implements Serializable {
         ));
 
         cashierIndexMetadata.addConfigOption(new ConfigOptionInfo(
-                "Maximum Allowed Cash Difference for Handover",
-                "Sets the maximum allowed difference between collected and handed over cash amounts, affecting Handover Management tab validation. Default: 1.0",
-                OptionScope.APPLICATION
-        ));
-
-        cashierIndexMetadata.addConfigOption(new ConfigOptionInfo(
-                "Should Select All Collections for Handover",
-                "When enabled, automatically selects all collected payments for handover, affecting Handover Management tab workflow.",
+                "Allow Handover with Unmatched Balance",
+                "When enabled (default: true), handover proceeds regardless of balance differences or partial payment selection. When disabled, all collections must be selected and total handed over must match total collected within 0.01.",
                 OptionScope.APPLICATION
         ));
 
@@ -10119,8 +10420,8 @@ public class FinancialTransactionController implements Serializable {
 
         // Cash Handling Configuration
         shiftEndMetadata.addConfigOption(new ConfigOptionInfo(
-                "Maximum Allowed Cash Difference for Handover",
-                "Maximum allowed difference between collected cash and counted cash during shift end reconciliation. Affects validation tolerance.",
+                "Allow Handover with Unmatched Balance",
+                "When enabled (default: true), handover proceeds regardless of balance differences or partial payment selection. When disabled, all collections must be selected and total handed over must match total collected within 0.01.",
                 OptionScope.APPLICATION
         ));
 
@@ -10187,8 +10488,8 @@ public class FinancialTransactionController implements Serializable {
         ));
 
         shiftEndPrintMetadata.addConfigOption(new ConfigOptionInfo(
-                "Maximum Allowed Cash Difference for Handover",
-                "Maximum allowed difference between collected cash and handed over cash (in currency units). Default: 1.0. Affects validation logic that determines shift completion status.",
+                "Allow Handover with Unmatched Balance",
+                "When enabled (default: true), handover proceeds regardless of balance differences or partial payment selection. When disabled, all collections must be selected and total handed over must match total collected within 0.01.",
                 OptionScope.APPLICATION
         ));
 
@@ -10211,11 +10512,6 @@ public class FinancialTransactionController implements Serializable {
                 OptionScope.APPLICATION
         ));
 
-        shiftEndPrintMetadata.addConfigOption(new ConfigOptionInfo(
-                "Should Select All Collections for Handover",
-                "When enabled, all collected payments are automatically selected for handover. Affects total value calculations displayed in shift summaries.",
-                OptionScope.APPLICATION
-        ));
 
         // Shift Management and Validation Configurations
         shiftEndPrintMetadata.addConfigOption(new ConfigOptionInfo(

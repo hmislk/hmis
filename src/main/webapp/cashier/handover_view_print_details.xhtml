@@ -13,28 +13,31 @@
                 <h:form>
                     <p:panel class="w-100 m-1">
                         <f:facet name="header">
-                            <p:outputLabel value="Reprint Handovers" />
+                            <p:outputLabel value="Handover Details Print" />
                             <p:commandButton
-                                value="To Print"
-                                styleClass="ui-button-success mx-1"
-                                icon="pi pi-check-circle"
-                                ajax="false"
-                                style="float: right;"
-                                action="#{financialTransactionController.navigateToHandoverReprint()}">
-                            </p:commandButton>
-                            <p:commandButton
-                                value="Print Accept Bill"
-                                styleClass="ui-button-warning mx-1"
+                                value="Print"
+                                styleClass="ui-button-info mx-1"
                                 icon="pi pi-print"
                                 ajax="false"
+                                style="float: right;">
+                                <p:printer target="printArea" />
+                            </p:commandButton>
+                            <p:commandButton
+                                value="Back"
+                                styleClass="ui-button-secondary mx-1"
+                                icon="pi pi-arrow-left"
+                                ajax="false"
                                 style="float: right;"
-                                rendered="#{financialTransactionController.selectedBill ne null and financialTransactionController.selectedBill.completed and not financialTransactionController.selectedBill.cancelled}"
-                                action="#{financialTransactionController.navigateToHandoverAcceptBillReprintFromReport()}">
+                                action="#{financialTransactionController.navigateToHandoverView()}">
                             </p:commandButton>
                         </f:facet>
 
-                        <prints:five_five_paper_with_headings_for_handover
-                            bundle="#{financialTransactionController.bundle}"/>
+                        <h:panelGrid id="printArea" class="w-100">
+                            <div class="d-flex justify-content-center">
+                                <prints:five_five_paper_with_headings_for_handover_detail
+                                    bundle="#{financialTransactionController.bundle}"/>
+                            </div>
+                        </h:panelGrid>
 
                     </p:panel>
                 </h:form>

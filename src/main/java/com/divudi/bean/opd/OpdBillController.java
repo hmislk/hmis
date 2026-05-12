@@ -2149,6 +2149,9 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             if (getPatient().getPhn() == null || getPatient().getPhn().trim().equals("")) {
                 getPatient().setPhn(applicationController.createNewPersonalHealthNumber(getSessionController().getInstitution()));
             }
+            
+            getPatient().getPerson().setForeigner(true);
+            
 
             getPatient().setCreatedInstitution(getSessionController().getInstitution());
             getPatient().setCreater(getSessionController().getLoggedUser());
@@ -3925,7 +3928,9 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         if (paymentMethod == null) {
             return;
         }
-
+        
+        foreigner = getPatient().getPerson().isForeigner();
+        
         double billDiscount = 0.0;
         double billGross = 0.0;
         double billNet = 0.0;
@@ -3956,23 +3961,14 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                     }
 
                     if(paymentMethod == PaymentMethod.Credit){
-                        System.out.println("PaymentMethod = Credit");
                         if(paymentMethodData != null && paymentMethodData.getCredit() != null && paymentMethodData.getCredit().getInstitution() != null){
                             creditCompany = paymentMethodData.getCredit().getInstitution();
-                            
-                            System.out.println("Found Credit Company = " + creditCompany.getId() + " --> " + creditCompany.getName());
                             priceMatrix = getPriceMatrixController().getPaymentSchemeDiscount(paymentMethod, paymentScheme, creditCompany, item);
-                            
-                        }else{
-                            System.out.println("Not Found Credit Company");
                         }
                     }else{
-                        System.out.println("PaymentMethod != Credit");
                         priceMatrix = getPriceMatrixController().getPaymentSchemeDiscount(paymentMethod, paymentScheme, department, item);
                     }
-                             
-                    System.out.println("priceMatrix = " + priceMatrix);
-                    
+                        
                     getBillBean().setBillFees(bf, isForeigner(), paymentMethod, paymentScheme, getCreditCompany(), priceMatrix);
 
                     if (bf.getBillItem().getItem().isVatable()) {
@@ -4046,12 +4042,20 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     }
 
     public void markAsForeigner() {
-        setForeigner(true);
+        if(patient == null){
+            JsfUtil.addErrorMessage("Need to Add Patient first ..! ");
+            return;
+        }
+        getPatient().getPerson().setForeigner(true);
         calTotals();
     }
 
     public void markAsLocal() {
-        setForeigner(false);
+        if(patient == null){
+            JsfUtil.addErrorMessage("Need to Add Patient first ..! ");
+            return;
+        }
+        getPatient().getPerson().setForeigner(false);
         calTotals();
     }
 

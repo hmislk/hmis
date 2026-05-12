@@ -224,18 +224,10 @@
                                     <tbody>
                                         <h:panelGroup rendered="#{cc.attrs.bundle.hasCashTransaction}">
                                             <tr>
-                                                <td>Cash</td>
+                                                <td>Cash Including Floats</td>
                                                 <td class="text-end"><h:outputText value="#{cc.attrs.bundle.cashValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
-                                                <td class="text-end"><h:outputText value="#{cc.attrs.bundle.cashValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
-                                                <td class="text-end"><h:outputText value="#{0}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
-                                            </tr>
-                                        </h:panelGroup>
-                                        <h:panelGroup rendered="#{cc.attrs.bundle.cashFloatNetTotal != 0}">
-                                            <tr>
-                                                <td>Net Float (Cash)</td>
-                                                <td class="text-end"><h:outputText value="#{cc.attrs.bundle.cashFloatNetTotal}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
-                                                <td class="text-end"><h:outputText value="#{cc.attrs.bundle.cashFloatNetTotal}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
-                                                <td class="text-end"><h:outputText value="#{0}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                                <td class="text-end"><h:outputText value="#{cc.attrs.bundle.cashHandoverValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                                <td class="text-end"><h:outputText value="#{cc.attrs.bundle.cashValue - cc.attrs.bundle.cashHandoverValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
                                             </tr>
                                         </h:panelGroup>
                                         <h:panelGroup rendered="#{cc.attrs.bundle.hasCardTransaction}">
@@ -345,7 +337,7 @@
                                         <tr style="font-weight: bold; background-color: #f0f0f0;">
                                             <td>Total</td>
                                             <td class="text-end">
-                                                <h:outputText value="#{cc.attrs.bundle.cashValue + cc.attrs.bundle.cashFloatNetTotal + cc.attrs.bundle.cardValue + cc.attrs.bundle.chequeValue + cc.attrs.bundle.slipValue + cc.attrs.bundle.ewalletValue + cc.attrs.bundle.staffValue + cc.attrs.bundle.creditValue + cc.attrs.bundle.staffWelfareValue + cc.attrs.bundle.voucherValue + cc.attrs.bundle.iouValue + cc.attrs.bundle.agentValue + cc.attrs.bundle.patientPointsValue + cc.attrs.bundle.onlineSettlementValue + cc.attrs.bundle.onCallValue}">
+                                                <h:outputText value="#{cc.attrs.bundle.cashValue + cc.attrs.bundle.cardValue + cc.attrs.bundle.chequeValue + cc.attrs.bundle.slipValue + cc.attrs.bundle.ewalletValue + cc.attrs.bundle.staffValue + cc.attrs.bundle.creditValue + cc.attrs.bundle.staffWelfareValue + cc.attrs.bundle.voucherValue + cc.attrs.bundle.iouValue + cc.attrs.bundle.agentValue + cc.attrs.bundle.patientPointsValue + cc.attrs.bundle.onlineSettlementValue + cc.attrs.bundle.onCallValue}">
                                                     <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputText>
                                             </td>
@@ -355,7 +347,7 @@
                                                 </h:outputText>
                                             </td>
                                             <td class="text-end">
-                                                <h:outputText value="#{(cc.attrs.bundle.cashValue + cc.attrs.bundle.cashFloatNetTotal + cc.attrs.bundle.cardValue + cc.attrs.bundle.chequeValue + cc.attrs.bundle.slipValue + cc.attrs.bundle.ewalletValue + cc.attrs.bundle.staffValue + cc.attrs.bundle.creditValue + cc.attrs.bundle.staffWelfareValue + cc.attrs.bundle.voucherValue + cc.attrs.bundle.iouValue + cc.attrs.bundle.agentValue + cc.attrs.bundle.patientPointsValue + cc.attrs.bundle.onlineSettlementValue + cc.attrs.bundle.onCallValue) - (cc.attrs.bundle.cashHandoverValue + cc.attrs.bundle.cardHandoverValue + cc.attrs.bundle.chequeHandoverValue + cc.attrs.bundle.slipHandoverValue + cc.attrs.bundle.ewalletHandoverValue + cc.attrs.bundle.staffHandoverValue + cc.attrs.bundle.creditHandoverValue + cc.attrs.bundle.staffWelfareHandoverValue + cc.attrs.bundle.voucherHandoverValue + cc.attrs.bundle.iouHandoverValue + cc.attrs.bundle.agentHandoverValue + cc.attrs.bundle.patientPointsHandoverValue + cc.attrs.bundle.onlineSettlementHandoverValue + cc.attrs.bundle.onCallHandoverValue)}">
+                                                <h:outputText value="#{(cc.attrs.bundle.cashValue + cc.attrs.bundle.cardValue + cc.attrs.bundle.chequeValue + cc.attrs.bundle.slipValue + cc.attrs.bundle.ewalletValue + cc.attrs.bundle.staffValue + cc.attrs.bundle.creditValue + cc.attrs.bundle.staffWelfareValue + cc.attrs.bundle.voucherValue + cc.attrs.bundle.iouValue + cc.attrs.bundle.agentValue + cc.attrs.bundle.patientPointsValue + cc.attrs.bundle.onlineSettlementValue + cc.attrs.bundle.onCallValue) - (cc.attrs.bundle.cashHandoverValue + cc.attrs.bundle.cardHandoverValue + cc.attrs.bundle.chequeHandoverValue + cc.attrs.bundle.slipHandoverValue + cc.attrs.bundle.ewalletHandoverValue + cc.attrs.bundle.staffHandoverValue + cc.attrs.bundle.creditHandoverValue + cc.attrs.bundle.staffWelfareHandoverValue + cc.attrs.bundle.voucherHandoverValue + cc.attrs.bundle.iouHandoverValue + cc.attrs.bundle.agentHandoverValue + cc.attrs.bundle.patientPointsHandoverValue + cc.attrs.bundle.onlineSettlementHandoverValue + cc.attrs.bundle.onCallHandoverValue)}">
                                                     <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputText>
                                             </td>
@@ -395,7 +387,8 @@
                     var="summary">
 
                     <p:column headerText="Institution / Type" style="font-weight: normal">
-                        <h:outputText value="#{summary.department.institution.name}" rendered="#{!summary.floatRow}" />
+                        <h:outputText value="#{summary.department.institution.name}" rendered="#{!summary.floatRow and (summary.paymentHandover == null or summary.paymentHandover.name() != 'FLOATS')}" />
+                        <h:outputText value="Shift Shortage"        rendered="#{summary.paymentHandover ne null and summary.paymentHandover.name() eq 'FLOATS'}" style="color:#dc3545; font-style:italic;" />
                         <h:outputText value="Float Sent (Cash)"     rendered="#{summary.floatRow and summary.paymentHandover ne null and summary.paymentHandover.name() eq 'FLOAT_OUT'}" style="color: red; font-weight: bold;" />
                         <h:outputText value="Float Received (Cash)" rendered="#{summary.floatRow and summary.paymentHandover ne null and summary.paymentHandover.name() eq 'FLOAT_IN'}"  style="color: green; font-weight: bold;" />
                     </p:column>
@@ -418,43 +411,23 @@
                         </h:outputText>
                     </p:column>
 
-                    <p:column class="text-end" headerText="Cash Collected" rendered="#{cc.attrs.bundle.hasCashTransaction}">
-                        <h:outputText value="#{summary.cashValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
-                        <f:facet name="footer"><h:outputText value="#{cc.attrs.bundle.cashValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></f:facet>
-                    </p:column>
-                    <p:column class="text-end" headerText="Cash Handover" rendered="#{cc.attrs.bundle.hasCashTransaction}">
+                    <p:column class="text-end" headerText="Cash" rendered="#{cc.attrs.bundle.hasCashTransaction}">
                         <h:outputText value="#{summary.cashHandoverValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
                         <f:facet name="footer"><h:outputText value="#{cc.attrs.bundle.cashHandoverValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></f:facet>
                     </p:column>
                     <p:column class="text-end" headerText="Card" rendered="#{cc.attrs.bundle.hasCardTransaction}">
-                        <h:outputText value="#{summary.cardValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
-                        <f:facet name="footer"><h:outputText value="#{cc.attrs.bundle.cardValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></f:facet>
-                    </p:column>
-                    <p:column class="text-end" headerText="Card Handover" rendered="#{cc.attrs.bundle.hasCardTransaction}">
                         <h:outputText value="#{summary.cardHandoverValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
                         <f:facet name="footer"><h:outputText value="#{cc.attrs.bundle.cardHandoverValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></f:facet>
                     </p:column>
                     <p:column class="text-end" headerText="Credit" rendered="#{cc.attrs.bundle.hasCreditTransaction}">
-                        <h:outputText value="#{summary.creditValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
-                        <f:facet name="footer"><h:outputText value="#{cc.attrs.bundle.creditValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></f:facet>
-                    </p:column>
-                    <p:column class="text-end" headerText="Credit Handover" rendered="#{cc.attrs.bundle.hasCreditTransaction}">
                         <h:outputText value="#{summary.creditHandoverValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
                         <f:facet name="footer"><h:outputText value="#{cc.attrs.bundle.creditHandoverValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></f:facet>
                     </p:column>
                     <p:column class="text-end" headerText="Staff" rendered="#{cc.attrs.bundle.hasStaffTransaction}">
-                        <h:outputText value="#{summary.staffValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
-                        <f:facet name="footer"><h:outputText value="#{cc.attrs.bundle.staffValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></f:facet>
-                    </p:column>
-                    <p:column class="text-end" headerText="Staff Handover" rendered="#{cc.attrs.bundle.hasStaffTransaction}">
                         <h:outputText value="#{summary.staffHandoverValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
                         <f:facet name="footer"><h:outputText value="#{cc.attrs.bundle.staffHandoverValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></f:facet>
                     </p:column>
                     <p:column class="text-end" headerText="Staff Welfare" rendered="#{cc.attrs.bundle.hasStaffWelfareTransaction}">
-                        <h:outputText value="#{summary.staffWelfareValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
-                        <f:facet name="footer"><h:outputText value="#{cc.attrs.bundle.staffWelfareValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></f:facet>
-                    </p:column>
-                    <p:column class="text-end" headerText="SW Handover" rendered="#{cc.attrs.bundle.hasStaffWelfareTransaction}">
                         <h:outputText value="#{summary.staffWelfareHandoverValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
                         <f:facet name="footer"><h:outputText value="#{cc.attrs.bundle.staffWelfareHandoverValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></f:facet>
                     </p:column>
@@ -495,9 +468,9 @@
                         <f:facet name="footer"><h:outputText value="#{cc.attrs.bundle.onCallValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></f:facet>
                     </p:column>
                     <p:column class="text-end" headerText="Total">
-                        <h:outputText value="#{summary.cashValue + summary.cardValue + summary.creditValue + summary.staffWelfareValue + summary.staffValue + summary.voucherValue + summary.iouValue + summary.agentValue + summary.chequeValue + summary.slipValue + summary.ewalletValue + summary.patientPointsValue + summary.onlineSettlementValue + summary.onCallValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                        <h:outputText value="#{summary.cashHandoverValue + summary.cardHandoverValue + summary.creditHandoverValue + summary.staffWelfareHandoverValue + summary.staffHandoverValue + summary.voucherHandoverValue + summary.iouHandoverValue + summary.agentHandoverValue + summary.chequeHandoverValue + summary.slipHandoverValue + summary.ewalletHandoverValue + summary.patientPointsHandoverValue + summary.onlineSettlementHandoverValue + summary.onCallHandoverValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
                         <f:facet name="footer">
-                            <h:outputText value="#{cc.attrs.bundle.cashValue + cc.attrs.bundle.cardValue + cc.attrs.bundle.creditValue + cc.attrs.bundle.staffWelfareValue + cc.attrs.bundle.staffValue + cc.attrs.bundle.voucherValue + cc.attrs.bundle.iouValue + cc.attrs.bundle.agentValue + cc.attrs.bundle.chequeValue + cc.attrs.bundle.slipValue + cc.attrs.bundle.ewalletValue + cc.attrs.bundle.patientPointsValue + cc.attrs.bundle.onlineSettlementValue + cc.attrs.bundle.onCallValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                            <h:outputText value="#{cc.attrs.bundle.cashHandoverValue + cc.attrs.bundle.cardHandoverValue + cc.attrs.bundle.creditHandoverValue + cc.attrs.bundle.staffWelfareHandoverValue + cc.attrs.bundle.staffHandoverValue + cc.attrs.bundle.voucherHandoverValue + cc.attrs.bundle.iouHandoverValue + cc.attrs.bundle.agentHandoverValue + cc.attrs.bundle.chequeHandoverValue + cc.attrs.bundle.slipHandoverValue + cc.attrs.bundle.ewalletHandoverValue + cc.attrs.bundle.patientPointsHandoverValue + cc.attrs.bundle.onlineSettlementHandoverValue + cc.attrs.bundle.onCallHandoverValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
                         </f:facet>
                     </p:column>
 

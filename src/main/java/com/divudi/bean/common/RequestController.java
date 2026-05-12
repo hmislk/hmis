@@ -103,15 +103,15 @@ public class RequestController implements Serializable {
         List<RequestType> types = new ArrayList<>();
         types.add(RequestType.PETTYCASH_APROVEL);
         types.add(RequestType.PETTYCASH_CANCELLATION);
-        
+
         status = null;
         List<RequestStatus> sts = new ArrayList<>();
         sts.add(RequestStatus.PENDING);
         sts.add(RequestStatus.UNDER_REVIEW);
-        
+
         fromDate = null;
         toDate = null;
-        
+
         requests = new ArrayList<>();
         requests = requestService.fillAllRequest(fromDate, toDate, billNo, bhtNo, requestNo, types, sts, null);
         return "/common/request/view_request?faces-redirect=true";
@@ -136,6 +136,8 @@ public class RequestController implements Serializable {
                 return "/opd/opd_batch_bill_print?faces-redirect=true";
             case INWARD_SERVICE_BILL:
                 return "/lab/inward_search_service?faces-redirect=true";
+            case CC_BILL:
+                return "/collecting_centre/view/cc_bill_view?faces-redirect=true";
             case PETTY_CASH_ISSUE:
                 return "/petty_cash_bill_search_own?faces-redirect=true";
             default:
@@ -208,6 +210,12 @@ public class RequestController implements Serializable {
                     break;
                 case OPD_BILL_WITH_PAYMENT:
                     navigation = "";
+                    break;
+                case CC_BILL:
+                    patient = bill.getPatient();
+                    setBatchBill(originalBill);
+                    comment = null;
+                    navigation = "/common/request/cc_bill_cancel_request?faces-redirect=true";
                     break;
                 case INWARD_SERVICE_BILL:
                     setBatchBill(originalBill);
@@ -305,6 +313,13 @@ public class RequestController implements Serializable {
             case OPD_BILL_WITH_PAYMENT:
                 navigation = "";
                 break;
+            case CC_BILL:
+                patient = currentRequest.getBill().getPatient();
+                bills.add(currentRequest.getBill());
+                comment = null;
+
+                navigation = "/common/request/cc_bill_cancel_request_approvel?faces-redirect=true";
+                break;
             case PETTY_CASH_PRE:
                 bills.add(currentRequest.getBill());
                 pettyCashPayeeType = resolvePettyCashPayeeType(currentRequest.getBill());
@@ -354,6 +369,14 @@ public class RequestController implements Serializable {
 
                 navigation = "/common/request/bill_cancel_request_cancel?faces-redirect=true";
                 break;
+            case CC_BILL:
+                bills.add(currentRequest.getBill());
+                patient = currentRequest.getBill().getPatient();
+                comment = null;
+
+                navigation = "/common/request/cc_bill_cancellation_request_cancel?faces-redirect=true";
+                break;
+
             case OPD_BILL_WITH_PAYMENT:
                 navigation = "";
                 break;
@@ -446,16 +469,59 @@ public class RequestController implements Serializable {
                 b.setCurrentRequest(newlyRequest);
                 billFacade.edit(b);
             }
+            setCurrentRequest(newlyRequest);
+        }
+        printPreview = true;
+    }
+
+    public void createRequestforCCBill() {
+        if (batchBill == null) {
+            JsfUtil.addErrorMessage("Bill not found for Create Request ");
+            return;
+        }
+        if (comment == null || comment.trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Comment is mandatory.");
+            return;
+        }
+
+        if (!batchBill.getDepartment().getId().equals(sessionController.getDepartment().getId())) {
+            JsfUtil.addErrorMessage("You must log in to " + batchBill.getDepartment().getName() + " to cancel this bill.");
+            return;
+        }
+
+        Request req = requestService.findRequest(batchBill);
+
+        if (req != null) {
+            JsfUtil.addErrorMessage("There is already a " + req.getRequestType().getDisplayName() + " request for this bill.");
+            return;
+        } else {
+            Request newlyRequest = new Request();
+
+            newlyRequest.setBill(batchBill);
+            newlyRequest.setRequester(sessionController.getLoggedUser());
+            newlyRequest.setRequestAt(new Date());
+            newlyRequest.setRequestReason(comment);
+            newlyRequest.setRequestType(RequestType.BILL_CANCELLATION);
+            newlyRequest.setStatus(RequestStatus.PENDING);
+
+            newlyRequest.setInstitution(sessionController.getInstitution());
+            newlyRequest.setDepartment(sessionController.getDepartment());
+
+            String reqNo = billNumberGenerator.departmentRequestNumberGeneratorYearly(sessionController.getDepartment(), RequestType.BILL_CANCELLATION);
+            newlyRequest.setRequestNo(reqNo);
+
+            requestService.save(newlyRequest, sessionController.getLoggedUser());
+
+            //Update Batch Bill
+            batchBill.setCurrentRequest(newlyRequest);
+            billFacade.edit(batchBill);
 
             setCurrentRequest(newlyRequest);
         }
-
         printPreview = true;
     }
 
     public void createRequestforPettyCashBillCancellation(Bill pettyCashBill) {
-        System.out.println("pettyCashBill = " + pettyCashBill);
-
         if (pettyCashBill == null) {
             JsfUtil.addErrorMessage("Bill not found for Create Request ");
             return;
@@ -500,7 +566,6 @@ public class RequestController implements Serializable {
 
             setCurrentRequest(newlyRequest);
         }
-
         printPreview = true;
     }
 
@@ -642,13 +707,10 @@ public class RequestController implements Serializable {
 
         Drawer loggedUserDrawer = drawerController.getUsersDrawer(sessionController.getLoggedUser());
 
-        System.out.println("loggedUserDrawer = " + loggedUserDrawer);
-
         if (loggedUserDrawer == null) {
             JsfUtil.addErrorMessage("Your Drawer have a Error.");
             return "";
         }
-        System.out.println("loggedUserDrawer.getCashInHandValue() = " + loggedUserDrawer.getCashInHandValue());
 
         if (loggedUserDrawer != null && (loggedUserDrawer.getCashInHandValue() == null || loggedUserDrawer.getCashInHandValue() == 0)) {
             JsfUtil.addErrorMessage("There is no cash in your drawer.");
@@ -807,8 +869,7 @@ public class RequestController implements Serializable {
                 return;
             }
         }
-        
-        
+
         currentRequest.setApproved(false);
         currentRequest.setApprovedAt(null);
         currentRequest.setApprovedBy(null);
@@ -828,8 +889,8 @@ public class RequestController implements Serializable {
             JsfUtil.addErrorMessage("Bill not found for request Cancel");
             return;
         }
-        
-        if(comment == null || comment.trim().isEmpty()){
+
+        if (comment == null || comment.trim().isEmpty()) {
             JsfUtil.addErrorMessage("Comment is Missing");
             return;
         }
@@ -862,13 +923,13 @@ public class RequestController implements Serializable {
                 currentRequest.getBill().setCurrentRequest(null);
                 billFacade.edit(currentRequest.getBill());
             }
+        }
 
-            //Update Individual Bills of Batch Bill
-            if (bills != null) {
-                for (Bill b : bills) {
-                    b.setCurrentRequest(null);
-                    billFacade.edit(b);
-                }
+        //Update Individual Bills
+        if (bills != null) {
+            for (Bill b : bills) {
+                b.setCurrentRequest(null);
+                billFacade.edit(b);
             }
         }
 
@@ -888,7 +949,7 @@ public class RequestController implements Serializable {
         req.getBill().setCurrentRequest(null);
         billFacade.edit(req.getBill());
 
-        //Update Induvidual Bills of Batch Bil
+        //Update Induvidual Bills
         if (bills != null) {
             for (Bill b : bills) {
                 b.setCurrentRequest(null);
@@ -896,7 +957,7 @@ public class RequestController implements Serializable {
             }
         }
 
-        JsfUtil.addSuccessMessage("Successfully Reject");
+        JsfUtil.addSuccessMessage("Request Process Completed.");
     }
 
     public void cancelRequestbyUser() {
@@ -906,6 +967,11 @@ public class RequestController implements Serializable {
         }
         if (currentRequest.getBill() == null) {
             JsfUtil.addErrorMessage("Bill not found for request Cancel");
+            return;
+        }
+        
+        if (comment.trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Comment is Missing...");
             return;
         }
 
@@ -921,12 +987,13 @@ public class RequestController implements Serializable {
             currentRequest.getBill().setCurrentRequest(null);
             billFacade.edit(currentRequest.getBill());
 
-            //Update Induvidual Bills of Batch Bil
-            if (bills != null) {
-                for (Bill b : bills) {
-                    b.setCurrentRequest(null);
-                    billFacade.edit(b);
-                }
+        }
+
+        //Update Induvidual Bills of Batch Bil
+        if (bills != null) {
+            for (Bill b : bills) {
+                b.setCurrentRequest(null);
+                billFacade.edit(b);
             }
         }
 

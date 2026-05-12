@@ -2340,6 +2340,21 @@ public class ReportTemplateRowBundle implements Serializable {
         this.totalOut = totalOut;
     }
 
+    /**
+     * Returns the total being handed over, matching the "Handing Over" column
+     * in the Net To Handover row on the page.
+     * Uses denominatorValue for cash (the manually entered denomination total),
+     * and per-payment-type handover values for all other payment methods.
+     */
+    public double getHandoverTotal() {
+        return denominatorValue + cardHandoverValue + chequeHandoverValue
+                + creditHandoverValue + staffHandoverValue + staffWelfareHandoverValue
+                + voucherHandoverValue + iouHandoverValue + agentHandoverValue
+                + slipHandoverValue + eWalletHandoverValue + onCallHandoverValue
+                + patientDepositHandoverValue + patientPointsHandoverValue
+                + onlineSettlementHandoverValue + multiplePaymentMethodsHandoverValue;
+    }
+
     public Long getCountIn() {
         return countIn;
     }
