@@ -192,17 +192,12 @@ public class RequestController implements Serializable {
 
         Request req = requestService.findRequest(originalBill);
 
-        System.out.println("req = " + req);
-
         if (req != null) {
             JsfUtil.addErrorMessage("There is already a " + req.getRequestType().getDisplayName() + " requesr for this bill.");
             return "";
         } else {
-            System.out.println("req = Null");
             printPreview = false;
             bills = new ArrayList<>();
-
-            System.out.println("Bill Type Atomic = " + originalBill.getBillTypeAtomic());
 
             switch (originalBill.getBillTypeAtomic()) {
                 case OPD_BATCH_BILL_WITH_PAYMENT:
@@ -217,7 +212,6 @@ public class RequestController implements Serializable {
                     navigation = "";
                     break;
                 case CC_BILL:
-                    System.out.println("Using ---> CC_BILL");
                     patient = bill.getPatient();
                     setBatchBill(originalBill);
                     comment = null;
@@ -944,8 +938,6 @@ public class RequestController implements Serializable {
     }
 
     public void complteRequest(Request req) {
-        System.out.println("complteRequest(Request req) ---> ");
-        System.out.println("requestController.getBills() = " + getBills());
 
         req.setCompletedBy(sessionController.getLoggedUser());
         req.setCompletedAt(new Date());

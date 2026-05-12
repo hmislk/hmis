@@ -3127,14 +3127,10 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
             }
         }
         
-        System.out.println("Bill = " + bill);
-
         CancelledBill cancellationBill = createCollectingCenterCancelBill(bill);
         billController.save(cancellationBill);
 //        Payment p = getOpdPreSettleController().createPaymentForCancellationsforOPDBill(cancellationBill, paymentMethod);
         List<BillItem> list = cancelCcBillItems(getBill(), cancellationBill);
-        
-        System.out.println("Bill = " + bill);
 
         try {
             if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
@@ -3145,8 +3141,6 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
         } catch (Exception e) {
         }
 
-        System.out.println("Bill = " + bill);
-        
         cancellationBill.setBillItems(list);
         billFacade.edit(cancellationBill);
 
@@ -3156,8 +3150,6 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
         billController.save(getBill());
         JsfUtil.addSuccessMessage("Cancelled");
         
-        System.out.println("Bill = " + bill);
-
 //        Institution collectingCentre,
 //            double hospitalFee,
 //            double collectingCentreFee,
@@ -3177,13 +3169,9 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
 
 //        drawerController.updateDrawerForOuts(p);
         if (configOptionApplicationController.getBooleanValueByKey("Mandatory permission to cancel bills.", false)) {
-            System.out.println("Need permission");   
-            System.out.println("Bill = " + bill);
             Request billRequest = requestService.findRequest(bill);
-            System.out.println("billRequest = " + billRequest);
             if (billRequest != null) {
                 requestController.getBills().add(bill);
-                System.out.println("requestController.getBills() = " + requestController.getBills());
                 requestController.complteRequest(billRequest);
             }
         }
@@ -6187,17 +6175,12 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
             return "";
         }
 
-        System.out.println("Bill = " + bill + " ------> " + bill.getDeptId());
         boolean needPermissionToCancelCCBill = configOptionApplicationController.getBooleanValueByKey("CC Billing - Mandatory permission to cancel bills.", false);
 
-        System.out.println("needPermissionToCancelCCBill = " + needPermissionToCancelCCBill);
-
         if (configOptionApplicationController.getBooleanValueByKey("Mandatory permission to cancel bills.", false) && needPermissionToCancelCCBill) {
-            System.out.println("need Permission ToCancel CC Bill");
             currentRequest = requestService.findRequest(bill);
 
             if (currentRequest == null) {
-                System.out.println("Request = Null");
                 return requestController.navigateToCreateRequest(bill);
             } else {
                 switch (currentRequest.getStatus()) {
