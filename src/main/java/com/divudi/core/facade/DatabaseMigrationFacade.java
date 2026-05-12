@@ -9,6 +9,7 @@ import com.divudi.core.data.MigrationStatus;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -76,6 +77,44 @@ public class DatabaseMigrationFacade extends AbstractFacade<DatabaseMigration> {
             // java.lang.reflect.UndeclaredThrowableException wrapped in SQLException.
             try { conn.setAutoCommit(false); } catch (Exception ignored) { }
             conn.close();
+        }
+    }
+
+    /**
+     * Execute a migration script on one raw JDBC connection.
+     *
+     * MySQL user variables, PREPARE, and EXECUTE statements are scoped to the
+     * connection. Running those scripts one statement per pooled connection can
+     * lose guard state and execute unsafe dynamic DDL. This method keeps the
+     * full script on a single connection while still running outside JTA.
+     */
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+    public void executeNativeSqlStatements(List<String> sqlStatements) throws Exception {
+        if (sqlStatements == null || sqlStatements.isEmpty()) {
+            return;
+        }
+        Connection conn = getRawJdbcConnection();
+        try {
+            conn.setAutoCommit(true);
+            try (Statement stmt = conn.createStatement()) {
+                for (String sql : sqlStatements) {
+                    if (sql == null || sql.trim().isEmpty()) {
+                        continue;
+                    }
+                    stmt.execute(sql);
+                    drainStatementResults(stmt);
+                }
+            }
+        } finally {
+            // Restore autoCommit=false before returning connection to Payara's JTA pool.
+            try { conn.setAutoCommit(false); } catch (Exception ignored) { }
+            conn.close();
+        }
+    }
+
+    private void drainStatementResults(Statement stmt) throws SQLException {
+        while (stmt.getMoreResults() || stmt.getUpdateCount() != -1) {
+            // Consume all result/update counts from statements such as CALL.
         }
     }
 
