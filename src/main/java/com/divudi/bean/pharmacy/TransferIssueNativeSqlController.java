@@ -349,6 +349,8 @@ public class TransferIssueNativeSqlController implements Serializable {
                 "Pharmacy Disbursement Reports - Display Retail Sale Rate", "Show retail rate column (default false)", OptionScope.APPLICATION));
         list.add(new com.divudi.core.data.admin.ConfigOptionInfo(
                 "Pharmacy Disbursement Reports - Display Retail Sale Value", "Show retail value column (default false)", OptionScope.APPLICATION));
+        list.add(new com.divudi.core.data.admin.ConfigOptionInfo(
+                "Pharmacy Disbursement Reports - Display Cost Value", "Show cost value column (default false)", OptionScope.APPLICATION));
         return list;
     }
 
