@@ -245,7 +245,7 @@
                             <h:outputLabel  rendered="#{cc.attrs.bill.discountPercentPharmacy ne 0.0}" value="#{cc.attrs.bill.discountPercentPharmacy}">
                                 <f:convertNumber pattern="#,##0.0" />
                             </h:outputLabel>
-                            <h:outputLabel value="%"/>
+                            <h:outputLabel rendered="#{cc.attrs.bill.discountPercentPharmacy ne 0.0}" value="%"/>
                         </td>
                     </tr>
                     <tr>
