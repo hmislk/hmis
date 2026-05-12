@@ -107,7 +107,7 @@ public class TransferIssueNativeSqlService {
                 + " i.name AS itemName,"
                 + " COALESCE(i.code, '') AS itemCode,"
                 + " i.DTYPE AS itemDtype,"
-                + " COALESCE(i.dblValue, 1.0) AS packSize,"
+                + " CASE WHEN i.DTYPE = 'Ampp' THEN COALESCE(i.dblValue, 1.0) ELSE 1.0 END AS packSize,"
                 + " CASE WHEN i.DTYPE = 'Ampp' THEN COALESCE(i.amp_ID, i.ID) ELSE i.ID END AS ampItemId"
                 + " FROM " + billItemTable() + " bi"
                 + " JOIN " + itemTable() + " i ON i.ID = bi.item_ID"
@@ -634,6 +634,9 @@ public class TransferIssueNativeSqlService {
             BigDecimal qtyByUnits = BigDecimal.valueOf(units);
             pi.setValueAtPurchaseRate(BigDecimal.valueOf(src.getPurchaseRate()).multiply(qtyByUnits));
             pi.setValueAtRetailRate(BigDecimal.valueOf(src.getRetailRate()).multiply(qtyByUnits));
+            double costRateForItem = src.getBatchCostRate() != null && src.getBatchCostRate() > 0
+                    ? src.getBatchCostRate() : src.getPurchaseRate();
+            pi.setValueAtCostRate(BigDecimal.valueOf(costRateForItem).multiply(qtyByUnits));
             pi.setLineGrossTotal(grossRate.multiply(BigDecimal.valueOf(packs)));
             printItems.add(pi);
         }
@@ -728,6 +731,9 @@ public class TransferIssueNativeSqlService {
                 .getResultList();
 
         List<TransferIssueItemPrintDto> items = new ArrayList<>();
+        double totalPurchaseValue   = 0.0;
+        double totalRetailSaleValue = 0.0;
+        double totalCostValue       = 0.0;
         int serial = 1;
         for (Object[] row : rows) {
             TransferIssueItemPrintDto item = new TransferIssueItemPrintDto();
@@ -752,12 +758,22 @@ public class TransferIssueNativeSqlService {
             item.setRetailRate(rrRate);
             item.setCostRate(crRate);
             BigDecimal unitsBd = BigDecimal.valueOf(units);
-            item.setValueAtPurchaseRate(BigDecimal.valueOf(prRate).multiply(unitsBd));
-            item.setValueAtRetailRate(BigDecimal.valueOf(rrRate).multiply(unitsBd));
+            BigDecimal purchaseValue = BigDecimal.valueOf(prRate).multiply(unitsBd);
+            BigDecimal retailValue   = BigDecimal.valueOf(rrRate).multiply(unitsBd);
+            BigDecimal costValue     = BigDecimal.valueOf(crRate).multiply(unitsBd);
+            item.setValueAtPurchaseRate(purchaseValue);
+            item.setValueAtRetailRate(retailValue);
+            item.setValueAtCostRate(costValue);
             item.setLineGrossTotal(BigDecimal.valueOf(rate).multiply(BigDecimal.valueOf(qty)));
+            totalPurchaseValue   += purchaseValue.doubleValue();
+            totalRetailSaleValue += retailValue.doubleValue();
+            totalCostValue       += costValue.doubleValue();
             items.add(item);
         }
         dto.setItems(items);
+        dto.setTotalPurchaseValue(totalPurchaseValue);
+        dto.setTotalRetailSaleValue(totalRetailSaleValue);
+        dto.setTotalCostValue(totalCostValue);
         return dto;
     }
 
