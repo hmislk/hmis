@@ -5929,48 +5929,31 @@ public class FinancialTransactionController implements Serializable {
             }
         }
 
-        boolean skipCashDiffValidation = configOptionApplicationController.getBooleanValueByKey("Skip Cash Difference Validation for Handover", false);
-        if (!skipCashDiffValidation) {
-            Double maximumAllowedCashDifferenceForHandover = configOptionApplicationController.getDoubleValueByKey("Maximum Allowed Cash Difference for Handover", 1.0);
-            double expectedCashHandover = bundle.getCashValue();
-            if (Math.abs(bundle.getDenominatorValue() - expectedCashHandover) > maximumAllowedCashDifferenceForHandover) {
-                JsfUtil.addErrorMessage("Cash Value Collected and the cash value Handing over are different. Cannot handover.");
-                return null;
+        boolean anyBundleSelected = false;
+        for (ReportTemplateRowBundle b : bundle.getBundles()) {
+            if (b.isSelected()) {
+                anyBundleSelected = true;
             }
         }
+        if (!anyBundleSelected) {
+            JsfUtil.addErrorMessage("No Payments to Handover");
+            return null;
+        }
 
-        boolean requireCollectionHandoverMatch = configOptionApplicationController.getBooleanValueByKey("Require Collection and Handover Values to Match", false);
-        if (requireCollectionHandoverMatch) {
-            Double configuredMaxDiff = configOptionApplicationController.getDoubleValueByKey("Maximum Allowed Difference for Handover Total", 0.01);
-            double maximumAllowedDifferenceForHandoverTotal = (configuredMaxDiff == null) ? 0.01 : Math.max(0.0, configuredMaxDiff);
+        boolean allowHandoverWithUnmatchedBalance = configOptionApplicationController.getBooleanValueByKey("Allow Handover with Unmatched Balance", true);
+        if (!allowHandoverWithUnmatchedBalance) {
+            for (ReportTemplateRowBundle b : bundle.getBundles()) {
+                if (!b.isSelected()) {
+                    JsfUtil.addErrorMessage("All collections must be selected for handover.");
+                    return null;
+                }
+            }
             double totalCollected = bundle.getTotal() != null ? bundle.getTotal() : 0.0;
-            double totalHandedOver = bundle.getTotalOut() != null ? bundle.getTotalOut() : 0.0;
-            if (Math.abs(totalCollected - totalHandedOver) > maximumAllowedDifferenceForHandoverTotal) {
+            double totalHandedOver = bundle.getHandoverTotal();
+            if (Math.abs(totalCollected - totalHandedOver) > 0.01) {
                 JsfUtil.addErrorMessage("Total Collected Value (" + totalCollected + ") and Total Handed Over Value (" + totalHandedOver + ") do not match. Cannot handover.");
                 return null;
             }
-        }
-
-        boolean shouldSelectAllCollectionsForHandover = configOptionApplicationController.getBooleanValueByKey("Should Select All Collections for Handover", false);
-        boolean allBundlesSelected = true;
-        boolean anyBundleSelected = false;
-
-        for (ReportTemplateRowBundle b : bundle.getBundles()) {
-            if (b.isSelected()) {
-                anyBundleSelected = true; // At least one bundle is selected
-            } else {
-                allBundlesSelected = false; // Found an unselected bundle, not all are selected
-            }
-        }
-
-        if (!anyBundleSelected) {
-            JsfUtil.addErrorMessage("No Payments to Handover");
-            return null; // Stop processing since no bundles are selected
-        }
-
-        if (shouldSelectAllCollectionsForHandover && !allBundlesSelected) {
-            JsfUtil.addErrorMessage("All collections must be selected for handover");
-            return null; // Stop processing since not all bundles are selected when they must be
         }
 
         bundle.setFromUser(sessionController.getLoggedUser());
@@ -9947,26 +9930,8 @@ public class FinancialTransactionController implements Serializable {
 
         // Configuration Options - Cash Handling
         metadata.addConfigOption(new ConfigOptionInfo(
-                "Maximum Allowed Cash Difference for Handover",
-                "Maximum allowed difference between collected cash and handed over cash (in currency units). Default: 1.0",
-                OptionScope.APPLICATION
-        ));
-
-        metadata.addConfigOption(new ConfigOptionInfo(
-                "Should Select All Collections for Handover",
-                "When enabled, all collected payments are automatically selected for handover. Default: false",
-                OptionScope.APPLICATION
-        ));
-
-        metadata.addConfigOption(new ConfigOptionInfo(
-                "Require Collection and Handover Values to Match",
-                "When enabled, the handover is blocked if the Total Collected Value and Total Handed Over Value differ by more than the configured tolerance. Default: false",
-                OptionScope.APPLICATION
-        ));
-
-        metadata.addConfigOption(new ConfigOptionInfo(
-                "Maximum Allowed Difference for Handover Total",
-                "Maximum allowed difference between total collected and total handed over (in currency units). Only used when 'Require Collection and Handover Values to Match' is enabled. Default: 0.01",
+                "Allow Handover with Unmatched Balance",
+                "When enabled (default: true), handover proceeds regardless of balance differences or partial payment selection. When disabled, all collections must be selected and total handed over must match total collected within 0.01.",
                 OptionScope.APPLICATION
         ));
 
@@ -10265,14 +10230,8 @@ public class FinancialTransactionController implements Serializable {
         ));
 
         cashierIndexMetadata.addConfigOption(new ConfigOptionInfo(
-                "Maximum Allowed Cash Difference for Handover",
-                "Sets the maximum allowed difference between collected and handed over cash amounts, affecting Handover Management tab validation. Default: 1.0",
-                OptionScope.APPLICATION
-        ));
-
-        cashierIndexMetadata.addConfigOption(new ConfigOptionInfo(
-                "Should Select All Collections for Handover",
-                "When enabled, automatically selects all collected payments for handover, affecting Handover Management tab workflow.",
+                "Allow Handover with Unmatched Balance",
+                "When enabled (default: true), handover proceeds regardless of balance differences or partial payment selection. When disabled, all collections must be selected and total handed over must match total collected within 0.01.",
                 OptionScope.APPLICATION
         ));
 
@@ -10403,8 +10362,8 @@ public class FinancialTransactionController implements Serializable {
 
         // Cash Handling Configuration
         shiftEndMetadata.addConfigOption(new ConfigOptionInfo(
-                "Maximum Allowed Cash Difference for Handover",
-                "Maximum allowed difference between collected cash and counted cash during shift end reconciliation. Affects validation tolerance.",
+                "Allow Handover with Unmatched Balance",
+                "When enabled (default: true), handover proceeds regardless of balance differences or partial payment selection. When disabled, all collections must be selected and total handed over must match total collected within 0.01.",
                 OptionScope.APPLICATION
         ));
 
@@ -10471,8 +10430,8 @@ public class FinancialTransactionController implements Serializable {
         ));
 
         shiftEndPrintMetadata.addConfigOption(new ConfigOptionInfo(
-                "Maximum Allowed Cash Difference for Handover",
-                "Maximum allowed difference between collected cash and handed over cash (in currency units). Default: 1.0. Affects validation logic that determines shift completion status.",
+                "Allow Handover with Unmatched Balance",
+                "When enabled (default: true), handover proceeds regardless of balance differences or partial payment selection. When disabled, all collections must be selected and total handed over must match total collected within 0.01.",
                 OptionScope.APPLICATION
         ));
 
@@ -10495,11 +10454,6 @@ public class FinancialTransactionController implements Serializable {
                 OptionScope.APPLICATION
         ));
 
-        shiftEndPrintMetadata.addConfigOption(new ConfigOptionInfo(
-                "Should Select All Collections for Handover",
-                "When enabled, all collected payments are automatically selected for handover. Affects total value calculations displayed in shift summaries.",
-                OptionScope.APPLICATION
-        ));
 
         // Shift Management and Validation Configurations
         shiftEndPrintMetadata.addConfigOption(new ConfigOptionInfo(
