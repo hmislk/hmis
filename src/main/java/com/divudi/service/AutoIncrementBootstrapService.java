@@ -13,27 +13,14 @@ import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
 
 /**
  * Ensures all entity table ID columns have AUTO_INCREMENT at application
  * startup.
  *
- * Background: switching from GenerationType.AUTO (shared SEQUENCE table) to
- * GenerationType.IDENTITY (per-table AUTO_INCREMENT) requires every entity
- * table's ID column to have AUTO_INCREMENT set. If the application is deployed
- * with the new GenerationType.IDENTITY code before the DB migration has run,
- * every INSERT fails with "Field 'ID' doesn't have a default value" (MySQL 1364).
- *
- * This @Singleton @Startup EJB runs once when Payara starts, before any user
- * can interact, and self-heals the database. The actual JDBC work is delegated
- * to DatabaseMigrationFacade.applyAutoIncrementToAllEntityTables() which uses
- * a proven raw-JDBC pattern (same as executeDdlNative) outside JTA.
- *
- * Pattern follows DatabaseMigrationService — inject facade via @EJB, not
- * @PersistenceContext directly, to avoid EclipseLink session initialisation
- * ordering issues at @Startup time.
+ * Runs on a daemon thread so the deploy thread is not blocked by the
+ * INFORMATION_SCHEMA scan or ALTER TABLE statements, which can be slow
+ * against remote (Azure) databases.
  *
  * @author Dr M H B Ariyaratne
  */
@@ -49,16 +36,16 @@ public class AutoIncrementBootstrapService {
     @EJB
     private AuditDatabaseFacade auditDatabaseFacade;
 
-    /**
-     * Migration version key recorded in DatabaseMigration once all tables have
-     * AUTO_INCREMENT. Subsequent startups check this record first and skip the
-     * expensive information_schema scan when it already exists.
-     */
     private static final String MIGRATION_VERSION = "v2.2.0";
 
     @PostConstruct
-    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
-    public void applyAutoIncrementIfNeeded() {
+    public void init() {
+        Thread t = new Thread(this::applyAutoIncrementIfNeeded, "AutoIncrementBootstrap-startup");
+        t.setDaemon(true);
+        t.start();
+    }
+
+    private void applyAutoIncrementIfNeeded() {
         // Main database (hmisPU)
         try {
             if (migrationFacade.isMigrationExecuted(MIGRATION_VERSION)) {
@@ -74,7 +61,6 @@ public class AutoIncrementBootstrapService {
                     LOGGER.info("AutoIncrementBootstrap: applied AUTO_INCREMENT to " + altered.size()
                             + " table(s) in " + elapsed + "ms: " + altered);
                 }
-                // Record completion so future startups skip this scan entirely.
                 recordMigrationComplete(elapsed);
             }
         } catch (Exception e) {
@@ -82,8 +68,7 @@ public class AutoIncrementBootstrapService {
                     + "entity INSERTs may fail until migration v2.2.0 is run manually", e);
         }
 
-        // Audit database (hmisAuditPU) — no persistent tracking table available;
-        // the information_schema query returns immediately when all tables are done.
+        // Audit database (hmisAuditPU)
         try {
             List<String> altered = auditDatabaseFacade.applyAutoIncrementToAllEntityTables();
             if (altered.isEmpty()) {
