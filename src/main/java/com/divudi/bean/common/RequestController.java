@@ -374,7 +374,7 @@ public class RequestController implements Serializable {
                 patient = currentRequest.getBill().getPatient();
                 comment = null;
 
-                navigation = "/common/request/cc_bill_canceation_request_cancel?faces-redirect=true";
+                navigation = "/common/request/cc_bill_cancellation_request_cancel?faces-redirect=true";
                 break;
 
             case OPD_BILL_WITH_PAYMENT:
@@ -492,7 +492,7 @@ public class RequestController implements Serializable {
         Request req = requestService.findRequest(batchBill);
 
         if (req != null) {
-            JsfUtil.addErrorMessage("There is already a " + req.getRequestType().getDisplayName() + " requesr for this bill.");
+            JsfUtil.addErrorMessage("There is already a " + req.getRequestType().getDisplayName() + " request for this bill.");
             return;
         } else {
             Request newlyRequest = new Request();
