@@ -579,7 +579,10 @@ public class DatabaseMigrationController implements Serializable {
 
             if (usesMysqlConnectionScopedState(executableStatements)) {
                 logBuilder.append("Executing stateful MySQL script on a single JDBC connection\n");
-                migrationFacade.executeNativeSqlStatements(executableStatements);
+                List<String> skipMessages = migrationFacade.executeNativeSqlStatements(executableStatements);
+                for (String skipMessage : skipMessages) {
+                    logBuilder.append(skipMessage).append("\n");
+                }
                 logBuilder.append("Stateful script executed successfully\n");
                 return;
             }

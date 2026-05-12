@@ -89,9 +89,10 @@ public class DatabaseMigrationFacade extends AbstractFacade<DatabaseMigration> {
      * full script on a single connection while still running outside JTA.
      */
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
-    public void executeNativeSqlStatements(List<String> sqlStatements) throws Exception {
+    public List<String> executeNativeSqlStatements(List<String> sqlStatements) throws Exception {
+        List<String> skipMessages = new ArrayList<>();
         if (sqlStatements == null || sqlStatements.isEmpty()) {
-            return;
+            return skipMessages;
         }
         Connection conn = getRawJdbcConnection();
         try {
@@ -101,8 +102,16 @@ public class DatabaseMigrationFacade extends AbstractFacade<DatabaseMigration> {
                     if (sql == null || sql.trim().isEmpty()) {
                         continue;
                     }
-                    stmt.execute(sql);
-                    drainStatementResults(stmt);
+                    try {
+                        stmt.execute(sql);
+                        drainStatementResults(stmt);
+                    } catch (SQLException e) {
+                        String skipReason = getIdempotentSkipReason(sql, e);
+                        if (skipReason == null) {
+                            throw e;
+                        }
+                        skipMessages.add(skipReason);
+                    }
                 }
             }
         } finally {
@@ -110,12 +119,54 @@ public class DatabaseMigrationFacade extends AbstractFacade<DatabaseMigration> {
             try { conn.setAutoCommit(false); } catch (Exception ignored) { }
             conn.close();
         }
+        return skipMessages;
     }
 
     private void drainStatementResults(Statement stmt) throws SQLException {
         while (stmt.getMoreResults() || stmt.getUpdateCount() != -1) {
             // Consume all result/update counts from statements such as CALL.
         }
+    }
+
+    private String getIdempotentSkipReason(String sql, SQLException e) {
+        String upper = sql.toUpperCase().trim();
+        String msg = collectCauseMessages(e);
+
+        if ((upper.startsWith("CREATE INDEX") || upper.startsWith("CREATE UNIQUE INDEX"))
+                && (msg.contains("1061") || msg.contains("Duplicate key name")
+                    || msg.contains("1146") || msg.contains("doesn't exist"))) {
+            return "Index already exists or target table missing, skipping: " + abbreviateSql(sql);
+        }
+
+        if (upper.startsWith("ALTER TABLE") && upper.contains("ADD COLUMN")
+                && (msg.contains("1060") || msg.contains("Duplicate column name"))) {
+            return "Column already exists, skipping: " + abbreviateSql(sql);
+        }
+
+        if (upper.startsWith("ALTER TABLE")
+                && (upper.contains("DROP FOREIGN KEY") || upper.contains("DROP INDEX") || upper.contains("DROP KEY"))
+                && (msg.contains("1091") || msg.contains("check that column/key exists"))) {
+            return "Foreign key or index already absent, skipping: " + abbreviateSql(sql);
+        }
+
+        return null;
+    }
+
+    private String collectCauseMessages(Throwable e) {
+        StringBuilder sb = new StringBuilder();
+        Throwable cause = e;
+        while (cause != null) {
+            if (cause.getMessage() != null) {
+                sb.append(cause.getMessage()).append('\n');
+            }
+            cause = cause.getCause();
+        }
+        return sb.toString();
+    }
+
+    private String abbreviateSql(String sql) {
+        String oneLine = sql.replaceAll("\\s+", " ").trim();
+        return oneLine.substring(0, Math.min(100, oneLine.length()));
     }
 
     private static final Logger LOGGER = Logger.getLogger(DatabaseMigrationFacade.class.getName());
