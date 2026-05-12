@@ -175,7 +175,7 @@ public class StaffController implements Serializable {
         if (current.getId() == null || current.getId() == 0) {
             JsfUtil.addErrorMessage("Please Select Staff Member");
         }
-        if (getSignatureUrl() == null || getSignatureUrl().trim() == "") {
+        if (getSignatureUrl() == null || getSignatureUrl().trim().isEmpty()) {
             JsfUtil.addErrorMessage("Add Signature Url");
         }
         System.out.println("getStaffController().getCurrent = " + getCurrent());
@@ -1063,7 +1063,7 @@ public class StaffController implements Serializable {
 
     public List<Staff> getSelectedItems() {
         if (selectedItems == null) {
-            selectedItems = new ArrayList<>();
+            fillSelectedItemsWithAllStaff();
         }
         return selectedItems;
     }
@@ -1182,6 +1182,7 @@ public class StaffController implements Serializable {
 
     public void prepareAdd() {
         current = new Staff();
+        current.setPerson(new Person());
         tempRetireDate = null;
         removeResign = false;
     }
@@ -1205,7 +1206,7 @@ public class StaffController implements Serializable {
         getItems();
         current = null;
         getCurrent();
-        fillSelectedItemsWithNonDoctorStaff();
+        fillSelectedItemsWithAllStaff();
     }
 
     public void setSelectedItems(List<Staff> selectedItems) {
