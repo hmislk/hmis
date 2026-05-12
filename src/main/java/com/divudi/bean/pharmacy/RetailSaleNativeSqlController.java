@@ -440,8 +440,12 @@ public class RetailSaleNativeSqlController implements Serializable, ControllerWi
         String billNo = generateBillNumber();
 
         double netTot = 0.0;
+        double grossTot = 0.0;
+        double discountTot = 0.0;
         for (BillItemData bid : billItemDataList) {
             netTot += Math.abs(bid.getNetValue());
+            grossTot += Math.abs(bid.getGrossValue());
+            discountTot += bid.getDiscountValue();
         }
 
         PreBill pb = new PreBill();
@@ -461,9 +465,10 @@ public class RetailSaleNativeSqlController implements Serializable, ControllerWi
         pb.setComments(comment);
         pb.setPaymentMethod(paymentMethod);
         pb.setPaymentScheme(paymentScheme);
-        pb.setTotal(netTot);
+        pb.setTotal(grossTot);
         pb.setNetTotal(netTot);
-        pb.setGrantTotal(netTot);
+        pb.setGrantTotal(grossTot);
+        pb.setDiscount(discountTot);
         if (paymentMethod == PaymentMethod.Credit || paymentMethod == PaymentMethod.Staff) {
             pb.setBalance(netTot);
             pb.setPaidAmount(0.0);
@@ -743,6 +748,21 @@ public class RetailSaleNativeSqlController implements Serializable, ControllerWi
         }
     }
 
+    private Double fetchCurrentStockQty(Long stockId) {
+        if (stockId == null) {
+            return null;
+        }
+        Map<String, Object> params = new HashMap<>();
+        params.put("id", stockId);
+        List<?> result = stockFacade.findLightsByJpql(
+                "SELECT s.stock FROM Stock s WHERE s.id = :id",
+                params, TemporalType.DATE, 1);
+        if (result == null || result.isEmpty() || result.get(0) == null) {
+            return null;
+        }
+        return ((Number) result.get(0)).doubleValue();
+    }
+
     private long resolveAmpItemId(Long itemId) {
         if (itemId == null) return 0L;
         try {
@@ -778,12 +798,11 @@ public class RetailSaleNativeSqlController implements Serializable, ControllerWi
         }
         if (bid.getStockId() != null) {
             try {
-                com.divudi.core.entity.pharmacy.Stock currentStock = stockFacade.find(bid.getStockId());
-                if (currentStock != null && currentStock.getStock() != null
-                        && bid.getQty() > currentStock.getStock()) {
-                    bid.setQty(currentStock.getStock());
+                Double availableQty = fetchCurrentStockQty(bid.getStockId());
+                if (availableQty != null && bid.getQty() > availableQty) {
+                    bid.setQty(availableQty);
                     JsfUtil.addErrorMessage("Quantity cannot exceed available stock ("
-                            + currentStock.getStock().intValue() + "). Quantity has been set to the maximum available.");
+                            + availableQty.intValue() + "). Quantity has been set to the maximum available.");
                 }
             } catch (Exception e) {
                 LOGGER.log(Level.WARNING, "Could not verify stock qty for stockId={0}", bid.getStockId());
