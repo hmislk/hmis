@@ -151,6 +151,7 @@ public class FinancialTransactionController implements Serializable {
     private boolean handoverValuesCreated = false;
     private boolean shortageSubmitting = false;
     private boolean settlementSubmitting = false;
+    private boolean handoverSubmitting = false;
     private double shortageSettledSoFar;
     private double shortageOutstanding;
 
@@ -5886,6 +5887,11 @@ public class FinancialTransactionController implements Serializable {
     }
 
     public String settleHandoverStartBill() {
+        if (handoverSubmitting) {
+            return null;
+        }
+        handoverSubmitting = true;
+        try {
         if (user == null) {
             JsfUtil.addErrorMessage("Please select a user to handover the shift.");
             return null;
@@ -6142,6 +6148,9 @@ public class FinancialTransactionController implements Serializable {
         createHandoverProofMissingBillIfNeeded(currentBill);
 
         return "/cashier/handover_creation_print_summary?faces-redirect=true";
+        } finally {
+            handoverSubmitting = false;
+        }
     }
 
     private void createHandoverProofMissingBillIfNeeded(Bill handoverCreateBill) {
