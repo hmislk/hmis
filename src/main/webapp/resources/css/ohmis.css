@@ -835,3 +835,20 @@ th.align-right-header .ui-column-title {
     position: static !important;
     margin: 0 !important;
 }
+
+/* Optimised menu item — subtle green tinge */
+a.ui-menuitem-link.menu-item-optimised,
+a.ui-menuitem-link.menu-item-optimised .ui-menuitem-text,
+a.ui-menuitem-link.menu-item-optimised .ui-menuitem-icon {
+    background-color: #eaf7ec !important;
+    background-image: none !important;
+    color: #1a5c2a !important;
+}
+
+a.ui-menuitem-link.menu-item-optimised:hover,
+a.ui-menuitem-link.menu-item-optimised:hover .ui-menuitem-text,
+a.ui-menuitem-link.menu-item-optimised:hover .ui-menuitem-icon {
+    background-color: #d4edda !important;
+    background-image: none !important;
+    color: #1a5c2a !important;
+}

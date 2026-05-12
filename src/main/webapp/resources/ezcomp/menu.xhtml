@@ -953,28 +953,46 @@
                         value="Token Management" 
                         icon="fa fa-file-medical" 
                         rendered="#{webUserController.hasPrivilege('PharmacyTokenManagement')}" />
-                    <p:submenu label="Retail Transactions" icon="fas fa-cash-register" rendered="#{webUserController.hasPrivilege('PharmacyRetailTransactionMenue')}">
-                        <p:menuitem
-                            ajax="false"
-                            action="#{pharmacySaleController.navigateToPharmacyRetailSale()}"
-                            value="Sale by Batch"
-                            icon="fas fa-shopping-cart"
-                            rendered="#{webUserController.hasPrivilege('PharmacySale') and configOptionApplicationController.getBooleanValueByKey('Pharmacy Retail Sale - By Batch Search', true)}" ></p:menuitem>
+                    <p:submenu label="Sale" icon="fas fa-cash-register" rendered="#{webUserController.hasPrivilege('PharmacyRetailTransactionMenue')}">
                         <p:menuitem
                             ajax="false"
                             action="/pharmacy/pharmacy_bill_retail_sale_native?faces-redirect=true"
                             actionListener="#{retailSaleNativeSqlController.resetAll()}"
-                            value="Sale by Batch (Fast)"
-                            icon="fas fa-bolt"
+                            value="Sale"
+                            icon="fas fa-mortar-pestle"
+                            style="font-weight: bold;"
+                            styleClass="menu-item-optimised"
                             rendered="#{webUserController.hasPrivilege('PharmacySale')}" ></p:menuitem>
+                        <p:menuitem
+                            ajax="false"
+                            action="#{pharmacySaleController.navigateToPharmacyRetailSale()}"
+                            value="Sale (Legacy)"
+                            icon="fas fa-shopping-cart"
+                            rendered="#{webUserController.hasPrivilege('PharmacySale') and configOptionApplicationController.getBooleanValueByKey('Pharmacy Retail Sale - By Batch Search', true) and configOptionApplicationController.getBooleanValueByKey('Legacy Functions Allowed', false)}" ></p:menuitem>
+                        <p:menuitem
+                            ajax="false" action="/pharmacy/pharmacy_search_sale_bill?faces-redirect=true"
+                            value="Search Sale Bill"
+                            icon="fas fa-search"
+                            styleClass="menu-item-optimised"
+                            actionListener="#{searchController.makeListNull}"
+                            rendered="#{webUserController.hasPrivilege('PharmacySearchSaleBill')}"></p:menuitem>
+                        <p:separator rendered="#{configOptionApplicationController.getBooleanValueByKey('Experimental Functions Allowed', false)}" />
                         <p:menuitem
                             ajax="false"
                             action="/pharmacy/pharmacy_fast_retail_sale?faces-redirect=true"
                             actionListener="#{pharmacyFastRetailSaleController.resetAll()}"
                             value="Sale by Item"
-                            icon="fas fa-bolt"
-                            rendered="#{webUserController.hasPrivilege('PharmacySaleQuick') and configOptionApplicationController.getBooleanValueByKey('Pharmacy Retail Sale - By Item Search', true)}" >
+                            icon="fas fa-tag"
+                            rendered="#{webUserController.hasPrivilege('PharmacySaleQuick') and configOptionApplicationController.getBooleanValueByKey('Pharmacy Retail Sale - By Item Search', true) and configOptionApplicationController.getBooleanValueByKey('Experimental Functions Allowed', false)}" >
                         </p:menuitem>
+                        <p:menuitem
+                            ajax="false"
+                            action="/pharmacy/pharmacy_fast_retail_sale_for_cashier?faces-redirect=true"
+                            actionListener="#{pharmacyFastRetailSaleForCashierController.resetAll()}"
+                            value="Sale for Cashier - By Item"
+                            icon="fas fa-tag"
+                            rendered="#{webUserController.hasPrivilege('PharmacySaleForCashierQuick') and configOptionApplicationController.getBooleanValueByKey('Experimental Functions Allowed', false)}" ></p:menuitem>
+                        <p:separator />
                         <p:menuitem
                             ajax="false"
                             action="#{pharmacySaleForCashierController.navigateToPharmacyBillForCashierFromMenu()}"
@@ -982,30 +1000,18 @@
                             icon="fas fa-cash-register"
                             rendered="#{webUserController.hasPrivilege('PharmacySaleForCashier')}" ></p:menuitem>
                         <p:menuitem
-                            ajax="false"
-                            action="/pharmacy/pharmacy_fast_retail_sale_for_cashier?faces-redirect=true"
-                            actionListener="#{pharmacyFastRetailSaleForCashierController.resetAll()}"
-                            value="Sale for Cashier - By Item"
-                            icon="fas fa-bolt"
-                            rendered="#{webUserController.hasPrivilege('PharmacySaleForCashierQuick')}" ></p:menuitem>
+                            ajax="false" action="/pharmacy/pharmacy_search_sale_pre_bill?faces-redirect=true"
+                            value="Search Sale for Cashier Bills"
+                            icon="fas fa-search"
+                            actionListener="#{searchController.makeListNull}"
+                            rendered="#{webUserController.hasPrivilege('PharmacySearchSalePreBill')}"></p:menuitem>
+                        <p:separator />
                         <p:menuitem
                             ajax="false"
                             action="#{pharmacySaleWithoutStockController.navigateToPharmacySaleWithoutStocks()}"
                             value="Sale without Stocks"
                             icon="fas fa-store-slash"
                             rendered="#{webUserController.hasPrivilege('PharmacySaleWithOutStock')}" ></p:menuitem>
-                        <p:menuitem
-                            ajax="false" action="/pharmacy/pharmacy_search_sale_bill?faces-redirect=true"
-                            value="Search Sale Bill"
-                            icon="fas fa-search-dollar"
-                            actionListener="#{searchController.makeListNull}"
-                            rendered="#{webUserController.hasPrivilege('PharmacySearchSaleBill')}"></p:menuitem>
-                        <p:menuitem
-                            ajax="false" action="/pharmacy/pharmacy_search_sale_pre_bill?faces-redirect=true"
-                            value="Search Sale for Cashier Bills"
-                            icon="fas fa-search-dollar"
-                            actionListener="#{searchController.makeListNull}"
-                            rendered="#{webUserController.hasPrivilege('PharmacySearchSalePreBill')}"></p:menuitem>
                         <p:menuitem
                             ajax="false" action="/pharmacy/pharmacy_search_sale_bill_item?faces-redirect=true"
                             value="Search Sale Bill Items" icon="fas fa-list" actionListener="#{searchController.makeListNull}"
