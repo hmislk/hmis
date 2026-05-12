@@ -760,7 +760,8 @@ public class TransferIssueNativeSqlService {
             BigDecimal unitsBd = BigDecimal.valueOf(units);
             BigDecimal purchaseValue = BigDecimal.valueOf(prRate).multiply(unitsBd);
             BigDecimal retailValue   = BigDecimal.valueOf(rrRate).multiply(unitsBd);
-            BigDecimal costValue     = BigDecimal.valueOf(crRate).multiply(unitsBd);
+            double effectiveCostRate = crRate > 0 ? crRate : prRate;
+            BigDecimal costValue     = BigDecimal.valueOf(effectiveCostRate).multiply(unitsBd);
             item.setValueAtPurchaseRate(purchaseValue);
             item.setValueAtRetailRate(retailValue);
             item.setValueAtCostRate(costValue);
