@@ -25,7 +25,7 @@
                                             id="commentsMenu"
                                             value="#{opdBatchBillCancellationController.comment}"
                                             editable="true"
-                                            disabled="#{configOptionApplicationController.getBooleanValueByKey('Mandatory permission to cancel bills.', false)}"
+                                            disabled="#{opdBatchBillCancellationController.batchBill.currentRequest ne null}"
                                             filter="true"
                                             placeholder="Select or enter a comment"
                                             filterMatchMode="contains"

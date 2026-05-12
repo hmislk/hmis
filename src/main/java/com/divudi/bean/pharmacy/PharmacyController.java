@@ -55,7 +55,6 @@ import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
 
 import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFCellStyle;
 import org.apache.poi.xssf.usermodel.XSSFFont;
@@ -68,7 +67,6 @@ import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.List;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.logging.Level;
@@ -8294,6 +8292,9 @@ public class PharmacyController implements Serializable {
         btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY);
         btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS);
 
+        boolean listOnlyDepartmentTransactions = configOptionApplicationController.getBooleanValueByKey(
+                "Pharmacy History Lists Only Department Transactions for Sales", true);
+
         String jpql = "SELECT new com.divudi.core.data.dto.PharmacySaleByBillTypeDTO("
                 + "i.bill.billTypeAtomic, "
                 + "sum(i.pharmaceuticalBillItem.qty)) "
@@ -8301,16 +8302,20 @@ public class PharmacyController implements Serializable {
                 + "WHERE (i.bill.retired is null or i.bill.retired=false) "
                 + "AND i.item in :ris "
                 + "AND i.bill.billTypeAtomic in :btas "
-                + "AND i.createdAt between :frm and :to "
-                + "AND i.bill.department=:dep "
-                + "GROUP BY i.bill.billTypeAtomic";
+                + "AND i.createdAt between :frm and :to ";
 
         Map<String, Object> m = new HashMap<>();
         m.put("ris", relatedAmpAndAmpps);
         m.put("frm", getFromDate());
         m.put("to", getToDate());
         m.put("btas", btas);
-        m.put("dep", sessionController.getDepartment());
+
+        if (listOnlyDepartmentTransactions) {
+            jpql += "AND i.bill.department=:dep ";
+            m.put("dep", sessionController.getDepartment());
+        }
+
+        jpql += "GROUP BY i.bill.billTypeAtomic";
 
         salesByBillType = (List<PharmacySaleByBillTypeDTO>) getBillItemFacade().findLightsByJpql(jpql, m, TemporalType.TIMESTAMP);
     }
@@ -12788,7 +12793,11 @@ public class PharmacyController implements Serializable {
             Cell valueCell = row.createCell(pairCounter * 3 + 1);
             Object value = entry.getValue();
 
-            valueCell.setCellValue((value != null) ? value.toString() : "");
+            if (value instanceof Date) {
+                valueCell.setCellValue(new SimpleDateFormat("dd MMM yyyy hh:mm a").format(value));
+            } else {
+                valueCell.setCellValue((value != null) ? value.toString() : "");
+            } 
 
             pairCounter++;
 

@@ -88,14 +88,6 @@
                                             <f:convertNumber pattern="#,##0.00" />
                                         </p:outputLabel>
 
-                                        <h:panelGroup rendered="#{financialTransactionController.bundle.cashFloatInTotal gt 0}">
-                                            <i class="pi pi-arrow-down" style="margin-right:5px; color: #198754;"></i>
-                                            <p:outputLabel value="Float Received (Cash)" />
-                                        </h:panelGroup>
-                                        <p:outputLabel rendered="#{financialTransactionController.bundle.cashFloatInTotal gt 0}" value="#{financialTransactionController.bundle.cashFloatInTotal}">
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </p:outputLabel>
-
                                         <h:panelGroup rendered="#{financialTransactionController.bundle.cashFloatOutTotal gt 0}">
                                             <i class="pi pi-arrow-up" style="margin-right:5px; color: #dc3545;"></i>
                                             <p:outputLabel value="Float Sent (Cash)" />
@@ -144,24 +136,15 @@
                                             </thead>
                                             <!-- Table Body -->
                                             <tbody>
-                                                <!-- Cash Row -->
-                                                <ui:fragment rendered="#{financialTransactionController.bundle.hasCashTransaction}">
+                                                <!-- Cash Row (merged with Net Float when float is present) -->
+                                                <ui:fragment rendered="#{financialTransactionController.bundle.hasCashTransaction or financialTransactionController.bundle.cashFloatNetTotal != 0}">
                                                     <tr>
-                                                        <td>Cash</td>
-                                                        <td class="text-end">
-                                                            <h:outputText value="#{financialTransactionController.bundle.cashValue}">
-                                                                <f:convertNumber pattern="#,##0.00" />
-                                                            </h:outputText>
+                                                        <td>
+                                                            <h:outputText value="Cash including Float" rendered="#{financialTransactionController.bundle.cashFloatNetTotal != 0}" />
+                                                            <h:outputText value="Cash" rendered="#{financialTransactionController.bundle.cashFloatNetTotal == 0}" />
                                                         </td>
-                                                    </tr>
-                                                </ui:fragment>
-
-                                                <!-- Net Float (Cash) row — only when there is a net float -->
-                                                <ui:fragment rendered="#{financialTransactionController.bundle.cashFloatNetTotal != 0}">
-                                                    <tr>
-                                                        <td><em>Net Float (Cash)</em></td>
                                                         <td class="text-end">
-                                                            <h:outputText value="#{financialTransactionController.bundle.cashFloatNetTotal}">
+                                                            <h:outputText value="#{financialTransactionController.bundle.cashValue + financialTransactionController.bundle.cashFloatNetTotal}">
                                                                 <f:convertNumber pattern="#,##0.00" />
                                                             </h:outputText>
                                                         </td>
@@ -431,9 +414,10 @@
                                         >
 
                                         <p:column headerText="Institution / Type" >
-                                            <h:outputText value="#{summary.department.institution.name}" rendered="#{!summary.floatRow}" />
-                                            <h:outputText value="Float Sent (Cash)"     rendered="#{summary.floatRow and summary.paymentHandover ne null and summary.paymentHandover.name() eq 'FLOAT_OUT'}" style="color:#dc3545; font-style:italic;" />
-                                            <h:outputText value="Float Received (Cash)" rendered="#{summary.floatRow and summary.paymentHandover ne null and summary.paymentHandover.name() eq 'FLOAT_IN'}"  style="color:#198754; font-style:italic;" />
+                                            <h:outputText value="#{summary.department.institution.name}" rendered="#{!summary.floatRow and (summary.paymentHandover == null or summary.paymentHandover.name() != 'FLOATS')}" />
+                                            <h:outputText value="Shift Shortage"    rendered="#{summary.paymentHandover ne null and summary.paymentHandover.name() eq 'FLOATS'}" style="color:#dc3545; font-style:italic;" />
+                                            <h:outputText value="Float Sent (Cash)" rendered="#{summary.floatRow and summary.paymentHandover ne null and summary.paymentHandover.name() eq 'FLOAT_OUT'}" style="color:#dc3545; font-style:italic;" />
+                                            <h:outputText value="Net Float (Cash)"  rendered="#{summary.floatRow and summary.paymentHandover ne null and summary.paymentHandover.name() eq 'FLOAT_IN'}"  style="color:#198754; font-style:italic;" />
                                         </p:column>
 
                                         <p:column headerText="Site"  rendered="#{configOptionApplicationController.getBooleanValueByKey('Sites are Managed',true)}" >
@@ -751,7 +735,7 @@
 
                                         <p:column headerText="Total"
                                                   class="text-end">
-                                            <h:outputText value="#{summary.total}">
+                                            <h:outputText value="#{summary.floatRow ? summary.cashValue : (summary.total != null ? summary.total : 0)}">
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </h:outputText>
                                             <f:facet name="footer">
