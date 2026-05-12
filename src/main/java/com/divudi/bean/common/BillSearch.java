@@ -111,6 +111,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.context.FacesContext;
@@ -160,6 +162,8 @@ import com.google.gson.Gson;
 @Named
 @SessionScoped
 public class BillSearch implements Serializable, ControllerWithMultiplePayments {
+
+    private static final Logger LOGGER = Logger.getLogger(BillSearch.class.getName());
 
     /**
      * EJBs
@@ -1944,26 +1948,34 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
      */
     public void onPaymentMethodChange() {
         try {
-            // If the user selects the same payment method as the original bill, restore the
-            // original payment details (including reference numbers, card details, split amounts).
-            // For any other method the cashier chooses to refund with, start a fresh form
-            // pre-filled with the actual refund amount (not the original bill total).
-            if (bill != null && paymentMethod == bill.getPaymentMethod()
-                    && billPayments != null && !billPayments.isEmpty()) {
-                paymentMethodData = new PaymentMethodData();
-                initializePaymentDataFromOriginalPayments(billPayments);
-                return;
-            }
-
-            // Use refundingBill.netTotal (calculated from selected return quantities) as the
-            // pre-fill amount — never the original bill total which may be larger.
-            double refundNetTotal = (refundingBill != null) ? Math.abs(refundingBill.getNetTotal()) : 0.0;
-
-            paymentMethodData = new PaymentMethodData();
-
             if (paymentMethod == null) {
                 return;
             }
+
+            if (billPayments != null && !billPayments.isEmpty()) {
+                // Original bill was paid with MultiplePaymentMethods: restore the full split
+                // when MPM is selected, or restore the matching single-component details
+                // (ref/bank/comment) when a specific method from the split is selected.
+                if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
+                    paymentMethodData = new PaymentMethodData();
+                    initializePaymentDataFromOriginalPayments(billPayments);
+                    return;
+                }
+                for (Payment p : billPayments) {
+                    if (paymentMethod == p.getPaymentMethod()) {
+                        paymentMethodData = new PaymentMethodData();
+                        initializePaymentDataFromOriginalPayments(java.util.Collections.singletonList(p));
+                        return;
+                    }
+                }
+            }
+
+            // User selected a method not present in the original bill — start a fresh form
+            // pre-filled with refundingBill.netTotal (the amount calculated from selected
+            // return quantities), never the original bill total which may be larger.
+            double refundNetTotal = (refundingBill != null) ? Math.abs(refundingBill.getNetTotal()) : 0.0;
+
+            paymentMethodData = new PaymentMethodData();
 
             switch (paymentMethod) {
                 case Cash:
@@ -2004,14 +2016,13 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
                     break;
             }
         } catch (Exception e) {
-            System.err.println("onPaymentMethodChange: ERROR - " + e.getMessage());
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error changing payment method", e);
         }
     }
 
     // Temporary test method to verify AJAX is working
     public void testAjaxMethod() {
-        System.out.println("TEST: AJAX method called successfully! Payment method is: " + this.paymentMethod);
+        // Retained for existing view bindings.
     }
 
     public String refundCollectingCenterBill() {
@@ -7401,8 +7412,6 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
      */
     private void initializePaymentMethodData() {
         try {
-            System.out.println("initializePaymentMethodData: Initializing for " + this.paymentMethod);
-
             // Convert stored ComponentDetail objects back to Payment entities for compatibility
             if (originalPaymentDetails != null && !originalPaymentDetails.isEmpty()) {
                 List<Payment> paymentEntities = new ArrayList<>();
@@ -7421,14 +7430,9 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
 
                 // Use existing method with converted payment entities
                 initializePaymentDataFromOriginalPayments(paymentEntities);
-
-                System.out.println("initializePaymentMethodData: Used stored payment details");
-            } else {
-                System.out.println("initializePaymentMethodData: No stored payment details available");
             }
         } catch (Exception e) {
-            System.out.println("Error initializing payment method data: " + e.getMessage());
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error initializing payment method data", e);
         }
     }
 
@@ -8078,7 +8082,7 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
 
         } catch (Exception e) {
             JsfUtil.addErrorMessage("Error updating batch bill balance: " + e.getMessage());
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error updating batch bill balance", e);
             // Don't re-throw to prevent cancellation from failing completely
             // The individual bill cancellation should still succeed
         }
@@ -8131,7 +8135,7 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
 
         } catch (Exception e) {
             JsfUtil.addErrorMessage("Error copying payment method data: " + e.getMessage());
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error copying payment method data", e);
         }
     }
 
@@ -8251,10 +8255,8 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
                 }
             }
 
-            System.out.println("getOriginalPaymentsByMethod(" + paymentMethod + "): Found " + filteredPayments.size() + " payments");
         } catch (Exception e) {
-            System.out.println("Error getting original payments by method: " + e.getMessage());
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error getting original payments by method", e);
         }
 
         return filteredPayments;
@@ -8272,7 +8274,6 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
             if (this.bill != null) {
                 // Use existing fetchBillPayments method that's working correctly
                 List<Payment> payments = fetchBillPayments(this.bill);
-                System.out.println("loadOriginalPaymentDetails: Found " + payments.size() + " payments");
 
                 // Convert Payment entities to ComponentDetail objects for UI compatibility
                 for (Payment payment : payments) {
@@ -8294,21 +8295,14 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
                         cd.setInstitution(bankOrInstitution);
 
                         originalPaymentDetails.add(cd);
-                        System.out.println("  Stored: " + payment.getPaymentMethod()
-                                + ", Amount: " + payment.getPaidValue()
-                                + ", Ref: " + payment.getReferenceNo()
-                                + ", Bank/Institution: " + (bankOrInstitution != null ? bankOrInstitution.getName() : "null"));
                     }
                 }
 
                 // Create PaymentMethodData structure for compatibility with existing components
                 createOriginalPaymentMethodData();
-
-                System.out.println("loadOriginalPaymentDetails: Total stored payment details: " + originalPaymentDetails.size());
             }
         } catch (Exception e) {
-            System.out.println("Error loading original payment details: " + e.getMessage());
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error loading original payment details", e);
             JsfUtil.addErrorMessage("Error loading original payment details: " + e.getMessage());
         }
     }
