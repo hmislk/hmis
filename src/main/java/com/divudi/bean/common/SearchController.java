@@ -24098,7 +24098,7 @@ public class SearchController implements Serializable {
             } else {
                 dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
             }
-        } else if (filterChannelBillsByBilledDate) {
+        } else if (filterChannelBillsByAppointmentDate) {
             if (channelIncomeReportSC != null && channelIncomeReportSC.get("Appointment From") instanceof Date && channelIncomeReportSC.get("Appointment To") instanceof Date) {
                 dates = CommonFunctions.dateRangeForFileName((Date) channelIncomeReportSC.get("Appointment From"), (Date) channelIncomeReportSC.get("Appointment To"), sessionController.getApplicationPreference().getLongDateFormat()) + "(Appt)";
             }
