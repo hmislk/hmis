@@ -3297,79 +3297,7 @@ public class SearchController implements Serializable {
     }
 
     public void createPharmacyRetailBills() {
-        Date startTime = new Date();
-
-        List<BillType> billTypes = new ArrayList<>();
-        billTypes.add(BillType.PharmacyPre);
-        billTypes.add(BillType.PharmacySaleWithoutStock);
-
-        createPharmacyRetailBills(billTypes, true);
-
-        mergeNativeRetailSaleBills(fetchNativeRetailSaleBills(true));
-    }
-
-    private void mergeNativeRetailSaleBills(List<Bill> nativeBills) {
-        bills.addAll(nativeBills);
-        bills.sort((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()));
-        netTotal = 0.0;
-        for (Bill b : bills) {
-            netTotal += b.getNetTotal();
-        }
-    }
-
-    private List<Bill> fetchNativeRetailSaleBills(boolean maxNum) {
-        Map<String, Object> m = new HashMap<>();
-        m.put("bta", BillTypeAtomic.PHARMACY_RETAIL_SALE);
-        m.put("fd", getFromDate());
-        m.put("td", getToDate());
-        m.put("ins", getSessionController().getInstitution());
-        m.put("ldep", getSessionController().getLoggedUser().getDepartment());
-
-        String sql = "SELECT b FROM Bill b WHERE b.billTypeAtomic = :bta"
-                + " AND b.createdAt BETWEEN :fd AND :td"
-                + " AND b.institution = :ins"
-                + " AND b.department = :ldep"
-                + " AND NOT EXISTS (SELECT pb FROM PreBill pb WHERE pb.billedBill = b)"
-                + " ORDER BY b.createdAt DESC";
-
-        if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().isEmpty()) {
-            sql = sql.replace(" ORDER BY", " AND (b.patient.person.name) LIKE :patientName ORDER BY");
-            m.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
-        }
-        if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().isEmpty()) {
-            sql = sql.replace(" ORDER BY", " AND (b.deptId) LIKE :billNo ORDER BY");
-            m.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
-        }
-        if (getSearchKeyword().getDepartment() != null && !getSearchKeyword().getDepartment().trim().isEmpty()) {
-            sql = sql.replace(" ORDER BY", " AND (b.department.name) LIKE :dep ORDER BY");
-            m.put("dep", "%" + getSearchKeyword().getDepartment().trim().toUpperCase() + "%");
-        }
-        if (getSearchKeyword().getPatientPhone() != null && !getSearchKeyword().getPatientPhone().trim().isEmpty()) {
-            sql = sql.replace(" ORDER BY", " AND (b.patient.person.phone) LIKE :phone ORDER BY");
-            m.put("phone", "%" + getSearchKeyword().getPatientPhone().trim().toUpperCase() + "%");
-        }
-        if (getPaymentMethod() != null) {
-            sql = sql.replace(" ORDER BY", " AND b.paymentMethod = :pay ORDER BY");
-            m.put("pay", getPaymentMethod());
-        }
-        if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().isEmpty()) {
-            sql = sql.replace(" ORDER BY", " AND b.netTotal = :netTotal ORDER BY");
-            m.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
-        }
-        if (getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().isEmpty()) {
-            sql = sql.replace(" ORDER BY", " AND b.total LIKE :total ORDER BY");
-            m.put("total", "%" + getSearchKeyword().getTotal().trim().toUpperCase() + "%");
-        }
-
-        try {
-            if (maxNum) {
-                return getBillFacade().findByJpql(sql, m, TemporalType.TIMESTAMP, 25);
-            } else {
-                return getBillFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
-            }
-        } catch (Exception e) {
-            return Collections.emptyList();
-        }
+        pharmacyBillSearch.fetchSaleSearchDtosFromNativeBills(true);
     }
 
     public void createPharmacyAddToStockBills() {
@@ -3491,15 +3419,7 @@ public class SearchController implements Serializable {
     }
 
     public void createPharmacyRetailAllBills() {
-        Date startTime = new Date();
-
-        List<BillType> billTypes = new ArrayList<>();
-        billTypes.add(BillType.PharmacyPre);
-        billTypes.add(BillType.PharmacySaleWithoutStock);
-
-        createPharmacyRetailBills(billTypes, false);
-
-        mergeNativeRetailSaleBills(fetchNativeRetailSaleBills(false));
+        pharmacyBillSearch.fetchSaleSearchDtosFromNativeBills(false);
     }
 
     public void createPharmacyWholesaleAllBills() {
@@ -4303,14 +4223,8 @@ public class SearchController implements Serializable {
         params.put("btp", BillTypeAtomic.PHARMACY_RECEIVE);
         params.put("issuedBillIds", issuedBillIds);
         String jpql = "SELECT NEW com.divudi.core.data.dto.PharmacyTransferReceivedListDTO("
-                + "b.id, b.referenceBill.id, b.deptId, b.createdAt, b.cancelled, wup.name, b.netTotal, "
-                + "cbwup.name, cb.createdAt) "
+                + "b.id, b.referenceBill.id, b.deptId, b.cancelled) "
                 + "FROM Bill b "
-                + "LEFT JOIN b.creater wu "
-                + "LEFT JOIN wu.webUserPerson wup "
-                + "LEFT JOIN b.cancelledBill cb "
-                + "LEFT JOIN cb.creater cbwu "
-                + "LEFT JOIN cbwu.webUserPerson cbwup "
                 + "WHERE b.retired = false "
                 + "AND b.billTypeAtomic = :btp "
                 + "AND b.referenceBill.id IN :issuedBillIds";

@@ -27,6 +27,9 @@ SET @ps_table = (
 );
 
 SELECT CONCAT('Detected patientsample table as: ', IFNULL(@ps_table, '(not found)')) AS info;
+SELECT IF(@ps_table IS NULL,
+          'patientsample table not found; v2.1.17 is not applicable and will complete as a successful no-op',
+          'patientsample table found; checking removable FK constraints and indexes') AS applicability;
 
 -- STEP 1: PRE-MIGRATION ANALYSIS
 
