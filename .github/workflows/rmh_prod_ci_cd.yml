@@ -105,37 +105,21 @@ jobs:
             chown appuser:appuser $WAR_DIR/$WAR_NAME
           "
 
-          # Deploy the WAR using asadmin
-          # Use --detach so the asadmin client does not block waiting for EclipseLink
-          # deploy-on-startup to finish (which previously caused the 600 s client
-          # timeout to fire even though Payara was still initialising normally).
-          # After submitting the detached deploy, poll list-applications for up to
-          # 15 minutes so the CI/CD still fails loudly if the deploy truly fails.
+          # Deploy the WAR using asadmin (synchronous, no --detach).
+          # AS_ADMIN_READTIMEOUT extends the HTTP read timeout to 5 minutes so
+          # the asadmin client waits long enough for Payara to finish deploying.
+          # Manual deploys complete in ~30 s; 300 s gives ample headroom.
           ssh -i private_key.pem -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "
             echo 'AS_ADMIN_PASSWORD=$PAYARA_ADMIN_PASS' > /tmp/payara-admin-pass.txt
             trap 'rm -f /tmp/payara-admin-pass.txt' EXIT
             /opt/payara5/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt undeploy $APP_NAME || true
-            /opt/payara5/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt --detach deploy --force=true --contextroot $APP_NAME $WAR_DIR/$WAR_NAME
+            AS_ADMIN_READTIMEOUT=300000 /opt/payara5/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt deploy --force=true --contextroot $APP_NAME $WAR_DIR/$WAR_NAME
             DEPLOY_EXIT=\$?
             if [ \"\$DEPLOY_EXIT\" != '0' ]; then
-              echo 'Deploy submission failed (asadmin exit code '\$DEPLOY_EXIT').'
+              echo 'Deploy failed (asadmin exit code '\$DEPLOY_EXIT').'
               exit \$DEPLOY_EXIT
             fi
-            echo 'Deploy submitted. Polling for application start (up to 15 min)...'
-            DEPLOYED=false
-            for i in \$(seq 1 30); do
-              sleep 30
-              if /opt/payara5/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt list-applications | grep -q '^$APP_NAME '; then
-                echo 'Application is running.'
-                DEPLOYED=true
-                break
-              fi
-              echo \"  Still waiting... (\$i/30)\"
-            done
-            if [ \"\$DEPLOYED\" = 'false' ]; then
-              echo 'Application failed to start within 15 minutes.'
-              exit 1
-            fi
+            echo 'Deploy completed successfully.'
           "
 
           # Check if the application is reachable
