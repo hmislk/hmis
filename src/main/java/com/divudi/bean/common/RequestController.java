@@ -103,15 +103,15 @@ public class RequestController implements Serializable {
         List<RequestType> types = new ArrayList<>();
         types.add(RequestType.PETTYCASH_APROVEL);
         types.add(RequestType.PETTYCASH_CANCELLATION);
-        
+
         status = null;
         List<RequestStatus> sts = new ArrayList<>();
         sts.add(RequestStatus.PENDING);
         sts.add(RequestStatus.UNDER_REVIEW);
-        
+
         fromDate = null;
         toDate = null;
-        
+
         requests = new ArrayList<>();
         requests = requestService.fillAllRequest(fromDate, toDate, billNo, bhtNo, requestNo, types, sts, null);
         return "/common/request/view_request?faces-redirect=true";
@@ -191,7 +191,7 @@ public class RequestController implements Serializable {
         Bill originalBill = billFacade.find(bill.getId());
 
         Request req = requestService.findRequest(originalBill);
-        
+
         System.out.println("req = " + req);
 
         if (req != null) {
@@ -201,7 +201,7 @@ public class RequestController implements Serializable {
             System.out.println("req = Null");
             printPreview = false;
             bills = new ArrayList<>();
-            
+
             System.out.println("Bill Type Atomic = " + originalBill.getBillTypeAtomic());
 
             switch (originalBill.getBillTypeAtomic()) {
@@ -471,8 +471,7 @@ public class RequestController implements Serializable {
         }
         printPreview = true;
     }
-    
-    
+
     public void createRequestforCCBill() {
         if (batchBill == null) {
             JsfUtil.addErrorMessage("Bill not found for Create Request ");
@@ -868,8 +867,7 @@ public class RequestController implements Serializable {
                 return;
             }
         }
-        
-        
+
         currentRequest.setApproved(false);
         currentRequest.setApprovedAt(null);
         currentRequest.setApprovedBy(null);
@@ -889,8 +887,8 @@ public class RequestController implements Serializable {
             JsfUtil.addErrorMessage("Bill not found for request Cancel");
             return;
         }
-        
-        if(comment == null || comment.trim().isEmpty()){
+
+        if (comment == null || comment.trim().isEmpty()) {
             JsfUtil.addErrorMessage("Comment is Missing");
             return;
         }
@@ -923,13 +921,13 @@ public class RequestController implements Serializable {
                 currentRequest.getBill().setCurrentRequest(null);
                 billFacade.edit(currentRequest.getBill());
             }
+        }
 
-            //Update Individual Bills of Batch Bill
-            if (bills != null) {
-                for (Bill b : bills) {
-                    b.setCurrentRequest(null);
-                    billFacade.edit(b);
-                }
+        //Update Individual Bills
+        if (bills != null) {
+            for (Bill b : bills) {
+                b.setCurrentRequest(null);
+                billFacade.edit(b);
             }
         }
 
@@ -938,7 +936,9 @@ public class RequestController implements Serializable {
     }
 
     public void complteRequest(Request req) {
-
+        System.out.println("complteRequest(Request req) ---> ");
+        System.out.println("requestController.getBills() = " + getBills());
+        
         req.setCompletedBy(sessionController.getLoggedUser());
         req.setCompletedAt(new Date());
         req.setStatus(RequestStatus.COMPLETED);
@@ -949,7 +949,7 @@ public class RequestController implements Serializable {
         req.getBill().setCurrentRequest(null);
         billFacade.edit(req.getBill());
 
-        //Update Induvidual Bills of Batch Bil
+        //Update Induvidual Bills
         if (bills != null) {
             for (Bill b : bills) {
                 b.setCurrentRequest(null);
