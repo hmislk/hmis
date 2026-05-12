@@ -2553,6 +2553,38 @@ public class FinancialTransactionController implements Serializable {
         prepareToAddNewFundTransferBill();
         currentBill.setToWebUser(requestBill.getFromWebUser());
         currentBill.setComments(requestBill.getComments());
+        // Pre-populate denominations from the request so the issuer sees the
+        // requested breakdown by default (they may still adjust quantities).
+        Map<String, Object> reqDenoParams = new HashMap<>();
+        reqDenoParams.put("ret", false);
+        reqDenoParams.put("refBill", requestBill);
+        reqDenoParams.put("btype", BillTypeAtomic.FUND_TRANSFER_REQUEST_DENOMINATION_BILL);
+        List<Bill> reqDenoBills = billFacade.findByJpql(
+                "select b from Bill b where b.retired=:ret and b.referenceBill=:refBill and b.billTypeAtomic=:btype",
+                reqDenoParams, TemporalType.TIMESTAMP);
+        if (reqDenoBills != null && !reqDenoBills.isEmpty()) {
+            List<DenominationTransaction> savedDenos = billService.fetchDenominationTransactionFromBill(reqDenoBills.get(0));
+            if (savedDenos != null && !savedDenos.isEmpty()) {
+                Map<Long, Long> reqDenoQtyMap = new HashMap<>();
+                for (DenominationTransaction dt : savedDenos) {
+                    if (dt.getDenomination() != null && dt.getDenominationQty() != null) {
+                        reqDenoQtyMap.put(dt.getDenomination().getId(), dt.getDenominationQty());
+                    }
+                }
+                for (DenominationTransaction dt : fundTransferDenominationTransactions) {
+                    if (dt.getDenomination() != null) {
+                        Long savedQty = reqDenoQtyMap.get(dt.getDenomination().getId());
+                        if (savedQty != null && savedQty > 0) {
+                            dt.setDenominationQty(savedQty);
+                            if (dt.getDenomination().getDenominationValue() != null) {
+                                dt.setDenominationValue(savedQty * dt.getDenomination().getDenominationValue());
+                            }
+                        }
+                    }
+                }
+                calculateFundTransferDenominationTotal();
+            }
+        }
         floatTransferStarted = false;
         currentBillPayments = new ArrayList<>();
         return "/cashier/fund_transfer_bill?faces-redirect=true";
@@ -2960,6 +2992,18 @@ public class FinancialTransactionController implements Serializable {
             }
             if (cumulativeCash > drawerBalance) {
                 JsfUtil.addErrorMessage("Transfer amount cannot exceed available drawer balance (" + drawerBalance + ").");
+                return;
+            }
+        }
+
+        if (selectedFundTransferRequest != null) {
+            double remaining = getRemainingAmountForRequest(selectedFundTransferRequest);
+            double alreadyAdded = 0.0;
+            for (Payment p : getCurrentBillPayments()) {
+                alreadyAdded += Math.abs(p.getPaidValue());
+            }
+            if (alreadyAdded + Math.abs(currentPayment.getPaidValue()) > remaining + 0.001) {
+                JsfUtil.addErrorMessage("Payment would exceed the remaining request balance of " + remaining + ".");
                 return;
             }
         }
