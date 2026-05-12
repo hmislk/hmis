@@ -162,7 +162,7 @@
                             <h:outputLabel value="Purchase Rate"/>
                         </f:facet>
                         <h:outputLabel value="#{bip.purchaseRate}">
-                            <f:convertNumber pattern="#0.00"/>
+                            <f:convertNumber pattern="#,##0.00"/>
                         </h:outputLabel>
                     </p:column>
 
@@ -178,7 +178,7 @@
                         <f:facet name="footer">
                             <h:outputLabel value="#{cc.attrs.dto.totalPurchaseValue}"
                                            rendered="#{webUserController.hasPrivilege('PharmacyTransferViewRates')}">
-                                <f:convertNumber pattern="#0.00"/>
+                                <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
                         </f:facet>
                     </p:column>
@@ -190,7 +190,7 @@
                             <h:outputLabel value="Retail Rate"/>
                         </f:facet>
                         <h:outputLabel value="#{bip.retailRate}">
-                            <f:convertNumber pattern="#0.00"/>
+                            <f:convertNumber pattern="#,##0.00"/>
                         </h:outputLabel>
                     </p:column>
 
@@ -200,11 +200,28 @@
                         <f:facet name="header">
                             <h:outputLabel value="Retail Value"/>
                         </f:facet>
-                        <h:outputLabel styleClass="retail-value" value="#{bip.valueAtRetailRate}">
+                        <h:outputLabel value="#{bip.valueAtRetailRate}">
                             <f:convertNumber pattern="#,##0.00"/>
                         </h:outputLabel>
                         <f:facet name="footer">
-                            <h:outputLabel styleClass="totalRetailValue" value="#{cc.attrs.dto.totalRetailSaleValue}"
+                            <h:outputLabel value="#{cc.attrs.dto.totalRetailSaleValue}"
+                                           rendered="#{webUserController.hasPrivilege('PharmacyTransferViewRates')}">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputLabel>
+                        </f:facet>
+                    </p:column>
+
+                    <p:column
+                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disbursement Reports - Display Cost Value', false) and webUserController.hasPrivilege('PharmacyTransferViewRates')}"
+                        width="4em" class="text-end" style="margin: 0px; padding: 1px 2px; line-height: 1.1;">
+                        <f:facet name="header">
+                            <h:outputLabel value="Cost Value"/>
+                        </f:facet>
+                        <h:outputLabel value="#{bip.valueAtCostRate}">
+                            <f:convertNumber pattern="#,##0.00"/>
+                        </h:outputLabel>
+                        <f:facet name="footer">
+                            <h:outputLabel value="#{cc.attrs.dto.totalCostValue}"
                                            rendered="#{webUserController.hasPrivilege('PharmacyTransferViewRates')}">
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>

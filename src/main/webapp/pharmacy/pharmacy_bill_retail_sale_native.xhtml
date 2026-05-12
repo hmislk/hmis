@@ -776,6 +776,11 @@
                                     bill="#{retailSaleNativeSqlController.printBill}"
                                     items="#{retailSaleNativeSqlController.printBillItems}" />
                             </h:panelGroup>
+                            <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Retail Sale Bill Paper is Custom 2', false)}">
+                                <phi:sale_for_cashier_bill_five_five_custom_2_native
+                                    bill="#{retailSaleNativeSqlController.printBill}"
+                                    items="#{retailSaleNativeSqlController.printBillItems}" />
+                            </h:panelGroup>
                             <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Retail Sale Bill Paper is Custom 3', false)}">
                                 <phi:sale_bill_five_five_custom_3_native
                                     bill="#{retailSaleNativeSqlController.printBill}"
@@ -824,7 +829,7 @@
                             </div>
                             <div class="mb-3">
                                 <h:selectBooleanCheckbox id="custom2Paper" value="#{pharmacyConfigController.custom2Paper}" />
-                                <p:outputLabel for="custom2Paper" value="Custom Format 2" class="ms-2" />
+                                <p:outputLabel for="custom2Paper" value="Custom Format 2 (5.5 inch with totals)" class="ms-2" />
                             </div>
                             <div class="mb-3">
                                 <h:selectBooleanCheckbox id="custom3Paper" value="#{pharmacyConfigController.custom3Paper}" />
