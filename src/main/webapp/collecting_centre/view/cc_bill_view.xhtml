@@ -23,7 +23,7 @@
                                         action="#{billSearch.navigateToCancelCollectingCentreBill}" 
                                         disabled="#{billSearch.bill.cancelled or billSearch.bill.refunded}" 
                                         class="ui-button-danger m-1" 
-                                        icon="fa fa-times" >                           
+                                        icon="fa fa-times" >
                                     </p:commandButton>
                                     <p:commandButton
                                         ajax="false" 
@@ -51,6 +51,13 @@
                                         icon="fas fa-flask"
                                         class="ui-button-info mx-1"
                                         action="#{patientInvestigationController.navigateToSampleManagementFromOPDBatchBillView(billSearch.bill)}"
+                                        ajax="false">
+                                    </p:commandButton> 
+                                    <p:commandButton 
+                                        value="Back to List" 
+                                        class="ui-button-secondary m-1"
+                                        icon="fa-solid fa-arrow-left"
+                                        action="/collecting_centre/collecting_centre_search_bill_own?faces-redirect=true"
                                         ajax="false">
                                     </p:commandButton> 
                                 </div>
