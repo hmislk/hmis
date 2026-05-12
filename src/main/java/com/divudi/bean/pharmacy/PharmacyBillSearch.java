@@ -57,7 +57,9 @@ import com.divudi.core.entity.BillItemFinanceDetails;
 import com.divudi.core.entity.PreBill;
 import com.divudi.core.entity.StockBill;
 import com.divudi.core.util.CommonFunctions;
+import com.divudi.core.data.dto.PharmacySaleSearchDTO;
 import com.divudi.service.BillService;
+import com.divudi.service.pharmacy.TransferIssueNativeSqlService;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -121,6 +123,8 @@ public class PharmacyBillSearch implements Serializable {
     private EmailFacade emailFacade;
     @EJB
     private EmailManagerEjb emailManagerEjb;
+    @EJB
+    private TransferIssueNativeSqlService transferIssueNativeSqlService;
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Controllers">
     @Inject
@@ -177,6 +181,7 @@ public class PharmacyBillSearch implements Serializable {
     private List<Bill> searchRetaiBills;
     // Bill id used when navigating directly from DTO tables
     private Long billId;
+    private List<PharmacySaleSearchDTO> saleBillDtos;
 
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Constructors">
@@ -299,7 +304,15 @@ public class PharmacyBillSearch implements Serializable {
             JsfUtil.addErrorMessage("No Bill Selected");
             return null;
         }
-        bill = billService.reloadBill(billId);
+        return viewRequestByBillId(billId);
+    }
+
+    public String viewRequestByBillId(Long billId) {
+        if (billId == null) {
+            JsfUtil.addErrorMessage("No Bill Selected");
+            return null;
+        }
+        bill = transferIssueNativeSqlService.loadRequestBillForView(billId);
         if (bill == null) {
             JsfUtil.addErrorMessage("Bill not found");
             return null;
@@ -310,7 +323,9 @@ public class PharmacyBillSearch implements Serializable {
     public String navigatePharmacyReprintRetailBill() {
         if (bill == null) {
             JsfUtil.addErrorMessage("No Bill Selected");
+            return null;
         }
+        bill = billService.reloadBill(bill);
         return "/pharmacy/pharmacy_reprint_bill_sale?faces-redirect=true";
     }
     
@@ -3879,6 +3894,7 @@ public class PharmacyBillSearch implements Serializable {
 
     }
 
+
     public List<BillEntry> getBillEntrys() {
         return billEntrys;
     }
@@ -4570,6 +4586,97 @@ public class PharmacyBillSearch implements Serializable {
             this.bill = billService.reloadBill(billId);
         } else {
             this.bill = null;
+        }
+    }
+
+    public List<PharmacySaleSearchDTO> getSaleBillDtos() {
+        return saleBillDtos;
+    }
+
+    public void setSaleBillDtos(List<PharmacySaleSearchDTO> saleBillDtos) {
+        this.saleBillDtos = saleBillDtos;
+    }
+
+    /**
+     * Fetches native PHARMACY_RETAIL_SALE bills (not linked to a PreBill) as DTOs.
+     */
+    @SuppressWarnings("unchecked")
+    public void fetchSaleSearchDtosFromNativeBills(boolean maxNum) {
+        Map<String, Object> m = new HashMap<>();
+        m.put("bta", com.divudi.core.data.BillTypeAtomic.PHARMACY_RETAIL_SALE);
+        m.put("fd", searchController.getFromDate());
+        m.put("td", searchController.getToDate());
+        m.put("ins", sessionController.getInstitution());
+        m.put("ldep", sessionController.getLoggedUser().getDepartment());
+
+        String sql = "SELECT new com.divudi.core.data.dto.PharmacySaleSearchDTO("
+                + "b.id, b.deptId, b.department.name, b.createdAt, "
+                + "creatorPerson.name, "
+                + "patientPerson.name, "
+                + "refDoctorPerson.name, "
+                + "b.paymentMethod, "
+                + "ps.name, "
+                + "b.total, b.discount, b.netTotal, "
+                + "b.refunded, b.cancelled) "
+                + "FROM Bill b "
+                + "LEFT JOIN b.creater creater "
+                + "LEFT JOIN creater.webUserPerson creatorPerson "
+                + "LEFT JOIN b.patient patient "
+                + "LEFT JOIN patient.person patientPerson "
+                + "LEFT JOIN b.referredBy referredBy "
+                + "LEFT JOIN referredBy.person refDoctorPerson "
+                + "LEFT JOIN b.paymentScheme ps "
+                + "WHERE b.billTypeAtomic = :bta "
+                + "AND b.createdAt BETWEEN :fd AND :td "
+                + "AND b.institution = :ins "
+                + "AND b.department = :ldep";
+
+        if (searchController.getSearchKeyword().getPatientName() != null && !searchController.getSearchKeyword().getPatientName().trim().isEmpty()) {
+            sql += " AND patientPerson.name LIKE :patientName";
+            m.put("patientName", "%" + searchController.getSearchKeyword().getPatientName().trim() + "%");
+        }
+        if (searchController.getSearchKeyword().getBillNo() != null && !searchController.getSearchKeyword().getBillNo().trim().isEmpty()) {
+            sql += " AND b.deptId LIKE :billNo";
+            m.put("billNo", "%" + searchController.getSearchKeyword().getBillNo().trim() + "%");
+        }
+        if (searchController.getSearchKeyword().getDepartment() != null && !searchController.getSearchKeyword().getDepartment().trim().isEmpty()) {
+            sql += " AND b.department.name LIKE :dep";
+            m.put("dep", "%" + searchController.getSearchKeyword().getDepartment().trim() + "%");
+        }
+        if (searchController.getSearchKeyword().getPatientPhone() != null && !searchController.getSearchKeyword().getPatientPhone().trim().isEmpty()) {
+            sql += " AND patientPerson.phone LIKE :phone";
+            m.put("phone", "%" + searchController.getSearchKeyword().getPatientPhone().trim() + "%");
+        }
+        if (searchController.getPaymentMethod() != null) {
+            sql += " AND b.paymentMethod = :pay";
+            m.put("pay", searchController.getPaymentMethod());
+        }
+        if (searchController.getSearchKeyword().getNetTotal() != null && !searchController.getSearchKeyword().getNetTotal().trim().isEmpty()) {
+            try {
+                sql += " AND b.netTotal = :netTotal";
+                m.put("netTotal", Double.parseDouble(searchController.getSearchKeyword().getNetTotal().trim()));
+            } catch (NumberFormatException e) {
+                // skip invalid input
+            }
+        }
+        if (searchController.getSearchKeyword().getTotal() != null && !searchController.getSearchKeyword().getTotal().trim().isEmpty()) {
+            try {
+                sql += " AND b.total = :total";
+                m.put("total", Double.parseDouble(searchController.getSearchKeyword().getTotal().trim()));
+            } catch (NumberFormatException e) {
+                // skip invalid input
+            }
+        }
+
+        sql += " ORDER BY b.createdAt DESC";
+
+        if (maxNum) {
+            saleBillDtos = (List<PharmacySaleSearchDTO>) billFacade.findLightsByJpql(sql, m, TemporalType.TIMESTAMP, 25);
+        } else {
+            saleBillDtos = (List<PharmacySaleSearchDTO>) billFacade.findLightsByJpql(sql, m, TemporalType.TIMESTAMP);
+        }
+        if (saleBillDtos == null) {
+            saleBillDtos = new ArrayList<>();
         }
     }
 

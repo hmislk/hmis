@@ -27,34 +27,47 @@
 
                         <p:panel class="w-100">
                             <f:facet name="header">
-                                <h:outputText styleClass="fas fa-mortar-pestle" />
-                                <h:outputLabel value="Pharmacy Retail Sale (Native)" class="mx-4" />
-                                <p:commandButton
-                                    icon="fa fa-plus"
-                                    value="New Bill"
-                                    style="float: right;"
-                                    ajax="false"
-                                    action="pharmacy_bill_retail_sale_native"
-                                    class="mx-1 ui-button-warning"
-                                    actionListener="#{retailSaleNativeSqlController.resetAll()}" />
-                                <p:commandButton
-                                    ajax="false"
-                                    accesskey="s"
-                                    value="Settle"
-                                    icon="fa fa-check"
-                                    style="float: right;"
-                                    class="ui-button-success mx-1"
-                                    onclick="if (!confirm('Are you sure?')) return false"
-                                    action="#{retailSaleNativeSqlController.settleBillWithPay}" />
-                                <h:panelGroup rendered="#{webUserController.hasPrivilege('Admin')}">
-                                    <p:commandButton
-                                        value="Config"
-                                        icon="fa fa-cog"
-                                        title="Page Configuration"
-                                        action="#{pageAdminController.navigateToPageAdmin('pharmacy/pharmacy_bill_retail_sale_native')}"
-                                        ajax="false"
-                                        class="ui-button-secondary mx-2" />
-                                </h:panelGroup>
+                                <div class="row w-100 align-items-center">
+                                    <div class="col-4">
+                                        <h:outputText styleClass="fas fa-mortar-pestle" />
+                                        <h:outputLabel value="Pharmacy Retail Sale" class="mx-2" />
+                                        <h:panelGroup rendered="#{webUserController.hasPrivilege('Admin')}">
+                                            <p:commandButton
+                                                value="Config"
+                                                icon="fa fa-cog"
+                                                title="Page Configuration"
+                                                action="#{pageAdminController.navigateToPageAdmin('pharmacy/pharmacy_bill_retail_sale_native')}"
+                                                ajax="false"
+                                                class="ui-button-secondary mx-1" />
+                                        </h:panelGroup>
+                                    </div>
+                                    <div class="col-4 text-center">
+                                        <p:commandButton
+                                            icon="fa fa-search"
+                                            value="Search Sale Bills"
+                                            ajax="false"
+                                            action="/pharmacy/pharmacy_search_sale_bill?faces-redirect=true"
+                                            actionListener="#{searchController.makeListNull}"
+                                            class="ui-button-info" />
+                                    </div>
+                                    <div class="col-4 text-end">
+                                        <p:commandButton
+                                            ajax="false"
+                                            accesskey="s"
+                                            value="Settle"
+                                            icon="fa fa-check"
+                                            class="ui-button-success mx-1"
+                                            onclick="if (!confirm('Are you sure?')) return false"
+                                            action="#{retailSaleNativeSqlController.settleBillWithPay}" />
+                                        <p:commandButton
+                                            icon="fa fa-plus"
+                                            value="New Bill"
+                                            ajax="false"
+                                            action="pharmacy_bill_retail_sale_native"
+                                            class="ui-button-warning"
+                                            actionListener="#{retailSaleNativeSqlController.resetAll()}" />
+                                    </div>
+                                </div>
                             </f:facet>
 
                             <div class="row">
@@ -199,7 +212,7 @@
                                             rowIndexVar="s"
                                             editable="true"
                                             class="w-100">
-                                            <p:ajax event="rowEdit" listener="#{retailSaleNativeSqlController.onEdit}" update="@this :#{p:resolveFirstComponentWithId('panelBillDetails', view).clientId}" />
+                                            <p:ajax event="rowEdit" listener="#{retailSaleNativeSqlController.onEdit}" update="@this :#{p:resolveFirstComponentWithId('panelBillDetails', view).clientId} :#{p:resolveFirstComponentWithId('panelError', view).clientId}" />
                                             <p:ajax event="rowEditCancel" listener="#{retailSaleNativeSqlController.onEditCancel}" update="@this :#{p:resolveFirstComponentWithId('panelBillDetails', view).clientId}" />
 
                                             <p:column headerText="No" style="width: 2em; padding: 6px;">
@@ -709,35 +722,27 @@
                             </div>
                             <div class="col-6 text-center">
                                 <p:commandButton
-                                    class="m-1"
-                                    icon="fas fa-file-invoice"
-                                    value="Sale 1"
-                                    action="pharmacy_bill_retail_sale?faces-redirect=true"
-                                    rendered="#{webUserController.hasPrivilege('PharmacySale')}"
-                                    actionListener="#{pharmacySaleController.pharmacyRetailSale()}" />
-                                <p:commandButton
-                                    class="m-1"
-                                    icon="fas fa-file-invoice"
-                                    value="Native Sale"
-                                    disabled="true"
-                                    rendered="#{webUserController.hasPrivilege('PharmacySale')}" />
+                                    value="Search Sale Bills"
+                                    icon="fa fa-search"
+                                    ajax="false"
+                                    action="pharmacy_search_sale_bill"
+                                    class="ui-button-info" />
                             </div>
                             <div class="col-3">
                                 <div class="float-end">
                                     <p:commandButton
                                         accesskey="n"
-                                        value="New Pharmacy Retail Sale"
+                                        value="New Sale"
                                         icon="fa fa-plus"
                                         ajax="false"
                                         action="pharmacy_bill_retail_sale_native"
-                                        class="ui-button-success mx-2"
+                                        class="ui-button-warning mx-2"
                                         actionListener="#{retailSaleNativeSqlController.resetAll()}" />
                                     <p:commandButton
                                         accesskey="p"
                                         id="btnPrint"
                                         icon="fas fa-print"
                                         value="Print Bill"
-                                        style="width: 10em;"
                                         class="ui-button-success"
                                         rendered="#{!configOptionApplicationController.getBooleanValueByKey('Pharmacy Bill Support for Native Printers')}"
                                         ajax="false">

@@ -48,12 +48,6 @@ public class WebUserRolePrivilege implements Serializable {
     String retireComments;
     String sname;
     String tname;
-    //Last Update Properties
-    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
-    private Date lastUpdateAt;
-    @ManyToOne
-    private WebUser lastUpdater;
-
     public Long getId() {
         return id;
     }
@@ -196,22 +190,6 @@ public class WebUserRolePrivilege implements Serializable {
 
     public void setWebUserRole(WebUserRole webUserRole) {
         this.webUserRole = webUserRole;
-    }
-
-    public Date getLastUpdateAt() {
-        return lastUpdateAt;
-    }
-
-    public void setLastUpdateAt(Date lastUpdateAt) {
-        this.lastUpdateAt = lastUpdateAt;
-    }
-
-    public WebUser getLastUpdater() {
-        return lastUpdater;
-    }
-
-    public void setLastUpdater(WebUser lastUpdater) {
-        this.lastUpdater = lastUpdater;
     }
 
 }

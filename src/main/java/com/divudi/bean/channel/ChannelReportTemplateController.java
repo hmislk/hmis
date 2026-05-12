@@ -4,8 +4,6 @@
  */
 package com.divudi.bean.channel;
 
-import com.divudi.bean.channel.ChannelReportTemplateController.OnlineBookingDetialRow;
-import com.divudi.bean.common.ExcelController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.WebUserController;
 import com.divudi.core.util.JsfUtil;
@@ -29,6 +27,7 @@ import com.divudi.core.data.dataStructure.BillsTotals;
 import com.divudi.core.data.dataStructure.ChannelDoctor;
 import com.divudi.core.data.dataStructure.WebUserBillsTotal;
 import com.divudi.core.data.hr.ReportKeyWord;
+import com.divudi.core.data.reports.Report.OnlineBookingCountReport;
 import com.divudi.core.data.table.String1Value1;
 import com.divudi.core.data.table.String1Value3;
 import com.divudi.ejb.ChannelBean;
@@ -70,6 +69,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -1002,7 +1002,55 @@ public class ChannelReportTemplateController implements Serializable {
     }
 
     List<OnlineBookingDetialRow> onlineBookingDetialRows;
-    private double totalNetTotalInOBReport;
+    private Double totalNetTotalInOBReport = 0.0;
+
+    public OnlineBookingCountReport getOnlineBookingCountReport() {
+        String fileName = "Online_Session_Bookings_Report";
+        String dates;
+        if (onlineBookingSessionsSC != null && onlineBookingSessionsSC.get("From Date") instanceof Date && onlineBookingSessionsSC.get("To Date") instanceof Date) {
+            dates = CommonFunctions.dateRangeForFileName((Date) onlineBookingSessionsSC.get("From Date"), (Date) onlineBookingSessionsSC.get("To Date"), sessionController.getApplicationPreference().getLongDateFormat());
+        } else {
+            dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
+        }
+
+        if (dates != null && !dates.isEmpty()) {
+            fileName += "_" + dates;
+        }
+        String institutionName = "";
+        String userName = "";
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            if (sessionController.getLoggedUser().getInstitution() != null && sessionController.getLoggedUser().getInstitution().getName() != null) {
+                institutionName = sessionController.getLoggedUser().getInstitution().getName();
+            }
+            if (sessionController.getLoggedUser().getName() != null) {
+                userName = sessionController.getLoggedUser().getName();
+            }
+        }
+
+        OnlineBookingCountReport oBReport = new OnlineBookingCountReport(fileName, institutionName, onlineBookingSessionsSC != null ? onlineBookingSessionsSC : getFiltersForOnlineBookingCountReports(), onlineBookingDetialRows, userName);
+        oBReport.setColumnFooter(totalNetTotalInOBReport, "Amount");
+
+        return oBReport;
+    }
+
+    public StreamedContent getOnlineBookingReportAsPdf() {
+        if (onlineBookingDetialRows == null || onlineBookingDetialRows.isEmpty()) {
+            JsfUtil.addErrorMessage("Please generate the Online Session Bookings report before exporting.");
+            return null;
+        }
+        return getOnlineBookingCountReport().createPdfAsStream();
+    }
+
+    public StreamedContent getOnlineBookingReportAsExcel() {
+        if (onlineBookingDetialRows == null || onlineBookingDetialRows.isEmpty()) {
+            JsfUtil.addErrorMessage("Please generate the Online Session Bookings report before exporting.");
+            return null;
+        }
+
+        return getOnlineBookingCountReport().createExcelAsStream();
+    }
+
+    private Map<String, Object> onlineBookingSessionsSC;
 
     public void generateOnlineSessionBookingsReport() {
         onlineBookingDetialRows = new ArrayList<>();
@@ -1087,6 +1135,8 @@ public class ChannelReportTemplateController implements Serializable {
             }
             totalNetTotalInOBReport += row.getPaidAmount();
         }
+        
+        onlineBookingSessionsSC = getFiltersForOnlineBookingCountReports();
     }
 
     public void fillDailyDoctorCounts() {
@@ -7904,6 +7954,21 @@ public class ChannelReportTemplateController implements Serializable {
 
     public void setOnlineBookingDetialRows(List<OnlineBookingDetialRow> onlineBookingDetialRows) {
         this.onlineBookingDetialRows = onlineBookingDetialRows;
+    }
+
+     // Filters for Channel Scanning Income report && Income With Agent Booking Report
+    public Map<String, Object> getFiltersForOnlineBookingCountReports() {
+        Map<String, Object> params = new LinkedHashMap<>();
+        SimpleDateFormat sdf = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
+
+        params.put("Speciality", speciality != null ? speciality.getName() : "All");
+        params.put("Doctor", (staff != null && staff.getPerson() != null) ? staff.getPerson().getNameWithTitle() : "All");
+        params.put("From Date", fromDate);
+        params.put("To Date", toDate);
+        params.put("Institution", institution != null ? institution.getName() : "All Institutions");
+        params.put("Bill Type", selectedBillTypeInOBReport != null ? selectedBillTypeInOBReport : "All");
+
+        return params;
     }
 
     public static class OnlineBookingDetialRow {

@@ -105,24 +105,6 @@
                             <h:outputText id="role" value="#{user.webUserRole.name}" class="d-flex justify-content-center" style="font-weight: 700;"/>
                         </div>
 
-                        <p:tooltip for="role" showEffect="clip" hideEffect="fold" position="bottom" >
-                            <div style="width: 550px; font-size: 19px;" class="p-2">
-                                <div class="row">
-                                    <h:outputText value="Last Role Update" style="width: 250px;"/>
-                                    <h:outputText value=" : " style="width: 50px;"/>
-                                    <h:outputText value="#{user.webUserRole.lastUpdateAt eq null ? 'N/A' : user.webUserRole.lastUpdateAt}">
-                                        <f:convertDateTime pattern="yyyy-MM-dd hh:mm a" />
-                                    </h:outputText>
-                                </div>
-                                <div class="row">
-                                    <h:outputText value="Last User Role Update" style="width: 250px;"/>
-                                    <h:outputText value=" : " style="width: 50px;"/>
-                                    <h:outputText value="#{user.editedAt eq null ? 'N/A' : user.editedAt}" >
-                                        <f:convertDateTime pattern="yyyy-MM-dd hh:mm a" />
-                                    </h:outputText>
-                                </div>
-                            </div>
-                        </p:tooltip>
                     </p:column>
 
                     <p:column headerText="Actions" class="text-center" style=" padding: 10px; width: 200px; " >

@@ -2570,6 +2570,16 @@ public class BhtSummeryController implements Serializable {
         return "/inward/inward_bill_intrim?faces-redirect=true";
     }
 
+    public String navigateToIntrimBillRefresh() {
+        if (inwardPaymentController.getCurrent() != null
+                && inwardPaymentController.getCurrent().getPatientEncounter() != null) {
+            this.patientEncounter = inwardPaymentController.getCurrent().getPatientEncounter();
+        }
+        childPatientEncouters = null;
+        createTables();
+        return "/inward/inward_bill_intrim?faces-redirect=true";
+    }
+
     public String toIntrimBillclear() {
         patientEncounter = null;
         makeNull();
@@ -2819,14 +2829,7 @@ public class BhtSummeryController implements Serializable {
         }
 
         if (getPatientEncounter().getCurrentPatientRoom().equals(patientRoom)) {
-            if (patientRoom.isDischarged()) {
-                //System.out.println("value * getInwardBean().calCount(timedFee, patientRoom.getAdmittedAt(), dischargeAt); = " + value * getInwardBean().calCount(timedFee, patientRoom.getAdmittedAt(), dischargeAt));
-                return value * getInwardBean().calCount(timedFee, patientRoom.getAdmittedAt(), dischargeAt);
-            } else {
-                // System.out.println("value * getInwardBean().calCountWithoutOverShoot(timedFee, patientRoom.getAdmittedAt(), dischargeAt) = " + value * getInwardBean().calCountWithoutOverShoot(timedFee, patientRoom.getAdmittedAt(), dischargeAt));
-                return value * getInwardBean().calCountWithoutOverShoot(timedFee, patientRoom.getAdmittedAt(), dischargeAt);
-            }
-
+            return value * getInwardBean().calCount(timedFee, patientRoom.getAdmittedAt(), dischargeAt);
         } else {
             //System.out.println("value * getInwardBean().calCount(timedFee, patientRoom.getAdmittedAt(), dischargeAt) = " + value * getInwardBean().calCount(timedFee, patientRoom.getAdmittedAt(), dischargeAt));
             return value * getInwardBean().calCount(timedFee, patientRoom.getAdmittedAt(), dischargeAt);

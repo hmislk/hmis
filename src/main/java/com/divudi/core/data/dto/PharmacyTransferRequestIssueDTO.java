@@ -29,6 +29,12 @@ public class PharmacyTransferRequestIssueDTO implements Serializable {
     public PharmacyTransferRequestIssueDTO() {
     }
 
+    public PharmacyTransferRequestIssueDTO(Long billId, String deptId) {
+        this.billId = billId;
+        this.deptId = deptId;
+        this.cancelled = false;
+    }
+
     public PharmacyTransferRequestIssueDTO(Long billId, String deptId, Date createdAt,
             String creatorName, Boolean cancelled, Date cancelledAt,
             String cancellerName, String toStaffName, BigDecimal netTotal) {

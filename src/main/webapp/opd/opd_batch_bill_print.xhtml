@@ -251,9 +251,9 @@
                                                     disabled="#{opdBillController.batchBill.cancelled or opdBillController.batchBill.refunded}"
                                                     action="#{opdBatchBillCancellationController.navigateToCancelOpdBatchBill()}" 
                                                     styleClass="ui-button-danger">
-                                                    <f:setPropertyActionListener 
-                                                        value="#{opdBillController.batchBill}" 
-                                                        target="#{opdBatchBillCancellationController.batchBill}" />
+                                                    <f:setPropertyActionListener value="#{opdBillController.batchBill}" target="#{opdBatchBillCancellationController.batchBill}" />
+                                                    <f:setPropertyActionListener value="#{opdBillController.bills}" target="#{opdBatchBillCancellationController.bills}" />
+
                                                 </p:commandButton>
                                             </div>
                                         </div>

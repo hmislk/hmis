@@ -10,7 +10,7 @@
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
-
+                <h:outputStylesheet library="css" name="printing/reportprint.css"/>
                 <h:form>
                     <p:panel header="Agent Channel Bookings Print View" styleClass="w-100">
                         <f:facet name="header">
@@ -36,94 +36,7 @@
                                 </div>
 
                             </div>
-                        </f:facet>
-
-                        <style>
-
-                            @media screen {
-                                .paper {
-                                    position: static !important;
-                                    width: 297mm !important;
-                                    zoom: 2.0;
-                                }
-
-                                table {
-                                    border-collapse: collapse;
-                                    width: 100%;
-                                    font-size: 12px !important;
-                                    margin-top: 1mm !important;
-                                }
-
-                                th, td {
-                                    border: 1px solid #000;
-                                    padding: 0px !important;
-                                    margin: 2px !important;
-                                    text-align: left;
-                                    margin-left: 10mm !important;
-                                }
-
-                                .header {
-                                    font-size: 16px !important;
-                                }
-
-                                tfoot {
-                                    font-weight: 700 !important;
-                                    font-size: 11px !important;
-                                }
-                            }
-
-                            @media print {
-                                @page {
-                                    @bottom-right {
-                                        content: "Page " counter(page) " of " counter(pages);
-                                        font-family: Arial, sans-serif;
-                                        font-size: 10pt;
-                                    }
-                                    size: A4 portrait !important;
-                                }
-
-                                body {
-                                    counter-reset: page;
-                                }
-
-                                .paper {
-                                    position: static !important;
-                                    width: 297mm !important;
-
-
-                                }
-
-                                .header {
-                                    line-height: 1.1;
-                                    margin: 0mm !important;
-                                    font-size: 13px !important;
-                                }
-
-                                table {
-                                    border-collapse: collapse;
-                                    width: 99.9%;
-                                    font-size: 12px !important;
-                                    margin-top: 1mm !important;
-                                }
-
-                                th, td {
-                                    border: 1px solid #000;
-                                    padding: 0px !important;
-                                    margin: 2px !important;
-                                    text-align: left;
-                                    margin-left: 10mm !important;
-                                }
-
-                                th {
-
-                                }
-
-                                tfoot {
-                                    font-weight: 700 !important;
-                                    font-size: 11px !important;
-                                }
-                            }
-                        </style>
+                        </f:facet>                            
 
                         <h:panelGroup id="reportView" class="d-flex justify-content-center">
                             <div class="paper">
@@ -153,7 +66,7 @@
                                 </div>
 
                                 <div>
-                                    <table style="width: 100%; border-collapse: collapse;">
+                                    <table class="table">
                                         <thead>
                                             <tr>
                                                 <th style="text-align: center;">Serial</th>
@@ -174,36 +87,36 @@
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            <ui:repeat varStatus="status" value="#{searchController.bills}" var="b">
+                                            <ui:repeat varStatus="status" value="#{searchController.agentBookings}" var="b">
                                                 <tr>
                                                     <td><h:outputText value="#{status.index +1}"/></td>
                                                     <td>
-                                                        <h:outputText value="#{b.createdAt}">
+                                                        <h:outputText value="#{b.billedDate}">
                                                             <f:convertDateTime
                                                                 pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
                                                         </h:outputText>
                                                     </td>
                                                     <td>
-                                                        <h:outputText value="#{b.deptId}"/>
+                                                        <h:outputText value="#{b.billDeptId}"/>
                                                         <p:badge value="Cancelled" severity="danger" rendered="#{b.cancelled}"/>
                                                         <p:badge value="Refunded" severity="warning" rendered="#{b.refunded}"/>
                                                     </td>
-                                                    <td><h:outputText value="#{b.patient.person.nameWithTitle}"/></td>
-                                                    <td><h:outputText value="#{b.creditCompany.name}"/></td>
-                                                    <td><h:outputText value="#{b.agentRefNo}"/></td>
-                                                    <td><h:outputText value="#{b.creater.name}"/></td>
+                                                    <td><h:outputText value="#{b.patientNameWithTitle}"/></td>
+                                                    <td><h:outputText value="#{b.creditCompanyName}"/></td>
+                                                    <td><h:outputText value="#{b.paymentReference}"/></td>
+                                                    <td><h:outputText value="#{b.billedBy}"/></td>
                                                     <td style="text-align: right" >
-                                                        <h:outputText value="#{b.hospitalFee}" style="text-decoration: #{b.cancelled ? 'line-through':'none'}">
+                                                        <h:outputText value="#{b.hosFee}" style="text-decoration: #{b.cancelled ? 'line-through':'none'}">
                                                             <f:convertNumber pattern="#,##0.00"/>
                                                         </h:outputText>
                                                     </td>
                                                     <td style="text-align: right">
-                                                        <h:outputText value="#{b.staffFee}" style="text-decoration: #{b.cancelled ? 'line-through':'none'}">
+                                                        <h:outputText value="#{b.doctorFee}" style="text-decoration: #{b.cancelled ? 'line-through':'none'}">
                                                             <f:convertNumber pattern="#,##0.00"/>
                                                         </h:outputText>
                                                     </td>
                                                     <td style="text-align: right">
-                                                        <h:outputText value="#{b.hospitalFee + b.staffFee}" style="text-decoration: #{b.cancelled ? 'line-through':'none'}">
+                                                        <h:outputText value="#{b.grossTotal}" style="text-decoration: #{b.cancelled ? 'line-through':'none'}">
                                                             <f:convertNumber pattern="#,##0.00"/>
                                                         </h:outputText>
                                                     </td>
@@ -214,7 +127,7 @@
                                                             </h:outputText>
                                                         </td>
                                                         <td style="text-align: right">
-                                                            <h:outputText value="#{b.netTotal}" style="text-decoration: #{b.cancelled ? 'line-through':'none'}">
+                                                            <h:outputText value="#{b.paymentFee}" style="text-decoration: #{b.cancelled ? 'line-through':'none'}">
                                                                 <f:convertNumber pattern="#,##0.00"/>
                                                             </h:outputText>
                                                         </td>

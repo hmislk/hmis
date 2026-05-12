@@ -368,7 +368,7 @@
                                 <h:outputLabel   value="Balance" />
                             </td>
                             <td  class="totalsItemBlock" style="text-align: right;">
-                                <h:outputLabel   value="#{cc.attrs.bill.balance}">
+                                <h:outputLabel   value="#{cc.attrs.bill.cashPaid-cc.attrs.bill.netTotal}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </td>
