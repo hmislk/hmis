@@ -1215,16 +1215,16 @@ public class Report<T> {
                             }
                             String billDept = b.getDeptId() != null ? b.getDeptId() : "";
                             if (b.isCancelled()) {
-                                billDept += "\nCancelled" + (b.getCancelledBill() != null ? (": " + b.getCancelledBill().getDeptId()) : "");
+                                billDept += "\n(Cancelled" + (b.getCancelledBill() != null ? (": " + b.getCancelledBill().getDeptId()) : "") + ")";
                             }
                             if (b.isRefunded()) {
-                                billDept += "\nRefunded" + (b.getRefundedBill() != null ? (": " + b.getRefundedBill().getDeptId()) : "" );
+                                billDept += "\n(Refunded" + (b.getRefundedBill() != null ? (": " + b.getRefundedBill().getDeptId()) : "" ) + ")";
                             }
                             if (b instanceof RefundBill) {
-                                billDept += "\nRefund Bill";
+                                billDept += "\n(Refund Bill)";
                             }
                             if (b.getBillTypeAtomic() != null && b.getBillTypeAtomic() == BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT) {
-                                billDept += "\nCancel Bill";
+                                billDept += "\n(Cancel Bill)";
                             }
                             return billDept;
                     },
@@ -1306,14 +1306,14 @@ public class Report<T> {
                             if (b.getBillTypeAtomic() == BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT || b.getBillTypeAtomic() == BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING) {
                                 pM = "WEB";
                             } else {
-                                pM = b.getPaymentMethod().getLabel();
+                                pM = b.getPaymentMethod() != null ? b.getPaymentMethod().getLabel() : "";
                             }
                             if (b.getBillTypeAtomic() == BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT && b.getReferenceBill() != null && b.getReferenceBill().getOnlineBooking() != null && b.getReferenceBill().getOnlineBooking().getAgency() != null) {
-                                pM += "\n" + b.getReferenceBill().getOnlineBooking().getAgency().getName();
+                                pM += "\n(" + b.getReferenceBill().getOnlineBooking().getAgency().getName() + ")";
                             } else if (b.getBillTypeAtomic() == BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING && b.getBilledBill() != null && b.getBilledBill().getReferenceBill() != null && b.getBilledBill().getReferenceBill().getOnlineBooking() != null && b.getBilledBill().getReferenceBill().getOnlineBooking().getAgency() != null) {
-                                pM += "\n" + b.getBilledBill().getReferenceBill().getOnlineBooking().getAgency().getName();
+                                pM += "\n(" + b.getBilledBill().getReferenceBill().getOnlineBooking().getAgency().getName() + ")";
                             } else if (b.getBillType() == BillType.ChannelAgent && b.getBillTypeAtomic() != BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT && b.getBillTypeAtomic() != BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING && b.getCreditCompany() != null) {
-                                pM += "\n" + (b.getCreditCompany().getName());
+                                pM += "\n(" + (b.getCreditCompany().getName()) + ")";
                             }
                             return pM ;
                     },
@@ -1360,7 +1360,7 @@ public class Report<T> {
         }
 
         public ChannelIncomeReport(String fileName, String institutionName, Map<String, Object> searchCriteria, List<ReportTemplateRow> data, boolean addNetTotalColumns, ChannelReportController.PaymentMethodFlags f, String reportGeneratedBy) {
-            super(rpCols);
+            super(new LinkedHashMap<>(rpCols));
             if (addNetTotalColumns) {
                 LinkedHashMap<String, ReportColumn<ReportTemplateRow>> columns = this.getColumns();
                 columns.put("Discount", new ReportColumn<>("Discount",
@@ -1376,7 +1376,7 @@ public class Report<T> {
                     "%,.2f",
                     3.5f));
 
-                columns.put("Net Total", new ReportColumn<>("netTotal",
+                columns.put("Net Total", new ReportColumn<>("Net Total",
                     row -> {
                             ReportTemplateRow r = (ReportTemplateRow) row;
                             Bill b = r.getBill();
@@ -1391,7 +1391,7 @@ public class Report<T> {
             }
             setPaymentMethodColumns(f);
             this.setSerialNoColumnAtStart(true);
-            this.setReportName("Channel Income Repoort");
+            this.setReportName("Channel Income Report");
             this.setFileName(fileName);
             this.setInstitutionName(institutionName);
             this.setSearchCriteria(searchCriteria);
@@ -1401,6 +1401,10 @@ public class Report<T> {
         }
 
         public void setPaymentMethodColumns(ChannelReportController.PaymentMethodFlags f) {
+            if (f == null) {
+                return;
+            }
+            
             LinkedHashMap<String, ReportColumn<ReportTemplateRow>> payCols = this.getColumns();
 
             if (f.hasCash) { 

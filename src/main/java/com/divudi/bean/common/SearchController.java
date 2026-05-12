@@ -21166,7 +21166,7 @@ public class SearchController implements Serializable {
 
     public void generateChannelIncome() {
         if (!filterChannelBillsByAppointmentDate && !filterChannelBillsByBilledDate) {
-            JsfUtil.addErrorMessage("Please select atleast one date filter.");
+            JsfUtil.addErrorMessage("Please select at least one date filter.");
             return;
         }
 
@@ -21256,7 +21256,7 @@ public class SearchController implements Serializable {
         }
 
         if (filterChannelBillsByBilledDate) {
-            jpql += "AND p.createdAt BETWEEN :fd AND :td ";
+            jpql += "AND bill.createdAt BETWEEN :fd AND :td ";
             parameters.put("fd", fromDate);
             parameters.put("td", toDate);
         }
@@ -23909,31 +23909,6 @@ public class SearchController implements Serializable {
         this.dateBasis = dateBasis;
     }
 
-    // PostProcessor for channel_income excel export
-    public void postProcessChannelIncomeReportExcel(Object document) {
-        if (document == null) {
-            logger.error("postProcessChannelIncomeReportExcel: Document is null in postProcessChannelIncomeReportExcel");
-            return;
-        }
-        if (!(document instanceof XSSFWorkbook)) {
-            logger.error("postProcessChannelIncomeReportExcel:Expected document to be an instance of XSSFWorkbook, but got: {}", document.getClass().getName());
-            return;
-        }
-        XSSFWorkbook workbook = (XSSFWorkbook) document;
-        XSSFSheet sheet = workbook.getSheetAt(0);
-        if (sheet == null) {
-            return;
-        }
-
-        workbook.setSheetName(0, "Channel Income Report");
-        sheet.shiftRows(0, sheet.getLastRowNum(), 6);
-
-        Map<String, Object> filters = getFiltersForChannelIncomeReport();
-
-        if (filters != null && !filters.isEmpty()) {
-            pharmacyController.addMetaDataToExcelSheet(workbook, sheet, 0, "Channel Income Report", filters);
-        }
-    }
 
     // Filters for Channel Income Report
     private Map<String, Object> getFiltersForChannelIncomeReport() {
@@ -23958,24 +23933,6 @@ public class SearchController implements Serializable {
         params.put("Payment Method", paymentMethod != null ? paymentMethod.getLabel() : "All");
 
         return params;
-    }
-
-    // Excel Export fileName : channel income
-    public String getChannelIncomeReportFileName() {
-        String fileName = "Channel_Income_Report";
-        if (filterChannelBillsByBilledDate) {
-                String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
-                if (dates != null && !dates.isEmpty()) {
-                    fileName += "_" + dates;
-                }
-            } else if (filterChannelBillsByAppointmentDate) {
-                String dates = CommonFunctions.dateRangeForFileName(appointmentFromDate, appointmentToDate, sessionController.getApplicationPreference().getLongDateFormat());
-                if (dates != null && !dates.isEmpty()) {
-                    fileName += "_" + dates + "(Appt)";
-                }
-            }
-        
-        return fileName;
     }
 
     // Channel_income: Booking Type
@@ -24123,13 +24080,13 @@ public class SearchController implements Serializable {
         pmFlags.setFlagsReportTemplateRowBundle(bundle);
 
         ChannelIncomeReport incomeReport = new ChannelIncomeReport(fileName, institutionName, channelIncomeReportSC != null ? channelIncomeReportSC : getFiltersForChannelIncomeReport(), bundle.getReportTemplateRows(), configOptionApplicationController.getBooleanValueByKey("Add discount column to the channel income report", false), pmFlags, userName);
-        incomeReport.setColumnFooter(bundle.getHospitalTotal() != null ?  bundle.getHospitalTotal().doubleValue() : "0.0", "Hospital Fee");
-        incomeReport.setColumnFooter(bundle.getStaffTotal() != null ?  bundle.getStaffTotal().doubleValue() : "0.0", "Staff Fee");
-        incomeReport.setColumnFooter(bundle.getGrossTotal() != null ?  bundle.getGrossTotal().doubleValue() : "0.0", "Gross Total");
+        incomeReport.setColumnFooter(bundle.getHospitalTotal() != null ?  bundle.getHospitalTotal().doubleValue() : 0.0, "Hospital Fee");
+        incomeReport.setColumnFooter(bundle.getStaffTotal() != null ?  bundle.getStaffTotal().doubleValue() : 0.0, "Staff Fee");
+        incomeReport.setColumnFooter(bundle.getGrossTotal() != null ?  bundle.getGrossTotal().doubleValue() : 0.0, "Gross Total");
 
         if (configOptionApplicationController.getBooleanValueByKey("Add discount column to the channel income report", false)) {
-            incomeReport.setColumnFooter(bundle.getDiscount() != null ?  bundle.getDiscount().doubleValue() : "0.0", "Discount");
-            incomeReport.setColumnFooter(bundle.getTotal() != null ?  bundle.getTotal().doubleValue() : "0.0", "Net Total");
+            incomeReport.setColumnFooter(bundle.getDiscount() != null ?  bundle.getDiscount().doubleValue() : 0.0, "Discount");
+            incomeReport.setColumnFooter(bundle.getTotal() != null ?  bundle.getTotal().doubleValue() : 0.0, "Net Total");
         }
 
         if (pmFlags.hasCash) {incomeReport.setColumnFooter(bundle.getCashValue(), "Cash");}
@@ -24214,9 +24171,21 @@ public class SearchController implements Serializable {
         if (filter == null) return true;
         if (value == null) return false;
 
-        java.time.LocalDate filterDate = (java.time.LocalDate) filter;
+        if (!(value instanceof Date)) return false;
+
+        java.time.LocalDate filterDate;
+        if (filter instanceof java.time.LocalDate) {
+            filterDate = (java.time.LocalDate) filter;
+        } else if (filter instanceof Date) {
+            filterDate = ((Date) filter).toInstant()
+                .atZone(ZoneId.systemDefault())
+                .toLocalDate();
+        } else {
+            return false;
+        }
+
         java.time.LocalDate rowDate = ((Date) value).toInstant()
-            .atZone(ZoneId.of("Asia/Colombo"))
+            .atZone(ZoneId.systemDefault())
             .toLocalDate();
 
         return rowDate.equals(filterDate);

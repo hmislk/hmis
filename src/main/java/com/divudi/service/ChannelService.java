@@ -689,6 +689,10 @@ public class ChannelService {
 
         ChannelReportController.WrapperDtoForChannelFutureIncome  wrapperDto = fetchChannelBookingBillsForShiftEnd(shiftStartBillId, shiftEndBillId, creatorId, hospital, categoryList, paymentMethods);
 
+        if (wrapperDto == null) {
+            return null;
+        }
+
         wrapperDto.setShiftStartAt(shiftStartAt);
         wrapperDto.setShiftEndAt(shiftEndAt);
         wrapperDto.setCashierUserName(creatorName);
@@ -704,6 +708,10 @@ public class ChannelService {
     public ChannelReportController.WrapperDtoForChannelFutureIncome updateChannelBookingBillsForShitEnd(Long shiftStartBillId, Long shiftEndBillId, Long createrId, Institution hospital, List<Category> categoryList, List<PaymentMethod> paymentMethods,
                                                                                                 Date shiftStartAt, Date shiftEndAt, String casherUserName) {
         ChannelReportController.WrapperDtoForChannelFutureIncome tempDto = fetchChannelBookingBillsForShiftEnd(shiftStartBillId, shiftEndBillId, createrId, hospital, categoryList, paymentMethods);
+
+        if (tempDto == null) {
+            return null;
+        }                                                                                               
 
         tempDto.setShiftStartAt(shiftStartAt);
         tempDto.setShiftEndAt(shiftEndAt);
@@ -1745,7 +1753,7 @@ public class ChannelService {
         sql += "order by bill.createdAt desc";
 
         List<ChannelReportController.ChannelIncomeDetailDto> dtoList = (List<ChannelReportController.ChannelIncomeDetailDto>) billSessionFacade.findLightsByJpql(sql, params, TemporalType.TIMESTAMP);
-        System.out.println("size: " + dtoList.size());
+
         if (dtoList == null || dtoList.isEmpty()) {
             return null;
         }
@@ -1856,8 +1864,6 @@ public class ChannelService {
                 }
                 if (dto.isIsCancelled()) {
                     if (!cancelledBillIds.contains(dto.getCancelBillId())) {
-                        System.out.println("BABUUUUSHKA");
-                        System.out.println("DEPTCAN: " + dto.getCancelBillId());
                         summeryDto.setTotalActiveAppoinments(summeryDto.getTotalActiveAppoinments() + 1);
                     }
                 } else if (dto.getBillTypeAtomic() == BillTypeAtomic.CHANNEL_REFUND_WITH_PAYMENT) {
@@ -1865,11 +1871,10 @@ public class ChannelService {
                     summeryDto.setTotalRefundAppoinments(summeryDto.getTotalRefundAppoinments() + 1);
                     summeryDto.setRefundTotal(summeryDto.getRefundTotal() + dto.getTotalAppoinmentFee());
                 } else if (dto.getBillTypeAtomic() == BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT) {
-                    System.out.println("DEPT: " + dto.getBillDeptId());
                     cancelledBillIds.add(dto.getBillId());
                     summeryDto.setTotalActiveAppoinments(summeryDto.getTotalActiveAppoinments());
                     summeryDto.setTotalCancelAppoinments(summeryDto.getTotalCancelAppoinments() + 1);
-                    summeryDto.setRefundTotal(summeryDto.getRefundTotal() + dto.getTotalAppoinmentFee());
+                    summeryDto.setCancelTotal(summeryDto.getCancelTotal() + dto.getTotalAppoinmentFee());
                 } else {
 
                     summeryDto.setTotalActiveAppoinments(summeryDto.getTotalActiveAppoinments() + 1);
@@ -1984,7 +1989,7 @@ public class ChannelService {
                 cancelledBillIds.add(dto.getBillId());
                 newSummery.setTotalActiveAppoinments(newSummery.getTotalActiveAppoinments());
                 newSummery.setTotalCancelAppoinments(newSummery.getTotalCancelAppoinments() + 1);
-                newSummery.setRefundTotal(newSummery.getRefundTotal() + dto.getTotalAppoinmentFee());
+                newSummery.setCancelTotal(newSummery.getCancelTotal() + dto.getTotalAppoinmentFee());
             } else {
 
                 newSummery.setTotalActiveAppoinments(newSummery.getTotalActiveAppoinments() + 1);

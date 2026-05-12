@@ -83,7 +83,8 @@
                                         <thead>
                                             <tr>
                                                 <th style="text-align: center;" class="col-serial">Serial</th>
-                                                <th style="text-align: center;" class="col-datetime">Date / Time</th>
+                                                <th style="text-align: center;" class="col-datetime">Bill Date</th>
+                                                <th style="text-align: center;" class="col-datetime">Appointment Date</th>
                                                 <th style="text-align: center;" class="col-billno">Bill No</th>
                                                 <th style="text-align: center;" class="col-billtype">Bill Type</th>
                                                 <th style="text-align: center;" class="col-patient">Patient</th>
@@ -143,6 +144,11 @@
                                                     <td style="text-align: center;"><h:outputText value="#{status.index + 1}"/></td>
                                                     <td>
                                                         <h:outputText value="#{row.bill.createdAt}">
+                                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td>
+                                                        <h:outputText value="#{row.bill.singleBillSession.sessionInstance.sessionDate}">
                                                             <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
                                                         </h:outputText>
                                                     </td>

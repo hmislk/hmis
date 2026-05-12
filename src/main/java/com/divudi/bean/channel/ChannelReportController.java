@@ -476,6 +476,10 @@ public class ChannelReportController implements Serializable {
     public void generateChannelBookingBillsForShitEndFromChannelReportController(Long shiftStartBillId){
         categorywiseDetailsWrapperDTO = null;
         bookingsByShiftDto = channelService.fetchAndGenerateChannelBookingBillsForShiftEnd(shiftStartBillId, categoryList, paymentMethods);
+        if (bookingsByShiftDto == null) {
+            return;
+        }
+
         bookingsByShiftDto.setProcessedBy(sessionController.getLoggedUser().getWebUserPerson().getName());
     }
 
@@ -4374,9 +4378,11 @@ public class ChannelReportController implements Serializable {
         valueList = null;
         dataBundle = null;
         categoryList = null;
+        paymentMethods = null;
         webUser = null;
         shiftStartBills = null;
         categorywiseDetailsWrapperDTO = null;
+        bookingsByShiftDto = null;
     }
 
     List<BillSession> nurseViewSessions;
@@ -5663,30 +5669,6 @@ public class ChannelReportController implements Serializable {
         return downloadingExcel;
     }
 
-    // Excel Export: Channel Income Daily Summary Report
-    public StreamedContent getChannelSummaryCollectionReportAsExcel() {
-        if (bookingsByShiftDto == null || bookingsByShiftDto.getIncomeDtos() == null || bookingsByShiftDto.getIncomeDtos().isEmpty()) {
-            JsfUtil.addErrorMessage("Please generate the Summary Collection report before exporting.");
-            return null;
-        }
-
-        StreamedContent downloadingExcel = null;
-        try {
-            String fileName = "Summary_Collection_Report";
-            String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
-            if (dates != null && !dates.isEmpty()) {
-                fileName += "_" + dates;
-            }
-            
-            downloadingExcel = excelController.createExcelForChannelIncomeDailySummaryReport(bookingsByShiftDto, getFiltersForChannelIncomeDailySummaryReport(), fileName);
-        } catch (IOException e) {
-            logger.error("getChannelIncomeDailySummaryReportAsExcel: Error creating downloadingExcel via excelController.createExcelForChannelIncomeDailySummaryReport", e);
-            downloadingExcel = null;
-            JsfUtil.addErrorMessage("Failed to generate Channel Income Daily Summary Report Excel file. Please try again.");
-        }
-        return downloadingExcel;
-    }
-
     // PostProcessor for Income With Agent Booking excel export
     public void postProcessIncomeWithAgentBookingReportExcel(Object document) {
         if (document == null) {
@@ -5838,6 +5820,7 @@ public class ChannelReportController implements Serializable {
         params.put("Report Status", reportStatusString);
         params.put("User", webUser != null ? webUser.getName() : "All Users");
         params.put("Category", getCategoryListAsString());
+        params.put("Payment Method", getSelectedPaymentMethodsAsString());
 
         return params;
     }
