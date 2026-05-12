@@ -218,7 +218,7 @@
                                                     <p:outputLabel value="#{bill.cancelledBill.createdAt}" rendered="#{bill.cancelled}" style="color: red">
                                                         <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}" ></f:convertDateTime>
                                                     </p:outputLabel>
-                                                    <p:outputLabel value="#{bill.refundedBill.createdAt}" style="color: orange">
+                                                    <p:outputLabel value="#{bill.refundedBill.createdAt}" rendered="#{bill.refunded}" style="color: orange">
                                                         <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}" ></f:convertDateTime>
                                                     </p:outputLabel>
                                                 </div>
@@ -311,7 +311,8 @@
                                     </p:column>
                                     <p:column
                                         headerText="Payment Method"
-                                        filterMatchMode="contains" >
+                                        filterMatchMode="contains"
+                                        filterBy="#{bill.paymentMethod}" >
                                         <h:outputLabel value="#{bill.paymentMethod}">
                                         </h:outputLabel>
                                     </p:column>
