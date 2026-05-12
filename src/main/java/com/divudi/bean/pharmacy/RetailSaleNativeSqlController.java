@@ -440,8 +440,12 @@ public class RetailSaleNativeSqlController implements Serializable, ControllerWi
         String billNo = generateBillNumber();
 
         double netTot = 0.0;
+        double grossTot = 0.0;
+        double discountTot = 0.0;
         for (BillItemData bid : billItemDataList) {
             netTot += Math.abs(bid.getNetValue());
+            grossTot += Math.abs(bid.getGrossValue());
+            discountTot += bid.getDiscountValue();
         }
 
         PreBill pb = new PreBill();
@@ -461,9 +465,10 @@ public class RetailSaleNativeSqlController implements Serializable, ControllerWi
         pb.setComments(comment);
         pb.setPaymentMethod(paymentMethod);
         pb.setPaymentScheme(paymentScheme);
-        pb.setTotal(netTot);
+        pb.setTotal(grossTot);
         pb.setNetTotal(netTot);
-        pb.setGrantTotal(netTot);
+        pb.setGrantTotal(grossTot);
+        pb.setDiscount(discountTot);
         if (paymentMethod == PaymentMethod.Credit || paymentMethod == PaymentMethod.Staff) {
             pb.setBalance(netTot);
             pb.setPaidAmount(0.0);
