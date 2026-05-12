@@ -3447,6 +3447,7 @@ public class FinancialTransactionController implements Serializable {
             p.setBill(currentBill);
             p.setCreatedAt(new Date());
             p.setCreater(sessionController.getLoggedUser());
+            p.setFloatRecipient(currentBill.getToWebUser());
             p.setInstitution(null);
             p.setDepartment(null);
             p.setPaidValue(0 - Math.abs(p.getPaidValue()));
@@ -5938,6 +5939,10 @@ public class FinancialTransactionController implements Serializable {
         try {
         if (user == null) {
             JsfUtil.addErrorMessage("Please select a user to handover the shift.");
+            return null;
+        }
+        if (user.equals(sessionController.getLoggedUser())) {
+            JsfUtil.addErrorMessage("Cannot handover to yourself. Please select a different user.");
             return null;
         }
         if (bundle == null) {
