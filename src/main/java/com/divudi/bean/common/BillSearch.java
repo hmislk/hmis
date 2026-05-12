@@ -1948,77 +1948,72 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
      */
     public void onPaymentMethodChange() {
         try {
-            // Check if user selected the original payment method - if so, restore original details
+            if (paymentMethod == null) {
+                return;
+            }
+
             if (billPayments != null && !billPayments.isEmpty()) {
-                Payment originalPayment = billPayments.get(0);
-                if (paymentMethod == originalPayment.getPaymentMethod()) {
-                    // User switched back to original payment method - restore original details
+                // Original bill was paid with MultiplePaymentMethods: restore the full split
+                // when MPM is selected, or restore the matching single-component details
+                // (ref/bank/comment) when a specific method from the split is selected.
+                if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
                     paymentMethodData = new PaymentMethodData();
                     initializePaymentDataFromOriginalPayments(billPayments);
                     return;
                 }
-            } else if (originalPaymentDetails != null && !originalPaymentDetails.isEmpty()) {
-                // Check stored original payment details when billPayments is not available
-                for (ComponentDetail originalDetail : originalPaymentDetails) {
-                    if (paymentMethod == originalDetail.getPaymentMethod()) {
-                        // User selected a payment method that was used in original bill
+                for (Payment p : billPayments) {
+                    if (paymentMethod == p.getPaymentMethod()) {
                         paymentMethodData = new PaymentMethodData();
-                        initializePaymentMethodData();
+                        initializePaymentDataFromOriginalPayments(java.util.Collections.singletonList(p));
                         return;
                     }
                 }
             }
 
-            // User selected a different payment method - create new payment data
+            // User selected a method not present in the original bill — start a fresh form
+            // pre-filled with refundingBill.netTotal (the amount calculated from selected
+            // return quantities), never the original bill total which may be larger.
+            double refundNetTotal = (refundingBill != null) ? Math.abs(refundingBill.getNetTotal()) : 0.0;
+
             paymentMethodData = new PaymentMethodData();
 
-            // Initialize basic payment data based on newly selected payment method
-            if (paymentMethod != null && getBill() != null) {
-                double netTotal = Math.abs(getBill().getNetTotal());
-
-                switch (paymentMethod) {
-                    case Cash:
-                        paymentMethodData.getCash().setTotalValue(netTotal);
-                        break;
-                    case Card:
-                        paymentMethodData.getCreditCard().setTotalValue(netTotal);
-                        break;
-                    case Cheque:
-                        paymentMethodData.getCheque().setTotalValue(netTotal);
-                        break;
-                    case Slip:
-                        paymentMethodData.getSlip().setTotalValue(netTotal);
-                        break;
-                    case ewallet:
-                        paymentMethodData.getEwallet().setTotalValue(netTotal);
-                        break;
-                    case Staff_Welfare:
-                        paymentMethodData.getStaffWelfare().setTotalValue(netTotal);
-                        // Note: toStaff property may need to be set separately in UI
-                        break;
-                    case Staff:
-                    case OnCall:
-                        paymentMethodData.getStaffCredit().setTotalValue(netTotal);
-                        // Note: toStaff property may need to be set separately in UI
-                        break;
-                    case Credit:
-                        paymentMethodData.getCredit().setTotalValue(netTotal);
-                        // Note: creditCompany property may need to be set separately in UI
-                        break;
-                    case PatientDeposit:
-                        paymentMethodData.getPatient_deposit().setTotalValue(netTotal);
-                        if (getBill().getPatient() != null) {
-                            paymentMethodData.getPatient_deposit().setPatient(getBill().getPatient());
-                        }
-                        break;
-                    case MultiplePaymentMethods:
-                        // For multiple payments, clear the component details
-                        paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().clear();
-                        break;
-                    default:
-                        // For other payment methods, just initialize with net total
-                        break;
-                }
+            switch (paymentMethod) {
+                case Cash:
+                    paymentMethodData.getCash().setTotalValue(refundNetTotal);
+                    break;
+                case Card:
+                    paymentMethodData.getCreditCard().setTotalValue(refundNetTotal);
+                    break;
+                case Cheque:
+                    paymentMethodData.getCheque().setTotalValue(refundNetTotal);
+                    break;
+                case Slip:
+                    paymentMethodData.getSlip().setTotalValue(refundNetTotal);
+                    break;
+                case ewallet:
+                    paymentMethodData.getEwallet().setTotalValue(refundNetTotal);
+                    break;
+                case Staff_Welfare:
+                    paymentMethodData.getStaffWelfare().setTotalValue(refundNetTotal);
+                    break;
+                case Staff:
+                case OnCall:
+                    paymentMethodData.getStaffCredit().setTotalValue(refundNetTotal);
+                    break;
+                case Credit:
+                    paymentMethodData.getCredit().setTotalValue(refundNetTotal);
+                    break;
+                case PatientDeposit:
+                    paymentMethodData.getPatient_deposit().setTotalValue(refundNetTotal);
+                    if (getBill() != null && getBill().getPatient() != null) {
+                        paymentMethodData.getPatient_deposit().setPatient(getBill().getPatient());
+                    }
+                    break;
+                case MultiplePaymentMethods:
+                    paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().clear();
+                    break;
+                default:
+                    break;
             }
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Error changing payment method", e);
