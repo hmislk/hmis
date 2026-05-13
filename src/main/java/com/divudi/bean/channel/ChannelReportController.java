@@ -29,6 +29,8 @@ import com.divudi.core.data.dataStructure.ChannelDoctor;
 import com.divudi.core.data.dataStructure.WebUserBillsTotal;
 import com.divudi.core.data.dto.ChannelServiceCategorywiseDetailsWrapperDTO;
 import com.divudi.core.data.dto.channel.ChannelAbsentPatientsDTO;
+import com.divudi.core.data.dto.channel.ChannelUserSummeryDTO;
+import com.divudi.core.data.dto.channel.ChannelUserSummeryDTO.ChannelUserSummeryByDateDTO;
 import com.divudi.core.data.hr.ReportKeyWord;
 import com.divudi.core.data.reports.PharmacyReports;
 import com.divudi.core.data.reports.Report;
@@ -4268,6 +4270,7 @@ public class ChannelReportController implements Serializable {
         webUser = null;
         shiftStartBills = null;
         categorywiseDetailsWrapperDTO = null;
+        userSummaryDtos = null;
     }
 
     List<BillSession> nurseViewSessions;
@@ -4853,6 +4856,117 @@ public class ChannelReportController implements Serializable {
 
         return getAgentHistoryFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
+    }
+
+    private List<ChannelUserSummeryDTO> userSummaryDtos;
+
+    public List<ChannelUserSummeryDTO> getUserSummeryDtos() {
+        return userSummaryDtos;
+    }
+
+    public void setUserSummeryDtos(List<ChannelUserSummeryDTO> dtos) {
+        this.userSummaryDtos = dtos;
+    }
+
+    public void processUserWiseSummeryReport() {
+        System.out.println("Started............");
+        Map m = new HashMap();
+        Map<String, ChannelUserSummeryDTO> userSummeryMap = new HashMap<>();
+        userSummaryDtos = new ArrayList<>();
+
+        String sql = "Select new com.divudi.core.data.dto.channel.ChannelUserSummeryDTO.ChannelUserSummeryByDateDTO( "
+                    + " b.billDate, c.name, b.paymentMethod, "
+                    + " sum(b.staffFee), "
+                    + " sum(b.hospitalFee), "
+                    + " sum(b.netTotal), "
+                    + " sum(case when b.billTypeAtomic = :billCancel then 1 else 0 end), "
+                    + " sum(case when b.billTypeAtomic = :billRefund then 1 else 0 end), "
+                    + " sum(case when b.billTypeAtomic != :billCancel and b.billTypeAtomic != :billRefund then 1 else 0 end) "
+                    + " ) "
+                    + " from Bill b "
+                    + " join b.creater c"
+                    + " left join b.singleBillSession bs "
+                    + " where bs.sessionInstance.sessionDate = :apptDate "
+                    + " and b.billTypeAtomic in :bta "
+                    + " and b.billType <> :bt ";
+
+        List<BillTypeAtomic> btaList = new ArrayList<>();
+
+        btaList.add(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
+        btaList.add(BillTypeAtomic.CHANNEL_PAYMENT_FOR_BOOKING_BILL);
+        btaList.add(BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT);
+        btaList.add(BillTypeAtomic.CHANNEL_REFUND_WITH_PAYMENT);
+
+        m.put("bta", btaList);
+        m.put("bt", BillType.ChannelAgent);
+        m.put("billCancel", BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT);
+        m.put("billRefund", BillTypeAtomic.CHANNEL_REFUND_WITH_PAYMENT);
+        m.put("apptDate", fromDate);
+
+        if (institution != null) {
+            sql += " and b.institution = :ins ";
+            m.put("ins", institution);
+        }
+
+        if (department != null) {
+            sql += " and b.department = :dept ";
+            m.put("dept", department);
+        }
+
+        if (paymentMethod != null) {
+            sql += " and b.paymentMethod = :pm"; 
+            m.put("pm", paymentMethod);
+        } 
+
+        sql += " group by b.billDate, b.creater, b.paymentMethod ";
+
+        System.out.println(" SQL COMPLETED>>>>>>>>>>>>>>>>>>>>>>");
+        List<ChannelUserSummeryByDateDTO> dtoList = (List<ChannelUserSummeryByDateDTO>) billFacade.findLightsByJpqlWithoutCache(sql, m, TemporalType.TIMESTAMP);
+
+        System.out.println("FETCHED <<<<<<<<<<<<<<<<<<<<<<<");
+        if (dtoList == null || dtoList.isEmpty()) {
+            System.out.println("WHOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO");
+            return;
+        }
+
+        for (ChannelUserSummeryByDateDTO dto : dtoList) {
+            System.out.println("date: " + dto.getBilledDate() + " user: " + dto.getUser() + " PM: " + dto.getPaymentMethod().getLabel() + " doctorFee: " + dto.getDoctorFee() + " hosFee: " + dto.getHosFee() + " total: " + dto.getTotal() + " cancelledC: " + dto.getCancelledCount() + " refundC: " + dto.getRefundCount() + " billedCount: " + dto.getBilledCount() + " totalC: " + dto.getTotal());
+
+            if (dto.getUser() == null) {
+                continue;
+            }
+
+            ChannelUserSummeryDTO user = userSummeryMap.computeIfAbsent(dto.getUser(), k -> new ChannelUserSummeryDTO());
+            user.getEntriesByDate().add(dto);
+            user.setDoctorFee(user.getDoctorFee() + dto.getDoctorFee());
+            user.setHosFee(user.getHosFee() + dto.getHosFee());
+            user.setTotal(user.getTotal() + dto.getTotal());
+            user.setBilledCount(user.getBilledCount() + dto.getBilledCount());
+            user.setCancelledCount(user.getCancelledCount() + dto.getCancelledCount());
+            user.setRefundCount(user.getRefundCount() + dto.getRefundCount());
+
+            dto.setTotalCount(dto.getBilledCount() - dto.getRefundCount() - dto.getCancelledCount());
+            user.setTotalCount(user.getTotalCount() + dto.getTotalCount());
+        }
+
+        System.out.println("=================================================================================");
+
+        userSummaryDtos = new ArrayList<>(userSummeryMap.values());
+
+        for (ChannelUserSummeryDTO user : userSummaryDtos) {
+            if (user.getEntriesByDate() == null || user.getEntriesByDate().isEmpty()) {
+                System.out.println("NANIIIIIIIIIIIIIIIIIIII");
+                continue;
+            }
+            for (ChannelUserSummeryByDateDTO dto : user.getEntriesByDate()) {
+                System.out.println("date: " + dto.getBilledDate() + " user: " + dto.getUser() + " PM: " + dto.getPaymentMethod().getLabel() + " doctorFee: " + dto.getDoctorFee() + " hosFee: " + dto.getHosFee() + " total: " + dto.getTotal() + " cancelledC: " + dto.getCancelledCount() + " refundC: " + dto.getRefundCount() + " billedCount: " + dto.getBilledCount() + " totalC: " + dto.getTotalCount());
+            }
+
+            System.out.println("Total:" + "docFee: " + user.getDoctorFee() + "HF: " + user.getHosFee() + "tot:" + user.getTotal() + "BC: " + user.getBilledCount() + "CC: " + user.getCancelledCount() + "RC: " + user.getRefundCount() + "TC: " + user.getTotalCount());
+        }
+
+
+        System.out.println("ENDED>>>>>>>>>>>>>>>>>>>>");
     }
 
     /**

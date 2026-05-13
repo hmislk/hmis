@@ -1,0 +1,275 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="/channel/channel_reports.xhtml">
+            <ui:define name="subContent">
+                <h:outputStylesheet library="css" name="eight_col_filter_panel.css" />
+                <h:form class="w-100">
+                    <p:panel header="User Wise Summery" class="w-100">
+
+                        <div class="row">
+                            <div class="col-md-12">
+                                <h:panelGrid columns="5" 
+                                             class="ui-fluid"
+                                             style="width: 100%; table-layout: fixed;"
+                                             columnClasses="fp-col-label1, fp-col-input1, fp-col-space1, fp-col-label3, fp-col-input3">
+                                    <h:panelGroup layout="block" styleClass="form-group">
+                                        <h:outputText value="&#xf073;"
+                                                      styleClass="fa ml-5"/> <!-- FontAwesome calendar icon -->
+                                        <h:outputLabel value="Appointment Date" for="fromDate" class="mx-3"/>
+                                    </h:panelGroup>
+                                    <p:calendar
+                                        styleClass="w-100"
+                                        inputStyleClass="w-100 form-control"
+                                        id="fromDate"
+                                        value="#{channelReportController.fromDate}"
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                        />
+
+                                    <p:spacer width="50"/>
+
+                                    <h:panelGroup layout="block" styleClass="form-group">
+                                        <h:outputText styleClass="fa fa-money-bill-wave" /> 
+                                        <h:outputLabel value="Payment Method" class="mx-3"/>
+                                    </h:panelGroup>
+
+                                    
+                                    <p:selectOneMenu
+                                        class="w-100"
+                                        styleClass="w-100 form-control"
+                                        value="#{channelReportController.paymentMethod}">
+                                        <f:selectItem itemLabel="Select a Payment Method"/>
+                                        <f:selectItems 
+                                                        value="#{enumController.paymentMethodsForChannelSettling}"  
+                                                        var="pm"
+                                                        itemLabel="#{pm.label}"
+                                                        itemValue="#{pm}"/>
+                                    </p:selectOneMenu>
+
+                                    <h:panelGroup layout="block" styleClass="form-group">
+                                        <h:outputText value="&#xf19c;"
+                                                      styleClass="fa mr-2"/> <!-- FontAwesome building icon -->
+                                        <h:outputLabel value="Institution" for="cmbIns" class="mx-3"/>
+                                    </h:panelGroup>
+                                    <p:selectOneMenu
+                                        id="cmbIns"
+                                        class="w-100"
+                                        styleClass="w-100 form-control"
+                                        value="#{channelReportController.institution}"
+                                        filter="true">
+                                        <f:selectItem itemLabel="All Institutions"/>
+                                        <f:selectItems value="#{institutionController.companies}" var="ins"
+                                                       itemLabel="#{ins.name}" itemValue="#{ins}"/>
+                                        <p:ajax process="cmbIns" update="cmbDept"/>
+                                    </p:selectOneMenu>
+
+                                    <p:spacer width="50"/>
+
+                                    <h:panelGroup layout="block" styleClass="form-group">
+                                        <h:outputText value="&#xf0e8;" styleClass="fa mr-2"/>
+                                        <h:outputLabel value="Department" for="cmbDept" class="mx-3"/>
+                                    </h:panelGroup>
+                                    <p:selectOneMenu
+                                        id="cmbDept"
+                                        style="width: 350px;"
+                                        class="w-100"
+                                        value="#{channelReportController.department}"
+                                        filter="true">
+                                        <f:selectItem itemLabel="All Departments"/>
+                                        <f:selectItems
+                                            value="#{departmentController.getInstitutionDepartments(searchController.institution)}"
+                                            var="d" itemLabel="#{d.name}" itemValue="#{d}"/>
+                                    </p:selectOneMenu>
+
+                                </h:panelGrid>
+
+                                <div class="d-flex align-items-center my-2">
+                                    <p:commandButton
+                                        id="btnList" class="mx-1 ui-button-warning"
+                                        icon="fas fa-cogs"
+                                        ajax="false" value="Process"
+                                        action="#{channelReportController.processUserWiseSummeryReport()}"/>
+
+                                    <p:commandButton 
+                                        value="Export as PDF" 
+                                        ajax="false" 
+                                        icon="fas fa-file-pdf"
+                                        class="mx-1 ui-button-info">
+                                    </p:commandButton>
+
+                                    <p:commandButton
+                                        id="btnPrint"
+                                        class="mx-1 ui-button-danger"
+                                        icon="fas fa-print"
+                                        ajax="false"
+                                        value="Print Table"
+                                        action="channel_income_bill_print?faces-redirect=true">
+                                    </p:commandButton>
+
+                                    <p:commandButton
+                                        id="btnExcel"
+                                        class="mx-1 ui-button-success"
+                                        icon="fas fa-file-excel"
+                                        ajax="false" value="Export to Excel">
+                                    </p:commandButton>
+                                </div>
+                                
+                            </div>
+                        </div>
+
+                        <h:panelGroup rendered="#{channelReportController.userSummeryDtos ne null}">
+                            <table class="w-100 ui-datatable ui-datatable-borderless compact-datatable table-no-vertical" style="font-size: medium;">
+                                <thead class="ui-datatable-thead">
+                                    <tr>
+                                        <th class="text-center" style="font-size: 16px;">
+                                            <h:outputText value="Bill Date"/>
+                                        </th>
+                                        <th class="text-center" style="font-size: 16px;">
+                                            <h:outputText value="User"/>
+                                        </th> 
+                                        <th class="text-center" style="font-size: 16px;">
+                                            <h:outputText value="Payment Method"/>
+                                        </th> 
+                                        <th class="text-center" style="font-size: 16px;">
+                                            <h:outputText value="Billed Count"/>
+                                        </th> 
+                                        <th class="text-center" style="font-size: 16px;">
+                                            <h:outputText value="Cancelled Count"/>
+                                        </th>
+                                        <th class="text-center" style="font-size: 16px;">
+                                            <h:outputText value="Refund Count"/>
+                                        </th>
+                                        <th class="text-center" style="font-size: 16px;">
+                                            <h:outputText value="Total Count"/>
+                                        </th>
+                                        <th class="text-center" style="font-size: 16px;">
+                                            <h:outputText value="Doc Fee"/>
+                                        </th>
+                                        <th class="text-center" style="font-size: 16px;">
+                                            <h:outputText value="Hos Fee"/>
+                                        </th>
+                                        <th class="text-center" style="font-size: 16px;">
+                                            <h:outputText value="Total"/>
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody class="ui-datatable-tbody">
+                                    <ui:repeat value="#{channelReportController.userSummeryDtos}" var="user">
+                                        <ui:repeat value="#{user.entriesByDate}" var="date">
+                                            <tr>
+                                                <td style="border: none;">
+                                                    <h:outputText value="#{date.billedDate}">
+                                                        <f:convertDateTime pattern="dd/MM/yyyy"/>
+                                                    </h:outputText>
+                                                </td>
+                                                <td style="text-align: center; border: none;">
+                                                    <h:outputText value="#{date.user}"/>
+                                                </td>
+                                                <td style="text-align: center; border: none;">
+                                                    <h:outputText value="#{date.paymentMethod}"/>
+                                                </td>
+                                                <td style="text-align: center; border: none;">
+                                                    <h:outputText value="#{date.billedCount}">
+                                                        <f:convertNumber pattern="#,##0"/>
+                                                    </h:outputText>
+                                                </td>
+                                                <td style="text-align: center; border: none;">
+                                                    <h:outputText value="#{date.cancelledCount}">
+                                                        <f:convertNumber pattern="#,##0"/>
+                                                    </h:outputText>
+                                                </td>
+                                                <td style="text-align: center; border: none;">
+                                                    <h:outputText value="#{date.refundCount}">
+                                                        <f:convertNumber pattern="#,##0"/>
+                                                    </h:outputText>
+                                                </td>
+                                                <td style="text-align: center; border: none;">
+                                                    <h:outputText value="#{date.totalCount}">
+                                                        <f:convertNumber pattern="#,##0"/>
+                                                    </h:outputText>
+                                                </td>
+                                                <td style="text-align: right; border: none;">
+                                                    <h:outputText value="#{date.doctorFee}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </td>
+                                                <td style="text-align: right; border: none;">
+                                                    <h:outputText value="#{date.hosFee}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </td>
+                                                <td style="text-align: right; border: none;">
+                                                    <h:outputText value="#{date.total}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </td>
+                                            </tr>
+                                        </ui:repeat>
+                                        <tr style="background-color:#f6f6f6; font-weight:bold;">
+                                            <td style="text-align: center; font-weight:bold; border: none;">
+                                                <h:outputText value="Total"/>
+                                            </td>
+                                            <td style="border: none;">
+                                                <h:outputText vaue=""/>
+                                            </td>
+                                            <td style="border: none;">
+                                                <h:outputText vaue=""/>
+                                            </td>
+                                            <td style="text-align: center; font-weight:bold; border: none;">
+                                                <h:outputText value="#{user.billedCount}">
+                                                    <f:convertNumber pattern="#,##0"/>
+                                                </h:outputText>
+                                            </td>
+                                            <td style="text-align: center; font-weight:bold; border: none;">
+                                                <h:outputText value="#{user.cancelledCount}">
+                                                    <f:convertNumber pattern="#,##0"/>
+                                                </h:outputText>
+                                            </td>
+                                            <td style="text-align: center; font-weight:bold; border: none;">
+                                                <h:outputText value="#{user.refundCount}">
+                                                    <f:convertNumber pattern="#,##0"/>
+                                                </h:outputText>
+                                            </td>
+                                            <td style="text-align: center; font-weight:bold; border: none;">
+                                                <h:outputText value="#{user.totalCount}">
+                                                    <f:convertNumber pattern="#,##0"/>
+                                                </h:outputText>
+                                            </td>
+                                            <td style="text-align: right; font-weight:bold; border: none;">
+                                                <h:outputText value="#{user.doctorFee}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </td>
+                                            <td style="text-align: right; font-weight:bold; border: none;">
+                                                <h:outputText value="#{user.hosFee}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </td>
+                                            <td style="text-align: right; font-weight:bold; border: none;">
+                                                <h:outputText value="#{user.total}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </td>
+                                        </tr>
+                                    </ui:repeat>
+                                </tbody>
+                            </table>
+                        </h:panelGroup>
+
+                        
+
+                        
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>
