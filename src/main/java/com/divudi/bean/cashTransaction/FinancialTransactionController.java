@@ -5547,7 +5547,6 @@ public class FinancialTransactionController implements Serializable {
     }
 
     public Bill findNonClosedShiftStartFundBill(WebUser user) {
-        nonClosedShiftStartFundBill = null;
         String jpql = "select b "
                 + " from Bill b "
                 + " where b.creater=:user "
@@ -5558,7 +5557,8 @@ public class FinancialTransactionController implements Serializable {
         m.put("user", user);
         m.put("ret", false);
         m.put("ofb", BillType.ShiftStartFundBill);
-        return billFacade.findFirstByJpql(jpql, m);
+        nonClosedShiftStartFundBill = billFacade.findFirstByJpql(jpql, m);
+        return nonClosedShiftStartFundBill;
     }
 
     public void listBillsFromInitialFundBillUpToNow() {
@@ -8647,6 +8647,13 @@ public class FinancialTransactionController implements Serializable {
             freshBill.setCancelledBill(cancellationBill);
             billController.save(freshBill);
         } catch (Exception e) {
+            if (cancellationBill.getId() != null) {
+                try {
+                    cancellationBill.setCancelled(true);
+                    billController.save(cancellationBill);
+                } catch (Exception ignore) {
+                }
+            }
             JsfUtil.addErrorMessage("Failed to cancel shortage bill: " + e.getMessage());
             return "";
         }
