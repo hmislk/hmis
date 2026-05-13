@@ -90,9 +90,11 @@ public class TransferReceiveNativeSqlService {
             long issuedBillId, boolean byPurchaseRate, boolean byCostRate) {
 
         // Query 1: Load all issued items with their batch and item data
+        // pbi.staffStock_ID is the transit stock incremented during issue (what receive deducts from).
+        // pbi.stock_ID is the Stores dept stock that was already deducted during issue (now empty).
         String sql1 = "SELECT"
                 + " bi.ID, bi.qty, bi.netValue, bi.rate, bi.netRate, bi.searialNo,"
-                + " pbi.stock_ID, pbi.itemBatch_ID, pbi.qty AS pbiQty,"
+                + " pbi.staffStock_ID, pbi.itemBatch_ID, pbi.qty AS pbiQty,"
                 + " ib.batchNo, ib.dateOfExpire, ib.purcahseRate, ib.retailsaleRate,"
                 + " ib.wholesaleRate, COALESCE(ib.costRate, 0) AS costRate,"
                 + " i.ID AS itemId, i.name AS itemName, COALESCE(i.code, '') AS itemCode,"
@@ -141,7 +143,7 @@ public class TransferReceiveNativeSqlService {
         for (Object[] row : issuedRows) {
             // row[0]=bi.ID, row[1]=bi.qty(packs), row[2]=bi.netValue, row[3]=bi.rate,
             // row[4]=bi.netRate, row[5]=bi.searialNo,
-            // row[6]=pbi.stock_ID, row[7]=pbi.itemBatch_ID, row[8]=pbi.qty(units in stock),
+            // row[6]=pbi.staffStock_ID, row[7]=pbi.itemBatch_ID, row[8]=pbi.qty(units in stock),
             // row[9]=ib.batchNo, row[10]=ib.dateOfExpire, row[11]=ib.purcahseRate,
             // row[12]=ib.retailsaleRate, row[13]=ib.wholesaleRate, row[14]=ib.costRate,
             // row[15]=i.ID, row[16]=i.name, row[17]=i.code, row[18]=i.DTYPE, row[19]=i.dblValue
@@ -186,7 +188,7 @@ public class TransferReceiveNativeSqlService {
             TransferReceiveItemRowDto dto = new TransferReceiveItemRowDto();
             dto.setSerialNo(serial++);
             dto.setIssuedBillItemId(biId);
-            dto.setStaffStockId(((Number) row[6]).longValue());
+            dto.setStaffStockId(row[6] != null ? ((Number) row[6]).longValue() : null);
             dto.setItemBatchId(((Number) row[7]).longValue());
             dto.setItemId(((Number) row[15]).longValue());
             dto.setAmpItemId(((Number) row[15]).longValue()); // may be refined by controller for Ampp items
@@ -397,7 +399,10 @@ public class TransferReceiveNativeSqlService {
             double units = packs * item.getUnitsPerPack();
 
             // 3a. Deduct from staff stock (atomic — throws if insufficient)
-            deductStock(item.getStaffStockId(), units);
+            // staffStockId is null when the issue had no toStaff; skip deduction in that case.
+            if (item.getStaffStockId() != null) {
+                deductStock(item.getStaffStockId(), units);
+            }
 
             // 3b. Find or create dept stock and add qty
             long deptStockId = findOrCreateDeptStock(receivingDeptId, item.getItemBatchId(), units);
