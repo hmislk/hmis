@@ -10251,12 +10251,6 @@ public class FinancialTransactionController implements Serializable {
         ));
 
         fundTransferMetadata.addConfigOption(new ConfigOptionInfo(
-                "Shift Shortage Bills are enabled",
-                "When enabled, allows recording and tracking of shift shortage bills in cashier operations.",
-                OptionScope.APPLICATION
-        ));
-
-        fundTransferMetadata.addConfigOption(new ConfigOptionInfo(
                 "Shift Excess Bills are enabled",
                 "When enabled, allows recording and tracking of shift excess bills in cashier operations.",
                 OptionScope.APPLICATION
@@ -10324,12 +10318,6 @@ public class FinancialTransactionController implements Serializable {
         ));
 
         receiveTransferMetadata.addConfigOption(new ConfigOptionInfo(
-                "Shift Shortage Bills are enabled",
-                "When enabled, allows recording and tracking of shift shortage bills, affecting overall cashier workflow including fund transfer receiving.",
-                OptionScope.APPLICATION
-        ));
-
-        receiveTransferMetadata.addConfigOption(new ConfigOptionInfo(
                 "Shift Excess Bills are enabled",
                 "When enabled, allows recording and tracking of shift excess bills, affecting overall cashier workflow including fund transfer receiving.",
                 OptionScope.APPLICATION
@@ -10385,12 +10373,6 @@ public class FinancialTransactionController implements Serializable {
         cashierIndexMetadata.addConfigOption(new ConfigOptionInfo(
                 "Completed Shift Handover is enabled",
                 "When enabled, shows 'My Shifts' button in the Shift Management tab to view completed shift handovers.",
-                OptionScope.APPLICATION
-        ));
-
-        cashierIndexMetadata.addConfigOption(new ConfigOptionInfo(
-                "Shift Shortage Bills are enabled",
-                "When enabled, shows 'Record Shift Shortage' and 'Shift Shortage Bill Search' buttons in the Shift Management tab for tracking cash shortages.",
                 OptionScope.APPLICATION
         ));
 
@@ -10598,12 +10580,6 @@ public class FinancialTransactionController implements Serializable {
         shiftEndMetadata.addConfigOption(new ConfigOptionInfo(
                 "Recording Shift End Cash is Required Before Viewing Shift Reports",
                 "When enabled, affects the overall shift ending workflow requiring cash recording steps before accessing reports from this page.",
-                OptionScope.APPLICATION
-        ));
-
-        shiftEndMetadata.addConfigOption(new ConfigOptionInfo(
-                "Shift Shortage Bills are enabled",
-                "When enabled, allows tracking of cash shortage transactions that may be identified during the shift ending process.",
                 OptionScope.APPLICATION
         ));
 
