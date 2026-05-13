@@ -607,7 +607,7 @@
                                         <p:selectBooleanCheckbox value="#{summary.selected}" rendered="#{!summary.floatRow}">
                                             <p:ajax
                                                 listener="#{financialTransactionController.bundle.calculateTotalsBySelectedChildBundles()}"
-                                                update=":#{p:resolveFirstComponentWithId('txtCashHandover',view).clientId} :#{p:resolveFirstComponentWithId('tblCashier',view).clientId} "
+                                                update=":#{p:resolveFirstComponentWithId('txtCashHandover',view).clientId} :#{p:resolveFirstComponentWithId('tblCashier',view).clientId} :#{p:resolveFirstComponentWithId('lblHandoverTotal',view).clientId}"
                                                 ></p:ajax>
                                         </p:selectBooleanCheckbox>
                                     </p:column>

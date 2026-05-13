@@ -910,6 +910,13 @@ public class ReportTemplateRowBundle implements Serializable {
                 }
             }
         }
+
+        // getHandoverTotal() uses denominatorValue for the cash portion (see its Javadoc).
+        // The denomination-blur path writes denominatorValue directly via
+        // calculateTotalHandoverByDenominationQuantities(). This checkbox path writes
+        // cashHandoverValue instead. Sync denominatorValue here so both paths keep
+        // getHandoverTotal() consistent regardless of which path ran last.
+        denominatorValue = cashHandoverValue;
     }
 
     public void calculateTotalsByChildBundlesForHandover() {
@@ -2341,10 +2348,18 @@ public class ReportTemplateRowBundle implements Serializable {
     }
 
     /**
-     * Returns the total being handed over, matching the "Handing Over" column
-     * in the Net To Handover row on the page.
-     * Uses denominatorValue for cash (the manually entered denomination total),
-     * and per-payment-type handover values for all other payment methods.
+     * Returns the total being handed over, shown as "Total Handed over Value" on
+     * handover_start_all.xhtml. Uses denominatorValue for the cash portion.
+     *
+     * denominatorValue is kept in sync by two separate update paths:
+     *   1. Denomination-qty blur → calculateTotalHandoverByDenominationQuantities()
+     *      writes denominatorValue directly from the physically counted notes.
+     *   2. Row-checkbox toggle → calculateTotalsByChildBundles() accumulates child
+     *      cashHandoverValue into cashHandoverValue, then syncs denominatorValue =
+     *      cashHandoverValue at the end so this method stays consistent.
+     *
+     * Both paths must also update lblHandoverTotal via AJAX; the denomination-blur
+     * p:ajax already does this, and the checkbox p:ajax was updated to match.
      */
     public double getHandoverTotal() {
         return denominatorValue + cardHandoverValue + chequeHandoverValue
