@@ -1,5 +1,5 @@
 {
-  "version": "2.4.0",
+  "version": "v2.4.0",
   "description": "Performance indexes for PharmaceuticalBillItem — fixes full-table scans on pharmacy date-range queries",
   "issue": "RMH database slowness — pharmacy retail sale and batch/stock transaction reports",
   "author": "Dr M H B Ariyaratne",
