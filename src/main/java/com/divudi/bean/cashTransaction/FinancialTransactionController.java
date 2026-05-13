@@ -285,6 +285,9 @@ public class FinancialTransactionController implements Serializable {
     private List<Payment> fundTransferAvailablePayments;
     private List<Payment> depositableNonCashPayments;
 
+    // Shortage Bill Cancellation Properties
+    private String shortageCancellationComment;
+
     // Float Out Cancellation Properties
     private List<Bill> myFundTransferBillsOut;
     private Bill fundTransferBillToCancel;
@@ -8518,6 +8521,136 @@ public class FinancialTransactionController implements Serializable {
 
     public double getShortageOutstanding() {
         return shortageOutstanding;
+    }
+
+    public boolean isShortageInCurrentShift(Bill bill) {
+        if (bill == null || bill.getCreatedAt() == null) {
+            return false;
+        }
+        if (nonClosedShiftStartFundBill == null) {
+            findNonClosedShiftStartFundBillIsAvailable();
+        }
+        if (nonClosedShiftStartFundBill == null || nonClosedShiftStartFundBill.getCreatedAt() == null) {
+            return false;
+        }
+        if (bill.getFromWebUser() == null
+                || !bill.getFromWebUser().getId().equals(sessionController.getLoggedUser().getId())) {
+            return false;
+        }
+        return !bill.getCreatedAt().before(nonClosedShiftStartFundBill.getCreatedAt());
+    }
+
+    public String cancelShiftShortageBill() {
+        if (selectedBill == null || selectedBill.getId() == null) {
+            JsfUtil.addErrorMessage("No shortage bill selected.");
+            return "";
+        }
+        Bill freshBill = billFacade.find(selectedBill.getId());
+        if (freshBill == null) {
+            JsfUtil.addErrorMessage("Shortage bill no longer exists.");
+            return "";
+        }
+        if (freshBill.getBillTypeAtomic() != BillTypeAtomic.FUND_SHIFT_SHORTAGE_BILL) {
+            JsfUtil.addErrorMessage("Only shortage bills can be cancelled.");
+            return "";
+        }
+        if (freshBill.isCancelled()) {
+            JsfUtil.addErrorMessage("This shortage bill has already been cancelled.");
+            return "";
+        }
+        if (freshBill.isPaid()) {
+            JsfUtil.addErrorMessage("Cannot cancel a fully settled shortage bill.");
+            return "";
+        }
+        if (freshBill.getFromWebUser() == null
+                || !freshBill.getFromWebUser().getId().equals(sessionController.getLoggedUser().getId())) {
+            JsfUtil.addErrorMessage("You can only cancel your own shortage bills.");
+            return "";
+        }
+        if (!isShortageInCurrentShift(freshBill)) {
+            JsfUtil.addErrorMessage("Shortage bills can only be cancelled within the shift they were created.");
+            return "";
+        }
+        if (shortageCancellationComment == null || shortageCancellationComment.trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Please provide a reason for cancellation.");
+            return "";
+        }
+
+        CancelledBill cancellationBill = new CancelledBill();
+        cancellationBill.setBillType(BillType.ShiftShortage);
+        cancellationBill.setBillTypeAtomic(BillTypeAtomic.FUND_SHIFT_SHORTAGE_BILL_CANCELLED);
+        cancellationBill.setBillClassType(BillClassType.CancelledBill);
+        cancellationBill.setBillDate(new Date());
+        cancellationBill.setBillTime(new Date());
+        cancellationBill.setCreatedAt(new Date());
+        cancellationBill.setCreater(sessionController.getLoggedUser());
+        cancellationBill.setFromDepartment(freshBill.getFromDepartment());
+        cancellationBill.setFromInstitution(freshBill.getFromInstitution());
+        cancellationBill.setFromStaff(freshBill.getFromStaff());
+        cancellationBill.setFromWebUser(freshBill.getFromWebUser());
+        cancellationBill.setDepartment(freshBill.getDepartment());
+        cancellationBill.setInstitution(freshBill.getInstitution());
+        cancellationBill.setComments(shortageCancellationComment);
+        cancellationBill.setBilledBill(freshBill);
+        cancellationBill.setBackwardReferenceBill(freshBill);
+
+        String deptId = billNumberGenerator.departmentBillNumberGeneratorYearly(
+                sessionController.getDepartment(),
+                BillTypeAtomic.FUND_SHIFT_SHORTAGE_BILL_CANCELLED);
+        cancellationBill.setDeptId(deptId);
+        cancellationBill.setInsId(deptId);
+
+        List<Payment> originalPayments = findPaymentsForBill(freshBill);
+        List<Payment> cancellationPayments = new ArrayList<>();
+        double totalValue = 0.0;
+
+        try {
+            billController.save(cancellationBill);
+
+            for (Payment originalPayment : originalPayments) {
+                Payment cancellationPayment = new Payment();
+                cancellationPayment.setBill(cancellationBill);
+                cancellationPayment.setPaymentMethod(originalPayment.getPaymentMethod());
+                cancellationPayment.setCreatedAt(new Date());
+                cancellationPayment.setCreater(sessionController.getLoggedUser());
+                cancellationPayment.setCurrentHolder(sessionController.getLoggedUser());
+                // Original paidValue is negative (shortage deducted from drawer);
+                // reversal payment is positive to restore the drawer.
+                cancellationPayment.setPaidValue(Math.abs(originalPayment.getPaidValue()));
+                totalValue += cancellationPayment.getPaidValue();
+                paymentController.save(cancellationPayment);
+                cancellationPayments.add(cancellationPayment);
+            }
+
+            cancellationBill.setTotal(totalValue);
+            cancellationBill.setNetTotal(totalValue);
+            billController.save(cancellationBill);
+
+            freshBill.setCancelled(true);
+            freshBill.setCancelledBill(cancellationBill);
+            billController.save(freshBill);
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Failed to cancel shortage bill: " + e.getMessage());
+            return "";
+        }
+
+        // Restore drawer: add back the amount the shortage had deducted.
+        drawerController.updateDrawerForIns(cancellationPayments, sessionController.getLoggedUser());
+
+        currentBill = cancellationBill;
+        currentBillPayments = cancellationPayments;
+        selectedBill = freshBill;
+        shortageCancellationComment = null;
+        JsfUtil.addSuccessMessage("Shortage bill cancelled successfully.");
+        return "/cashier/shift_shortage_bill_cancellation_print?faces-redirect=true";
+    }
+
+    public String getShortageCancellationComment() {
+        return shortageCancellationComment;
+    }
+
+    public void setShortageCancellationComment(String shortageCancellationComment) {
+        this.shortageCancellationComment = shortageCancellationComment;
     }
 
     private void calculateShortageBillTotal() {

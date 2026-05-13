@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body>
+        <ui:composition template="./index.xhtml">
+            <ui:define name="subcontent">
+                <h:form>
+                    <p:panel>
+                        <f:facet name="header">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div>
+                                    <i class="fa fa-ban me-2" style="color:#dc3545;"/>
+                                    <h:outputText value="Shift Shortage Bill Cancelled" style="color:#dc3545;"/>
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <p:commandButton
+                                        value="View Shortage Bills"
+                                        icon="fa fa-search"
+                                        styleClass="ui-button-info"
+                                        ajax="false"
+                                        action="#{financialTransactionController.navigateToCashierShiftBillSearchWithTodayResults()}"/>
+                                    <p:commandButton
+                                        value="Print"
+                                        icon="fa fa-print"
+                                        styleClass="ui-button-secondary">
+                                        <p:printer target="cancellationNote"/>
+                                    </p:commandButton>
+                                </div>
+                            </div>
+                        </f:facet>
+
+                        <h:panelGroup id="cancellationNote">
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <p:panel header="Cancellation Details">
+                                        <p:panelGrid columns="2" layout="tabular" class="w-100"
+                                                     columnClasses="fw-medium, text-end">
+                                            <h:outputText value="Cancellation Bill No"/>
+                                            <h:outputText value="#{financialTransactionController.currentBill.deptId}"/>
+
+                                            <h:outputText value="Cancelled At"/>
+                                            <h:outputText value="#{financialTransactionController.currentBill.createdAt}">
+                                                <f:convertDateTime timeZone="Asia/Colombo"
+                                                                   pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                            </h:outputText>
+
+                                            <h:outputText value="Cancelled By"/>
+                                            <h:outputText value="#{financialTransactionController.currentBill.creater.name}"/>
+
+                                            <h:outputText value="Reason"/>
+                                            <h:outputText value="#{financialTransactionController.currentBill.comments}"/>
+                                        </p:panelGrid>
+                                    </p:panel>
+                                </div>
+                                <div class="col-md-4">
+                                    <p:panel header="Original Shortage Bill">
+                                        <p:panelGrid columns="2" layout="tabular" class="w-100"
+                                                     columnClasses="fw-medium, text-end">
+                                            <h:outputText value="Original Bill No"/>
+                                            <h:outputText value="#{financialTransactionController.currentBill.billedBill.deptId}"/>
+
+                                            <h:outputText value="Shortage Amount"/>
+                                            <h:outputText value="#{financialTransactionController.currentBill.billedBill.total}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+
+                                            <h:outputText value="Recorded At"/>
+                                            <h:outputText value="#{financialTransactionController.currentBill.billedBill.createdAt}">
+                                                <f:convertDateTime timeZone="Asia/Colombo"
+                                                                   pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                            </h:outputText>
+
+                                            <h:outputText value="Recorded By"/>
+                                            <h:outputText value="#{financialTransactionController.currentBill.billedBill.fromWebUser.webUserPerson.name}"/>
+                                        </p:panelGrid>
+                                    </p:panel>
+                                </div>
+                                <div class="col-md-4">
+                                    <p:panel header="Drawer Impact">
+                                        <p:panelGrid columns="2" layout="tabular" class="w-100"
+                                                     columnClasses="fw-medium, text-end">
+                                            <h:outputText value="Amount Restored"/>
+                                            <h:outputText value="#{financialTransactionController.currentBill.total}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </p:panelGrid>
+                                        <p:outputLabel styleClass="text-muted small d-block mt-2"
+                                                       value="The shortage amount has been added back to your drawer."/>
+                                    </p:panel>
+                                </div>
+                            </div>
+                        </h:panelGroup>
+
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>
