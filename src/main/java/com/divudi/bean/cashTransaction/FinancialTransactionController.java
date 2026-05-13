@@ -287,6 +287,7 @@ public class FinancialTransactionController implements Serializable {
 
     // Shortage Bill Cancellation Properties
     private String shortageCancellationComment;
+    private boolean shortageCancellationSubmitting = false;
 
     // Float Out Cancellation Properties
     private List<Bill> myFundTransferBillsOut;
@@ -8523,24 +8524,35 @@ public class FinancialTransactionController implements Serializable {
         return shortageOutstanding;
     }
 
-    public boolean isShortageInCurrentShift(Bill bill) {
+    public boolean shortageInCurrentShift(Bill bill) {
         if (bill == null || bill.getCreatedAt() == null) {
             return false;
         }
-        if (nonClosedShiftStartFundBill == null) {
-            findNonClosedShiftStartFundBillIsAvailable();
-        }
-        if (nonClosedShiftStartFundBill == null || nonClosedShiftStartFundBill.getCreatedAt() == null) {
+        // Always fetch fresh from DB to avoid stale session-cached shift state.
+        Bill activeShift = findNonClosedShiftStartFundBill(sessionController.getLoggedUser());
+        if (activeShift == null || activeShift.getCreatedAt() == null) {
             return false;
         }
         if (bill.getFromWebUser() == null
                 || !bill.getFromWebUser().getId().equals(sessionController.getLoggedUser().getId())) {
             return false;
         }
-        return !bill.getCreatedAt().before(nonClosedShiftStartFundBill.getCreatedAt());
+        return !bill.getCreatedAt().before(activeShift.getCreatedAt());
     }
 
     public String cancelShiftShortageBill() {
+        if (shortageCancellationSubmitting) {
+            return "";
+        }
+        shortageCancellationSubmitting = true;
+        try {
+            return doCancelShiftShortageBill();
+        } finally {
+            shortageCancellationSubmitting = false;
+        }
+    }
+
+    private String doCancelShiftShortageBill() {
         if (selectedBill == null || selectedBill.getId() == null) {
             JsfUtil.addErrorMessage("No shortage bill selected.");
             return "";
@@ -8562,12 +8574,17 @@ public class FinancialTransactionController implements Serializable {
             JsfUtil.addErrorMessage("Cannot cancel a fully settled shortage bill.");
             return "";
         }
+        computeShortageSettlementSummary(freshBill);
+        if (shortageSettledSoFar > 0.001) {
+            JsfUtil.addErrorMessage("Cannot cancel a shortage bill that already has settlements.");
+            return "";
+        }
         if (freshBill.getFromWebUser() == null
                 || !freshBill.getFromWebUser().getId().equals(sessionController.getLoggedUser().getId())) {
             JsfUtil.addErrorMessage("You can only cancel your own shortage bills.");
             return "";
         }
-        if (!isShortageInCurrentShift(freshBill)) {
+        if (!shortageInCurrentShift(freshBill)) {
             JsfUtil.addErrorMessage("Shortage bills can only be cancelled within the shift they were created.");
             return "";
         }
