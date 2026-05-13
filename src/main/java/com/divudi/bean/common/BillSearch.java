@@ -141,12 +141,15 @@ import static com.divudi.core.data.BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_S
 import static com.divudi.core.data.BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER;
 import static com.divudi.core.data.BillTypeAtomic.PHARMACY_TRANSFER_REQUEST;
 import static com.divudi.core.data.BillTypeAtomic.PHARMACY_TRANSFER_REQUEST_PRE;
+import com.divudi.core.data.DepartmentType;
+import com.divudi.core.entity.Request;
 import com.divudi.core.entity.lab.Investigation;
 import com.divudi.core.entity.lab.PatientReport;
 import com.divudi.core.entity.lab.PatientSample;
 import com.divudi.core.entity.lab.PatientSampleComponant;
 import com.divudi.core.facade.PatientInvestigationFacade;
 import com.divudi.core.facade.PatientSampleComponantFacade;
+import com.divudi.service.RequestService;
 
 import org.primefaces.event.RowEditEvent;
 import org.primefaces.model.LazyDataModel;
@@ -2021,6 +2024,9 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
     }
 
     // Temporary test method to verify AJAX is working
+    
+
+
     public void testAjaxMethod() {
         // Retained for existing view bindings.
     }
@@ -3119,7 +3125,7 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
                 return;
             }
         }
-
+        
         CancelledBill cancellationBill = createCollectingCenterCancelBill(bill);
         billController.save(cancellationBill);
 //        Payment p = getOpdPreSettleController().createPaymentForCancellationsforOPDBill(cancellationBill, paymentMethod);
@@ -3142,7 +3148,7 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
 
         billController.save(getBill());
         JsfUtil.addSuccessMessage("Cancelled");
-
+        
 //        Institution collectingCentre,
 //            double hospitalFee,
 //            double collectingCentreFee,
@@ -3150,6 +3156,7 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
 //            double transactionValue,
 //            HistoryType historyType,
 //            Bill bill
+
         collectingCentreApplicationController.updateCcBalance(
                 getBill().getCollectingCentre(),
                 bill.getTotalHospitalFee(),
@@ -3160,6 +3167,14 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
                 cancellationBill);
 
 //        drawerController.updateDrawerForOuts(p);
+        if (configOptionApplicationController.getBooleanValueByKey("Mandatory permission to cancel bills.", false)) {
+            Request billRequest = requestService.findRequest(bill);
+            if (billRequest != null) {
+                requestController.getBills().add(bill);
+                requestController.complteRequest(billRequest);
+            }
+        }
+        
         bill = billFacade.find(bill.getId());
         printPreview = true;
         comment = null;
@@ -6191,18 +6206,51 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
         return "/collecting_centre/bill_refund?faces-redirect=true";
     }
 
+    Request currentRequest;
+    @Inject
+    RequestController requestController1;
+    @Inject
+    RequestService requestService;
+
     public String navigateToCancelCollectingCentreBill() {
         if (bill == null) {
             JsfUtil.addErrorMessage("Nothing to cancel");
             return "";
         }
-        ccBillCancellingStarted.set(false);
-        paymentMethod = bill.getPaymentMethod();
-//        createBillItemsAndBillFees();
-//        boolean flag = billController.checkBillValues(bill);
-//        bill.setTransError(flag);
-        printPreview = false;
-        return "/collecting_centre/bill_cancel?faces-redirect=true";
+
+        boolean needPermissionToCancelCCBill = configOptionApplicationController.getBooleanValueByKey("CC Billing - Mandatory permission to cancel bills.", false);
+
+        if (configOptionApplicationController.getBooleanValueByKey("Mandatory permission to cancel bills.", false) && needPermissionToCancelCCBill) {
+            currentRequest = requestService.findRequest(bill);
+
+            if (currentRequest == null) {
+                return requestController.navigateToCreateRequest(bill);
+            } else {
+                switch (currentRequest.getStatus()) {
+                    case PENDING:
+                        requestController.setCurrentRequest(currentRequest);
+                        return "/common/request/request_status?faces-redirect=true";
+                    case UNDER_REVIEW:
+                        requestController.setCurrentRequest(currentRequest);
+                        return "/common/request/request_status?faces-redirect=true";
+                    case APPROVED:
+                        setBill(currentRequest.getBill());
+                        ccBillCancellingStarted.set(false);
+                        paymentMethod = currentRequest.getBill().getPaymentMethod();
+                        comment = currentRequest.getRequestReason();
+                        printPreview = false;
+
+                        return "/collecting_centre/bill_cancel?faces-redirect=true";
+                    default:
+                        return "";
+                }
+            }
+        } else {
+            ccBillCancellingStarted.set(false);
+            paymentMethod = bill.getPaymentMethod();
+            printPreview = false;
+            return "/collecting_centre/bill_cancel?faces-redirect=true";
+        }
     }
 
     public List<BillEntry> getBillEntrys() {
@@ -8295,6 +8343,7 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
                         cd.setInstitution(bankOrInstitution);
 
                         originalPaymentDetails.add(cd);
+
                     }
                 }
 

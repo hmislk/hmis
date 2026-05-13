@@ -125,6 +125,16 @@
                         </td>
                     </tr>
 
+                    <h:panelGroup rendered="#{cc.attrs.request.bill.collectingCentre ne null}" >
+                        <tr>
+                            <td style="padding: 2px; width: 120px;">CC Name</td>
+                            <td style="padding: 2px;" class="spacer"></td>
+                            <td style="padding: 2px;" colspan="4">
+                                <h:outputLabel value="#{cc.attrs.request.bill.collectingCentre.name}"/>
+                            </td>
+                        </tr>
+                    </h:panelGroup>
+
                     <h:panelGroup rendered="#{cc.attrs.request.bill.patient ne null}" >
                         <tr>
                             <td style="padding: 2px; width: 120px;">Patient Name</td>
@@ -162,11 +172,11 @@
 
 
                 </table>
-                
+
                 <div class="justify-content-end" style="margin-top:25px; min-height: 30px;">
                     <div class="d-flex justify-content-center">
                         <h:panelGroup rendered="#{cc.attrs.request.approvedBy ne null and cc.attrs.request.approvedBy.staff ne null and cc.attrs.request.approvedBy.staff.id ne null}" >
-                            
+
                             <h:panelGroup rendered="#{cc.attrs.request.approvedBy.staff.signatureUrl eq null}">
                                 <p:graphicImage
                                     cache="false"

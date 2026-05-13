@@ -2896,8 +2896,6 @@ public class OpdBatchBillCancellationController implements Serializable, Control
             if (billRequest != null) {
                 requestController.setBills(bills);
                 requestController.complteRequest(billRequest);
-            } else {
-                JsfUtil.addErrorMessage("Related approval request not found to complete.");
             }
         }
 
