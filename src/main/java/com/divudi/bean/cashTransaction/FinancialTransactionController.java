@@ -1911,21 +1911,19 @@ public class FinancialTransactionController implements Serializable {
         // display them. Same query as navigateToViewHandoverBill.
         Bill shiftStartBill = selectedBill.getReferenceBill();
         if (shiftStartBill != null && shiftStartBill.getId() != null) {
-            List<BillTypeAtomic> floatBtas = new ArrayList<>();
-            floatBtas.add(BillTypeAtomic.FUND_TRANSFER_BILL);
-            floatBtas.add(BillTypeAtomic.FUND_TRANSFER_RECEIVED_BILL);
             Map<String, Object> floatParams = new HashMap<>();
             String floatJpql = "SELECT p FROM Payment p JOIN p.bill b "
-                    + "WHERE (p.creater = :cu OR p.floatRecipient = :cu) "
+                    + "WHERE ((b.billTypeAtomic = :ftBill AND p.creater = :cu) "
+                    + "OR (b.billTypeAtomic = :ftRecv AND p.floatRecipient = :cu)) "
                     + "AND p.retired = false "
                     + "AND p.cancelled = false "
                     + "AND p.handingOverStarted = true "
-                    + "AND b.billTypeAtomic IN :btas "
                     + "AND b.id > :sid "
                     + "AND b.id <= :hid "
                     + "ORDER BY b.id";
             floatParams.put("cu", selectedBill.getFromWebUser());
-            floatParams.put("btas", floatBtas);
+            floatParams.put("ftBill", BillTypeAtomic.FUND_TRANSFER_BILL);
+            floatParams.put("ftRecv", BillTypeAtomic.FUND_TRANSFER_RECEIVED_BILL);
             floatParams.put("sid", shiftStartBill.getId());
             floatParams.put("hid", selectedBill.getId());
             List<Payment> floatPayments = paymentFacade.findByJpql(floatJpql, floatParams);
@@ -2054,21 +2052,19 @@ public class FinancialTransactionController implements Serializable {
         // handover bill, for this user as creator or recipient.
         Bill shiftStartBill = selectedBill.getReferenceBill();
         if (shiftStartBill != null && shiftStartBill.getId() != null) {
-            List<BillTypeAtomic> floatBtas = new ArrayList<>();
-            floatBtas.add(BillTypeAtomic.FUND_TRANSFER_BILL);
-            floatBtas.add(BillTypeAtomic.FUND_TRANSFER_RECEIVED_BILL);
             Map<String, Object> floatParams = new HashMap<>();
             String floatJpql = "SELECT p FROM Payment p JOIN p.bill b "
-                    + "WHERE (p.creater = :cu OR p.floatRecipient = :cu) "
+                    + "WHERE ((b.billTypeAtomic = :ftBill AND p.creater = :cu) "
+                    + "OR (b.billTypeAtomic = :ftRecv AND p.floatRecipient = :cu)) "
                     + "AND p.retired = false "
                     + "AND p.cancelled = false "
                     + "AND p.handingOverStarted = true "
-                    + "AND b.billTypeAtomic IN :btas "
                     + "AND b.id > :sid "
                     + "AND b.id <= :hid "
                     + "ORDER BY b.id";
             floatParams.put("cu", selectedBill.getFromWebUser());
-            floatParams.put("btas", floatBtas);
+            floatParams.put("ftBill", BillTypeAtomic.FUND_TRANSFER_BILL);
+            floatParams.put("ftRecv", BillTypeAtomic.FUND_TRANSFER_RECEIVED_BILL);
             floatParams.put("sid", shiftStartBill.getId());
             floatParams.put("hid", selectedBill.getId());
             List<Payment> floatPayments = paymentFacade.findByJpql(floatJpql, floatParams);
@@ -6170,20 +6166,18 @@ public class FinancialTransactionController implements Serializable {
         // at this point (validated at the start of this method).
         Bill shiftStartBillForFloats = bundle.getStartBill();
         if (shiftStartBillForFloats != null && shiftStartBillForFloats.getId() != null) {
-            List<BillTypeAtomic> floatTransferBtas = new ArrayList<>();
-            floatTransferBtas.add(BillTypeAtomic.FUND_TRANSFER_BILL);
-            floatTransferBtas.add(BillTypeAtomic.FUND_TRANSFER_RECEIVED_BILL);
             Map<String, Object> floatParams = new HashMap<>();
             String floatJpql = "SELECT p FROM Payment p JOIN p.bill b "
-                    + "WHERE (p.creater = :cu OR p.floatRecipient = :cu) "
+                    + "WHERE ((b.billTypeAtomic = :ftBill AND p.creater = :cu) "
+                    + "OR (b.billTypeAtomic = :ftRecv AND p.floatRecipient = :cu)) "
                     + "AND p.retired = false "
                     + "AND p.cancelled = false "
                     + "AND p.handingOverStarted = false "
                     + "AND p.cashbookEntryStated = false "
-                    + "AND b.billTypeAtomic IN :btas "
                     + "AND b.id > :sid";
             floatParams.put("cu", sessionController.getLoggedUser());
-            floatParams.put("btas", floatTransferBtas);
+            floatParams.put("ftBill", BillTypeAtomic.FUND_TRANSFER_BILL);
+            floatParams.put("ftRecv", BillTypeAtomic.FUND_TRANSFER_RECEIVED_BILL);
             floatParams.put("sid", shiftStartBillForFloats.getId());
             List<Payment> floatPaymentsToMark = paymentFacade.findByJpql(floatJpql, floatParams);
             for (Payment ftp : floatPaymentsToMark) {
