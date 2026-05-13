@@ -472,7 +472,10 @@
                                                             </h:outputText>
                                                         </td>
                                                         <td class="text-end">
-                                                            <h:outputText value="#{financialTransactionController.bundle.cashValue - financialTransactionController.bundle.denominatorValue}">
+                                                            <!-- Difference = To Handover total (col 2) minus Handing Over total (col 3).
+                                                                 Previously only subtracted cashValue - denominatorValue, ignoring all
+                                                                 other payment methods (card, cheque, slip, etc.). -->
+                                                            <h:outputText value="#{(financialTransactionController.bundle.cashValue + financialTransactionController.bundle.cardValue + financialTransactionController.bundle.chequeValue + financialTransactionController.bundle.creditValue + financialTransactionController.bundle.staffValue + financialTransactionController.bundle.staffWelfareValue + financialTransactionController.bundle.voucherValue + financialTransactionController.bundle.iouValue + financialTransactionController.bundle.agentValue + financialTransactionController.bundle.slipValue + financialTransactionController.bundle.ewalletValue + financialTransactionController.bundle.onCallValue + financialTransactionController.bundle.patientDepositValue + financialTransactionController.bundle.patientPointsValue + financialTransactionController.bundle.onlineSettlementValue + financialTransactionController.bundle.multiplePaymentMethodsValue) - (financialTransactionController.bundle.denominatorValue + financialTransactionController.bundle.cardHandoverValue + financialTransactionController.bundle.chequeHandoverValue + financialTransactionController.bundle.creditHandoverValue + financialTransactionController.bundle.staffHandoverValue + financialTransactionController.bundle.staffWelfareHandoverValue + financialTransactionController.bundle.voucherHandoverValue + financialTransactionController.bundle.iouHandoverValue + financialTransactionController.bundle.agentHandoverValue + financialTransactionController.bundle.slipHandoverValue + financialTransactionController.bundle.ewalletHandoverValue + financialTransactionController.bundle.onCallHandoverValue + financialTransactionController.bundle.patientDepositHandoverValue + financialTransactionController.bundle.patientPointsHandoverValue + financialTransactionController.bundle.onlineSettlementHandoverValue + financialTransactionController.bundle.multiplePaymentMethodsHandoverValue)}">
                                                                 <f:convertNumber pattern="#,##0.00" />
                                                             </h:outputText>
                                                         </td>
@@ -607,7 +610,7 @@
                                         <p:selectBooleanCheckbox value="#{summary.selected}" rendered="#{!summary.floatRow}">
                                             <p:ajax
                                                 listener="#{financialTransactionController.bundle.calculateTotalsBySelectedChildBundles()}"
-                                                update=":#{p:resolveFirstComponentWithId('txtCashHandover',view).clientId} :#{p:resolveFirstComponentWithId('tblCashier',view).clientId} "
+                                                update=":#{p:resolveFirstComponentWithId('txtCashHandover',view).clientId} :#{p:resolveFirstComponentWithId('tblCashier',view).clientId} :#{p:resolveFirstComponentWithId('lblHandoverTotal',view).clientId} :#{p:resolveFirstComponentWithId('tblAll',view).clientId}"
                                                 ></p:ajax>
                                         </p:selectBooleanCheckbox>
                                     </p:column>
