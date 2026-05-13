@@ -1254,7 +1254,6 @@ public class StaffSalaryAdvanceController implements Serializable {
             }
             current = stf;
 
-            // Save StaffSalary record first
             current.setInstitution(current.getStaff().getInstitution());
             current.setDepartment(current.getStaff().getWorkingDepartment());
             current.setSalaryCycle(salaryCycle);
@@ -1262,6 +1261,8 @@ public class StaffSalaryAdvanceController implements Serializable {
             current.setCreater(getSessionController().getLoggedUser());
 
             List<StaffSalaryComponant> list = current.getStaffSalaryComponants();
+            // Detach components temporarily so JPA cascade does not try to persist
+            // them before the parent StaffSalary has been assigned an ID.
             current.setStaffSalaryComponants(null);
             getStaffSalaryFacade().create(current);
             current.setStaffSalaryComponants(list);
@@ -1275,7 +1276,8 @@ public class StaffSalaryAdvanceController implements Serializable {
                 }
             }
 
-            current.setStaffSalaryComponants(list);
+            // Removed redundant current.setStaffSalaryComponants(list) here —
+            // list reference was already restored above before the loop.
             getStaffSalaryFacade().edit(current);
 
             save();
@@ -1283,6 +1285,8 @@ public class StaffSalaryAdvanceController implements Serializable {
             current = null;
         }
     }
+
+    
 
     private void updateStaffShift(Staff staff, Date fromDate, Date toDate) {
         List<StaffShift> staffShiftsLiePaymentAllowed = humanResourceBean.fetchStaffShiftLiePaymentAllowed(fromDate, toDate, staff);
