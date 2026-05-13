@@ -188,7 +188,7 @@ public class TransferReceiveNativeSqlService {
             TransferReceiveItemRowDto dto = new TransferReceiveItemRowDto();
             dto.setSerialNo(serial++);
             dto.setIssuedBillItemId(biId);
-            dto.setStaffStockId(((Number) row[6]).longValue());
+            dto.setStaffStockId(row[6] != null ? ((Number) row[6]).longValue() : null);
             dto.setItemBatchId(((Number) row[7]).longValue());
             dto.setItemId(((Number) row[15]).longValue());
             dto.setAmpItemId(((Number) row[15]).longValue()); // may be refined by controller for Ampp items
@@ -399,7 +399,10 @@ public class TransferReceiveNativeSqlService {
             double units = packs * item.getUnitsPerPack();
 
             // 3a. Deduct from staff stock (atomic — throws if insufficient)
-            deductStock(item.getStaffStockId(), units);
+            // staffStockId is null when the issue had no toStaff; skip deduction in that case.
+            if (item.getStaffStockId() != null) {
+                deductStock(item.getStaffStockId(), units);
+            }
 
             // 3b. Find or create dept stock and add qty
             long deptStockId = findOrCreateDeptStock(receivingDeptId, item.getItemBatchId(), units);
