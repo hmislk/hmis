@@ -20,6 +20,7 @@ import com.divudi.core.data.ServiceType;
 import com.divudi.core.data.dto.InwardAdmissionDTO;
 import com.divudi.core.data.dto.InwardAdmissionDemographicDataDTO;
 import com.divudi.core.data.dto.InwardIncomeDoctorSpecialtyDTO;
+import com.divudi.core.data.dto.IpIncomeCategoryWiseRowDTO;
 import com.divudi.core.data.dto.MonthServiceCountDTO;
 import com.divudi.core.data.dto.MonthlySurgeryCountDTO;
 import com.divudi.core.data.dto.IpUnsettledInvoiceDTO;
@@ -434,13 +435,13 @@ public class InwardReportController implements Serializable {
             }
         }
 
-        List<BillItem> bis = findIpIncomeBillItemsSingleQuery(btasOP, btasIP);
+        List<IpIncomeCategoryWiseRowDTO> rows = findIpIncomeCategoryWiseRowsSingleQuery(btasOP, btasIP);
 
         // ── Summarise ────────────────────────────────────────────────────────────
         boolean includeItems = "detail".equalsIgnoreCase(reportType);
-        summarizeBillItemsToIpIncomeCategoryWise(rtrb, bis, includeItems);
+        summarizeIpIncomeCategoryWiseRows(rtrb, rows, includeItems);
 
-        populateIpIncomeProfitMatrixAndBillDiscounts(bis);
+        populateIpIncomeProfitMatrixAndBillDiscounts(rows);
 
         rtrb.setName(includeItems
                 ? "IP Income Category Wise Report - Detail"
@@ -460,15 +461,25 @@ public class InwardReportController implements Serializable {
         return rtrb;
     }
 
-    private List<BillItem> findIpIncomeBillItemsSingleQuery(List<BillTypeAtomic> btasOP, List<BillTypeAtomic> btasIP) {
+    private List<IpIncomeCategoryWiseRowDTO> findIpIncomeCategoryWiseRowsSingleQuery(List<BillTypeAtomic> btasOP, List<BillTypeAtomic> btasIP) {
 
         List<PaymentMethod> creditPaymentMethods = enumController.getPaymentTypeOfPaymentMethods(PaymentType.CREDIT);
         List<PaymentMethod> nonCreditPaymentMethods = enumController.getPaymentTypeOfPaymentMethods(PaymentType.NON_CREDIT);
 
         StringBuilder jpql = new StringBuilder();
-        jpql.append("select bi from BillItem bi"
-                + " where bi.bill.retired = :br"
-                + " and bi.bill.createdAt between :fd and :td ");
+        jpql.append("select new com.divudi.core.data.dto.IpIncomeCategoryWiseRowDTO("
+                + " b.id, b.billClassType, b.billType, b.discount, b.deptId,"
+                + " bi.grossValue, bi.hospitalFee, bi.discount, bi.staffFee, bi.netValue,"
+                + " i.id, i.name, c.id, c.name,"
+                + " pe.paymentMethod, b.paymentMethod"
+                + ")"
+                + " from BillItem bi"
+                + " join bi.bill b"
+                + " left join bi.item i"
+                + " left join i.category c"
+                + " left join b.patientEncounter pe"
+                + " where b.retired = :br"
+                + " and b.createdAt between :fd and :td ");
 
         Map<String, Object> m = new HashMap<>();
         m.put("br", false);
@@ -546,12 +557,14 @@ public class InwardReportController implements Serializable {
             m.put("cat", category);
         }
 
-        return billItemFacade.findByJpql(jpql.toString(), m, TemporalType.TIMESTAMP);
+        return (List<IpIncomeCategoryWiseRowDTO>) billItemFacade.findLightsByJpql(jpql.toString(), m, TemporalType.TIMESTAMP);
     }
 
-    private void summarizeBillItemsToIpIncomeCategoryWise(ReportTemplateRowBundle reportBundle, List<BillItem> billItems, boolean includeItems) {
+    private void summarizeIpIncomeCategoryWiseRows(ReportTemplateRowBundle reportBundle,
+            List<IpIncomeCategoryWiseRowDTO> rows, boolean includeItems) {
         Map<String, ReportTemplateRow> categoryMap = new TreeMap<>();
         Map<String, ReportTemplateRow> itemMap = new TreeMap<>();
+        Map<String, String> itemKeyToCategoryName = new HashMap<>();
         List<ReportTemplateRow> rowsToAdd = new ArrayList<>();
         double totalNetIncome = 0.0;
         double totalIncome = 0.0;
@@ -562,58 +575,75 @@ public class InwardReportController implements Serializable {
         double totalPatientPay = 0.0;
         long totalCount = 0L;
 
-        for (BillItem iteratingBillItem : billItems) {
-            if (iteratingBillItem.getBill() == null) {
+        for (IpIncomeCategoryWiseRowDTO rowDto : rows) {
+            if (rowDto.getBillId() == null) {
                 continue;
             }
 
             PaymentMethod paymentMethodForBillItem = null;
-            if (iteratingBillItem.getBill().getPatientEncounter() != null) {
-                paymentMethodForBillItem = iteratingBillItem.getBill().getPatientEncounter().getPaymentMethod();
-            } else {
-                paymentMethodForBillItem = iteratingBillItem.getBill().getPaymentMethod();
-            }
+            paymentMethodForBillItem = rowDto.getEncounterPaymentMethod() != null
+                    ? rowDto.getEncounterPaymentMethod()
+                    : rowDto.getBillPaymentMethod();
 
             if (paymentMethodForBillItem == null || paymentMethodForBillItem.getPaymentType() == PaymentType.NONE) {
                 continue;
             }
 
-            String categoryName = iteratingBillItem.getItem() != null && iteratingBillItem.getItem().getCategory() != null
-                    ? iteratingBillItem.getItem().getCategory().getName() : "No Category";
-            String itemName = iteratingBillItem.getItem() != null ? iteratingBillItem.getItem().getName() : "No Item";
+            String categoryName = rowDto.getCategoryName() != null
+                    ? rowDto.getCategoryName()
+                    : "No Category";
+            String itemName = rowDto.getItemName() != null
+                    ? rowDto.getItemName()
+                    : "No Item";
             String itemKey = categoryName + "->" + itemName;
 
             categoryMap.putIfAbsent(categoryName, new ReportTemplateRow());
 
             ReportTemplateRow categoryRow = categoryMap.get(categoryName);
-            if (iteratingBillItem.getItem() != null) {
-                categoryRow.setCategory(iteratingBillItem.getItem().getCategory());
+            if (rowDto.getCategoryId() != null) {
+                Category categoryRef = new Category();
+                categoryRef.setId(rowDto.getCategoryId());
+                categoryRef.setName(rowDto.getCategoryName());
+                categoryRow.setCategory(categoryRef);
             }
 
             ReportTemplateRow itemRow = null;
             if (includeItems) {
-                itemMap.putIfAbsent(itemKey, new ReportTemplateRow());
                 itemRow = itemMap.get(itemKey);
-                if (iteratingBillItem.getItem() != null) {
-                    itemRow.setItem(iteratingBillItem.getItem());
+                if (itemRow == null) {
+                    itemRow = new ReportTemplateRow();
+                    if (rowDto.getItemId() != null) {
+                        Item itemRef = new Item();
+                        itemRef.setId(rowDto.getItemId());
+                        itemRef.setName(rowDto.getItemName());
+                        if (rowDto.getCategoryId() != null) {
+                            Category categoryRef = new Category();
+                            categoryRef.setId(rowDto.getCategoryId());
+                            categoryRef.setName(rowDto.getCategoryName());
+                            itemRef.setCategory(categoryRef);
+                        }
+                        itemRow.setItem(itemRef);
+                    }
+                    itemMap.put(itemKey, itemRow);
+                    itemKeyToCategoryName.put(itemKey, categoryName);
                 }
             }
 
-            long countModifier = (iteratingBillItem.getBill().getBillClassType() == BillClassType.CancelledBill
-                    || iteratingBillItem.getBill().getBillClassType() == BillClassType.RefundBill) ? -1 : 1;
+            long countModifier = (rowDto.getBillClassType() == BillClassType.CancelledBill
+                    || rowDto.getBillClassType() == BillClassType.RefundBill) ? -1 : 1;
 
-            double grossValue = countModifier * Math.abs(iteratingBillItem.getGrossValue());
-            double hospitalFee = countModifier * Math.abs(iteratingBillItem.getHospitalFee());
-            double iteratingDiscount = countModifier * Math.abs(iteratingBillItem.getDiscount());
-            double staffFee = countModifier * Math.abs(iteratingBillItem.getStaffFee());
-            boolean professionalPaymentBill = iteratingBillItem.getBill().getBillType() == BillType.PaymentBill;
+            double grossValue = countModifier * Math.abs(nullSafeDouble(rowDto.getGrossValue()));
+            double hospitalFee = countModifier * Math.abs(nullSafeDouble(rowDto.getHospitalFee()));
+            double iteratingDiscount = countModifier * Math.abs(nullSafeDouble(rowDto.getDiscount()));
+            double staffFee = countModifier * Math.abs(nullSafeDouble(rowDto.getStaffFee()));
+            boolean professionalPaymentBill = rowDto.getBillType() == BillType.PaymentBill;
             double netValue;
             if (professionalPaymentBill) {
-                netValue = countModifier * Math.abs(iteratingBillItem.getNetValue());
+                netValue = countModifier * Math.abs(nullSafeDouble(rowDto.getNetValue()));
             } else if (withProfessionalFee) {
-                netValue = countModifier * Math.abs(iteratingBillItem.getNetValue());
+                netValue = countModifier * Math.abs(nullSafeDouble(rowDto.getNetValue()));
             } else {
-                netValue = countModifier * Math.abs(iteratingBillItem.getNetValue() - iteratingBillItem.getStaffFee());
+                netValue = countModifier * Math.abs(nullSafeDouble(rowDto.getNetValue()) - nullSafeDouble(rowDto.getStaffFee()));
             }
 
             double sponsorDiscount = 0.0;
@@ -643,14 +673,23 @@ public class InwardReportController implements Serializable {
             }
         }
 
+        Map<String, List<ReportTemplateRow>> itemRowsByCategory = new HashMap<>();
+        if (includeItems) {
+            for (Map.Entry<String, ReportTemplateRow> entry : itemMap.entrySet()) {
+                String categoryName = itemKeyToCategoryName.get(entry.getKey());
+                itemRowsByCategory
+                        .computeIfAbsent(categoryName, k -> new ArrayList<>())
+                        .add(entry.getValue());
+            }
+        }
+
         categoryMap.forEach((categoryName, catRow) -> {
             rowsToAdd.add(catRow);
             if (includeItems) {
-                itemMap.values().stream()
-                        .filter(iRow -> iRow.getItem() != null
-                        && iRow.getItem().getCategory() != null
-                        && iRow.getItem().getCategory().getName().equals(categoryName))
-                        .forEach(rowsToAdd::add);
+                List<ReportTemplateRow> itemRows = itemRowsByCategory.get(categoryName);
+                if (itemRows != null) {
+                    rowsToAdd.addAll(itemRows);
+                }
             }
         });
 
@@ -709,7 +748,7 @@ public class InwardReportController implements Serializable {
         row.setRowValueOut(row.getRowValueOut() + patientPay);
     }
 
-    private void populateIpIncomeProfitMatrixAndBillDiscounts(List<BillItem> billItems) {
+    private void populateIpIncomeProfitMatrixAndBillDiscounts(List<IpIncomeCategoryWiseRowDTO> rows) {
         ipIncomeCashTotal = 0.0;
         ipIncomeCreditTotal = 0.0;
         ipIncomeTotalBillDiscount = 0.0;
@@ -719,34 +758,31 @@ public class InwardReportController implements Serializable {
         // Key: bill.id  →  { invoiceNo, billDiscount }
         Map<Long, Map<String, Object>> billDiscountMap = new LinkedHashMap<>();
 
-        for (BillItem bi : billItems) {
-            Bill bill = bi.getBill();
-            if (bill == null) {
+        for (IpIncomeCategoryWiseRowDTO rowDto : rows) {
+            if (rowDto.getBillId() == null) {
                 continue;
             }
 
             // ── Resolve payment method ──────────────────────────────────────────
             PaymentMethod pm = null;
-            if (bill.getPatientEncounter() != null) {
-                pm = bill.getPatientEncounter().getPaymentMethod();
-            } else {
-                pm = bill.getPaymentMethod();
-            }
+            pm = rowDto.getEncounterPaymentMethod() != null
+                    ? rowDto.getEncounterPaymentMethod()
+                    : rowDto.getBillPaymentMethod();
             if (pm == null || pm.getPaymentType() == PaymentType.NONE) {
                 continue;
             }
 
             // ── Count modifier (cancellations/refunds subtract) ─────────────────
-            long countModifier = (bill.getBillClassType() == BillClassType.CancelledBill
-                    || bill.getBillClassType() == BillClassType.RefundBill) ? -1 : 1;
+            long countModifier = (rowDto.getBillClassType() == BillClassType.CancelledBill
+                    || rowDto.getBillClassType() == BillClassType.RefundBill) ? -1 : 1;
 
             // ── Net value (same logic as summarizeBillItemsToIpIncomeCategoryWise) ──
-            boolean isProfPayment = bill.getBillType() == BillType.PaymentBill;
+            boolean isProfPayment = rowDto.getBillType() == BillType.PaymentBill;
             double netValue;
             if (isProfPayment || withProfessionalFee) {
-                netValue = countModifier * Math.abs(bi.getNetValue());
+                netValue = countModifier * Math.abs(nullSafeDouble(rowDto.getNetValue()));
             } else {
-                netValue = countModifier * Math.abs(bi.getNetValue() - bi.getStaffFee());
+                netValue = countModifier * Math.abs(nullSafeDouble(rowDto.getNetValue()) - nullSafeDouble(rowDto.getStaffFee()));
             }
 
             // ── Profit Matrix: Cash vs Credit ───────────────────────────────────
@@ -757,18 +793,19 @@ public class InwardReportController implements Serializable {
             }
 
             // ── Bill Discount: aggregate per bill ───────────────────────────────
-            if (bill.getDiscount() != 0.0) {
-                Long billId = bill.getId();
+            Double billDiscount = rowDto.getBillDiscount();
+            if (billDiscount != null && billDiscount != 0.0) {
+                Long billId = rowDto.getBillId();
                 if (!billDiscountMap.containsKey(billId)) {
                     Map<String, Object> entry = new LinkedHashMap<>();
-                    entry.put("invoiceNo", bill.getDeptId()!= null
-                            ? bill.getDeptId() : String.valueOf(billId));
-                    entry.put("discount", countModifier * Math.abs(bill.getDiscount()));
+                    entry.put("invoiceNo", rowDto.getBillDeptId() != null
+                            ? rowDto.getBillDeptId() : String.valueOf(billId));
+                    entry.put("discount", countModifier * Math.abs(billDiscount));
                     billDiscountMap.put(billId, entry);
                 } else {
                     Map<String, Object> entry = billDiscountMap.get(billId);
                     double existing = (Double) entry.get("discount");
-                    entry.put("discount", existing + countModifier * Math.abs(bill.getDiscount()));
+                    entry.put("discount", existing + countModifier * Math.abs(billDiscount));
                 }
             }
         }
@@ -777,6 +814,10 @@ public class InwardReportController implements Serializable {
         ipIncomeTotalBillDiscount = ipIncomeBillDiscounts.stream()
                 .mapToDouble(e -> (Double) e.get("discount"))
                 .sum();
+    }
+
+    private double nullSafeDouble(Double value) {
+        return value == null ? 0.0 : value;
     }
 
     public void processSurgeryCountDoctorWiseReport() {
