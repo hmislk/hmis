@@ -11,6 +11,8 @@ import com.divudi.service.archival.StockHistoryArchivalService;
 import java.io.Serializable;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -29,6 +31,8 @@ import javax.inject.Named;
 public class StockHistoryArchivalController implements Serializable {
 
     private static final long serialVersionUID = 1L;
+
+    private static final Logger LOGGER = Logger.getLogger(StockHistoryArchivalController.class.getName());
 
     @EJB
     private StockHistoryArchivalService archivalService;
@@ -51,17 +55,21 @@ public class StockHistoryArchivalController implements Serializable {
     }
 
     private void resetDefaults() {
-        int retentionDays = configOptionController.getIntegerValueByKey(
-                "StockHistory Archive - Retention Days", 730);
+        int retentionDays = sanitisePositive(configOptionController.getIntegerValueByKey(
+                "StockHistory Archive - Retention Days", 730), 730);
         Calendar cal = Calendar.getInstance();
         cal.add(Calendar.DATE, -retentionDays);
         cutoffDate = cal.getTime();
 
-        batchSize = configOptionController.getIntegerValueByKey(
-                "StockHistory Archive - Batch Size", 2000);
-        maxBatches = configOptionController.getIntegerValueByKey(
-                "StockHistory Archive - Max Batches Per Run", 50);
+        batchSize = sanitisePositive(configOptionController.getIntegerValueByKey(
+                "StockHistory Archive - Batch Size", 2000), 2000);
+        maxBatches = sanitisePositive(configOptionController.getIntegerValueByKey(
+                "StockHistory Archive - Max Batches Per Run", 50), 50);
         dryRun = true;
+    }
+
+    private static int sanitisePositive(Integer raw, int fallback) {
+        return (raw == null || raw <= 0) ? fallback : raw;
     }
 
     public void preview() {
@@ -73,7 +81,8 @@ public class StockHistoryArchivalController implements Serializable {
             JsfUtil.addSuccessMessage(candidateCount + " row(s) eligible for archival before "
                     + cutoffDate);
         } catch (Exception ex) {
-            JsfUtil.addErrorMessage("Preview failed: " + ex.getMessage());
+            LOGGER.log(Level.SEVERE, "StockHistory archival preview failed", ex);
+            JsfUtil.addErrorMessage("Preview failed. Please check server logs for details.");
         }
     }
 
@@ -90,7 +99,8 @@ public class StockHistoryArchivalController implements Serializable {
                 JsfUtil.addSuccessMessage(lastResult.getMessage());
             }
         } catch (Exception ex) {
-            JsfUtil.addErrorMessage("Archive run failed: " + ex.getMessage());
+            LOGGER.log(Level.SEVERE, "StockHistory archive run failed", ex);
+            JsfUtil.addErrorMessage("Archive run failed. Please check server logs for details.");
         }
     }
 

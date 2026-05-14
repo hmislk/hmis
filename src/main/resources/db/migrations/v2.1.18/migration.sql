@@ -90,7 +90,7 @@ SET @has_auto_inc = (
       AND EXTRA LIKE '%auto_increment%'
 );
 
-SET @sql = IF(@has_auto_inc > 0,
+SET @sql = IF(@archive_table IS NOT NULL AND @has_auto_inc > 0,
               CONCAT('ALTER TABLE ', @archive_table, ' MODIFY ID BIGINT NOT NULL'),
               'SELECT 1');
 PREPARE stmt FROM @sql;
@@ -110,7 +110,7 @@ SET @has_archivedat = (
       AND UPPER(COLUMN_NAME) = 'ARCHIVEDAT'
 );
 
-SET @sql = IF(@has_archivedat = 0,
+SET @sql = IF(@archive_table IS NOT NULL AND @has_archivedat = 0,
               CONCAT('ALTER TABLE ', @archive_table, ' ADD COLUMN ARCHIVEDAT DATETIME NULL'),
               'SELECT 1');
 PREPARE stmt FROM @sql;
@@ -131,7 +131,7 @@ SET @has_createdat_idx = (
       AND INDEX_NAME = 'idx_stockhistoryarchive_createdat'
 );
 
-SET @sql = IF(@has_createdat_idx = 0,
+SET @sql = IF(@archive_table IS NOT NULL AND @has_createdat_idx = 0,
               CONCAT('ALTER TABLE ', @archive_table, ' ADD INDEX idx_stockhistoryarchive_createdat (CREATEDAT)'),
               'SELECT 1');
 PREPARE stmt FROM @sql;

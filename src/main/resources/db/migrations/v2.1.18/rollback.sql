@@ -20,11 +20,12 @@ SET @archive_table = (
 
 SELECT CONCAT('Detected stockhistoryarchive table as: ', IFNULL(@archive_table, '(not found - nothing to drop)')) AS info;
 
-SET @row_count = (
-    SELECT IFNULL(TABLE_ROWS, 0)
+SET @row_count = COALESCE((
+    SELECT TABLE_ROWS
     FROM INFORMATION_SCHEMA.TABLES
     WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @archive_table
-);
+    LIMIT 1
+), 0);
 
 SELECT CONCAT('Approximate rows in archive (will be lost): ', @row_count) AS warning;
 

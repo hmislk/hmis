@@ -164,12 +164,12 @@ public class ScheduledProcessService {
      * remaining backlog.
      */
     private void archiveOldStockHistoryRecords() {
-        int retentionDays = configOptionController.getIntegerValueByKey(
-                "StockHistory Archive - Retention Days", 730);
-        int batchSize = configOptionController.getIntegerValueByKey(
-                "StockHistory Archive - Batch Size", 2000);
-        int maxBatches = configOptionController.getIntegerValueByKey(
-                "StockHistory Archive - Max Batches Per Run", 50);
+        int retentionDays = sanitisePositive(configOptionController.getIntegerValueByKey(
+                "StockHistory Archive - Retention Days", 730), 730);
+        int batchSize = sanitisePositive(configOptionController.getIntegerValueByKey(
+                "StockHistory Archive - Batch Size", 2000), 2000);
+        int maxBatches = sanitisePositive(configOptionController.getIntegerValueByKey(
+                "StockHistory Archive - Max Batches Per Run", 50), 50);
 
         Calendar cal = Calendar.getInstance();
         cal.add(Calendar.DATE, -retentionDays);
@@ -183,7 +183,14 @@ public class ScheduledProcessService {
                             result.getDurationMillis(), result.getMessage()});
         } catch (Exception ex) {
             LOGGER.log(Level.SEVERE, "StockHistory archive run failed", ex);
+            // Rethrow so executeScheduledProcess() does not mark
+            // lastProcessCompleted=true when the archive actually failed.
+            throw new RuntimeException("StockHistory archive run failed", ex);
         }
+    }
+
+    private static int sanitisePositive(Integer raw, int fallback) {
+        return (raw == null || raw <= 0) ? fallback : raw;
     }
 
     public Date calculateNextSupposedAt(ScheduledFrequency frequency, Date from) {

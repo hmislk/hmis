@@ -88,19 +88,26 @@ public abstract class ArchivalServiceBase {
     /**
      * Resolve the list of column names common to both source and archive
      * tables (excluding {@code ARCHIVEDAT}, which the batch executor sets
-     * to {@code NOW()}). Uses INFORMATION_SCHEMA so the column list stays
-     * in sync as the schema evolves.
+     * to {@code NOW()}). Uses an INFORMATION_SCHEMA intersection so any
+     * future schema drift between the two tables — a column added to one
+     * but not the other — yields a safe subset rather than a runtime
+     * "column unknown" failure inside the INSERT…SELECT batch.
      */
     @SuppressWarnings("unchecked")
     protected List<String> resolveCommonColumns() {
         String sql =
-                "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS "
-              + "WHERE TABLE_SCHEMA = DATABASE() "
-              + "  AND UPPER(TABLE_NAME) = UPPER(?) "
-              + "  AND UPPER(COLUMN_NAME) <> 'ARCHIVEDAT' "
-              + "ORDER BY ORDINAL_POSITION";
+                "SELECT a.COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS a "
+              + "JOIN INFORMATION_SCHEMA.COLUMNS s "
+              + "  ON s.TABLE_SCHEMA = a.TABLE_SCHEMA "
+              + " AND UPPER(s.TABLE_NAME) = UPPER(?) "
+              + " AND UPPER(s.COLUMN_NAME) = UPPER(a.COLUMN_NAME) "
+              + "WHERE a.TABLE_SCHEMA = DATABASE() "
+              + "  AND UPPER(a.TABLE_NAME) = UPPER(?) "
+              + "  AND UPPER(a.COLUMN_NAME) <> 'ARCHIVEDAT' "
+              + "ORDER BY a.ORDINAL_POSITION";
         Query q = em().createNativeQuery(sql);
-        q.setParameter(1, archiveTable());
+        q.setParameter(1, sourceTable());
+        q.setParameter(2, archiveTable());
         List<?> raw = q.getResultList();
         List<String> cols = new ArrayList<>(raw.size());
         for (Object o : raw) {
