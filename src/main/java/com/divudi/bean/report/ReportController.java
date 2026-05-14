@@ -4130,6 +4130,160 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         }
         System.out.println("durationServiceReportRows = " + durationServiceReportRows);
     }
+    
+     public void exportDurationServiceReportToPDF() {
+        if (durationServiceReportRows == null || durationServiceReportRows.isEmpty()) {
+            JsfUtil.addErrorMessage("No data to export. Please process the report first.");
+            return;
+        }
+
+        FacesContext context = FacesContext.getCurrentInstance();
+        ExternalContext externalContext = context.getExternalContext();
+        HttpServletResponse response = (HttpServletResponse) externalContext.getResponse();
+        response.reset();
+
+        String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate,
+                sessionController.getApplicationPreference().getLongDateFormat());
+        response.setContentType("application/pdf");
+        if (dates != null && !dates.isEmpty()) {
+            response.setHeader("Content-Disposition", "attachment; filename=Duration_Service_Report_" + dates + ".pdf");
+        } else {
+            response.setHeader("Content-Disposition", "attachment; filename=Duration_Service_Report.pdf");
+        }
+
+        SimpleDateFormat generatedAtFormat = new SimpleDateFormat("dd MM yyyy hh:mm:ss a");
+        SimpleDateFormat dateTimeFormat = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
+        String institutionName = sessionController.getInstitution() != null ? sessionController.getInstitution().getName() : "";
+
+        try (OutputStream out = response.getOutputStream()) {
+            com.itextpdf.text.Document document = new com.itextpdf.text.Document(com.itextpdf.text.PageSize.A3.rotate(), 12, 12, 18, 18);
+            com.itextpdf.text.pdf.PdfWriter.getInstance(document, out);
+            document.open();
+
+            if (institutionName != null && !institutionName.isEmpty()) {
+                document.add(new com.itextpdf.text.Paragraph(institutionName,
+                        com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA_BOLD, 16)));
+            }
+            document.add(new com.itextpdf.text.Paragraph("Duration Service Report",
+                    com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA_BOLD, 14)));
+            document.add(new com.itextpdf.text.Paragraph("Date: " + generatedAtFormat.format(new Date()),
+                    com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA, 10)));
+            document.add(new com.itextpdf.text.Paragraph(" "));
+
+            com.itextpdf.text.pdf.PdfPTable infoTable = pharmacyController.createInfoTablePdfExport(generatedAtFormat, getFiltersForDurationServiceReport());
+            if (infoTable != null) {
+                document.add(infoTable);
+            }
+
+            String[] headers = new String[]{
+                "S. No.", "BHT No", "MRN No", "Consultant", "Surgery", "Service Dept.",
+                "Service", "Service Group", "Start Time", "End Time", "Duration",
+                "Base Price", "Discount", "Sponsor Discount", "Sponsor Net.",
+                "Patient Amt", "Adjusted Amt", "Creator", "Checked By", "Checked At"
+            };
+            float[] widths = new float[]{
+                0.6f, 1.1f, 1.1f, 2.0f, 1.8f, 1.8f, 2.3f, 1.8f, 1.5f, 1.5f,
+                1.1f, 1.1f, 1.1f, 1.1f, 1.1f, 1.1f, 1.1f, 1.5f, 1.5f, 1.5f
+            };
+
+            com.itextpdf.text.Font headerFont = com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA_BOLD, 6);
+            com.itextpdf.text.Font bodyFont = com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA, 6);
+            com.itextpdf.text.pdf.PdfPTable table = new com.itextpdf.text.pdf.PdfPTable(headers.length);
+            table.setWidthPercentage(100);
+            table.setWidths(widths);
+            table.setHeaderRows(1);
+
+            for (String header : headers) {
+                com.itextpdf.text.pdf.PdfPCell cell = new com.itextpdf.text.pdf.PdfPCell(new com.itextpdf.text.Phrase(header, headerFont));
+                cell.setBackgroundColor(com.itextpdf.text.BaseColor.LIGHT_GRAY);
+                cell.setHorizontalAlignment(com.itextpdf.text.Element.ALIGN_CENTER);
+                cell.setVerticalAlignment(com.itextpdf.text.Element.ALIGN_MIDDLE);
+                cell.setPadding(2f);
+                table.addCell(cell);
+            }
+
+            int index = 1;
+            for (DurationServiceReportDTO row : durationServiceReportRows) {
+                table.addCell(textCell(String.valueOf(index++), bodyFont));
+                table.addCell(textCell(row.getBhtNo(), bodyFont));
+                table.addCell(textCell(row.getMrnNo(), bodyFont));
+                table.addCell(textCell(row.getConsultantName(), bodyFont));
+                table.addCell(textCell(row.getSurgeryName(), bodyFont));
+                table.addCell(textCell(row.getServiceDepartmentName(), bodyFont));
+                table.addCell(textCell(row.getServiceName(), bodyFont));
+                table.addCell(textCell(row.getServiceGroupName(), bodyFont));
+                table.addCell(textCell(formatDate(row.getStartTime(), dateTimeFormat), bodyFont));
+                table.addCell(textCell(formatDate(row.getEndTime(), dateTimeFormat), bodyFont));
+                table.addCell(textCell(row.getDuration(), bodyFont));
+                table.addCell(numCell(row.getBasePrice(), bodyFont));
+                table.addCell(numCell(row.getDiscountAmount(), bodyFont));
+                table.addCell(numCell(row.getSponsorDiscount(), bodyFont));
+                table.addCell(numCell(row.getSponsorNet(), bodyFont));
+                table.addCell(numCell(row.getPatientAmount(), bodyFont));
+                table.addCell(numCell(row.getAdjustedAmount(), bodyFont));
+                table.addCell(textCell(row.getCreatorName(), bodyFont));
+                table.addCell(textCell(row.getCheckedByName(), bodyFont));
+                table.addCell(textCell(formatDate(row.getCheckedAt(), dateTimeFormat), bodyFont));
+            }
+
+            document.add(table);
+            document.close();
+            context.responseComplete();
+        } catch (Exception e) {
+            Logger.getLogger(ReportController.class.getName()).log(Level.SEVERE, "Error exporting Duration Service Report to PDF", e);
+        }
+    }
+
+    private Map<String, Object> getFiltersForDurationServiceReport() {
+        SimpleDateFormat sdf = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
+        Map<String, Object> filters = new LinkedHashMap<>();
+
+        filters.put("Discharge Date From", fromDate != null ? sdf.format(fromDate) : "All");
+        filters.put("Discharge Date To", toDate != null ? sdf.format(toDate) : "All");
+        filters.put("Service Added Date From", serviceAddedFromDate != null ? sdf.format(serviceAddedFromDate) : "All");
+        filters.put("Service Added Date To", serviceAddedToDate != null ? sdf.format(serviceAddedToDate) : "All");
+        filters.put("Invoice Date From", invoiceFromDate != null ? sdf.format(invoiceFromDate) : "All");
+        filters.put("Invoice Date To", invoiceToDate != null ? sdf.format(invoiceToDate) : "All");
+        filters.put("Service Name", item != null ? item.getName() : "All Services");
+        filters.put("Admission Types", namesForDurationServiceReport(admissionTypes));
+        filters.put("Room Categories", namesForDurationServiceReport(roomCategories));
+        filters.put("Service Department", serviceDepartment != null ? serviceDepartment.getName() : "All Service Departments");
+        filters.put("Billed Department", billedDepartment != null ? billedDepartment.getName() : "All Billed Departments");
+        filters.put("Visit Type", visitType != null && !visitType.trim().isEmpty() ? visitType : "All");
+        filters.put("Service Group", serviceGroup != null && !serviceGroup.trim().isEmpty() ? serviceGroup.trim() : "All");
+        return filters;
+    }
+
+    private String namesForDurationServiceReport(List<?> values) {
+        if (values == null || values.isEmpty()) {
+            return "All";
+        }
+        StringBuilder names = new StringBuilder();
+        for (Object value : values) {
+            if (value == null) {
+                continue;
+            }
+            String name = value.toString();
+            if (value instanceof AdmissionType) {
+                name = ((AdmissionType) value).getName();
+            } else if (value instanceof RoomCategory) {
+                name = ((RoomCategory) value).getName();
+            }
+            if (name == null || name.trim().isEmpty()) {
+                continue;
+            }
+            if (names.length() > 0) {
+                names.append(", ");
+            }
+            names.append(name);
+        }
+        return names.length() > 0 ? names.toString() : "All";
+    }
+
+    private String formatDate(Date date, SimpleDateFormat sdf) {
+        return date != null ? sdf.format(date) : "-";
+    }
+
 
     private DurationServiceReportDTO toDurationServiceReportDto(PatientItem patientItem) {
         PatientEncounter encounter = patientItem != null ? patientItem.getPatientEncounter() : null;

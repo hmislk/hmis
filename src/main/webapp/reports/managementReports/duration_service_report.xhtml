@@ -210,9 +210,8 @@
 
             <p:commandButton ajax="false" value="PDF"
                              icon="fas fa-file-pdf"
-                             styleClass="ui-button-danger mx-1">
-                <p:dataExporter fileName="Duration_Service_Report"
-                                type="pdf" target="tbl" />
+                             styleClass="ui-button-danger mx-1"
+                             action="#{reportController.exportDurationServiceReportToPDF()}">
             </p:commandButton>
         </h:panelGrid>
 
