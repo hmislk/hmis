@@ -1366,11 +1366,48 @@ public class FinancialTransactionController implements Serializable {
         return "/cashier/record_shift_excess?faces-redirect=true";
     }
 
-    public String navigateToViewDetailsOfSelectedBundleDuringHandoverInNewWindow() {
+    public String navigateToViewDetailsOfSelectedBundleDuringHandover() {
         if (selectedBundle == null) {
             return null;
         }
+        if (selectedBundle.isFloatRow()) {
+            populateFloatBundleRows(selectedBundle);
+        } else if (selectedBundle.getPaymentHandover() == PaymentHandover.FLOATS) {
+            // Shortage rows already have reportTemplateRows from generatePaymentBundleForHandovers;
+            // nothing extra needed.
+        }
         return "/cashier/handover_start_all_bill_type_details?faces-redirect=true";
+    }
+
+    private void populateFloatBundleRows(ReportTemplateRowBundle floatBundle) {
+        if (floatBundle == null || bundle == null || bundle.getStartBill() == null) {
+            return;
+        }
+        if (!floatBundle.getReportTemplateRows().isEmpty()) {
+            return;
+        }
+        Bill startBill = bundle.getStartBill();
+        Bill endBill = bundle.getEndBill();
+        List<Payment> fundTransferPayments = fetchFundTransferPaymentsForShift(startBill, endBill, startBill.getCreater());
+        if (fundTransferPayments == null) {
+            return;
+        }
+        boolean isOut = floatBundle.getPaymentHandover() == PaymentHandover.FLOAT_OUT;
+        for (Payment fp : fundTransferPayments) {
+            if (fp.getBill() == null) {
+                continue;
+            }
+            BillTypeAtomic bta = fp.getBill().getBillTypeAtomic();
+            if (isOut && bta == BillTypeAtomic.FUND_TRANSFER_BILL) {
+                ReportTemplateRow row = new ReportTemplateRow();
+                row.setPayment(fp);
+                floatBundle.getReportTemplateRows().add(row);
+            } else if (!isOut && bta == BillTypeAtomic.FUND_TRANSFER_RECEIVED_BILL) {
+                ReportTemplateRow row = new ReportTemplateRow();
+                row.setPayment(fp);
+                floatBundle.getReportTemplateRows().add(row);
+            }
+        }
     }
 
     public String navigateToCashierShiftBillSearch() {
