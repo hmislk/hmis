@@ -195,11 +195,16 @@
                              action="#{reportController.createDurationServiceReport}"
                              styleClass="ui-button-warning mx-1"/>
 
-            <p:commandButton ajax="false" value="Print All"
+            <p:commandButton ajax="false" value="To Print"
+                             icon="fas fa-print"
+                             action="duration_service_report_view?faces-redirect=true"
+                             styleClass="ui-button-info mx-1"/>
+
+<!--            <p:commandButton ajax="false" value="Print All"
                              icon="fas fa-print"
                              styleClass="ui-button-info mx-1">
                 <p:printer target="tbl"/>
-            </p:commandButton>
+            </p:commandButton>-->
 
             <p:commandButton ajax="false" value="Download"
                              icon="fas fa-file-excel"
