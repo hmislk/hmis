@@ -4100,16 +4100,16 @@ public class ReportController implements Serializable, ControllerWithReportFilte
             }
         }
         if (serviceDepartment != null) {
-            jpql.append("AND serviceDept = :serviceDepartment ");
+            jpql.append("AND timedItem.department = :serviceDepartment ");
             params.put("serviceDepartment", serviceDepartment);
         }
         if (billedDepartment != null) {
             jpql.append("AND (bill.department = :billedDepartment ")
-                    .append("OR (bill.department IS NULL AND pe.department = :billedDepartment)) ");
+                    .append("OR (bill IS NULL AND finalBill.department = :billedDepartment)) ");
             params.put("billedDepartment", billedDepartment);
         }
         if (serviceGroup != null && !serviceGroup.trim().isEmpty()) {
-            jpql.append("AND LOWER(serviceCategory.name) LIKE :serviceGroup ");
+            jpql.append("AND LOWER(timedItem.category.name) LIKE :serviceGroup ");
             params.put("serviceGroup", "%" + serviceGroup.trim().toLowerCase() + "%");
         }
 
@@ -4330,7 +4330,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
                 encounter != null ? encounter.getBhtNo() : "",
                 patient != null ? patient.getPhn() : "",
                 personName(consultant != null ? consultant.getPerson() : null),
-                "",
+                surgeryName(displayBill),
                 timedItem != null && timedItem.getDepartment() != null ? timedItem.getDepartment().getName() : "",
                 timedItem != null ? timedItem.getName() : "",
                 timedItem != null && timedItem.getCategory() != null ? timedItem.getCategory().getName() : "",
@@ -4355,6 +4355,17 @@ public class ReportController implements Serializable, ControllerWithReportFilte
             return "";
         }
         return personName(webUser.getWebUserPerson());
+    }
+
+    private String surgeryName(Bill bill) {
+        PatientEncounter procedure = bill != null ? bill.getProcedure() : null;
+        if (procedure == null) {
+            return "";
+        }
+        if (procedure.getItem() != null && procedure.getItem().getName() != null) {
+            return procedure.getItem().getName();
+        }
+        return procedure.getName() != null ? procedure.getName() : "";
     }
 
     private void createProfitMatrixSummaryReport() {

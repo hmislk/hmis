@@ -110,6 +110,7 @@
 
                 <p:selectCheckboxMenu id="admType"
                                       value="#{reportController.admissionTypes}"
+                                      converter="admissionTypeConverter"
                                       styleClass="w-100 mb-3"
                                       label="Select Types"
                                       updateLabel="true">
@@ -126,6 +127,7 @@
 
                 <p:selectCheckboxMenu id="roomCat"
                                       value="#{reportController.roomCategories}"
+                                      converter="#{roomCategoryConverter}"
                                       styleClass="w-100 mb-3"
                                       label="Select Categories"
                                       updateLabel="true">

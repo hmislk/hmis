@@ -63,7 +63,7 @@ public class DurationServiceReportDTO implements Serializable {
         this.discountAmount = discountAmount != null ? discountAmount : 0.0;
         this.sponsorDiscount = 0.0;
         this.sponsorNet = 0.0;
-        this.patientAmount = this.basePrice - this.discountAmount - this.sponsorDiscount;
+        recalculatePatientAmount();
         this.adjustedAmount = adjustedAmount != null ? adjustedAmount : 0.0;
         this.creatorName = creatorName;
         this.checkedByName = checkedByName;
@@ -169,6 +169,7 @@ public class DurationServiceReportDTO implements Serializable {
 
     public void setBasePrice(Double basePrice) {
         this.basePrice = basePrice;
+        recalculatePatientAmount();
     }
 
     public Double getDiscountAmount() {
@@ -177,6 +178,7 @@ public class DurationServiceReportDTO implements Serializable {
 
     public void setDiscountAmount(Double discountAmount) {
         this.discountAmount = discountAmount;
+        recalculatePatientAmount();
     }
 
     public Double getSponsorDiscount() {
@@ -185,6 +187,7 @@ public class DurationServiceReportDTO implements Serializable {
 
     public void setSponsorDiscount(Double sponsorDiscount) {
         this.sponsorDiscount = sponsorDiscount;
+        recalculatePatientAmount();
     }
 
     public Double getSponsorNet() {
@@ -201,6 +204,13 @@ public class DurationServiceReportDTO implements Serializable {
 
     public void setPatientAmount(Double patientAmount) {
         this.patientAmount = patientAmount;
+    }
+
+    private void recalculatePatientAmount() {
+        double bp = basePrice != null ? basePrice : 0.0;
+        double da = discountAmount != null ? discountAmount : 0.0;
+        double sd = sponsorDiscount != null ? sponsorDiscount : 0.0;
+        this.patientAmount = bp - da - sd;
     }
 
     public Double getAdjustedAmount() {
