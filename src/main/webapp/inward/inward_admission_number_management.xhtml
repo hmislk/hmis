@@ -59,7 +59,9 @@
                             <p:inputText id="lastBhtInput"
                                          value="#{admissionNumberController.selected.lastAdmissionNumber}"
                                          class="w-100 m-1"
-                                         autocomplete="off" />
+                                         autocomplete="off">
+                                <f:validateLongRange minimum="0" />
+                            </p:inputText>
 
                             <p:outputLabel value="Next BHT to be Issued" />
                             <p:outputLabel value=": " style="width: 30px; text-align: center;" />

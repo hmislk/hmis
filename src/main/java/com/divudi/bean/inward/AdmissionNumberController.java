@@ -78,6 +78,10 @@ public class AdmissionNumberController implements Serializable {
             JsfUtil.addErrorMessage("No record selected.");
             return;
         }
+        if (selected.getLastAdmissionNumber() == null || selected.getLastAdmissionNumber() < 0) {
+            JsfUtil.addErrorMessage("Last used BHT number must be zero or a positive number.");
+            return;
+        }
         ejbFacade.edit(selected);
         JsfUtil.addSuccessMessage("BHT counter updated. Next BHT will be " + getNextBht(selected) + ".");
         items = null;
