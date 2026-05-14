@@ -37,17 +37,17 @@
                         </div>
                     </div>
                 </div>
-                <div class="row">
+                <div class="col-3">
                     <div class="m-2">
                         <p:commandButton id="btnAddStaff" value="Add Staff" ajax="false"
                                          action="#{rosterStaffController.add}"
-                                         class="m-1" />
+                                         styleClass="m-1" />
                         <p:defaultCommand target="btnAddStaff" />
                     </div>
                 </div>
             </div>
 
-            <p:panel id="col" class="m-3" styleClass="noBorder summeryBorder">
+            <p:panel id="col" styleClass="m-3 noBorder summeryBorder">
                 <f:facet name="header">
                     <p:commandButton ajax="false" value="Print" styleClass="noPrintButton"
                                      style="float: right;">
@@ -57,11 +57,11 @@
 
                 <p:dataTable value="#{rosterStaffController.staffList}" var="s">
                     <f:facet name="header">
-                        <h:outputLabel value="#{sessionController.loggedUser.institution.name}"/><br/>
-                        <h:outputLabel value="Staff List"/><br/>
-                        <h:outputLabel value="Roster : #{rosterStaffController.currentRoster.name}"
+                        <h:outputText value="#{sessionController.loggedUser.institution.name}"/><br/>
+                        <h:outputText value="Staff List"/><br/>
+                        <h:outputText value="Roster : #{rosterStaffController.currentRoster.name}"
                                        rendered="#{rosterStaffController.currentRoster ne null}"/><br/>
-                        <h:outputLabel value="Department : #{rosterStaffController.currentRoster.department.name}"
+                        <h:outputText value="Department : #{rosterStaffController.currentRoster.department.name}"
                                        rendered="#{rosterStaffController.currentRoster ne null}"/>
                     </f:facet>
 
