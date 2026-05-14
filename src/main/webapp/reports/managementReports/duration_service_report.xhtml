@@ -210,7 +210,9 @@
                              icon="fas fa-file-excel"
                              styleClass="ui-button-success mx-1">
                 <p:dataExporter fileName="Duration_Service_Report" 
-                                type="xlsx" target="tbl" />
+                                type="xlsx"
+                                target="tbl"
+                                postProcessor="#{reportController.postProcessDurationServiceReportExcel}" />
             </p:commandButton>
 
             <p:commandButton ajax="false" value="PDF"

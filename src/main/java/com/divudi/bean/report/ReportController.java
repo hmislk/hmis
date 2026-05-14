@@ -4254,6 +4254,31 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         return filters;
     }
 
+    public void postProcessDurationServiceReportExcel(Object document) {
+        if (document == null) {
+            Logger.getLogger(ReportController.class.getName()).log(Level.SEVERE, "Document is null in postProcessDurationServiceReportExcel");
+            return;
+        }
+        if (!(document instanceof XSSFWorkbook)) {
+            Logger.getLogger(ReportController.class.getName()).log(Level.SEVERE, "Expected document to be an instance of XSSFWorkbook, but got: {0}", document.getClass().getName());
+            return;
+        }
+
+        XSSFWorkbook workbook = (XSSFWorkbook) document;
+        XSSFSheet sheet = workbook.getSheetAt(0);
+        if (sheet == null) {
+            return;
+        }
+
+        workbook.setSheetName(0, "Duration Service Report");
+        sheet.shiftRows(0, sheet.getLastRowNum(), 7);
+
+        Map<String, Object> filters = getFiltersForDurationServiceReport();
+        if (filters != null && !filters.isEmpty()) {
+            pharmacyController.addMetaDataToExcelSheet(workbook, sheet, 0, "Duration Service Report", filters);
+        }
+    }
+
     private String namesForDurationServiceReport(List<?> values) {
         if (values == null || values.isEmpty()) {
             return "All";
