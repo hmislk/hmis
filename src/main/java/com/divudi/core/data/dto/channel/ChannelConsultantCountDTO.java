@@ -40,7 +40,7 @@ public class ChannelConsultantCountDTO {
         this.rescheduledDocFee = rescheduledDocFee != null ? rescheduledDocFee.doubleValue() : 0.0;
         this.onCallDocFee = onCallDocFee != null ? onCallDocFee.doubleValue() : 0.0;
 
-        this.doctorFee = this.doctorFee + this.onCallDocFee + this.refundDocFee + this.rescheduledDocFee;
+        this.doctorFee = this.doctorFee + this.onCallDocFee - Math.abs(this.refundDocFee) + this.rescheduledDocFee;
     }
 
     public ChannelConsultantCountDTO(Long id, Date sessionStartingTime, boolean holiday, String consultantName, Title consultantTitle, String consultantSpeciality) {
