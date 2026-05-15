@@ -97,13 +97,13 @@
 
                                 </div>
                                 <div  class="col-md-2">
-                                    <p:commandButton class="mx-2 ui-button-danger" style="width: 150px" value="PDF" icon="pi pi-file-pdf" ajax="false">
-                                        <p:dataExporter
-                                            type="pdf" 
-                                            target="agentHistoriesTable" 
-                                            fileName="Collection_center_balance_report_#{reportController.fromDateFormatted()}_to_#{reportController.toDateFormatted()}"
-                                            preProcessor="#{reportController.preProcessCollectionCenterBalanceReportPDF}"
-                                            />
+                                    <p:commandButton 
+                                        class="mx-2 ui-button-danger" 
+                                        style="width: 150px" 
+                                        value="PDF" 
+                                        icon="pi pi-file-pdf" 
+                                        ajax="false"
+                                        action="#{reportController.exportCollectionCenterBalanceReportToPDF()}">
                                     </p:commandButton>
 
 

@@ -5117,12 +5117,12 @@ public class DataAdministrationController implements Serializable {
                     + "  WHERE pe2.discharged = 0 AND pe2.paymentFinalized = 0 AND pe2.currentPatientRoom_id IS NOT NULL "
                     + "  GROUP BY prm2.roomFacilityCharge_id "
                     + ") latest ON prm.roomFacilityCharge_id = latest.roomFacilityCharge_id "
-                    + "SET pe.discharged = 1 "
+                    + "SET pe.discharged = 1, pe.currentPatientRoom_id = NULL, prm.discharged = 1, prm.dischargedAt = NOW() "
                     + "WHERE pe.discharged = 0 AND pe.paymentFinalized = 0 "
                     + "AND pe.id != latest.keep_id "
                     + "AND pe.currentPatientRoom_id IS NOT NULL";
             patientEncounterFacade.executeNativeSql(sql);
-            JsfUtil.addSuccessMessage("Done. Old duplicate undischarged encounters have been discharged, keeping the latest per room.");
+            JsfUtil.addSuccessMessage("Done. Old duplicate undischarged encounters have been discharged, and their current rooms have been released.");
         } catch (Exception e) {
             JsfUtil.addErrorMessage("Error: " + getExceptionMessage(e));
         }
@@ -5137,12 +5137,15 @@ public class DataAdministrationController implements Serializable {
         }
         try {
             String t = patientEncounterFacade.getTableName();
-            String sql = "UPDATE " + t + " "
-                    + "SET discharged = 1 "
-                    + "WHERE discharged = 0 AND paymentFinalized = 0 "
-                    + "AND createdAt < DATE_SUB(NOW(), INTERVAL " + staleEncounterDays + " DAY)";
+            String pr = patientRoomFacade.getTableName();
+            String sql = "UPDATE " + t + " pe "
+                    + "JOIN " + pr + " prm ON pe.currentPatientRoom_id = prm.id "
+                    + "SET pe.discharged = 1, pe.currentPatientRoom_id = NULL, prm.discharged = 1, prm.dischargedAt = NOW() "
+                    + "WHERE pe.discharged = 0 AND pe.paymentFinalized = 0 "
+                    + "AND pe.currentPatientRoom_id IS NOT NULL "
+                    + "AND pe.createdAt < DATE_SUB(NOW(), INTERVAL " + staleEncounterDays + " DAY)";
             patientEncounterFacade.executeNativeSql(sql);
-            JsfUtil.addSuccessMessage("Done. Undischarged encounters older than " + staleEncounterDays + " days have been marked as discharged.");
+            JsfUtil.addSuccessMessage("Done. Undischarged encounters older than " + staleEncounterDays + " days have been marked as discharged and their current rooms have been released.");
         } catch (Exception e) {
             JsfUtil.addErrorMessage("Error: " + getExceptionMessage(e));
         }

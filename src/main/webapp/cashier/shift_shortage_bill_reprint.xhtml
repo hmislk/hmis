@@ -33,7 +33,7 @@
                                         styleClass="ui-button-success"
                                         ajax="false"
                                         action="#{financialTransactionController.navigateToSettleShiftShortageBill()}"
-                                        rendered="#{!billSearch.bill.paid and !billSearch.bill.cancelled}"/>
+                                        rendered="#{!billSearch.bill.paid and !billSearch.bill.cancelled and !financialTransactionController.shortageInCurrentShift(billSearch.bill)}"/>
                                     <p:commandButton
                                         value="Back to Search"
                                         icon="fa fa-arrow-left"
@@ -68,6 +68,30 @@
                                 <h:outputText value="#{billSearch.bill.fromWebUser.webUserPerson.name}"/>
                             </div>
                         </div>
+
+                        <h:panelGroup rendered="#{!billSearch.bill.paid and !billSearch.bill.cancelled and financialTransactionController.shortageInCurrentShift(billSearch.bill)}"
+                                      layout="block" styleClass="row g-3 mb-3 p-2 border border-danger rounded">
+                            <div class="col-12">
+                                <h:outputText value="Cancel This Shortage" styleClass="fw-bold text-danger d-block mb-2"/>
+                                <h:outputText value="This shortage was created in your current shift. You may cancel it if it was recorded in error." styleClass="text-muted small d-block mb-2"/>
+                            </div>
+                            <div class="col-md-8">
+                                <p:inputTextarea
+                                    rows="2"
+                                    styleClass="w-100"
+                                    placeholder="Enter reason for cancellation (required)"
+                                    value="#{financialTransactionController.shortageCancellationComment}"/>
+                            </div>
+                            <div class="col-md-4 d-flex align-items-end">
+                                <p:commandButton
+                                    value="Cancel This Shortage"
+                                    icon="fa fa-ban"
+                                    styleClass="ui-button-danger"
+                                    ajax="false"
+                                    onclick="return confirm('Are you sure you want to cancel this shortage bill? This will reverse the drawer deduction.');"
+                                    action="#{financialTransactionController.cancelShiftShortageBill()}"/>
+                            </div>
+                        </h:panelGroup>
 
                         <div class="row">
                             <div class="col-lg-6">

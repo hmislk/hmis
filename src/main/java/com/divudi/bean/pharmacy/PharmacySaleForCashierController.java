@@ -3292,10 +3292,14 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         }
 
         for (BillItem tbi : list) {
-            if (execureOnEditActions(tbi)) {
-                // If any issue in Stock Bill Item will not save & not include for total
-                // continue;
-            }
+            // Stock validation is handled upstream by lockAndValidateStocks() before this
+            // method is called. Calling execureOnEditActions() here was redundant and caused
+            // a mid-loop side effect: onEditCalculation() → calculateBillItemsAndBillTotalsOfPreBill()
+            // recalculated the bill total before the current item was added to preBill.getBillItems(),
+            // which could leave preBill.total set to the sum of only the previously-added items.
+            // The final calculateRatesForAllBillItemsInPreBill() below corrects the total in most
+            // cases, but if it failed (e.g. stale proxy on a specific item) the wrong total
+            // remained. Removed to fix intermittent wrong bill total (Closes #20408).
 
             tbi.setInwardChargeType(InwardChargeType.Medicine);
             tbi.setBill(getPreBill());
@@ -3734,17 +3738,23 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         }
 
         if (configOptionApplicationController.getBooleanValueByKey("Patient Phone number is mandotary in sale for cashier", true)) {
-            if (getPatient().getPatientPhoneNumber() == null && getPatient().getPatientMobileNumber() == null) {
-                JsfUtil.addErrorMessage("Please enter phone number of the patient");
-                return null;
-            } else if (getPatient().getId() == null) {
-                if (getPatient().getPatientPhoneNumber() != null && !(String.valueOf(getPatient().getPatientPhoneNumber()).length() >= 9)) {
-                    JsfUtil.addErrorMessage("Please enter valid phone number with more than or equal 10 digits of the patient");
+            if (getPatient() != null && getPatient().getPerson() != null) {
+                if (getPatient().getPatientPhoneNumber() == null && getPatient().getPatientMobileNumber() == null) {
+                    JsfUtil.addErrorMessage("Please enter phone number of the patient");
                     return null;
-                } else if (getPatient().getPatientMobileNumber() != null && !(String.valueOf(getPatient().getPatientMobileNumber()).length() >= 9)) {
-                    JsfUtil.addErrorMessage("Please enter valid mobile number with more than or equal 10 digits of the patient");
-                    return null;
+                } else if (getPatient().getId() == null) {
+                    if (getPatient().getPatientPhoneNumber() != null && !(String.valueOf(getPatient().getPatientPhoneNumber()).length() >= 9)) {
+                        JsfUtil.addErrorMessage("Please enter valid phone number with more than or equal 10 digits of the patient");
+                        return null;
+                    } else if (getPatient().getPatientMobileNumber() != null && !(String.valueOf(getPatient().getPatientMobileNumber()).length() >= 9)) {
+                        JsfUtil.addErrorMessage("Please enter valid mobile number with more than or equal 10 digits of the patient");
+                        return null;
+                    }
                 }
+            } else if (patientRequired) {
+                JsfUtil.addErrorMessage("Patient is required.");
+                billSettlingStarted = false;
+                return null;
             }
         }
 
@@ -4019,17 +4029,23 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         }
 
         if (configOptionApplicationController.getBooleanValueByKey("Patient Phone number is mandotary in sale for cashier", true)) {
-            if (getPatient().getPatientPhoneNumber() == null && getPatient().getPatientMobileNumber() == null) {
-                JsfUtil.addErrorMessage("Please enter phone number of the patient");
-                return;
-            } else if (getPatient().getId() == null) {
-                if (getPatient().getPatientPhoneNumber() != null && !(String.valueOf(getPatient().getPatientPhoneNumber()).length() >= 9)) {
-                    JsfUtil.addErrorMessage("Please enter valid phone number with more than or equal 10 digits of the patient");
+            if (getPatient() != null && getPatient().getPerson() != null) {
+                if (getPatient().getPatientPhoneNumber() == null && getPatient().getPatientMobileNumber() == null) {
+                    JsfUtil.addErrorMessage("Please enter phone number of the patient");
                     return;
-                } else if (getPatient().getPatientMobileNumber() != null && !(String.valueOf(getPatient().getPatientMobileNumber()).length() >= 9)) {
-                    JsfUtil.addErrorMessage("Please enter valid mobile number with more than or equal 10 digits of the patient");
-                    return;
+                } else if (getPatient().getId() == null) {
+                    if (getPatient().getPatientPhoneNumber() != null && !(String.valueOf(getPatient().getPatientPhoneNumber()).length() >= 9)) {
+                        JsfUtil.addErrorMessage("Please enter valid phone number with more than or equal 10 digits of the patient");
+                        return;
+                    } else if (getPatient().getPatientMobileNumber() != null && !(String.valueOf(getPatient().getPatientMobileNumber()).length() >= 9)) {
+                        JsfUtil.addErrorMessage("Please enter valid mobile number with more than or equal 10 digits of the patient");
+                        return;
+                    }
                 }
+            } else if (patientRequiredForPharmacySale) {
+                JsfUtil.addErrorMessage("Patient is required.");
+                billSettlingStarted = false;
+                return;
             }
         }
 

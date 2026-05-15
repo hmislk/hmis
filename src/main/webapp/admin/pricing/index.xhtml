@@ -364,8 +364,14 @@
                                             <p:commandButton 
                                                 class="w-100" 
                                                 action="#{navigationController.navigateToPaymentSchemeDiscountforCreditCompany()}" 
-                                                value="Discount for Credit Company " 
-                                                actionListener="#{opdMemberShipDiscountController.recreateModel()}" 
+                                                value="Discount for Credit Company (Category)"
+                                                ajax="false">
+                                            </p:commandButton>
+                                            
+                                            <p:commandButton 
+                                                class="w-100" 
+                                                action="#{navigationController.navigateToPaymentSchemeDiscountforCreditCompanyItems()}" 
+                                                value="Discount for Credit Company (Item)"
                                                 ajax="false">
                                             </p:commandButton>
 

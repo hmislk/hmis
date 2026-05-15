@@ -913,28 +913,34 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         m.put("fd", fromDate);
         m.put("td", toDate);
 
-        if (patientNameForSearch != null && !patientNameForSearch.trim().equals("")) {
+        String patientNameFilter = normalizeSearchFilter(patientNameForSearch);
+        String bhtNumberFilter = normalizeSearchFilter(bhtNumberForSearch);
+        String patientNumberFilter = normalizeSearchFilter(patientNumberForSearch);
+        String patientPhoneNumberFilter = normalizeSearchFilter(patientPhoneNumberForSearch);
+        String patientIdentityNumberFilter = normalizeSearchFilter(patientIdentityNumberForSearch);
+
+        if (patientNameFilter != null) {
             j += " and c.patient.person.name like :name ";
-            m.put("name", "%" + patientNameForSearch + "%");
+            m.put("name", "%" + patientNameFilter + "%");
         }
-        if (bhtNumberForSearch != null && !bhtNumberForSearch.trim().equals("")) {
+        if (bhtNumberFilter != null) {
             j += "  and c.bhtNo like :bht ";
-            m.put("bht", "%" + bhtNumberForSearch + "%");
+            m.put("bht", "%" + bhtNumberFilter + "%");
         }
 
-        if (patientNumberForSearch != null && !patientNumberForSearch.trim().equals("")) {
+        if (patientNumberFilter != null) {
             j += " and (c.patient.code =:phn or c.patient.phn =:phn)";
-            m.put("phn", patientNumberForSearch);
+            m.put("phn", patientNumberFilter);
         }
 
-        if (patientPhoneNumberForSearch != null && !patientPhoneNumberForSearch.trim().equals("")) {
+        if (patientPhoneNumberFilter != null) {
             j += " and (c.patient.person.phone =:phone or c.patient.person.mobile =:phone)";
-            m.put("phone", patientPhoneNumberForSearch);
+            m.put("phone", patientPhoneNumberFilter);
         }
 
-        if (patientIdentityNumberForSearch != null && !patientIdentityNumberForSearch.trim().equals("")) {
+        if (patientIdentityNumberFilter != null) {
             j += " and c.patient.person.nic =:nic";
-            m.put("nic", patientIdentityNumberForSearch);
+            m.put("nic", patientIdentityNumberFilter);
         }
 
         if (admissionStatusForSearch != null) {
@@ -1000,28 +1006,34 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         m.put("fd", fromDate);
         m.put("td", toDate);
 
-        if (patientNameForSearch != null && !patientNameForSearch.trim().equals("")) {
+        String patientNameFilter = normalizeSearchFilter(patientNameForSearch);
+        String bhtNumberFilter = normalizeSearchFilter(bhtNumberForSearch);
+        String patientNumberFilter = normalizeSearchFilter(patientNumberForSearch);
+        String patientPhoneNumberFilter = normalizeSearchFilter(patientPhoneNumberForSearch);
+        String patientIdentityNumberFilter = normalizeSearchFilter(patientIdentityNumberForSearch);
+
+        if (patientNameFilter != null) {
             j += " and c.patient.person.name like :name ";
-            m.put("name", "%" + patientNameForSearch + "%");
+            m.put("name", "%" + patientNameFilter + "%");
         }
-        if (bhtNumberForSearch != null && !bhtNumberForSearch.trim().equals("")) {
+        if (bhtNumberFilter != null) {
             j += "  and c.bhtNo like :bht ";
-            m.put("bht", "%" + bhtNumberForSearch + "%");
+            m.put("bht", "%" + bhtNumberFilter + "%");
         }
 
-        if (patientNumberForSearch != null && !patientNumberForSearch.trim().equals("")) {
+        if (patientNumberFilter != null) {
             j += " and (c.patient.code =:phn or c.patient.phn =:phn)";
-            m.put("phn", patientNumberForSearch);
+            m.put("phn", patientNumberFilter);
         }
 
-        if (patientPhoneNumberForSearch != null && !patientPhoneNumberForSearch.trim().equals("")) {
+        if (patientPhoneNumberFilter != null) {
             j += " and (c.patient.person.phone =:phone or c.patient.person.mobile =:phone)";
-            m.put("phone", patientPhoneNumberForSearch);
+            m.put("phone", patientPhoneNumberFilter);
         }
 
-        if (patientIdentityNumberForSearch != null && !patientIdentityNumberForSearch.trim().equals("")) {
+        if (patientIdentityNumberFilter != null) {
             j += " and c.patient.person.nic =:nic";
-            m.put("nic", patientIdentityNumberForSearch);
+            m.put("nic", patientIdentityNumberFilter);
         }
 
         if (admissionStatusForSearch != null) {
@@ -1064,6 +1076,14 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         }
 
         items = getFacade().findByJpql(j, m, TemporalType.TIMESTAMP);
+    }
+
+    private String normalizeSearchFilter(String value) {
+        if (value == null) {
+            return null;
+        }
+        String trimmed = value.trim();
+        return trimmed.isEmpty() ? null : trimmed;
     }
 
     public String navigateToAdmissionProfilePage() {

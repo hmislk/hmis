@@ -121,9 +121,15 @@
                                 </p:selectOneMenu>
 
                                 <p:outputLabel value="Discounts Allowed" ></p:outputLabel>
-                                <p:selectBooleanButton 
+                                <p:selectBooleanButton
                                     class="w-100"
                                     value="#{itemFeeManager.itemFee.discountAllowed}" offLabel="Discounts NOT Allowed" onLabel="Discounts Allowed" >
+                                </p:selectBooleanButton>
+
+                                <p:outputLabel value="Service Charge Allowed" ></p:outputLabel>
+                                <p:selectBooleanButton
+                                    class="w-100"
+                                    value="#{itemFeeManager.itemFee.marginAllowed}" offLabel="Service Charge NOT Allowed" onLabel="Service Charge Allowed" >
                                 </p:selectBooleanButton>
 
                                 <h:panelGroup id="gpLblIns" rendered="#{itemFeeManager.itemFee.feeType eq 'OtherInstitution' or itemFeeManager.itemFee.feeType eq 'OwnInstitution'  or itemFeeManager.itemFee.feeType eq 'Referral' }" >
@@ -222,7 +228,11 @@
                                     </p:selectBooleanButton>
                                 </p:column>
 
-
+                                <p:column headerText="Service Charge Allowed" >
+                                    <p:selectBooleanButton value="#{f.marginAllowed}" offLabel="Service Charge NOT Allowed" onLabel="Service Charge Allowed" >
+                                        <p:ajax process="@this" listener="#{itemFeeManager.updateFee(f)}" ></p:ajax>
+                                    </p:selectBooleanButton>
+                                </p:column>
 
                                 <p:column headerText="For" >
 

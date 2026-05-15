@@ -24,7 +24,6 @@ import com.divudi.core.entity.WebUserRolePrivilege;
 import com.divudi.core.facade.WebUserRolePrivilegeFacade;
 import com.divudi.service.AuditEventService;
 import com.divudi.core.entity.AuditEvent;
-import com.divudi.core.facade.WebUserRoleFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -666,6 +665,7 @@ public class UserPrivilageController implements Serializable {
 
         TreeNode handoverAcceptAsCashier = new DefaultTreeNode(new PrivilegeHolder(Privileges.ShiftHandoverAcceptAsCashier, "Shift Handover Accept As A Cashier"), cashTransactionNode);
         TreeNode handoverAcceptAsMainCashier = new DefaultTreeNode(new PrivilegeHolder(Privileges.ShiftHandoverAcceptAsMainCashier, "Shift Handover Accept As Main Cashier"), cashTransactionNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.SettleHandoverProofMissing, "Settle Handover Proof Missing"), cashTransactionNode);
 
         TreeNode listToCashReceiveNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.CashTransactionListToCashRecieve, "List To Cash Receive"), cashTransactionNode);
 
@@ -790,6 +790,8 @@ public class UserPrivilageController implements Serializable {
         TreeNode PharmacyStockTakeApprove = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyStockTakeApprove, "Pharmacy Stock Take Approve"), PharmacyAdjustment);
         // Create New Batch privilege
         new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyAdjustmentCreateBatch, "Pharmacy Adjustment Create Batch"), PharmacyAdjustment);
+        // Archive Old StockHistory Records (issue #20726)
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.ArchiveOldStockHistory, "Archive Old StockHistory Records"), PharmacyAdjustment);
 
         TreeNode pharmacyDisposalNode = new DefaultTreeNode(new PrivilegeHolder(null, "Pharmacy Disposal"), pharmacyNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyDisposalMenue, "Pharmacy Disposal Menu"), pharmacyDisposalNode);
@@ -1160,21 +1162,10 @@ public class UserPrivilageController implements Serializable {
         }
         getRoleFacede().batchCreate(newWups);
         getRoleFacede().batchEdit(oldWups);
-        
-        //Save Last Edit Data
-        webUserRole.setLastUpdateAt(new Date());
-        webUserRole.setLastUpdater(sessionController.getLoggedUser());
-        webUserRoleFacade.edit(webUserRole);
-        System.out.println("Update Last Edit by " + webUserRole.getLastUpdater().getName() +" at " + webUserRole.getLastUpdateAt());
-        
-        
         fillUserRolePrivileges();
         JsfUtil.addSuccessMessage("Updated");
     }
     
-    @EJB
-    WebUserRoleFacade webUserRoleFacade;
-
     private static void checkNodes(TreeNode root, List<PrivilegeHolder> privilegesToCheck) {
         if (root == null || privilegesToCheck == null || privilegesToCheck.isEmpty()) {
             return;

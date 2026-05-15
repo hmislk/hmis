@@ -9,7 +9,6 @@ import com.divudi.bean.common.ExcelController;
 import com.divudi.bean.common.InstitutionController;
 import com.divudi.bean.common.PdfController;
 import com.divudi.bean.common.ReportTimerController;
-import com.divudi.bean.common.SearchController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.pharmacy.PharmacyController;
 import com.divudi.core.data.BillClassType;
@@ -29,8 +28,13 @@ import com.divudi.core.data.dataStructure.BillsTotals;
 import com.divudi.core.data.dataStructure.ChannelDoctor;
 import com.divudi.core.data.dataStructure.WebUserBillsTotal;
 import com.divudi.core.data.dto.ChannelServiceCategorywiseDetailsWrapperDTO;
+import com.divudi.core.data.dto.channel.ChannelAbsentPatientsDTO;
 import com.divudi.core.data.hr.ReportKeyWord;
 import com.divudi.core.data.reports.PharmacyReports;
+import com.divudi.core.data.reports.Report;
+import com.divudi.core.data.reports.Report.ChannelPatientAbsentReport;
+import com.divudi.core.data.reports.Report.OnlineBookingCountReport;
+import com.divudi.core.data.reports.ReportColumn;
 import com.divudi.core.data.table.String1Value1;
 import com.divudi.core.data.table.String1Value3;
 import com.divudi.ejb.ChannelBean;
@@ -90,13 +94,12 @@ import javax.persistence.TemporalType;
 
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.apache.poi.xssf.usermodel.XSSFSheet;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.primefaces.model.StreamedContent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import com.itextpdf.kernel.geom.PageSize;
+import com.itextpdf.layout.properties.TextAlignment;
 
 @Named
 @SessionScoped
@@ -165,6 +168,8 @@ public class ChannelReportController implements Serializable {
     List<Bill> channelBills;
     List<Bill> channelBillsCancelled;
     List<Bill> channelBillsRefunded;
+
+    List<ChannelAbsentPatientsDTO> absentPatientsDTO;
 
     /////
     @EJB
@@ -492,6 +497,8 @@ public class ChannelReportController implements Serializable {
         return list;
     }
 
+    private Map<String, Object> cardIncomeReportSC;
+
     public void getPaymentsForChannelCardAppoinments() {
 
         if (institution == null) {
@@ -500,6 +507,8 @@ public class ChannelReportController implements Serializable {
         }
 
         cardPaymentDetails = channelService.fetchCardPaymentDetailsForChannelIncome(fromDate, toDate, institution, reportStatus);
+
+        cardIncomeReportSC = getFiltersForChannelIncomeDailySummaryReport();
     }
 
     public double calculateTotalsFromPayment(List<Payment> payments, String type) {
@@ -3374,7 +3383,7 @@ public class ChannelReportController implements Serializable {
 
     public void createAbsentPatientTable() {
         channelBills = new ArrayList<>();
-        channelBills.addAll(getChannelBillsAbsentPatient(staff, paymentMethods));
+        channelBills.addAll(getChannelBillsAbsentPatient(staff, paymentMethods));  
     }
 
     public List<Bill> getChannelBillsAbsentPatient(Staff stf) {
@@ -3399,6 +3408,128 @@ public class ChannelReportController implements Serializable {
         doctorFeeTotal = getStaffFeeTotal(b);
 
         return b;
+    }
+
+    private List<ChannelAbsentPatientsDTO> absentPatients;
+    private ChannelAbsentPatientsDTO summaryAbsentPatients;
+    private Map<String, Object> absentPatientsSC;
+
+    // Patient Absent Report 
+    // Consider temporary bookings can not be makred absent
+    public void processPatientAbsentReport() {
+        absentPatients = new ArrayList<>();
+        summaryAbsentPatients = new ChannelAbsentPatientsDTO();
+        HashMap params = new HashMap();
+
+        String sql = " Select new com.divudi.core.data.dto.channel.ChannelAbsentPatientsDTO( "
+                + " b.id, "
+                + " coalesce(b.deptId, ''), "
+                + " b.billTypeAtomic, "
+                + " coalesce(bs.serviceSession.name, ''), "
+                + " bs.serialNo, "
+                + " coalesce(case when b.billTypeAtomic = :onlineCompletedPayment then ob.patientName "
+                + " when b.billTypeAtomic = :onlineCancellation then orbb.patientName "
+                + " else pe.name end, ''), "
+                + " coalesce(c.name, '-'), "
+                + " b.paymentMethod, "
+                + " coalesce(b.staff.person.name, ''), "
+                + " coalesce(b.staffFee, 0.0), "
+                + " coalesce(b.hospitalFee, 0.0), "
+                + " coalesce(b.netTotal, 0.0), "
+                + " b.cancelled, "
+                + " b.refunded, "
+                + " coalesce(cb.deptId, ''), "
+                + " coalesce(rfb.deptId, ''), "
+                + " rb.id, "
+                + " pb.id "
+                + " ) "
+                + " from Bill b"
+                + " join b.singleBillSession bs "
+                + " left join b.patient p "
+                + " left join p.person pe "
+                + " left join b.creater c "
+                + " left join b.cancelledBill cb "
+                + " left join b.refundedBill rfb "
+                + " left join b.referenceBill rb "
+                + " left join b.paidBill pb"
+                + " left join b.billedBill bb "
+                + " left join bb.referenceBill rbb "
+                + " left join rbb.onlineBooking orbb "
+                + " left join rb.onlineBooking ob"
+                + " left join rb.singleBillSession rbs "
+                + " where b.retired=false "
+                + " and bs.retired=false "
+                + " and ("
+                + "      (bs.absent=true and b.createdAt between :fd and :td) "
+                + "   or (rbs.absent=true and rb.paymentMethod=:pmo and rb.createdAt between :fd and :td) "
+                + " )";
+
+        params.put("onlineCompletedPayment", BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT);
+        params.put("onlineCancellation", BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING);
+        params.put("fd", fromDate);
+        params.put("td", toDate);
+        params.put("pmo", PaymentMethod.OnCall);
+
+        if (staff != null) {
+            sql += " and b.staff=:st ";
+            params.put("st", staff);
+        }
+        if (paymentMethods != null && !paymentMethods.isEmpty()) {
+            if (paymentMethods.contains(PaymentMethod.OnCall)) {
+                sql += " and ((b.paymentMethod in :pm) or (rb is not null and rb.billTypeAtomic in :onCallBTA)) ";
+                params.put("pm", paymentMethods);
+                params.put("onCallBTA", Arrays.asList(
+                    BillTypeAtomic.CHANNEL_BOOKING_WITHOUT_PAYMENT,
+                    BillTypeAtomic.CHANNEL_RESHEDULE_WITH_OUT_PAYMENT
+                ));
+            } else {
+                sql += " and b.paymentMethod in :pm and b.billTypeAtomic != :paymentBTA  ";
+                params.put("pm", paymentMethods);
+                params.put("paymentBTA", BillTypeAtomic.CHANNEL_PAYMENT_FOR_BOOKING_BILL);
+            }
+        }
+
+        sql += " order by b.createdAt desc ";
+
+        List<ChannelAbsentPatientsDTO> fetchedBills = (List<ChannelAbsentPatientsDTO>) billFacade.findLightsByJpqlWithoutCache(sql, params, TemporalType.TIMESTAMP);
+
+        if (fetchedBills == null || fetchedBills.isEmpty()) {
+            return;
+        }
+
+        double totalStaffFee = 0.0;
+        double totalHosFee = 0.0;
+        double totalNetTotal = 0.0;
+
+        for (ChannelAbsentPatientsDTO dto : fetchedBills) { 
+            if (dto.getPaymentMethod() == PaymentMethod.OnCall) {
+                if (dto.getPaidId() != null) {
+                    continue;
+                } else {
+                    absentPatients.add(dto);
+
+                    totalNetTotal += dto.getNetTotal();
+                    totalStaffFee += dto.getStaffFee();
+                    totalHosFee += dto.getHospitalFee();
+                }
+            } else {
+                if (dto.getReferenceId() != null && dto.getBillTypeAtomic() != BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT && dto.getBillTypeAtomic() != BillTypeAtomic.CHANNEL_PAYMENT_FOR_BOOKING_BILL) {
+                    continue;
+                } else {
+                    absentPatients.add(dto);
+
+                    totalNetTotal += dto.getNetTotal();
+                    totalStaffFee += dto.getStaffFee();
+                    totalHosFee += dto.getHospitalFee();
+                }
+            }
+        }
+
+        summaryAbsentPatients.setStaffFee(totalStaffFee);
+        summaryAbsentPatients.setHospitalFee(totalHosFee);
+        summaryAbsentPatients.setNetTotal(totalNetTotal);
+
+        absentPatientsSC = getFiltersForPatientAbsentReports();
     }
 
     public List<Bill> getChannelBillsAbsentPatient(Staff stf, List<PaymentMethod> pms) {
@@ -5118,6 +5249,22 @@ public class ChannelReportController implements Serializable {
         this.category = category;
     }
 
+    public List<ChannelAbsentPatientsDTO> getAbsentPatients() {
+        return absentPatients;
+    }
+
+    public void setAbsentPatients(List<ChannelAbsentPatientsDTO> absentPatients) {
+        this.absentPatients = absentPatients;
+    }
+
+    public ChannelAbsentPatientsDTO getSummaryAbsentPatients() {
+        return summaryAbsentPatients;
+    }
+
+    public void setSummaryAbsentPatients(ChannelAbsentPatientsDTO summaryAbsentPatients) {
+        this.summaryAbsentPatients = summaryAbsentPatients;
+    }
+
     // PDF Export: Channel Scanning Income Report
     public StreamedContent getChannelScanningIncomeReportAsPdf() {
         if (dataBundle == null || dataBundle.getReportTemplateRows() == null || dataBundle.getReportTemplateRows().isEmpty()) {
@@ -5174,22 +5321,140 @@ public class ChannelReportController implements Serializable {
         return downloadingExcel;
     }
 
-    // PDF Export: Channel Scanning Income Report
+    public Report getChannelCardIncomeReport() {
+
+        Report<ChannelIncomeDetailDto> channelCardIncomeReport = new Report();
+        channelCardIncomeReport.setSerialNoColumnAtStart(true);
+        LinkedHashMap columns = new LinkedHashMap<>();
+
+        columns.put("Bill Id", new ReportColumn<>("Bill Id", ChannelIncomeDetailDto::getBillId, TextAlignment.LEFT, "%s", 3f));
+
+        columns.put("Created At", new ReportColumn<>("Created At",
+                row -> {
+                        ChannelIncomeDetailDto r = (ChannelIncomeDetailDto) row;
+                        return new SimpleDateFormat("dd MMM yyyy").format(r.getBilledDate());
+                },
+                TextAlignment.LEFT,
+                "%s",
+                3f));
+        columns.put("Bill No", new ReportColumn<>("Bill No",
+                row -> {
+                        ChannelIncomeDetailDto r = (ChannelIncomeDetailDto) row;
+                        String billDept = r.getBillDeptId() != null ? r.getBillDeptId() : "";
+                        if (r.isIsCancelled()) {
+                            billDept += "\nCancelled" + (r.getCancelledBillDeptId() != null ? (" - " + r.getCancelledBillDeptId()) : "");
+                        }
+                        if (r.isIsRefunded()) {
+                            billDept += "\nRefunded" + (r.getRefundBillDeptId() != null ? (" - " + r.getRefundBillDeptId()) : "" );
+                        }
+                        if (r.getBillTypeAtomic() != null && r.getBillTypeAtomic() == BillTypeAtomic.CHANNEL_REFUND_WITH_PAYMENT) {
+                                billDept += "\nRefund Bill";
+                        }
+                        if (r.getBillTypeAtomic() != null && r.getBillTypeAtomic() == BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT) {
+                                billDept += "\nCancel Bill";
+                        }
+                        return billDept;
+                },
+                TextAlignment.LEFT,
+                "%s",
+                4f));
+
+        columns.put("Bill Type", new ReportColumn<>("Bill Type", ChannelIncomeDetailDto::getBillType, TextAlignment.LEFT, "%s", 3.5f));
+        columns.put("Patient", new ReportColumn<>("Patient", ChannelIncomeDetailDto::getPatientName, TextAlignment.LEFT, "%s", 4f));
+        columns.put("Cashier", new ReportColumn<>("Cashier", ChannelIncomeDetailDto::getBilledBy, TextAlignment.LEFT, "%s", 3f));
+        columns.put("Hospital Fee", new ReportColumn<>("Hospital Fee", ChannelIncomeDetailDto::getHosFee, TextAlignment.RIGHT, "%,.2f", 4f));
+        columns.put("Doctor Fee", new ReportColumn<>("Doctor Fee", ChannelIncomeDetailDto::getDoctorFee, TextAlignment.RIGHT, "%,.2f", 4f));
+        columns.put("Bill Gross Total", new ReportColumn<>("Bill Gross Total", ChannelIncomeDetailDto::getTotalAppoinmentFee, TextAlignment.RIGHT, "%,.2f", 4f));
+        columns.put("Card Total", new ReportColumn<>("Card Total", ChannelIncomeDetailDto::getCardFee, TextAlignment.RIGHT, "%,.2f", 4f));
+        columns.put("Card Last 4 Numbers", new ReportColumn<>("Card Last 4 Numbers", ChannelIncomeDetailDto::getPaymentReference, TextAlignment.LEFT, "%s", 2.5f));
+        columns.put("Bank", new ReportColumn<>("Bank", ChannelIncomeDetailDto::getCreditCompanyName, TextAlignment.LEFT, "%s", 4f));
+
+        channelCardIncomeReport.setColumns(columns);
+
+        String fileName = "Channel_Card_Income_Report";
+        String dates;
+        if (cardIncomeReportSC != null && cardIncomeReportSC.get("From Date") instanceof Date && cardIncomeReportSC.get("To Date") instanceof Date) {
+            dates = CommonFunctions.dateRangeForFileName((Date) cardIncomeReportSC.get("From Date"), (Date) cardIncomeReportSC.get("To Date"), sessionController.getApplicationPreference().getLongDateFormat());
+        } else {
+            dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
+        }
+        if (dates != null && !dates.isEmpty()) {
+            fileName += "_" + dates;
+        }
+        channelCardIncomeReport.setFileName(fileName);
+        channelCardIncomeReport.setReportName("Channel Card Income Report");
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            if (sessionController.getLoggedUser().getInstitution() != null && sessionController.getLoggedUser().getInstitution().getName() != null) {
+                channelCardIncomeReport.setInstitutionName(sessionController.getLoggedUser().getInstitution().getName());
+            }
+            if (sessionController.getLoggedUser().getName() != null) {
+                channelCardIncomeReport.setReportGeneratedBy(sessionController.getLoggedUser().getName());
+            }        
+        }
+        channelCardIncomeReport.setSearchCriteria(cardIncomeReportSC != null ? cardIncomeReportSC : getFiltersForChannelIncomeReports());   
+        channelCardIncomeReport.setData(cardPaymentDetails.getIncomeDtos());
+        channelCardIncomeReport.setColumnFooter(cardPaymentDetails.getAllHosFeeTotal(), "Hospital Fee");
+        channelCardIncomeReport.setColumnFooter(cardPaymentDetails.getAllDoctorFeeTotal(), "Doctor Fee");
+        channelCardIncomeReport.setColumnFooter(cardPaymentDetails.getAllTotalAmount(), "Bill Gross Total");
+        channelCardIncomeReport.setColumnFooter(cardPaymentDetails.getAllCardTotal(), "Card Total");
+
+        return channelCardIncomeReport;
+    }
+
     public StreamedContent getChannelIncomeFromCardPaymentsReportAsPdf() {
         if (cardPaymentDetails == null || cardPaymentDetails.getIncomeDtos() == null || cardPaymentDetails.getIncomeDtos().isEmpty()) {
-            JsfUtil.addErrorMessage("Please generate the Channel Income From Card Payment report before exporting.");
+            JsfUtil.addErrorMessage("Please generate the Channel Card Income report before exporting.");
             return null;
         }
+        return getChannelCardIncomeReport().createPdfAsStream();
+    }
 
-        StreamedContent pdfSc = null;
-        try {            
-            pdfSc = pdfController.createPdfForChannelCardIncomeReport(cardPaymentDetails, PageSize.A4.rotate(), true, getFiltersForChannelIncomeReports(), getIncomeFromCardPaymentReportFileName());
-        } catch (IOException e) {
-            logger.error("getChannelIncomeFromCardPaymentsReportAsPdf: Error creating pdfSc via pdfController.createPdfForChannelCardIncomeReport", e);
-            pdfSc = null;
-            JsfUtil.addErrorMessage("Failed to generate Channel Income From Card Payment Report PDF file. Please try again.");
+    public ChannelPatientAbsentReport getPateintAbsentReport() {
+        String fileName = "Patient_Absent_Report";
+        String dates;
+        if (absentPatientsSC != null && absentPatientsSC.get("From Date") instanceof Date && absentPatientsSC.get("To Date") instanceof Date) {
+            dates = CommonFunctions.dateRangeForFileName((Date) absentPatientsSC.get("From Date"), (Date) absentPatientsSC.get("To Date"), sessionController.getApplicationPreference().getLongDateFormat());
+        } else {
+            dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
         }
-        return pdfSc;
+        if (dates != null && !dates.isEmpty()) {
+            fileName += "_" + dates;
+        }
+        String institutionName = "";
+        String userName = "";
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            if (sessionController.getLoggedUser().getInstitution() != null && sessionController.getLoggedUser().getInstitution().getName() != null) {
+                institutionName = sessionController.getLoggedUser().getInstitution().getName();
+            }
+            if (sessionController.getLoggedUser().getName() != null) {
+                userName = sessionController.getLoggedUser().getName();
+            }
+        }
+
+        ChannelPatientAbsentReport pAReport = new ChannelPatientAbsentReport(fileName, institutionName, absentPatientsSC != null ? absentPatientsSC : getFiltersForPatientAbsentReports(), absentPatients, userName);
+        if (summaryAbsentPatients != null) {
+            pAReport.setColumnFooter(summaryAbsentPatients.getStaffFee(), "Doctor Fee");
+            pAReport.setColumnFooter(summaryAbsentPatients.getHospitalFee(), "Hospital Fee");
+            pAReport.setColumnFooter(summaryAbsentPatients.getNetTotal(), "Net Total");
+        }
+
+        return pAReport;
+    }
+
+    public StreamedContent getPatientAbsentReportAsPdf() {
+        if (absentPatients == null || absentPatients.isEmpty()) {
+            JsfUtil.addErrorMessage("Please generate the Patient Absent report before exporting.");
+            return null;
+        }
+        return getPateintAbsentReport().createPdfAsStream();
+    }
+
+    public StreamedContent getPatientAbsentReportAsExcel() {
+        if (absentPatients == null || absentPatients.isEmpty()) {
+            JsfUtil.addErrorMessage("Please generate the Patient Absent report before exporting.");
+            return null;
+        }
+        return getPateintAbsentReport().createExcelAsStream();
     }
 
     // PostProcessor for channem_card_income_report excel export
@@ -5211,7 +5476,7 @@ public class ChannelReportController implements Serializable {
         workbook.setSheetName(0, "Channel Card Income Report");
         sheet.shiftRows(0, sheet.getLastRowNum(), 6);
 
-        Map<String, Object> filters = getFiltersForChannelIncomeReports();
+        Map<String, Object> filters = cardIncomeReportSC != null ? cardIncomeReportSC : getFiltersForChannelIncomeReports();
 
         if (filters != null && !filters.isEmpty()) {
             pharmacyController.addMetaDataToExcelSheet(workbook, sheet, 0, "Channel Card Income Report", filters);
@@ -5344,10 +5609,52 @@ public class ChannelReportController implements Serializable {
 
         return params;
     }
+
+     // Filters for Channel Scanning Income report && Income With Agent Booking Report
+    public Map<String, Object> getFiltersForPatientAbsentReports() {
+        Map<String, Object> params = new LinkedHashMap<>();
+        SimpleDateFormat sdf = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
+
+        params.put("From Date", fromDate);
+        params.put("To Date", toDate);
+        params.put("Consultant", staff != null ? (staff.getPerson() != null ? staff.getPerson().getCapitalNameWithTitle() : "N/A") : "All");
+        params.put("Payment Method", getSelectedPaymentMethodsAsString());
+
+        return params;
+    }
+
+    // Helper method to convert selected department types to a comma-separated string
+    public String getSelectedPaymentMethodsAsString() {
+        if (paymentMethods == null || paymentMethods.isEmpty()) {
+            return "All";
+        }
+
+        StringBuilder result = new StringBuilder();
+
+        for (int i = 0; i < paymentMethods.size(); i++) {
+            PaymentMethod dt = paymentMethods.get(i);
+
+            if (dt != null && dt.getLabel() != null) {
+                result.append(dt.getLabel());
+            }
+
+            if (i < paymentMethods.size() - 1) {
+                result.append(", ");
+            }
+        }
+
+        return result.toString();
+    }
+
     // Excel Export fileName : channel income from card payment report
     public String getIncomeFromCardPaymentReportFileName() {
         String fileName = "Channel_Card_Income_Report";
-        String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
+        String dates;
+        if (cardIncomeReportSC != null && cardIncomeReportSC.get("From Date") instanceof Date && cardIncomeReportSC.get("To Date") instanceof Date) {
+            dates = CommonFunctions.dateRangeForFileName((Date) cardIncomeReportSC.get("From Date"), (Date) cardIncomeReportSC.get("To Date"), sessionController.getApplicationPreference().getLongDateFormat());
+        } else {
+            dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
+        }
         if (dates != null && !dates.isEmpty()) {
             fileName += "_" + dates;
         }
@@ -5382,9 +5689,6 @@ public class ChannelReportController implements Serializable {
     // Filters for Channel Income Daily Summary  Report
     public Map<String, Object> getFiltersForChannelIncomeDailySummaryReport() {
         Map<String, Object> params = new LinkedHashMap<>();
-        String dateTimeFormat = sessionController.getApplicationPreference().getLongDateTimeFormat();
-        String formattedFromDate = fromDate != null ? new SimpleDateFormat(dateTimeFormat).format(fromDate) : "Not available";
-        String formattedToDate = toDate != null ? new SimpleDateFormat(dateTimeFormat).format(toDate) : "Not available";
 
         String reportStatusString = "";
         if (reportStatus != null && !reportStatus.isEmpty()) {
@@ -5395,14 +5699,22 @@ public class ChannelReportController implements Serializable {
             }
         }
 
-        params.put("From Date", formattedFromDate);
-        params.put("To Date", formattedToDate);
+        params.put("From Date", fromDate);
+        params.put("To Date", toDate);
         params.put("Institution", institution != null ? institution.getName() : "All Institutions");
         params.put("Report Status", reportStatusString);
         params.put("User", webUser != null ? webUser.getName() : "All Users");
         params.put("Category", getCategoryListAsString());
 
         return params;
+    }
+
+    public List<ChannelAbsentPatientsDTO> getAbsentPatientsDTO() {
+        return absentPatientsDTO;
+    }
+
+    public void setAbsentPatientsDTO(List<ChannelAbsentPatientsDTO> absentPatientsDTO) {
+        this.absentPatientsDTO = absentPatientsDTO;
     }
 
     public class ChannelReportColumnModelBundle implements Serializable {

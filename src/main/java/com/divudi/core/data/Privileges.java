@@ -138,6 +138,7 @@ public enum Privileges {
     ShiftHandoverAcceptAsCashier("Shift Handover Accept As Cashier"),
     ShiftHandoverAcceptAsMainCashier("Shift Handover Accept As Main Cashier"),
     CashierHandoverStatusReport("Cashier Handover Status Report"),
+    SettleHandoverProofMissing("Settle Handover Proof Missing"),
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Lab">
@@ -554,6 +555,7 @@ public enum Privileges {
     PharmacyAdjustmentCreateBatch("Pharmacy Adjustment Create Batch"),
     PharmacyPhysicalCountApprove("Pharmacy Physical Count Approve"),
     PharmacyStockTakeApprove("Pharmacy Stock Take Approve"),
+    ArchiveOldStockHistory("Archive Old StockHistory Records"),
     // Pharmacy Dealer Payments
     PharmacyDealerPaymentMenue("Pharmacy Dealer Payment Menu"),
     PharmacyDealerDueSearch("Pharmacy Dealer Due Search"),
@@ -965,6 +967,7 @@ public enum Privileges {
             case PharmacyAdjustmentCreateBatch:
             case PharmacyPhysicalCountApprove:
             case PharmacyStockTakeApprove:
+            case ArchiveOldStockHistory:
 
             // Pharmacy Dealer Payments
             case PharmacyDealerDueSearch:
@@ -1019,6 +1022,7 @@ public enum Privileges {
                 return "Approval";
 
             case CashierHandoverStatusReport:
+            case SettleHandoverProofMissing:
                 return "Finance";
 
             case IssueFundTransfer:
