@@ -8,7 +8,8 @@ public enum ScheduledProcess {
     Record_Pharmacy_Stock_Values("Record Pharmacy Stock Values"),
     All_Drawer_Balances("All Drawer Balances"),
     All_Collection_Centre_Balances("All Collection Centre Balances"),
-    All_Credit_Company_Balances("All Credit Company Balances");
+    All_Credit_Company_Balances("All Credit Company Balances"),
+    Archive_Old_StockHistory_Records("Archive Old StockHistory Records");
 
     private final String label;
 
