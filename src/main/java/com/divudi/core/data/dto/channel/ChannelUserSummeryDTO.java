@@ -11,8 +11,6 @@ public class ChannelUserSummeryDTO {
         private double doctorFee;
         private double hosFee;
         private double total;
-        private double cashTotal;
-        private double cardTotal;
         private long billedCount;
         private long cancelledCount;
         private long refundCount;
@@ -25,8 +23,6 @@ public class ChannelUserSummeryDTO {
             doctorFee = 0.0;
             hosFee = 0.0;
             total = 0.0;
-            cashTotal = 0.0;
-            cardTotal = 0.0;
             billedCount = 0;
             cancelledCount = 0;
             refundCount = 0;
@@ -63,22 +59,6 @@ public class ChannelUserSummeryDTO {
             
         public void setTotal(double total) {
             this.total = total;
-        }
-            
-        public double getCashTotal() {
-            return cashTotal;
-        }
-            
-        public void setCashTotal(double cashTotal) {
-            this.cashTotal = cashTotal;
-        }
-            
-        public double getCardTotal() {
-            return cardTotal;
-        }
-            
-        public void setCardTotal(double cardTotal) {
-            this.cardTotal = cardTotal;
         }
             
         public long getBilledCount() {
@@ -122,8 +102,6 @@ public class ChannelUserSummeryDTO {
             private double doctorFee;
             private double hosFee;
             private double total;
-            private double cashTotal;
-            private double cardTotal;
             private long billedCount;
             private long cancelledCount;
             private long refundCount;
@@ -137,12 +115,19 @@ public class ChannelUserSummeryDTO {
                 this.doctorFee = doctorFee != null ? doctorFee.doubleValue() : 0;
                 this.hosFee = hosFee != null ? hosFee.doubleValue() : 0;
                 this.total = total != null ? total.doubleValue() : 0;
-                this.cashTotal = 0.0;
-                this.cardTotal = 0.0;
-
                 this.cancelledCount = cancelledCount != null ? cancelledCount.longValue() : 0;
                 this.refundCount = refundedCount != null ? refundedCount.longValue() : 0;
                 this.billedCount = billedCount != null ? billedCount.longValue() : 0;
+                this.totalCount = 0;
+            }
+
+            public ChannelUserSummeryByDateDTO() {
+                this.doctorFee = 0.0;
+                this.hosFee = 0.0;
+                this.total = 0.0;
+                this.billedCount = 0;
+                this.cancelledCount = 0;
+                this.refundCount = 0;
                 this.totalCount = 0;
             }
 
@@ -193,22 +178,6 @@ public class ChannelUserSummeryDTO {
             
             public void setTotal(double total) {
                 this.total = total;
-            }
-            
-            public double getCashTotal() {
-                return cashTotal;
-            }
-            
-            public void setCashTotal(double cashTotal) {
-                this.cashTotal = cashTotal;
-            }
-            
-            public double getCardTotal() {
-                return cardTotal;
-            }
-            
-            public void setCardTotal(double cardTotal) {
-                this.cardTotal = cardTotal;
             }
             
             public long getBilledCount() {

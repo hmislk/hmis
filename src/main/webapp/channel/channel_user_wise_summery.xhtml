@@ -103,15 +103,7 @@
                                         ajax="false" 
                                         icon="fas fa-file-pdf"
                                         class="mx-1 ui-button-info">
-                                    </p:commandButton>
-
-                                    <p:commandButton
-                                        id="btnPrint"
-                                        class="mx-1 ui-button-danger"
-                                        icon="fas fa-print"
-                                        ajax="false"
-                                        value="Print Table"
-                                        action="channel_income_bill_print?faces-redirect=true">
+                                        <p:fileDownload value="#{channelReportController.userWiseSummeryReportAsPdf}" />
                                     </p:commandButton>
 
                                     <p:commandButton
@@ -119,6 +111,7 @@
                                         class="mx-1 ui-button-success"
                                         icon="fas fa-file-excel"
                                         ajax="false" value="Export to Excel">
+                                        <p:fileDownload value="#{channelReportController.userWiseSummeryReportAsExcel}" />
                                     </p:commandButton>
                                 </div>
                                 
@@ -134,9 +127,6 @@
                                         </th>
                                         <th class="text-center" style="font-size: 16px;">
                                             <h:outputText value="User"/>
-                                        </th> 
-                                        <th class="text-center" style="font-size: 16px;">
-                                            <h:outputText value="Payment Method"/>
                                         </th> 
                                         <th class="text-center" style="font-size: 16px;">
                                             <h:outputText value="Billed Count"/>
@@ -172,9 +162,6 @@
                                                 </td>
                                                 <td style="text-align: center; border: none;">
                                                     <h:outputText value="#{date.user}"/>
-                                                </td>
-                                                <td style="text-align: center; border: none;">
-                                                    <h:outputText value="#{date.paymentMethod}"/>
                                                 </td>
                                                 <td style="text-align: center; border: none;">
                                                     <h:outputText value="#{date.billedCount}">
@@ -216,9 +203,6 @@
                                         <tr style="background-color:#f6f6f6; font-weight:bold;">
                                             <td style="text-align: center; font-weight:bold; border: none;">
                                                 <h:outputText value="Total"/>
-                                            </td>
-                                            <td style="border: none;">
-                                                <h:outputText vaue=""/>
                                             </td>
                                             <td style="border: none;">
                                                 <h:outputText vaue=""/>
