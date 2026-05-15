@@ -148,9 +148,11 @@
                                                         </h:outputText>
                                                     </td>
                                                     <td>
-                                                        <h:outputText value="#{row.bill.singleBillSession.sessionInstance.sessionDate}">
-                                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
-                                                        </h:outputText>
+                                                        <h:panelGroup rendered="#{not empty row.bill.singleBillSession and not empty row.bill.singleBillSession.sessionInstance}">
+                                                                <h:outputText value="#{row.bill.singleBillSession.sessionInstance.sessionDate}">
+                                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
+                                                            </h:outputText>
+                                                        </h:panelGroup>
                                                     </td>
                                                     <td>
                                                         <h:outputText value="#{row.bill.deptId}"/>
@@ -323,7 +325,7 @@
                                         </tbody>
                                         <tfoot>
                                             <tr>
-                                                <td colspan="6" style="text-align: center; font-weight: 700;">
+                                                <td colspan="7" style="text-align: center; font-weight: 700;">
                                                     <h:outputText value="Total"/>
                                                 </td>
                                                 <td style="text-align: right; font-weight: 700;">

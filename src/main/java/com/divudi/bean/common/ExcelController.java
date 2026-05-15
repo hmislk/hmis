@@ -4994,13 +4994,13 @@ public class ExcelController {
             ctgLabel.setCellValue("Category");
             ctgLabel.setCellStyle(metaStyleBold);
             Cell ctg = criteriaRow2.createCell(1);
-            ctg.setCellValue(filter.get("Category").toString());
+            ctg.setCellValue(filter.get("Category") != null ? filter.get("Category").toString() : "All");
 
             Cell pmLabel = criteriaRow2.createCell(3);
             pmLabel.setCellValue("Payment Method");
             pmLabel.setCellStyle(metaStyleBold);
             Cell pm = criteriaRow2.createCell(4);
-            pm.setCellValue(filter.get("Payment Method").toString());
+            pm.setCellValue(filter.get("Payment Method") != null ? filter.get("Payment Method").toString() : "All");
         }
 
         currentRow++;
