@@ -3133,11 +3133,11 @@ public class ReportsController implements Serializable {
 
         if (reportType.equalsIgnoreCase("detail")) {
             for (YearMonth yearMonth : yearMonths) {
-                data.put(yearMonth, getCollectionCenterWiseTotalSampleCount(yearMonth) / calculateCollectionCenterWiseBillCount(yearMonth));
+                data.put(yearMonth, safeAverage(getCollectionCenterWiseTotalSampleCount(yearMonth), calculateCollectionCenterWiseBillCount(yearMonth)));
             }
         } else {
             for (YearMonth yearMonth : yearMonths) {
-                data.put(yearMonth, calculateRouteWiseTotalSampleCount(yearMonth) / calculateRouteWiseBillCount(yearMonth));
+                data.put(yearMonth, safeAverage(calculateRouteWiseTotalSampleCount(yearMonth), calculateRouteWiseBillCount(yearMonth)));
             }
         }
 
@@ -3149,11 +3149,11 @@ public class ReportsController implements Serializable {
 
         if (reportType.equalsIgnoreCase("detail")) {
             for (YearMonth yearMonth : yearMonths) {
-                data.put(yearMonth, getCollectionCenterWiseTotalServiceAmount(yearMonth) / calculateCollectionCenterWiseBillCount(yearMonth));
+                data.put(yearMonth, safeAverage(getCollectionCenterWiseTotalServiceAmount(yearMonth), calculateCollectionCenterWiseBillCount(yearMonth)));
             }
         } else {
             for (YearMonth yearMonth : yearMonths) {
-                data.put(yearMonth, calculateRouteWiseTotalServiceAmount(yearMonth) / calculateRouteWiseBillCount(yearMonth));
+                data.put(yearMonth, safeAverage(calculateRouteWiseTotalServiceAmount(yearMonth), calculateRouteWiseBillCount(yearMonth)));
             }
         }
 
@@ -8947,8 +8947,8 @@ public void preProcessLaboratoryWorkloadSummaryReportPDF(Object document) {
                 Map<YearMonth, Bill> monthlyData = entrySet.getValue();
 
                 table.addCell(new PdfPCell(new Phrase(String.valueOf(serialNumber++))));
-                table.addCell(new PdfPCell(new Phrase(route.getCode()!=null ? route.getCode() : "-")));
-                table.addCell(new PdfPCell(new Phrase(route.getName() != null ? route.getName() : "-")));
+                table.addCell(new PdfPCell(new Phrase(route != null && route.getCode() != null ? route.getCode() : "-")));
+                table.addCell(new PdfPCell(new Phrase(route != null && route.getName() != null ? route.getName() : "-")));
 
                 for (YearMonth yearMonth : yearMonths) {
                     Bill billData = monthlyData.get(yearMonth);
@@ -8965,8 +8965,8 @@ public void preProcessLaboratoryWorkloadSummaryReportPDF(Object document) {
             table.addCell(totalCell);
 
             for (YearMonth yearMonth : yearMonths) {
-                table.addCell(new PdfPCell(new Phrase(String.format("%.2f", calculateRouteWiseTotalSampleCount(yearMonth) / calculateRouteWiseBillCount(yearMonth)))));
-                table.addCell(new PdfPCell(new Phrase(String.format("%.2f", calculateRouteWiseTotalServiceAmount(yearMonth) / calculateRouteWiseBillCount(yearMonth)))));
+                table.addCell(new PdfPCell(new Phrase(String.format("%.2f", safeAverage(calculateRouteWiseTotalSampleCount(yearMonth), calculateRouteWiseBillCount(yearMonth))))));
+                table.addCell(new PdfPCell(new Phrase(String.format("%.2f", safeAverage(calculateRouteWiseTotalServiceAmount(yearMonth), calculateRouteWiseBillCount(yearMonth))))));
             }
 
             document.add(table);
