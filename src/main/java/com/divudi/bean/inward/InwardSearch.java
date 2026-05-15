@@ -947,8 +947,15 @@ public class InwardSearch implements Serializable {
                 return;
             }
 
+            if (getBill().getPatient() == null && getBill().getPatientEncounter().getPatient() != null) {
+                getBill().setPatient(getBill().getPatientEncounter().getPatient());
+            }
+
             CancelledBill cb = createCancelBill();
             cb.setBillTypeAtomic(BillTypeAtomic.INWARD_THEATRE_PROFESSIONAL_FEE_BILL_CANCELLATION);
+            if (cb.getPatient() == null && getBill().getPatient() != null) {
+                cb.setPatient(getBill().getPatient());
+            }
             if (cb.getId() == null) {
                 getBillFacade().create(cb);
             }
