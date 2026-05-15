@@ -8420,6 +8420,10 @@ public void preProcessLaboratoryWorkloadSummaryReportPDF(Object document) {
     }
 
     public void exportRouteAnalysisDetailReportToExcel() {
+        if (exportRouteAnalysisReportToExcel(true)) {
+            return;
+        }
+
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
 
@@ -8580,6 +8584,196 @@ public void preProcessLaboratoryWorkloadSummaryReportPDF(Object document) {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private boolean exportRouteAnalysisReportToExcel(boolean detailReport) {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
+
+        String reportTitle = detailReport ? "Collecting Center Monthly Report" : "Route Wise Monthly Report";
+        String sheetName = detailReport ? "CC Monthly Report" : "Route Wise Monthly Report";
+        String filePrefix = detailReport ? "Collecting_Center_Monthly_Report_" : "Route_Wise_Monthly_Report_";
+        String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
+
+        try (XSSFWorkbook workbook = new XSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+            XSSFSheet sheet = workbook.createSheet(sheetName);
+            Map<String, Object> filters = getFiltersForRouteAnalysisReport();
+            int rowIndex = pharmacyController.addMetaDataToExcelSheet(workbook, sheet, 0, reportTitle, filters);
+
+            rowIndex = addRouteAnalysisChartImage(workbook, sheet, rowIndex, "Sample Count Over Months",
+                    getRouteAnalysisSampleCountChartData(detailReport), "Month", "Sample Count");
+            rowIndex = addRouteAnalysisChartImage(workbook, sheet, rowIndex, "Service Amount Over Months",
+                    getRouteAnalysisServiceAmountChartData(detailReport), "Month", "Service Amount");
+            rowIndex++;
+
+            writeRouteAnalysisExcelTable(workbook, sheet, rowIndex, detailReport);
+
+            int columnCount = 3 + getRouteAnalysisYearMonths().size() * 2;
+            for (int i = 0; i < columnCount; i++) {
+                sheet.autoSizeColumn(i);
+            }
+
+            workbook.write(out);
+            byte[] bytes = out.toByteArray();
+
+            response.reset();
+            response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            response.setContentLength(bytes.length);
+            response.setHeader("Content-Disposition", "attachment; filename=" + filePrefix + dates + ".xlsx");
+            response.getOutputStream().write(bytes);
+            response.getOutputStream().flush();
+            context.responseComplete();
+        } catch (Exception e) {
+            Logger.getLogger(ReportsController.class.getName()).log(Level.SEVERE, "Error exporting route analysis report to Excel", e);
+            JsfUtil.addErrorMessage("Error generating Excel file: " + e.getMessage());
+        }
+
+        return true;
+    }
+
+    private int addRouteAnalysisChartImage(XSSFWorkbook workbook, XSSFSheet sheet, int rowIndex, String title,
+            Map<YearMonth, Double> data, String categoryLabel, String valueLabel) throws IOException {
+        Row titleRow = sheet.createRow(rowIndex++);
+        Cell titleCell = titleRow.createCell(0);
+        titleCell.setCellValue(title);
+
+        byte[] chartBytes = generateChartAsBytes(title, data, categoryLabel, valueLabel);
+        int pictureIndex = workbook.addPicture(chartBytes, Workbook.PICTURE_TYPE_PNG);
+
+        XSSFDrawing drawing = sheet.createDrawingPatriarch();
+        CreationHelper helper = workbook.getCreationHelper();
+        XSSFClientAnchor anchor = (XSSFClientAnchor) helper.createClientAnchor();
+        anchor.setCol1(0);
+        anchor.setRow1(rowIndex);
+        anchor.setCol2(8);
+        anchor.setRow2(rowIndex + 16);
+        drawing.createPicture(anchor, pictureIndex);
+
+        return rowIndex + 17;
+    }
+
+    private void writeRouteAnalysisExcelTable(XSSFWorkbook workbook, XSSFSheet sheet, int rowIndex, boolean detailReport) {
+        CellStyle headerStyle = workbook.createCellStyle();
+        Font headerFont = workbook.createFont();
+        headerFont.setBold(true);
+        headerStyle.setFont(headerFont);
+
+        CellStyle numberStyle = workbook.createCellStyle();
+        numberStyle.setDataFormat(workbook.createDataFormat().getFormat("#,##0.00"));
+
+        Row headerRow = sheet.createRow(rowIndex++);
+        int cellIndex = 0;
+        createStyledCell(headerRow, cellIndex++, "S. No", headerStyle);
+        createStyledCell(headerRow, cellIndex++, detailReport ? "Collecting Center Code" : "Route Code", headerStyle);
+        createStyledCell(headerRow, cellIndex++, detailReport ? "Collecting Center" : "Route", headerStyle);
+
+        List<YearMonth> yearMonths = getRouteAnalysisYearMonths();
+        for (YearMonth yearMonth : yearMonths) {
+            createStyledCell(headerRow, cellIndex++, yearMonth + " - Sample Count", headerStyle);
+            createStyledCell(headerRow, cellIndex++, yearMonth + " - Service Amount", headerStyle);
+        }
+
+        int serialNumber = 1;
+        if (detailReport) {
+            Map<Institution, Map<YearMonth, Bill>> groupedData = getGroupedCollectingCenterWiseBillsMonthly();
+            if (groupedData != null) {
+                for (Map.Entry<Institution, Map<YearMonth, Bill>> entrySet : groupedData.entrySet()) {
+                    Institution center = entrySet.getKey();
+                    Row row = sheet.createRow(rowIndex++);
+                    cellIndex = 0;
+                    row.createCell(cellIndex++).setCellValue(serialNumber++);
+                    row.createCell(cellIndex++).setCellValue(center != null && center.getCode() != null ? center.getCode() : "-");
+                    row.createCell(cellIndex++).setCellValue(center != null && center.getName() != null ? center.getName() : "-");
+                    writeRouteAnalysisMonthlyCells(row, cellIndex, yearMonths, entrySet.getValue(), numberStyle);
+                }
+            }
+        } else {
+            Map<Route, Map<YearMonth, Bill>> groupedData = getGroupedRouteWiseBillsMonthly();
+            if (groupedData != null) {
+                for (Map.Entry<Route, Map<YearMonth, Bill>> entrySet : groupedData.entrySet()) {
+                    Route reportRoute = entrySet.getKey();
+                    Row row = sheet.createRow(rowIndex++);
+                    cellIndex = 0;
+                    row.createCell(cellIndex++).setCellValue(serialNumber++);
+                    row.createCell(cellIndex++).setCellValue(reportRoute != null && reportRoute.getCode() != null ? reportRoute.getCode() : "-");
+                    row.createCell(cellIndex++).setCellValue(reportRoute != null && reportRoute.getName() != null ? reportRoute.getName() : "-");
+                    writeRouteAnalysisMonthlyCells(row, cellIndex, yearMonths, entrySet.getValue(), numberStyle);
+                }
+            }
+        }
+
+        Row totalRow = sheet.createRow(rowIndex);
+        createStyledCell(totalRow, 0, "Average", headerStyle);
+        cellIndex = 3;
+        for (YearMonth yearMonth : yearMonths) {
+            Cell sampleCell = totalRow.createCell(cellIndex++);
+            sampleCell.setCellValue(detailReport
+                    ? safeAverage(getCollectionCenterWiseTotalSampleCount(yearMonth), calculateCollectionCenterWiseBillCount(yearMonth))
+                    : safeAverage(calculateRouteWiseTotalSampleCount(yearMonth), calculateRouteWiseBillCount(yearMonth)));
+            sampleCell.setCellStyle(numberStyle);
+
+            Cell serviceCell = totalRow.createCell(cellIndex++);
+            serviceCell.setCellValue(detailReport
+                    ? safeAverage(getCollectionCenterWiseTotalServiceAmount(yearMonth), calculateCollectionCenterWiseBillCount(yearMonth))
+                    : safeAverage(calculateRouteWiseTotalServiceAmount(yearMonth), calculateRouteWiseBillCount(yearMonth)));
+            serviceCell.setCellStyle(numberStyle);
+        }
+    }
+
+    private void writeRouteAnalysisMonthlyCells(Row row, int cellIndex, List<YearMonth> yearMonths,
+            Map<YearMonth, Bill> monthlyData, CellStyle numberStyle) {
+        for (YearMonth yearMonth : yearMonths) {
+            Bill bill = monthlyData != null ? monthlyData.get(yearMonth) : null;
+
+            Cell sampleCell = row.createCell(cellIndex++);
+            sampleCell.setCellValue(bill != null ? bill.getQty() : 0);
+            sampleCell.setCellStyle(numberStyle);
+
+            Cell serviceCell = row.createCell(cellIndex++);
+            serviceCell.setCellValue(bill != null
+                    ? BigDecimal.valueOf(bill.getTotalHospitalFee()).setScale(2, RoundingMode.HALF_UP).doubleValue()
+                    : 0.0);
+            serviceCell.setCellStyle(numberStyle);
+        }
+    }
+
+    private void createStyledCell(Row row, int column, String value, CellStyle style) {
+        Cell cell = row.createCell(column);
+        cell.setCellValue(value);
+        cell.setCellStyle(style);
+    }
+
+    private List<YearMonth> getRouteAnalysisYearMonths() {
+        List<YearMonth> sortedYearMonths = getYearMonths() == null ? new ArrayList<>() : new ArrayList<>(getYearMonths());
+        Collections.sort(sortedYearMonths);
+        return sortedYearMonths;
+    }
+
+    private Map<YearMonth, Double> getRouteAnalysisSampleCountChartData(boolean detailReport) {
+        Map<YearMonth, Double> data = new LinkedHashMap<>();
+        for (YearMonth yearMonth : getRouteAnalysisYearMonths()) {
+            data.put(yearMonth, detailReport
+                    ? safeAverage(getCollectionCenterWiseTotalSampleCount(yearMonth), calculateCollectionCenterWiseBillCount(yearMonth))
+                    : safeAverage(calculateRouteWiseTotalSampleCount(yearMonth), calculateRouteWiseBillCount(yearMonth)));
+        }
+        return data;
+    }
+
+    private Map<YearMonth, Double> getRouteAnalysisServiceAmountChartData(boolean detailReport) {
+        Map<YearMonth, Double> data = new LinkedHashMap<>();
+        for (YearMonth yearMonth : getRouteAnalysisYearMonths()) {
+            data.put(yearMonth, detailReport
+                    ? safeAverage(getCollectionCenterWiseTotalServiceAmount(yearMonth), calculateCollectionCenterWiseBillCount(yearMonth))
+                    : safeAverage(calculateRouteWiseTotalServiceAmount(yearMonth), calculateRouteWiseBillCount(yearMonth)));
+        }
+        return data;
+    }
+
+    private double safeAverage(double total, double count) {
+        if (count == 0) {
+            return 0;
+        }
+        return BigDecimal.valueOf(total / count).setScale(2, RoundingMode.HALF_UP).doubleValue();
     }
     
        // Filters for route analysis report
@@ -8805,6 +8999,10 @@ public void preProcessLaboratoryWorkloadSummaryReportPDF(Object document) {
     }
 
     public void exportRouteAnalysisSummaryReportToExcel() {
+        if (exportRouteAnalysisReportToExcel(false)) {
+            return;
+        }
+
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
 
