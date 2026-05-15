@@ -5669,6 +5669,30 @@ public class ChannelReportController implements Serializable {
         return downloadingExcel;
     }
 
+    // Excel Export: Channel Summary Collection Report
+    public StreamedContent getChannelSummaryCollectionReportAsExcel() {
+        if (bookingsByShiftDto == null || bookingsByShiftDto.getIncomeDtos() == null || bookingsByShiftDto.getIncomeDtos().isEmpty()) {
+            JsfUtil.addErrorMessage("Please generate the Summary Collection report before exporting.");
+            return null;
+        }
+
+        StreamedContent downloadingExcel = null;
+        try {
+            String fileName = "Channel_Summary_Collection_Report";
+            String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
+            if (dates != null && !dates.isEmpty()) {
+                fileName += "_" + dates;
+            }
+            
+            downloadingExcel = excelController.createExcelForChannelSummaryCollectionReport(bookingsByShiftDto, fileName, getFiltersForSummaryCollectionReport());
+        } catch (IOException e) {
+            logger.error("getChannelSummaryCollectionReportAsExcel: Error creating downloadingExcel via excelController.createExcelForChannelSummaryCollectionReport", e);
+            downloadingExcel = null;
+            JsfUtil.addErrorMessage("Failed to generate Channel Summary Collection Report Excel file. Please try again.");
+        }
+        return downloadingExcel;
+    }
+
     // PostProcessor for Income With Agent Booking excel export
     public void postProcessIncomeWithAgentBookingReportExcel(Object document) {
         if (document == null) {
@@ -5799,6 +5823,16 @@ public class ChannelReportController implements Serializable {
         }
 
         return result.toString();
+    }
+
+    // Filters for Channel Summary Collection Report
+    public Map<String, Object> getFiltersForSummaryCollectionReport() {
+        Map<String, Object> params = new LinkedHashMap<>();
+
+        params.put("Category", getCategoryListAsString());
+        params.put("Payment Method", getSelectedPaymentMethodsAsString());
+
+        return params;
     }
 
     // Filters for Channel Income Daily Summary  Report

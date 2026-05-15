@@ -1825,43 +1825,64 @@ public class ChannelService {
         for (ChannelReportController.ChannelIncomeSummeryDto summeryDto : summeryDtoList) {
             if (dto.getAppoinmentDate().equals(summeryDto.getAppoimentDate())) {
                 availableSummery = true;
-                switch (dto.getPaymentMethod()) {
-                    case Cash:
-                        summeryDto.setCashTotal(summeryDto.getCashTotal() + dto.getTotalAppoinmentFee());
-                        break;
-                    case Card:
-                        summeryDto.setCardTotal(summeryDto.getCardTotal() + dto.getTotalAppoinmentFee());
-                        break;
-                    case MultiplePaymentMethods:
-                        Bill bill = billFacade.find(dto.getBillId());
-                        List<Payment> payments = new ArrayList<>();
-                        if (bill != null) {
-                            payments = billService.fetchBillPayments(bill);
-                        }
-                        for (Payment p : payments) {
-                            switch (p.getPaymentMethod()) {
-                                case Cash:
-                                    summeryDto.setCashTotal(summeryDto.getCashTotal() + p.getPaidValue());
-                                    break;
-                                case Card:
-                                    summeryDto.setCardTotal(summeryDto.getCardTotal() + p.getPaidValue());
-                                    break;
-                                default:
-                                    break;
+                if (dto.getPaymentMethod() == null) {
+                    Bill bill = billFacade.find(dto.getBillId());
+                    List<Payment> payments = new ArrayList<>();
+                    if (bill != null) {
+                        payments = billService.fetchBillPayments(bill);
+                    }
+                    for (Payment p : payments) {
+                        switch (p.getPaymentMethod()) {
+                            case Cash:
+                                summeryDto.setCashTotal(summeryDto.getCashTotal() + p.getPaidValue());
+                                break;
+                            case Card:
+                                summeryDto.setCardTotal(summeryDto.getCardTotal() + p.getPaidValue());
+                                break;
+                            default:
+                                break;
                             }
-                        }
-                        break;
-                    case Agent:
-                        summeryDto.setAgentTotal(summeryDto.getAgentTotal() + dto.getTotalAppoinmentFee());
-                        break;
+                    }
+                } else {
+                    switch (dto.getPaymentMethod()) {
+                        case Cash:
+                            summeryDto.setCashTotal(summeryDto.getCashTotal() + dto.getTotalAppoinmentFee());
+                            break;
+                        case Card:
+                            summeryDto.setCardTotal(summeryDto.getCardTotal() + dto.getTotalAppoinmentFee());
+                            break;
+                        case MultiplePaymentMethods:
+                            Bill bill = billFacade.find(dto.getBillId());
+                            List<Payment> payments = new ArrayList<>();
+                            if (bill != null) {
+                                payments = billService.fetchBillPayments(bill);
+                            }
+                            for (Payment p : payments) {
+                                switch (p.getPaymentMethod()) {
+                                    case Cash:
+                                        summeryDto.setCashTotal(summeryDto.getCashTotal() + p.getPaidValue());
+                                        break;
+                                    case Card:
+                                        summeryDto.setCardTotal(summeryDto.getCardTotal() + p.getPaidValue());
+                                        break;
+                                    default:
+                                        break;
+                                }
+                            }
+                            break;
+                        case Agent:
+                            summeryDto.setAgentTotal(summeryDto.getAgentTotal() + dto.getTotalAppoinmentFee());
+                            break;
 
-                    case Credit:
-                        summeryDto.setCreditTotal(summeryDto.getCreditTotal() + dto.getTotalAppoinmentFee());
-                        break;
+                        case Credit:
+                            summeryDto.setCreditTotal(summeryDto.getCreditTotal() + dto.getTotalAppoinmentFee());
+                            break;
 
-                    default:
-                        break;
+                        default:
+                            break;
+                    }
                 }
+                
                 if (dto.isIsCancelled()) {
                     if (!cancelledBillIds.contains(dto.getCancelBillId())) {
                         summeryDto.setTotalActiveAppoinments(summeryDto.getTotalActiveAppoinments() + 1);
@@ -1938,43 +1959,63 @@ public class ChannelService {
             ChannelReportController.ChannelIncomeSummeryDto newSummery = new ChannelReportController.ChannelIncomeSummeryDto();
             newSummery.setAppoimentDate(dto.getAppoinmentDate());
 
-            switch (dto.getPaymentMethod()) {
-                case Cash:
-                    newSummery.setCashTotal(newSummery.getCashTotal() + dto.getTotalAppoinmentFee());
-                    break;
-                case Card:
-                    newSummery.setCardTotal(newSummery.getCardTotal() + dto.getTotalAppoinmentFee());
-                    break;
-                case MultiplePaymentMethods:
-                    Bill bill = billFacade.find(dto.getBillId());
-                    List<Payment> payments = new ArrayList<>();
-                    if (bill != null) {
-                        payments = billService.fetchBillPayments(bill);
+            if (dto.getPaymentMethod() == null) {
+                Bill bill = billFacade.find(dto.getBillId());
+                List<Payment> payments = new ArrayList<>();
+                if (bill != null) {
+                    payments = billService.fetchBillPayments(bill);
+                }
+                for (Payment p : payments) {
+                    switch (p.getPaymentMethod()) {
+                        case Cash:
+                            newSummery.setCashTotal(newSummery.getCashTotal() + p.getPaidValue());
+                            break;
+                        case Card:
+                            newSummery.setCardTotal(newSummery.getCardTotal() + p.getPaidValue());
+                            break;
+                        default:
+                            break;
                     }
-                    for (Payment p : payments) {
-                        switch (p.getPaymentMethod()) {
-                            case Cash:
-                                newSummery.setCashTotal(newSummery.getCashTotal() + p.getPaidValue());
-                                break;
-                            case Card:
-                                newSummery.setCardTotal(newSummery.getCardTotal() + p.getPaidValue());
-                                break;
-                            default:
-                                break;
+                }
+            } else {
+                switch (dto.getPaymentMethod()) {
+                    case Cash:
+                        newSummery.setCashTotal(newSummery.getCashTotal() + dto.getTotalAppoinmentFee());
+                        break;
+                    case Card:
+                        newSummery.setCardTotal(newSummery.getCardTotal() + dto.getTotalAppoinmentFee());
+                        break;
+                    case MultiplePaymentMethods:
+                        Bill bill = billFacade.find(dto.getBillId());
+                        List<Payment> payments = new ArrayList<>();
+                        if (bill != null) {
+                            payments = billService.fetchBillPayments(bill);
                         }
-                    }
-                    break;
+                        for (Payment p : payments) {
+                            switch (p.getPaymentMethod()) {
+                                case Cash:
+                                    newSummery.setCashTotal(newSummery.getCashTotal() + p.getPaidValue());
+                                    break;
+                                case Card:
+                                    newSummery.setCardTotal(newSummery.getCardTotal() + p.getPaidValue());
+                                    break;
+                                default:
+                                    break;
+                            }
+                        }
+                        break;
 
-                case Agent:
-                    newSummery.setAgentTotal(newSummery.getAgentTotal() + dto.getTotalAppoinmentFee());
-                    break;
+                    case Agent:
+                        newSummery.setAgentTotal(newSummery.getAgentTotal() + dto.getTotalAppoinmentFee());
+                        break;
 
-                case Credit:
-                    newSummery.setCreditTotal(newSummery.getCreditTotal() + dto.getTotalAppoinmentFee());
-                    break;
+                    case Credit:
+                        newSummery.setCreditTotal(newSummery.getCreditTotal() + dto.getTotalAppoinmentFee());
+                        break;
 
-                default:
-                    break;
+                    default:
+                        break;
+                }
             }
 
             if (dto.isIsCancelled()) {
