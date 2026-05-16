@@ -53,36 +53,42 @@ public class ClinicalEntityController implements Serializable {
     public String navigateToManageClinicalEntities() {
         filterSymanticType = null;
         items = null;
+        current = null;
         return "/emr/admin/clinical_entities?faces-redirect=true";
     }
 
     public String navigateToManageBloodGroups() {
         filterSymanticType = SymanticType.Blood_Group;
         items = null;
+        current = null;
         return "/emr/admin/clinical_entities?faces-redirect=true";
     }
 
     public String navigateToManageCivilStatuses() {
         filterSymanticType = SymanticType.Civil_status;
         items = null;
+        current = null;
         return "/emr/admin/clinical_entities?faces-redirect=true";
     }
 
     public String navigateToManageOccupations() {
         filterSymanticType = SymanticType.Employment;
         items = null;
+        current = null;
         return "/emr/admin/clinical_entities?faces-redirect=true";
     }
 
     public String navigateToManageRaces() {
         filterSymanticType = SymanticType.Race;
         items = null;
+        current = null;
         return "/emr/admin/clinical_entities?faces-redirect=true";
     }
 
     public String navigateToManageReligions() {
         filterSymanticType = SymanticType.Religion;
         items = null;
+        current = null;
         return "/emr/admin/clinical_entities?faces-redirect=true";
     }
 
