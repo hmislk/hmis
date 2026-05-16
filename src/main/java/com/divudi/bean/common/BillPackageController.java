@@ -465,12 +465,9 @@ public class BillPackageController implements Serializable, ControllerWithPatien
             }
         }
         
-        if(configOptionApplicationController.getBooleanValueByKey("Enable blacklist patient management in the system", false) 
-                && configOptionApplicationController.getBooleanValueByKey("Enable blacklist patient management for OPD from the system", false)){
-            if(getPatient().isBlacklisted()){
-                JsfUtil.addErrorMessage("This patient is blacklisted from the system. Can't Bill.");
-                return true;
-            }
+        if (getPatient().isBlacklisted()) {
+            JsfUtil.addErrorMessage("This patient is blacklisted from the system. Can't Bill.");
+            return true;
         }
 
         if (getLstBillEntries().isEmpty()) {
@@ -2735,19 +2732,6 @@ public class BillPackageController implements Serializable, ControllerWithPatien
             OptionScope.APPLICATION
         ));
 
-        metadata.addConfigOption(new ConfigOptionInfo(
-            "Enable blacklist patient management in the system",
-            "Enables blacklist patient management features globally",
-            "Line 425: Blacklist patient badge rendering (combined with OPD-specific setting)",
-            OptionScope.APPLICATION
-        ));
-
-        metadata.addConfigOption(new ConfigOptionInfo(
-            "Enable blacklist patient management for OPD from the system",
-            "Enables blacklist patient management specifically for OPD modules",
-            "Line 425: Combined with global blacklist setting for OPD blacklist badge",
-            OptionScope.APPLICATION
-        ));
 
         // Configuration Options - Package Management
         metadata.addConfigOption(new ConfigOptionInfo(

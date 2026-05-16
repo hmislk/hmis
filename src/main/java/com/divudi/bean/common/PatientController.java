@@ -58,6 +58,7 @@ import com.divudi.core.facade.WebUserFacade;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.SpecificPatientStatus;
+import com.divudi.core.entity.AuditEvent;
 import com.divudi.core.entity.CancelledBill;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.PatientDeposit;
@@ -195,6 +196,8 @@ public class PatientController implements Serializable, ControllerWithPatient {
     PatientController patientController;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    AuditEventController auditEventController;
     @Inject
     PatientDepositController patientDepositController;
     @Inject
@@ -3125,6 +3128,11 @@ public class PatientController implements Serializable, ControllerWithPatient {
                 JsfUtil.addErrorMessage("Please provide a reason for blacklisting. ");
                 return;
             }
+            AuditEvent auditEvent = auditEventController.createNewAuditEvent(
+                    "Blacklist Patient",
+                    "{\"patientId\":" + patient.getId() + ",\"blacklisted\":false}",
+                    patient.getId(),
+                    "Patient");
             Patient newb = getFacade().find(patient.getId());
             newb.setBlacklisted(true);
             newb.setBlacklistedAt(new Date());
@@ -3134,6 +3142,8 @@ public class PatientController implements Serializable, ControllerWithPatient {
 //            getFacade().edit(patient);
 
             getFacade().editAndCommit(newb);
+            auditEventController.completeAuditEvent(auditEvent,
+                    "{\"patientId\":" + newb.getId() + ",\"blacklisted\":true,\"reason\":\"" + blacklistComment + "\"}");
             this.current = getFacade().findWithoutCache(newb.getId());
             blacklistComment = null;
             JsfUtil.addSuccessMessage("Patient is blacklisted.");
@@ -3144,6 +3154,11 @@ public class PatientController implements Serializable, ControllerWithPatient {
                 return;
             }
 
+            AuditEvent auditEvent = auditEventController.createNewAuditEvent(
+                    "Revert Patient Blacklist",
+                    "{\"patientId\":" + patient.getId() + ",\"blacklisted\":true,\"reason\":\"" + patient.getReasonForBlacklist() + "\"}",
+                    patient.getId(),
+                    "Patient");
             Patient newb = getFacade().find(patient.getId());
             newb.setBlacklisted(false);
             getFacade().edit(newb);
@@ -3157,7 +3172,8 @@ public class PatientController implements Serializable, ControllerWithPatient {
             newb.setBlacklistedBy(null);
 
             getFacade().editAndCommit(newb);
-
+            auditEventController.completeAuditEvent(auditEvent,
+                    "{\"patientId\":" + newb.getId() + ",\"blacklisted\":false,\"revertComment\":\"" + blacklistComment + "\"}");
             blacklistComment = null;
             JsfUtil.addSuccessMessage("Patient blacklist is reverted.");
         }

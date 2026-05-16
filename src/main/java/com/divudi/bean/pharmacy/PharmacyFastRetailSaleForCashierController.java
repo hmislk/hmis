@@ -152,12 +152,9 @@ public class PharmacyFastRetailSaleForCashierController extends PharmacyFastReta
             return;
         }
         
-        if(getPatient() != null && getPatient().getId() != null && configOptionApplicationController.getBooleanValueByKey("Enable blacklist patient management in the system", false) 
-                && configOptionApplicationController.getBooleanValueByKey("Enable blacklist patient management for Pharmacy from the system", false)){
-            if(getPatient().isBlacklisted()){
-                JsfUtil.addErrorMessage("This patient is blacklisted from the system. Can't Bill.");
-                return;
-            }
+        if (getPatient() != null && getPatient().getId() != null && getPatient().isBlacklisted()) {
+            JsfUtil.addErrorMessage("This patient is blacklisted from the system. Can't Bill.");
+            return;
         }
         
         for (BillItem bi : getPreBill().getBillItems()) {
