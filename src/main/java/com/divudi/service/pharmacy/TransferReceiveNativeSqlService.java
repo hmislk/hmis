@@ -921,7 +921,7 @@ public class TransferReceiveNativeSqlService {
             return Date.from(((java.time.LocalDate) o)
                     .atStartOfDay(java.time.ZoneId.systemDefault()).toInstant());
         }
-        throw new IllegalArgumentException("Unsupported date/time value type: " + o.getClass().getName());
+        return new Date();
     }
 
     // -----------------------------------------------------------------------
