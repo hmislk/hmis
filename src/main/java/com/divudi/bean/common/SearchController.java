@@ -16568,27 +16568,27 @@ public class SearchController implements Serializable {
 
     public String navigateToListSingleUserBills() {
         processAllFinancialTransactionalBillListBySingleUserByIds();
-        return "/cashier/shift_end_summary_bill_list";
+        return "/cashier/shift_end_summary_bill_list?faces-redirect=true";
     }
 
     public String navigateToListCashBookEntry() {
         cashBookEntries = new ArrayList<>();
-        return "/cashier/cash_book_entry";
+        return "/cashier/cash_book_entry?faces-redirect=true";
     }
 
     public String navigateToListCashBookEntrySiteSummary() {
         cashBookEntries = new ArrayList<>();
-        return "/cashier/cash_book_summery_site";
+        return "/cashier/cash_book_summery_site?faces-redirect=true";
     }
 
     public String navigateToListCashBookEntryDepartmentSummary() {
         cashBookEntries = new ArrayList<>();
-        return "/cashier/cash_book_summery_department";
+        return "/cashier/cash_book_summery_department?faces-redirect=true";
     }
 
     public String navigateToListCashBookEntryInstitutionSummary() {
         cashBookEntries = new ArrayList<>();
-        return "/cashier/cash_book_summery_institution";
+        return "/cashier/cash_book_summery_institution?faces-redirect=true";
     }
 
     public String navigateToPatientReportSearch() {
