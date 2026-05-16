@@ -92,13 +92,12 @@ public class TransferReceiveNativeSqlService {
         // Query 1: Load all issued items with their batch and item data
         // pbi.staffStock_ID is the transit stock incremented during issue (what receive deducts from).
         // pbi.stock_ID is the Stores dept stock that was already deducted during issue (now empty).
-        // COALESCE(pbi.doe, ib.dateOfExpire): prefer the DOE captured on the issued PBI (DATE column,
-        // set at issue time) over the current ItemBatch DATETIME value. This handles cases where
-        // the ItemBatch dateOfExpire was cleared/null after the issue was created.
+        // COALESCE(ib.dateOfExpire, pbi.doe): item-batch expiry is authoritative; pbi.doe is the
+        // fallback for when the batch column is null.
         String sql1 = "SELECT"
                 + " bi.ID, bi.qty, bi.netValue, bi.rate, bi.netRate, bi.searialNo,"
                 + " pbi.staffStock_ID, pbi.itemBatch_ID, pbi.qty AS pbiQty,"
-                + " ib.batchNo, COALESCE(pbi.doe, ib.dateOfExpire), ib.purcahseRate, ib.retailsaleRate,"
+                + " ib.batchNo, COALESCE(ib.dateOfExpire, pbi.doe) AS dateOfExpire, ib.purcahseRate, ib.retailsaleRate,"
                 + " ib.wholesaleRate, COALESCE(ib.costRate, 0) AS costRate,"
                 + " i.ID AS itemId, i.name AS itemName, COALESCE(i.code, '') AS itemCode,"
                 + " i.DTYPE AS itemDtype, COALESCE(i.dblValue, 1) AS dblValue"
@@ -147,7 +146,7 @@ public class TransferReceiveNativeSqlService {
             // row[0]=bi.ID, row[1]=bi.qty(packs), row[2]=bi.netValue, row[3]=bi.rate,
             // row[4]=bi.netRate, row[5]=bi.searialNo,
             // row[6]=pbi.staffStock_ID, row[7]=pbi.itemBatch_ID, row[8]=pbi.qty(units in stock),
-            // row[9]=ib.batchNo, row[10]=COALESCE(pbi.doe,ib.dateOfExpire), row[11]=ib.purcahseRate,
+            // row[9]=ib.batchNo, row[10]=COALESCE(ib.dateOfExpire,pbi.doe), row[11]=ib.purcahseRate,
             // row[12]=ib.retailsaleRate, row[13]=ib.wholesaleRate, row[14]=ib.costRate,
             // row[15]=i.ID, row[16]=i.name, row[17]=i.code, row[18]=i.DTYPE, row[19]=i.dblValue
 
@@ -600,7 +599,7 @@ public class TransferReceiveNativeSqlService {
         }
 
         String sql = "SELECT COALESCE(bi.searialNo, 0), i.name, COALESCE(i.code, ''),"
-                + " ib.batchNo, COALESCE(pbi.doe, ib.dateOfExpire),"
+                + " ib.batchNo, COALESCE(ib.dateOfExpire, pbi.doe) AS dateOfExpire,"
                 + " ABS(bi.qty) AS qty, ABS(pbi.qty) AS qtyInUnits,"
                 + " ABS(bi.rate) AS rate, ABS(bi.netValue) AS netValue,"
                 + " COALESCE(ib.purcahseRate, 0), COALESCE(ib.retailsaleRate, 0),"
@@ -922,7 +921,7 @@ public class TransferReceiveNativeSqlService {
             return Date.from(((java.time.LocalDate) o)
                     .atStartOfDay(java.time.ZoneId.systemDefault()).toInstant());
         }
-        return null;
+        throw new IllegalArgumentException("Unsupported date/time value type: " + o.getClass().getName());
     }
 
     // -----------------------------------------------------------------------
