@@ -96,6 +96,24 @@
                                         </div>
                                     </div>
                                     <div class="row form-group mb-1">
+                                        <div class="col-md-6">
+                                            <p:outputLabel value="Full Name:" for="txtFullName" class="form-label" />
+                                            <p:inputText
+                                                id="txtFullName"
+                                                value="#{patientController.current.person.fullName}"
+                                                class="w-100 form-control"
+                                                placeholder="Full name as in official documents" />
+                                        </div>
+                                        <div class="col-md-6">
+                                            <p:outputLabel value="Name with Initials:" for="txtNameWithInitials" class="form-label" />
+                                            <p:inputText
+                                                id="txtNameWithInitials"
+                                                value="#{patientController.current.person.nameWithInitials}"
+                                                class="w-100 form-control"
+                                                placeholder="e.g. A.B. Perera" />
+                                        </div>
+                                    </div>
+                                    <div class="row form-group mb-1">
                                         <div class="col-md-2">
                                             <p:outputLabel value="Sex:"  class="form-label" />
                                             <p:selectOneMenu id="somSex" value="#{patientController.current.person.sex}" class="form-control" >
