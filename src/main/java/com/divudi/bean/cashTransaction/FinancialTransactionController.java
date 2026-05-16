@@ -2874,6 +2874,8 @@ public class FinancialTransactionController implements Serializable {
         currentBill.setBillType(BillType.DepositFundBill);
         currentBill.setBillTypeAtomic(BillTypeAtomic.FUND_DEPOSIT_BILL);
         currentBill.setBillClassType(BillClassType.Bill);
+        currentPayment = new Payment();
+        currentPayment.setPaymentMethod(PaymentMethod.Cash);
     }
 
     private void prepareToAddNewFundTransferReceiveBill() {
@@ -8153,9 +8155,14 @@ public class FinancialTransactionController implements Serializable {
             JsfUtil.addErrorMessage("Select a Payment Method");
             return;
         }
+        if (currentPayment.getPaymentMethod() != PaymentMethod.Cash) {
+            JsfUtil.addErrorMessage("Only Cash is allowed in bank deposits. Cheque deposits are handled separately.");
+            return;
+        }
         getCurrentBillPayments().add(currentPayment);
         calculateFundDepositBillTotal();
-        currentPayment = null;
+        currentPayment = new Payment();
+        currentPayment.setPaymentMethod(PaymentMethod.Cash);
     }
 
     public void addPaymentToIncomeBill() {
