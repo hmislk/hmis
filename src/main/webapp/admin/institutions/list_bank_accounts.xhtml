@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8' ?>
-<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 template="/admin/institutions/admin_institutions_index.xhtml"
                 xmlns:h="http://xmlns.jcp.org/jsf/html"
@@ -22,11 +22,11 @@
                                  rowsPerPageTemplate="10,20,50"
                                  styleClass="w-100"
                                  emptyMessage="No bank accounts found.">
-                        <p:column headerText="Account Name" sortBy="#{item.name}" filterBy="#{item.name}">
-                            <h:outputText value="#{item.name}"/>
+                        <p:column headerText="Account Name" sortBy="#{item.accountName}" filterBy="#{item.accountName}">
+                            <h:outputText value="#{item.accountName}"/>
                         </p:column>
-                        <p:column headerText="Account Number" sortBy="#{item.accountNumber}" filterBy="#{item.accountNumber}">
-                            <h:outputText value="#{item.accountNumber}"/>
+                        <p:column headerText="Account Number" sortBy="#{item.accountNo}" filterBy="#{item.accountNo}">
+                            <h:outputText value="#{item.accountNo}"/>
                         </p:column>
                         <p:column headerText="Type" sortBy="#{item.bankAccountType}">
                             <h:outputText value="#{item.bankAccountType}"/>
