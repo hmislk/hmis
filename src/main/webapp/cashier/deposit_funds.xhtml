@@ -258,6 +258,19 @@
                                             ajax="false"
                                             action="#{financialTransactionController.settleFundDepositBill()}"/>
                                     </f:facet>
+                                    <p:outputLabel value="Cashbook"/>
+                                    <p:autoComplete
+                                        class="w-100"
+                                        inputStyleClass="w-100"
+                                        completeMethod="#{cashBookController.completeCashBook}"
+                                        value="#{financialTransactionController.depositCashBook}"
+                                        var="cb"
+                                        forceSelection="true"
+                                        itemLabel="#{cb.department.name} - #{cb.institution.name}"
+                                        itemValue="#{cb}"
+                                        required="true"
+                                        requiredMessage="Please select a cashbook"/>
+
                                     <p:outputLabel value="Deposit To"/>
                                     <p:autoComplete
                                         class="w-100"

@@ -284,6 +284,7 @@ public class FinancialTransactionController implements Serializable {
 
     private List<Payment> fundTransferAvailablePayments;
     private List<Payment> depositableNonCashPayments;
+    private CashBook depositCashBook;
 
     // Shortage Bill Cancellation Properties
     private String shortageCancellationComment;
@@ -2912,6 +2913,7 @@ public class FinancialTransactionController implements Serializable {
         fundTransferAvailablePayments = null;
         department = null;
         selectedFundTransferRequest = null;
+        depositCashBook = null;
         searchController.setBills(null);
     }
 
@@ -3151,6 +3153,14 @@ public class FinancialTransactionController implements Serializable {
 
     public void setDepositableNonCashPayments(List<Payment> depositableNonCashPayments) {
         this.depositableNonCashPayments = depositableNonCashPayments;
+    }
+
+    public CashBook getDepositCashBook() {
+        return depositCashBook;
+    }
+
+    public void setDepositCashBook(CashBook depositCashBook) {
+        this.depositCashBook = depositCashBook;
     }
 
     public void addPaymentToShiftEndFundBill() {
@@ -8812,6 +8822,11 @@ public class FinancialTransactionController implements Serializable {
             }
         }
 
+        if (depositCashBook == null) {
+            JsfUtil.addErrorMessage("Please select a cashbook for this deposit");
+            return "";
+        }
+
         currentBill.setNetTotal(0 - Math.abs(netTotal));
         currentBill.setTotal(0 - Math.abs(netTotal));
         billController.save(currentBill);
@@ -8823,6 +8838,7 @@ public class FinancialTransactionController implements Serializable {
             p.setCurrentHolder(null);
             paymentController.save(p);
             drawerController.updateDrawerForOuts(p);
+            cashBookEntryController.writeCashBookEntryAtBankDeposit(p, depositCashBook, currentBill);
             Payment original = p.getReferancePayment();
             if (original != null) {
                 original.setDeposited(true);
