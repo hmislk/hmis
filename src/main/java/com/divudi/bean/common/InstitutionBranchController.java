@@ -7,20 +7,22 @@
  * (94) 71 5812399
  */
 package com.divudi.bean.common;
-import com.divudi.core.util.JsfUtil;
+
 import com.divudi.core.data.InstitutionType;
+import com.divudi.core.data.dto.BankBranchDto;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.facade.InstitutionFacade;
+import com.divudi.core.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.persistence.TemporalType;
 
 /**
  *
@@ -32,45 +34,50 @@ import javax.persistence.TemporalType;
 public class InstitutionBranchController implements Serializable {
 
     private static final long serialVersionUID = 1L;
+
     @Inject
     SessionController sessionController;
     @EJB
     private InstitutionFacade ejbFacade;
-    List<Institution> selectedItems;
+
     private Institution current;
+    private Long selectedBranchId;
     private List<Institution> items = null;
-    //   private String insCode;
     String selectText = "";
     private Boolean codeDisabled = false;
-    private InstitutionType[] institutionTypes;
 
-    public List<Institution> getSelectedItems() {
-        String sql;
-        HashMap hm = new HashMap();
-        if (selectText.trim().equals("")) {
-            sql = "select c from Institution c where c.institutionType=:tp and c.retired=false order by c.name";
-        } else {
-            sql = "select c from Institution c where c.institutionType=:tp and c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name";
+    /**
+     * Returns a DTO list of all active bank branches for safe display in the
+     * listbox (avoids lazy-loading issues with entity collections).
+     */
+    public List<BankBranchDto> getBranchDtos() {
+        String jpql = "select c.id, c.name, c.institutionCode, i.name "
+                + "from Institution c left join c.institution i "
+                + "where c.institutionType = :tp and c.retired = false "
+                + "order by c.name";
+        Map<String, Object> params = new HashMap<>();
+        params.put("tp", InstitutionType.branch);
+        List<Object[]> rows = getFacade().findObjectArrayByJpql(jpql, params, null);
+        List<BankBranchDto> dtos = new ArrayList<>();
+        for (Object[] row : rows) {
+            Long id = (Long) row[0];
+            String name = (String) row[1];
+            String code = (String) row[2];
+            String bankName = (String) row[3];
+            dtos.add(new BankBranchDto(id, name, code, bankName));
         }
-
-        hm.put("tp", InstitutionType.branch);
-
-        selectedItems = getFacade().findByJpql(sql, hm, TemporalType.DATE);
-
-        return selectedItems;
+        return dtos;
     }
 
-//    public List<Institution> completeIns(String qry) {
-//        String sql;
-//        sql = "select c from Institution c where c.retired=false and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name";
-//        return getFacade().findByJpql(sql);
-//    }
-
-//    public List<Institution> completeCompany(String qry) {
-//        String sql;
-//        sql = "select c from Institution c where c.retired=false and c.institutionType=com.divudi.core.data.InstitutionType.Company and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name";
-//        return getFacade().findByJpql(sql);
-//    }
+    /**
+     * Called by AJAX when user selects a branch in the listbox. Loads the full
+     * entity into {@code current} for editing in the detail panel.
+     */
+    public void onBranchSelect() {
+        if (selectedBranchId != null) {
+            current = getFacade().find(selectedBranchId);
+        }
+    }
 
     public List<Institution> completeCredit(String query) {
         List<Institution> suggestions;
@@ -79,7 +86,6 @@ public class InstitutionBranchController implements Serializable {
             suggestions = new ArrayList<>();
         } else {
             sql = "select p from Institution p where p.retired=false and p.institutionType=com.divudi.core.data.InstitutionType.CreditCompany and (p.name) like '%" + query.toUpperCase() + "%' order by p.name";
-            //////// // System.out.println(sql);
             suggestions = getFacade().findByJpql(sql);
         }
         return suggestions;
@@ -88,14 +94,8 @@ public class InstitutionBranchController implements Serializable {
     public void prepareAdd() {
         codeDisabled = false;
         current = new Institution();
-    }
-
-    public void setSelectedItems(List<Institution> selectedItems) {
-        this.selectedItems = selectedItems;
-    }
-
-    public String getSelectText() {
-        return selectText;
+        current.setInstitutionType(InstitutionType.branch);
+        selectedBranchId = null;
     }
 
     private void recreateModel() {
@@ -103,19 +103,28 @@ public class InstitutionBranchController implements Serializable {
     }
 
     public void saveSelected() {
-        if (getCurrent().getInstitutionType() == null) {
-            JsfUtil.addErrorMessage("Select Instituion Type");
-            return;
-        }
+        getCurrent().setInstitutionType(InstitutionType.branch);
         if (getCurrent().getInstitution() == null) {
-            JsfUtil.addErrorMessage("Select Main Institution");
+            JsfUtil.addErrorMessage("Select the Bank");
             return;
         }
-        getCurrent().getInstitution().getBranch().add(getCurrent());
-        getEjbFacade().edit(getCurrent().getInstitution());
+        if (getCurrent().getName() == null || getCurrent().getName().trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Enter Branch Name");
+            return;
+        }
+        if (getCurrent().getId() == null) {
+            getFacade().create(getCurrent());
+        } else {
+            getFacade().edit(getCurrent());
+        }
+        JsfUtil.addSuccessMessage("Saved Successfully");
         recreateModel();
-        getItems();
-        current=null;
+        current = null;
+        selectedBranchId = null;
+    }
+
+    public String getSelectText() {
+        return selectText;
     }
 
     public void setSelectText(String selectText) {
@@ -154,18 +163,27 @@ public class InstitutionBranchController implements Serializable {
         this.current = current;
     }
 
+    public Long getSelectedBranchId() {
+        return selectedBranchId;
+    }
+
+    public void setSelectedBranchId(Long selectedBranchId) {
+        this.selectedBranchId = selectedBranchId;
+    }
+
     public void delete() {
-        if (getCurrent() != null) {
-            getCurrent().setRetired(true);
-            getCurrent().setRetiredAt(new Date());
-            getCurrent().setRetirer(getSessionController().getLoggedUser());
-            getFacade().edit(getCurrent());
+        if (current != null) {
+            current.setRetired(true);
+            current.setRetiredAt(new Date());
+            current.setRetirer(getSessionController().getLoggedUser());
+            getFacade().edit(current);
             JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
             JsfUtil.addErrorMessage("Nothing to Delete");
         }
         recreateModel();
         current = null;
+        selectedBranchId = null;
     }
 
     private InstitutionFacade getFacade() {
@@ -175,7 +193,6 @@ public class InstitutionBranchController implements Serializable {
     public List<Institution> getItems() {
         return items;
     }
-
 
     public Boolean getCodeDisabled() {
         return codeDisabled;
@@ -187,10 +204,6 @@ public class InstitutionBranchController implements Serializable {
 
     public InstitutionType[] getInstitutionTypes() {
         return InstitutionType.values();
-    }
-
-    public void setInstitutionTypes(InstitutionType[] institutionTypes) {
-        this.institutionTypes = institutionTypes;
     }
 
 }
