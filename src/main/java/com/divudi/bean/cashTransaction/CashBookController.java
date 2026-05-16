@@ -130,7 +130,7 @@ public class CashBookController implements Serializable {
                 return null;
             }
             CashBookController controller = (CashBookController) facesContext.getApplication().getELResolver().
-                    getValue(facesContext.getELContext(), null, "CashBookController");
+                    getValue(facesContext.getELContext(), null, "cashBookController");
             return controller.getCashbookFacade().find(getKey(value));
         }
 
