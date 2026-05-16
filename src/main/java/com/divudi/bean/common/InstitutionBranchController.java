@@ -75,7 +75,12 @@ public class InstitutionBranchController implements Serializable {
      */
     public void onBranchSelect() {
         if (selectedBranchId != null) {
-            current = getFacade().find(selectedBranchId);
+            Institution found = getFacade().find(selectedBranchId);
+            if (found != null && found.getInstitutionType() == InstitutionType.branch) {
+                current = found;
+            }
+        } else {
+            current = null;
         }
     }
 
@@ -105,7 +110,7 @@ public class InstitutionBranchController implements Serializable {
     public void saveSelected() {
         getCurrent().setInstitutionType(InstitutionType.branch);
         if (getCurrent().getInstitution() == null) {
-            JsfUtil.addErrorMessage("Select the Bank");
+            JsfUtil.addErrorMessage("Select the Institution");
             return;
         }
         if (getCurrent().getName() == null || getCurrent().getName().trim().isEmpty()) {
@@ -172,7 +177,7 @@ public class InstitutionBranchController implements Serializable {
     }
 
     public void delete() {
-        if (current != null) {
+        if (current != null && current.getId() != null) {
             current.setRetired(true);
             current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
