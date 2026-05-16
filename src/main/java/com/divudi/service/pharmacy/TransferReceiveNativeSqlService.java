@@ -92,6 +92,8 @@ public class TransferReceiveNativeSqlService {
         // Query 1: Load all issued items with their batch and item data
         // pbi.staffStock_ID is the transit stock incremented during issue (what receive deducts from).
         // pbi.stock_ID is the Stores dept stock that was already deducted during issue (now empty).
+        // COALESCE(ib.dateOfExpire, pbi.doe): item-batch expiry is authoritative; pbi.doe is the
+        // fallback for when the batch column is null.
         String sql1 = "SELECT"
                 + " bi.ID, bi.qty, bi.netValue, bi.rate, bi.netRate, bi.searialNo,"
                 + " pbi.staffStock_ID, pbi.itemBatch_ID, pbi.qty AS pbiQty,"
@@ -195,8 +197,7 @@ public class TransferReceiveNativeSqlService {
             dto.setItemName(row[16] != null ? row[16].toString() : "");
             dto.setItemCode(row[17] != null ? row[17].toString() : "");
             dto.setBatchNo(row[9] != null ? row[9].toString() : "");
-            dto.setDateOfExpire(row[10] instanceof java.sql.Date ? new Date(((java.sql.Date) row[10]).getTime())
-                    : (row[10] instanceof Date ? (Date) row[10] : null));
+            dto.setDateOfExpire(toDate(row[10]));
             dto.setUnitsPerPack(unitsPerPack);
             dto.setPurchaseRate(purchaseRate);
             dto.setRetailRate(retailRate);
@@ -623,9 +624,7 @@ public class TransferReceiveNativeSqlService {
             item.setItemName(row[1] != null ? row[1].toString() : "");
             item.setItemCode(row[2] != null ? row[2].toString() : "");
             item.setBatchNo(row[3] != null ? row[3].toString() : "");
-            item.setDateOfExpire(row[4] instanceof java.sql.Date
-                    ? new Date(((java.sql.Date) row[4]).getTime())
-                    : (row[4] instanceof Date ? (Date) row[4] : null));
+            item.setDateOfExpire(toDate(row[4]));
             double qty    = toDouble(row[5]);
             double units  = toDouble(row[6]);
             double rate   = toDouble(row[7]);
@@ -893,6 +892,36 @@ public class TransferReceiveNativeSqlService {
 
     private static double toDouble(Object o) {
         return o == null ? 0.0 : ((Number) o).doubleValue();
+    }
+
+    /**
+     * Converts a raw JDBC date/time object to java.util.Date.
+     * Handles java.sql.Timestamp, java.sql.Date, java.util.Date, and the
+     * Java 8 time types (LocalDateTime, LocalDate) returned by MySQL Connector/J 8.x
+     * when useLegacyDatetimeCode=false.
+     */
+    private static Date toDate(Object o) {
+        if (o == null) {
+            return null;
+        }
+        if (o instanceof java.sql.Timestamp) {
+            return new Date(((java.sql.Timestamp) o).getTime());
+        }
+        if (o instanceof java.sql.Date) {
+            return new Date(((java.sql.Date) o).getTime());
+        }
+        if (o instanceof Date) {
+            return (Date) o;
+        }
+        if (o instanceof java.time.LocalDateTime) {
+            return Date.from(((java.time.LocalDateTime) o)
+                    .atZone(java.time.ZoneId.systemDefault()).toInstant());
+        }
+        if (o instanceof java.time.LocalDate) {
+            return Date.from(((java.time.LocalDate) o)
+                    .atStartOfDay(java.time.ZoneId.systemDefault()).toInstant());
+        }
+        return new Date();
     }
 
     // -----------------------------------------------------------------------
