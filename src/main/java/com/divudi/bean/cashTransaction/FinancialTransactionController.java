@@ -584,7 +584,7 @@ public class FinancialTransactionController implements Serializable {
     }
 
     public String navigateToMyServiceDepartmentRevenueReportByPeriod() {
-        return "/cashier/my_service_department_revenue_report_by_period";
+        return "/cashier/my_service_department_revenue_report_by_period?faces-redirect=true";
     }
 
     public void processMyServiceDepartmentRevenueReportByPeriod() {
