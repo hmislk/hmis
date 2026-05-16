@@ -1,0 +1,41 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/admin/institutions/admin_institutions_index.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui">
+
+    <ui:define name="admin">
+
+        <h:panelGroup>
+            <h:form>
+                <p:growl id="msg"/>
+
+                <p:panel header="List of Banks">
+                    <f:facet name="header">
+                        <h:panelGroup>
+                            <span class="pi pi-building" style="margin-right:0.5em;"/>
+                            <h:outputText value="List of Banks"/>
+                        </h:panelGroup>
+                    </f:facet>
+                    <p:dataTable id="tblBanks"
+                                 value="#{bankController.items}"
+                                 var="item"
+                                 paginator="true"
+                                 rows="20"
+                                 rowsPerPageTemplate="10,20,50"
+                                 styleClass="w-100"
+                                 emptyMessage="No banks found.">
+                        <p:column headerText="Name" sortBy="#{item.name}" filterBy="#{item.name}">
+                            <h:outputText value="#{item.name}"/>
+                        </p:column>
+                    </p:dataTable>
+                </p:panel>
+            </h:form>
+        </h:panelGroup>
+
+    </ui:define>
+
+</ui:composition>

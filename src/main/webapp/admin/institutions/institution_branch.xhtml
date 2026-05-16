@@ -45,10 +45,10 @@
                                     </h:outputText>
                                     <p:inputText autocomplete="off"  value="#{institutionBranchController.current.institutionCode}"  class="w-100 p-1" >
                                     </p:inputText>   
-                                    <h:outputText value="Bank" ></h:outputText>
+                                    <h:outputText value="Institution" ></h:outputText>
                                     <p:selectOneMenu id="cmbIns" value="#{institutionBranchController.current.institution}" class="w-100 p-1" >
                                         <f:selectItem itemLabel="Select the Institution" />
-                                        <f:selectItems value="#{institutionController.banks}" var="i" itemLabel="#{i.name}" itemValue="#{i}" />
+                                        <f:selectItems value="#{institutionController.companies}" var="i" itemLabel="#{i.name}" itemValue="#{i}" />
                                     </p:selectOneMenu>
                                 </h:panelGrid>
                                <p:commandButton id="btnSave" value="Save" 
