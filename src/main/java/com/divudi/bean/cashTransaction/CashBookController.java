@@ -78,6 +78,15 @@ public class CashBookController implements Serializable {
         return cb;
     }
 
+    public String getCashBookLabel(CashBook cb) {
+        if (cb == null) {
+            return "";
+        }
+        String dept = (cb.getDepartment() != null && cb.getDepartment().getName() != null) ? cb.getDepartment().getName() : "";
+        String inst = (cb.getInstitution() != null && cb.getInstitution().getName() != null) ? cb.getInstitution().getName() : "";
+        return dept + " - " + inst;
+    }
+
     public List<CashBook> completeCashBook(String qry) {
         String jpql = "select cb from CashBook cb "
                 + " where cb.retired = false "
