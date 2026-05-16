@@ -598,7 +598,7 @@ public class TransferReceiveNativeSqlService {
         }
 
         String sql = "SELECT COALESCE(bi.searialNo, 0), i.name, COALESCE(i.code, ''),"
-                + " ib.batchNo, COALESCE(pbi.doe, ib.dateOfExpire) AS dateOfExpire,"
+                + " ib.batchNo, COALESCE(ib.dateOfExpire, pbi.doe) AS dateOfExpire,"
                 + " ABS(bi.qty) AS qty, ABS(pbi.qty) AS qtyInUnits,"
                 + " ABS(bi.rate) AS rate, ABS(bi.netValue) AS netValue,"
                 + " COALESCE(ib.purcahseRate, 0), COALESCE(ib.retailsaleRate, 0),"
