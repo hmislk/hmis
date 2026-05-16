@@ -323,8 +323,16 @@ public class LimsMiddlewareController {
 
                     if (isImageValue
                             && priv.getInvestigationItem().getIxItemType() == InvestigationItemType.ReportImage) {
+                        byte[] imageBytes;
+                        try {
+                            imageBytes = base64TextToByteArray(observationValueStr);
+                        } catch (IllegalArgumentException e) {
+                            return Response.status(Response.Status.BAD_REQUEST)
+                                    .entity("Invalid image observation value: " + observationValueCode)
+                                    .build();
+                        }
                         priv.setLobValue(observationValueStr);
-                        priv.setBaImage(base64TextToByteArray(observationValueStr));
+                        priv.setBaImage(imageBytes);
                         String fileType = extractImageTypeFromResult(observationValueStr);
                         priv.setFileType(fileType);
                         priv.setFileName(observationValueCode + "_" + sampleId + "." + fileType.toLowerCase());
