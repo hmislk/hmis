@@ -12,6 +12,7 @@ import com.divudi.core.entity.cashTransaction.CashBook;
 import com.divudi.core.facade.CashBookFacade;
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
@@ -75,6 +76,18 @@ public class CashBookController implements Serializable {
             cashbookFacade.create(cb);
         }
         return cb;
+    }
+
+    public List<CashBook> completeCashBook(String qry) {
+        String jpql = "select cb from CashBook cb "
+                + " where cb.retired = false "
+                + " and (UPPER(cb.Name) like :q "
+                + " or UPPER(cb.department.name) like :q "
+                + " or UPPER(cb.institution.name) like :q) "
+                + " order by cb.department.name";
+        Map<String, Object> params = new HashMap<>();
+        params.put("q", "%" + qry.toUpperCase() + "%");
+        return cashbookFacade.findByJpql(jpql, params);
     }
 
     public CashBookController() {
