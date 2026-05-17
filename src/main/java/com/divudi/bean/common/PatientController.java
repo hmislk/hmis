@@ -3138,7 +3138,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
             newb.setBlacklistedAt(new Date());
             getFacade().edit(newb);
             newb.setBlacklistedBy(sessionController.getLoggedUser());
-            newb.setReasonForBlacklist(newb.getReasonForBlacklist() != null ? newb.getReasonForBlacklist() + " / " + blacklistComment : blacklistComment);
+            newb.setReasonForBlacklist(blacklistComment);
 //            getFacade().edit(patient);
 
             getFacade().editAndCommit(newb);
