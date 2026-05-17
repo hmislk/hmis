@@ -881,7 +881,7 @@ public class ReportTemplateRowBundle implements Serializable {
 
                 if (childBundle.isSelected() || selectAll) {
 
-                    if (forHandover) {
+                    if (forHandover && !childBundle.isFloatRow()) {
                         childBundle.calculateTotalsByPaymentsAndDenominationsForHandover();
                     }
 
