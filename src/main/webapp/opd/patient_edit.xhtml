@@ -26,21 +26,21 @@
                                         </div>
 
                                         <div class="">
-                                            <p:commandButton 
-                                                value="Save" 
-                                                action="#{patientController.saveAndNavigateToOpdPatientProfile()}"
-                                                ajax="false" 
-                                                icon="pi pi-check" 
-                                                iconPos="left" 
+                                            <p:commandButton
+                                                value="Save"
+                                                action="#{patientController.checkBeforeSavePatient()}"
+                                                update="@form"
+                                                icon="pi pi-check"
+                                                iconPos="left"
                                                 class="ui-button-success m-1 " />
 
-                                            <p:commandButton 
-                                                value="Patient Profile" 
-                                                disabled="#{patientController.current eq null}" 
-                                                action="#{patientController.saveAndNavigateToOpdPatientProfile()}"
-                                                ajax="false" 
+                                            <p:commandButton
+                                                value="Patient Profile"
+                                                disabled="#{patientController.current eq null}"
+                                                action="#{patientController.checkBeforeSavePatient()}"
+                                                update="@form"
                                                 icon="fa fa-user"
-                                                iconPos="left" 
+                                                iconPos="left"
                                                 class="ui-button-warning m-1 " />
 
                                             <p:commandButton
@@ -55,8 +55,8 @@
                                             <p:commandButton
                                                 value="Inpatient Dashboard"
                                                 rendered="#{admissionController.current ne null and admissionController.current.id ne null}"
-                                                action="#{patientController.saveAndNavigateToAdmissionProfile()}"
-                                                ajax="false"
+                                                action="#{patientController.checkBeforeSaveAndGoToAdmission()}"
+                                                update="@form"
                                                 icon="fa fa-hospital-o"
                                                 iconPos="left"
                                                 class="ui-button-info m-1" />
@@ -347,6 +347,76 @@
                                     </div>
                                 </div>
                             </p:panel>
+
+                            <!-- Blacklist Warning Dialog — Save and go to Patient Profile -->
+                            <p:dialog id="dlgBlacklistSaveWarning"
+                                      widgetVar="dlgBlacklistSaveWarning"
+                                      header="&#9888; Patient is Blacklisted"
+                                      modal="true"
+                                      resizable="false"
+                                      closable="true"
+                                      style="width:500px">
+                                <div style="padding:12px">
+                                    <p style="color:#b71c1c; font-weight:bold; font-size:1.1em;">
+                                        &#9888; WARNING: This patient is blacklisted.
+                                    </p>
+                                    <p>
+                                        Reason: <strong>#{patientController.current.reasonForBlacklist}</strong>
+                                    </p>
+                                    <p style="font-weight:bold;">
+                                        Are you sure you want to save changes to this blacklisted patient's record?
+                                    </p>
+                                    <div class="d-flex justify-content-end gap-2 mt-3">
+                                        <p:commandButton
+                                            value="Cancel"
+                                            icon="fa fa-times"
+                                            class="ui-button-secondary"
+                                            onclick="PF('dlgBlacklistSaveWarning').hide(); return false;" />
+                                        <p:commandButton
+                                            value="Yes, Save Anyway"
+                                            icon="fa fa-exclamation-triangle"
+                                            class="ui-button-danger"
+                                            action="#{patientController.saveAndNavigateToOpdPatientProfile()}"
+                                            ajax="false"
+                                            onclick="PF('dlgBlacklistSaveWarning').hide();" />
+                                    </div>
+                                </div>
+                            </p:dialog>
+
+                            <!-- Blacklist Warning Dialog — Save and go to Inpatient Dashboard -->
+                            <p:dialog id="dlgBlacklistSaveAdmissionWarning"
+                                      widgetVar="dlgBlacklistSaveAdmissionWarning"
+                                      header="&#9888; Patient is Blacklisted"
+                                      modal="true"
+                                      resizable="false"
+                                      closable="true"
+                                      style="width:500px">
+                                <div style="padding:12px">
+                                    <p style="color:#b71c1c; font-weight:bold; font-size:1.1em;">
+                                        &#9888; WARNING: This patient is blacklisted.
+                                    </p>
+                                    <p>
+                                        Reason: <strong>#{patientController.current.reasonForBlacklist}</strong>
+                                    </p>
+                                    <p style="font-weight:bold;">
+                                        Are you sure you want to save changes to this blacklisted patient's record?
+                                    </p>
+                                    <div class="d-flex justify-content-end gap-2 mt-3">
+                                        <p:commandButton
+                                            value="Cancel"
+                                            icon="fa fa-times"
+                                            class="ui-button-secondary"
+                                            onclick="PF('dlgBlacklistSaveAdmissionWarning').hide(); return false;" />
+                                        <p:commandButton
+                                            value="Yes, Save Anyway"
+                                            icon="fa fa-exclamation-triangle"
+                                            class="ui-button-danger"
+                                            action="#{patientController.saveAndNavigateToAdmissionProfile()}"
+                                            ajax="false"
+                                            onclick="PF('dlgBlacklistSaveAdmissionWarning').hide();" />
+                                    </div>
+                                </div>
+                            </p:dialog>
 
                         </h:form>
                     </h:panelGroup>

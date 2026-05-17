@@ -102,6 +102,7 @@ import net.sourceforge.barbecue.Barcode;
 import net.sourceforge.barbecue.BarcodeFactory;
 import net.sourceforge.barbecue.BarcodeImageHandler;
 import org.apache.commons.lang3.StringUtils;
+import org.primefaces.PrimeFaces;
 import org.primefaces.context.PrimeRequestContext;
 import org.primefaces.event.CaptureEvent;
 import org.primefaces.event.FileUploadEvent;
@@ -3305,6 +3306,30 @@ public class PatientController implements Serializable, ControllerWithPatient {
             return null;
         }
         return "/membership/add_family?faces-redirect=true";
+    }
+
+    public void checkBeforeSavePatient() {
+        if (current != null && current.getId() != null && current.isBlacklisted()) {
+            PrimeFaces.current().executeScript("PF('dlgBlacklistSaveWarning').show();");
+            return;
+        }
+        boolean savedSuccessfully = saveSelected(current);
+        if (!savedSuccessfully) {
+            return;
+        }
+        try {
+            javax.faces.context.ExternalContext ec = FacesContext.getCurrentInstance().getExternalContext();
+            ec.redirect(ec.getRequestContextPath() + "/faces/opd/patient");
+            FacesContext.getCurrentInstance().responseComplete();
+        } catch (java.io.IOException e) {
+            JsfUtil.addErrorMessage("Saved but could not redirect.");
+        }
+    }
+
+    public void checkBeforeSaveAndGoToAdmission() {
+        if (current != null && current.getId() != null && current.isBlacklisted()) {
+            PrimeFaces.current().executeScript("PF('dlgBlacklistSaveAdmissionWarning').show();");
+        }
     }
 
     public String saveAndNavigateToOpdPatientProfile() {
