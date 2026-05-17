@@ -4602,6 +4602,12 @@ public class FinancialTransactionController implements Serializable {
 
     public String navigateToViewIndividualShiftForHandover(ReportTemplateRowBundle childBundle) {
         selectedBundle = childBundle;
+        if (selectedBundle.isFloatRow()
+                && selectedBundle.getReportTemplateRows().isEmpty()
+                && bundle != null
+                && !bundle.getReportTemplateRows().isEmpty()) {
+            selectedBundle.getReportTemplateRows().addAll(bundle.getReportTemplateRows());
+        }
         return "/cashier/handover_accept_row_detail?faces-redirect=true";
     }
 
