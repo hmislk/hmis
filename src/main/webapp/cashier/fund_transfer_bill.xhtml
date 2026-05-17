@@ -147,7 +147,9 @@
                                                 class="text-end w-100"
                                                 id="txtDenoQtyTransfer"
                                                 value="#{deno.denominationQty}"
-                                                onfocus="this.select()">
+                                                onfocus="this.select()"
+                                                onkeydown="if(event.key==='-')return false;"
+                                                oninput="if(this.value.charAt(0)==='-')this.value=this.value.replace('-','');">
                                                 <f:convertNumber integerOnly="true"/>
                                                 <f:validateLongRange minimum="0" />
                                                 <p:ajax
