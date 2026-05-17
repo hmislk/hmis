@@ -3865,6 +3865,10 @@ public class PatientController implements Serializable, ControllerWithPatient {
     }
 
     public void activePatient(Patient p) {
+        if (!webUserController.hasPrivilege("AdminInactivePatients")) {
+            JsfUtil.addErrorMessage("You do not have permission to activate inactive patients.");
+            return;
+        }
         if (p == null || p.getId() == null) {
             return;
         }
@@ -3886,11 +3890,19 @@ public class PatientController implements Serializable, ControllerWithPatient {
     }
 
     public void searchInactivePatients() {
+        if (!webUserController.hasPrivilege("AdminInactivePatients")) {
+            inactivePatients = new java.util.ArrayList<>();
+            return;
+        }
         String j = "select p from Patient p where p.retired = true order by p.id desc";
         inactivePatients = getFacade().findByJpql(j);
     }
 
     public String navigateToInactivePatients() {
+        if (!webUserController.hasPrivilege("AdminInactivePatients")) {
+            JsfUtil.addErrorMessage("You do not have permission to manage inactive patients.");
+            return null;
+        }
         searchInactivePatients();
         return "/admin/patients/inactive_patients?faces-redirect=true";
     }

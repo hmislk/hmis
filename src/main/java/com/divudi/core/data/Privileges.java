@@ -1055,6 +1055,9 @@ public enum Privileges {
             case InpatientClinicalDischarge:
                 return "Inward";
 
+            case AdminInactivePatients:
+                return "Admin";
+
             default:
                 return this.toString();
         }
