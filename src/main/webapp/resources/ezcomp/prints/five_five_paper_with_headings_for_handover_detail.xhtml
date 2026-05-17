@@ -508,7 +508,7 @@
                                         <h:outputText value="#{floatRow.payment.creater.webUserPerson.nameWithTitle}" />
                                     </td>
                                     <td>
-                                        <h:outputText value="#{floatRow.payment.floatRecipient.webUserPerson.nameWithTitle}" />
+                                        <h:outputText value="#{floatRow.payment.floatRecipient ne null ? floatRow.payment.floatRecipient.webUserPerson.nameWithTitle : floatRow.payment.bill.toWebUser.webUserPerson.nameWithTitle}" />
                                     </td>
                                     <td class="text-end">
                                         <h:outputText value="#{floatRow.payment.paidValue}">

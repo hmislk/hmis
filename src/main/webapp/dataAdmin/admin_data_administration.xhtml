@@ -149,6 +149,13 @@
                                                 ajax="false"
                                                 styleClass="w-100 ui-button-success"
                                                 icon="fa fa-database" />
+                                            <p:commandButton
+                                                value="Archive Old StockHistory"
+                                                action="#{stockHistoryArchivalController.navigateToArchiveStockHistory()}"
+                                                ajax="false"
+                                                styleClass="w-100 ui-button-warning"
+                                                icon="fa fa-archive"
+                                                rendered="#{webUserController.hasPrivilege('ArchiveOldStockHistory')}" />
                                         </div>
                                     </p:tab>
 

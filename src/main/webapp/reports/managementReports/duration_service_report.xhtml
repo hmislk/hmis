@@ -23,6 +23,7 @@
                 </h:panelGroup>
 
                 <p:datePicker showTime="true" 
+                    value="#{reportController.fromDate}"
                     pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
                     styleClass="w-100" inputStyleClass="w-100 mb-3"/>
 
@@ -34,6 +35,7 @@
                 </h:panelGroup>
 
                 <p:datePicker showTime="true" 
+                    value="#{reportController.toDate}"
                     pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
                     styleClass="w-100" inputStyleClass="w-100 mb-3"/>
 
@@ -45,6 +47,7 @@
                 </h:panelGroup>
 
                 <p:datePicker showTime="true" 
+                    value="#{reportController.serviceAddedFromDate}"
                     pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
                     styleClass="w-100" inputStyleClass="w-100 mb-3"/>
 
@@ -56,6 +59,7 @@
                 </h:panelGroup>
 
                 <p:datePicker showTime="true" 
+                    value="#{reportController.serviceAddedToDate}"
                     pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
                     styleClass="w-100" inputStyleClass="w-100 mb-3"/>
 
@@ -67,6 +71,7 @@
                 </h:panelGroup>
 
                 <p:datePicker showTime="true" 
+                    value="#{reportController.invoiceFromDate}"
                     pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
                     styleClass="w-100" inputStyleClass="w-100 mb-3"/>
 
@@ -78,6 +83,7 @@
                 </h:panelGroup>
 
                 <p:datePicker showTime="true"  
+                    value="#{reportController.invoiceToDate}"
                     pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
                     styleClass="w-100" inputStyleClass="w-100 mb-3"/>
 
@@ -88,10 +94,10 @@
                     <h:outputLabel value="Service Name" class="mx-3"/>
                 </h:panelGroup>
 
-                <p:selectOneMenu value="#{reportController.service}" 
+                <p:selectOneMenu value="#{reportController.item}" 
                                  styleClass="w-100 form-control mb-3">
-                    <f:selectItem itemLabel="Select Service"/>
-                    <f:selectItems value="#{serviceController.items}" var="s"
+                    <f:selectItem itemLabel="All Services" itemValue="#{null}"/>
+                    <f:selectItems value="#{timedItemController.items}" var="s"
                                    itemLabel="#{s.name}" itemValue="#{s}"/>
                 </p:selectOneMenu>
 
@@ -103,14 +109,13 @@
                 </h:panelGroup>
 
                 <p:selectCheckboxMenu id="admType"
+                                      value="#{reportController.admissionTypes}"
+                                      converter="admissionTypeConverter"
                                       styleClass="w-100 mb-3"
                                       label="Select Types"
                                       updateLabel="true">
-                    <f:selectItem itemLabel="Normal" itemValue="A"/>
-                    <f:selectItem itemLabel="Dialysis" itemValue="B"/>
-                    <f:selectItem itemLabel="ETU" itemValue="P"/>
-                    <f:selectItem itemLabel="Day Care" itemValue="W"/>
-                    <f:selectItem itemLabel="Cath Lab" itemValue="K"/>
+                    <f:selectItems value="#{admissionTypeController.items}" var="at"
+                                   itemLabel="#{at.name}" itemValue="#{at}"/>
                 </p:selectCheckboxMenu>
 
 
@@ -121,14 +126,13 @@
                 </h:panelGroup>
 
                 <p:selectCheckboxMenu id="roomCat"
+                                      value="#{reportController.roomCategories}"
+                                      converter="#{roomCategoryConverter}"
                                       styleClass="w-100 mb-3"
                                       label="Select Categories"
                                       updateLabel="true">
-                    <f:selectItem itemLabel="Superior A" itemValue="A"/>
-                    <f:selectItem itemLabel="Superior B" itemValue="B"/>
-                    <f:selectItem itemLabel="Premium Range" itemValue="P"/>
-                    <f:selectItem itemLabel="Bay Window" itemValue="W"/>
-                    <f:selectItem itemLabel="King Court" itemValue="K"/>
+                    <f:selectItems value="#{roomCategoryController.items}" var="rc"
+                                   itemLabel="#{rc.name}" itemValue="#{rc}"/>
                 </p:selectCheckboxMenu>
 
                 <p:spacer />
@@ -139,9 +143,10 @@
                     <h:outputLabel value="Service Department" class="mx-3"/>
                 </h:panelGroup>
 
-                <p:selectOneMenu styleClass="w-100 mb-3">
-                    <f:selectItem itemLabel="All Service Departments"/>
-                    <f:selectItems/>
+                <p:selectOneMenu value="#{reportController.serviceDepartment}" styleClass="w-100 mb-3" filter="true">
+                    <f:selectItem itemLabel="All Service Departments" itemValue="#{null}"/>
+                    <f:selectItems value="#{departmentController.items}" var="d"
+                                   itemLabel="#{d.name}" itemValue="#{d}"/>
                 </p:selectOneMenu>
 
 
@@ -151,9 +156,10 @@
                     <h:outputLabel value="Billed Department" class="mx-3"/>
                 </h:panelGroup>
 
-                <p:selectOneMenu styleClass="w-100 mb-3">
-                    <f:selectItem itemLabel="All Billed Departments"/>
-                    <f:selectItems/>
+                <p:selectOneMenu value="#{reportController.billedDepartment}" styleClass="w-100 mb-3" filter="true">
+                    <f:selectItem itemLabel="All Billed Departments" itemValue="#{null}"/>
+                    <f:selectItems value="#{departmentController.items}" var="d"
+                                   itemLabel="#{d.name}" itemValue="#{d}"/>
                 </p:selectOneMenu>
 
                 <p:spacer />
@@ -164,9 +170,10 @@
                     <h:outputLabel value="Visit Type" class="mx-3"/>
                 </h:panelGroup>
 
-                <p:selectOneMenu styleClass="w-100 mb-3">
-                    <f:selectItem itemLabel="OP"/>
-                    <f:selectItem itemLabel="IP"/>
+                <p:selectOneMenu value="#{reportController.visitType}" styleClass="w-100 mb-3">
+                    <f:selectItem itemLabel="All" itemValue="#{null}"/>
+                    <f:selectItem itemLabel="OP" itemValue="OP"/>
+                    <f:selectItem itemLabel="IP" itemValue="IP"/>
                 </p:selectOneMenu>
 
 
@@ -176,7 +183,7 @@
                     <h:outputLabel value="Service Group" class="mx-3"/>
                 </h:panelGroup>
 
-                <p:inputText styleClass="w-100 mb-3"/>
+                <p:inputText value="#{reportController.serviceGroup}" styleClass="w-100 mb-3"/>
 
             </h:panelGrid>
 
@@ -187,24 +194,34 @@
 
             <p:commandButton ajax="false" value="Process"
                              icon="fas fa-cogs"
+                             action="#{reportController.createDurationServiceReport}"
                              styleClass="ui-button-warning mx-1"/>
 
-            <p:commandButton ajax="false" value="Print All"
+            <p:commandButton ajax="false" value="To Print"
+                             icon="fas fa-print"
+                             action="duration_service_report_view?faces-redirect=true"
+                             styleClass="ui-button-info mx-1"/>
+
+<!--            <p:commandButton ajax="false" value="Print All"
                              icon="fas fa-print"
                              styleClass="ui-button-info mx-1">
                 <p:printer target="tbl"/>
-            </p:commandButton>
+            </p:commandButton>-->
 
             <p:commandButton ajax="false" value="Download"
                              icon="fas fa-file-excel"
                              styleClass="ui-button-success mx-1">
                 <p:dataExporter fileName="Duration_Service_Report" 
-                                type="xlsx" target="tbl" />
+                                type="xlsx"
+                                target="tbl"
+                                postProcessor="#{reportController.postProcessDurationServiceReportExcel}" />
             </p:commandButton>
 
             <p:commandButton ajax="false" value="PDF"
                              icon="fas fa-file-pdf"
-                             styleClass="ui-button-danger mx-1"/>
+                             styleClass="ui-button-danger mx-1"
+                             action="#{reportController.exportDurationServiceReportToPDF()}">
+            </p:commandButton>
         </h:panelGrid>
 
         <!-- TABLE with dual scrollbars (top + bottom) -->
@@ -217,8 +234,10 @@
         <div id="tableScrollContainer" style="overflow-x: auto; overflow-y: visible; width: 100%; margin: 0.5em 1em 1em 1em;">
         <p:panel styleClass="border-round-md shadow-1" style="width: 210em;">
             <p:dataTable var="c" id="tbl"
+                         value="#{reportController.durationServiceReportRows}"
                          style="width:206em;"
                          rows="10"
+                         paginator="true"
                          paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                          currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}"
                          rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
@@ -226,61 +245,79 @@
 
            
                 <p:column headerText="BHT No" style="width: 100px">
-                    <h:outputText value="BHT-RH230800297"/>
+                    <h:outputText value="#{c.bhtNo}"/>
                 </p:column>
                 <p:column headerText="MRN No">
-                    <h:outputText value="0233042370-4"/>
+                    <h:outputText value="#{c.mrnNo}"/>
                 </p:column>
                 <p:column headerText="Consultant Name">
-                    <h:outputText value="Dr.Thilochana Nagolla"/>
+                    <h:outputText value="#{c.consultantName}"/>
                 </p:column>
                 <p:column headerText="Surgery Name">
-                    <h:outputText value=""/>
+                    <h:outputText value="#{c.surgeryName}"/>
                 </p:column>
                 <p:column headerText="Service Department">
-                    <h:outputText value=""/>
+                    <h:outputText value="#{c.serviceDepartmentName}"/>
                 </p:column>
                 <p:column headerText="Service Name">
-                    <h:outputText value="Nitros Oxide"/>
+                    <h:outputText value="#{c.serviceName}"/>
                 </p:column>
                 <p:column headerText="Service Group">
-                    <h:outputText value="Medical Service"/>
+                    <h:outputText value="#{c.serviceGroupName}"/>
                 </p:column>
                 <p:column headerText="Start Time">
-                    <h:outputText value="8/14/23 9:30 PM"/>
+                    <h:outputText value="#{c.startTime}">
+                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                    </h:outputText>
                 </p:column>
                 <p:column headerText="End Time">
-                    <h:outputText value="8/14/23 10:30 PM"/>
+                    <h:outputText value="#{c.endTime}">
+                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                    </h:outputText>
                 </p:column>
                 <p:column headerText="Duration">
-                    <h:outputText value="0D 1H 0M"/>
+                    <h:outputText value="#{c.duration}"/>
                 </p:column>
                 <p:column headerText="Base Price">
-                    <h:outputText value="799.8"/>
+                    <h:outputText value="#{c.basePrice}">
+                        <f:convertNumber pattern="#,##0.00"/>
+                    </h:outputText>
                 </p:column>
                 <p:column headerText="Discount Amount">
-                    <h:outputText value="0"/>
+                    <h:outputText value="#{c.discountAmount}">
+                        <f:convertNumber pattern="#,##0.00"/>
+                    </h:outputText>
                 </p:column>
                 <p:column headerText="Sponsor Discount">
-                    <h:outputText value="0"/>
+                    <h:outputText value="#{c.sponsorDiscount}">
+                        <f:convertNumber pattern="#,##0.00"/>
+                    </h:outputText>
                 </p:column>
                 <p:column headerText="Sponsor Net.">
-                    <h:outputText value="0"/>
+                    <h:outputText value="#{c.sponsorNet}">
+                        <f:convertNumber pattern="#,##0.00"/>
+                    </h:outputText>
                 </p:column>
                 <p:column headerText="Patient Amt">
-                    <h:outputText value="799.8"/>
+                    <h:outputText value="#{c.patientAmount}">
+                        <f:convertNumber pattern="#,##0.00"/>
+                    </h:outputText>
                 </p:column>
                 <p:column headerText="Adjusted Amt">
-                    <h:outputText value="0"/>
+                    <h:outputText value="#{c.adjustedAmount}">
+                        <f:convertNumber pattern="#,##0.00"/>
+                    </h:outputText>
                 </p:column>
                 <p:column headerText="Creator">
-                    <h:outputText value="Welihinda Badalge Rohini Pathma"/>
+                    <h:outputText value="#{c.creatorName}"/>
                 </p:column>
                 <p:column headerText="Checked By">
-                    <h:outputText value=""/>
+                    <h:outputText value="#{c.checkedByName}"/>
                 </p:column>
                 <p:column headerText="Checked At">
-                    <h:outputText value=""/>
+                    <h:outputText value="#{c.checkedAt}">
+                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                    </h:outputText>
                 </p:column>
 
             </p:dataTable>

@@ -51,7 +51,7 @@
                                 <h:panelGrid columns="3" class="w-100" style="font-size: 12pt">
                                     <h:outputLabel value="Patient Name"/>
                                     <h:outputLabel value=":"/>
-                                    <h:outputLabel value="#{inwardSearch.bill.patient.person.nameWithTitle}"/>
+                                    <h:outputLabel value="#{empty inwardSearch.bill.patient ? inwardSearch.bill.patientEncounter.patient.person.nameWithTitle : inwardSearch.bill.patient.person.nameWithTitle}"/>
                                     <h:outputLabel value="BHT No"/>
                                     <h:outputLabel value=":"/>
                                     <h:outputLabel value="#{inwardSearch.bill.patientEncounter.bhtNo}"/>

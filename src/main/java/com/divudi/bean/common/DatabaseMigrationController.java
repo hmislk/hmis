@@ -511,7 +511,9 @@ public class DatabaseMigrationController implements Serializable {
             );
 
             migration.setStatus(MigrationStatus.EXECUTING);
+            migration.setExecutedAt(new Date());
             migration.setExecutedBy(sessionController.getLoggedUser());
+            migration.setErrorMessage(null);
             migration.setRequiresDowntime(migrationInfo.isRequiresDowntime());
             migration.setEstimatedDurationMs(migrationInfo.getEstimatedDurationMs());
             migration.setMigrationMetadata(serializeMigrationInfo(migrationInfo));
@@ -530,6 +532,7 @@ public class DatabaseMigrationController implements Serializable {
             long executionTime = System.currentTimeMillis() - startTime;
             migration.setStatus(MigrationStatus.SUCCESS);
             migration.setExecutionTimeMs(executionTime);
+            migration.setErrorMessage(null);
             migration.setExecutionLog(logBuilder.toString());
             migrationFacade.edit(migration);
 
@@ -572,13 +575,19 @@ public class DatabaseMigrationController implements Serializable {
     private void executeSqlScript(String sql, StringBuilder logBuilder) throws Exception {
         try {
             List<String> statements = splitSqlStatements(sql);
+            List<String> executableStatements = getExecutableSqlStatements(statements);
 
-            for (String stmt : statements) {
-                // Strip leading comment/blank lines to get to the executable SQL
-                String executableStmt = stripLeadingComments(stmt);
-                if (executableStmt.isEmpty()) {
-                    continue;
+            if (usesMysqlConnectionScopedState(executableStatements)) {
+                logBuilder.append("Executing stateful MySQL script on a single JDBC connection\n");
+                List<String> skipMessages = migrationFacade.executeNativeSqlStatements(executableStatements);
+                for (String skipMessage : skipMessages) {
+                    logBuilder.append(skipMessage).append("\n");
                 }
+                logBuilder.append("Stateful script executed successfully\n");
+                return;
+            }
+
+            for (String executableStmt : executableStatements) {
                 logBuilder.append("Executing: ").append(executableStmt.substring(0, Math.min(100, executableStmt.length()))).append("...\n");
                 try {
                     if (isDdlStatement(executableStmt)) {
@@ -602,6 +611,17 @@ public class DatabaseMigrationController implements Serializable {
             logBuilder.append("Error executing SQL: ").append(e.getMessage()).append("\n");
             throw e;
         }
+    }
+
+    private List<String> getExecutableSqlStatements(List<String> statements) {
+        List<String> executableStatements = new ArrayList<>();
+        for (String stmt : statements) {
+            String executableStmt = stripLeadingComments(stmt);
+            if (!executableStmt.isEmpty()) {
+                executableStatements.add(executableStmt);
+            }
+        }
+        return executableStatements;
     }
 
     /**
@@ -686,6 +706,17 @@ public class DatabaseMigrationController implements Serializable {
         return upper.startsWith("CREATE") || upper.startsWith("ALTER")
                 || upper.startsWith("DROP") || upper.startsWith("CALL")
                 || upper.startsWith("RENAME") || upper.startsWith("TRUNCATE");
+    }
+
+    private boolean usesMysqlConnectionScopedState(List<String> statements) {
+        for (String statement : statements) {
+            String upper = statement.toUpperCase().trim();
+            if (upper.contains("@") || upper.startsWith("PREPARE ")
+                    || upper.startsWith("EXECUTE ") || upper.startsWith("DEALLOCATE PREPARE")) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

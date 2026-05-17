@@ -32,6 +32,9 @@ import com.divudi.core.data.dto.ChannelServiceCategorywiseDetailsDTO;
 import com.divudi.core.data.dto.ChannelServiceCategorywiseDetailsWrapperDTO;
 import com.divudi.core.data.dto.OpdIncomeReportDTO;
 import com.divudi.core.data.dto.PharmacyIncomeBillDTO;
+import com.divudi.core.data.dto.channel.ChannelIncomeDTO;
+import com.divudi.core.data.dto.channel.ChannelUserSummeryDTO;
+import com.divudi.core.data.dto.channel.ChannelUserSummeryDTO.ChannelUserSummeryByDateDTO;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.ServiceSessionBean;
 import com.divudi.core.entity.ApiKey;
@@ -104,6 +107,9 @@ import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.persistence.TemporalType;
 import javax.transaction.Transactional;
+
+import org.eclipse.persistence.internal.helper.Helper;
+
 import com.divudi.service.WebSocketService;
 
 /**
@@ -3328,6 +3334,184 @@ public class ChannelService {
 
         return billFeeList;
 
+    }
+
+    public List<ChannelUserSummeryDTO> fetchChannelUserSummeryDTOs(Date apptDate, Institution institution, Department department, PaymentMethod paymentMethod) {
+        Map m = new HashMap();
+        List<ChannelUserSummeryDTO> userSummaryDtos = new ArrayList<>();
+
+        String sql = "Select new com.divudi.core.data.dto.channel.ChannelIncomeDTO( "
+                    + " b.id, b.billDate, b.billTypeAtomic, c.id, c.name, b.paymentMethod, "
+                    + " b.hospitalFee, b.staffFee, b.netTotal "
+                    + " ) "
+                    + " from Bill b "
+                    + " join b.creater c "
+                    + " join b.singleBillSession bs "
+                    + " where bs.sessionInstance.sessionDate = :apptDate "
+                    + " and b.billTypeAtomic in :bta "
+                    + " and b.billType <> :bt "
+                    + " and b.retired=false and bs.retired=false and bs.sessionInstance.retired=false ";
+
+        List<BillTypeAtomic> btaList = new ArrayList<>();
+
+        btaList.add(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
+        btaList.add(BillTypeAtomic.CHANNEL_PAYMENT_FOR_BOOKING_BILL);
+        btaList.add(BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT);
+        btaList.add(BillTypeAtomic.CHANNEL_REFUND_WITH_PAYMENT);
+
+        m.put("bta", btaList);
+        m.put("bt", BillType.ChannelAgent);
+        m.put("apptDate", apptDate);
+
+        if (institution != null) {
+            sql += " and b.institution = :ins ";
+            m.put("ins", institution);
+        }
+
+        if (department != null) {
+            sql += " and b.department = :dept ";
+            m.put("dept", department);
+        }
+
+        if (paymentMethod != null) {
+            sql += " and (b.paymentMethod = :pm or exists(select p.id from Payment p where p.bill = b and p.paymentMethod = :pm)) "; 
+            m.put("pm", paymentMethod); 
+        } 
+
+        List<ChannelIncomeDTO> dtoList = (List<ChannelIncomeDTO>) billFacade.findLightsByJpqlWithoutCache(sql, m, TemporalType.TIMESTAMP);
+
+        if (dtoList == null || dtoList.isEmpty()) {
+            return null;
+        }
+        System.out.println("size of dto list : " + dtoList.size() );
+
+        Map<String, ChannelUserSummeryByDateDTO> summeryByDateMap = new HashMap<>();
+
+        for (ChannelIncomeDTO dto : dtoList) {
+            if (dto.getCashierId() == null) {
+                continue;
+            }
+            System.out.println("bill: " + dto.getBillId() + ", payment method: " + dto.getPaymentMethod() + "bta:" + dto.getBillTypeAtomic());
+
+            if (dto.getPaymentMethod() == null || dto.getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
+                List<Payment> payments = billService.fetchBillPaymentsFromBillId(dto.getBillId());
+                boolean counted = false;
+
+                if (payments != null) {
+                    System.out.println("size of payments : " + payments.size() );
+                    for (Payment p : payments) {
+                        if (p.getPaymentMethod() == null) {
+                            continue;
+                        }
+                        if (paymentMethod != null && paymentMethod != PaymentMethod.MultiplePaymentMethods && p.getPaymentMethod() != paymentMethod) {
+                            continue;
+                        }
+
+                        ChannelUserSummeryByDateDTO summeryByDate = summeryByDateMap.computeIfAbsent(
+                                generateKey(dto.getBilledDate(), dto.getCashierId()),
+                                k -> {
+                                    ChannelUserSummeryByDateDTO s = new ChannelUserSummeryByDateDTO();
+                                    s.setBilledDate(dto.getBilledDate());
+                                    s.setUser(dto.getBilledBy());
+                                    return s;
+                                }
+                        );
+
+                        summeryByDate.setDoctorFee(summeryByDate.getDoctorFee() + (dto.getDoctorFee() * (p.getPaidValue() / dto.getPaymentFee())));
+                        summeryByDate.setHosFee(summeryByDate.getHosFee() + (dto.getHosFee() * (p.getPaidValue() / dto.getPaymentFee())));
+                        summeryByDate.setTotal(summeryByDate.getTotal() + p.getPaidValue());
+
+                        System.out.println("count" + counted);
+                        if (!counted) {
+                            switch (dto.getBillTypeAtomic()) {
+                                case CHANNEL_BOOKING_WITH_PAYMENT:
+                                case CHANNEL_PAYMENT_FOR_BOOKING_BILL:
+                                    summeryByDate.setBilledCount((summeryByDate.getBilledCount() + 1));
+                                    summeryByDate.setTotalCount((summeryByDate.getTotalCount() + 1));
+                                    break;
+                                case CHANNEL_CANCELLATION_WITH_PAYMENT:
+                                    summeryByDate.setCancelledCount((summeryByDate.getCancelledCount() + 1));
+                                    summeryByDate.setTotalCount((summeryByDate.getTotalCount() - 1));
+                                    break;
+                                case CHANNEL_REFUND_WITH_PAYMENT:
+                                    summeryByDate.setRefundCount((summeryByDate.getRefundCount() + 1));
+                                    summeryByDate.setTotalCount((summeryByDate.getTotalCount() - 1));
+                                    break;
+                                default:
+                                    break;
+                            }
+                            counted = true;
+                        }
+
+                    }
+                }
+            } else {
+                ChannelUserSummeryByDateDTO summeryByDate = summeryByDateMap.computeIfAbsent(
+                        generateKey(dto.getBilledDate(), dto.getCashierId()),
+                        k -> {
+                            ChannelUserSummeryByDateDTO s = new ChannelUserSummeryByDateDTO();
+                            s.setBilledDate(dto.getBilledDate());
+                            s.setUser(dto.getBilledBy());
+                            return s;
+                        }
+                );
+
+                summeryByDate.setDoctorFee(summeryByDate.getDoctorFee() + dto.getDoctorFee());
+                summeryByDate.setHosFee(summeryByDate.getHosFee() + dto.getHosFee());
+                summeryByDate.setTotal(summeryByDate.getTotal() + dto.getPaymentFee());
+
+                switch (dto.getBillTypeAtomic()) {
+                    case CHANNEL_BOOKING_WITH_PAYMENT:
+                    case CHANNEL_PAYMENT_FOR_BOOKING_BILL:
+                        summeryByDate.setBilledCount((summeryByDate.getBilledCount() + 1));
+                        summeryByDate.setTotalCount((summeryByDate.getTotalCount() + 1));
+                        break;
+                    case CHANNEL_CANCELLATION_WITH_PAYMENT:
+                        summeryByDate.setCancelledCount((summeryByDate.getCancelledCount() + 1));
+                        summeryByDate.setTotalCount((summeryByDate.getTotalCount() - 1));
+                        break;
+                    case CHANNEL_REFUND_WITH_PAYMENT:
+                        summeryByDate.setRefundCount((summeryByDate.getRefundCount() + 1));
+                        summeryByDate.setTotalCount((summeryByDate.getTotalCount() - 1));
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+
+        Map<String, ChannelUserSummeryDTO> userSummeryMap = new HashMap<>();
+
+        for (ChannelUserSummeryByDateDTO summeryByDate : summeryByDateMap.values()) {
+            ChannelUserSummeryDTO userSummery = userSummeryMap.computeIfAbsent(
+                    summeryByDate.getUser(),
+                    k -> {
+                        ChannelUserSummeryDTO s = new ChannelUserSummeryDTO();
+                        return s;
+                    }
+            );
+
+            userSummery.getEntriesByDate().add(summeryByDate);
+            userSummery.setDoctorFee(userSummery.getDoctorFee() + summeryByDate.getDoctorFee());
+            userSummery.setHosFee(userSummery.getHosFee() + summeryByDate.getHosFee());
+            userSummery.setTotal(userSummery.getTotal() + summeryByDate.getTotal());
+            userSummery.setBilledCount(userSummery.getBilledCount() + summeryByDate.getBilledCount());
+            userSummery.setCancelledCount(userSummery.getCancelledCount() + summeryByDate.getCancelledCount());
+            userSummery.setRefundCount(userSummery.getRefundCount() + summeryByDate.getRefundCount());
+            userSummery.setTotalCount(userSummery.getTotalCount() + summeryByDate.getTotalCount());
+        }
+
+        userSummaryDtos = new ArrayList<>(userSummeryMap.values());
+
+        return userSummaryDtos;
+    }
+
+    // Helper method: bill date and cashier id key
+    private String generateKey(Date billDate, Long cashierId) {
+        if (billDate == null || cashierId == null) {
+            return "";
+        }
+        return billDate.toString() + "_" + cashierId;
     }
 
 }

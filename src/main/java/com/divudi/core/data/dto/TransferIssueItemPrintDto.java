@@ -47,6 +47,7 @@ public class TransferIssueItemPrintDto implements Serializable {
 
     private BigDecimal valueAtPurchaseRate;
     private BigDecimal valueAtRetailRate;
+    private BigDecimal valueAtCostRate;
 
     private BigDecimal lineGrossTotal;
 
@@ -100,6 +101,9 @@ public class TransferIssueItemPrintDto implements Serializable {
 
     public BigDecimal getValueAtRetailRate() { return valueAtRetailRate; }
     public void setValueAtRetailRate(BigDecimal valueAtRetailRate) { this.valueAtRetailRate = valueAtRetailRate; }
+
+    public BigDecimal getValueAtCostRate() { return valueAtCostRate; }
+    public void setValueAtCostRate(BigDecimal valueAtCostRate) { this.valueAtCostRate = valueAtCostRate; }
 
     public BigDecimal getLineGrossTotal() { return lineGrossTotal; }
     public void setLineGrossTotal(BigDecimal lineGrossTotal) { this.lineGrossTotal = lineGrossTotal; }

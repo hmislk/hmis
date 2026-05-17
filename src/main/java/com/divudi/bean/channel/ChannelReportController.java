@@ -41,10 +41,14 @@ import com.divudi.core.data.dataStructure.ChannelDoctor;
 import com.divudi.core.data.dataStructure.WebUserBillsTotal;
 import com.divudi.core.data.dto.ChannelServiceCategorywiseDetailsWrapperDTO;
 import com.divudi.core.data.dto.channel.ChannelAbsentPatientsDTO;
+import com.divudi.core.data.dto.channel.ChannelIncomeDTO;
+import com.divudi.core.data.dto.channel.ChannelUserSummeryDTO;
+import com.divudi.core.data.dto.channel.ChannelUserSummeryDTO.ChannelUserSummeryByDateDTO;
 import com.divudi.core.data.hr.ReportKeyWord;
 import com.divudi.core.data.reports.PharmacyReports;
 import com.divudi.core.data.reports.Report;
 import com.divudi.core.data.reports.Report.ChannelPatientAbsentReport;
+import com.divudi.core.data.reports.Report.ChannelUserWiseSummeryReport;
 import com.divudi.core.data.reports.Report.OnlineBookingCountReport;
 import com.divudi.core.data.reports.ReportColumn;
 import com.divudi.core.data.table.String1Value1;
@@ -4383,6 +4387,7 @@ public class ChannelReportController implements Serializable {
         shiftStartBills = null;
         categorywiseDetailsWrapperDTO = null;
         bookingsByShiftDto = null;
+        userSummaryDtos = null;
     }
 
     List<BillSession> nurseViewSessions;
@@ -4968,6 +4973,30 @@ public class ChannelReportController implements Serializable {
 
         return getAgentHistoryFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
+    }
+
+    private List<ChannelUserSummeryDTO> userSummaryDtos;
+
+    public List<ChannelUserSummeryDTO> getUserSummeryDtos() {
+        return userSummaryDtos;
+    }
+
+    public void setUserSummeryDtos(List<ChannelUserSummeryDTO> dtos) {
+        this.userSummaryDtos = dtos;
+    }
+
+    private Map<String, Object> userSummeryRpSC;
+
+    public void processUserWiseSummeryReport() {
+        userSummaryDtos = new ArrayList<>();
+
+        userSummaryDtos = channelService.fetchChannelUserSummeryDTOs(fromDate, institution, department, paymentMethod);
+
+        if (userSummaryDtos == null) {
+            return;
+        }
+
+        userSummeryRpSC = getFiltersForUserWiseSummeryReport();
     }
 
     /**
@@ -5865,6 +5894,61 @@ public class ChannelReportController implements Serializable {
 
     public void setAbsentPatientsDTO(List<ChannelAbsentPatientsDTO> absentPatientsDTO) {
         this.absentPatientsDTO = absentPatientsDTO;
+    }
+
+    public ChannelUserWiseSummeryReport getUserWiseSummaryReport() {
+        String fileName = "User_Wise_Summery_Report";
+        String dates;
+        if (userSummeryRpSC != null && userSummeryRpSC.get("Appointment Date") instanceof String) {
+            dates = (String) userSummeryRpSC.get("Appointment Date");
+        } else {
+            dates = CommonFunctions.dateRangeForFileName(fromDate, null, sessionController.getApplicationPreference().getLongDateFormat(), true);
+        }
+        if (dates != null && !dates.isEmpty()) {
+            fileName += "_" + dates;
+        }
+        String institutionName = "";
+        String userName = "";
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            if (sessionController.getLoggedUser().getInstitution() != null && sessionController.getLoggedUser().getInstitution().getName() != null) {
+                institutionName = sessionController.getLoggedUser().getInstitution().getName();
+            }
+            if (sessionController.getLoggedUser().getName() != null) {
+                userName = sessionController.getLoggedUser().getName();
+            }
+        }
+
+        ChannelUserWiseSummeryReport uWReport = new ChannelUserWiseSummeryReport(fileName, institutionName, userSummeryRpSC != null ? userSummeryRpSC : getFiltersForUserWiseSummeryReport(), userSummaryDtos, userName);
+
+        return uWReport;
+    }
+
+    public StreamedContent getUserWiseSummeryReportAsPdf() {
+        if (userSummaryDtos == null || userSummaryDtos.isEmpty()) {
+            JsfUtil.addErrorMessage("Please generate the User Wise Summery report before exporting.");
+            return null;
+        }
+        return getUserWiseSummaryReport().createPdfAsStream();
+    }
+
+    public StreamedContent getUserWiseSummeryReportAsExcel() {
+        if (userSummaryDtos == null || userSummaryDtos.isEmpty()) {
+            JsfUtil.addErrorMessage("Please generate the User Wise Summery report before exporting.");
+            return null;
+        }
+        return getUserWiseSummaryReport().createExcelAsStream();
+    }
+
+    // Filters for Channel Income Daily Summary  Report
+    public Map<String, Object> getFiltersForUserWiseSummeryReport() {
+        Map<String, Object> params = new LinkedHashMap<>();
+
+        params.put("Appointment Date", new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateFormat()).format(fromDate));
+        params.put("Institution", institution != null ? institution.getName() : "All Institutions");
+        params.put("Department", department != null ? department.getName() : "All Departments");
+        params.put("Payment Method", paymentMethod != null ? paymentMethod.getLabel() : "All Payment Methods");
+
+        return params;
     }
 
     public class ChannelReportColumnModelBundle implements Serializable {

@@ -75,34 +75,34 @@
                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                             rowsPerPageTemplate="5,10,15"
                             >
-                            <p:column headerText="Issue No" width="6em">
+                            <p:column headerText="Issue No">
                                 <p:commandLink
                                     ajax="false"
                                     value="#{p.deptId}"
                                     styleClass="#{p.cancelled ? 'text-danger text-decoration-line-through' : ''}"
                                     action="#{transferIssueNativeSqlController.viewByBillId(p.billId)}"/>
                             </p:column>
-                            <p:column headerText="From Department" width="150px">
+                            <p:column headerText="From Department">
                                 <h:outputLabel value="#{p.fromDepartmentName}"/>
                             </p:column>
-                            <p:column headerText="Department Type" width="120px">
+                            <p:column headerText="Department Type">
                                 <h:outputText value="#{p.departmentTypeLabel}"
                                               rendered="#{p.departmentType != null}"/>
                                 <h:outputText value="-"
                                               rendered="#{p.departmentType == null}"/>
                             </p:column>
-                            <p:column headerText="Issued By" width="6em">
+                            <p:column headerText="Issued By">
                                 <h:outputLabel value="#{p.issuerName}"/>
                                 <br/>
-                                <h:panelGroup rendered="#{p.cancelled}" >
-                                    <h:outputLabel style="color: red;" value="Cancelled By " />
-                                    <h:outputLabel style="color: red;" value="#{p.cancelledByName}" />
+                                <h:panelGroup rendered="#{p.cancelled}">
+                                    <h:outputLabel style="color: red;" value="Cancelled By "/>
+                                    <h:outputLabel style="color: red;" value="#{p.cancelledByName}"/>
                                 </h:panelGroup>
                             </p:column>
-                            <p:column headerText="Staff" width="6em">
+                            <p:column headerText="Staff">
                                 <h:outputLabel value="#{p.staffName}"/>
                             </p:column>
-                            <p:column headerText="Issued At" width="6em">
+                            <p:column headerText="Issued At">
                                 <h:outputLabel value="#{p.createdAt}">
                                     <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
@@ -115,12 +115,12 @@
                                 </h:panelGroup>
                             </p:column>
 
-                            <p:column headerText="Action" width="6em">
+                            <p:column headerText="Action">
                                 <p:commandButton
                                     id="btnToReceive"
                                     ajax="false"
                                     value="Receive"
-                                    class="ui-button-warning mx-2"
+                                    class="ui-button-warning mx-1"
                                     action="#{transferReceiveController.navigateToRecieveRequest()}"
                                     disabled="#{p.cancelled or p.fullyIssued}">
                                     <f:setPropertyActionListener target="#{transferReceiveController.issuedBillId}" value="#{p.billId}"/>
@@ -130,25 +130,25 @@
                                     id="btnToReceiveFast"
                                     ajax="false"
                                     value="Fast Receive"
-                                    class="ui-button-success mx-2"
+                                    class="ui-button-success mx-1"
                                     action="#{transferReceiveNativeSqlController.navigateToReceiveRequestNative()}"
                                     disabled="#{p.cancelled or p.fullyIssued}">
                                     <f:setPropertyActionListener target="#{transferReceiveNativeSqlController.issuedBillId}" value="#{p.billId}"/>
                                 </p:commandButton>
-
                             </p:column>
 
                             <p:column headerText="Received">
-                                <ui:repeat value="#{p.receivedBills}" var="b" varStatus="loop">
-                                    <p:commandLink
-                                        ajax="false"
-                                        value="#{b.deptId}"
-                                        styleClass="#{b.cancelled ? 'text-danger text-decoration-line-through' : ''}"
-                                        action="#{billSearch.navigateToViewBillByAtomicBillTypeBySelectedId}">
-                                        <f:setPropertyActionListener value="#{b.billId}" target="#{billSearch.selectedBillId}"/>
-                                    </p:commandLink>
-                                    <h:outputText value=", " rendered="#{!loop.last}"/>
-                                </ui:repeat>
+                                <div class="d-flex flex-wrap gap-1">
+                                    <ui:repeat value="#{p.receivedBills}" var="b" varStatus="loop">
+                                        <p:commandButton
+                                            ajax="false"
+                                            value="#{b.deptId}"
+                                            styleClass="#{b.cancelled ? 'ui-button-danger' : 'ui-button-secondary'}"
+                                            action="#{billSearch.navigateToViewBillByAtomicBillTypeBySelectedId}">
+                                            <f:setPropertyActionListener value="#{b.billId}" target="#{billSearch.selectedBillId}"/>
+                                        </p:commandButton>
+                                    </ui:repeat>
+                                </div>
                             </p:column>
 
                         </p:dataTable>

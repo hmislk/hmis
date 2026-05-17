@@ -3534,13 +3534,10 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             }
         }
         
-        if(configOptionApplicationController.getBooleanValueByKey("Enable blacklist patient management in the system", false) 
-                && configOptionApplicationController.getBooleanValueByKey("Enable blacklist patient management for Pharmacy from the system", false)){
-            if(getPatient().isBlacklisted()){
-                JsfUtil.addErrorMessage("This patient is blacklisted from the system. Can't Bill.");
-                billSettlingStarted = false;
-                return;
-            }
+        if (getPatient().isBlacklisted()) {
+            JsfUtil.addErrorMessage("This patient is blacklisted from the system. Can't Bill.");
+            billSettlingStarted = false;
+            return;
         }
 
         if (configOptionApplicationController.getBooleanValueByKey("Need Patient Title And Gender To Save Patient in Pharmacy Sale", false)) {

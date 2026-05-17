@@ -498,6 +498,7 @@ public class UserPrivilageController implements Serializable {
         new DefaultTreeNode(new PrivilegeHolder(Privileges.ClinicalPatientEdit, "Edit Patient"), clinicalsNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.ClinicalPatientNameChange, "Change Patient Name"), clinicalsNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.ClinicalPatientPhoneNumberEdit, "Edit Patient Phone Number"), clinicalsNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.ClinicalPatientBlacklist, "Blacklist / Unblacklist Patient"), clinicalsNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.ClinicalPatientCommentsView, "View Patient Comments"), clinicalsNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.ClinicalPatientCommentsEdit, "Edit Patient Comments"), clinicalsNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.ClinicalMembershipAdd, "Add Membership"), clinicalsNode);
@@ -790,6 +791,8 @@ public class UserPrivilageController implements Serializable {
         TreeNode PharmacyStockTakeApprove = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyStockTakeApprove, "Pharmacy Stock Take Approve"), PharmacyAdjustment);
         // Create New Batch privilege
         new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyAdjustmentCreateBatch, "Pharmacy Adjustment Create Batch"), PharmacyAdjustment);
+        // Archive Old StockHistory Records (issue #20726)
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.ArchiveOldStockHistory, "Archive Old StockHistory Records"), PharmacyAdjustment);
 
         TreeNode pharmacyDisposalNode = new DefaultTreeNode(new PrivilegeHolder(null, "Pharmacy Disposal"), pharmacyNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyDisposalMenue, "Pharmacy Disposal Menu"), pharmacyDisposalNode);

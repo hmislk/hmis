@@ -275,17 +275,17 @@
                                             <p:datePicker
                                                 showButtonBar="true"
                                                 showClearButton="true"
-                                                inputStyleClass="form-control" 
-                                                selectionMode="single" 
-                                                onchange="PF('billsTable').filter()" 
+                                                inputStyleClass="form-control"
+                                                selectionMode="single"
+                                                onchange="PF('billsTable').filter()"
                                                 pattern="dd/MM/yy"/>
                                         </f:facet>
                                     </p:column>
 
-                                    <p:column 
-                                        headerText="Session" 
-                                        sortBy="#{bill.singleBillSession.sessionInstance.originatingSession.name}" 
-                                        filterBy="#{bill.singleBillSession.sessionInstance.originatingSession.name}" 
+                                    <p:column
+                                        headerText="Session"
+                                        sortBy="#{bill.singleBillSession.sessionInstance.originatingSession.name}"
+                                        filterBy="#{bill.singleBillSession.sessionInstance.originatingSession.name}"
                                         filterMatchMode="contains"
                                         style="min-width: 100px;">
                                         <h:outputLabel id="byDep" value="#{bill.singleBillSession.sessionInstance.originatingSession.name}" />
