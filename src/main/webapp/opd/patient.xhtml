@@ -283,11 +283,12 @@
                                                 icon="pi pi-user-plus"
                                                 styleClass="ui-button-success"
                                                 style="font-size:0.8em;"
-                                                onclick="PF('addRelationshipDlg').show()"
-                                                type="button"
-                                                rendered="#{webUserController.hasPrivilege('OpdBilling')}">
-                                                <f:ajax execute="@this" />
-                                            </p:commandButton>
+                                                ajax="true"
+                                                process="@this"
+                                                action="#{personRelationshipController.prepareAdd(patientController.current)}"
+                                                oncomplete="PF('addRelationshipDlg').show()"
+                                                rendered="#{webUserController.hasPrivilege('OpdBilling')}"/>
+
                                         </div>
                                         <div class="card-body p-2">
                                             <p:dataTable

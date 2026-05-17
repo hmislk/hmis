@@ -107,12 +107,18 @@ public class PersonRelationshipController implements Serializable {
     }
 
     /**
-     * Returns the label describing how the current patient is related to the
-     * other person in the given PersonRelationship record.
+     * Returns the label describing how the current patient relates to the
+     * other person. Inverts the label when the current patient is bperson,
+     * so directional types like Parent/Child display correctly from either end.
      */
     public String getRelationshipLabel(PersonRelationship pr) {
         if (pr == null || pr.getApToBpRelationship() == null) {
             return "";
+        }
+        if (currentPatient != null
+                && currentPatient.getPerson() != null
+                && currentPatient.getPerson().equals(pr.getBperson())) {
+            return pr.getApToBpRelationship().getInverseLabel();
         }
         return pr.getApToBpRelationship().getLabel();
     }
