@@ -45,7 +45,7 @@
                     <tr>
                         <td><h:outputLabel value="Patient" class="billDetailsFiveFive"/></td>
                         <td style="width:5px;">:</td>
-                        <td><h:outputLabel value="#{cc.attrs.bill.patient.person.nameWithTitle}" class="billDetailsFiveFive"/></td>
+                        <td><h:outputLabel value="#{empty cc.attrs.bill.patient ? cc.attrs.bill.patientEncounter.patient.person.nameWithTitle : cc.attrs.bill.patient.person.nameWithTitle}" class="billDetailsFiveFive"/></td>
                         <td style="width:30px;"/>
                         <td><h:outputLabel value="Date" class="billDetailsFiveFive"/></td>
                         <td>:</td>

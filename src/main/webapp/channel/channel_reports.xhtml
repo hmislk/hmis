@@ -29,6 +29,12 @@
                                     <p:tab title="Summary Reports">
                                         <div class="d-grid gap-2">
                                             <p:commandButton
+                                                    class="w-100"
+                                                    value="All Doctor Appointments"
+                                                    action="/channel/channel_all_doctor_bookings?faces-redirect=true"
+                                                    ajax="false"/>
+
+                                            <p:commandButton
                                                     class="w-100 ui-button-warning"
                                                     value="Session Counts"
 
@@ -73,6 +79,9 @@
                                                              ajax="false"/>
                                             <p:commandButton class="w-100" value="Service Category User Shift Wise"
                                                              action="#{channelReportController.navigateToServiceCategoryWiseIncomeForChanneling()}"
+                                                             ajax="false"/>
+                                            <p:commandButton class="w-100" value="User Wise Summery"
+                                                             action="/channel/channel_user_wise_summery?faces-redirect=true"
                                                              ajax="false"/>
                                             <p:commandButton class="w-100" value="Income With Agent Bookings"
                                                              action="#{channelReportController.navigateToIncomeForAgentBookings()}"

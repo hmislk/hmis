@@ -58,6 +58,7 @@ import com.divudi.core.facade.WebUserFacade;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.SpecificPatientStatus;
+import com.divudi.core.entity.AuditEvent;
 import com.divudi.core.entity.CancelledBill;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.PatientDeposit;
@@ -102,6 +103,7 @@ import net.sourceforge.barbecue.Barcode;
 import net.sourceforge.barbecue.BarcodeFactory;
 import net.sourceforge.barbecue.BarcodeImageHandler;
 import org.apache.commons.lang3.StringUtils;
+import org.primefaces.PrimeFaces;
 import org.primefaces.context.PrimeRequestContext;
 import org.primefaces.event.CaptureEvent;
 import org.primefaces.event.FileUploadEvent;
@@ -195,6 +197,8 @@ public class PatientController implements Serializable, ControllerWithPatient {
     PatientController patientController;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    AuditEventController auditEventController;
     @Inject
     PatientDepositController patientDepositController;
     @Inject
@@ -3125,15 +3129,22 @@ public class PatientController implements Serializable, ControllerWithPatient {
                 JsfUtil.addErrorMessage("Please provide a reason for blacklisting. ");
                 return;
             }
+            AuditEvent auditEvent = auditEventController.createNewAuditEvent(
+                    "Blacklist Patient",
+                    "{\"patientId\":" + patient.getId() + ",\"blacklisted\":false}",
+                    patient.getId(),
+                    "Patient");
             Patient newb = getFacade().find(patient.getId());
             newb.setBlacklisted(true);
             newb.setBlacklistedAt(new Date());
             getFacade().edit(newb);
             newb.setBlacklistedBy(sessionController.getLoggedUser());
-            newb.setReasonForBlacklist(newb.getReasonForBlacklist() != null ? newb.getReasonForBlacklist() + " / " + blacklistComment : blacklistComment);
+            newb.setReasonForBlacklist(blacklistComment);
 //            getFacade().edit(patient);
 
             getFacade().editAndCommit(newb);
+            auditEventController.completeAuditEvent(auditEvent,
+                    "{\"patientId\":" + newb.getId() + ",\"blacklisted\":true,\"reason\":\"" + blacklistComment + "\"}");
             this.current = getFacade().findWithoutCache(newb.getId());
             blacklistComment = null;
             JsfUtil.addSuccessMessage("Patient is blacklisted.");
@@ -3144,6 +3155,11 @@ public class PatientController implements Serializable, ControllerWithPatient {
                 return;
             }
 
+            AuditEvent auditEvent = auditEventController.createNewAuditEvent(
+                    "Revert Patient Blacklist",
+                    "{\"patientId\":" + patient.getId() + ",\"blacklisted\":true,\"reason\":\"" + patient.getReasonForBlacklist() + "\"}",
+                    patient.getId(),
+                    "Patient");
             Patient newb = getFacade().find(patient.getId());
             newb.setBlacklisted(false);
             getFacade().edit(newb);
@@ -3157,7 +3173,8 @@ public class PatientController implements Serializable, ControllerWithPatient {
             newb.setBlacklistedBy(null);
 
             getFacade().editAndCommit(newb);
-
+            auditEventController.completeAuditEvent(auditEvent,
+                    "{\"patientId\":" + newb.getId() + ",\"blacklisted\":false,\"revertComment\":\"" + blacklistComment + "\"}");
             blacklistComment = null;
             JsfUtil.addSuccessMessage("Patient blacklist is reverted.");
         }
@@ -3305,6 +3322,32 @@ public class PatientController implements Serializable, ControllerWithPatient {
             return null;
         }
         return "/membership/add_family?faces-redirect=true";
+    }
+
+    public void checkBeforeSavePatient() {
+        if (current != null && current.getId() != null && current.isBlacklisted()) {
+            PrimeFaces.current().executeScript("PF('dlgBlacklistSaveWarning').show();");
+            return;
+        }
+        boolean savedSuccessfully = saveSelected(current);
+        if (!savedSuccessfully) {
+            return;
+        }
+        try {
+            javax.faces.context.ExternalContext ec = FacesContext.getCurrentInstance().getExternalContext();
+            ec.redirect(ec.getRequestContextPath() + "/faces/opd/patient");
+            FacesContext.getCurrentInstance().responseComplete();
+        } catch (java.io.IOException e) {
+            JsfUtil.addErrorMessage("Saved but could not redirect.");
+        }
+    }
+
+    public String checkBeforeSaveAndGoToAdmission() {
+        if (current != null && current.getId() != null && current.isBlacklisted()) {
+            PrimeFaces.current().executeScript("PF('dlgBlacklistSaveAdmissionWarning').show();");
+            return null;
+        }
+        return saveAndNavigateToAdmissionProfile();
     }
 
     public String saveAndNavigateToOpdPatientProfile() {

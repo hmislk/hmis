@@ -447,7 +447,7 @@
                                                             <p:outputLabel value="#{appointmentController.patient.person.nameWithTitle}" rendered="#{not empty appointmentController.patient.person.nameWithTitle}" />
                                                         </p:badge> 
 
-                                                        <p:badge rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable blacklist patient management in the system')}" style="transform: translate(110%, -40%);background-color: #{appointmentController.patient.blacklisted ? 'black' : 'white'} ; font-style: italic; font-size: 15px" value="X #{appointmentController.patient.blacklisted ? 'Blacklisted' : 'Active'}" severity="danger">
+                                                        <p:badge style="transform: translate(110%, -40%);background-color: #{appointmentController.patient.blacklisted ? 'black' : 'white'} ; font-style: italic; font-size: 15px" value="X #{appointmentController.patient.blacklisted ? 'Blacklisted' : 'Active'}" severity="danger">
 
                                                         </p:badge>
 

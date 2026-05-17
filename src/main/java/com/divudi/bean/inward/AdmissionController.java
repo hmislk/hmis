@@ -287,12 +287,6 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
                 OptionScope.APPLICATION
         ));
 
-        metadata.addConfigOption(new ConfigOptionInfo(
-                "Enable blacklist patient management for inward from the system",
-                "Prevent blacklisted patients from being admitted (default false)",
-                "inward/inward_admission",
-                OptionScope.APPLICATION
-        ));
 
         pageMetadataRegistry.registerPage(metadata);
     }
@@ -1997,7 +1991,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             return;
         }
 
-        if (getPatient() != null && getPatient().getId() != null && getPatient().isBlacklisted() && configOptionApplicationController.getBooleanValueByKey("Enable blacklist patient management for inward from the system", false)) {
+        if (getPatient() != null && getPatient().getId() != null && getPatient().isBlacklisted()) {
             JsfUtil.addErrorMessage("This patient is blacklisted from the system.");
             return;
         }

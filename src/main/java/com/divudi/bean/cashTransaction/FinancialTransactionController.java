@@ -284,6 +284,7 @@ public class FinancialTransactionController implements Serializable {
 
     private List<Payment> fundTransferAvailablePayments;
     private List<Payment> depositableNonCashPayments;
+    private CashBook depositCashBook;
 
     // Shortage Bill Cancellation Properties
     private String shortageCancellationComment;
@@ -583,7 +584,7 @@ public class FinancialTransactionController implements Serializable {
     }
 
     public String navigateToMyServiceDepartmentRevenueReportByPeriod() {
-        return "/cashier/my_service_department_revenue_report_by_period";
+        return "/cashier/my_service_department_revenue_report_by_period?faces-redirect=true";
     }
 
     public void processMyServiceDepartmentRevenueReportByPeriod() {
@@ -1392,17 +1393,15 @@ public class FinancialTransactionController implements Serializable {
         if (fundTransferPayments == null) {
             return;
         }
-        boolean isOut = floatBundle.getPaymentHandover() == PaymentHandover.FLOAT_OUT;
+        // The net float bundle (FLOAT_IN) represents received minus sent, so both
+        // FUND_TRANSFER_BILL (sent) and FUND_TRANSFER_RECEIVED_BILL (received) rows
+        // must appear so the user can see the full breakdown that produces the net value.
         for (Payment fp : fundTransferPayments) {
             if (fp.getBill() == null) {
                 continue;
             }
             BillTypeAtomic bta = fp.getBill().getBillTypeAtomic();
-            if (isOut && bta == BillTypeAtomic.FUND_TRANSFER_BILL) {
-                ReportTemplateRow row = new ReportTemplateRow();
-                row.setPayment(fp);
-                floatBundle.getReportTemplateRows().add(row);
-            } else if (!isOut && bta == BillTypeAtomic.FUND_TRANSFER_RECEIVED_BILL) {
+            if (bta == BillTypeAtomic.FUND_TRANSFER_BILL || bta == BillTypeAtomic.FUND_TRANSFER_RECEIVED_BILL) {
                 ReportTemplateRow row = new ReportTemplateRow();
                 row.setPayment(fp);
                 floatBundle.getReportTemplateRows().add(row);
@@ -2873,6 +2872,8 @@ public class FinancialTransactionController implements Serializable {
         currentBill.setBillType(BillType.DepositFundBill);
         currentBill.setBillTypeAtomic(BillTypeAtomic.FUND_DEPOSIT_BILL);
         currentBill.setBillClassType(BillClassType.Bill);
+        currentPayment = new Payment();
+        currentPayment.setPaymentMethod(PaymentMethod.Cash);
     }
 
     private void prepareToAddNewFundTransferReceiveBill() {
@@ -2912,6 +2913,7 @@ public class FinancialTransactionController implements Serializable {
         fundTransferAvailablePayments = null;
         department = null;
         selectedFundTransferRequest = null;
+        depositCashBook = null;
         searchController.setBills(null);
     }
 
@@ -3151,6 +3153,14 @@ public class FinancialTransactionController implements Serializable {
 
     public void setDepositableNonCashPayments(List<Payment> depositableNonCashPayments) {
         this.depositableNonCashPayments = depositableNonCashPayments;
+    }
+
+    public CashBook getDepositCashBook() {
+        return depositCashBook;
+    }
+
+    public void setDepositCashBook(CashBook depositCashBook) {
+        this.depositCashBook = depositCashBook;
     }
 
     public void addPaymentToShiftEndFundBill() {
@@ -8143,9 +8153,14 @@ public class FinancialTransactionController implements Serializable {
             JsfUtil.addErrorMessage("Select a Payment Method");
             return;
         }
+        if (currentPayment.getPaymentMethod() != PaymentMethod.Cash) {
+            JsfUtil.addErrorMessage("Only Cash is allowed in bank deposits. Cheque deposits are handled separately.");
+            return;
+        }
         getCurrentBillPayments().add(currentPayment);
         calculateFundDepositBillTotal();
-        currentPayment = null;
+        currentPayment = new Payment();
+        currentPayment.setPaymentMethod(PaymentMethod.Cash);
     }
 
     public void addPaymentToIncomeBill() {
@@ -8812,6 +8827,11 @@ public class FinancialTransactionController implements Serializable {
             }
         }
 
+        if (depositCashBook == null) {
+            JsfUtil.addErrorMessage("Please select a cashbook for this deposit");
+            return "";
+        }
+
         currentBill.setNetTotal(0 - Math.abs(netTotal));
         currentBill.setTotal(0 - Math.abs(netTotal));
         billController.save(currentBill);
@@ -8823,6 +8843,7 @@ public class FinancialTransactionController implements Serializable {
             p.setCurrentHolder(null);
             paymentController.save(p);
             drawerController.updateDrawerForOuts(p);
+            cashBookEntryController.writeCashBookEntryAtBankDeposit(p, depositCashBook, currentBill);
             Payment original = p.getReferancePayment();
             if (original != null) {
                 original.setDeposited(true);

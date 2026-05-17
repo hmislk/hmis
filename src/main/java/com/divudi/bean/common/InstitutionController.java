@@ -440,7 +440,15 @@ public class InstitutionController implements Serializable {
     }
 
     public List<Institution> getBranches(Institution bank) {
-        return completeInstitution(null, InstitutionType.branch, bank);
+        if (bank == null) {
+            return new ArrayList<>();
+        }
+        String jpql = "select c from Institution c where c.retired = false"
+                + " and c.institutionType = :tp and c.institution = :bank order by c.name";
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("tp", InstitutionType.branch);
+        params.put("bank", bank);
+        return getFacade().findByJpql(jpql, params);
     }
 
     public Institution getInstitutionByName(String name, InstitutionType type) {

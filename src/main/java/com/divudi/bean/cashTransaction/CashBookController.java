@@ -12,6 +12,7 @@ import com.divudi.core.entity.cashTransaction.CashBook;
 import com.divudi.core.facade.CashBookFacade;
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
@@ -77,6 +78,27 @@ public class CashBookController implements Serializable {
         return cb;
     }
 
+    public String getCashBookLabel(CashBook cb) {
+        if (cb == null) {
+            return "";
+        }
+        String dept = (cb.getDepartment() != null && cb.getDepartment().getName() != null) ? cb.getDepartment().getName() : "";
+        String inst = (cb.getInstitution() != null && cb.getInstitution().getName() != null) ? cb.getInstitution().getName() : "";
+        return dept + " - " + inst;
+    }
+
+    public List<CashBook> completeCashBook(String qry) {
+        String jpql = "select cb from CashBook cb "
+                + " where cb.retired = false "
+                + " and (UPPER(cb.Name) like :q "
+                + " or UPPER(cb.department.name) like :q "
+                + " or UPPER(cb.institution.name) like :q) "
+                + " order by cb.department.name";
+        Map<String, Object> params = new HashMap<>();
+        params.put("q", "%" + qry.toUpperCase() + "%");
+        return cashbookFacade.findByJpql(jpql, params);
+    }
+
     public CashBookController() {
     }
 
@@ -108,7 +130,7 @@ public class CashBookController implements Serializable {
                 return null;
             }
             CashBookController controller = (CashBookController) facesContext.getApplication().getELResolver().
-                    getValue(facesContext.getELContext(), null, "CashBookController");
+                    getValue(facesContext.getELContext(), null, "cashBookController");
             return controller.getCashbookFacade().find(getKey(value));
         }
 

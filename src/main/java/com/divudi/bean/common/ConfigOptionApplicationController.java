@@ -118,6 +118,7 @@ public class ConfigOptionApplicationController implements Serializable {
             loadPettyCashBillingConfigurationDefaults();
             loadDatabaseVersionConfigurationDefaults();
             loadAiChatConfigurationDefaults();
+            loadStockHistoryArchiveConfigurationDefaults();
             enumController.resetPaymentMethods();
         } finally {
             isLoadingApplicationOptions = false;
@@ -1160,6 +1161,12 @@ public class ConfigOptionApplicationController implements Serializable {
     private String buildAllCashierCollectionOptionKey(PaymentMethod paymentMethod) {
         String label = paymentMethod != null ? paymentMethod.getLabel() : "Unknown";
         return "Include " + label + " in Collection Total";
+    }
+
+    private void loadStockHistoryArchiveConfigurationDefaults() {
+        getIntegerValueByKey("StockHistory Archive - Retention Days", 730);
+        getIntegerValueByKey("StockHistory Archive - Batch Size", 2000);
+        getIntegerValueByKey("StockHistory Archive - Max Batches Per Run", 50);
     }
 
     public ConfigOption getApplicationOption(String key) {
