@@ -10,7 +10,7 @@ package com.divudi.core.data;
 public enum PaymentHandover {
     FLOATS("Floats"),
     FLOAT_OUT("Float Sent (Cash)"),
-    FLOAT_IN("Float Received (Cash)"),
+    FLOAT_IN("Net Float (Cash)"),
     USER_COLLECTED("Collected by User"),
     OTHER_USERS_COLLECTED_AND_HANDED_OVER("Collected by Other Users and Handed Over");
 

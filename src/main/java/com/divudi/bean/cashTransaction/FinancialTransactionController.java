@@ -1393,17 +1393,15 @@ public class FinancialTransactionController implements Serializable {
         if (fundTransferPayments == null) {
             return;
         }
-        boolean isOut = floatBundle.getPaymentHandover() == PaymentHandover.FLOAT_OUT;
+        // The net float bundle (FLOAT_IN) represents received minus sent, so both
+        // FUND_TRANSFER_BILL (sent) and FUND_TRANSFER_RECEIVED_BILL (received) rows
+        // must appear so the user can see the full breakdown that produces the net value.
         for (Payment fp : fundTransferPayments) {
             if (fp.getBill() == null) {
                 continue;
             }
             BillTypeAtomic bta = fp.getBill().getBillTypeAtomic();
-            if (isOut && bta == BillTypeAtomic.FUND_TRANSFER_BILL) {
-                ReportTemplateRow row = new ReportTemplateRow();
-                row.setPayment(fp);
-                floatBundle.getReportTemplateRows().add(row);
-            } else if (!isOut && bta == BillTypeAtomic.FUND_TRANSFER_RECEIVED_BILL) {
+            if (bta == BillTypeAtomic.FUND_TRANSFER_BILL || bta == BillTypeAtomic.FUND_TRANSFER_RECEIVED_BILL) {
                 ReportTemplateRow row = new ReportTemplateRow();
                 row.setPayment(fp);
                 floatBundle.getReportTemplateRows().add(row);
