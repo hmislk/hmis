@@ -273,7 +273,7 @@
                                                         event="blur"
                                                         process="txtDenoQtyHandover"
                                                         listener="#{financialTransactionController.bundle.calculateTotalHandoverByDenominationQuantities()}"
-                                                        update=":#{p:resolveFirstComponentWithId('txtCashHandover',view).clientId} txtDenoVal" ></p:ajax>
+                                                        update=":#{p:resolveFirstComponentWithId('txtCashHandover',view).clientId} txtDenoVal :growl" ></p:ajax>
                                                 </p:inputText>
                                             </p:column>
                                             <p:column >
