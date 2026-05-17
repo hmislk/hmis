@@ -723,9 +723,8 @@
 
                                                                 <h:panelGroup class="d-flex">
 
-                                                                    <p:outputLabel class="ml-4" value="#{pharmacyFastRetailSaleForCashierController.patient.person.nameWithTitle}" rendered="#{not empty pharmacyFastRetailSaleForCashierController.patient.person.nameWithTitle and !configOptionApplicationController.getBooleanValueByKey('Enable patient specific status management in the system')}" />
-
-                                                                    <p:badge rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable patient specific status management in the system')}" style="transform: translate(110%, -40%);background-color: #{empty pharmacyFastRetailSaleForCashierController.patient.specificStatus ? 'white' : '#FF401F'} ; font-style: italic;" value="#{pharmacyFastRetailSaleForCashierController.patient.specificStatus}" severity="danger">
+                                                                    
+                                                                    <p:badge style="transform: translate(110%, -40%);background-color: #{pharmacyFastRetailSaleForCashierController.patient.specificStatus != null and pharmacyFastRetailSaleForCashierController.patient.specificStatus.name() != 'NORMAL' ? '#FF401F' : 'white'} ; font-style: italic;" value="#{pharmacyFastRetailSaleForCashierController.patient.specificStatus}" severity="danger">
                                                                         <p:outputLabel value="#{pharmacyFastRetailSaleForCashierController.patient.person.nameWithTitle}" rendered="#{not empty pharmacyFastRetailSaleForCashierController.patient.person.nameWithTitle}" />
                                                                     </p:badge> 
 

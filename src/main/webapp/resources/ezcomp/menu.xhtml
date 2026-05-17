@@ -312,14 +312,28 @@
                         value="Add Family" 
                         rendered="#{webUserController.hasPrivilege('MemberShipAdd')}"
                         icon="fa fa-users"></p:menuitem>
-                    <p:menuitem 
-                        ajax="false" 
+                    <p:menuitem
+                        ajax="false"
                         action="#{patientController.navigateToSearchFamilyMembership()}"
-                        value="Search Families" 
+                        value="Search Families"
                         rendered="#{webUserController.hasPrivilege('MemberShipSearch')}"
                         icon="fa fa-search-plus"></p:menuitem>
-                    <p:menuitem 
-                        ajax="false" 
+                    <p:separator />
+                    <p:menuitem
+                        ajax="false"
+                        action="#{patientController.navigateToAddNewCorporateMembership()}"
+                        value="Add Corporate Member"
+                        rendered="#{webUserController.hasPrivilege('MemberShipAdd')}"
+                        icon="fa fa-building"></p:menuitem>
+                    <p:menuitem
+                        ajax="false"
+                        action="#{patientController.navigateToSearchCorporateMembership()}"
+                        value="Search Corporate Members"
+                        rendered="#{webUserController.hasPrivilege('MemberShipSearch')}"
+                        icon="fa fa-search"></p:menuitem>
+                    <p:separator />
+                    <p:menuitem
+                        ajax="false"
                         id="mnuItemMembershipAnalytics"
                         action="#{membershipController.navigateToMembershipAnalyticsIndex()}"
                         value="Analytics"
