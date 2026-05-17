@@ -203,6 +203,8 @@ public class PatientController implements Serializable, ControllerWithPatient {
     PatientDepositController patientDepositController;
     @Inject
     WebUserController webUserController;
+    @Inject
+    PatientInsuranceController patientInsuranceController;
 
     /**
      *
@@ -811,6 +813,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         patientEncounterController.setPatient(current);
         patientEncounterController.fillCurrentPatientLists(current);
         patientEncounterController.fillPatientInvestigations(current);
+        patientInsuranceController.initForPatient(current);
         return "/emr/patient_profile?faces-redirect=true";
     }
 
@@ -3186,6 +3189,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
 
     public String navigateToEmrEditPatient() {
         getCurrent();
+        patientInsuranceController.initForPatient(current);
         return "/emr/patient?faces-redirect=true";
     }
 
