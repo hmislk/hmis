@@ -692,6 +692,7 @@ public enum Privileges {
     AdminStaff("Admin Staff"),
     AdminItems("Admin Items"),
     AdminPrices("Admin Prices"),
+    AdminPatientRelationships("Manage Patient Relationships"),
     ManageCreditCompany("Manage Credit Company"),
     AdminFilterWithoutDepartment("Admin Filter Without Department"),
     //</editor-fold>
