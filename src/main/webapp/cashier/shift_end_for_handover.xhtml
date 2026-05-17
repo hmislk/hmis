@@ -566,19 +566,20 @@
                                         <p:outputLabel value="#{deno.denomination.displayName}" ></p:outputLabel>
                                     </p:column>
                                     <p:column  title="Denomination"  style="padding: 4px; width: 6em;">
-                                        <p:inputText 
-                                            class="text-end w-50" 
+                                        <p:inputText
+                                            class="text-end w-50"
                                             id="txtDenoQty"
-                                            value="#{deno.denominationQty}" 
+                                            value="#{deno.denominationQty}"
                                             style="width: 100%; padding: 3px;"
                                             onfocus="this.select()">
                                             <f:convertNumber integerOnly="true" />
-                                            <p:ajax 
+                                            <f:validateLongRange minimum="0" />
+                                            <p:ajax
                                                 event="blur"
-                                                process="txtDenoQty" 
+                                                process="txtDenoQty"
                                                 listener="#{financialTransactionController.calculateTotalCashDenomination()}"
                                                 update="txtDenoVal" ></p:ajax>
-                                        </p:inputText>  
+                                        </p:inputText>
                                     </p:column>
                                     <p:column  style="padding: 4px; width: 8em;">
                                         <p:outputLabel

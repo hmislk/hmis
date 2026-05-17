@@ -267,6 +267,7 @@
                                                     label="Cash Handover"
                                                     onfocus="this.select()">
                                                     <f:convertNumber integerOnly="true" />
+                                                    <f:validateLongRange minimum="0" />
                                                     <p:ajax
                                                         event="blur"
                                                         process="txtDenoQtyHandover"

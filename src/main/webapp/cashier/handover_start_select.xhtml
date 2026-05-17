@@ -362,20 +362,21 @@
                                             <p:outputLabel value="#{deno.denomination.displayName}" ></p:outputLabel>
                                         </p:column>
                                         <p:column  title="Denomination">
-                                            <p:inputText 
-                                                class="text-end w-100" 
+                                            <p:inputText
+                                                class="text-end w-100"
                                                 id="txtDenoQtyHandover"
-                                                value="#{deno.denominationQty}" 
-                                                style="width: 100%;" 
-                                                label="Cash Handover" 
+                                                value="#{deno.denominationQty}"
+                                                style="width: 100%;"
+                                                label="Cash Handover"
                                                 onfocus="this.select()">
                                                 <f:convertNumber integerOnly="true" />
-                                                <p:ajax 
+                                                <f:validateLongRange minimum="0" />
+                                                <p:ajax
                                                     event="blur"
-                                                    process="txtDenoQtyHandover" 
+                                                    process="txtDenoQtyHandover"
                                                     listener="#{financialTransactionController.selectedBundle.calculateTotalHandoverByDenominationQuantities()}"
                                                     update=":#{p:resolveFirstComponentWithId('txtDenoVal',view).clientId} :#{p:resolveFirstComponentWithId('gpHandoverValues',view).clientId}" ></p:ajax>
-                                            </p:inputText>  
+                                            </p:inputText>
                                         </p:column>
                                         <p:column >
                                             <p:outputLabel
