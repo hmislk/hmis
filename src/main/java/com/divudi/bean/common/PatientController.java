@@ -3378,6 +3378,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
     }
 
     List<Patient> patientList;
+    List<Patient> inactivePatients;
 
     public List<Patient> completePatientByNameOrCode(String query) {
         if (query == null) {
@@ -3864,19 +3865,34 @@ public class PatientController implements Serializable, ControllerWithPatient {
     }
 
     public void activePatient(Patient p) {
-//        p.setEditedAt(new Date());
-//        p.setEditer(getSessionController().getLoggedUser());
+        if (p == null || p.getId() == null) {
+            return;
+        }
+        AuditEvent auditEvent = auditEventController.createNewAuditEvent(
+                "Activate Patient",
+                "{\"patientId\":" + p.getId() + ",\"retired\":true}",
+                p.getId(),
+                "Patient");
         p.setRetired(false);
         p.setRetireComments("Re-Activated");
         getFacade().edit(p);
-
-//        p.getPerson().setEditedAt(new Date());
-//        p.getPerson().setEditer(getSessionController().getLoggedUser());
         p.getPerson().setRetired(false);
         p.getPerson().setRetireComments("Re-Activated");
         getPersonFacade().edit(p.getPerson());
-        createPatientList();
+        auditEventController.completeAuditEvent(auditEvent,
+                "{\"patientId\":" + p.getId() + ",\"retired\":false}");
+        searchInactivePatients();
         JsfUtil.addSuccessMessage("Re-Activated");
+    }
+
+    public void searchInactivePatients() {
+        String j = "select p from Patient p where p.retired = true order by p.id desc";
+        inactivePatients = getFacade().findByJpql(j);
+    }
+
+    public String navigateToInactivePatients() {
+        searchInactivePatients();
+        return "/admin/patients/inactive_patients?faces-redirect=true";
     }
 
     public void deActivePatient(Patient p) {
@@ -4481,6 +4497,14 @@ public class PatientController implements Serializable, ControllerWithPatient {
 
     public void setPatientList(List<Patient> patientList) {
         this.patientList = patientList;
+    }
+
+    public List<Patient> getInactivePatients() {
+        return inactivePatients;
+    }
+
+    public void setInactivePatients(List<Patient> inactivePatients) {
+        this.inactivePatients = inactivePatients;
     }
 
     public BillFacade getBillFacade() {
