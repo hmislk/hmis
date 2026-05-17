@@ -2821,7 +2821,8 @@ public class PatientController implements Serializable, ControllerWithPatient {
         }
         saveIndividualMembership();
         currentFamily = new Family();
-        current = new Patient();
+        current = null;
+        getCurrent();
         return navigateToAddNewCorporateMembership();
     }
 
@@ -3261,6 +3262,10 @@ public class PatientController implements Serializable, ControllerWithPatient {
     }
 
     public void pseudonymisePatient() {
+        if (!webUserController.hasPrivilege("ClinicalPatientPseudonymise")) {
+            JsfUtil.addErrorMessage("You do not have permission to pseudonymise patient records.");
+            return;
+        }
         if (current == null || current.getId() == null) {
             JsfUtil.addErrorMessage("No patient selected.");
             return;
@@ -3276,20 +3281,18 @@ public class PatientController implements Serializable, ControllerWithPatient {
                 p.getId(),
                 "Patient");
 
-        // Use PHN as the seed so the placeholder is stable and unique per patient.
-        // Name uses only letters/spaces to satisfy name-regex patterns (e.g. [A-Za-z ]+).
-        // Phone uses 10-digit format starting with 0 to satisfy common mobile-regex patterns.
-        String phn = p.getPhn() != null ? p.getPhn() : String.valueOf(p.getId());
-        String namePlaceholder = "Patient " + phn;
-        // Derive a deterministic 10-digit phone from the PHN/ID numeric characters only
-        String digits = phn.replaceAll("[^0-9]", "");
-        // Pad or trim to 9 digits, prefix with 0 → valid 10-digit number (e.g. 0XXXXXXXXX)
+        // Use patient DB ID (not PHN) as seed — ID is a non-reversible surrogate
+        // and does not expose the original identity in visible fields.
+        String seed = String.valueOf(p.getId());
+        String namePlaceholder = "Patient " + seed;
+        // Derive a deterministic 10-digit phone from the ID digits only
+        String digits = seed.replaceAll("[^0-9]", "");
         while (digits.length() < 9) {
             digits = digits + "0";
         }
         String phonePlaceholder = "0" + digits.substring(0, 9);
-        String nicPlaceholder = phn.replaceAll("[^A-Za-z0-9]", "") + "V";
-        String addressPlaceholder = "Address " + phn;
+        String nicPlaceholder = seed + "V";
+        String addressPlaceholder = "Address " + seed;
 
         p.getPerson().setName(namePlaceholder);
         p.getPerson().setFullName(namePlaceholder);
