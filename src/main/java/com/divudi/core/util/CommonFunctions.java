@@ -1186,4 +1186,16 @@ public class CommonFunctions {
             return "";
         }
     }
+
+    public boolean filterBySingleDate(Object value, Object filter, Locale locale) {
+        if (filter == null) return true;
+        if (value == null) return false;
+
+        java.time.LocalDate filterDate = (java.time.LocalDate) filter;
+        java.time.LocalDate rowDate = ((Date) value).toInstant()
+            .atZone(ZoneId.of("Asia/Colombo"))
+            .toLocalDate();
+
+        return rowDate.equals(filterDate);
+    }
 }
