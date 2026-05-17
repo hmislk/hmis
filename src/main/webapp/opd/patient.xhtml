@@ -245,6 +245,17 @@
                                                         <p:badge value="#{patientController.current.blacklisted eq true ? 'Blacklisted' : 'Active'}"
                                                                  severity="#{patientController.current.blacklisted eq true ? 'danger' : 'success'}"/>
                                                     </div>
+                                                    <h:panelGroup rendered="#{patientController.current.blacklisted}" layout="block">
+                                                        <div class="alert alert-danger p-2 mt-1" style="font-size:0.85em;">
+                                                            <strong>Reason:</strong> #{patientController.current.reasonForBlacklist}<br/>
+                                                            <h:panelGroup rendered="#{not empty patientController.current.blacklistedBy}">
+                                                                <strong>By:</strong> #{patientController.current.blacklistedBy.person.nameWithTitle}<br/>
+                                                            </h:panelGroup>
+                                                            <h:panelGroup rendered="#{not empty patientController.current.blacklistedAt}">
+                                                                <strong>On:</strong> <h:outputText value="#{patientController.current.blacklistedAt}"><f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" /></h:outputText>
+                                                            </h:panelGroup>
+                                                        </div>
+                                                    </h:panelGroup>
 
                                                 </div>
 
