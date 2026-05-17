@@ -270,15 +270,10 @@ public class RetailSaleNativeSqlController implements Serializable, ControllerWi
             }
         }
 
-        if (configOptionApplicationController.getBooleanValueByKey(
-                "Enable blacklist patient management in the system", false)
-                && configOptionApplicationController.getBooleanValueByKey(
-                        "Enable blacklist patient management for Pharmacy from the system", false)) {
-            if (getPatient().isBlacklisted()) {
-                billSettlingStarted = false;
-                JsfUtil.addErrorMessage("This patient is blacklisted from the system. Can't Bill.");
-                return null;
-            }
+        if (getPatient().isBlacklisted()) {
+            billSettlingStarted = false;
+            JsfUtil.addErrorMessage("This patient is blacklisted from the system. Can't Bill.");
+            return null;
         }
 
         if (configOptionApplicationController.getBooleanValueByKey(

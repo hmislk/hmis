@@ -137,7 +137,7 @@
                         <f:facet name="header">
                             <h:outputLabel value="QTY"/>
                         </f:facet>
-                        <h:outputLabel value="#{0-bip.qty}"/>
+                        <h:outputLabel value="#{bip.qty}"/>
                     </p:column>                    
 
                     <p:column style="text-align: right;"
@@ -160,7 +160,7 @@
                             </p:column>
                             <p:column  style="text-align: right;">
                                 <f:facet name="footer">
-                                    <h:outputLabel value="#{-cc.attrs.bill.netTotal}">
+                                    <h:outputLabel value="#{cc.attrs.bill.netTotal}">
                                         <f:convertNumber pattern="#0.00" />
                                     </h:outputLabel>
                                 </f:facet>

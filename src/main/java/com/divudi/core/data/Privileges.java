@@ -485,6 +485,7 @@ public enum Privileges {
     ClinicalMembershipAdd("Clinical Membership Add"),
     ClinicalMembershipEdit("Clinical Membership Edit"),
     ClinicalPatientPhoneNumberEdit("Clinical Patient Phone Number Edit"),
+    ClinicalPatientBlacklist("Clinical Patient Blacklist"),
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Pharmacy">
@@ -711,6 +712,7 @@ public enum Privileges {
     CancelOwnFundTransfer("Cancel Own Float Transfer"),
     CancelOthersFundTransfer("Cancel Others Float Transfer"),
     ViewFundTransferReports("View Float Transfer Reports"),
+    ViewAllShiftShortageBills("View All Shift Shortage Bills"),
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Developers">
@@ -1033,6 +1035,7 @@ public enum Privileges {
             case CancelOwnFundTransfer:
             case CancelOthersFundTransfer:
             case ViewFundTransferReports:
+            case ViewAllShiftShortageBills:
                 return "Float Transfer";
 
             case NursingWorkBench:

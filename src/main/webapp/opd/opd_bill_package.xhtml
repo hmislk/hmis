@@ -436,7 +436,7 @@
                                                                 <p:outputLabel value="#{billPackageController.patient.person.nameWithTitle}" rendered="#{not empty billPackageController.patient.person.nameWithTitle}" />
                                                             </p:badge> 
 
-                                                            <p:badge rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable blacklist patient management in the system') and configOptionApplicationController.getBooleanValueByKey('Enable blacklist patient management for OPD from the system', false)}" style="transform: translate(110%, -40%);background-color: #{billPackageController.patient.blacklisted ? 'black' : 'white'} ; font-style: italic; font-size: 15px" value="X #{billPackageController.patient.blacklisted ? 'Blacklisted' : 'Active'}" severity="danger">
+                                                            <p:badge style="transform: translate(110%, -40%);background-color: #{billPackageController.patient.blacklisted ? 'black' : 'white'} ; font-style: italic; font-size: 15px" value="X #{billPackageController.patient.blacklisted ? 'Blacklisted' : 'Active'}" severity="danger">
 
                                                             </p:badge>
 

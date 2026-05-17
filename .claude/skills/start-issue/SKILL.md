@@ -39,6 +39,8 @@ git push -u origin $0-<description>
 
 **Rule**: ALWAYS base on `origin/development`, never on `master`.
 
+> ⚠️ **Check current branch first.** If `git branch --show-current` shows `master`, DO NOT proceed with uncommitted changes present — those changes will be carried onto the new branch and their ancestry will include `master`, causing PR conflicts. Instead, stash the changes (`git stash`), create the branch cleanly, then pop the stash (`git stash pop`).
+
 ## Step 3 — Set persistence.xml to Local JNDI
 
 Read the local JNDI name from:
@@ -50,8 +52,9 @@ Then update `src/main/resources/META-INF/persistence.xml`:
 - Replace `${JDBC_DATASOURCE}` → the local main JNDI (e.g. `jdbc/ruhunu`)
 - Replace `${JDBC_AUDIT_DATASOURCE}` → the local audit JNDI (e.g. `jdbc/ruhunuAudit`)
 
-**Do NOT commit this change.** It stays local only. Before any push, revert to placeholders
-(or use the `verify-persistence` skill which will catch it).
+**Do NOT commit this change.** It stays local only. Before any push, revert to placeholders.
+**Remember these JNDI names** — after every push they must be restored immediately so the
+developer can test without any manual step. See the `verify-persistence` skill.
 
 ## Step 4 — Assign Issue on GitHub
 
