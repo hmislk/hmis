@@ -3326,10 +3326,12 @@ public class PatientController implements Serializable, ControllerWithPatient {
         }
     }
 
-    public void checkBeforeSaveAndGoToAdmission() {
+    public String checkBeforeSaveAndGoToAdmission() {
         if (current != null && current.getId() != null && current.isBlacklisted()) {
             PrimeFaces.current().executeScript("PF('dlgBlacklistSaveAdmissionWarning').show();");
+            return null;
         }
+        return saveAndNavigateToAdmissionProfile();
     }
 
     public String saveAndNavigateToOpdPatientProfile() {

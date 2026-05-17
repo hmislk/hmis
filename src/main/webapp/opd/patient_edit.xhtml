@@ -56,7 +56,7 @@
                                                 value="Inpatient Dashboard"
                                                 rendered="#{admissionController.current ne null and admissionController.current.id ne null}"
                                                 action="#{patientController.checkBeforeSaveAndGoToAdmission()}"
-                                                update="@form"
+                                                ajax="false"
                                                 icon="fa fa-hospital-o"
                                                 iconPos="left"
                                                 class="ui-button-info m-1" />
