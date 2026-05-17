@@ -2725,12 +2725,6 @@ public class BillPackageController implements Serializable, ControllerWithPatien
             OptionScope.APPLICATION
         ));
 
-        metadata.addConfigOption(new ConfigOptionInfo(
-            "Enable patient specific status management in the system",
-            "Shows patient-specific status badges and management features",
-            "Lines 419-423: Patient specific status badge display",
-            OptionScope.APPLICATION
-        ));
 
 
         // Configuration Options - Package Management

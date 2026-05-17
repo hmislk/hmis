@@ -486,6 +486,7 @@ public enum Privileges {
     ClinicalMembershipEdit("Clinical Membership Edit"),
     ClinicalPatientPhoneNumberEdit("Clinical Patient Phone Number Edit"),
     ClinicalPatientBlacklist("Clinical Patient Blacklist"),
+    ClinicalPatientPseudonymise("Clinical Patient Pseudonymise"),
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Pharmacy">
