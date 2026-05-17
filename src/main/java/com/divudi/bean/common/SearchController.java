@@ -5920,6 +5920,27 @@ public class SearchController implements Serializable {
                 + " b.createdAt between :fromDate and :toDate "
                 + " and b.retired=false "
                 + " and b.billTypeAtomic=:bTA "
+                + " and b.billType=:bT "
+                + " and b.creater=:user ";
+
+        m.put("fromDate", fromDate);
+        m.put("toDate", toDate);
+        m.put("bTA", BillTypeAtomic.FUND_SHIFT_SHORTAGE_BILL);
+        m.put("bT", BillType.ShiftShortage);
+        m.put("user", sessionController.getLoggedUser());
+        bills = getBillFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
+    }
+
+    public void createAllShiftShortageBillsTable() {
+        bills = null;
+        bills = new ArrayList<>();
+        String sql;
+        Map m = new HashMap();
+
+        sql = "Select b From Bill b where "
+                + " b.createdAt between :fromDate and :toDate "
+                + " and b.retired=false "
+                + " and b.billTypeAtomic=:bTA "
                 + " and b.billType=:bT ";
 
         m.put("fromDate", fromDate);
@@ -5927,11 +5948,6 @@ public class SearchController implements Serializable {
         m.put("bTA", BillTypeAtomic.FUND_SHIFT_SHORTAGE_BILL);
         m.put("bT", BillType.ShiftShortage);
         bills = getBillFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
-
-        if (bills == null || bills.isEmpty()) {
-        } else {
-        }
-
     }
 
     public void createApprovedPharmacy() {
