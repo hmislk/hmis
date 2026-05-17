@@ -341,7 +341,7 @@
                                     <div class="col-md-4 p-1">
 
                                         <div class="input-group">
-                                            <p:selectOneMenu title="Patient Specific Status" class="w-100" id="specificStatus" value="#{cc.attrs.controller.patient.specificStatus != null and cc.attrs.controller.patient.specificStatus.name() != 'NORMAL' ? cc.attrs.controller.patient.specificStatus : ''}">
+                                            <p:selectOneMenu title="Patient Specific Status" class="w-100" id="specificStatus" value="#{cc.attrs.controller.patient.specificStatus}">
                                                 <f:selectItems value="#{patientController.getAllPatientSpecificLabels()}"/>
                                             </p:selectOneMenu>
 
@@ -386,7 +386,7 @@
                             <h:panelGroup class="d-flex">
 
                                 
-                                <p:badge style="transform: translate(110%, -40%);background-color: #{cc.attrs.controller.patient.specificStatus != null and cc.attrs.controller.patient.specificStatus.name() != 'NORMAL' ? '#FF401F' : 'white'} ; font-style: italic;" value="#{cc.attrs.controller.patient.specificStatus != null and cc.attrs.controller.patient.specificStatus.name() != 'NORMAL' ? cc.attrs.controller.patient.specificStatus : ''}" severity="danger">
+                                <p:badge style="transform: translate(110%, -40%);background-color: #{cc.attrs.controller.patient.specificStatus != null and cc.attrs.controller.patient.specificStatus.name() != 'NORMAL' ? '#FF401F' : 'white'} ; font-style: italic;" value="#{cc.attrs.controller.patient.specificStatus}" severity="danger">
                                     <p:outputLabel value="#{cc.attrs.controller.patient.person.nameWithTitle}" rendered="#{not empty cc.attrs.controller.patient.person.nameWithTitle}" />
                                 </p:badge> 
 

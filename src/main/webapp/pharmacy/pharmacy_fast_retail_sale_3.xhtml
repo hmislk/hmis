@@ -681,7 +681,7 @@
                                                                         <div class="col-md-4 p-1">
 
                                                                             <div class="input-group">
-                                                                                <p:selectOneMenu title="Patient Specific Status" class="w-100" id="specificStatus" value="#{pharmacyFastRetailSaleController3.patient.specificStatus != null and pharmacyFastRetailSaleController3.patient.specificStatus.name() != 'NORMAL' ? pharmacyFastRetailSaleController3.patient.specificStatus : ''}">
+                                                                                <p:selectOneMenu title="Patient Specific Status" class="w-100" id="specificStatus" value="#{pharmacyFastRetailSaleController3.patient.specificStatus}">
                                                                                     <f:selectItems value="#{patientController.getAllPatientSpecificLabels()}"/>
                                                                                 </p:selectOneMenu>
 
@@ -727,7 +727,7 @@
                                                                 <h:panelGroup class="d-flex">
 
                                                                     
-                                                                    <p:badge style="transform: translate(110%, -40%);background-color: #{pharmacyFastRetailSaleController3.patient.specificStatus != null and pharmacyFastRetailSaleController3.patient.specificStatus.name() != 'NORMAL' ? '#FF401F' : 'white'} ; font-style: italic;" value="#{pharmacyFastRetailSaleController3.patient.specificStatus != null and pharmacyFastRetailSaleController3.patient.specificStatus.name() != 'NORMAL' ? pharmacyFastRetailSaleController3.patient.specificStatus : ''}" severity="danger">
+                                                                    <p:badge style="transform: translate(110%, -40%);background-color: #{pharmacyFastRetailSaleController3.patient.specificStatus != null and pharmacyFastRetailSaleController3.patient.specificStatus.name() != 'NORMAL' ? '#FF401F' : 'white'} ; font-style: italic;" value="#{pharmacyFastRetailSaleController3.patient.specificStatus}" severity="danger">
                                                                         <p:outputLabel value="#{pharmacyFastRetailSaleController3.patient.person.nameWithTitle}" rendered="#{not empty pharmacyFastRetailSaleController3.patient.person.nameWithTitle}" />
                                                                     </p:badge> 
 

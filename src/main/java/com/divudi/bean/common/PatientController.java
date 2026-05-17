@@ -218,6 +218,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
     Long patientId;
     private FamilyMember familyMember;
     private List<FamilyMember> familyMembers;
+    private List<FamilyMember> filteredFamilyMembers;
     private Family currentFamily;
     private List<Family> families;
     FamilyMember currentFamilyMember;
@@ -2622,6 +2623,10 @@ public class PatientController implements Serializable, ControllerWithPatient {
 
     public String searchCorporateFamilyMember() {
         familyMembers = null;
+        if (searchText == null || searchText.trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Please enter a search term.");
+            return "";
+        }
         String j = "Select fm "
                 + " from FamilyMember fm"
                 + " where fm.retired=false "
@@ -4446,6 +4451,14 @@ public class PatientController implements Serializable, ControllerWithPatient {
 
     public void setFamilyMembers(List<FamilyMember> familyMembers) {
         this.familyMembers = familyMembers;
+    }
+
+    public List<FamilyMember> getFilteredFamilyMembers() {
+        return filteredFamilyMembers;
+    }
+
+    public void setFilteredFamilyMembers(List<FamilyMember> filteredFamilyMembers) {
+        this.filteredFamilyMembers = filteredFamilyMembers;
     }
 
     public ReportKeyWord getReportKeyWord() {

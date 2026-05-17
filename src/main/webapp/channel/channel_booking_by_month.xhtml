@@ -540,7 +540,7 @@
                                                                     <div class="col-md-4 p-1">
 
                                                                         <div class="input-group">
-                                                                            <p:selectOneMenu title="Patient Specific Status" class="w-100" id="specificStatus" value="#{bookingControllerViewScopeMonth.patient.specificStatus != null and bookingControllerViewScopeMonth.patient.specificStatus.name() != 'NORMAL' ? bookingControllerViewScopeMonth.patient.specificStatus : ''}">
+                                                                            <p:selectOneMenu title="Patient Specific Status" class="w-100" id="specificStatus" value="#{bookingControllerViewScopeMonth.patient.specificStatus}">
                                                                                 <f:selectItems value="#{patientController.getAllPatientSpecificLabels()}"/>
                                                                             </p:selectOneMenu>
 
@@ -585,7 +585,7 @@
                                                                 <h:panelGroup class="d-flex">
 
                                                                     
-                                                                    <p:badge style="transform: translate(110%, -40%);background-color: #{bookingControllerViewScopeMonth.patient.specificStatus != null and bookingControllerViewScopeMonth.patient.specificStatus.name() != 'NORMAL' ? '#FF401F' : 'white'} ; font-style: italic;" value="#{bookingControllerViewScopeMonth.patient.specificStatus != null and bookingControllerViewScopeMonth.patient.specificStatus.name() != 'NORMAL' ? bookingControllerViewScopeMonth.patient.specificStatus : ''}" severity="danger">
+                                                                    <p:badge style="transform: translate(110%, -40%);background-color: #{bookingControllerViewScopeMonth.patient.specificStatus != null and bookingControllerViewScopeMonth.patient.specificStatus.name() != 'NORMAL' ? '#FF401F' : 'white'} ; font-style: italic;" value="#{bookingControllerViewScopeMonth.patient.specificStatus}" severity="danger">
                                                                         <p:outputLabel value="#{bookingControllerViewScopeMonth.patient.person.nameWithTitle}" rendered="#{not empty bookingControllerViewScopeMonth.patient.person.nameWithTitle}" />
                                                                     </p:badge> 
 
