@@ -102,7 +102,13 @@
                 }
 
                 .salary-table .ui-datatable-tablewrapper {
-                    overflow-x: auto;
+                    overflow-x: auto !important;
+                    width: 100% !important;
+                }
+
+                .salary-table table {
+                    width: auto !important;
+                    table-layout: auto !important;
                 }
 
                 .salary-table .ui-datatable-data td,
@@ -110,6 +116,7 @@
                     padding: 10px 14px !important;
                     white-space: nowrap;
                     font-size: 13px !important;
+                    width: auto !important;
                 }
 
                 .salary-table .ui-datatable-thead th {
@@ -137,6 +144,10 @@
 
                 .salary-table .col-text {
                     text-align: left !important;
+                }
+
+                .salary-table .col-name {
+                    min-width: 200px !important;
                 }
 
                 .salary-table .col-name .ui-outputlabel {
@@ -206,16 +217,16 @@
                                          icon="pi pi-sync"
                                          styleClass="btn-action" />
                         <p:commandButton value="Print"
-                                        ajax="false"
-                                        action="#"
-                                        icon="pi pi-print"
-                                        styleClass="btn-action">
+                                         ajax="false"
+                                         action="#"
+                                         icon="pi pi-print"
+                                         styleClass="btn-action">
                             <p:printer target="gpBillPreview" />
                         </p:commandButton>
                         <p:commandButton value="Export Excel"
-                                        ajax="false"
-                                        icon="pi pi-file-excel"
-                                        styleClass="btn-action noPrintButton">
+                                         ajax="false"
+                                         icon="pi pi-file-excel"
+                                         styleClass="btn-action noPrintButton">
                             <p:dataExporter type="xlsx" target="tbl" fileName="all_staff_salary_summary" />
                         </p:commandButton>
                     </div>
@@ -242,11 +253,11 @@
                              var="scc"
                              styleClass="salary-table">
 
-                    <p:column headerText="Name" styleClass="col-text col-name">
+                    <p:column headerText="Name" styleClass="col-text col-name" style="min-width: 200px;">
                         <h:outputLabel value="#{scc.staff.person.nameWithTitle}" />
                     </p:column>
 
-                    <p:column headerText="Department" styleClass="col-text">
+                    <p:column headerText="Department" styleClass="col-text" style="min-width: 140px;">
                         <h:outputLabel value="#{scc.staff.department.name}" />
                         <f:facet name="footer">
                             <h:outputLabel value="Total" />
