@@ -24,6 +24,7 @@ import com.divudi.core.entity.Person;
 import com.divudi.core.entity.Speciality;
 import com.divudi.core.entity.Staff;
 import com.divudi.core.entity.hr.Roster;
+import com.divudi.core.entity.hr.SalaryCycle;
 import com.divudi.core.entity.hr.StaffDesignation;
 import com.divudi.core.entity.hr.StaffEmployeeStatus;
 import com.divudi.core.entity.hr.StaffEmployment;
@@ -500,7 +501,7 @@ public class StaffController implements Serializable {
                 + " and type(ss)!=:class "
                 + " and LENGTH(ss.code) > 0 "
                 + " and LENGTH(ss.person.name) > 0 "
-                + " and ss.employeeStatus!=:sts";
+                + " and (ss.employeeStatus!=:sts or ss.employeeStatus is null)";
 
         sql += " and (ss.dateLeft is null or ss.dateLeft > :to ) ";
         hm.put("to", ssDate);
@@ -552,7 +553,7 @@ public class StaffController implements Serializable {
                 + " and type(ss)!=:class "
                 + " and LENGTH(ss.code) > 0 "
                 + " and LENGTH(ss.person.name) > 0 "
-                + " and ss.employeeStatus!=:sts"
+                + " and (ss.employeeStatus!=:sts or ss.employeeStatus is null)"
                 + " and ss.dateLeft >:fd "
                 + " and ss.dateLeft < :to ";
         hm.put("to", staffSalaryController.getSalaryCycle().getSalaryToDate());
@@ -621,7 +622,7 @@ public class StaffController implements Serializable {
                 + " and type(ss)!=:class "
                 + " and LENGTH(ss.code) > 0 "
                 + " and LENGTH(ss.person.name) > 0 "
-                + " and ss.employeeStatus!=:sts";
+                + " and (ss.employeeStatus!=:sts or ss.employeeStatus is null)";
 
 //        sql += " and (ss.dateLeft is null or ss.dateLeft > :to ) ";
 //        hm.put("to", ssDate );
@@ -665,12 +666,31 @@ public class StaffController implements Serializable {
     }
 
     public void fetchWorkDays(List<Staff> staffs) {
+        if (staffs == null || staffs.isEmpty()) {
+            return;
+        }
+        SalaryCycle cycle = staffSalaryController.getSalaryCycle();
+        if (cycle == null) {
+            JsfUtil.addErrorMessage("Please select a Salary Cycle before filling staff.");
+            return;
+        }
+        if (cycle.getDayOffPhFromDate() == null || cycle.getDayOffPhToDate() == null) {
+            JsfUtil.addErrorMessage("Salary Cycle dates are incomplete.");
+            return;
+        }
+        if (cycle.getSalaryFromDate() == null || cycle.getSalaryToDate() == null) {
+            JsfUtil.addErrorMessage("Salary From/To dates are incomplete.");
+            return;
+        }
         for (Staff s : staffs) {
-            if (staffSalaryController.getSalaryCycle() != null) {
-                s.setTransWorkedDays(hrReportController.fetchWorkedDays(s, staffSalaryController.getSalaryCycle().getDayOffPhFromDate(), staffSalaryController.getSalaryCycle().getDayOffPhToDate()));
-                s.setTransWorkedDaysSalaryFromToDate(hrReportController.fetchWorkedDays(s, staffSalaryController.getSalaryCycle().getSalaryFromDate(), staffSalaryController.getSalaryCycle().getSalaryToDate()));
-
-            }
+            s.setTransWorkedDays(
+                hrReportController.fetchWorkedDays(s,
+                    cycle.getDayOffPhFromDate(),
+                    cycle.getDayOffPhToDate()));
+            s.setTransWorkedDaysSalaryFromToDate(
+                hrReportController.fetchWorkedDays(s,
+                    cycle.getSalaryFromDate(),
+                    cycle.getSalaryToDate()));
         }
     }
 

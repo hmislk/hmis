@@ -499,6 +499,7 @@ public class UserPrivilageController implements Serializable {
         new DefaultTreeNode(new PrivilegeHolder(Privileges.ClinicalPatientNameChange, "Change Patient Name"), clinicalsNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.ClinicalPatientPhoneNumberEdit, "Edit Patient Phone Number"), clinicalsNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.ClinicalPatientBlacklist, "Blacklist / Unblacklist Patient"), clinicalsNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.ClinicalPatientPseudonymise, "Pseudonymise Patient"), clinicalsNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.ClinicalPatientCommentsView, "View Patient Comments"), clinicalsNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.ClinicalPatientCommentsEdit, "Edit Patient Comments"), clinicalsNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.ClinicalMembershipAdd, "Add Membership"), clinicalsNode);
@@ -513,6 +514,8 @@ public class UserPrivilageController implements Serializable {
         new DefaultTreeNode(new PrivilegeHolder(Privileges.AdminStaff, "Manage Staff"), adminNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.AdminItems, "Manage Items/Services"), adminNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.AdminPrices, "Manage Fees/Prices/Packages"), adminNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.AdminPatientRelationships, "Manage Patient Relationships"), adminNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.AdminInactivePatients, "Manage Inactive Patients"), adminNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.ManageCreditCompany, "Manage Credit Companies"), adminNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.AdminFilterWithoutDepartment, "Filter Without Department"), adminNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.SearchAll, "Search All"), adminNode);

@@ -441,9 +441,8 @@
 
                                                     <h:panelGroup class="d-flex">
 
-                                                        <p:outputLabel class="ml-4" value="#{appointmentController.patient.person.nameWithTitle}" rendered="#{not empty appointmentController.patient.person.nameWithTitle and !configOptionApplicationController.getBooleanValueByKey('Enable patient specific status management in the system')}" />
-
-                                                        <p:badge rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable patient specific status management in the system')}" style="transform: translate(110%, -40%);background-color: #{empty appointmentController.patient.specificStatus ? 'white' : '#FF401F'} ; font-style: italic;" value="#{appointmentController.patient.specificStatus}" severity="danger">
+                                                        
+                                                        <p:badge style="transform: translate(110%, -40%);background-color: #{appointmentController.patient.specificStatus != null and appointmentController.patient.specificStatus.name() != 'NORMAL' ? '#FF401F' : 'white'} ; font-style: italic;" value="#{appointmentController.patient.specificStatus}" severity="danger">
                                                             <p:outputLabel value="#{appointmentController.patient.person.nameWithTitle}" rendered="#{not empty appointmentController.patient.person.nameWithTitle}" />
                                                         </p:badge> 
 
