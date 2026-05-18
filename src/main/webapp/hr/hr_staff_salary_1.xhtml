@@ -134,14 +134,16 @@
                 }
 
                 .payroll-table-wrap {
-                    overflow-x: auto;
+                    overflow-x: auto !important;
+                    width: 100% !important;
                     margin-top: 1rem;
                 }
 
                 .payroll-table {
                     border-collapse: collapse;
                     font-size: 13px;
-                    min-width: 100%;
+                    width: auto !important;
+                    table-layout: auto !important;
                 }
 
                 .payroll-table thead tr {
@@ -181,6 +183,7 @@
                 .payroll-table td.col-name {
                     text-align: left;
                     font-weight: 500;
+                    min-width: 200px;
                 }
 
                 .payroll-table tbody tr:hover td {
@@ -387,7 +390,7 @@
                                         <th class="col-left">Code</th>
                                         <th class="col-left">EPF</th>
                                         <th class="col-left">Joined</th>
-                                        <th class="col-name">Staff</th>
+                                        <th class="col-left" style="min-width: 200px;">Staff</th>
                                         <th class="col-left">Designation</th>
                                         <th>Basic + BR</th>
                                         <th>Merchan.</th>
