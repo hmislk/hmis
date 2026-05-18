@@ -277,10 +277,9 @@
 
                     <div class="controls-actions-secondary">
                         <p:commandButton value="Print"
-                                         ajax="false"
-                                         action="#"
-                                         icon="pi pi-print"
-                                         styleClass="btn-action">
+                                        type="button"
+                                        icon="pi pi-print"
+                                        styleClass="btn-action noPrintButton">
                             <p:printer target="gpBillPreview" />
                         </p:commandButton>
                         <p:commandButton value="Export Excel"
@@ -300,7 +299,7 @@
                     <div class="report-header-wrap">
                         <span class="report-title-label">Employee Salary Bank-Wise</span>
                         <span class="report-cycle-label">
-                            <h:outputText value="#{hrReportController.reportKeyWord.salaryCycle.name}" />
+                            <h:outputText value="#{empty hrReportController.reportKeyWord.salaryCycle ? '' : hrReportController.reportKeyWord.salaryCycle.name}" />
                         </span>
                         <h:panelGroup rendered="#{hrReportController.reportKeyWord.institution ne null}">
                             <p class="report-meta">
