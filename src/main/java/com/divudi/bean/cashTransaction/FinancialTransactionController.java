@@ -1393,17 +1393,15 @@ public class FinancialTransactionController implements Serializable {
         if (fundTransferPayments == null) {
             return;
         }
-        boolean isOut = floatBundle.getPaymentHandover() == PaymentHandover.FLOAT_OUT;
+        // The net float bundle (FLOAT_IN) represents received minus sent, so both
+        // FUND_TRANSFER_BILL (sent) and FUND_TRANSFER_RECEIVED_BILL (received) rows
+        // must appear so the user can see the full breakdown that produces the net value.
         for (Payment fp : fundTransferPayments) {
             if (fp.getBill() == null) {
                 continue;
             }
             BillTypeAtomic bta = fp.getBill().getBillTypeAtomic();
-            if (isOut && bta == BillTypeAtomic.FUND_TRANSFER_BILL) {
-                ReportTemplateRow row = new ReportTemplateRow();
-                row.setPayment(fp);
-                floatBundle.getReportTemplateRows().add(row);
-            } else if (!isOut && bta == BillTypeAtomic.FUND_TRANSFER_RECEIVED_BILL) {
+            if (bta == BillTypeAtomic.FUND_TRANSFER_BILL || bta == BillTypeAtomic.FUND_TRANSFER_RECEIVED_BILL) {
                 ReportTemplateRow row = new ReportTemplateRow();
                 row.setPayment(fp);
                 floatBundle.getReportTemplateRows().add(row);
@@ -1898,9 +1896,17 @@ public class FinancialTransactionController implements Serializable {
             }
 
             childBundle.calculateTotalsByPaymentsAndDenominations();
-            // Shortage component bills have negative cash — mark them so the accept page
-            // can display the "Shift Shortage" label in the Institution/Type column.
-            if (childBundle.getCashValue() < -0.001) {
+            // Mark shortage-related component bills so the accept page displays the
+            // "Shift Shortage" label in the Institution/Type column.  The sign-only
+            // check misses two cases: (a) a cancellation-only row (positive cashValue)
+            // and (b) a merged row where the original shortage and its same-day
+            // cancellation net to zero.  Checking the bill type of any linked payment
+            // covers all three cases reliably.
+            boolean isShortageRelated = payments != null && payments.stream().anyMatch(p ->
+                    p.getBill() != null && (
+                            p.getBill().getBillTypeAtomic() == BillTypeAtomic.FUND_SHIFT_SHORTAGE_BILL
+                            || p.getBill().getBillTypeAtomic() == BillTypeAtomic.FUND_SHIFT_SHORTAGE_BILL_CANCELLED));
+            if (childBundle.getCashValue() < -0.001 || isShortageRelated) {
                 childBundle.setPaymentHandover(PaymentHandover.FLOATS);
             }
             bundle.getBundles().add(childBundle);
@@ -2030,9 +2036,17 @@ public class FinancialTransactionController implements Serializable {
             }
 
             childBundle.calculateTotalsByPaymentsAndDenominations();
-            // Shortage component bills have negative cash — mark them so the reprint
-            // composite can display the "Shift Shortage" label in Institution/Type column.
-            if (childBundle.getCashValue() < -0.001) {
+            // Mark shortage-related component bills so the reprint composite displays
+            // the "Shift Shortage" label in the Institution/Type column.  The sign-only
+            // check misses two cases: (a) a cancellation-only row (positive cashValue)
+            // and (b) a merged row where the original shortage and its same-day
+            // cancellation net to zero.  Checking the bill type of any linked payment
+            // covers all three cases reliably.
+            boolean isShortageRelated = payments != null && payments.stream().anyMatch(p ->
+                    p.getBill() != null && (
+                            p.getBill().getBillTypeAtomic() == BillTypeAtomic.FUND_SHIFT_SHORTAGE_BILL
+                            || p.getBill().getBillTypeAtomic() == BillTypeAtomic.FUND_SHIFT_SHORTAGE_BILL_CANCELLED));
+            if (childBundle.getCashValue() < -0.001 || isShortageRelated) {
                 childBundle.setPaymentHandover(PaymentHandover.FLOATS);
             }
             bundle.getBundles().add(childBundle);
@@ -4588,6 +4602,12 @@ public class FinancialTransactionController implements Serializable {
 
     public String navigateToViewIndividualShiftForHandover(ReportTemplateRowBundle childBundle) {
         selectedBundle = childBundle;
+        if (selectedBundle.isFloatRow()
+                && selectedBundle.getReportTemplateRows().isEmpty()
+                && bundle != null
+                && !bundle.getReportTemplateRows().isEmpty()) {
+            selectedBundle.getReportTemplateRows().addAll(bundle.getReportTemplateRows());
+        }
         return "/cashier/handover_accept_row_detail?faces-redirect=true";
     }
 

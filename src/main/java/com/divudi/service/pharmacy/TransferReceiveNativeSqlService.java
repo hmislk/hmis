@@ -92,10 +92,12 @@ public class TransferReceiveNativeSqlService {
         // Query 1: Load all issued items with their batch and item data
         // pbi.staffStock_ID is the transit stock incremented during issue (what receive deducts from).
         // pbi.stock_ID is the Stores dept stock that was already deducted during issue (now empty).
+        // COALESCE(ib.dateOfExpire, pbi.doe): item-batch expiry is authoritative; pbi.doe is the
+        // fallback for when the batch column is null.
         String sql1 = "SELECT"
                 + " bi.ID, bi.qty, bi.netValue, bi.rate, bi.netRate, bi.searialNo,"
                 + " pbi.staffStock_ID, pbi.itemBatch_ID, pbi.qty AS pbiQty,"
-                + " ib.batchNo, ib.dateOfExpire, ib.purcahseRate, ib.retailsaleRate,"
+                + " ib.batchNo, COALESCE(ib.dateOfExpire, pbi.doe) AS dateOfExpire, ib.purcahseRate, ib.retailsaleRate,"
                 + " ib.wholesaleRate, COALESCE(ib.costRate, 0) AS costRate,"
                 + " i.ID AS itemId, i.name AS itemName, COALESCE(i.code, '') AS itemCode,"
                 + " i.DTYPE AS itemDtype, COALESCE(i.dblValue, 1) AS dblValue"
@@ -144,7 +146,7 @@ public class TransferReceiveNativeSqlService {
             // row[0]=bi.ID, row[1]=bi.qty(packs), row[2]=bi.netValue, row[3]=bi.rate,
             // row[4]=bi.netRate, row[5]=bi.searialNo,
             // row[6]=pbi.staffStock_ID, row[7]=pbi.itemBatch_ID, row[8]=pbi.qty(units in stock),
-            // row[9]=ib.batchNo, row[10]=ib.dateOfExpire, row[11]=ib.purcahseRate,
+            // row[9]=ib.batchNo, row[10]=COALESCE(ib.dateOfExpire,pbi.doe), row[11]=ib.purcahseRate,
             // row[12]=ib.retailsaleRate, row[13]=ib.wholesaleRate, row[14]=ib.costRate,
             // row[15]=i.ID, row[16]=i.name, row[17]=i.code, row[18]=i.DTYPE, row[19]=i.dblValue
 
@@ -195,8 +197,7 @@ public class TransferReceiveNativeSqlService {
             dto.setItemName(row[16] != null ? row[16].toString() : "");
             dto.setItemCode(row[17] != null ? row[17].toString() : "");
             dto.setBatchNo(row[9] != null ? row[9].toString() : "");
-            dto.setDateOfExpire(row[10] instanceof java.sql.Date ? new Date(((java.sql.Date) row[10]).getTime())
-                    : (row[10] instanceof Date ? (Date) row[10] : null));
+            dto.setDateOfExpire(toDate(row[10]));
             dto.setUnitsPerPack(unitsPerPack);
             dto.setPurchaseRate(purchaseRate);
             dto.setRetailRate(retailRate);
@@ -598,7 +599,7 @@ public class TransferReceiveNativeSqlService {
         }
 
         String sql = "SELECT COALESCE(bi.searialNo, 0), i.name, COALESCE(i.code, ''),"
-                + " ib.batchNo, ib.dateOfExpire,"
+                + " ib.batchNo, COALESCE(ib.dateOfExpire, pbi.doe) AS dateOfExpire,"
                 + " ABS(bi.qty) AS qty, ABS(pbi.qty) AS qtyInUnits,"
                 + " ABS(bi.rate) AS rate, ABS(bi.netValue) AS netValue,"
                 + " COALESCE(ib.purcahseRate, 0), COALESCE(ib.retailsaleRate, 0),"
@@ -623,9 +624,7 @@ public class TransferReceiveNativeSqlService {
             item.setItemName(row[1] != null ? row[1].toString() : "");
             item.setItemCode(row[2] != null ? row[2].toString() : "");
             item.setBatchNo(row[3] != null ? row[3].toString() : "");
-            item.setDateOfExpire(row[4] instanceof java.sql.Date
-                    ? new Date(((java.sql.Date) row[4]).getTime())
-                    : (row[4] instanceof Date ? (Date) row[4] : null));
+            item.setDateOfExpire(toDate(row[4]));
             double qty    = toDouble(row[5]);
             double units  = toDouble(row[6]);
             double rate   = toDouble(row[7]);
@@ -893,6 +892,36 @@ public class TransferReceiveNativeSqlService {
 
     private static double toDouble(Object o) {
         return o == null ? 0.0 : ((Number) o).doubleValue();
+    }
+
+    /**
+     * Converts a raw JDBC date/time object to java.util.Date.
+     * Handles java.sql.Timestamp, java.sql.Date, java.util.Date, and the
+     * Java 8 time types (LocalDateTime, LocalDate) returned by MySQL Connector/J 8.x
+     * when useLegacyDatetimeCode=false.
+     */
+    private static Date toDate(Object o) {
+        if (o == null) {
+            return null;
+        }
+        if (o instanceof java.sql.Timestamp) {
+            return new Date(((java.sql.Timestamp) o).getTime());
+        }
+        if (o instanceof java.sql.Date) {
+            return new Date(((java.sql.Date) o).getTime());
+        }
+        if (o instanceof Date) {
+            return (Date) o;
+        }
+        if (o instanceof java.time.LocalDateTime) {
+            return Date.from(((java.time.LocalDateTime) o)
+                    .atZone(java.time.ZoneId.systemDefault()).toInstant());
+        }
+        if (o instanceof java.time.LocalDate) {
+            return Date.from(((java.time.LocalDate) o)
+                    .atStartOfDay(java.time.ZoneId.systemDefault()).toInstant());
+        }
+        return new Date();
     }
 
     // -----------------------------------------------------------------------
