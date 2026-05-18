@@ -198,8 +198,8 @@
             </h:outputStylesheet>
 
             <div class="page-header">
-                <p class="page-title">Staff over time</p>
-                <p class="page-subtitle">Filter by cycle, department, employee or category and process to generate</p>
+                <p class="page-title"><h:outputText value="Staff over time" /></p>
+                <p class="page-subtitle"><h:outputText value="Filter by cycle, department, employee or category and process to generate" /></p>
             </div>
 
             <p:panel styleClass="controls-panel">
@@ -263,13 +263,13 @@
                         <div class="field-group">
                             <p:outputLabel value="Options" styleClass="field-label" />
                             <div class="checkbox-row">
-                                <div class="checkbox-group">
-                                    <p:selectBooleanCheckbox value="#{hrReportController.blocked}" />
-                                    <span class="field-label">Blocked</span>
+                               <div class="checkbox-group">
+                                    <p:selectBooleanCheckbox id="blocked" value="#{hrReportController.blocked}" />
+                                    <h:outputLabel for="blocked" styleClass="field-label" value="Blocked" />
                                 </div>
                                 <div class="checkbox-group">
-                                    <p:selectBooleanCheckbox value="#{hrReportController.hold}" />
-                                    <span class="field-label">Hold</span>
+                                    <p:selectBooleanCheckbox id="hold" value="#{hrReportController.hold}" />
+                                    <h:outputLabel for="hold" styleClass="field-label" value="Hold" />
                                 </div>
                             </div>
                         </div>
