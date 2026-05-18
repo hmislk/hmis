@@ -102,13 +102,6 @@
                             margin-bottom: 1rem;
                         }
 
-                        .report-header-wrap .report-inst-name {
-                            font-size: 15px;
-                            font-weight: 600;
-                            display: block;
-                            margin-bottom: 2px;
-                        }
-
                         .report-header-wrap .report-title-label {
                             font-size: 13px;
                             color: #666;
@@ -129,14 +122,16 @@
                         }
 
                         .payroll-table-wrap {
-                            overflow-x: auto;
+                            overflow-x: auto !important;
+                            width: 100% !important;
                             margin-top: 1rem;
                         }
 
                         .payroll-table {
                             border-collapse: collapse;
                             font-size: 13px;
-                            min-width: 100%;
+                            width: auto !important;
+                            table-layout: auto !important;
                         }
 
                         .payroll-table thead tr {
@@ -156,11 +151,7 @@
                             white-space: nowrap;
                         }
 
-                        .payroll-table th:first-child,
-                        .payroll-table th:nth-child(2),
-                        .payroll-table th:nth-child(3),
-                        .payroll-table th:nth-child(4),
-                        .payroll-table th:nth-child(5) {
+                        .payroll-table th.col-left {
                             text-align: left;
                         }
 
@@ -173,16 +164,14 @@
                             color: #333;
                         }
 
-                        .payroll-table td:first-child,
-                        .payroll-table td:nth-child(2),
-                        .payroll-table td:nth-child(3),
-                        .payroll-table td:nth-child(4),
-                        .payroll-table td:nth-child(5) {
+                        .payroll-table td.col-left {
                             text-align: left;
                         }
 
-                        .payroll-table td:nth-child(4) {
+                        .payroll-table td.col-name {
+                            text-align: left;
                             font-weight: 500;
+                            min-width: 200px;
                         }
 
                         .payroll-table tbody tr:hover td {
@@ -220,13 +209,13 @@
                                 <div class="field-group">
                                     <p:outputLabel for="advanced" value="Salary cycle" styleClass="field-label" />
                                     <p:selectOneMenu id="advanced"
-                                                    value="#{salaryCycleController.current}"
-                                                    var="t"
-                                                    filter="true"
-                                                    filterMatchMode="startsWith"
-                                                    appendTo="@body"
-                                                    autoWidth="false"
-                                                    style="width: 100%;">
+                                                     value="#{salaryCycleController.current}"
+                                                     var="t"
+                                                     filter="true"
+                                                     filterMatchMode="startsWith"
+                                                     appendTo="@body"
+                                                     autoWidth="false"
+                                                     style="width: 100%;">
                                         <f:selectItems value="#{salaryCycleController.salaryCycles}"
                                                        var="theme"
                                                        itemLabel="#{theme.name}"
@@ -332,11 +321,11 @@
                             <table id="tbl" class="payroll-table">
                                 <thead>
                                     <tr>
-                                        <th>Code</th>
-                                        <th>EPF</th>
-                                        <th>Joined</th>
-                                        <th>Staff</th>
-                                        <th>Roster</th>
+                                        <th class="col-left">Code</th>
+                                        <th class="col-left">EPF</th>
+                                        <th class="col-left">Joined</th>
+                                        <th class="col-left" style="min-width: 200px;">Staff</th>
+                                        <th class="col-left">Roster</th>
                                         <th>Basic + BR</th>
                                         <th>Merchan.</th>
                                         <th>Poya</th>
@@ -365,15 +354,15 @@
                                 <tbody>
                                     <ui:repeat value="#{salaryCycleController.staffSalarys}" var="scc">
                                         <tr>
-                                            <td><h:outputText value="#{scc.staff.codeInterger}" /></td>
-                                            <td><h:outputText value="#{scc.staff.epfNo}" /></td>
-                                            <td>
+                                            <td class="col-left"><h:outputText value="#{scc.staff.codeInterger}" /></td>
+                                            <td class="col-left"><h:outputText value="#{scc.staff.epfNo}" /></td>
+                                            <td class="col-left">
                                                 <h:outputText value="#{scc.staff.dateJoined}">
                                                     <f:convertDateTime pattern="dd MM yy" />
                                                 </h:outputText>
                                             </td>
-                                            <td><h:outputText value="#{scc.staff.person.name}" /></td>
-                                            <td><h:outputText value="#{scc.staff.roster.name}" /></td>
+                                            <td class="col-name"><h:outputText value="#{scc.staff.person.name}" /></td>
+                                            <td class="col-left"><h:outputText value="#{scc.staff.roster.name}" /></td>
                                             <td><h:outputText value="#{scc.basicValue}"><f:convertNumber pattern="#,##0.00" /></h:outputText></td>
                                             <td><h:outputText value="#{scc.merchantileAllowanceValue}"><f:convertNumber pattern="#,##0.00" /></h:outputText></td>
                                             <td><h:outputText value="#{scc.poyaAllowanceValue}"><f:convertNumber pattern="#,##0.00" /></h:outputText></td>
@@ -401,7 +390,7 @@
                                     </ui:repeat>
 
                                     <tr class="totals-row">
-                                        <td colspan="5">Total</td>
+                                        <td colspan="5" class="col-left">Total</td>
                                         <td><h:outputText value="#{salaryCycleController.basicVal}"><f:convertNumber pattern="#,##0.00" /></h:outputText></td>
                                         <td><h:outputText value="#{salaryCycleController.mercAll}"><f:convertNumber pattern="#,##0.00" /></h:outputText></td>
                                         <td><h:outputText value="#{salaryCycleController.poyaAll}"><f:convertNumber pattern="#,##0.00" /></h:outputText></td>
