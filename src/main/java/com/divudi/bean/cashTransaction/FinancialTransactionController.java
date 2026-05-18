@@ -8326,6 +8326,12 @@ public class FinancialTransactionController implements Serializable {
         currentBill.setFromStaff(sessionController.getLoggedUser().getStaff());
         currentBill.setFromWebUser(sessionController.getLoggedUser());
 
+        String deptId = billNumberGenerator.departmentBillNumberGeneratorYearly(
+                sessionController.getDepartment(),
+                BillTypeAtomic.FUND_SHIFT_SHORTAGE_BILL);
+        currentBill.setDeptId(deptId);
+        currentBill.setInsId(deptId);
+
         try {
             billController.save(currentBill);  // Save the bill
             // Save each payment linked to this bill
@@ -8374,6 +8380,12 @@ public class FinancialTransactionController implements Serializable {
         currentBill.setFromInstitution(sessionController.getInstitution());
         currentBill.setFromStaff(sessionController.getLoggedUser().getStaff());
         currentBill.setFromWebUser(sessionController.getLoggedUser());
+
+        String deptId = billNumberGenerator.departmentBillNumberGeneratorYearly(
+                sessionController.getDepartment(),
+                BillTypeAtomic.FUND_SHIFT_SHORTAGE_BILL);
+        currentBill.setDeptId(deptId);
+        currentBill.setInsId(deptId);
 
         try {
             billController.save(currentBill);
