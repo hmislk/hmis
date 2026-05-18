@@ -8678,6 +8678,18 @@ public class FinancialTransactionController implements Serializable {
             JsfUtil.addErrorMessage("Cannot cancel a shortage bill that already has settlements.");
             return "";
         }
+        // Block cancellation once the shortage bill's payments have been included
+        // in a handover (handingOverStarted=true). This covers both pending
+        // handovers (created but not yet accepted) and completed handovers
+        // (already accepted). Allowing cancellation after handover would cause
+        // the handover totals to become inconsistent.
+        List<Payment> shortageBillPayments = findPaymentsForBill(freshBill);
+        boolean includedInHandover = shortageBillPayments.stream()
+                .anyMatch(Payment::isHandingOverStarted);
+        if (includedInHandover) {
+            JsfUtil.addErrorMessage("Cannot cancel a shortage bill that is already included in a handover.");
+            return "";
+        }
         if (freshBill.getFromWebUser() == null
                 || !freshBill.getFromWebUser().getId().equals(sessionController.getLoggedUser().getId())) {
             JsfUtil.addErrorMessage("You can only cancel your own shortage bills.");
