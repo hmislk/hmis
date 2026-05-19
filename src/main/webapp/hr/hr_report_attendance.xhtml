@@ -367,15 +367,19 @@
                     </p:column>
 
                     <p:column headerText="In" styleClass="col-text">
-                        <h:outputLabel value="#{ss.startRecord.recordTimeStamp}">
+                        <h:outputText value="#{ss.startRecord.recordTimeStamp}"
+                                    rendered="#{not empty ss.startRecord}">
                             <f:convertDateTime pattern="dd/MM/yy HH:mm:ss" />
-                        </h:outputLabel>
+                        </h:outputText>
+                        <h:outputText value="-" rendered="#{empty ss.startRecord}" />
                     </p:column>
 
                     <p:column headerText="Out" styleClass="col-text">
-                        <h:outputLabel value="#{ss.endRecord.recordTimeStamp}">
+                        <h:outputText value="#{ss.endRecord.recordTimeStamp}"
+                                    rendered="#{not empty ss.endRecord}">
                             <f:convertDateTime pattern="dd/MM/yy HH:mm:ss" />
-                        </h:outputLabel>
+                        </h:outputText>
+                        <h:outputText value="-" rendered="#{empty ss.endRecord}" />
                     </p:column>
 
                     <p:column headerText="Within shift (hrs)" styleClass="col-num">
