@@ -8326,6 +8326,12 @@ public class FinancialTransactionController implements Serializable {
         currentBill.setFromStaff(sessionController.getLoggedUser().getStaff());
         currentBill.setFromWebUser(sessionController.getLoggedUser());
 
+        String deptId = billNumberGenerator.departmentBillNumberGeneratorYearly(
+                sessionController.getDepartment(),
+                BillTypeAtomic.FUND_SHIFT_SHORTAGE_BILL);
+        currentBill.setDeptId(deptId);
+        currentBill.setInsId(deptId);
+
         try {
             billController.save(currentBill);  // Save the bill
             // Save each payment linked to this bill
@@ -8374,6 +8380,12 @@ public class FinancialTransactionController implements Serializable {
         currentBill.setFromInstitution(sessionController.getInstitution());
         currentBill.setFromStaff(sessionController.getLoggedUser().getStaff());
         currentBill.setFromWebUser(sessionController.getLoggedUser());
+
+        String deptId = billNumberGenerator.departmentBillNumberGeneratorYearly(
+                sessionController.getDepartment(),
+                BillTypeAtomic.FUND_SHIFT_SHORTAGE_BILL);
+        currentBill.setDeptId(deptId);
+        currentBill.setInsId(deptId);
 
         try {
             billController.save(currentBill);
@@ -8664,6 +8676,18 @@ public class FinancialTransactionController implements Serializable {
         computeShortageSettlementSummary(freshBill);
         if (shortageSettledSoFar > 0.001) {
             JsfUtil.addErrorMessage("Cannot cancel a shortage bill that already has settlements.");
+            return "";
+        }
+        // Block cancellation once the shortage bill's payments have been included
+        // in a handover (handingOverStarted=true). This covers both pending
+        // handovers (created but not yet accepted) and completed handovers
+        // (already accepted). Allowing cancellation after handover would cause
+        // the handover totals to become inconsistent.
+        List<Payment> shortageBillPayments = findPaymentsForBill(freshBill);
+        boolean includedInHandover = shortageBillPayments.stream()
+                .anyMatch(Payment::isHandingOverStarted);
+        if (includedInHandover) {
+            JsfUtil.addErrorMessage("Cannot cancel a shortage bill that is already included in a handover.");
             return "";
         }
         if (freshBill.getFromWebUser() == null
