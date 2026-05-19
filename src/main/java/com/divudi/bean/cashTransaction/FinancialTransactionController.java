@@ -1896,9 +1896,17 @@ public class FinancialTransactionController implements Serializable {
             }
 
             childBundle.calculateTotalsByPaymentsAndDenominations();
-            // Shortage component bills have negative cash — mark them so the accept page
-            // can display the "Shift Shortage" label in the Institution/Type column.
-            if (childBundle.getCashValue() < -0.001) {
+            // Mark shortage-related component bills so the accept page displays the
+            // "Shift Shortage" label in the Institution/Type column.  The sign-only
+            // check misses two cases: (a) a cancellation-only row (positive cashValue)
+            // and (b) a merged row where the original shortage and its same-day
+            // cancellation net to zero.  Checking the bill type of any linked payment
+            // covers all three cases reliably.
+            boolean isShortageRelated = payments != null && payments.stream().anyMatch(p ->
+                    p.getBill() != null && (
+                            p.getBill().getBillTypeAtomic() == BillTypeAtomic.FUND_SHIFT_SHORTAGE_BILL
+                            || p.getBill().getBillTypeAtomic() == BillTypeAtomic.FUND_SHIFT_SHORTAGE_BILL_CANCELLED));
+            if (childBundle.getCashValue() < -0.001 || isShortageRelated) {
                 childBundle.setPaymentHandover(PaymentHandover.FLOATS);
             }
             bundle.getBundles().add(childBundle);
@@ -2028,9 +2036,17 @@ public class FinancialTransactionController implements Serializable {
             }
 
             childBundle.calculateTotalsByPaymentsAndDenominations();
-            // Shortage component bills have negative cash — mark them so the reprint
-            // composite can display the "Shift Shortage" label in Institution/Type column.
-            if (childBundle.getCashValue() < -0.001) {
+            // Mark shortage-related component bills so the reprint composite displays
+            // the "Shift Shortage" label in the Institution/Type column.  The sign-only
+            // check misses two cases: (a) a cancellation-only row (positive cashValue)
+            // and (b) a merged row where the original shortage and its same-day
+            // cancellation net to zero.  Checking the bill type of any linked payment
+            // covers all three cases reliably.
+            boolean isShortageRelated = payments != null && payments.stream().anyMatch(p ->
+                    p.getBill() != null && (
+                            p.getBill().getBillTypeAtomic() == BillTypeAtomic.FUND_SHIFT_SHORTAGE_BILL
+                            || p.getBill().getBillTypeAtomic() == BillTypeAtomic.FUND_SHIFT_SHORTAGE_BILL_CANCELLED));
+            if (childBundle.getCashValue() < -0.001 || isShortageRelated) {
                 childBundle.setPaymentHandover(PaymentHandover.FLOATS);
             }
             bundle.getBundles().add(childBundle);
@@ -4586,6 +4602,12 @@ public class FinancialTransactionController implements Serializable {
 
     public String navigateToViewIndividualShiftForHandover(ReportTemplateRowBundle childBundle) {
         selectedBundle = childBundle;
+        if (selectedBundle.isFloatRow()
+                && selectedBundle.getReportTemplateRows().isEmpty()
+                && bundle != null
+                && !bundle.getReportTemplateRows().isEmpty()) {
+            selectedBundle.getReportTemplateRows().addAll(bundle.getReportTemplateRows());
+        }
         return "/cashier/handover_accept_row_detail?faces-redirect=true";
     }
 
@@ -8304,6 +8326,12 @@ public class FinancialTransactionController implements Serializable {
         currentBill.setFromStaff(sessionController.getLoggedUser().getStaff());
         currentBill.setFromWebUser(sessionController.getLoggedUser());
 
+        String deptId = billNumberGenerator.departmentBillNumberGeneratorYearly(
+                sessionController.getDepartment(),
+                BillTypeAtomic.FUND_SHIFT_SHORTAGE_BILL);
+        currentBill.setDeptId(deptId);
+        currentBill.setInsId(deptId);
+
         try {
             billController.save(currentBill);  // Save the bill
             // Save each payment linked to this bill
@@ -8352,6 +8380,12 @@ public class FinancialTransactionController implements Serializable {
         currentBill.setFromInstitution(sessionController.getInstitution());
         currentBill.setFromStaff(sessionController.getLoggedUser().getStaff());
         currentBill.setFromWebUser(sessionController.getLoggedUser());
+
+        String deptId = billNumberGenerator.departmentBillNumberGeneratorYearly(
+                sessionController.getDepartment(),
+                BillTypeAtomic.FUND_SHIFT_SHORTAGE_BILL);
+        currentBill.setDeptId(deptId);
+        currentBill.setInsId(deptId);
 
         try {
             billController.save(currentBill);
@@ -8642,6 +8676,18 @@ public class FinancialTransactionController implements Serializable {
         computeShortageSettlementSummary(freshBill);
         if (shortageSettledSoFar > 0.001) {
             JsfUtil.addErrorMessage("Cannot cancel a shortage bill that already has settlements.");
+            return "";
+        }
+        // Block cancellation once the shortage bill's payments have been included
+        // in a handover — either pending (handingOverStarted=true) or already
+        // accepted/completed (handingOverCompleted=true, handingOverStarted cleared
+        // to false by settleHandoverAcceptBill). Allowing cancellation after either
+        // state would cause handover totals to become inconsistent.
+        List<Payment> shortageBillPayments = findPaymentsForBill(freshBill);
+        boolean includedInHandover = shortageBillPayments.stream()
+                .anyMatch(p -> p.isHandingOverStarted() || p.isHandingOverCompleted());
+        if (includedInHandover) {
+            JsfUtil.addErrorMessage("Cannot cancel a shortage bill that is already included in a handover.");
             return "";
         }
         if (freshBill.getFromWebUser() == null

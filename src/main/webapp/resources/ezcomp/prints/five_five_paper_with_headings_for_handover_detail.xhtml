@@ -471,6 +471,57 @@
 
                 </p:dataTable>
 
+                <!-- Shortage transactions — individual shortage/cancellation bills -->
+                <ui:repeat value="#{cc.attrs.bundle.selectedBundles}" var="shortageBundle">
+                    <h:panelGroup rendered="#{shortageBundle.paymentHandover ne null and shortageBundle.paymentHandover.name() eq 'FLOATS' and not empty shortageBundle.reportTemplateRows}">
+                        <hr/>
+                        <div style="font-weight: bold; margin: 8px 0 4px 0;">Shortage Transactions</div>
+                        <table class="table table-bordered table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Date / Time</th>
+                                    <th>Bill Type</th>
+                                    <th>Bill Number</th>
+                                    <th class="text-end">Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <ui:repeat value="#{shortageBundle.reportTemplateRows}" var="shortageRow">
+                                    <tr>
+                                        <td>
+                                            <h:outputText value="#{shortageRow.payment.createdAt}">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                            </h:outputText>
+                                        </td>
+                                        <td>
+                                            <h:outputText
+                                                value="Shift Shortage"
+                                                rendered="#{shortageRow.payment.bill.billTypeAtomic ne null and shortageRow.payment.bill.billTypeAtomic.name() eq 'FUND_SHIFT_SHORTAGE_BILL'}"
+                                                style="color: #dc3545; font-weight: bold;" />
+                                            <h:outputText
+                                                value="Shortage Cancellation"
+                                                rendered="#{shortageRow.payment.bill.billTypeAtomic ne null and shortageRow.payment.bill.billTypeAtomic.name() eq 'FUND_SHIFT_SHORTAGE_BILL_CANCELLED'}"
+                                                style="color: green; font-weight: bold;" />
+                                        </td>
+                                        <td>
+                                            <h:outputText value="#{shortageRow.payment.bill.deptId}"
+                                                rendered="#{not empty shortageRow.payment.bill.deptId}" />
+                                            <h:outputText value="Bill Number not recorded"
+                                                rendered="#{empty shortageRow.payment.bill.deptId}"
+                                                style="color: #999; font-style: italic;" />
+                                        </td>
+                                        <td class="text-end">
+                                            <h:outputText value="#{shortageRow.payment.paidValue}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </td>
+                                    </tr>
+                                </ui:repeat>
+                            </tbody>
+                        </table>
+                    </h:panelGroup>
+                </ui:repeat>
+
                 <!-- Float transactions — individual rows from reportTemplateRows -->
                 <h:panelGroup rendered="#{not empty cc.attrs.bundle.reportTemplateRows}">
                     <hr/>
@@ -516,7 +567,7 @@
                                         </h:outputText>
                                     </td>
                                     <td>
-                                        <h:outputText value="#{floatRow.payment.comments}" />
+                                        <h:outputText value="#{floatRow.payment.bill.comments}" />
                                     </td>
                                 </tr>
                             </ui:repeat>

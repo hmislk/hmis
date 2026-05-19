@@ -692,6 +692,8 @@ public enum Privileges {
     AdminStaff("Admin Staff"),
     AdminItems("Admin Items"),
     AdminPrices("Admin Prices"),
+    AdminPatientRelationships("Manage Patient Relationships"),
+    AdminInactivePatients("Manage Inactive Patients"),
     ManageCreditCompany("Manage Credit Company"),
     AdminFilterWithoutDepartment("Admin Filter Without Department"),
     //</editor-fold>
@@ -1052,6 +1054,9 @@ public enum Privileges {
             case InpatientClinicalAssessment:
             case InpatientClinicalDischarge:
                 return "Inward";
+
+            case AdminInactivePatients:
+                return "Admin";
 
             default:
                 return this.toString();

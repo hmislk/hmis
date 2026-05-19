@@ -53,7 +53,9 @@ SET @size_sql = CONCAT(
     'FROM INFORMATION_SCHEMA.TABLES ',
     'WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME IN (''', @pbi_table, ''',''', @bi_table, ''')'
 );
-PREPARE stmt FROM @size_sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+PREPARE stmt FROM @size_sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
 
 SELECT COUNT(*) AS pbi_existing_idx FROM INFORMATION_SCHEMA.STATISTICS
 WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @pbi_table;
@@ -75,7 +77,9 @@ SET @sql = IF(@pbi_table IS NULL OR @idx_exists > 0,
     'SELECT "SKIPPED: table not found or index already exists" AS status',
     CONCAT('CREATE INDEX idx_pbi_createdat_retired ON ', @pbi_table, '(CREATEDAT, RETIRED)')
 );
-PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
 
 SET @idx_exists = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.STATISTICS
     WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @pbi_table AND INDEX_NAME = 'idx_pbi_createdat_retired');
@@ -97,7 +101,9 @@ SET @sql = IF(@pbi_table IS NULL OR @idx_exists > 0,
     'SELECT "SKIPPED: table not found or index already exists" AS status',
     CONCAT('CREATE INDEX idx_pbi_stock_createdat ON ', @pbi_table, '(STOCK_ID, CREATEDAT, RETIRED)')
 );
-PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
 
 SET @idx_exists = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.STATISTICS
     WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @pbi_table AND INDEX_NAME = 'idx_pbi_stock_createdat');
@@ -119,7 +125,9 @@ SET @sql = IF(@pbi_table IS NULL OR @idx_exists > 0,
     'SELECT "SKIPPED: table not found or index already exists" AS status',
     CONCAT('CREATE INDEX idx_pbi_batch_createdat ON ', @pbi_table, '(ITEMBATCH_ID, CREATEDAT, RETIRED)')
 );
-PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
 
 SET @idx_exists = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.STATISTICS
     WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @pbi_table AND INDEX_NAME = 'idx_pbi_batch_createdat');
@@ -142,7 +150,9 @@ SET @sql = IF(@bi_table IS NULL OR @idx_exists = 0,
     'SELECT "SKIPPED: table not found or index already absent" AS status',
     CONCAT('ALTER TABLE ', @bi_table, ' DROP INDEX BILLITEM_BILLITEMSTATUS_idx')
 );
-PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
 
 SET @idx_gone = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.STATISTICS
     WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @bi_table AND INDEX_NAME = 'BILLITEM_BILLITEMSTATUS_idx');
