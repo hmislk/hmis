@@ -1803,6 +1803,33 @@ public class CashBookEntryController implements Serializable {
 
     }
 
+    public void writeCashBookEntryAtBankDeposit(Payment p, CashBook cb, Bill depositBill) {
+        if (p == null) {
+            JsfUtil.addErrorMessage("Cashbook Entry Error !");
+            return;
+        }
+        if (cb == null) {
+            JsfUtil.addErrorMessage("Cashbook Entry Error - No cashbook selected!");
+            return;
+        }
+        CashBookEntry newCbEntry = new CashBookEntry();
+        newCbEntry.setInstitution(p.getInstitution());
+        newCbEntry.setDepartment(cb.getDepartment());
+        newCbEntry.setSite(cb.getSite());
+        newCbEntry.setCreater(sessionController.getLoggedUser());
+        newCbEntry.setCreatedAt(new Date());
+        newCbEntry.setPaymentMethod(p.getPaymentMethod());
+        newCbEntry.setEntryValue(p.getPaidValue());
+        newCbEntry.setPayment(p);
+        newCbEntry.setBill(depositBill);
+        newCbEntry.setCashBook(cb);
+        updateBalances(p.getPaymentMethod(), p.getPaidValue(), newCbEntry);
+        p.setCashbook(cb);
+        p.setCashbookEntry(newCbEntry);
+        paymentFacade.edit(p);
+        cashbookEntryFacade.create(newCbEntry);
+    }
+
     public void updateBalances(PaymentMethod pm, Double Value, CashBookEntry cbe) {
         Map m = new HashMap<>();
         String jpql = "Select cbe from CashBookEntry cbe where "

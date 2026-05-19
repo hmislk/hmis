@@ -209,6 +209,72 @@ public class PharmacyService {
         return "";
     }
 
+    /**
+     * Allergy check that takes an {@link Item} directly, for callers that do not
+     * have a {@link BillItem} available (e.g. native-SQL retail sale flow).
+     * Uses the same VTM-hierarchy traversal as {@link #getAllergyMessageForPatient}.
+     */
+    public String getAllergyMessageForItem(Patient patient, Item item, List<ClinicalFindingValue> allergyListOfPatient) {
+        if (item == null) {
+            return "";
+        }
+        if (allergyListOfPatient == null || allergyListOfPatient.isEmpty()) {
+            allergyListOfPatient = getAllergyListForPatient(patient);
+        }
+        if (allergyListOfPatient.isEmpty()) {
+            return "";
+        }
+
+        Amp amp = null;
+        Vmp vmp = null;
+        if (item instanceof Ampp) {
+            amp = ((Ampp) item).getAmp();
+        } else if (item instanceof Amp) {
+            amp = (Amp) item;
+        } else if (item instanceof Vmp) {
+            vmp = (Vmp) item;
+        }
+
+        Atm atm = null;
+        Vtm vtm = null;
+        if (amp != null) {
+            atm = amp.getAtm();
+            vmp = amp.getVmp();
+        } else if (vmp != null) {
+            vtm = (Vtm) vmp.getVtm();
+        }
+        if (atm != null && vtm == null) {
+            vtm = (Vtm) atm.getVtm();
+        }
+        if (vtm == null && vmp != null) {
+            vtm = (Vtm) vmp.getVtm();
+        }
+        if (vtm == null) {
+            vtm = (Vtm) item.getVtm();
+        }
+
+        for (ClinicalFindingValue c : allergyListOfPatient) {
+            if (c.getItemValue() == null) continue;
+            Item allergyItem = c.getItemValue();
+            Vtm allergyVtm = null;
+            if (allergyItem instanceof Vtm) {
+                allergyVtm = (Vtm) allergyItem;
+            } else if (allergyItem instanceof Amp) {
+                allergyVtm = allergyItem.getVmp() != null ? (Vtm) allergyItem.getVmp().getVtm() : (Vtm) allergyItem.getVtm();
+            } else if (allergyItem instanceof Vmp) {
+                allergyVtm = (Vtm) allergyItem.getVtm();
+            } else if (allergyItem instanceof Atm) {
+                allergyVtm = (Vtm) allergyItem.getVtm();
+            } else {
+                allergyVtm = (Vtm) allergyItem.getVtm();
+            }
+            if (vtm != null && allergyVtm != null && vtm.equals(allergyVtm)) {
+                return item.getName() + " is not allowed as patient has allergic to " + allergyVtm.getName();
+            }
+        }
+        return "";
+    }
+
     public void addBillItemInstructions(BillItem billItem) {
         if (billItem == null) {
             return;

@@ -761,19 +761,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         ));
 
         // Patient Management and Security Configurations
-        metadata.addConfigOption(new ConfigOptionInfo(
-                "Enable blacklist patient management in the system",
-                "Enables global blacklist functionality for patients across the entire system",
-                "OpdBillController.java line 3022: Global blacklist check in settleOpdBill()",
-                OptionScope.APPLICATION
-        ));
-
-        metadata.addConfigOption(new ConfigOptionInfo(
-                "Enable blacklist patient management for OPD from the system",
-                "Enables blacklist validation specifically for OPD billing to prevent billing blacklisted patients",
-                "OpdBillController.java line 3023: OPD-specific blacklist check in settleOpdBill()",
-                OptionScope.APPLICATION
-        ));
 
         // Item Listing Strategy Configuration
         metadata.addConfigOption(new ConfigOptionInfo(
@@ -2149,6 +2136,9 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             if (getPatient().getPhn() == null || getPatient().getPhn().trim().equals("")) {
                 getPatient().setPhn(applicationController.createNewPersonalHealthNumber(getSessionController().getInstitution()));
             }
+            
+            getPatient().getPerson().setForeigner(true);
+            
 
             getPatient().setCreatedInstitution(getSessionController().getInstitution());
             getPatient().setCreater(getSessionController().getLoggedUser());
@@ -3224,12 +3214,9 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             return true;
         }
 
-        if (configOptionApplicationController.getBooleanValueByKey("Enable blacklist patient management in the system", false)
-                && configOptionApplicationController.getBooleanValueByKey("Enable blacklist patient management for OPD from the system", false)) {
-            if (getPatient().isBlacklisted()) {
-                JsfUtil.addErrorMessage("This patient is blacklisted from the system. Can't Bill.");
-                return true;
-            }
+        if (getPatient().isBlacklisted()) {
+            JsfUtil.addErrorMessage("This patient is blacklisted from the system. Can't Bill.");
+            return true;
         }
 
         if (getPatient().getPerson() == null) {
@@ -3925,7 +3912,9 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         if (paymentMethod == null) {
             return;
         }
-
+        
+        foreigner = getPatient().getPerson().isForeigner();
+        
         double billDiscount = 0.0;
         double billGross = 0.0;
         double billNet = 0.0;
@@ -3944,19 +3933,26 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 
                 boolean needToAdd = billFeeIsThereAsSelectedInBillFeeBundle(bf);
                 if (needToAdd) {
-
+                    Institution creditCompany = null;
                     Department department = null;
                     Item item = null;
-                    PriceMatrix priceMatrix;
+                    PriceMatrix priceMatrix = null;
                     Category category = null;
 
                     if (bf.getBillItem() != null && bf.getBillItem().getItem() != null) {
                         department = bf.getBillItem().getItem().getDepartment();
-
                         item = bf.getBillItem().getItem();
                     }
 
-                    priceMatrix = getPriceMatrixController().getPaymentSchemeDiscount(paymentMethod, paymentScheme, department, item);
+                    if(paymentMethod == PaymentMethod.Credit){
+                        if(paymentMethodData != null && paymentMethodData.getCredit() != null && paymentMethodData.getCredit().getInstitution() != null){
+                            creditCompany = paymentMethodData.getCredit().getInstitution();
+                            priceMatrix = getPriceMatrixController().getPaymentSchemeDiscount(paymentMethod, paymentScheme, creditCompany, item);
+                        }
+                    }else{
+                        priceMatrix = getPriceMatrixController().getPaymentSchemeDiscount(paymentMethod, paymentScheme, department, item);
+                    }
+                        
                     getBillBean().setBillFees(bf, isForeigner(), paymentMethod, paymentScheme, getCreditCompany(), priceMatrix);
 
                     if (bf.getBillItem().getItem().isVatable()) {
@@ -4030,12 +4026,20 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     }
 
     public void markAsForeigner() {
-        setForeigner(true);
+        if(patient == null){
+            JsfUtil.addErrorMessage("Need to Add Patient first ..! ");
+            return;
+        }
+        getPatient().getPerson().setForeigner(true);
         calTotals();
     }
 
     public void markAsLocal() {
-        setForeigner(false);
+        if(patient == null){
+            JsfUtil.addErrorMessage("Need to Add Patient first ..! ");
+            return;
+        }
+        getPatient().getPerson().setForeigner(false);
         calTotals();
     }
 

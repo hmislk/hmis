@@ -13,7 +13,7 @@
 
             <ui:define name="subcontent">
 
-                <p:panel header="Discount Scheme for Credit Company">
+                <p:panel header="Discount Scheme for Credit Company (Category)">
                     <h:form>
 
 
@@ -118,7 +118,7 @@
                                         styleClass="ui-button-success fw-bold px-4"
                                         style="min-width: 160px; height: 42px; letter-spacing: 0.5px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"
                                         icon="fa fa-save"
-                                        action="#{opdMemberShipDiscountController.saveSelectedCreditCompany()}">
+                                        action="#{opdMemberShipDiscountController.saveCategoryForSelectedCreditCompany()}">
                                     </p:commandButton>
                                 </div>
                             </div>
@@ -164,7 +164,7 @@
                                     icon="fas fa-sync"
                                     style="width: 8em;"
                                     title="Auto-fill matrix entries for the selected scheme"
-                                    action="#{opdMemberShipDiscountController.createItemsCreditCompanyOpdPaymentScheme()}" >
+                                    action="#{opdMemberShipDiscountController.fillCreditCompanyPaymentSchemeForCategory()}" >
                                 </p:commandButton>
 
                             </div>
@@ -198,6 +198,9 @@
                                         inputStyleClass="w-100"
                                         itemLabel="#{mem.name}" 
                                         itemValue="#{mem}" >
+                                        <p:column headerText="Payment Scheme" style="padding: 6px;">
+                                            <h:outputLabel value="#{mem.name}"/>
+                                        </p:column>
                                     </p:autoComplete>
                                 </p:column>
 
@@ -223,7 +226,7 @@
                                         inputStyleClass="w-100"
                                         itemLabel="#{cat.name}" 
                                         itemValue="#{cat}" >
-                                        <p:column>
+                                        <p:column headerText="Category" style="padding: 6px;">
                                             <h:outputLabel value="#{cat.name}"/>
                                         </p:column>
                                     </p:autoComplete>
@@ -260,7 +263,7 @@
                                             styleClass="ui-button-danger"
                                             title="Delete this discount entry"
                                             onclick="return confirm('Delete this discount entry? This cannot be undone.');"
-                                            action="#{opdMemberShipDiscountController.deleteCreditCompanyOpdPaymentScheme}">
+                                            action="#{opdMemberShipDiscountController.deleteCreditCompanyPaymentSchemeforCategory}">
                                             <f:setPropertyActionListener value="#{a}" target="#{opdMemberShipDiscountController.current}"/>
                                         </p:commandButton>
                                     </div>

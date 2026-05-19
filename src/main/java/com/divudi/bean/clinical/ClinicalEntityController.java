@@ -48,9 +48,57 @@ public class ClinicalEntityController implements Serializable {
     private List<ClinicalEntity> items = null;
     String selectText = "";
     Department department;
+    private SymanticType filterSymanticType;
 
     public String navigateToManageClinicalEntities() {
+        filterSymanticType = null;
+        items = null;
+        current = null;
         return "/emr/admin/clinical_entities?faces-redirect=true";
+    }
+
+    public String navigateToManageBloodGroups() {
+        filterSymanticType = SymanticType.Blood_Group;
+        items = null;
+        current = null;
+        return "/emr/admin/clinical_entities?faces-redirect=true";
+    }
+
+    public String navigateToManageCivilStatuses() {
+        filterSymanticType = SymanticType.Civil_status;
+        items = null;
+        current = null;
+        return "/emr/admin/clinical_entities?faces-redirect=true";
+    }
+
+    public String navigateToManageOccupations() {
+        filterSymanticType = SymanticType.Employment;
+        items = null;
+        current = null;
+        return "/emr/admin/clinical_entities?faces-redirect=true";
+    }
+
+    public String navigateToManageRaces() {
+        filterSymanticType = SymanticType.Race;
+        items = null;
+        current = null;
+        return "/emr/admin/clinical_entities?faces-redirect=true";
+    }
+
+    public String navigateToManageReligions() {
+        filterSymanticType = SymanticType.Religion;
+        items = null;
+        current = null;
+        return "/emr/admin/clinical_entities?faces-redirect=true";
+    }
+
+    public SymanticType getFilterSymanticType() {
+        return filterSymanticType;
+    }
+
+    public void setFilterSymanticType(SymanticType filterSymanticType) {
+        this.filterSymanticType = filterSymanticType;
+        items = null;
     }
 
     public String navigateToMangeSurgeries() {
@@ -129,7 +177,9 @@ public class ClinicalEntityController implements Serializable {
 
     public void prepareAdd() {
         current = new ClinicalEntity();
-        //TODO:
+        if (filterSymanticType != null) {
+            current.setSymanticType(filterSymanticType);
+        }
     }
 
     public void setSelectedItems(List<ClinicalEntity> selectedItems) {
@@ -217,11 +267,15 @@ public class ClinicalEntityController implements Serializable {
         if (items == null) {
             Map m = new HashMap();
             String sql;
-            sql = "select c from ClinicalEntity c where c.retired=false order by c.name";
+            if (filterSymanticType != null) {
+                sql = "select c from ClinicalEntity c where c.retired=false and c.symanticType=:t order by c.name";
+                m.put("t", filterSymanticType);
+            } else {
+                sql = "select c from ClinicalEntity c where c.retired=false order by c.name";
+            }
             items = getFacade().findByJpql(sql, m);
         }
         return items;
-
     }
 
     /**

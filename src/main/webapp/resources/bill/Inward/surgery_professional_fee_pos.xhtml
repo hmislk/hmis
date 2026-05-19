@@ -46,7 +46,7 @@
                     <tr>
                         <td style="width: 35%;"><h:outputLabel value="Patient"/></td>
                         <td style="width: 5%;">:</td>
-                        <td><h:outputLabel value="#{cc.attrs.bill.patient.person.nameWithTitle}"/></td>
+                        <td><h:outputLabel value="#{empty cc.attrs.bill.patient ? cc.attrs.bill.patientEncounter.patient.person.nameWithTitle : cc.attrs.bill.patient.person.nameWithTitle}"/></td>
                     </tr>
                     <tr>
                         <td><h:outputLabel value="BHT No"/></td>

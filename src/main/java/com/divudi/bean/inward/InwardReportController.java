@@ -9,12 +9,18 @@ import com.divudi.bean.common.SessionController;
 
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.EncounterType;
 import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.PaymentType;
 import com.divudi.core.data.Sex;
+import com.divudi.core.data.ReportTemplateRow;
+import com.divudi.core.data.ReportTemplateRowBundle;
+import com.divudi.core.data.ServiceType;
 import com.divudi.core.data.dto.InwardAdmissionDTO;
 import com.divudi.core.data.dto.InwardAdmissionDemographicDataDTO;
 import com.divudi.core.data.dto.InwardIncomeDoctorSpecialtyDTO;
+import com.divudi.core.data.dto.IpIncomeCategoryWiseRowDTO;
 import com.divudi.core.data.dto.MonthServiceCountDTO;
 import com.divudi.core.data.dto.MonthlySurgeryCountDTO;
 import com.divudi.core.data.dto.IpUnsettledInvoiceDTO;
@@ -56,6 +62,7 @@ import com.divudi.core.facade.PatientEncounterFacade;
 import com.divudi.core.facade.PatientInvestigationFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.util.JsfUtil;
+import com.divudi.bean.common.EnumController;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -68,6 +75,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
@@ -173,6 +181,8 @@ public class InwardReportController implements Serializable {
     BhtSummeryController bhtSummeryController;
     @Inject
     InwardBeanController inwardBeanController;
+    @Inject
+    EnumController enumController;
 
     PaymentMethod paymentMethod;
     AdmissionType admissionType;
@@ -234,6 +244,14 @@ public class InwardReportController implements Serializable {
 
     // Surgery Survey Report
     private String reportType;
+    private String visitType;
+    private String paymentType;
+    private Category category;
+    private List<RoomCategory> roomCategories;
+    private boolean withProfessionalFee;
+    private double ipIncomeTotalSponsorPay;
+    private double ipIncomeTotalPatientPay;
+    private ReportTemplateRowBundle bundle;
     private SurgeryType surgeryType;
     private List<MonthlySurgeryCountDTO> monthlySurgeryCountList;
     private List<String> surgeryHeaders;
@@ -275,6 +293,11 @@ public class InwardReportController implements Serializable {
 
     private Date admissionReportProcessedAt;
     private String admissionReportProcessedBy;
+    private double ipIncomeCashTotal;
+    private double ipIncomeCreditTotal;
+
+    private List<Map<String, Object>> ipIncomeBillDiscounts;
+    private double ipIncomeTotalBillDiscount;
 
     public List<PatientEncounter> getPatientEncounters() {
         return patientEncounters;
@@ -346,6 +369,456 @@ public class InwardReportController implements Serializable {
     }
 
     private List<SurgeryCountDoctorWiseDTO> billList;
+
+    public void createIpIncomeCategoryWiseReport() {
+        if (reportType == null || reportType.trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Please select a report type");
+            return;
+        }
+        bundle = generateIpIncomeCategoryWiseReport();
+    }
+
+    public ReportTemplateRowBundle generateIpIncomeCategoryWiseReport() {
+        ReportTemplateRowBundle rtrb = new ReportTemplateRowBundle();
+
+        if (visitType == null || visitType.trim().isEmpty()) {
+            visitType = "Any";
+        }
+        if (paymentType == null || paymentType.trim().isEmpty()) {
+            paymentType = "Any";
+        }
+
+        List<BillTypeAtomic> btasOP = new ArrayList<>();
+        List<BillTypeAtomic> btasIP = new ArrayList<>();
+
+        if ("IP".equals(visitType)) {
+            btasIP.addAll(BillTypeAtomic.findByServiceType(ServiceType.INWARD_SERVICE));
+        }
+        if ("OP".equals(visitType)) {
+            btasOP.addAll(BillTypeAtomic.findByServiceType(ServiceType.OPD));
+        }
+        if ("Any".equals(visitType)) {
+            btasIP.addAll(BillTypeAtomic.findByServiceType(ServiceType.INWARD_SERVICE));
+            btasOP.addAll(BillTypeAtomic.findByServiceType(ServiceType.OPD));
+
+        }
+
+        if (withProfessionalFee) {
+            if ("IP".equals(visitType)) {
+                List<BillTypeAtomic> profBillTypes = Arrays.asList(
+                        BillTypeAtomic.INWARD_PROFESSIONAL_FEE_BILL,
+                        BillTypeAtomic.INWARD_PROFESSIONAL_FEE_BILL_CANCELLATION,
+                        BillTypeAtomic.INWARD_THEATRE_PROFESSIONAL_FEE_BILL,
+                        BillTypeAtomic.INWARD_THEATRE_PROFESSIONAL_FEE_BILL_CANCELLATION
+                );
+                btasIP.addAll(profBillTypes);
+            }
+            if ("OP".equals(visitType)) {
+                List<BillTypeAtomic> profBillTypes = Arrays.asList(
+                        BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES,
+                        BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES_RETURN);
+                btasOP.addAll(profBillTypes);
+            }
+            if ("Any".equals(visitType)) {
+                List<BillTypeAtomic> opProfBillTypes = Arrays.asList(
+                        BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES,
+                        BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES_RETURN
+                );
+                List<BillTypeAtomic> ipProfBillTypes = Arrays.asList(
+                        BillTypeAtomic.INWARD_PROFESSIONAL_FEE_BILL,
+                        BillTypeAtomic.INWARD_PROFESSIONAL_FEE_BILL_CANCELLATION,
+                        BillTypeAtomic.INWARD_THEATRE_PROFESSIONAL_FEE_BILL,
+                        BillTypeAtomic.INWARD_THEATRE_PROFESSIONAL_FEE_BILL_CANCELLATION
+                );
+                btasIP.addAll(ipProfBillTypes);
+                btasOP.addAll(opProfBillTypes);
+            }
+        }
+
+        List<IpIncomeCategoryWiseRowDTO> rows = findIpIncomeCategoryWiseRowsSingleQuery(btasOP, btasIP);
+
+        // ── Summarise ────────────────────────────────────────────────────────────
+        boolean includeItems = "detail".equalsIgnoreCase(reportType);
+        summarizeIpIncomeCategoryWiseRows(rtrb, rows, includeItems);
+
+        populateIpIncomeProfitMatrixAndBillDiscounts(rows);
+
+        rtrb.setName(includeItems
+                ? "IP Income Category Wise Report - Detail"
+                : "IP Income Category Wise Report - Summary");
+        rtrb.setBundleType(includeItems
+                ? "ip_income_category_wise_detail"
+                : "ip_income_category_wise_summary");
+
+        rtrb.getReportTemplateRows().forEach(rtr -> {
+            rtr.setInstitution(institution);
+            rtr.setDepartment(department);
+            rtr.setSite(site);
+            rtr.setFromDate(fromDate);
+            rtr.setToDate(toDate);
+        });
+
+        return rtrb;
+    }
+
+    private List<IpIncomeCategoryWiseRowDTO> findIpIncomeCategoryWiseRowsSingleQuery(List<BillTypeAtomic> btasOP, List<BillTypeAtomic> btasIP) {
+
+        List<PaymentMethod> creditPaymentMethods = enumController.getPaymentTypeOfPaymentMethods(PaymentType.CREDIT);
+        List<PaymentMethod> nonCreditPaymentMethods = enumController.getPaymentTypeOfPaymentMethods(PaymentType.NON_CREDIT);
+
+        StringBuilder jpql = new StringBuilder();
+        jpql.append("select new com.divudi.core.data.dto.IpIncomeCategoryWiseRowDTO("
+                + " b.id, b.billClassType, b.billType, b.discount, b.deptId,"
+                + " bi.grossValue, bi.hospitalFee, bi.discount, bi.staffFee, bi.netValue,"
+                + " i.id, i.name, c.id, c.name,"
+                + " pe.paymentMethod, b.paymentMethod"
+                + ")"
+                + " from BillItem bi"
+                + " join bi.bill b"
+                + " left join bi.item i"
+                + " left join i.category c"
+                + " left join b.patientEncounter pe"
+                + " where b.retired = :br"
+                + " and b.createdAt between :fd and :td ");
+
+        Map<String, Object> m = new HashMap<>();
+        m.put("br", false);
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+
+        switch (visitType) {
+            case "IP":
+                jpql.append(" and bi.bill.billTypeAtomic in :btas ");
+                m.put("btas", btasIP);
+
+                if (roomCategories != null && !roomCategories.isEmpty()) {
+                    jpql.append(" AND bi.bill.patientEncounter.currentPatientRoom.roomFacilityCharge.roomCategory IN :cat ");
+                    m.put("cat", roomCategories);
+                }
+                if (admissionTypes != null && !admissionTypes.isEmpty()) {
+                    jpql.append(" AND bi.bill.patientEncounter.admissionType IN :admTypes ");
+                    m.put("admTypes", admissionTypes);
+                }
+                if (paymentType != null && !paymentType.isEmpty() && !"Any".equalsIgnoreCase(paymentType)) {
+                    jpql.append(" and bi.bill.patientEncounter.paymentMethod in :pmIp ");
+                    m.put("pmIp", "Credit".equals(paymentType) ? creditPaymentMethods : nonCreditPaymentMethods);
+                }
+                break;
+            case "OP":
+                jpql.append(" and bi.bill.billTypeAtomic in :btas ");
+                m.put("btas", btasOP);
+
+                if (paymentType != null && !paymentType.isEmpty() && !"Any".equalsIgnoreCase(paymentType)) {
+                    jpql.append(" and bi.bill.paymentMethod in :pmOp ");
+                    m.put("pmOp", "Credit".equals(paymentType)
+                            ? creditPaymentMethods
+                            : nonCreditPaymentMethods);
+                }
+                break;
+            case "Any":
+                jpql.append(" and bi.bill.billTypeAtomic in :btas ");
+                List<BillTypeAtomic> all = new ArrayList<>();
+                all.addAll(btasIP);
+                all.addAll(btasOP);
+                m.put("btas", all);
+
+                if (roomCategories != null && !roomCategories.isEmpty()) {
+                    jpql.append(" AND bi.bill.patientEncounter.currentPatientRoom.roomFacilityCharge.roomCategory IN :cat ");
+                    m.put("cat", roomCategories);
+                }
+                if (admissionTypes != null && !admissionTypes.isEmpty()) {
+                    jpql.append(" AND bi.bill.patientEncounter.admissionType IN :admTypes ");
+                    m.put("admTypes", admissionTypes);
+                }
+                if (paymentType != null && !paymentType.isEmpty() && !"Any".equalsIgnoreCase(paymentType)) {
+                    jpql.append(" and bi.bill.patientEncounter.paymentMethod in :pmIp ");
+                    m.put("pmIp", "Credit".equals(paymentType) ? creditPaymentMethods : nonCreditPaymentMethods);
+                }
+                break;
+
+            default:
+                break;
+        }
+
+        if (department != null) {
+            jpql.append(" and bi.bill.department = :dep ");
+            m.put("dep", department);
+        }
+        if (institution != null) {
+            jpql.append(" and bi.bill.department.institution = :ins ");
+            m.put("ins", institution);
+        }
+        if (site != null) {
+            jpql.append(" and bi.bill.department.site = :site ");
+            m.put("site", site);
+        }
+        if (category != null) {
+            jpql.append(" and bi.item.category = :cat ");
+            m.put("cat", category);
+        }
+
+        return (List<IpIncomeCategoryWiseRowDTO>) billItemFacade.findLightsByJpql(jpql.toString(), m, TemporalType.TIMESTAMP);
+    }
+
+    private void summarizeIpIncomeCategoryWiseRows(ReportTemplateRowBundle reportBundle,
+            List<IpIncomeCategoryWiseRowDTO> rows, boolean includeItems) {
+        Map<String, ReportTemplateRow> categoryMap = new TreeMap<>();
+        Map<String, ReportTemplateRow> itemMap = new TreeMap<>();
+        Map<String, String> itemKeyToCategoryName = new HashMap<>();
+        List<ReportTemplateRow> rowsToAdd = new ArrayList<>();
+        double totalNetIncome = 0.0;
+        double totalIncome = 0.0;
+        double totalDiscount = 0.0;
+        double totalHospitalFees = 0.0;
+        double totalStaffFees = 0.0;
+        double totalSponsorPay = 0.0;
+        double totalPatientPay = 0.0;
+        long totalCount = 0L;
+
+        for (IpIncomeCategoryWiseRowDTO rowDto : rows) {
+            if (rowDto.getBillId() == null) {
+                continue;
+            }
+
+            PaymentMethod paymentMethodForBillItem = null;
+            paymentMethodForBillItem = rowDto.getEncounterPaymentMethod() != null
+                    ? rowDto.getEncounterPaymentMethod()
+                    : rowDto.getBillPaymentMethod();
+
+            if (paymentMethodForBillItem == null || paymentMethodForBillItem.getPaymentType() == PaymentType.NONE) {
+                continue;
+            }
+
+            String categoryName = rowDto.getCategoryName() != null
+                    ? rowDto.getCategoryName()
+                    : "No Category";
+            String itemName = rowDto.getItemName() != null
+                    ? rowDto.getItemName()
+                    : "No Item";
+            String itemKey = categoryName + "->" + itemName;
+
+            categoryMap.putIfAbsent(categoryName, new ReportTemplateRow());
+
+            ReportTemplateRow categoryRow = categoryMap.get(categoryName);
+            if (rowDto.getCategoryId() != null) {
+                Category categoryRef = new Category();
+                categoryRef.setId(rowDto.getCategoryId());
+                categoryRef.setName(rowDto.getCategoryName());
+                categoryRow.setCategory(categoryRef);
+            }
+
+            ReportTemplateRow itemRow = null;
+            if (includeItems) {
+                itemRow = itemMap.get(itemKey);
+                if (itemRow == null) {
+                    itemRow = new ReportTemplateRow();
+                    if (rowDto.getItemId() != null) {
+                        Item itemRef = new Item();
+                        itemRef.setId(rowDto.getItemId());
+                        itemRef.setName(rowDto.getItemName());
+                        if (rowDto.getCategoryId() != null) {
+                            Category categoryRef = new Category();
+                            categoryRef.setId(rowDto.getCategoryId());
+                            categoryRef.setName(rowDto.getCategoryName());
+                            itemRef.setCategory(categoryRef);
+                        }
+                        itemRow.setItem(itemRef);
+                    }
+                    itemMap.put(itemKey, itemRow);
+                    itemKeyToCategoryName.put(itemKey, categoryName);
+                }
+            }
+
+            long countModifier = (rowDto.getBillClassType() == BillClassType.CancelledBill
+                    || rowDto.getBillClassType() == BillClassType.RefundBill) ? -1 : 1;
+
+            double grossValue = countModifier * Math.abs(nullSafeDouble(rowDto.getGrossValue()));
+            double hospitalFee = countModifier * Math.abs(nullSafeDouble(rowDto.getHospitalFee()));
+            double iteratingDiscount = countModifier * Math.abs(nullSafeDouble(rowDto.getDiscount()));
+            double staffFee = countModifier * Math.abs(nullSafeDouble(rowDto.getStaffFee()));
+            boolean professionalPaymentBill = rowDto.getBillType() == BillType.PaymentBill;
+            double netValue;
+            if (professionalPaymentBill) {
+                netValue = countModifier * Math.abs(nullSafeDouble(rowDto.getNetValue()));
+            } else if (withProfessionalFee) {
+                netValue = countModifier * Math.abs(nullSafeDouble(rowDto.getNetValue()));
+            } else {
+                netValue = countModifier * Math.abs(nullSafeDouble(rowDto.getNetValue()) - nullSafeDouble(rowDto.getStaffFee()));
+            }
+
+            double sponsorDiscount = 0.0;
+            double sponsorPay = 0.0;
+            double patientPay = 0.0;
+            if (paymentMethodForBillItem.getPaymentType() == PaymentType.CREDIT) {
+                sponsorPay = netValue;
+            } else if (paymentMethodForBillItem.getPaymentType() == PaymentType.NON_CREDIT) {
+                patientPay = netValue;
+            }
+
+            totalIncome += grossValue;
+            totalNetIncome += netValue;
+            totalHospitalFees += hospitalFee;
+            totalDiscount += iteratingDiscount;
+            totalStaffFees += staffFee;
+            totalSponsorPay += sponsorPay;
+            totalPatientPay += patientPay;
+            totalCount += countModifier;
+
+            updateIpIncomeCategoryRow(categoryRow, countModifier, grossValue, hospitalFee, iteratingDiscount,
+                    sponsorDiscount, staffFee, netValue, sponsorPay, patientPay);
+
+            if (includeItems && itemRow != null) {
+                updateIpIncomeCategoryRow(itemRow, countModifier, grossValue, hospitalFee, iteratingDiscount,
+                        sponsorDiscount, staffFee, netValue, sponsorPay, patientPay);
+            }
+        }
+
+        Map<String, List<ReportTemplateRow>> itemRowsByCategory = new HashMap<>();
+        if (includeItems) {
+            for (Map.Entry<String, ReportTemplateRow> entry : itemMap.entrySet()) {
+                String categoryName = itemKeyToCategoryName.get(entry.getKey());
+                itemRowsByCategory
+                        .computeIfAbsent(categoryName, k -> new ArrayList<>())
+                        .add(entry.getValue());
+            }
+        }
+
+        categoryMap.forEach((categoryName, catRow) -> {
+            rowsToAdd.add(catRow);
+            if (includeItems) {
+                List<ReportTemplateRow> itemRows = itemRowsByCategory.get(categoryName);
+                if (itemRows != null) {
+                    rowsToAdd.addAll(itemRows);
+                }
+            }
+        });
+
+        reportBundle.getReportTemplateRows().addAll(rowsToAdd);
+
+        reportBundle.setTotal(totalNetIncome);
+        reportBundle.setDiscount(totalDiscount);
+        reportBundle.setGrossTotal(totalIncome);
+        reportBundle.setHospitalTotal(totalHospitalFees);
+        reportBundle.setStaffTotal(totalStaffFees);
+        reportBundle.setCount(totalCount);
+
+        ipIncomeTotalSponsorPay = totalSponsorPay;
+        ipIncomeTotalPatientPay = totalPatientPay;
+    }
+
+    private void updateIpIncomeCategoryRow(ReportTemplateRow row, long countModifier, double grossValue, double hospitalFee,
+            double discount, double sponsorDiscount, double professionalFee, double netValue, double sponsorPay, double patientPay) {
+
+        if (row.getItemCount() == null) {
+            row.setItemCount(0L);
+        }
+        if (row.getItemTotal() == null) {
+            row.setItemTotal(0.0);
+        }
+        if (row.getItemHospitalFee() == null) {
+            row.setItemHospitalFee(0.0);
+        }
+        if (row.getItemDiscountAmount() == null) {
+            row.setItemDiscountAmount(0.0);
+        }
+        if (row.getItemDiscount() == null) {
+            row.setItemDiscount(0.0);
+        }
+        if (row.getItemProfessionalFee() == null) {
+            row.setItemProfessionalFee(0.0);
+        }
+        if (row.getItemNetTotal() == null) {
+            row.setItemNetTotal(0.0);
+        }
+        if (row.getRowValueIn() == null) {
+            row.setRowValueIn(0.0);
+        }
+        if (row.getRowValueOut() == null) {
+            row.setRowValueOut(0.0);
+        }
+
+        row.setItemCount(row.getItemCount() + countModifier);
+        row.setItemTotal(row.getItemTotal() + grossValue);
+        row.setItemHospitalFee(row.getItemHospitalFee() + hospitalFee);
+        row.setItemDiscountAmount(row.getItemDiscountAmount() + discount);
+        row.setItemDiscount(row.getItemDiscount() + sponsorDiscount);
+        row.setItemProfessionalFee(row.getItemProfessionalFee() + professionalFee);
+        row.setItemNetTotal(row.getItemNetTotal() + netValue);
+        row.setRowValueIn(row.getRowValueIn() + sponsorPay);
+        row.setRowValueOut(row.getRowValueOut() + patientPay);
+    }
+
+    private void populateIpIncomeProfitMatrixAndBillDiscounts(List<IpIncomeCategoryWiseRowDTO> rows) {
+        ipIncomeCashTotal = 0.0;
+        ipIncomeCreditTotal = 0.0;
+        ipIncomeTotalBillDiscount = 0.0;
+        ipIncomeBillDiscounts = new ArrayList<>();
+
+        // Collect per-bill bill-level discounts (one entry per bill, avoid duplicates)
+        // Key: bill.id  →  { invoiceNo, billDiscount }
+        Map<Long, Map<String, Object>> billDiscountMap = new LinkedHashMap<>();
+
+        for (IpIncomeCategoryWiseRowDTO rowDto : rows) {
+            if (rowDto.getBillId() == null) {
+                continue;
+            }
+
+            // ── Resolve payment method ──────────────────────────────────────────
+            PaymentMethod pm = null;
+            pm = rowDto.getEncounterPaymentMethod() != null
+                    ? rowDto.getEncounterPaymentMethod()
+                    : rowDto.getBillPaymentMethod();
+            if (pm == null || pm.getPaymentType() == PaymentType.NONE) {
+                continue;
+            }
+
+            // ── Count modifier (cancellations/refunds subtract) ─────────────────
+            long countModifier = (rowDto.getBillClassType() == BillClassType.CancelledBill
+                    || rowDto.getBillClassType() == BillClassType.RefundBill) ? -1 : 1;
+
+            // ── Net value (same logic as summarizeBillItemsToIpIncomeCategoryWise) ──
+            boolean isProfPayment = rowDto.getBillType() == BillType.PaymentBill;
+            double netValue;
+            if (isProfPayment || withProfessionalFee) {
+                netValue = countModifier * Math.abs(nullSafeDouble(rowDto.getNetValue()));
+            } else {
+                netValue = countModifier * Math.abs(nullSafeDouble(rowDto.getNetValue()) - nullSafeDouble(rowDto.getStaffFee()));
+            }
+
+            // ── Profit Matrix: Cash vs Credit ───────────────────────────────────
+            if (pm.getPaymentType() == PaymentType.NON_CREDIT) {
+                ipIncomeCashTotal += netValue;
+            } else if (pm.getPaymentType() == PaymentType.CREDIT) {
+                ipIncomeCreditTotal += netValue;
+            }
+
+            // ── Bill Discount: aggregate per bill ───────────────────────────────
+            Double billDiscount = rowDto.getBillDiscount();
+            if (billDiscount != null && billDiscount != 0.0) {
+                Long billId = rowDto.getBillId();
+                if (!billDiscountMap.containsKey(billId)) {
+                    Map<String, Object> entry = new LinkedHashMap<>();
+                    entry.put("invoiceNo", rowDto.getBillDeptId() != null
+                            ? rowDto.getBillDeptId() : String.valueOf(billId));
+                    entry.put("discount", countModifier * Math.abs(billDiscount));
+                    billDiscountMap.put(billId, entry);
+                } else {
+                    Map<String, Object> entry = billDiscountMap.get(billId);
+                    double existing = (Double) entry.get("discount");
+                    entry.put("discount", existing + countModifier * Math.abs(billDiscount));
+                }
+            }
+        }
+
+        ipIncomeBillDiscounts = new ArrayList<>(billDiscountMap.values());
+        ipIncomeTotalBillDiscount = ipIncomeBillDiscounts.stream()
+                .mapToDouble(e -> (Double) e.get("discount"))
+                .sum();
+    }
+
+    private double nullSafeDouble(Double value) {
+        return value == null ? 0.0 : value;
+    }
 
     public void processSurgeryCountDoctorWiseReport() {
         billList = new ArrayList<>();
@@ -5055,6 +5528,102 @@ public class InwardReportController implements Serializable {
 
     public void setAdmissionReportProcessedBy(String admissionReportProcessedBy) {
         this.admissionReportProcessedBy = admissionReportProcessedBy;
+    }
+
+    public String getVisitType() {
+        return visitType;
+    }
+
+    public void setVisitType(String visitType) {
+        this.visitType = visitType;
+    }
+
+    public String getPaymentType() {
+        return paymentType;
+    }
+
+    public void setPaymentType(String paymentType) {
+        this.paymentType = paymentType;
+    }
+
+    public Category getCategory() {
+        return category;
+    }
+
+    public void setCategory(Category category) {
+        this.category = category;
+    }
+
+    public boolean isWithProfessionalFee() {
+        return withProfessionalFee;
+    }
+
+    public void setWithProfessionalFee(boolean withProfessionalFee) {
+        this.withProfessionalFee = withProfessionalFee;
+    }
+
+    public double getIpIncomeTotalSponsorPay() {
+        return ipIncomeTotalSponsorPay;
+    }
+
+    public void setIpIncomeTotalSponsorPay(double ipIncomeTotalSponsorPay) {
+        this.ipIncomeTotalSponsorPay = ipIncomeTotalSponsorPay;
+    }
+
+    public double getIpIncomeTotalPatientPay() {
+        return ipIncomeTotalPatientPay;
+    }
+
+    public void setIpIncomeTotalPatientPay(double ipIncomeTotalPatientPay) {
+        this.ipIncomeTotalPatientPay = ipIncomeTotalPatientPay;
+    }
+
+    public ReportTemplateRowBundle getBundle() {
+        return bundle;
+    }
+
+    public void setBundle(ReportTemplateRowBundle bundle) {
+        this.bundle = bundle;
+    }
+
+    public List<RoomCategory> getRoomCategories() {
+        return roomCategories;
+    }
+
+    public void setRoomCategories(List<RoomCategory> roomCategories) {
+        this.roomCategories = roomCategories;
+    }
+
+    public double getIpIncomeCashTotal() {
+        return ipIncomeCashTotal;
+    }
+
+    public void setIpIncomeCashTotal(double ipIncomeCashTotal) {
+        this.ipIncomeCashTotal = ipIncomeCashTotal;
+    }
+
+    public double getIpIncomeCreditTotal() {
+        return ipIncomeCreditTotal;
+    }
+
+    public void setIpIncomeCreditTotal(double ipIncomeCreditTotal) {
+        this.ipIncomeCreditTotal = ipIncomeCreditTotal;
+    }
+
+    public List<Map<String, Object>> getIpIncomeBillDiscounts() {
+        return ipIncomeBillDiscounts;
+    }
+
+    public void setIpIncomeBillDiscounts(List<Map<String, Object>> ipIncomeBillDiscounts) {
+        this.ipIncomeBillDiscounts = ipIncomeBillDiscounts;
+    }
+
+    public double getIpIncomeTotalBillDiscount() {
+        return ipIncomeTotalBillDiscount;
+    }
+
+    public void setIpIncomeTotalBillDiscount(double ipIncomeTotalBillDiscount) {
+        this.ipIncomeTotalBillDiscount = ipIncomeTotalBillDiscount;
     }
 
     public class IncomeByCategoryRecord {
