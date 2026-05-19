@@ -286,8 +286,7 @@
 
                     <div class="controls-actions-secondary">
                         <p:commandButton value="Print"
-                                         ajax="false"
-                                         action="#"
+                                         type="button"
                                          icon="pi pi-print"
                                          styleClass="btn-action">
                             <p:printer target="gpBillPreview" />
@@ -311,18 +310,19 @@
                         <span class="report-cycle-label">
                             <h:outputText value="#{hrReportController.reportKeyWord.salaryCycle.name}" />
                         </span>
-                        <p class="report-meta"
-                           rendered="#{hrReportController.reportKeyWord.salaryCycle ne null}">
-                            <h:outputText value="#{hrReportController.reportKeyWord.salaryCycle.salaryFromDate}">
-                                <f:convertDateTime timeZone="Asia/Colombo"
-                                                   pattern="#{sessionController.applicationPreference.shortDateFormat}" />
-                            </h:outputText>
-                            —
-                            <h:outputText value="#{hrReportController.reportKeyWord.salaryCycle.salaryToDate}">
-                                <f:convertDateTime timeZone="Asia/Colombo"
-                                                   pattern="#{sessionController.applicationPreference.shortDateFormat}" />
-                            </h:outputText>
-                        </p>
+                        <h:panelGroup rendered="#{hrReportController.reportKeyWord.salaryCycle ne null}">
+                            <p class="report-meta">
+                                <h:outputText value="#{hrReportController.reportKeyWord.salaryCycle.salaryFromDate}">
+                                    <f:convertDateTime timeZone="Asia/Colombo"
+                                                       pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                                </h:outputText>
+                                —
+                                <h:outputText value="#{hrReportController.reportKeyWord.salaryCycle.salaryToDate}">
+                                    <f:convertDateTime timeZone="Asia/Colombo"
+                                                       pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                                </h:outputText>
+                            </p>
+                        </h:panelGroup>
                         <h:panelGroup rendered="#{hrReportController.reportKeyWord.institution ne null}">
                             <p class="report-meta">
                                 <h:outputText value="#{hrReportController.reportKeyWord.institution.name}" />
@@ -351,17 +351,8 @@
                              var="ss"
                              styleClass="epf-table">
 
-                    <!-- Debug columns — noPrintButton hides from print but kept for dev use -->
-                    <p:column headerText="Staff ID" styleClass="col-text noPrintButton">
-                        <p:outputLabel value="#{ss.staff.id}" style="color: red;" />
-                    </p:column>
-
-                    <p:column headerText="Name (raw)" styleClass="col-text noPrintButton">
-                        <p:outputLabel value="#{ss.staff.person.name}" style="color: red;" />
-                    </p:column>
-
                     <p:column headerText="Employee name" styleClass="col-text col-name" style="min-width: 200px;">
-                        <p:outputLabel value="#{ss.staff.person.nameWithInitials}" />
+                        <p:outputLabel value="#{not empty ss.staff.person.nameWithInitials ? ss.staff.person.nameWithInitials : ss.staff.person.name}" />
                     </p:column>
 
                     <p:column headerText="NIC no" styleClass="col-text">
