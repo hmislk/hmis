@@ -1,0 +1,449 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:hr="http://xmlns.jcp.org/jsf/composite/autocomplete">
+
+    <ui:define name="content">
+
+        <h:form styleClass="gen-or-not-form">
+
+            <h:outputStylesheet>
+                .gen-or-not-form {
+                    padding: 2rem 1.75rem;
+                }
+
+                .page-header {
+                    margin-bottom: 1.75rem;
+                }
+
+                .page-title {
+                    font-size: 18px;
+                    font-weight: 600;
+                    margin: 0 0 4px 0;
+                }
+
+                .page-subtitle {
+                    font-size: 13px;
+                    color: #888;
+                    margin: 0;
+                }
+
+                .controls-panel .ui-panel-content {
+                    padding: 1.5rem 1.75rem !important;
+                }
+
+                .controls-grid {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 1.25rem;
+                }
+
+                .fields-grid {
+                    display: grid;
+                    grid-template-columns: repeat(2, 1fr);
+                    gap: 1rem 1.5rem;
+                }
+
+                .field-group {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 6px;
+                }
+
+                .field-label {
+                    font-size: 11.5px !important;
+                    font-weight: 600 !important;
+                    text-transform: uppercase;
+                    letter-spacing: 0.05em;
+                    color: #888 !important;
+                }
+
+                .checkbox-row {
+                    display: flex;
+                    gap: 2rem;
+                    align-items: center;
+                }
+
+                .checkbox-group {
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                }
+
+                .controls-actions {
+                    display: flex;
+                    gap: 10px;
+                    align-items: center;
+                    flex-wrap: wrap;
+                }
+
+                .controls-actions-secondary {
+                    display: flex;
+                    gap: 10px;
+                    align-items: center;
+                    flex-wrap: wrap;
+                    padding-top: 0.75rem;
+                    border-top: 1px solid #e8e8e8;
+                }
+
+                .btn-action {
+                    height: 36px !important;
+                    padding: 0 18px !important;
+                    font-size: 13px !important;
+                }
+
+                .report-panel {
+                    margin-top: 1.5rem;
+                }
+
+                .report-panel .ui-panel-content {
+                    padding: 0 !important;
+                }
+
+                .report-section {
+                    padding: 1.5rem 1.5rem 0;
+                }
+
+                .report-section-title {
+                    font-size: 13px;
+                    font-weight: 700;
+                    text-transform: uppercase;
+                    letter-spacing: 0.06em;
+                    color: #555;
+                    margin: 0 0 0.15rem 0;
+                    padding-bottom: 0.6rem;
+                    border-bottom: 2px solid #e8e8e8;
+                }
+
+                .report-section-title.not-generated {
+                    color: #c0392b;
+                    border-color: #f5c6c2;
+                }
+
+                .report-section-title.generated {
+                    color: #1a7a4a;
+                    border-color: #b6e2cc;
+                }
+
+                .report-meta {
+                    font-size: 13px;
+                    color: #555;
+                    margin-top: 4px;
+                }
+
+                .report-cycle-label {
+                    font-size: 13px;
+                    font-weight: 500;
+                    display: block;
+                    margin-bottom: 2px;
+                }
+
+                .section-divider {
+                    height: 1px;
+                    background: #e8e8e8;
+                    margin: 0 1.5rem;
+                }
+
+                .gen-table .ui-datatable-tablewrapper {
+                    overflow-x: auto !important;
+                    width: 100% !important;
+                }
+
+                .gen-table table {
+                    width: auto !important;
+                    table-layout: auto !important;
+                }
+
+                .gen-table .ui-datatable-data td,
+                .gen-table .ui-datatable-thead th {
+                    padding: 10px 14px !important;
+                    white-space: nowrap;
+                    font-size: 13px !important;
+                    width: auto !important;
+                }
+
+                .gen-table .ui-datatable-thead th {
+                    font-size: 12px !important;
+                    font-weight: 600 !important;
+                    text-transform: uppercase;
+                    letter-spacing: 0.03em;
+                    color: #888 !important;
+                    background: #f9f9f9 !important;
+                    border-bottom: 1px solid #e8e8e8 !important;
+                }
+
+                .gen-table .ui-datatable-data tr:hover td {
+                    background: #f5f7ff !important;
+                }
+
+                .gen-table .col-text {
+                    text-align: left !important;
+                }
+
+                .gen-table .col-num {
+                    text-align: right !important;
+                }
+
+                .gen-table .col-name .ui-outputlabel {
+                    font-weight: 500;
+                }
+
+                .gen-table .col-idx {
+                    text-align: center !important;
+                    color: #aaa;
+                    font-size: 12px !important;
+                    min-width: 40px;
+                }
+
+                .gen-table tfoot td {
+                    background: #f9f9f9 !important;
+                    font-weight: 600 !important;
+                    font-size: 13px !important;
+                    border-top: 2px solid #e0e0e0 !important;
+                    padding: 10px 14px !important;
+                }
+
+                .report-table-footer {
+                    display: flex;
+                    justify-content: flex-end;
+                    align-items: center;
+                    gap: 6px;
+                    padding: 0.85rem 1.5rem;
+                    border-top: 1px solid #e8e8e8;
+                    font-size: 12px;
+                    color: #999;
+                }
+
+                .not-generated-row td {
+                    background: #fff8f8 !important;
+                }
+            </h:outputStylesheet>
+
+            <div class="page-header">
+                <p class="page-title"><h:outputText value="Staff Salary Generate Or Not Report" /></p>
+                <p class="page-subtitle"><h:outputText value="Shows which staff have and have not had salary generated for the selected cycle" /></p>
+            </div>
+
+            <p:panel styleClass="controls-panel">
+                <div class="controls-grid">
+
+                    <div class="fields-grid">
+                        <div class="field-group">
+                            <p:outputLabel for="salaryCycle" value="Salary cycle" styleClass="field-label" />
+                            <p:selectOneMenu id="salaryCycle"
+                                             value="#{hrReportController.reportKeyWord.salaryCycle}"
+                                             var="t"
+                                             appendTo="@body"
+                                             autoWidth="false"
+                                             style="width: 100%;">
+                                <f:selectItems value="#{salaryCycleController.salaryCycles}"
+                                               var="theme"
+                                               itemLabel="#{theme.name}"
+                                               itemValue="#{theme}" />
+                                <p:column style="width:10%">
+                                    <h:outputText value="#{t.name}" />
+                                </p:column>
+                                <p:column>
+                                    <h:outputText value="#{t.salaryYear}" />
+                                </p:column>
+                                <p:column>
+                                    <h:outputText value="#{t.salaryMonth}" />
+                                </p:column>
+                            </p:selectOneMenu>
+                        </div>
+
+                        <div class="field-group">
+                            <p:outputLabel value="Institution" styleClass="field-label" />
+                            <hr:institution value="#{hrReportController.reportKeyWord.institution}" />
+                        </div>
+
+                        <div class="field-group">
+                            <p:outputLabel value="Department" styleClass="field-label" />
+                            <hr:department value="#{hrReportController.reportKeyWord.department}" />
+                        </div>
+
+                        <div class="field-group">
+                            <p:outputLabel value="Employee" styleClass="field-label" />
+                            <hr:completeStaff value="#{hrReportController.reportKeyWord.staff}" />
+                        </div>
+
+                        <div class="field-group">
+                            <p:outputLabel value="Staff category" styleClass="field-label" />
+                            <hr:completeStaffCategory value="#{hrReportController.reportKeyWord.staffCategory}" />
+                        </div>
+
+                        <div class="field-group">
+                            <p:outputLabel value="Staff designation" styleClass="field-label" />
+                            <hr:completeDesignation value="#{hrReportController.reportKeyWord.designation}" />
+                        </div>
+
+                        <div class="field-group">
+                            <p:outputLabel value="Staff roster" styleClass="field-label" />
+                            <hr:completeRoster value="#{hrReportController.reportKeyWord.roster}" />
+                        </div>
+
+                        <div class="field-group">
+                            <p:outputLabel value="Options" styleClass="field-label" />
+                            <div class="checkbox-row">
+                                <div class="checkbox-group">
+                                    <p:selectBooleanCheckbox id="blocked" value="#{hrReportController.blocked}" />
+                                    <h:outputLabel for="blocked" styleClass="field-label" value="Blocked" />
+                                </div>
+                                <div class="checkbox-group">
+                                    <p:selectBooleanCheckbox id="hold" value="#{hrReportController.hold}" />
+                                    <h:outputLabel for="hold" styleClass="field-label" value="Hold" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="controls-actions">
+                        <p:commandButton value="Process"
+                                         ajax="false"
+                                         action="#{hrReportController.createStaffSalaryGenereateOrNotStaffTable()}"
+                                         icon="pi pi-sync"
+                                         styleClass="btn-action" />
+                    </div>
+
+                    <div class="controls-actions-secondary">
+                        <p:commandButton value="Print"
+                                         type="button"
+                                         icon="pi pi-print"
+                                         styleClass="btn-action">
+                            <p:printer target="gpBillPreview" />
+                        </p:commandButton>
+                        <p:commandButton value="Export Excel"
+                                         ajax="false"
+                                         icon="pi pi-file-excel"
+                                         styleClass="btn-action noPrintButton">
+                            <p:dataExporter type="xlsx" target="tb1 tb2" fileName="hr_report_staff_salary_generate_or_not" />
+                        </p:commandButton>
+                    </div>
+
+                </div>
+            </p:panel>
+
+            <p:panel id="gpBillPreview" styleClass="report-panel noBorder summeryBorder">
+
+                <!-- Not Generated table -->
+                <div class="report-section">
+                    <p class="report-section-title not-generated">Salary not generated</p>
+                    <h:panelGroup rendered="#{hrReportController.reportKeyWord.salaryCycle ne null}">
+                        <p class="report-meta">
+                            <span class="report-cycle-label">
+                                <h:outputText value="#{hrReportController.reportKeyWord.salaryCycle.name}" />
+                            </span>
+                        </p>
+                    </h:panelGroup>
+                    <h:panelGroup rendered="#{hrReportController.reportKeyWord.institution ne null}">
+                        <p class="report-meta"><h:outputText value="#{hrReportController.reportKeyWord.institution.name}" /></p>
+                    </h:panelGroup>
+                    <h:panelGroup rendered="#{hrReportController.reportKeyWord.department ne null}">
+                        <p class="report-meta">Department: <h:outputText value="#{hrReportController.reportKeyWord.department.name}" /></p>
+                    </h:panelGroup>
+                    <h:panelGroup rendered="#{hrReportController.reportKeyWord.staff.person.name ne null}">
+                        <p class="report-meta">Staff: <h:outputText value="#{hrReportController.reportKeyWord.staff.person.name}" /></p>
+                    </h:panelGroup>
+                    <h:panelGroup rendered="#{hrReportController.reportKeyWord.roster ne null}">
+                        <p class="report-meta">Roster: <h:outputText value="#{hrReportController.reportKeyWord.roster.name}" /></p>
+                    </h:panelGroup>
+                </div>
+
+                <p:dataTable id="tb2"
+                             value="#{hrReportController.salaryNotGeneratedStaffs}"
+                             var="s"
+                             rowIndexVar="i"
+                             styleClass="gen-table">
+                    <p:column styleClass="col-idx">
+                        <h:outputText value="#{i + 1}" />
+                    </p:column>
+                    <p:column headerText="Code" styleClass="col-text">
+                        <h:outputLabel value="#{s.codeInterger}" />
+                    </p:column>
+                    <p:column headerText="Name" styleClass="col-text col-name">
+                        <h:outputLabel value="#{not empty s.person.nameWithTitle ? s.person.nameWithTitle : s.person.name}" />
+                    </p:column>
+                    <p:column headerText="Roster" styleClass="col-text">
+                        <h:outputLabel value="#{s.roster.name}" />
+                    </p:column>
+                    <p:column headerText="Grade" styleClass="col-text">
+                        <h:outputLabel value="#{s.grade.name}" />
+                    </p:column>
+                    <p:column headerText="Category" styleClass="col-text">
+                        <h:outputLabel value="#{s.staffCategory.name}" />
+                    </p:column>
+                    <p:column headerText="Designation" styleClass="col-text">
+                        <h:outputLabel value="#{s.designation.name}" />
+                    </p:column>
+                </p:dataTable>
+
+                <div class="section-divider" />
+
+                <!-- Generated table -->
+                <div class="report-section">
+                    <p class="report-section-title generated">Salary generated</p>
+                    <h:panelGroup rendered="#{hrReportController.reportKeyWord.salaryCycle ne null}">
+                        <p class="report-meta">
+                            <span class="report-cycle-label">
+                                <h:outputText value="#{hrReportController.reportKeyWord.salaryCycle.name}" />
+                            </span>
+                        </p>
+                    </h:panelGroup>
+                    <h:panelGroup rendered="#{hrReportController.reportKeyWord.institution ne null}">
+                        <p class="report-meta"><h:outputText value="#{hrReportController.reportKeyWord.institution.name}" /></p>
+                    </h:panelGroup>
+                    <h:panelGroup rendered="#{hrReportController.reportKeyWord.department ne null}">
+                        <p class="report-meta">Department: <h:outputText value="#{hrReportController.reportKeyWord.department.name}" /></p>
+                    </h:panelGroup>
+                    <h:panelGroup rendered="#{hrReportController.reportKeyWord.roster ne null}">
+                        <p class="report-meta">Roster: <h:outputText value="#{hrReportController.reportKeyWord.roster.name}" /></p>
+                    </h:panelGroup>
+                </div>
+
+                <p:dataTable id="tb1"
+                             value="#{hrReportController.salaryGeneratedStaffs}"
+                             var="s"
+                             rowIndexVar="i"
+                             styleClass="gen-table">
+                    <p:column styleClass="col-idx">
+                        <h:outputText value="#{i + 1}" />
+                    </p:column>
+                    <p:column headerText="Code" styleClass="col-text">
+                        <h:outputLabel value="#{s.codeInterger}" />
+                    </p:column>
+                    <p:column headerText="Name" styleClass="col-text col-name">
+                        <h:outputLabel value="#{not empty s.person.nameWithTitle ? s.person.nameWithTitle : s.person.name}" />
+                    </p:column>
+                    <p:column headerText="Roster" styleClass="col-text">
+                        <h:outputLabel value="#{s.roster.name}" />
+                    </p:column>
+                    <p:column headerText="Grade" styleClass="col-text">
+                        <h:outputLabel value="#{s.grade.name}" />
+                    </p:column>
+                    <p:column headerText="Category" styleClass="col-text">
+                        <h:outputLabel value="#{s.staffCategory.name}" />
+                    </p:column>
+                    <p:column headerText="Designation" styleClass="col-text">
+                        <h:outputLabel value="#{s.designation.name}" />
+                    </p:column>
+                    <f:facet name="footer">
+                        <div class="report-table-footer">
+                            <p:outputLabel value="Print by: #{sessionController.loggedUser.webUserPerson.name}" />
+                            <span>·</span>
+                            <p:outputLabel value="#{commonFunctionsProxy.currentDateTime}">
+                                <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a" />
+                            </p:outputLabel>
+                        </div>
+                    </f:facet>
+                </p:dataTable>
+
+            </p:panel>
+
+        </h:form>
+    </ui:define>
+
+</ui:composition>
