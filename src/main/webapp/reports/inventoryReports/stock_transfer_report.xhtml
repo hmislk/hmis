@@ -381,29 +381,26 @@
                                                                          rendered="#{pharmacyController.reportType eq 'byBill'}">
                                                             <p:printer target="tbl3"/>
                                                         </p:commandButton>-->
-                            <p:commandButton 
+                            <p:commandButton
                                 class="ui-button-primary mx-1"
                                 icon="fas fa-print"
                                 ajax="false"
                                 action="stock_transfer_report_print?faces-redirect=true"
-                                value="To Print"
-                                rendered="#{pharmacyController.reportType ne 'breakdownSummary'}">
+                                value="To Print">
                             </p:commandButton>
 
                             <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false"
                                              value="Download"
                                              rendered="#{pharmacyController.reportType eq 'summeryReport'}"
                                              action="#{pharmacyController.exportStockTransferSummaryReportToExcel()}">
-                                <!-- <p:dataExporter type="xlsx" target="tbl1" fileName="stock_trnsfer_summery" /> -->
                             </p:commandButton>
                             <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false"
                                              value="Download" rendered="#{pharmacyController.reportType eq 'detailReport'}"
                                              action="#{pharmacyController.exportStockTransferDetailReportToExcel()}">
-                                <!--                            <p:dataExporter type="xlsx" target="tbl2" fileName="stock_trnsfer_detail"/>-->
                             </p:commandButton>
                             <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false"
                                              value="Download" rendered="#{pharmacyController.reportType eq 'byBill'}">
-                                <p:dataExporter type="xlsx" target="tbl3" fileName="stock_trnsfer_bill" postProcessor="#{pharmacyController.postProcessStockTransferByBillExcel}"/>
+                                <p:dataExporter type="xlsx" target="tbl3" fileName="#{pharmacyController.getStockTransferByBillExcelFileName()}" postProcessor="#{pharmacyController.postProcessStockTransferByBillExcel}"/>
                             </p:commandButton>
 
                             <p:commandButton class="ui-button-danger mx-1" icon="fas fa-file-pdf" ajax="false" value="PDF"
@@ -413,12 +410,18 @@
                             <p:commandButton class="ui-button-danger mx-1" icon="fas fa-file-pdf" ajax="false" value="PDF"
                                              rendered="#{pharmacyController.reportType eq 'detailReport'}"
                                              action="#{pharmacyController.exportStockTransferDetailReportToPDF()}">
-                                <!--                            <p:dataExporter type="pdf" target="tbl2" fileName="stock_trnsfer_detail"/>-->
                             </p:commandButton>
                             <p:commandButton class="ui-button-danger mx-1" icon="fas fa-file-pdf" ajax="false" value="PDF"
                                              rendered="#{pharmacyController.reportType eq 'byBill'}"
                                              action="#{pharmacyController.exportStockTransferByBillToPDF()}">
-                                <!-- <p:dataExporter type="pdf" target="tbl3" fileName="stock_trnsfer_bill"/> -->
+                            </p:commandButton>
+                            <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false"
+                                             value="Download" rendered="#{pharmacyController.reportType eq 'breakdownSummary'}"
+                                             action="#{pharmacyController.exportStockTransferBreakdownReportToExcel()}">
+                            </p:commandButton>
+                            <p:commandButton class="ui-button-danger mx-1" icon="fas fa-file-pdf" ajax="false" value="PDF"
+                                             rendered="#{pharmacyController.reportType eq 'breakdownSummary'}"
+                                             action="#{pharmacyController.exportStockTransferBreakdownReportToPDF()}">
                             </p:commandButton>
                         </div>
 

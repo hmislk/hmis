@@ -214,11 +214,13 @@ public class SmsController implements Serializable {
                 + " LEFT JOIN b.patient pt "
                 + " LEFT JOIN pt.person p "
                 + " where s.createdAt between :fd and :td "
+                + " and s.retired =:ret"
                 + " ORDER BY s.id asc";
 
         Map params = new HashMap();
         params.put("fd", fromDate);
         params.put("td", toDate);
+        params.put("ret", false);
 
         smsDtoList = (List<SmsDTO>) smsFacade.findLightsByJpqlWithoutCache(jpql, params, TemporalType.TIMESTAMP);
 

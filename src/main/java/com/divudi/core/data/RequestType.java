@@ -21,7 +21,10 @@ public enum RequestType {
     DATE_MODIFICATION("Date Modification", RequestCategory.EDIT,"DMOD"),
 
     // Adjustment types
-    DRAWER_ADJUSTMENT("Drawer Adjustment", RequestCategory.ADJUSTMENT, "DRADJ");
+    DRAWER_ADJUSTMENT("Drawer Adjustment", RequestCategory.ADJUSTMENT, "DRADJ"),
+    
+    PETTYCASH_APROVEL("Petty Cash Request" ,RequestCategory.APROVEL, "PTY-CH"),
+    PETTYCASH_CANCELLATION("Cancel Petty Cash" ,RequestCategory.APROVEL, "CAN-PTY-CH");
     
     private final String displayName;
     private final RequestCategory category;

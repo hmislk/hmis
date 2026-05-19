@@ -80,6 +80,8 @@ public enum Privileges {
     WatingRoomAdmitPatient("Wating Room Admit Patient"),
     InwardRoomGurdianRoomChange("Inward Guardian Room Change"),
     InwardRoomDischarge("Inward Room Discharge"),
+    InwardRoomTransferInitiate("Inward Room Transfer Initiate"),
+    InwardRoomPatientAccept("Inward Room Patient Accept"),
     InwardServicesAndItems("Inward Services and Items"),
     InwardServicesAndItemsAddServices("Inward Add Services"),
     InwardServicesAndItemsAddOutSideCharges("Inward Add Outside Charges"),
@@ -116,6 +118,8 @@ public enum Privileges {
     InwardPharmacyIssueRequestSearch("Inward Pharmacy Issue Request Search"),
     InwardBillSettleWithoutCheck("Inward Bill Settle Without Check"),
     TheaterIssueBHT("Theater Issue BHT"),
+    InpatientClinicalAssessment("Inpatient Clinical Assessment"),
+    InpatientClinicalDischarge("Inpatient Clinical Discharge"),
     //</editor-fold>
     
     //<editor-fold defaultstate="collapsed" desc="Nurse">
@@ -126,12 +130,15 @@ public enum Privileges {
     //<editor-fold defaultstate="collapsed" desc="Finance">
     PettyCashBillCancellationApprove("Petty Cash Bill Cancellation Approval"),
     PettyCashBillApprove("Petty Cash Bill Approval"),
+    PettyCashEditFinancialYear("Petty Cash Edit Financial Year"),
     AllCashierSummery("All Cashier Summary"),
     CashTransactionCashIn("Cash Transaction Cash In"),
     CashTransactionCashOut("Cash Transaction Cash Out"),
     CashTransactionListToCashRecieve("Cash Transaction List to Cash Receive"),
     ShiftHandoverAcceptAsCashier("Shift Handover Accept As Cashier"),
     ShiftHandoverAcceptAsMainCashier("Shift Handover Accept As Main Cashier"),
+    CashierHandoverStatusReport("Cashier Handover Status Report"),
+    SettleHandoverProofMissing("Settle Handover Proof Missing"),
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Lab">
@@ -609,6 +616,8 @@ public enum Privileges {
     PharmacyItemSearch("Pharmacy Item Search"),
     PharmacyGenarateReports("Pharmacy Generate Reports"),
     PharmacySummaryViews("Pharmacy Summary Views"),
+    PrintOriginalPoBillFromReprint("Print Original PO Bill From Reprint"),
+    PrintOriginalGrnBillFromReprint("Print Original GRN Bill From Reprint"),
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Optician">
@@ -689,6 +698,18 @@ public enum Privileges {
     ItemRefundRequestApproval("Item Refund Request Approval"),
     DrawerAdjustmentRequestApproval("Drawer Adjustment Request Approval"),
     DrawerAdjustmentDirect("Drawer Adjustment Direct (No Approval)"),
+    PettyCashCancellationApproval("Petty-Cash Cancellation Approval"),
+    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="Float Transfer">
+    IssueFundTransfer("Issue Float Transfer"),
+    ReceiveFundTransfer("Receive Float Transfer"),
+    DeclineFundTransfer("Decline Float Transfer"),
+    RequestFundTransfer("Request Float Transfer"),
+    ProcessFundTransferRequest("Process Float Transfer Request"),
+    CancelOwnFundTransfer("Cancel Own Float Transfer"),
+    CancelOthersFundTransfer("Cancel Others Float Transfer"),
+    ViewFundTransferReports("View Float Transfer Reports"),
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Developers">
@@ -960,6 +981,8 @@ public enum Privileges {
             case PharmacyGrnSave:
             case PharmacyGrnFinalize:
             case PharmacyGrnApprove:
+            case PrintOriginalPoBillFromReprint:
+            case PrintOriginalGrnBillFromReprint:    
 
                 return "Pharmacy";
 
@@ -993,8 +1016,23 @@ public enum Privileges {
             case ItemRefundRequestApproval:
             case DrawerAdjustmentRequestApproval:
             case DrawerAdjustmentDirect:
+            case PettyCashCancellationApproval:
                 return "Approval";
-            
+
+            case CashierHandoverStatusReport:
+            case SettleHandoverProofMissing:
+                return "Finance";
+
+            case IssueFundTransfer:
+            case ReceiveFundTransfer:
+            case DeclineFundTransfer:
+            case RequestFundTransfer:
+            case ProcessFundTransferRequest:
+            case CancelOwnFundTransfer:
+            case CancelOthersFundTransfer:
+            case ViewFundTransferReports:
+                return "Float Transfer";
+
             case NursingWorkBench:
             case ShowDrugCharges:
                 return "Nursing Work Bench";
@@ -1005,8 +1043,10 @@ public enum Privileges {
             case InwardAppointmentAdmission:
             case InwardAppointmentUpdate:
             case InwardAppointmentCancel:
+            case InpatientClinicalAssessment:
+            case InpatientClinicalDischarge:
                 return "Inward";
-                
+
             default:
                 return this.toString();
         }

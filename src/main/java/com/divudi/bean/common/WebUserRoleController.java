@@ -34,23 +34,29 @@ import javax.inject.Named;
 @SessionScoped
 public class WebUserRoleController implements Serializable {
 
+    public WebUserRoleController() {
+    }
+    
     @Inject
     SessionController sessionController;
     @Inject
     WebUserRoleUserController webUserRoleUserController;
+    @Inject
+    UserPrivilageController userPrivilageController;
+    
     @EJB
     private WebUserRoleFacade ejbFacade;
 
     private WebUserRole current;
     private List<WebUserRole> items = null;
-
+    private List<WebUserRole> activatediItems = null;
+    private String comment;
 
     public String navigateToManageWebUserRoles(){
         items = findAllItems();
+        comment = null;
         return "/admin/users/user_roles?faces-redirect=true";
     }
-
-
 
     public String navigateToManageWebUserRolePrivileges(){
         if(current==null){
@@ -61,6 +67,7 @@ public class WebUserRoleController implements Serializable {
             JsfUtil.addErrorMessage("Save first");
             return null;
         }
+        userPrivilageController.setPrivilegesLoaded(false);
         return "/admin/users/user_role_privileges?faces-redirect=true";
     }
 
@@ -106,9 +113,51 @@ public class WebUserRoleController implements Serializable {
     }
 
     public void saveCurrent(){
+        if(current == null){
+            JsfUtil.addErrorMessage("Error in User Role.");
+            return;
+        }
+        
+        if(current.getName() == null || current.getName().trim().isEmpty()){
+            JsfUtil.addErrorMessage("Please enter a Name.");
+            return;
+        }
+        
+        if(current.getDescription()== null || current.getDescription().trim().isEmpty()){
+            JsfUtil.addErrorMessage("Please enter a Description.");
+            return;
+        }
+        
+        if (isRoleNameDuplicate(current)) {
+            JsfUtil.addErrorMessage("A User Role with this name already exists.");
+            return;
+        }
         save(current);
         items = findAllItems();
         JsfUtil.addSuccessMessage("Saved");
+    }
+
+    private boolean isRoleNameDuplicate(WebUserRole role) {
+        if (role == null || role.getName() == null || role.getName().trim().isEmpty()) {
+            return false;
+        }
+        String jpql;
+        Map<String, Object> m = new HashMap<>();
+        m.put("ret", false);
+        m.put("name", role.getName().trim());
+        if (role.getId() != null) {
+            jpql = "SELECT COUNT(r) FROM WebUserRole r "
+                 + "WHERE r.retired = :ret "
+                 + "AND lower(r.name) = lower(:name) "
+                 + "AND r.id != :id";
+            m.put("id", role.getId());
+        } else {
+            jpql = "SELECT COUNT(r) FROM WebUserRole r "
+                 + "WHERE r.retired = :ret "
+                 + "AND lower(r.name) = lower(:name)";
+        }
+        Long count = getFacade().findLongByJpql(jpql, m);
+        return count != null && count > 0;
     }
     
     public void deleteCurrent() {
@@ -128,6 +177,7 @@ public class WebUserRoleController implements Serializable {
 
     public void save(WebUserRole r){
         if(r==null){
+            JsfUtil.addErrorMessage("Select the Role");
             return;
         }
         if(r.getId()==null){
@@ -138,18 +188,45 @@ public class WebUserRoleController implements Serializable {
             getFacade().edit(r);
         }
     }
+    
+    public void removeRole(WebUserRole r){
+        if(r == null){
+            JsfUtil.addErrorMessage("Select the Role");
+            return;
+        }
+        if(comment == null || comment.isEmpty()){
+            JsfUtil.addErrorMessage("Comment is mandatory.");
+            return;
+        }
+        r.setRetired(true);
+        r.setRetiredAt(new Date());
+        r.setRetirer(sessionController.getLoggedUser());
+        r.setRetireComments(comment);
+        getFacade().edit(r);
+        JsfUtil.addSuccessMessage("Comment is Mandertory");
+    }
 
     private List<WebUserRole> findAllItems(){
         String jpql = "Select r "
                 + " from WebUserRole r "
-                + " where r.retired=:ret"
+                + " where r.retired=:ret "
                 + " order by r.name";
         Map m = new HashMap<>();
         m.put("ret", false);
         return getFacade().findByJpql(jpql, m);
     }
-
-
+    
+    private List<WebUserRole> findActivatedItems(){
+        String jpql = "Select r "
+                + " from WebUserRole r "
+                + " where r.retired=:ret "
+                + " and r.activated=:act "
+                + " order by r.name";
+        Map m = new HashMap<>();
+        m.put("ret", false);
+        m.put("act", true);
+        return getFacade().findByJpql(jpql, m);
+    }
 
     public WebUserRoleFacade getEjbFacade() {
         return ejbFacade;
@@ -166,11 +243,6 @@ public class WebUserRoleController implements Serializable {
     public void setSessionController(SessionController sessionController) {
         this.sessionController = sessionController;
     }
-
-    public WebUserRoleController() {
-    }
-
-
 
     public WebUserRole getCurrent() {
         return current;
@@ -191,6 +263,24 @@ public class WebUserRoleController implements Serializable {
         return items;
     }
 
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
+    }
+
+    public List<WebUserRole> getActivatediItems() {
+        if(activatediItems == null){
+            activatediItems = findActivatedItems();
+        }
+        return activatediItems;
+    }
+
+    public void setActivatediItems(List<WebUserRole> activatediItems) {
+        this.activatediItems = activatediItems;
+    }
 
     /**
      *

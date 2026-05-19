@@ -9,10 +9,12 @@ import com.divudi.bean.common.ConfigOptionController;
 import com.divudi.bean.common.ItemController;
 import com.divudi.bean.common.EnumController;
 import com.divudi.bean.common.NotificationController;
+import com.divudi.bean.common.PageMetadataRegistry;
 import com.divudi.bean.common.SessionController;
 
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.DepartmentType;
+import com.divudi.core.data.OptionScope;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.PharmacyBean;
@@ -30,6 +32,9 @@ import com.divudi.core.facade.ItemFacade;
 import com.divudi.core.facade.ItemsDistributorsFacade;
 import com.divudi.core.facade.PharmaceuticalBillItemFacade;
 import com.divudi.core.facade.EmailFacade;
+import com.divudi.core.data.admin.ConfigOptionInfo;
+import com.divudi.core.data.admin.PageMetadata;
+import com.divudi.core.data.admin.PrivilegeInfo;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.ejb.EmailManagerEjb;
@@ -48,6 +53,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -90,12 +96,15 @@ public class PurchaseOrderRequestController implements Serializable {
     EnumController enumController;
     @Inject
     ConfigOptionController configOptionController;
+    @Inject
+    private PageMetadataRegistry pageMetadataRegistry;
 
     private Bill currentBill;
     private BillItem currentBillItem;
     private List<BillItem> selectedBillItems;
     private List<BillItem> billItems;
     private boolean printPreview;
+    private boolean itemHistoryVisible;
     private double totalBillItemsCount;
     private Long billId;
     //private List<PharmaceuticalBillItem> pharmaceuticalBillItems;
@@ -194,6 +203,7 @@ public class PurchaseOrderRequestController implements Serializable {
         currentBillItem = null;
         billItems = null;
         printPreview = false;
+        itemHistoryVisible = false;
     }
 
     public void addItem() {
@@ -299,6 +309,7 @@ public class PurchaseOrderRequestController implements Serializable {
         currentBill = billService.reloadBill(currentBill);
         calculateBillTotals();
         currentBillItem = null;
+        itemHistoryVisible = false;
     }
 
     @Inject
@@ -472,6 +483,19 @@ public class PurchaseOrderRequestController implements Serializable {
 
     public void displayItemDetails(BillItem bi) {
         getPharmacyController().fillItemDetails(bi.getItem());
+        itemHistoryVisible = true;
+    }
+
+    public void closeItemHistory() {
+        itemHistoryVisible = false;
+    }
+
+    public boolean isItemHistoryVisible() {
+        return itemHistoryVisible;
+    }
+
+    public void setItemHistoryVisible(boolean itemHistoryVisible) {
+        this.itemHistoryVisible = itemHistoryVisible;
     }
 
     /**
@@ -1361,6 +1385,127 @@ public class PurchaseOrderRequestController implements Serializable {
 
     public void setEmailRecipient(String emailRecipient) {
         this.emailRecipient = emailRecipient;
+    }
+
+    @PostConstruct
+    public void init() {
+        registerPageMetadata();
+    }
+
+    /**
+     * Register page metadata for the admin configuration interface
+     */
+    private void registerPageMetadata() {
+        if (pageMetadataRegistry == null) {
+            return;
+        }
+
+        PageMetadata metadata = new PageMetadata(
+                "pharmacy/pharmacy_purhcase_order_request",
+                "Pharmacy Purchase Order Request",
+                "Create and manage pharmacy purchase order requests to suppliers",
+                "PurchaseOrderRequestController"
+        );
+
+        // Configuration Options - APPLICATION scope
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Pharmacy PO - Show Item History Above Items",
+                "Controls whether item history panel appears above or below the items datatable",
+                OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Enable Consignment in Pharmacy Purchasing",
+                "Shows or hides the consignment checkbox option in the purchase order panel",
+                OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Minimum Number of Characters to Search for Item",
+                "Minimum characters required before item autocomplete search triggers",
+                OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Prevent Duplicate Items in Purchase Orders",
+                "When enabled, prevents adding duplicate items to a purchase order",
+                OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Consignment Option is checked in new Pharmacy Purchasing Bills",
+                "Sets the default checked state of the consignment checkbox when creating a new purchase order",
+                OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Pharmacy Purchase Order Default Payment Method",
+                "Sets the default payment method when creating a new purchase order",
+                OptionScope.APPLICATION
+        ));
+
+        // Bill Number Generation Strategies
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Bill Number Suffix for PHARMACY_ORDER_PRE",
+                "Custom suffix for purchase order request bill numbers (default: POR)",
+                OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Bill Number Generation Strategy for Purchase Order Requests - Prefix + Department Code + Institution Code + Year + Yearly Number and Yearly Number",
+                "Bill numbering format: Prefix-DeptCode-InstCode-Year-Number",
+                OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Bill Number Generation Strategy for Purchase Order Requests - Prefix + Institution Code + Department Code + Year + Yearly Number and Yearly Number",
+                "Bill numbering format: Prefix-InstCode-DeptCode-Year-Number",
+                OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Bill Number Generation Strategy for Purchase Order Requests - Prefix + Institution Code + Year + Yearly Number and Yearly Number",
+                "Bill numbering format: Prefix-InstCode-Year-Number (institution-wide)",
+                OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Institution Number Generation Strategy for Purchase Order Requests - Prefix + Institution Code + Year + Yearly Number and Yearly Number",
+                "Controls separate institution-wide number generation for the insId field",
+                OptionScope.APPLICATION
+        ));
+
+        // Configuration Options - INSTITUTION scope
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Pharmacy Purchase Order Request Print - A4 Paper Custom 1",
+                "Uses A4 Paper Custom Format 1 for purchase order request printing",
+                OptionScope.INSTITUTION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Pharmacy Purchase Order Request Print - A4 Paper Custom 2",
+                "Uses A4 Paper Custom Format 2 for purchase order request printing",
+                OptionScope.INSTITUTION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Pharmacy Purchase - Quantity Must Be Integer",
+                "Validates that quantity and free quantity values are whole numbers (no decimals)",
+                OptionScope.INSTITUTION
+        ));
+
+        // Privileges
+        metadata.addPrivilege(new PrivilegeInfo(
+                "Admin",
+                "Administrative access to configuration interface",
+                "Controls visibility of the Config button"
+        ));
+        metadata.addPrivilege(new PrivilegeInfo(
+                "CreatePurchaseOrder",
+                "Permission to create and manage purchase orders",
+                "Controls access to the entire purchase order request page"
+        ));
+        metadata.addPrivilege(new PrivilegeInfo(
+                "Developers",
+                "Developer-only features",
+                "Controls visibility of item ID column in autocomplete"
+        ));
+        metadata.addPrivilege(new PrivilegeInfo(
+                "ChangeReceiptPrintingPaperTypes",
+                "Access to receipt printing configuration settings",
+                "Controls visibility of the Settings button in print preview"
+        ));
+
+        pageMetadataRegistry.registerPage(metadata);
     }
 
 }

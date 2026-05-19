@@ -93,13 +93,12 @@
                             </p:commandButton>
 
                             <p:commandButton
-                                class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false" value="Download">
-                                <p:dataExporter type="xlsx" target="surgeryTable" fileName="Surgery_Count_Doctor_Wise.xlsx"/>
+                                class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false" value="Download" action="#{inwardReportController.downloadSurgeryCountDoctorWiseExcel()}">
+
                             </p:commandButton>
 
                             <p:commandButton
-                                class="ui-button-danger mx-1" icon="fas fa-file-pdf" ajax="false" value="PDF">
-                                <p:dataExporter type="pdf" target="surgeryTable" fileName="Surgery_Count_Doctor_Wise.pdf"/>
+                                class="ui-button-danger mx-1" icon="fas fa-file-pdf" ajax="false" value="PDF" action="#{inwardReportController.downloadSurgeryCountDoctorWisePdf}">
                             </p:commandButton>
                         </div>
 

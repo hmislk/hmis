@@ -14,7 +14,7 @@
                 <h:panelGroup id="panbilledit" rendered="#{!staffPaymentBillController.printPreview}" styleClass="alignTop" >
                     <p:panel header="OPD Professional Payment" >
                         <h:form>
-                            <h:panelGrid columns="5" class="w-100">
+                            <h:panelGrid columns="8" class="w-100">
                                 <p:outputLabel 
                                     value="From" />
                                 <p:calendar 
@@ -37,7 +37,17 @@
                                     navigator="true" 
                                     pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
 
-
+                                <p:spacer width="50" ></p:spacer>
+                                <p:outputLabel 
+                                    value="MRN" />
+                                <p:inputText 
+                                    autocomplete="off" 
+                                    placeholder="Patient MRN"
+                                    value="#{staffPaymentBillController.patientPhn}" 
+                                    class="my-1 w-100">
+                                </p:inputText>
+                                
+                                
                                 <h:outputLabel 
                                     value="Speciality" ></h:outputLabel>
                                 <p:autoComplete 
@@ -45,6 +55,7 @@
                                     value="#{staffPaymentBillController.speciality}"
                                     inputStyleClass="w-100" 
                                     class="m-1 w-100"
+                                    placeholder="Select Speciality..."
                                     id="acSpeciality"
                                     completeMethod="#{specialityController.completeSpeciality}" 
                                     var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
@@ -63,18 +74,20 @@
                                     value="#{staffPaymentBillController.currentStaff}"
                                     inputStyleClass="w-100" class="m-1 w-100"
                                     id="scStaff"
+                                    placeholder="Select Doctor..."
                                     completeMethod="#{staffPaymentBillController.completeStaff}"
                                     var="mys" 
                                     itemLabel="#{mys.person.nameWithTitle}" 
                                     itemValue="#{mys}"
                                     >
                                 </p:autoComplete>
+
                             </h:panelGrid>
 
 
                             <p:commandButton 
                                 value="Find Due Payments" 
-                                action="#{staffPaymentBillController.calculateDueFeesForOpdForSelectedPeriod}" 
+                                    action="#{staffPaymentBillController.calculateDueFeesForOpdForSelectedPeriod}" 
                                 ajax="false" 
                                 icon="fa-solid fa-arrows-rotate"
                                 class="ui-button-warning" />
@@ -119,7 +132,7 @@
                                 <p:ajax  event="toggleSelect" process="tblFee" listener="#{staffPaymentBillController.performCalculations()}"   
                                          update=":#{p:resolveFirstComponentWithId('pTotals',view).clientId}"  />  
 
-                                <p:column selectionBox="true" width="20"></p:column>
+                                <p:column selectionBox="true" width="10"></p:column>
 
 
                                 <p:column headerText="Bill Id" width="9em;">
@@ -159,6 +172,14 @@
                                     </h:outputLabel>
                                 </p:column>
 
+                                <p:column width="3em">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="MRN"/>
+                                    </f:facet>    
+                                    <h:outputLabel value="#{bf.bill.patient.phn}" rendered="#{bf.bill.patientEncounter eq null}"/>                                    
+                                    <h:outputLabel value="#{bf.bill.patientEncounter.patient.phn}"/>                                    
+                                </p:column>
+
                                 <p:column headerText="Patient" width="5em">
                                     <f:facet name="header">
                                         <h:outputLabel value="Patient"/>
@@ -182,7 +203,7 @@
                                     <h:outputLabel value="-" rendered="#{bf.bill.comments eq null or bf.bill.comments eq ''}"/>
                                 </p:column>
 
-                                <p:column headerText="Charge" width="5em;">
+                                <p:column headerText="Charge" width="3em;">
                                     <f:facet name="header">
                                         <h:outputLabel value="Charge Type"/>
                                     </f:facet>
@@ -203,20 +224,18 @@
                             <p:panel   >
                                 <f:facet name="header">
                                     <h:outputLabel value="Payment Details" class="mt-2" />
-
-
-
                                     <p:commandButton 
                                         id="btnPay"
                                         ajax="false"
                                         value="&nbsp;&nbsp;&nbsp;&nbsp; Settle Professional Payment" 
                                         style="float: right;"
+                                        onclick="if (!confirm('Do you want to process this payment?'))
+                                                    return false;"
                                         class="ui-button-success"
                                         action="#{staffPaymentBillController.settleBill()}" >
                                     </p:commandButton>
                                     <p:defaultCommand target="btnPay"/>
                                 </f:facet>
-
 
                                 <div class="row" >
                                     <div class="col " >

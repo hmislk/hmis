@@ -23,6 +23,12 @@
                             <h:outputLabel value="To" ></h:outputLabel>
                             <p:calendar value="#{inwardReportController.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
 
+                            <h:outputLabel value="Date Basis" />
+                            <p:selectOneMenu value="#{inwardReportController.dateBasis}">
+                                <f:selectItem itemValue="dischargeDate" itemLabel="Discharge Date" />
+                                <f:selectItem itemValue="admissionDate" itemLabel="Admission Date" />
+                            </p:selectOneMenu>
+
                             <p:outputLabel value="Admission Type"/>
                             <p:selectOneMenu value="#{inwardReportController.admissionType}">
                                 <f:selectItem itemLabel="All Admission Type"/>

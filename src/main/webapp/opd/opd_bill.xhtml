@@ -158,9 +158,10 @@
                                                 <p:column>
                                                     <p:commandButton 
                                                         action="#{patientController.selectQuickOneFromQuickSearchPatient(opdBillController)}" 
+                                                        actionListener="#{opdBillController.calTotals()}"
                                                         id="btnSelectPt"
                                                         process="btnSelectPt tblPatients"
-                                                        update=":#{p:resolveFirstComponentWithId('ptImp',view).clientId} :#{p:resolveFirstComponentWithId('paymentDetails',view).clientId} :#{p:resolveFirstComponentWithId('payment',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}"
+                                                        update=":#{p:resolveFirstComponentWithId('panelBillItems',view).clientId} :#{p:resolveFirstComponentWithId('ptImp',view).clientId} :#{p:resolveFirstComponentWithId('paymentDetails',view).clientId} :#{p:resolveFirstComponentWithId('payment',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}"
                                                         value="select">
                                                         <f:setPropertyActionListener value="#{ps}" target="#{patientController.current}" />
                                                     </p:commandButton>
@@ -337,6 +338,11 @@
                                                                     offLabel="Patient is Local"
                                                                     class="w-100"
                                                                     onLabel="Patient is Forigner" >
+                                                                    <p:ajax 
+                                                                        listener="#{opdBillController.calTotals()}"
+                                                                        process="scbforigner" 
+                                                                        update=":#{p:resolveFirstComponentWithId('panelBillItems',view).clientId} :#{p:resolveFirstComponentWithId('ptImp',view).clientId} :#{p:resolveFirstComponentWithId('paymentDetails',view).clientId} :#{p:resolveFirstComponentWithId('payment',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}">
+                                                                    </p:ajax>
                                                                 </p:selectBooleanButton>
                                                             </h:panelGroup>
 
@@ -461,10 +467,16 @@
 
                                                     <h:outputLabel value="Account Balance (PD)" class="mx-3" rendered="#{opdBillController.patient.hasAnAccount}"/>
                                                     <h:outputLabel value=" : " class="mx-3" rendered="#{opdBillController.patient.hasAnAccount}"/>
-
                                                     <h:outputText value="#{patientDepositController.getPatientCurrentPatientDepositeTotal(opdBillController.patient, sessionController.loggedUser.department)}" rendered="#{opdBillController.patient.hasAnAccount}">
                                                         <f:convertNumber pattern="#,##0.00" />
                                                     </h:outputText>
+
+                                                    <h:outputLabel value="Registered Type" class="mx-3"/>
+                                                    <h:outputLabel value=" : " class="mx-3"/>
+                                                    <p:badge 
+                                                        value="#{opdBillController.patient.selfRegistered eq true ? 'Self Registered' : 'System Registered'}"
+                                                        severity="#{opdBillController.patient.selfRegistered eq true ? 'warning' : 'success'}">
+                                                    </p:badge>
 
                                                     <h:outputLabel value="Area " class="mx-3"/>
                                                     <h:outputLabel value=" : " class="mx-3"/>
@@ -614,7 +626,7 @@
                                                 icon="fa fa-plus"
                                                 class="w-100 ui-button-success"
                                                 action="#{opdBillController.addToBill()}"  
-                                                process="txtQty slmPriority acIx btnAddIx :#{p:resolveFirstComponentWithId('cmbPs',view).clientId} :#{p:resolveFirstComponentWithId('pay',view).clientId} panelBillItems"
+                                                process="txtQty slmPriority acIx btnAddIx :#{p:resolveFirstComponentWithId('cmbPs',view).clientId} :#{p:resolveFirstComponentWithId('cmbPsAll',view).clientId} :#{p:resolveFirstComponentWithId('pay',view).clientId} panelBillItems"
                                                 update=" msg slmPriority tblBillItem :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} acIx pIxAdd txtQty focusLstIx">
                                             </p:commandButton>
                                             <p:focus rendered="#{opdBillController.patient.person.name ne null}" id="focusLstIx" for="acIx" ></p:focus>
@@ -852,7 +864,7 @@
                                                         </p:tabView>
                                                     </p:dialog>
                                                 </p:column>
-                                                
+
                                                 <p:column  width="2em" class="text-end" >
                                                     <f:facet name="header">
                                                         <h:outputText value="Qty" />
@@ -862,12 +874,12 @@
                                                         value="#{bi.billItem.qty}" 
                                                         class="mx-1 text-end"  ></h:outputText>
                                                 </p:column>
-                                                
+
                                                 <p:column  width="10em" >
                                                     <f:facet name="header">Department</f:facet>
                                                         #{bi.billItem.item.department.name}
                                                 </p:column>
-                                                
+
                                                 <p:column width="8em" >
                                                     <f:facet name="header">Priority</f:facet>
                                                     <p:selectOneMenu  
@@ -893,20 +905,20 @@
                                                         </p:column>
                                                     </p:selectOneMenu>
                                                     <h:panelGroup rendered="#{not bi.billItem.item.allowedForBillingPriority}">
-                                                    <div class="card bg-secondary text-white">
-                                                        <h:outputText value="Not Allow" style="font-weight: 700;" class=" d-flex justify-content-center m-2"/>
-                                                    </div>
+                                                        <div class="card bg-secondary text-white">
+                                                            <h:outputText value="Not Allowed" style="font-weight: 700;" class=" d-flex justify-content-center m-2"/>
+                                                        </div>
                                                     </h:panelGroup>
-                                                    
+
                                                 </p:column>
-                                                
+
                                                 <p:column width="5em" class="text-end">
                                                     <f:facet name="header">Fee</f:facet>
                                                     <h:outputText value="#{bi.billItem.netValue}">
                                                         <f:convertNumber pattern="#,##0.00" />
                                                     </h:outputText>
                                                 </p:column>
-                                                
+
                                                 <p:column width="2em">
                                                     <p:commandButton 
                                                         id="btnRemove" 
@@ -1171,7 +1183,7 @@
                                                     var="pm"
                                                     itemLabel="#{pm.label}"
                                                     itemValue="#{pm}"/>
-                                                <p:ajax process="@this cmbPs" 
+                                                <p:ajax process="@this cmbPs cmbPsAll" 
                                                         update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}  tblBillItem paymentDetails"
                                                         event="change"
                                                         listener="#{opdBillController.listnerForPaymentMethodChange()}"/>
@@ -1375,20 +1387,74 @@
 
                                     <div class="row my-1" >
                                         <div class="col-4" >
-                                            <p:selectOneMenu   
-                                                id="cmbPs" 
-                                                value="#{opdBillController.paymentScheme}"
-                                                class="w-100">     
-                                                <f:selectItem 
-                                                    itemLabel="Select Discount Scheme"/>
-                                                <f:selectItems 
-                                                    value="#{paymentSchemeController.paymentSchemesForOPD}" 
-                                                    var="paysch" itemLabel="#{paysch.name}" itemValue="#{paysch}"  />
-                                                <p:ajax process="@this" 
-                                                        update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} tblBillItem paymentDetails" 
-                                                        event="change" 
-                                                        listener="#{opdBillController.listnerForPaymentMethodChange()}"/>
-                                            </p:selectOneMenu>
+                                            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Allowing the use of expired payment schemes', true)}">
+                                                <p:selectOneMenu   
+                                                    id="cmbPs" 
+                                                    value="#{opdBillController.paymentScheme}"
+                                                    class="w-100">     
+                                                    <f:selectItem 
+                                                        itemLabel="Select Discount Scheme"/>
+                                                    <f:selectItems 
+                                                        value="#{paymentSchemeController.paymentSchemesForOPD}" 
+                                                        var="paysch" itemLabel="#{paysch.name}" itemValue="#{paysch}"  />
+                                                    <p:ajax process="@this" 
+                                                            update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} tblBillItem paymentDetails" 
+                                                            event="change" 
+                                                            listener="#{opdBillController.listnerForPaymentMethodChange()}"/>
+                                                </p:selectOneMenu>
+                                            </h:panelGroup>
+
+                                            <h:panelGroup rendered="#{!configOptionApplicationController.getBooleanValueByKey('Allowing the use of expired payment schemes', true)}">
+                                                <p:selectOneMenu   
+                                                    id="cmbPsAll"
+                                                    value="#{opdBillController.paymentScheme}"
+                                                    class="w-100"
+                                                    filter="true"
+                                                    height="500"
+                                                    var="c"
+                                                    filterMatchMode="contains">
+
+                                                    <f:selectItem itemLabel="Select Discount Scheme" itemValue=""  />
+
+                                                    <f:selectItems
+                                                        value="#{paymentSchemeController.paymentSchemesForOPD}"
+                                                        var="paysch"
+                                                        itemDisabled="#{paysch.expired}"
+                                                        itemLabel="#{paysch.name}"
+                                                        itemValue="#{paysch}">
+                                                    </f:selectItems>
+
+                                                    <!-- Custom display with columns -->
+                                                    <p:column style="padding: 9px; min-width: 350px;" headerText="Scheme Name">
+                                                        <h:outputText value="#{c.name}" />
+                                                    </p:column>
+                                                    <p:column style="padding: 9px;" headerText="Expiry Date">
+                                                        <h:panelGroup class="d-flex justify-content-center">
+                                                            <h:outputText value="Not Included" rendered="#{c.expiryDate eq null}"></h:outputText>
+                                                            <h:outputText value="#{c.expiryDate}" rendered="#{c.expiryDate ne null}">
+                                                                <f:convertDateTime pattern="yyyy.MM.dd hh.mm a"/>
+                                                            </h:outputText>
+                                                        </h:panelGroup>
+                                                    </p:column>
+                                                    <p:column style="padding: 9px;" headerText="Status">
+                                                        <h:panelGroup class="d-flex justify-content-center">
+                                                            <h:outputText 
+                                                                value="Expired" 
+                                                                rendered="#{c.expired}" 
+                                                                style="color: red; font-weight: bold;" />
+                                                            <h:outputText 
+                                                                value="Active" 
+                                                                rendered="#{!c.expired}" 
+                                                                style="color: green;" />
+                                                        </h:panelGroup>
+                                                    </p:column>
+
+                                                    <p:ajax process="@this" 
+                                                            update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} tblBillItem paymentDetails" 
+                                                            event="change" 
+                                                            listener="#{opdBillController.listnerForPaymentMethodChange()}" />
+                                                </p:selectOneMenu>
+                                            </h:panelGroup>
                                         </div>
 
                                     </div>
@@ -1407,7 +1473,7 @@
                                                     value="Mark Foreigner" 
                                                     class="mx-2"
                                                     action="#{opdBillController.markAsForeigner}" 
-                                                    rendered="#{!opdBillController.foreigner}" 
+                                                    rendered="#{!opdBillController.patient.person.foreigner}" 
                                                     process="@this" 
                                                     update="gpLocalForeign :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} tblBillItem paymentDetails" 
                                                     >
@@ -1416,7 +1482,7 @@
                                                     value="Mark Local" 
                                                     class="mx-2"
                                                     action="#{opdBillController.markAsLocal}" 
-                                                    rendered="#{opdBillController.foreigner}" 
+                                                    rendered="#{opdBillController.patient.person.foreigner}" 
                                                     process="@this" 
                                                     update="gpLocalForeign :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} tblBillItem paymentDetails" 
                                                     >

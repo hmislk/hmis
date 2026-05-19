@@ -23,6 +23,10 @@ import com.divudi.core.data.dto.SurgeryCountDoctorWiseDTO;
 import com.divudi.core.data.dto.SurgeryCountSurgeryWiseDTO;
 import com.divudi.core.data.hr.ReportKeyWord;
 import com.divudi.core.data.inward.AdmissionStatus;
+import static com.divudi.core.data.inward.AdmissionStatus.ADMITTED_BUT_NOT_DISCHARGED;
+import static com.divudi.core.data.inward.AdmissionStatus.ANY_STATUS;
+import static com.divudi.core.data.inward.AdmissionStatus.DISCHARGED_AND_FINAL_BILL_COMPLETED;
+import static com.divudi.core.data.inward.AdmissionStatus.DISCHARGED_BUT_FINAL_BILL_NOT_COMPLETED;
 import com.divudi.core.data.inward.InwardChargeType;
 
 import com.divudi.core.entity.Bill;
@@ -50,6 +54,7 @@ import com.divudi.core.facade.BillFeeFacade;
 import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.PatientEncounterFacade;
 import com.divudi.core.facade.PatientInvestigationFacade;
+import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -88,6 +93,50 @@ import software.xdev.chartjs.model.options.elements.Fill;
 import software.xdev.chartjs.model.options.scale.Scales;
 import software.xdev.chartjs.model.options.scale.cartesian.linear.LinearScaleOptions;
 import software.xdev.chartjs.model.options.scale.cartesian.linear.LinearTickOptions;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Base64;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.xssf.usermodel.*;
+import org.primefaces.model.DefaultStreamedContent;
+import org.primefaces.model.StreamedContent;
+import com.itextpdf.html2pdf.HtmlConverter;
+import com.itextpdf.html2pdf.ConverterProperties;
+import com.itextpdf.kernel.geom.PageSize;
+import com.itextpdf.kernel.pdf.PdfDocument;
+import com.itextpdf.kernel.pdf.PdfWriter;
+import java.util.stream.Collectors;
+
+import com.lowagie.text.Document;
+import com.lowagie.text.DocumentException;
+import com.lowagie.text.Element;
+import com.lowagie.text.FontFactory;
+import com.lowagie.text.Paragraph;
+import com.lowagie.text.Phrase;
+import com.lowagie.text.pdf.PdfPCell;
+import com.lowagie.text.pdf.PdfPTable;
+import java.io.OutputStream;
+import javax.faces.context.ExternalContext;
+import javax.faces.context.FacesContext;
+import javax.persistence.TemporalType;
+import javax.servlet.http.HttpServletResponse;
+
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.plot.CategoryPlot;
+import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.renderer.category.BarRenderer;
+import org.jfree.chart.renderer.category.LineAndShapeRenderer;
+import org.jfree.data.category.DefaultCategoryDataset;
+
+import com.lowagie.text.Image;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
+import javax.imageio.ImageIO;
 
 /**
  *
@@ -122,12 +171,15 @@ public class InwardReportController implements Serializable {
     InwardReportControllerBht inwardReportControllerBht;
     @Inject
     BhtSummeryController bhtSummeryController;
+    @Inject
+    InwardBeanController inwardBeanController;
 
     PaymentMethod paymentMethod;
     AdmissionType admissionType;
     Institution institution;
     Institution site;
     Department department;
+    private String dateBasis = "createdAt";
     Date fromDate;
     Date toDate;
     private Date fromYearStartDate;
@@ -215,6 +267,14 @@ public class InwardReportController implements Serializable {
 
     private String surgeryWiseLineChartModel;
     private String surgeryWiseBarChartModel;
+
+    private String specialtyLineChartImage;
+    private String specialtyBarChartImage;
+    private String doctorLineChartImage;
+    private String doctorBarChartImage;
+
+    private Date admissionReportProcessedAt;
+    private String admissionReportProcessedBy;
 
     public List<PatientEncounter> getPatientEncounters() {
         return patientEncounters;
@@ -377,6 +437,696 @@ public class InwardReportController implements Serializable {
         billList.add(grandTotal);
 
         createChartModels();
+    }
+
+    public void downloadSurgeryCountDoctorWisePdf() throws Exception {
+        if (billList == null || billList.isEmpty()) {
+            JsfUtil.addErrorMessage("No data to export. Please process the report first.");
+            return;
+        }
+
+        com.lowagie.text.Document document = null;
+        try {
+            FacesContext facesContext = FacesContext.getCurrentInstance();
+            ExternalContext externalContext = facesContext.getExternalContext();
+            externalContext.responseReset();
+            externalContext.setResponseContentType("application/pdf");
+
+            String fileName = "Surgery_Count_Doctor_Wise_"
+                    + new SimpleDateFormat("yyyyMMdd_HHmm").format(new Date()) + ".pdf";
+            externalContext.setResponseHeader("Content-Disposition",
+                    "attachment; filename=\"" + fileName + "\"");
+
+            OutputStream out = externalContext.getResponseOutputStream();
+
+            document = new com.lowagie.text.Document(
+                    com.lowagie.text.PageSize.A3.rotate(), 20, 20, 30, 20);
+            com.lowagie.text.pdf.PdfWriter.getInstance(document, out);
+            document.open();
+
+            // ── Derive year from fromYearStartDate ─────────────────────────────────
+            // fromYearStartDate is bound in XHTML — extract year from it safely
+            int reportYear = Calendar.getInstance().get(Calendar.YEAR); // fallback
+            if (fromYearStartDate != null) {
+                Calendar cal = Calendar.getInstance();
+                cal.setTime(fromYearStartDate);
+                reportYear = cal.get(Calendar.YEAR);
+            }
+
+            // ── Fonts ──────────────────────────────────────────────────────────────
+            com.lowagie.text.Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 14);
+            com.lowagie.text.Font subFont = FontFactory.getFont(FontFactory.HELVETICA, 10);
+            com.lowagie.text.Font headerFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8,
+                    com.lowagie.text.Font.NORMAL, new java.awt.Color(255, 255, 255));
+            com.lowagie.text.Font normalFont = FontFactory.getFont(FontFactory.HELVETICA, 8);
+            com.lowagie.text.Font boldFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8);
+            com.lowagie.text.Font subtotalFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 9);
+            com.lowagie.text.Font grandFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10);
+            com.lowagie.text.Font totalColFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8,
+                    com.lowagie.text.Font.NORMAL, new java.awt.Color(255, 255, 255));
+
+            // ── Colors ─────────────────────────────────────────────────────────────
+            java.awt.Color headerBg = new java.awt.Color(41, 128, 185);
+            java.awt.Color subtotalBg = new java.awt.Color(213, 232, 255);
+            java.awt.Color grandTotalBg = new java.awt.Color(255, 200, 100);
+            java.awt.Color totalColBg = new java.awt.Color(255, 165, 0);
+            java.awt.Color evenRowBg = new java.awt.Color(255, 255, 255);
+            java.awt.Color oddRowBg = new java.awt.Color(248, 249, 250);
+
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+
+            // ── Title ──────────────────────────────────────────────────────────────
+            Paragraph title = new Paragraph(
+                    "Surgery Count Report - Doctor Wise", titleFont);
+            title.setAlignment(Element.ALIGN_CENTER);
+            title.setSpacingAfter(4);
+            document.add(title);
+
+            Paragraph yearLine = new Paragraph("Year: " + reportYear, subFont);
+            yearLine.setAlignment(Element.ALIGN_CENTER);
+            yearLine.setSpacingAfter(10);
+            document.add(yearLine);
+
+            // ── Info Table (inline helper — no external method needed) ─────────────
+            PdfPTable infoTable = new PdfPTable(2);
+            infoTable.setWidthPercentage(45);
+            infoTable.setHorizontalAlignment(Element.ALIGN_LEFT);
+            infoTable.setWidths(new float[]{1.5f, 3f});
+            infoTable.setSpacingAfter(12);
+
+            // Inline addInfoRow — avoids dependency on missing helper method
+            String[][] infoRows = {
+                {"From Date:", fromYearStartDate != null ? sdf.format(fromYearStartDate) : ""},
+                {"To Date:", toYearEndDate != null ? sdf.format(toYearEndDate) : ""},
+                {"Speciality:", currentSpeciality != null ? currentSpeciality.getName() : "All"},
+                {"Generated:", sdf.format(new Date())}
+            };
+            for (String[] row : infoRows) {
+                // Label cell
+                PdfPCell labelCell = new PdfPCell(new Phrase(row[0], boldFont));
+                labelCell.setBorder(com.lowagie.text.Rectangle.NO_BORDER);
+                labelCell.setPadding(3);
+                infoTable.addCell(labelCell);
+                // Value cell
+                PdfPCell valueCell = new PdfPCell(new Phrase(row[1], normalFont));
+                valueCell.setBorder(com.lowagie.text.Rectangle.NO_BORDER);
+                valueCell.setPadding(3);
+                infoTable.addCell(valueCell);
+            }
+            document.add(infoTable);
+
+            // ── Column Headers & Widths ────────────────────────────────────────────
+            String[] headers = {
+                "Doctor Name", "Speciality",
+                "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+                "Total"
+            };
+            float[] colWidths = {
+                3.5f, 2.5f,
+                1f, 1f, 1f, 1f, 1f, 1f,
+                1f, 1f, 1f, 1f, 1f, 1f,
+                1.3f
+            };
+
+            // ── Main Data Table ────────────────────────────────────────────────────
+            PdfPTable table = new PdfPTable(15);
+            table.setWidthPercentage(100);
+            table.setWidths(colWidths);
+            table.setSpacingBefore(5);
+            table.setSpacingAfter(10);
+            table.setHeaderRows(1);
+
+            // Header Row
+            for (int i = 0; i < headers.length; i++) {
+                PdfPCell cell = new PdfPCell(new Phrase(headers[i], headerFont));
+                cell.setBackgroundColor(headerBg);
+                cell.setHorizontalAlignment(i <= 1 ? Element.ALIGN_LEFT : Element.ALIGN_CENTER);
+                cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                cell.setPadding(4);
+                table.addCell(cell);
+            }
+
+            // Data Rows
+            int rowIndex = 0;
+            for (SurgeryCountDoctorWiseDTO item : billList) {
+
+                boolean isSubtotal = item.isSubtotal();
+                boolean isGrandTotal = item.isGrandTotal();
+                boolean isDataRow = !isSubtotal && !isGrandTotal;
+
+                java.awt.Color rowBg = isGrandTotal ? grandTotalBg
+                        : isSubtotal ? subtotalBg
+                                : (rowIndex % 2 == 0) ? evenRowBg : oddRowBg;
+
+                com.lowagie.text.Font rowFont
+                        = (isSubtotal || isGrandTotal) ? subtotalFont : normalFont;
+
+                // Col 0 – Doctor Name
+                // Inline nullSafe — avoids dependency on missing helper
+                String doctorName = item.getDoctorName() != null ? item.getDoctorName() : "";
+                addSurgeryPdfCell(table, doctorName,
+                        isGrandTotal ? grandFont : rowFont,
+                        rowBg, Element.ALIGN_LEFT, isGrandTotal);
+
+                // Col 1 – Speciality
+                String speciality = (isDataRow && item.getSpecialityName() != null)
+                        ? item.getSpecialityName() : "";
+                addSurgeryPdfCell(table, speciality,
+                        rowFont, rowBg, Element.ALIGN_LEFT, false);
+
+                // Cols 2-13 – Month values
+                int[] monthValues = {
+                    item.getJanuary(), item.getFebruary(), item.getMarch(),
+                    item.getApril(), item.getMay(), item.getJune(),
+                    item.getJuly(), item.getAugust(), item.getSeptember(),
+                    item.getOctober(), item.getNovember(), item.getDecember()
+                };
+                for (int mv : monthValues) {
+                    addSurgeryPdfCell(table,
+                            mv > 0 ? String.valueOf(mv) : "",
+                            rowFont, rowBg, Element.ALIGN_CENTER, false);
+                }
+
+                // Col 14 – Total (orange background, white text always)
+                PdfPCell totalCell = new PdfPCell(
+                        new Phrase(String.valueOf(item.getTotalSurgeries()), totalColFont));
+                totalCell.setBackgroundColor(totalColBg);
+                totalCell.setHorizontalAlignment(Element.ALIGN_CENTER);
+                totalCell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                totalCell.setPadding(3);
+                if (isGrandTotal) {
+                    totalCell.setBorderWidthTop(2f);
+                }
+                table.addCell(totalCell);
+
+                if (isDataRow) {
+                    rowIndex++;
+                }
+            }
+
+            document.add(table);
+            // ── Doctor-wise charts ─────────────────────────────────────────────────
+            document.add(buildDoctorLineChart(reportYear));
+            document.add(buildDoctorBarChart(reportYear));
+
+            // ── Specialty-wise charts ──────────────────────────────────────────────
+            document.add(buildSpecialtyLineChart(reportYear));
+            document.add(buildSpecialtyBarChart(reportYear));
+
+            // ── Footer ─────────────────────────────────────────────────────────────
+            Paragraph footer = new Paragraph(
+                    "Generated on: " + sdf.format(new Date()), normalFont);
+            footer.setAlignment(Element.ALIGN_RIGHT);
+            footer.setSpacingBefore(6);
+            document.add(footer);
+
+            document.close();
+            facesContext.responseComplete();
+
+        } catch (DocumentException | IOException e) {
+            JsfUtil.addErrorMessage("Error generating PDF: " + e.getMessage());
+            if (document != null && document.isOpen()) {
+                document.close();
+            }
+        }
+    }
+
+// ── Helper: styled cell for surgery PDF table ─────────────────────────────────
+    private void addSurgeryPdfCell(PdfPTable table,
+            String value,
+            com.lowagie.text.Font font,
+            java.awt.Color bg,
+            int hAlign,
+            boolean topBorder) {
+        PdfPCell cell = new PdfPCell(new Phrase(value == null ? "" : value, font));
+        if (bg != null) {
+            cell.setBackgroundColor(bg);
+        }
+        cell.setHorizontalAlignment(hAlign);
+        cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+        cell.setPadding(3);
+        if (topBorder) {
+            cell.setBorderWidthTop(2f);
+        }
+        table.addCell(cell);
+    }
+
+    private Image buildChartImage(JFreeChart chart, int width, int height)
+            throws Exception {
+        BufferedImage bi = chart.createBufferedImage(width, height);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ImageIO.write(bi, "png", baos);
+        Image img = Image.getInstance(baos.toByteArray());
+        img.setWidthPercentage(100);
+        return img;
+    }
+    private static final String[] MONTH_LABELS
+            = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
+
+    private static final java.awt.Color[] DOCTOR_COLORS = {
+        new java.awt.Color(75, 192, 192), new java.awt.Color(255, 99, 132),
+        new java.awt.Color(54, 162, 235), new java.awt.Color(255, 206, 86),
+        new java.awt.Color(153, 102, 255), new java.awt.Color(255, 159, 64),
+        new java.awt.Color(199, 199, 199), new java.awt.Color(83, 102, 255),
+        new java.awt.Color(255, 99, 255), new java.awt.Color(99, 255, 132)
+    };
+
+    private static final java.awt.Color[] SPECIALTY_COLORS = {
+        new java.awt.Color(220, 20, 60), new java.awt.Color(65, 105, 225),
+        new java.awt.Color(255, 140, 0), new java.awt.Color(34, 139, 34),
+        new java.awt.Color(138, 43, 226), new java.awt.Color(255, 215, 0)
+    };
+
+    /**
+     * Fills a DefaultCategoryDataset from billList for doctor rows
+     * (non-subtotal, non-grand).
+     */
+    private DefaultCategoryDataset buildDoctorDataset() {
+        DefaultCategoryDataset ds = new DefaultCategoryDataset();
+        for (SurgeryCountDoctorWiseDTO dto : billList) {
+            if (dto.isSubtotal() || dto.isGrandTotal()) {
+                continue;
+            }
+            int[] vals = {dto.getJanuary(), dto.getFebruary(), dto.getMarch(),
+                dto.getApril(), dto.getMay(), dto.getJune(),
+                dto.getJuly(), dto.getAugust(), dto.getSeptember(),
+                dto.getOctober(), dto.getNovember(), dto.getDecember()};
+            for (int i = 0; i < 12; i++) {
+                ds.addValue(vals[i], dto.getDoctorName(), MONTH_LABELS[i]);
+            }
+        }
+        return ds;
+    }
+
+    /**
+     * Fills a DefaultCategoryDataset from billList for specialty subtotal rows.
+     */
+    private DefaultCategoryDataset buildSpecialtyDataset() {
+        DefaultCategoryDataset ds = new DefaultCategoryDataset();
+        for (SurgeryCountDoctorWiseDTO dto : billList) {
+            if (!dto.isSubtotal()) {
+                continue;
+            }
+            int[] vals = {dto.getJanuary(), dto.getFebruary(), dto.getMarch(),
+                dto.getApril(), dto.getMay(), dto.getJune(),
+                dto.getJuly(), dto.getAugust(), dto.getSeptember(),
+                dto.getOctober(), dto.getNovember(), dto.getDecember()};
+            for (int i = 0; i < 12; i++) {
+                ds.addValue(vals[i], dto.getSpecialityName(), MONTH_LABELS[i]);
+            }
+        }
+        return ds;
+    }
+
+    /**
+     * Applies a color array to every series in a CategoryPlot renderer.
+     */
+    private void applyColors(CategoryPlot plot, java.awt.Color[] palette) {
+        for (int i = 0; i < plot.getDataset().getRowCount(); i++) {
+            plot.getRenderer().setSeriesPaint(i, palette[i % palette.length]);
+        }
+    }
+
+// ── Doctor line chart ──────────────────────────────────────────────────────
+    private Image buildDoctorLineChart(int year) throws Exception {
+        DefaultCategoryDataset ds = buildDoctorDataset();
+        JFreeChart chart = ChartFactory.createLineChart(
+                "Doctor Wise Surgery Count – Year " + year,
+                "Month", "Surgery Count",
+                ds, PlotOrientation.VERTICAL, true, false, false);
+
+        CategoryPlot plot = chart.getCategoryPlot();
+        ((NumberAxis) plot.getRangeAxis()).setStandardTickUnits(
+                NumberAxis.createIntegerTickUnits());
+        plot.getRangeAxis().setLowerBound(0);
+
+        LineAndShapeRenderer renderer = new LineAndShapeRenderer(true, true);
+        renderer.setDefaultStroke(new java.awt.BasicStroke(2f));
+        plot.setRenderer(renderer);
+        applyColors(plot, DOCTOR_COLORS);
+
+        chart.getLegend().setPosition(
+                org.jfree.chart.ui.RectangleEdge.RIGHT);
+
+        Image img = buildChartImage(chart, 1100, 400);
+        img.setSpacingBefore(20);
+        img.setSpacingAfter(10);
+        return img;
+    }
+
+// ── Doctor bar chart ───────────────────────────────────────────────────────
+    private Image buildDoctorBarChart(int year) throws Exception {
+        DefaultCategoryDataset ds = buildDoctorDataset();
+        JFreeChart chart = ChartFactory.createBarChart(
+                "Doctor Wise Surgery Count – Year " + year,
+                "Month", "Surgery Count",
+                ds, PlotOrientation.VERTICAL, true, false, false);
+
+        CategoryPlot plot = chart.getCategoryPlot();
+        ((NumberAxis) plot.getRangeAxis()).setStandardTickUnits(
+                NumberAxis.createIntegerTickUnits());
+        plot.getRangeAxis().setLowerBound(0);
+
+        BarRenderer renderer = (BarRenderer) plot.getRenderer();
+        renderer.setDrawBarOutline(true);
+        applyColors(plot, DOCTOR_COLORS);
+
+        chart.getLegend().setPosition(
+                org.jfree.chart.ui.RectangleEdge.TOP);
+
+        Image img = buildChartImage(chart, 1100, 400);
+        img.setSpacingBefore(10);
+        img.setSpacingAfter(20);
+        return img;
+    }
+
+// ── Specialty line chart ───────────────────────────────────────────────────
+    private Image buildSpecialtyLineChart(int year) throws Exception {
+        DefaultCategoryDataset ds = buildSpecialtyDataset();
+        JFreeChart chart = ChartFactory.createLineChart(
+                "Specialty Wise Surgery Count – Year " + year,
+                "Month", "Surgery Count",
+                ds, PlotOrientation.VERTICAL, true, false, false);
+
+        CategoryPlot plot = chart.getCategoryPlot();
+        ((NumberAxis) plot.getRangeAxis()).setStandardTickUnits(
+                NumberAxis.createIntegerTickUnits());
+        plot.getRangeAxis().setLowerBound(0);
+
+        LineAndShapeRenderer renderer = new LineAndShapeRenderer(true, true);
+        renderer.setDefaultStroke(new java.awt.BasicStroke(3f));
+        plot.setRenderer(renderer);
+        applyColors(plot, SPECIALTY_COLORS);
+
+        chart.getLegend().setPosition(
+                org.jfree.chart.ui.RectangleEdge.RIGHT);
+
+        Image img = buildChartImage(chart, 1100, 400);
+        img.setSpacingBefore(20);
+        img.setSpacingAfter(10);
+        return img;
+    }
+
+// ── Specialty bar chart ────────────────────────────────────────────────────
+    private Image buildSpecialtyBarChart(int year) throws Exception {
+        DefaultCategoryDataset ds = buildSpecialtyDataset();
+        JFreeChart chart = ChartFactory.createBarChart(
+                "Specialty Wise Surgery Count – Year " + year,
+                "Month", "Surgery Count",
+                ds, PlotOrientation.VERTICAL, true, false, false);
+
+        CategoryPlot plot = chart.getCategoryPlot();
+        ((NumberAxis) plot.getRangeAxis()).setStandardTickUnits(
+                NumberAxis.createIntegerTickUnits());
+        plot.getRangeAxis().setLowerBound(0);
+
+        BarRenderer renderer = (BarRenderer) plot.getRenderer();
+        renderer.setDrawBarOutline(true);
+        applyColors(plot, SPECIALTY_COLORS);
+
+        chart.getLegend().setPosition(
+                org.jfree.chart.ui.RectangleEdge.TOP);
+
+        Image img = buildChartImage(chart, 1100, 400);
+        img.setSpacingBefore(10);
+        img.setSpacingAfter(20);
+        return img;
+    }
+
+    public void downloadSurgeryCountDoctorWiseExcel() {
+        if (billList == null || billList.isEmpty()) {
+            JsfUtil.addErrorMessage("No data to export. Please process the report first.");
+            return;
+        }
+
+        XSSFWorkbook workbook = null;
+        try {
+            workbook = new XSSFWorkbook();
+            XSSFSheet sheet = workbook.createSheet("Surgery Count Doctor Wise");
+
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+
+            // ── Derive report year ─────────────────────────────────────────────────
+            int reportYear = Calendar.getInstance().get(Calendar.YEAR);
+            if (fromYearStartDate != null) {
+                Calendar cal = Calendar.getInstance();
+                cal.setTime(fromYearStartDate);
+                reportYear = cal.get(Calendar.YEAR);
+            }
+
+            // ── Title style ────────────────────────────────────────────────────────
+            XSSFCellStyle titleStyle = workbook.createCellStyle();
+            XSSFFont titleFont = workbook.createFont();
+            titleFont.setBold(true);
+            titleFont.setFontHeightInPoints((short) 14);
+            titleStyle.setFont(titleFont);
+            titleStyle.setAlignment(HorizontalAlignment.CENTER);
+
+            // ── Info label style ───────────────────────────────────────────────────
+            XSSFCellStyle infoLabelStyle = workbook.createCellStyle();
+            XSSFFont infoLabelFont = workbook.createFont();
+            infoLabelFont.setBold(true);
+            infoLabelFont.setFontHeightInPoints((short) 9);
+            infoLabelStyle.setFont(infoLabelFont);
+
+            // ── Info value style ───────────────────────────────────────────────────
+            XSSFCellStyle infoValueStyle = workbook.createCellStyle();
+            XSSFFont infoValueFont = workbook.createFont();
+            infoValueFont.setFontHeightInPoints((short) 9);
+            infoValueStyle.setFont(infoValueFont);
+
+            // ── Column header style — blue bg, white bold ──────────────────────────
+            XSSFCellStyle headerStyle = workbook.createCellStyle();
+            XSSFFont headerFont = workbook.createFont();
+            headerFont.setBold(true);
+            headerFont.setFontHeightInPoints((short) 9);
+            headerFont.setColor(new XSSFColor(new byte[]{(byte) 255, (byte) 255, (byte) 255}, null));
+            headerStyle.setFont(headerFont);
+            headerStyle.setFillForegroundColor(
+                    new XSSFColor(new byte[]{(byte) 41, (byte) 128, (byte) 185}, null));
+            headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            headerStyle.setAlignment(HorizontalAlignment.CENTER);
+            headerStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+            headerStyle.setBorderBottom(BorderStyle.THIN);
+            headerStyle.setBorderTop(BorderStyle.THIN);
+            headerStyle.setBorderLeft(BorderStyle.THIN);
+            headerStyle.setBorderRight(BorderStyle.THIN);
+
+            // ── Normal text style ──────────────────────────────────────────────────
+            XSSFCellStyle normalStyle = workbook.createCellStyle();
+            XSSFFont normalFont = workbook.createFont();
+            normalFont.setFontHeightInPoints((short) 8);
+            normalStyle.setFont(normalFont);
+            normalStyle.setBorderBottom(BorderStyle.THIN);
+            normalStyle.setBorderTop(BorderStyle.THIN);
+            normalStyle.setBorderLeft(BorderStyle.THIN);
+            normalStyle.setBorderRight(BorderStyle.THIN);
+
+            // ── Normal number style — center aligned ───────────────────────────────
+            XSSFCellStyle numberStyle = workbook.createCellStyle();
+            numberStyle.cloneStyleFrom(normalStyle);
+            numberStyle.setAlignment(HorizontalAlignment.CENTER);
+
+            // ── Subtotal style — light blue bg, bold ───────────────────────────────
+            XSSFCellStyle subtotalStyle = workbook.createCellStyle();
+            XSSFFont subtotalFont = workbook.createFont();
+            subtotalFont.setBold(true);
+            subtotalFont.setFontHeightInPoints((short) 9);
+            subtotalStyle.setFont(subtotalFont);
+            subtotalStyle.setFillForegroundColor(
+                    new XSSFColor(new byte[]{(byte) 213, (byte) 232, (byte) 255}, null));
+            subtotalStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            subtotalStyle.setBorderBottom(BorderStyle.THIN);
+            subtotalStyle.setBorderTop(BorderStyle.THIN);
+            subtotalStyle.setBorderLeft(BorderStyle.THIN);
+            subtotalStyle.setBorderRight(BorderStyle.THIN);
+
+            // ── Subtotal number style ──────────────────────────────────────────────
+            XSSFCellStyle subtotalNumberStyle = workbook.createCellStyle();
+            subtotalNumberStyle.cloneStyleFrom(subtotalStyle);
+            subtotalNumberStyle.setAlignment(HorizontalAlignment.CENTER);
+
+            // ── Grand total style — orange bg, bold ────────────────────────────────
+            XSSFCellStyle grandTotalStyle = workbook.createCellStyle();
+            XSSFFont grandFont = workbook.createFont();
+            grandFont.setBold(true);
+            grandFont.setFontHeightInPoints((short) 10);
+            grandTotalStyle.setFont(grandFont);
+            grandTotalStyle.setFillForegroundColor(
+                    new XSSFColor(new byte[]{(byte) 255, (byte) 200, (byte) 100}, null));
+            grandTotalStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            grandTotalStyle.setBorderBottom(BorderStyle.MEDIUM);
+            grandTotalStyle.setBorderTop(BorderStyle.MEDIUM);
+            grandTotalStyle.setBorderLeft(BorderStyle.THIN);
+            grandTotalStyle.setBorderRight(BorderStyle.THIN);
+
+            // ── Grand total number style ───────────────────────────────────────────
+            XSSFCellStyle grandTotalNumberStyle = workbook.createCellStyle();
+            grandTotalNumberStyle.cloneStyleFrom(grandTotalStyle);
+            grandTotalNumberStyle.setAlignment(HorizontalAlignment.CENTER);
+
+            // ── Total column style — orange bg, white bold ─────────────────────────
+            XSSFCellStyle totalColStyle = workbook.createCellStyle();
+            XSSFFont totalColFont = workbook.createFont();
+            totalColFont.setBold(true);
+            totalColFont.setFontHeightInPoints((short) 9);
+            totalColFont.setColor(
+                    new XSSFColor(new byte[]{(byte) 255, (byte) 255, (byte) 255}, null));
+            totalColStyle.setFont(totalColFont);
+            totalColStyle.setFillForegroundColor(
+                    new XSSFColor(new byte[]{(byte) 255, (byte) 165, (byte) 0}, null));
+            totalColStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            totalColStyle.setAlignment(HorizontalAlignment.CENTER);
+            totalColStyle.setBorderBottom(BorderStyle.THIN);
+            totalColStyle.setBorderTop(BorderStyle.THIN);
+            totalColStyle.setBorderLeft(BorderStyle.THIN);
+            totalColStyle.setBorderRight(BorderStyle.THIN);
+
+            int rowIdx = 0;
+
+            // ── Title row ──────────────────────────────────────────────────────────
+            Row titleRow = sheet.createRow(rowIdx++);
+            titleRow.setHeightInPoints(22);
+            org.apache.poi.ss.usermodel.Cell titleCell = titleRow.createCell(0);
+            titleCell.setCellValue(
+                    "Surgery Count Report - Doctor Wise  (Year: " + reportYear + ")");
+            titleCell.setCellStyle(titleStyle);
+            sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 14));
+
+            rowIdx++; // blank row
+
+            // ── Info rows ──────────────────────────────────────────────────────────
+            String[][] infoRows = {
+                {"From Date:", fromYearStartDate != null ? sdf.format(fromYearStartDate) : ""},
+                {"To Date:", toYearEndDate != null ? sdf.format(toYearEndDate) : ""},
+                {"Speciality:", currentSpeciality != null ? currentSpeciality.getName() : "All"},
+                {"Generated:", sdf.format(new Date())}
+            };
+            for (String[] info : infoRows) {
+                Row infoRow = sheet.createRow(rowIdx++);
+                org.apache.poi.ss.usermodel.Cell labelCell = infoRow.createCell(0);
+                labelCell.setCellValue(info[0]);
+                labelCell.setCellStyle(infoLabelStyle);
+                org.apache.poi.ss.usermodel.Cell valueCell = infoRow.createCell(1);
+                valueCell.setCellValue(info[1]);
+                valueCell.setCellStyle(infoValueStyle);
+            }
+
+            rowIdx++; // blank row
+
+            // ── Column header row ──────────────────────────────────────────────────
+            String[] headers = {
+                "Doctor Name", "Speciality",
+                "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+                "Total"
+            };
+            Row headerRow = sheet.createRow(rowIdx++);
+            headerRow.setHeightInPoints(18);
+            for (int i = 0; i < headers.length; i++) {
+                org.apache.poi.ss.usermodel.Cell cell = headerRow.createCell(i);
+                cell.setCellValue(headers[i]);
+                cell.setCellStyle(headerStyle);
+            }
+
+            // ── Data rows ──────────────────────────────────────────────────────────
+            for (SurgeryCountDoctorWiseDTO item : billList) {
+
+                boolean isSubtotal = item.isSubtotal();
+                boolean isGrandTotal = item.isGrandTotal();
+                boolean isDataRow = !isSubtotal && !isGrandTotal;
+
+                XSSFCellStyle textStyle = isGrandTotal ? grandTotalStyle
+                        : isSubtotal ? subtotalStyle
+                                : normalStyle;
+                XSSFCellStyle numStyle = isGrandTotal ? grandTotalNumberStyle
+                        : isSubtotal ? subtotalNumberStyle
+                                : numberStyle;
+
+                Row dataRow = sheet.createRow(rowIdx++);
+                dataRow.setHeightInPoints(15);
+
+                // Col 0 – Doctor Name
+                org.apache.poi.ss.usermodel.Cell nameCell = dataRow.createCell(0);
+                nameCell.setCellValue(item.getDoctorName() != null ? item.getDoctorName() : "");
+                nameCell.setCellStyle(textStyle);
+
+                // Col 1 – Speciality
+                org.apache.poi.ss.usermodel.Cell specCell = dataRow.createCell(1);
+                specCell.setCellValue(isDataRow && item.getSpecialityName() != null
+                        ? item.getSpecialityName() : "");
+                specCell.setCellStyle(textStyle);
+
+                // Cols 2-13 – Month values
+                int[] monthValues = {
+                    item.getJanuary(), item.getFebruary(), item.getMarch(),
+                    item.getApril(), item.getMay(), item.getJune(),
+                    item.getJuly(), item.getAugust(), item.getSeptember(),
+                    item.getOctober(), item.getNovember(), item.getDecember()
+                };
+                for (int m = 0; m < monthValues.length; m++) {
+                    org.apache.poi.ss.usermodel.Cell monthCell = dataRow.createCell(2 + m);
+                    if (monthValues[m] > 0) {
+                        monthCell.setCellValue(monthValues[m]);
+                    } else {
+                        monthCell.setCellValue("");
+                    }
+                    monthCell.setCellStyle(numStyle);
+                }
+
+                // Col 14 – Total (always orange)
+                org.apache.poi.ss.usermodel.Cell totalCell = dataRow.createCell(14);
+                totalCell.setCellValue(item.getTotalSurgeries());
+                totalCell.setCellStyle(totalColStyle);
+            }
+
+            // ── Column widths ──────────────────────────────────────────────────────
+            int[] colWidths = {
+                6000, 5000,
+                1800, 1800, 1800, 1800, 1800, 1800,
+                1800, 1800, 1800, 1800, 1800, 1800,
+                2200
+            };
+            for (int i = 0; i < colWidths.length; i++) {
+                sheet.setColumnWidth(i, colWidths[i]);
+            }
+
+            // ── Write workbook to byte array first, then stream ────────────────────
+            // Avoids "IOException never thrown" by separating workbook.write()
+            // from the JSF response stream handling
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            workbook.write(baos);
+            byte[] excelBytes = baos.toByteArray();
+
+            // ── Write to HTTP response ─────────────────────────────────────────────
+            FacesContext facesContext = FacesContext.getCurrentInstance();
+            ExternalContext externalContext = facesContext.getExternalContext();
+            externalContext.responseReset();
+            externalContext.setResponseContentType(
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            externalContext.setResponseContentLength(excelBytes.length);
+            String fileName = "Surgery_Count_Doctor_Wise_"
+                    + new SimpleDateFormat("yyyyMMdd_HHmm").format(new Date()) + ".xlsx";
+            externalContext.setResponseHeader("Content-Disposition",
+                    "attachment; filename=\"" + fileName + "\"");
+
+            OutputStream out = externalContext.getResponseOutputStream();
+            out.write(excelBytes);
+            out.flush();
+
+            facesContext.responseComplete();
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error generating Excel: " + e.getMessage());
+        } finally {
+            if (workbook != null) {
+                try {
+                    workbook.close();
+                } catch (Exception ignored) {
+                }
+            }
+        }
     }
 
     private List<SurgeryCountSurgeryWiseDTO> surgeryCountSurgeryWiseList;
@@ -640,8 +1390,22 @@ public class InwardReportController implements Serializable {
                     .append(" Where s.retired = false ")
                     .append(" and a.discharged = true ")
                     .append(" and a.dateOfDischarge is not null ")
-                    .append(" AND a.dateOfDischarge BETWEEN :fromDate AND :toDate ");
+                    .append(" AND a.dateOfDischarge BETWEEN :fromDate AND :toDate ")
+                    .append("   and exists ( ")
+                    .append("       select bf.id ")
+                    .append("       from Bill bf ")
+                    .append("       where bf.retired = false ")
+                    .append("         and bf.cancelled = false ")
+                    .append("         and bf.billTypeAtomic = :bt ")
+                    .append("         and (bf.patientEncounter = s OR bf.patientEncounter = a) ")
+                    .append("         and not exists ( ")
+                    .append("             select cb.id from CancelledBill cb ")
+                    .append("             where cb.retired = false ")
+                    .append("             and cb.billedBill = bf ")
+                    .append("         ) ")
+                    .append("   ) ");
 
+            params.put("bt", BillTypeAtomic.INWARD_THEATRE_PROFESSIONAL_FEE_BILL);
             params.put("fromDate", fromDate);
             params.put("toDate", toDate);
 
@@ -679,7 +1443,22 @@ public class InwardReportController implements Serializable {
                     .append(" Where s.retired = false ")
                     .append(" and a.discharged = true ")
                     .append(" and a.dateOfDischarge is not null ")
-                    .append(" AND a.dateOfDischarge BETWEEN :fromDate AND :toDate ");
+                    .append(" AND a.dateOfDischarge BETWEEN :fromDate AND :toDate ")
+                    .append("   and exists ( ")
+                    .append("       select bf.id ")
+                    .append("       from Bill bf ")
+                    .append("       where bf.retired = false ")
+                    .append("         and bf.cancelled = false ")
+                    .append("         and bf.billTypeAtomic = :bt ")
+                    .append("         and (bf.patientEncounter = s OR bf.patientEncounter = a) ")
+                    .append("         and not exists ( ")
+                    .append("             select cb.id from CancelledBill cb ")
+                    .append("             where cb.retired = false ")
+                    .append("             and cb.billedBill = bf ")
+                    .append("         ) ")
+                    .append("   ) ");
+
+            params.put("bt", BillTypeAtomic.INWARD_THEATRE_PROFESSIONAL_FEE_BILL);
 
             params.put("fromDate", fromDate);
             params.put("toDate", toDate);
@@ -762,11 +1541,119 @@ public class InwardReportController implements Serializable {
 
     }
 
+    public void downloadSurgerySurveyPdf() {
+        if (monthlySurgeryCountList == null || monthlySurgeryCountList.isEmpty()) {
+            JsfUtil.addErrorMessage("No data to export. Please process the report first.");
+            return;
+        }
+
+        com.lowagie.text.Document document = null;
+        try {
+            FacesContext facesContext = FacesContext.getCurrentInstance();
+            ExternalContext externalContext = facesContext.getExternalContext();
+            externalContext.responseReset();
+            externalContext.setResponseContentType("application/pdf");
+
+            String fileName = "Surgery_Survey_"
+                    + new SimpleDateFormat("yyyyMMdd_HHmm").format(new Date()) + ".pdf";
+            externalContext.setResponseHeader("Content-Disposition",
+                    "attachment; filename=\"" + fileName + "\"");
+
+            OutputStream out = externalContext.getResponseOutputStream();
+
+            document = new com.lowagie.text.Document(
+                    com.lowagie.text.PageSize.A3.rotate(), 20, 20, 30, 20);
+            com.lowagie.text.pdf.PdfWriter.getInstance(document, out);
+            document.open();
+
+            com.lowagie.text.Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 13);
+            com.lowagie.text.Font labelFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 9);
+            com.lowagie.text.Font normalFont = FontFactory.getFont(FontFactory.HELVETICA, 9);
+            com.lowagie.text.Font headerFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 9);
+
+            SimpleDateFormat sdf = new SimpleDateFormat("dd/MMM/yyyy");
+
+            String title = "Surgery Survey " + reportType + " Report";
+            Paragraph titlePara = new Paragraph(title, titleFont);
+            titlePara.setAlignment(Element.ALIGN_CENTER);
+            titlePara.setSpacingAfter(6);
+            document.add(titlePara);
+
+            PdfPTable info = new PdfPTable(2);
+            info.setWidthPercentage(50);
+            info.setWidths(new float[]{1.4f, 3f});
+            info.setSpacingAfter(10);
+
+            addInfoRow(info, "From Date:", fromDate != null ? sdf.format(fromDate) : "");
+            addInfoRow(info, "To Date:", toDate != null ? sdf.format(toDate) : "");
+            addInfoRow(info, "Surgery Type:", surgeryType != null ? surgeryType.getName() : "All");
+            addInfoRow(info, "Institution:", institution != null ? institution.getName() : "All");
+            addInfoRow(info, "Site:", site != null ? site.getName() : "All");
+            addInfoRow(info, "Department:", department != null ? department.getName() : "All");
+            document.add(info);
+
+            // Build table header: Month + dynamic surgery headers + Total
+            int colCount = 2 + (surgeryHeaders != null ? surgeryHeaders.size() : 0);
+            PdfPTable table = new PdfPTable(colCount);
+            table.setWidthPercentage(100);
+
+            PdfPCell monthHeader = new PdfPCell(new Phrase("Month", headerFont));
+            monthHeader.setHorizontalAlignment(Element.ALIGN_CENTER);
+            table.addCell(monthHeader);
+
+            if (surgeryHeaders != null) {
+                for (String h : surgeryHeaders) {
+                    PdfPCell cell = new PdfPCell(new Phrase(h, headerFont));
+                    cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+                    table.addCell(cell);
+                }
+            }
+
+            PdfPCell totalHeader = new PdfPCell(new Phrase("Total", headerFont));
+            totalHeader.setHorizontalAlignment(Element.ALIGN_CENTER);
+            table.addCell(totalHeader);
+
+            for (MonthlySurgeryCountDTO row : monthlySurgeryCountList) {
+                table.addCell(new Phrase(row.isGrandTotal() ? "Grand Total" : row.getMonthName(), normalFont));
+
+                if (surgeryHeaders != null) {
+                    for (String h : surgeryHeaders) {
+                        Long val = row.getServiceCountMap().get(h);
+                        table.addCell(new Phrase(val == null ? "0" : val.toString(), normalFont));
+                    }
+                }
+
+                table.addCell(new Phrase(String.valueOf(row.getTotal()), normalFont));
+            }
+
+            document.add(table);
+            facesContext.responseComplete();
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Failed to generate PDF: " + e.getMessage());
+        } finally {
+            if (document != null) {
+                document.close();
+            }
+        }
+    }
+
+    private void addInfoRow(PdfPTable info, String label, String value) {
+        PdfPCell l = new PdfPCell(new Phrase(label, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 9)));
+        l.setBorder(com.lowagie.text.Rectangle.NO_BORDER);
+        l.setPadding(3);
+        info.addCell(l);
+
+        PdfPCell v = new PdfPCell(new Phrase(value, FontFactory.getFont(FontFactory.HELVETICA, 9)));
+        v.setBorder(com.lowagie.text.Rectangle.NO_BORDER);
+        v.setPadding(3);
+        info.addCell(v);
+    }
+
     public void processIpUnsettledInvoicesReport() {
         Map<String, Object> params = new HashMap<>();
         StringBuilder jpql = new StringBuilder();
 
-        // Use PatientEncounter instead of Admission
         jpql.append("SELECT new com.divudi.core.data.dto.IpUnsettledInvoiceDTO(")
                 .append("pe.id, ")
                 .append("pe.patient.phn, ")
@@ -788,22 +1675,18 @@ public class InwardReportController implements Serializable {
         }
 
         jpql.append("WHERE pe.retired = :ret ")
-                .append("AND pe.dateOfAdmission BETWEEN :fd AND :td ")
-                .append("AND pe.discharged = TRUE ")
-                .append("AND pe.paymentFinalized = FALSE ");
+                .append("AND pe.dateOfAdmission BETWEEN :fd AND :td ");
 
         params.put("ret", false);
         params.put("fd", fromDate);
         params.put("td", toDate);
 
-        // Discharge date filter
         if (dischargeFromDate != null && dischargeToDate != null) {
             jpql.append("AND pe.dateOfDischarge BETWEEN :dfd AND :dtd ");
             params.put("dfd", dischargeFromDate);
             params.put("dtd", dischargeToDate);
         }
 
-        // Invoice approved date filter
         if (invoiceApprovedFromDate != null && invoiceApprovedToDate != null) {
             jpql.append("AND pe.finalBill IS NOT NULL ")
                     .append("AND pe.finalBill.createdAt BETWEEN :iafd AND :iatd ");
@@ -811,83 +1694,438 @@ public class InwardReportController implements Serializable {
             params.put("iatd", invoiceApprovedToDate);
         }
 
-        // Institution filter
         if (institution != null) {
             jpql.append("AND pe.institution = :inst ");
             params.put("inst", institution);
         }
-
-        // Site filter
         if (site != null) {
             jpql.append("AND pe.department.site = :site ");
             params.put("site", site);
         }
-
-        // Department filter
         if (department != null) {
             jpql.append("AND pe.department = :dept ");
             params.put("dept", department);
         }
-
-        // Consultant filter
         if (consultant != null) {
             jpql.append("AND pe.referringConsultant = :cons ");
             params.put("cons", consultant);
         }
-
-        // Service Center filter (assuming this uses department)
         if (serviceCenter != null) {
             jpql.append("AND pe.department = :sc ");
             params.put("sc", serviceCenter);
         }
-
         if (sponsor != null) {
             jpql.append("AND pe.creditCompany = :sponsor ");
             params.put("sponsor", sponsor);
         }
-
-        // Admission Status filter (if PatientEncounter has admissionStatus)
-        if (admissionStatus != null) {
-            jpql.append("AND pe.admissionStatus = :as ");
-            params.put("as", admissionStatus);
-        }
-
-        // Admission Type filter
         if (admissionType != null) {
             jpql.append("AND pe.admissionType = :at ");
             params.put("at", admissionType);
         }
-
-        // Payment Method filter
         if (paymentMethod != null) {
             jpql.append("AND pe.paymentMethod = :pm ");
             params.put("pm", paymentMethod);
         }
-
-        // Room Category filter
         if (roomCategory != null) {
             jpql.append("AND rfc.roomCategory = :rc ");
             params.put("rc", roomCategory);
+        }
+        if (admissionStatus != null) {
+            switch (admissionStatus) {
+                case ADMITTED_BUT_NOT_DISCHARGED:
+                    jpql.append("AND pe.discharged = :dis AND pe.paymentFinalized = FALSE ");
+                    params.put("dis", false);
+                    break;
+                case DISCHARGED_BUT_FINAL_BILL_NOT_COMPLETED:
+                    jpql.append("AND pe.discharged = :dis AND pe.paymentFinalized = FALSE ");
+                    params.put("dis", true);
+                    break;
+                case DISCHARGED_AND_FINAL_BILL_COMPLETED:
+                    jpql.append("AND pe.discharged = :dis AND pe.paymentFinalized = TRUE ");
+                    params.put("dis", true);
+                    break;
+                case ANY_STATUS:
+                default:
+                    jpql.append("AND pe.paymentFinalized = FALSE ");
+                    break;
+            }
+        } else {
+            jpql.append("AND pe.paymentFinalized = FALSE ");
         }
 
         jpql.append("ORDER BY pe.dateOfAdmission ");
 
         try {
             unsettledInvoicesList = (List<IpUnsettledInvoiceDTO>) peFacade.findLightsByJpql(
-                    jpql.toString(),
-                    params,
-                    TemporalType.TIMESTAMP
-            );
-
+                    jpql.toString(), params, TemporalType.TIMESTAMP);
         } catch (Exception e) {
             JsfUtil.addErrorMessage("Error loading unsettled invoices: " + e.getMessage());
             unsettledInvoicesList = new ArrayList<>();
+            return;
         }
 
-        if (unsettledInvoicesList == null) {
+        if (unsettledInvoicesList == null || unsettledInvoicesList.isEmpty()) {
             unsettledInvoicesList = new ArrayList<>();
+            return;
         }
 
+        List<Long> encounterIds = unsettledInvoicesList.stream()
+                .filter(dto -> dto != null && dto.getAdmissionId() != null)
+                .map(IpUnsettledInvoiceDTO::getAdmissionId)
+                .collect(Collectors.toList());
+
+        if (encounterIds.isEmpty()) {
+            return;
+        }
+
+        List<PatientEncounter> encounters = peFacade.findByJpql(
+                "SELECT pe FROM PatientEncounter pe WHERE pe.id IN :ids",
+                Collections.singletonMap("ids", encounterIds));
+
+        Map<Long, PatientEncounter> encounterById = (encounters == null)
+                ? Collections.emptyMap()
+                : encounters.stream().collect(
+                        Collectors.toMap(PatientEncounter::getId, pe -> pe));
+
+        List<PatientEncounter> allChildren = peFacade.findByJpql(
+                "SELECT pe FROM PatientEncounter pe WHERE pe.parentEncounter.id IN :ids AND pe.retired = false",
+                Collections.singletonMap("ids", encounterIds));
+        Map<Long, List<PatientEncounter>> childrenByParentId = (allChildren == null)
+                ? Collections.emptyMap()
+                : allChildren.stream()
+                        .filter(pe -> pe.getParentEncounter() != null)
+                        .collect(Collectors.groupingBy(pe -> pe.getParentEncounter().getId()));
+
+        Map<Long, Double> paidByEncounterId = batchFetchPaidAmounts(encounterIds);
+
+        for (IpUnsettledInvoiceDTO dto : unsettledInvoicesList) {
+            if (dto == null) {
+                continue;
+            }
+
+            PatientEncounter pe = encounterById.get(dto.getAdmissionId());
+            if (pe == null) {
+                dto.setNetTotal(0.0);
+                dto.setCreditPaidAmount(0.0);
+                continue;
+            }
+
+            List<PatientEncounter> children = childrenByParentId.getOrDefault(dto.getAdmissionId(), Collections.emptyList());
+            double total = inwardBeanController.calculateInwardTotal(pe, children);
+            double collected = paidByEncounterId.getOrDefault(dto.getAdmissionId(), 0.0);
+            collected = Math.min(collected, total);
+
+            dto.setNetTotal(total);
+            dto.setCreditPaidAmount(collected);
+        }
+    }
+
+    private Map<Long, Double> batchFetchPaidAmounts(List<Long> encounterIds) {
+        if (encounterIds == null || encounterIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        String sql = "SELECT b.patientEncounter.id, SUM(b.netTotal) "
+                + "FROM Bill b "
+                + "WHERE b.retired = false "
+                + "  AND b.cancelled = false "
+                + "  AND b.billType = :btp "
+                + "  AND b.patientEncounter.id IN :ids "
+                + "GROUP BY b.patientEncounter.id";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("btp", BillType.InwardPaymentBill);
+        params.put("ids", encounterIds);
+
+        List<Object[]> rows = getBillFacade().findObjectsArrayByJpql(sql, params, TemporalType.TIMESTAMP);
+
+        Map<Long, Double> result = new HashMap<>(encounterIds.size());
+        if (rows != null) {
+            for (Object[] row : rows) {
+                Long id = ((Number) row[0]).longValue();
+                Double paid = row[1] != null ? ((Number) row[1]).doubleValue() : 0.0;
+                result.put(id, Math.max(0.0, paid));
+            }
+        }
+        return result;
+    }
+
+    public void downloadIpUnsettledInvoicesPdf() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        ExternalContext externalContext = context.getExternalContext();
+        HttpServletResponse response = (HttpServletResponse) externalContext.getResponse();
+
+        String dates = CommonFunctions.dateRangeForFileName(
+                fromDate, toDate,
+                sessionController.getApplicationPreference().getLongDateFormat());
+
+        response.setContentType("application/pdf");
+        response.setHeader("Content-Disposition",
+                "attachment; filename=IP_Unsettled_Invoices_" + dates + ".pdf");
+
+        SimpleDateFormat sdf = new SimpleDateFormat("dd MMMM yyyy");
+        SimpleDateFormat sdt = new SimpleDateFormat("dd MMM yyyy HH:mm");
+
+        try (OutputStream out = response.getOutputStream()) {
+            Document document = new Document(com.lowagie.text.PageSize.A4.rotate());
+            com.lowagie.text.pdf.PdfWriter.getInstance(document, out);
+            document.open();
+
+            String institutionName = sessionController.getInstitution() != null
+                    ? sessionController.getInstitution().getName()
+                    : "No Logged Institution";
+
+            document.add(new Paragraph(institutionName, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18)));
+            document.add(new Paragraph("IP Unsettled Invoices Report", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18)));
+            document.add(new Paragraph("Date: " + sdf.format(new Date()), FontFactory.getFont(FontFactory.HELVETICA, 12)));
+            document.add(new Paragraph(" "));
+
+            if (unsettledInvoicesList == null || unsettledInvoicesList.isEmpty()) {
+                document.add(new Paragraph("No unsettled invoices for the selected criteria.",
+                        FontFactory.getFont(FontFactory.HELVETICA, 12)));
+                document.close();
+                context.responseComplete();
+                return;
+            }
+
+            PdfPTable infoTable = buildIpUnsettledInfoTable(sdf, sdt);
+            if (infoTable != null) {
+                document.add(infoTable);
+            }
+
+            PdfPTable table = new PdfPTable(12);
+            table.setWidthPercentage(100);
+            table.setSpacingBefore(10);
+            float[] columnWidths = {1.2f, 2.2f, 3.5f, 2.2f, 1.2f, 2.8f, 2.2f, 1.8f, 2.2f, 2.2f, 2.2f, 2.8f};
+            table.setWidths(columnWidths);
+
+            addIpUnsettledHeaderRow(table);
+
+            double totalNet = 0.0;
+            double totalCollected = 0.0;
+            double totalDue = 0.0;
+
+            int idx = 1;
+            for (IpUnsettledInvoiceDTO row : unsettledInvoicesList) {
+                addIpUnsettledRow(table, row, idx++, sdt);
+
+                totalNet += row.getNetTotal() != null ? row.getNetTotal() : 0.0;
+                totalCollected += row.getCreditPaidAmount() != null ? row.getCreditPaidAmount() : 0.0;
+                totalDue += row.getAmountToBePaid() != null ? row.getAmountToBePaid() : 0.0;
+            }
+
+            addIpUnsettledGrandTotalRow(table, totalNet, totalCollected, totalDue);
+            document.add(table);
+
+            document.close();
+            context.responseComplete();
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error generating PDF: " + e.getMessage());
+        }
+    }
+
+    private PdfPTable buildIpUnsettledInfoTable(SimpleDateFormat sdf, SimpleDateFormat sdt) throws DocumentException {
+        PdfPTable info = new PdfPTable(2);
+        info.setWidthPercentage(60);
+        info.setSpacingBefore(5);
+        info.setWidths(new float[]{1f, 2f});
+
+        addInfoCell(info, "Institution:", institution != null ? institution.getName() : "All");
+        addInfoCell(info, "Site:", site != null ? site.getName() : "All");
+        addInfoCell(info, "Department:", department != null ? department.getName() : "All");
+        addInfoCell(info, "From Date:", fromDate != null ? sdt.format(fromDate) : "-");
+        addInfoCell(info, "To Date:", toDate != null ? sdt.format(toDate) : "-");
+        addInfoCell(info, "Generated:", sdt.format(new Date()));
+        return info;
+    }
+
+    private void addInfoCell(PdfPTable table, String label, String value) {
+        com.lowagie.text.Font bold = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 9);
+        com.lowagie.text.Font normal = FontFactory.getFont(FontFactory.HELVETICA, 9);
+
+        PdfPCell c1 = new PdfPCell(new Phrase(label, bold));
+        c1.setBorder(0);
+        c1.setPadding(2);
+        table.addCell(c1);
+
+        PdfPCell c2 = new PdfPCell(new Phrase(value != null ? value : "", normal));
+        c2.setBorder(0);
+        c2.setPadding(2);
+        table.addCell(c2);
+    }
+
+    private void addIpUnsettledHeaderRow(PdfPTable table) {
+        java.awt.Color headerBg = new java.awt.Color(33, 37, 41);
+        com.lowagie.text.Font headerFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 9, java.awt.Color.WHITE);
+
+        String[] headers = {
+            "#", "MRN", "Patient Name", "Mobile", "Age", "Location",
+            "Discharged On", "Status", "Total", "Collected", "Due", "Discharged By"
+        };
+
+        for (String h : headers) {
+            PdfPCell cell = new PdfPCell(new Phrase(h, headerFont));
+            cell.setBackgroundColor(headerBg);
+            cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+            cell.setPadding(4);
+            table.addCell(cell);
+        }
+    }
+
+    private void addIpUnsettledRow(PdfPTable table, IpUnsettledInvoiceDTO row, int idx, SimpleDateFormat sdt) {
+        com.lowagie.text.Font normal = FontFactory.getFont(FontFactory.HELVETICA, 8);
+
+        table.addCell(new Phrase(String.valueOf(idx), normal));
+        table.addCell(new Phrase(nullSafe(row.getPhn()), normal));
+        table.addCell(new Phrase(nullSafe(row.getPatientNameWithTitle()), normal));
+        table.addCell(new Phrase(nullSafe(row.getMobileNumber()), normal));
+        table.addCell(new Phrase(row.getAge() != null ? row.getAge().toString() : "", normal));
+
+        String location = "";
+        if (row.getRoomCategoryName() != null
+                && row.getRoomCategoryName().getRoomFacilityCharge() != null
+                && row.getRoomCategoryName().getRoomFacilityCharge().getName() != null) {
+            location = row.getRoomCategoryName().getRoomFacilityCharge().getName();
+        }
+        table.addCell(new Phrase(location, normal));
+
+        table.addCell(new Phrase(row.getDateOfDischarge() != null ? sdt.format(row.getDateOfDischarge()) : "", normal));
+        table.addCell(new Phrase(nullSafe(row.getPaymentStatusLabel()), normal));
+        table.addCell(new Phrase(formatAmount(row.getNetTotal()), normal));
+        table.addCell(new Phrase(formatAmount(row.getCreditPaidAmount()), normal));
+        table.addCell(new Phrase(formatAmount(row.getAmountToBePaid()), normal));
+
+        String dischargedBy = row.getCreaterName() != null ? nullSafe(row.getCreaterName().getName()) : "";
+        table.addCell(new Phrase(dischargedBy, normal));
+    }
+
+    private void addIpUnsettledGrandTotalRow(PdfPTable table, double totalNet, double totalCollected, double totalDue) {
+        com.lowagie.text.Font boldWhite = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 9, java.awt.Color.WHITE);
+        java.awt.Color bg = new java.awt.Color(52, 58, 64);
+
+        PdfPCell label = new PdfPCell(new Phrase("Grand Total", boldWhite));
+        label.setColspan(8);
+        label.setHorizontalAlignment(Element.ALIGN_RIGHT);
+        label.setBackgroundColor(bg);
+        label.setPadding(4);
+        table.addCell(label);
+
+        table.addCell(makeTotalCell(totalNet, boldWhite, bg));
+        table.addCell(makeTotalCell(totalCollected, boldWhite, bg));
+        table.addCell(makeTotalCell(totalDue, boldWhite, bg));
+        table.addCell(makeTotalCell("", boldWhite, bg));
+    }
+
+    private PdfPCell makeTotalCell(double value, com.lowagie.text.Font font, java.awt.Color bg) {
+        PdfPCell cell = new PdfPCell(new Phrase(formatAmount(value), font));
+        cell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+        cell.setBackgroundColor(bg);
+        cell.setPadding(4);
+        return cell;
+    }
+
+    private PdfPCell makeTotalCell(String value, com.lowagie.text.Font font, java.awt.Color bg) {
+        PdfPCell cell = new PdfPCell(new Phrase(value, font));
+        cell.setBackgroundColor(bg);
+        cell.setPadding(4);
+        return cell;
+    }
+
+    private String formatAmount(Double v) {
+        return String.format("%,.2f", v != null ? v : 0.0);
+    }
+
+    private String nullSafe(String value) {
+        return value != null ? value : "";
+    }
+
+    public StreamedContent getIpUnsettledInvoicesExcel() {
+        if (unsettledInvoicesList == null || unsettledInvoicesList.isEmpty()) {
+            JsfUtil.addErrorMessage("No data available to export.");
+            return null;
+        }
+
+        try (XSSFWorkbook wb = new XSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+            XSSFSheet sheet = wb.createSheet("IP Unsettled Invoices");
+
+            String[] headers = {
+                "SI No", "MRN", "Patient Name", "Mobile", "Age", "Location",
+                "Discharged On", "Status", "Total", "Collected", "Due", "Discharged By"
+            };
+
+            Row headerRow = sheet.createRow(0);
+            for (int i = 0; i < headers.length; i++) {
+                headerRow.createCell(i).setCellValue(headers[i]);
+            }
+
+            CreationHelper helper = wb.getCreationHelper();
+            CellStyle dateStyle = wb.createCellStyle();
+            dateStyle.setDataFormat(helper.createDataFormat().getFormat("dd-MMM-yyyy HH:mm"));
+            CellStyle moneyStyle = wb.createCellStyle();
+            moneyStyle.setDataFormat(helper.createDataFormat().getFormat("#,##0.00"));
+
+            int rowNum = 1;
+            int idx = 1;
+            for (IpUnsettledInvoiceDTO dto : unsettledInvoicesList) {
+                Row row = sheet.createRow(rowNum++);
+
+                row.createCell(0).setCellValue(idx++);
+                row.createCell(1).setCellValue(dto.getPhn() != null ? dto.getPhn() : "");
+                row.createCell(2).setCellValue(dto.getPatientNameWithTitle() != null ? dto.getPatientNameWithTitle() : "");
+                row.createCell(3).setCellValue(dto.getMobileNumber() != null ? dto.getMobileNumber() : "");
+                row.createCell(4).setCellValue(dto.getAge() != null ? dto.getAge() : 0);
+
+                String location = "";
+                if (dto.getRoomCategoryName() != null
+                        && dto.getRoomCategoryName().getRoomFacilityCharge() != null
+                        && dto.getRoomCategoryName().getRoomFacilityCharge().getName() != null) {
+                    location = dto.getRoomCategoryName().getRoomFacilityCharge().getName();
+                }
+                row.createCell(5).setCellValue(location);
+
+                Cell dischargeCell = row.createCell(6);
+                if (dto.getDateOfDischarge() != null) {
+                    dischargeCell.setCellValue(dto.getDateOfDischarge());
+                    dischargeCell.setCellStyle(dateStyle);
+                }
+
+                row.createCell(7).setCellValue(dto.getPaymentStatusLabel() != null ? dto.getPaymentStatusLabel() : "");
+
+                Cell totalCell = row.createCell(8);
+                totalCell.setCellValue(dto.getNetTotal() != null ? dto.getNetTotal() : 0.0);
+                totalCell.setCellStyle(moneyStyle);
+
+                Cell collectedCell = row.createCell(9);
+                collectedCell.setCellValue(dto.getCreditPaidAmount() != null ? dto.getCreditPaidAmount() : 0.0);
+                collectedCell.setCellStyle(moneyStyle);
+
+                Cell dueCell = row.createCell(10);
+                dueCell.setCellValue(dto.getAmountToBePaid() != null ? dto.getAmountToBePaid() : 0.0);
+                dueCell.setCellStyle(moneyStyle);
+
+                String dischargedBy = dto.getCreaterName() != null ? dto.getCreaterName().getName() : "";
+                row.createCell(11).setCellValue(dischargedBy);
+            }
+
+            for (int i = 0; i < headers.length; i++) {
+                sheet.autoSizeColumn(i);
+            }
+
+            wb.write(out);
+            byte[] bytes = out.toByteArray();
+            return DefaultStreamedContent.builder()
+                    .name("IP_Unsettled_Invoices.xlsx")
+                    .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                    .stream(() -> new ByteArrayInputStream(bytes))
+                    .build();
+
+        } catch (IOException e) {
+            java.util.logging.Logger.getLogger(InwardReportController.class.getName())
+                    .log(java.util.logging.Level.SEVERE, "Excel generation failed", e);
+            JsfUtil.addErrorMessage("Failed to generate Excel: " + e.getMessage());
+            return null;
+        }
     }
 
     public void processSpecialtyDoctorWiseIncomeReport() {
@@ -908,18 +2146,14 @@ public class InwardReportController implements Serializable {
                     .append(" coalesce(bf.staff.person.name, 'N/A'), ")
                     .append(" coalesce(bf.staff.speciality.name, 'N/A'), ")
                     .append(" coalesce(bf.feeValue, 0.0), ")
-                    .append(" coalesce(bf.billItem.hospitalFee, 0.0), ")
-                    .append(" bf.bill.id, ")
-                    .append(" bf.bill.netTotal ")
+                    .append(" coalesce(bf.billItem.hospitalFee, 0.0) ")
                     .append(") ");
         } else {
             jpql.append(" Select new com.divudi.core.data.dto.InwardIncomeDoctorSpecialtyDTO(")
                     .append(" bf.staff.speciality.id, ")
                     .append(" coalesce(bf.staff.speciality.name, 'N/A'), ")
                     .append(" coalesce(bf.feeValue, 0.0), ")
-                    .append(" coalesce(bf.billItem.hospitalFee, 0.0), ")
-                    .append(" bf.bill.id, ")
-                    .append(" bf.bill.netTotal ")
+                    .append(" coalesce(bf.billItem.hospitalFee, 0.0) ")
                     .append(") ");
         }
 
@@ -959,23 +2193,33 @@ public class InwardReportController implements Serializable {
     }
 
     public void calculateTotalValuesSpcDocIncome(Map<Long, InwardIncomeDoctorSpecialtyDTO> m) {
+        if (spcDocIncomeBillList == null) {
+            spcDocIncomeBillList = new ArrayList<>();
+        }
+
         Double docChargeTotal = 0.0;
         Double hospitalChargeTotal = 0.0;
         Double totalCharge = 0.0;
 
+        InwardIncomeDoctorSpecialtyDTO curr;
+
         for (Map.Entry<Long, InwardIncomeDoctorSpecialtyDTO> entry : m.entrySet()) {
-            if (entry.getValue().getBillTotal() == 0.0) {
+            curr = entry.getValue();
+            curr.setTotalCharge(curr.getDocFee() + curr.getHosFee());
+
+            if (entry.getValue().getTotalCharge() == 0.0) {
                 continue;
             }
-            getSpcDocIncomeBillList().add(entry.getValue());
-            docChargeTotal += entry.getValue().getDocFee();
-            hospitalChargeTotal += entry.getValue().getHosFee();
-            totalCharge += entry.getValue().getBillTotal();
+
+            getSpcDocIncomeBillList().add(curr);
+            docChargeTotal += curr.getDocFee();
+            hospitalChargeTotal += curr.getHosFee();
+            totalCharge += curr.getTotalCharge();
         }
 
         totalValuesSpcDocIncome = new InwardIncomeDoctorSpecialtyDTO();
-        totalValuesSpcDocIncome.setDocFeeTotal(docChargeTotal);
-        totalValuesSpcDocIncome.setHosFeeTotal(hospitalChargeTotal);
+        totalValuesSpcDocIncome.setDocFee(docChargeTotal);
+        totalValuesSpcDocIncome.setHosFee(hospitalChargeTotal);
         totalValuesSpcDocIncome.setTotalCharge(totalCharge);
     }
 
@@ -985,7 +2229,6 @@ public class InwardReportController implements Serializable {
         }
 
         Map<Long, InwardIncomeDoctorSpecialtyDTO> specialtyMap = new LinkedHashMap<>();
-        Map<Long, Set<Long>> spacialtyBill = new LinkedHashMap<>();
 
         for (InwardIncomeDoctorSpecialtyDTO dto : rawList) {
             if (dto.getStaffId() == null) {
@@ -1001,11 +2244,6 @@ public class InwardReportController implements Serializable {
                 return spc;
             });
 
-            Set<Long> currentBill = spacialtyBill.computeIfAbsent(sId, k -> new HashSet<>());
-            if (currentBill.add(dto.getBillId())) {
-                currentSpc.setBillTotal(currentSpc.getBillTotal() + dto.getBillTotal());
-            }
-
             currentSpc.setDocFee(currentSpc.getDocFee() + dto.getDocFee());
             currentSpc.setHosFee(currentSpc.getHosFee() + dto.getHosFee());
         }
@@ -1020,7 +2258,6 @@ public class InwardReportController implements Serializable {
         }
 
         Map<Long, InwardIncomeDoctorSpecialtyDTO> doctorMap = new LinkedHashMap<>();
-        Map<Long, Set<Long>> doctorBill = new LinkedHashMap<>();
 
         for (InwardIncomeDoctorSpecialtyDTO dto : rawList) {
             if (dto.getStaffId() == null) {
@@ -1037,11 +2274,6 @@ public class InwardReportController implements Serializable {
 
                 return doc;
             });
-
-            Set<Long> currentBill = doctorBill.computeIfAbsent(sId, k -> new HashSet<>());
-            if (currentBill.add(dto.getBillId())) {
-                currentDoc.setBillTotal(currentDoc.getBillTotal() + dto.getBillTotal());
-            }
 
             currentDoc.setDocFee(currentDoc.getDocFee() + dto.getDocFee());
             currentDoc.setHosFee(currentDoc.getHosFee() + dto.getHosFee());
@@ -1406,6 +2638,23 @@ public class InwardReportController implements Serializable {
 
     private List<InwardAdmissionDTO> list;
 
+    public void clearAdmissionCountConsultantWiseReport() {
+        list = null;
+        specialtyLineChartImage = null;
+        specialtyBarChartImage = null;
+        doctorLineChartImage = null;
+        doctorBarChartImage = null;
+        admissionReportProcessedAt = null;
+        admissionReportProcessedBy = null;
+        specialtyLineChartModel = null;
+        specialtyBarChartModel = null;
+        lineChartModel = null;
+        barChartModel = null;
+        fromYearStartDate = null;
+        toYearEndDate = null;
+        currentSpeciality = null;
+    }
+
     public void processAdmissionCountConsultantWiseReport() {
         Map<String, Object> params = new HashMap<>();
         StringBuilder jpql = new StringBuilder();
@@ -1496,6 +2745,13 @@ public class InwardReportController implements Serializable {
         list.add(grandTotal);
 
         createAdmissionCountCharts();
+        admissionReportProcessedAt = new Date();
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            com.divudi.core.entity.WebUser u = sessionController.getLoggedUser();
+            String personName = (u.getWebUserPerson() != null && u.getWebUserPerson().getName() != null)
+                    ? u.getWebUserPerson().getName() : null;
+            admissionReportProcessedBy = (personName != null && !personName.isBlank()) ? personName : u.getName();
+        }
     }
 
     public void createAdmissionCountCharts() {
@@ -1538,7 +2794,7 @@ public class InwardReportController implements Serializable {
         LineOptions lineOptionsObj = new LineOptions();
         Plugins plugins = new Plugins();
         plugins.setTitle(new Title().setDisplay(true).setText("Doctor Wise Count"));
-        plugins.setLegend(new Legend().setDisplay(true).setPosition(Legend.Position.RIGHT));
+        plugins.setLegend(new Legend().setDisplay(true).setPosition(Legend.Position.TOP));
         lineOptionsObj.setPlugins(plugins);
         Scales scales = new Scales();
         scales.addScale("y", new LinearScaleOptions().setBeginAtZero(true).setTicks(new LinearTickOptions().setStepSize(1)));
@@ -1618,7 +2874,7 @@ public class InwardReportController implements Serializable {
         LineOptions lineOptionsObj = new LineOptions();
         Plugins plugins = new Plugins();
         plugins.setTitle(new Title().setDisplay(true).setText("Specialty Wise Count"));
-        plugins.setLegend(new Legend().setDisplay(true).setPosition(Legend.Position.RIGHT));
+        plugins.setLegend(new Legend().setDisplay(true).setPosition(Legend.Position.TOP));
         lineOptionsObj.setPlugins(plugins);
         Scales scales = new Scales();
         scales.addScale("y", new LinearScaleOptions().setBeginAtZero(true).setTicks(new LinearTickOptions().setStepSize(5)));
@@ -1888,12 +3144,28 @@ public class InwardReportController implements Serializable {
 
     public void fillAdmissions(Boolean discharged, Boolean finalized) {
         Map m = new HashMap();
+        String dateField = "admissionDate".equals(dateBasis) ? "b.dateOfAdmission" : "b.createdAt";
         String sql = "select b from PatientEncounter b "
-                + " where b.dateOfAdmission between :fd and :td ";
+                + " where " + dateField + " between :fd and :td ";
 
         if (admissionType != null) {
             sql += " and b.admissionType =:ad";
             m.put("ad", admissionType);
+        }
+
+        if (institution != null) {
+            sql += " and b.institution =:inst ";
+            m.put("inst", institution);
+        }
+
+        if (site != null) {
+            sql += " and b.department.site =:site ";
+            m.put("site", site);
+        }
+
+        if (department != null) {
+            sql += " and b.department =:dept ";
+            m.put("dept", department);
         }
 
         if (withoutCancelBHT) {
@@ -1985,11 +3257,12 @@ public class InwardReportController implements Serializable {
 
     public void fillDischargeBook() {
         Map m = new HashMap();
+        String dateField = "admissionDate".equals(dateBasis) ? "b.dateOfAdmission" : "b.createdAt";
         String sql = "select b from PatientEncounter b "
                 + " where b.retired=false "
                 + " and b.discharged=true "
                 //                + " and b.paymentFinalized=true "
-                + " and b.dateOfDischarge between :fd and :td ";
+                + " and " + dateField + " between :fd and :td ";
 
         if (admissionType != null) {
             sql += " and b.admissionType =:ad ";
@@ -1999,6 +3272,16 @@ public class InwardReportController implements Serializable {
         if (institution != null) {
             sql += " and b.creditCompany =:ins ";
             m.put("ins", institution);
+        }
+
+        if (site != null) {
+            sql += " and b.department.site =:site ";
+            m.put("site", site);
+        }
+
+        if (department != null) {
+            sql += " and b.department =:dept ";
+            m.put("dept", department);
         }
 
         if (paymentMethod != null) {
@@ -2183,12 +3466,13 @@ public class InwardReportController implements Serializable {
     public void fillDischargeBookPaymentFinalizedNoChanges() {
         Date startTime = new Date();
 
+        String dateField = "admissionDate".equals(dateBasis) ? "b.dateOfAdmission" : "b.dateOfDischarge";
         Map m = new HashMap();
         String sql = "select b from PatientEncounter b "
                 + " where b.retired=false "
                 + " and b.discharged=true "
                 //                + " and b.paymentFinalized=true "
-                + " and b.dateOfDischarge between :fd and :td ";
+                + " and " + dateField + " between :fd and :td ";
 
         if (admissionType != null) {
             sql += " and b.admissionType =:ad ";
@@ -2218,12 +3502,13 @@ public class InwardReportController implements Serializable {
     public void fillDischargeBookPaymentFinalizedNoChangesOnlyDue() {
         Date startTime = new Date();
 
+        String dateField = "admissionDate".equals(dateBasis) ? "b.dateOfAdmission" : "b.dateOfDischarge";
         Map m = new HashMap();
         String sql = "select b from PatientEncounter b "
                 + " where b.retired=false "
                 + " and b.discharged=true "
                 + " and b.paymentFinalized=true "
-                + " and b.dateOfDischarge between :fd and :td ";
+                + " and " + dateField + " between :fd and :td ";
 
         if (admissionType != null) {
             sql += " and b.admissionType =:ad ";
@@ -2923,6 +4208,253 @@ public class InwardReportController implements Serializable {
         }
     }
 
+    public StreamedContent getAdmissionCountPdf() {
+        try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+            PdfWriter writer = new PdfWriter(out);
+            PdfDocument pdfDoc = new PdfDocument(writer);
+            pdfDoc.setDefaultPageSize(PageSize.A4.rotate());
+            HtmlConverter.convertToPdf(buildAdmissionCountHtml(), pdfDoc, new ConverterProperties());
+            byte[] bytes = out.toByteArray();
+            return DefaultStreamedContent.builder()
+                    .name("Admission_Count_Doctor_Wise.pdf")
+                    .contentType("application/pdf")
+                    .stream(() -> new ByteArrayInputStream(bytes))
+                    .build();
+        } catch (Exception e) {
+            java.util.logging.Logger.getLogger(InwardReportController.class.getName())
+                    .log(java.util.logging.Level.SEVERE, "PDF generation failed", e);
+            JsfUtil.addErrorMessage("Failed to generate PDF: " + e.getMessage());
+            return null;
+        }
+    }
+
+    private String buildAdmissionCountHtml() {
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MMM/yyyy");
+        SimpleDateFormat sdtf = new SimpleDateFormat("dd/MMM/yyyy HH:mm:ss");
+        String fromDate = fromYearStartDate != null ? sdf.format(fromYearStartDate) : "";
+        String toDate = toYearEndDate != null ? sdf.format(toYearEndDate) : "";
+        String institutionName = (sessionController != null && sessionController.getInstitution() != null)
+                ? sessionController.getInstitution().getName() : "";
+        String processedBy = admissionReportProcessedBy != null ? admissionReportProcessedBy : "";
+        String processedAt = admissionReportProcessedAt != null ? sdtf.format(admissionReportProcessedAt) : "";
+        String printedBy = "";
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            com.divudi.core.entity.WebUser u = sessionController.getLoggedUser();
+            String personName = (u.getWebUserPerson() != null && u.getWebUserPerson().getName() != null
+                    && !u.getWebUserPerson().getName().isBlank())
+                    ? u.getWebUserPerson().getName() : null;
+            printedBy = personName != null ? personName : u.getName();
+        }
+        String printedAt = sdtf.format(new Date());
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("<!DOCTYPE html><html><head><meta charset='UTF-8'/>")
+                .append("<style>")
+                .append("body{font-family:Arial,sans-serif;font-size:10px;margin:8mm;}")
+                .append("h1{text-align:center;font-size:15px;margin:0 0 2px 0;}")
+                .append("h2{text-align:center;font-size:12px;margin:0 0 4px 0;}")
+                .append(".dates{text-align:center;font-size:10px;margin-bottom:6px;}")
+                .append("table{border-collapse:collapse;width:100%;font-size:9px;}")
+                .append("th,td{border:1px solid #000;padding:2px 3px;}")
+                .append("th{background-color:#c8c8c8;font-weight:bold;text-align:center;}")
+                .append(".name{text-align:left;}")
+                .append(".num{text-align:center;}")
+                .append(".subtotal td{font-weight:bold;background-color:#ebebef;}")
+                .append(".grandtotal td{font-weight:bold;background-color:#d0d0d0;font-size:10px;}")
+                .append(".total{background-color:#a0a0a0;font-weight:bold;text-align:center;}")
+                .append(".meta{font-size:9px;margin-bottom:6px;border-collapse:collapse;width:100%;}")
+                .append(".meta td{border:none;padding:1px 4px;vertical-align:top;}")
+                .append("</style></head><body>");
+
+        sb.append("<h1>").append(escapeHtml(institutionName)).append("</h1>");
+        sb.append("<h2>Doctor Wise Admission Count Report</h2>");
+        sb.append("<div class='dates'>From: <b>").append(fromDate)
+                .append("</b>&nbsp;&nbsp;&nbsp;To: <b>").append(toDate).append("</b></div>");
+
+        sb.append("<table><thead><tr>")
+                .append("<th class='name'>Doctor Name</th>")
+                .append("<th class='name'>Speciality</th>");
+        for (String m : new String[]{"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"}) {
+            sb.append("<th>").append(m).append("</th>");
+        }
+        sb.append("<th>Total</th></tr></thead><tbody>");
+
+        if (list != null) {
+            for (InwardAdmissionDTO dto : list) {
+                boolean sub = dto.isSubtotal();
+                boolean grand = dto.isGrandTotal();
+                sb.append("<tr class='").append(grand ? "grandtotal" : sub ? "subtotal" : "").append("'>");
+                if (!sub && !grand) {
+                    sb.append("<td class='name'>").append(escapeHtml(dto.getNameWithTitle())).append("</td>");
+                    sb.append("<td class='name'>").append(escapeHtml(dto.getSpecialityName())).append("</td>");
+                } else {
+                    sb.append("<td colspan='2' class='name'>").append(escapeHtml(dto.getNameWithTitle())).append("</td>");
+                }
+                int[] months = {dto.getJanuary(), dto.getFebruary(), dto.getMarch(), dto.getApril(),
+                    dto.getMay(), dto.getJune(), dto.getJuly(), dto.getAugust(),
+                    dto.getSeptember(), dto.getOctober(), dto.getNovember(), dto.getDecember()};
+                for (int v : months) {
+                    sb.append("<td class='num'>").append(v > 0 ? v : "").append("</td>");
+                }
+                sb.append("<td class='total'>").append(dto.getTotalAdmissions()).append("</td>");
+                sb.append("</tr>");
+            }
+        }
+        sb.append("</tbody></table>");
+
+        sb.append("<table class='meta'>")
+                .append("<tr>")
+                .append("<td>")
+                .append("<b>Processed By:</b> ").append(escapeHtml(processedBy)).append("<br/>")
+                .append("<b>Processed At:</b> ").append(escapeHtml(processedAt))
+                .append("</td>")
+                .append("<td style='text-align:right;'>")
+                .append("<b>Printed By:</b> ").append(escapeHtml(printedBy)).append("<br/>")
+                .append("<b>Printed At:</b> ").append(escapeHtml(printedAt))
+                .append("</td>")
+                .append("</tr>")
+                .append("</table>");
+
+        // Append charts if captured from the browser
+        String[] chartTitles = {
+            "Specialty Wise Admission Trend",
+            "Specialty Wise Admission Count",
+            "Doctor Wise Admission Trend",
+            "Doctor Wise Admission Count"
+        };
+        String[] chartImages = {specialtyLineChartImage, specialtyBarChartImage, doctorLineChartImage, doctorBarChartImage};
+        boolean hasCharts = false;
+        for (String img : chartImages) {
+            if (img != null && img.startsWith("data:image/png;base64,")) {
+                hasCharts = true;
+                break;
+            }
+        }
+        if (hasCharts) {
+            sb.append("<div style='page-break-before:always; margin-top:10px;'>")
+                    .append("<h2>Admission Count Visual Reports</h2>")
+                    .append("<table style='border:none; width:100%;'>");
+            int col = 0;
+            for (int i = 0; i < chartImages.length; i++) {
+                if (col % 2 == 0) {
+                    if (col > 0) {
+                        sb.append("</tr>");
+                    }
+                    sb.append("<tr>");
+                }
+                sb.append("<td style='border:none; width:50%; padding:5px; text-align:center; vertical-align:top;'>");
+                String img = chartImages[i];
+                if (img != null && img.startsWith("data:image/png;base64,")) {
+                    sb.append("<div style='font-weight:bold; margin-bottom:4px;'>").append(chartTitles[i]).append("</div>");
+                    sb.append("<img src='").append(img).append("' style='width:100%;'/>");
+                }
+                sb.append("</td>");
+                col++;
+            }
+            sb.append("</tr></table></div>");
+        }
+
+        sb.append("</body></html>");
+        return sb.toString();
+    }
+
+    private String escapeHtml(String s) {
+        if (s == null) {
+            return "";
+        }
+        return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
+    }
+
+    public StreamedContent getAdmissionCountExcelWithCharts() {
+        if (list == null || list.isEmpty()) {
+            JsfUtil.addErrorMessage("No admission data available to export.");
+            return null;
+        }
+        try (XSSFWorkbook wb = new XSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+
+            // --- Sheet 1: Data table ---
+            XSSFSheet dataSheet = wb.createSheet("Admission Data");
+            String[] headers = {"Doctor Name", "Speciality", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", "Total"};
+            Row headerRow = dataSheet.createRow(0);
+            for (int i = 0; i < headers.length; i++) {
+                headerRow.createCell(i).setCellValue(headers[i]);
+            }
+            int rowNum = 1;
+            for (InwardAdmissionDTO dto : list) {
+                Row row = dataSheet.createRow(rowNum++);
+                row.createCell(0).setCellValue(dto.getNameWithTitle() != null ? dto.getNameWithTitle() : "");
+                row.createCell(1).setCellValue(!dto.isSubtotal() && !dto.isGrandTotal() && dto.getSpecialityName() != null ? dto.getSpecialityName() : "");
+                row.createCell(2).setCellValue(dto.getJanuary());
+                row.createCell(3).setCellValue(dto.getFebruary());
+                row.createCell(4).setCellValue(dto.getMarch());
+                row.createCell(5).setCellValue(dto.getApril());
+                row.createCell(6).setCellValue(dto.getMay());
+                row.createCell(7).setCellValue(dto.getJune());
+                row.createCell(8).setCellValue(dto.getJuly());
+                row.createCell(9).setCellValue(dto.getAugust());
+                row.createCell(10).setCellValue(dto.getSeptember());
+                row.createCell(11).setCellValue(dto.getOctober());
+                row.createCell(12).setCellValue(dto.getNovember());
+                row.createCell(13).setCellValue(dto.getDecember());
+                row.createCell(14).setCellValue(dto.getTotalAdmissions());
+            }
+
+            // --- Charts appended below the data table on the same sheet ---
+            XSSFDrawing drawing = dataSheet.createDrawingPatriarch();
+            // Leave 2 blank rows as a gap after the last data row
+            int chartStartRow = rowNum + 2;
+            String[][] chartDefs = {
+                {specialtyLineChartImage, "Specialty Wise Line Chart"},
+                {specialtyBarChartImage, "Specialty Wise Bar Chart"},
+                {doctorLineChartImage, "Doctor Wise Line Chart"},
+                {doctorBarChartImage, "Doctor Wise Bar Chart"}
+            };
+            for (String[] def : chartDefs) {
+                String b64 = def[0];
+                String title = def[1];
+                if (b64 != null && b64.startsWith("data:image/png;base64,")) {
+                    b64 = b64.substring("data:image/png;base64,".length());
+                    byte[] imgBytes = Base64.getDecoder().decode(b64);
+                    int picIdx = wb.addPicture(imgBytes, Workbook.PICTURE_TYPE_PNG);
+                    dataSheet.createRow(chartStartRow).createCell(0).setCellValue(title);
+                    XSSFClientAnchor anchor = new XSSFClientAnchor(0, 0, 0, 0, 0, chartStartRow + 1, 15, chartStartRow + 31);
+                    drawing.createPicture(anchor, picIdx);
+                    chartStartRow += 33;
+                }
+            }
+
+            wb.write(out);
+            byte[] bytes = out.toByteArray();
+            return DefaultStreamedContent.builder()
+                    .name("Admission_Count_Doctor_Wise.xlsx")
+                    .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                    .stream(() -> new ByteArrayInputStream(bytes))
+                    .build();
+
+        } catch (IOException e) {
+            java.util.logging.Logger.getLogger(InwardReportController.class.getName())
+                    .log(java.util.logging.Level.SEVERE, "Excel generation failed", e);
+            JsfUtil.addErrorMessage("Failed to generate Excel: " + e.getMessage());
+            return null;
+        }
+    }
+
+    private static final int MAX_CHART_IMAGE_DATA_URL_LENGTH = 3000000;
+
+    private String sanitizeChartImage(String image) {
+        if (image == null || image.isBlank()) {
+            return null;
+        }
+        if (!image.startsWith("data:image/png;base64,")) {
+            return null;
+        }
+        if (image.length() > MAX_CHART_IMAGE_DATA_URL_LENGTH) {
+            JsfUtil.addErrorMessage("Chart image is too large to export.");
+            return null;
+        }
+        return image;
+    }
+
     public Institution getInstitution() {
         return institution;
     }
@@ -2945,6 +4477,18 @@ public class InwardReportController implements Serializable {
 
     public void setDepartment(Department deptartment) {
         this.department = deptartment;
+    }
+
+    public void clearDepartment() {
+        this.department = null;
+    }
+
+    public String getDateBasis() {
+        return dateBasis;
+    }
+
+    public void setDateBasis(String dateBasis) {
+        this.dateBasis = dateBasis;
     }
 
     public AdmissionType getAdmissionType() {
@@ -3461,6 +5005,54 @@ public class InwardReportController implements Serializable {
 
     public void setSurgeryWiseBarChartModel(String surgeryWiseBarChartModel) {
         this.surgeryWiseBarChartModel = surgeryWiseBarChartModel;
+    }
+
+    public String getSpecialtyLineChartImage() {
+        return specialtyLineChartImage;
+    }
+
+    public void setSpecialtyLineChartImage(String specialtyLineChartImage) {
+        this.specialtyLineChartImage = sanitizeChartImage(specialtyLineChartImage);
+    }
+
+    public String getSpecialtyBarChartImage() {
+        return specialtyBarChartImage;
+    }
+
+    public void setSpecialtyBarChartImage(String specialtyBarChartImage) {
+        this.specialtyBarChartImage = sanitizeChartImage(specialtyBarChartImage);
+    }
+
+    public String getDoctorLineChartImage() {
+        return doctorLineChartImage;
+    }
+
+    public void setDoctorLineChartImage(String doctorLineChartImage) {
+        this.doctorLineChartImage = sanitizeChartImage(doctorLineChartImage);
+    }
+
+    public String getDoctorBarChartImage() {
+        return doctorBarChartImage;
+    }
+
+    public void setDoctorBarChartImage(String doctorBarChartImage) {
+        this.doctorBarChartImage = sanitizeChartImage(doctorBarChartImage);
+    }
+
+    public Date getAdmissionReportProcessedAt() {
+        return admissionReportProcessedAt;
+    }
+
+    public void setAdmissionReportProcessedAt(Date admissionReportProcessedAt) {
+        this.admissionReportProcessedAt = admissionReportProcessedAt;
+    }
+
+    public String getAdmissionReportProcessedBy() {
+        return admissionReportProcessedBy;
+    }
+
+    public void setAdmissionReportProcessedBy(String admissionReportProcessedBy) {
+        this.admissionReportProcessedBy = admissionReportProcessedBy;
     }
 
     public class IncomeByCategoryRecord {

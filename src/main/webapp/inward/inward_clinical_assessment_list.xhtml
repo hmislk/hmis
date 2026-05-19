@@ -1,0 +1,132 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:form id="formList">
+                    <div class="row">
+                        <div class="col-12 px-4">
+                            <p:commandButton
+                                value="Back to Inpatient Dashboard"
+                                ajax="false"
+                                action="#{admissionController.navigateToAdmissionProfilePage}"
+                                icon="fa fa-arrow-left"
+                                class="p-0 m-1">
+                                <f:setPropertyActionListener
+                                    value="#{inpatientClinicalDataController.parentAdmission}"
+                                    target="#{admissionController.current}" />
+                            </p:commandButton>
+                            <p:commandButton
+                                value="New Clinical Assessment"
+                                ajax="false"
+                                action="#{inpatientClinicalDataController.newClinicalAssessment()}"
+                                icon="pi pi-plus"
+                                class="p-0 m-1"
+                                rendered="#{webUserController.hasPrivilege('InpatientClinicalAssessment')}">
+                            </p:commandButton>
+                        </div>
+                    </div>
+
+                    <!-- h:panelGroup with layout="block" enforces the rendered attribute;
+                         plain <div rendered="..."> is silently ignored by JSF. -->
+                    <h:panelGroup layout="block" rendered="#{webUserController.hasPrivilege('InpatientClinicalAssessment')}"  >
+                        <div class="row px-4 py-2">
+                            <div class="col-12">
+                                <p:panel header="Patient Information" class="m-1">
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <p:outputLabel value="Patient: " />
+                                            <h:outputText value="#{inpatientClinicalDataController.parentAdmission.patient.person.fullName}" />
+                                        </div>
+                                        <div class="col-md-4">
+                                            <p:outputLabel value="BHT: " />
+                                            <h:outputText value="#{inpatientClinicalDataController.parentAdmission.bhtNo}" />
+                                        </div>
+                                        <div class="col-md-4">
+                                            <p:outputLabel value="Admission Date: " />
+                                            <h:outputText value="#{inpatientClinicalDataController.parentAdmission.encounterDateTime}">
+                                                <f:convertDateTime pattern="dd/MM/yyyy HH:mm" />
+                                            </h:outputText>
+                                        </div>
+                                    </div>
+                                </p:panel>
+                            </div>
+                        </div>
+
+                        <div class="row px-4">
+                            <div class="col-12">
+                                <p:panel header="Clinical Assessments" class="m-1">
+                                    <p:dataTable
+                                        id="tblAssessments"
+                                        value="#{inpatientClinicalDataController.clinicalAssessments}"
+                                        var="assessment"
+                                        emptyMessage="No Clinical Assessments recorded yet."
+                                        paginator="true"
+                                        rows="10"
+                                        paginatorAlwaysVisible="false"
+                                        paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                        class="w-100">
+                                        <p:column headerText="Date / Time" style="width:160px;">
+                                            <h:outputText value="#{assessment.encounterDateTime}">
+                                                <f:convertDateTime pattern="dd/MM/yyyy HH:mm" />
+                                            </h:outputText>
+                                        </p:column>
+                                        <p:column headerText="Department">
+                                            <h:outputText value="#{assessment.department.name}" />
+                                        </p:column>
+                                        <p:column headerText="BP" style="width:100px;">
+                                            <h:outputText value="#{assessment.bp}" />
+                                        </p:column>
+                                        <p:column headerText="Temp (°C)" style="width:90px;">
+                                            <h:outputText value="#{assessment.temperature}" />
+                                        </p:column>
+                                        <p:column headerText="PR" style="width:70px;">
+                                            <h:outputText value="#{assessment.pr}" />
+                                        </p:column>
+                                        <p:column headerText="SpO2 (%)" style="width:80px;">
+                                            <h:outputText value="#{assessment.saturation}" />
+                                        </p:column>
+                                        <p:column headerText="Summary">
+                                            <h:outputText value="#{assessment.comments ne null and assessment.comments.length() > 80 ? assessment.comments.substring(0, 80).concat('...') : assessment.comments}" />
+                                        </p:column>
+                                        <p:column headerText="Actions" style="width:130px;">
+                                            <p:commandButton
+                                                value="View"
+                                                ajax="false"
+                                                action="#{inpatientClinicalDataController.viewClinicalAssessment(assessment)}"
+                                                icon="fa fa-eye"
+                                                class="p-0 m-1" />
+                                            <p:commandButton
+                                                value="Edit"
+                                                ajax="false"
+                                                action="#{inpatientClinicalDataController.editClinicalAssessment(assessment)}"
+                                                icon="fa fa-edit"
+                                                class="p-0 m-1" />
+                                        </p:column>
+                                    </p:dataTable>
+                                </p:panel>
+                            </div>
+                        </div>
+                    </h:panelGroup>
+
+                    <!-- h:panelGroup with layout="block" enforces the rendered attribute;
+                         plain <div rendered="..."> is silently ignored by JSF. -->
+                    <h:panelGroup layout="block" rendered="#{not webUserController.hasPrivilege('InpatientClinicalAssessment')}">
+                        <div class="row px-4">
+                            <div class="col-12">
+                                <p:panel class="m-1">
+                                    <h:outputText value="You do not have permission to access Clinical Assessments." />
+                                </p:panel>
+                            </div>
+                        </div>
+                    </h:panelGroup>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

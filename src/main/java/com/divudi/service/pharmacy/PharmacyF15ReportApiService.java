@@ -76,6 +76,7 @@ public class PharmacyF15ReportApiService {
         // Opening stock (same as Step 2 in JSF controller)
         double openingRetail = stockHistoryFacade.calculateStockValueAtRetailRateOptimized(startOfDay, departmentId);
         double openingCost = stockHistoryFacade.calculateStockValueAtCostRateOptimized(startOfDay, departmentId);
+        double openingPurchase = stockHistoryFacade.calculateStockValueAtPurchaseRateOptimized(startOfDay, departmentId);
 
         // Fetch transaction bundles (same as Steps 4-7 in JSF controller)
         PharmacyBundle salesBundle = pharmacyService
@@ -104,18 +105,19 @@ public class PharmacyF15ReportApiService {
         // Closing stock (same as Step 8 in JSF controller)
         double closingRetail = stockHistoryFacade.calculateStockValueAtRetailRateOptimized(nextDayStart, departmentId);
         double closingCost = stockHistoryFacade.calculateStockValueAtCostRateOptimized(nextDayStart, departmentId);
+        double closingPurchase = stockHistoryFacade.calculateStockValueAtPurchaseRateOptimized(nextDayStart, departmentId);
 
         // Build DTO
         PharmacyF15ReportDTO dto = new PharmacyF15ReportDTO();
         dto.setDate(new SimpleDateFormat("yyyy-MM-dd").format(date));
         dto.setDepartmentId(departmentId);
         dto.setDepartmentName(department.getName());
-        dto.setOpeningStock(new StockValueDTO(openingRetail, openingCost));
+        dto.setOpeningStock(new StockValueDTO(openingRetail, openingCost, openingPurchase));
         dto.setSales(buildBundleDTO(salesBundle));
         dto.setPurchases(buildBundleDTO(purchasesBundle));
         dto.setTransfers(buildBundleDTO(transfersBundle));
         dto.setAdjustments(buildBundleDTO(adjustmentsBundle));
-        dto.setClosingStock(new StockValueDTO(closingRetail, closingCost));
+        dto.setClosingStock(new StockValueDTO(closingRetail, closingCost, closingPurchase));
         dto.setBalanceCheck(buildBalanceCheck(
                 openingRetail, closingRetail,
                 salesBundle, purchasesBundle, transfersBundle, adjustmentsBundle));
@@ -168,6 +170,10 @@ public class PharmacyF15ReportApiService {
         dto.setStockValueAtRetailRate(
                 row.getValueOfStocksAtRetailSaleRate() != null
                         ? row.getValueOfStocksAtRetailSaleRate().doubleValue()
+                        : 0.0);
+        dto.setStockValueAtPurchaseRate(
+                row.getValueOfStocksAtPurchaseRate() != null
+                        ? row.getValueOfStocksAtPurchaseRate().doubleValue()
                         : 0.0);
         return dto;
     }

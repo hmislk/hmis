@@ -114,16 +114,23 @@
                                             </div>
                                             <div class="col-md-6">
                                                 <div class="info-item mb-2">
+                                                    <i class="fa fa-hashtag text-muted" style="margin-right: 8px;"></i>
+                                                    <strong>ID:</strong>
+                                                    <h:outputText value="#{pharmacyStockTakeController.snapshotBillDisplay.id}"
+                                                                  style="font-family: monospace; margin-left: 8px; font-weight: bold;"/>
+                                                </div>
+                                                <div class="info-item mb-2">
                                                     <i class="fa fa-file-alt text-muted" style="margin-right: 8px;"></i>
                                                     <strong>Bill No:</strong>
-                                                    <span class="badge badge-secondary" style="font-family: monospace; margin-left: 8px;">#{pharmacyStockTakeController.snapshotBillDisplay.deptId}</span>
+                                                    <h:outputText value="#{pharmacyStockTakeController.snapshotBillDisplay.deptId}"
+                                                                  style="font-family: monospace; margin-left: 8px; font-weight: bold;"/>
                                                 </div>
                                                 <div class="info-item mb-2">
                                                     <i class="fa fa-calendar text-muted" style="margin-right: 8px;"></i>
                                                     <strong>Created:</strong>
                                                     <span class="ml-2">
                                                         <h:outputText value="#{pharmacyStockTakeController.snapshotBillDisplay.createdAt}">
-                                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
+                                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                                                         </h:outputText>
                                                     </span>
                                                 </div>
@@ -142,7 +149,11 @@
 
 
                                 <h:form id="frmUpload" enctype="multipart/form-data" rendered="#{not pharmacyStockTakeController.snapshotBillDisplay.completed}">
-                                    <p:poll ></p:poll>
+                                    <div id="uploadOverlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:9999; text-align:center; padding-top:20%;">
+                                        <i class="fa fa-spinner fa-spin fa-3x" style="color:white; margin-bottom: 12px;"></i>
+                                        <div style="color:white; font-size: 1.1em; font-weight: bold;">Processing upload, please wait...</div>
+                                        <div style="color:white; font-size: 0.9em; margin-top: 6px;">This may take several minutes for large files.</div>
+                                    </div>
                                     <div class="card">
                                         <div class="card-header bg-secondary text-white">
                                             <i class="fa fa-upload" style="margin-right: 8px;"></i>
@@ -174,11 +185,13 @@
                                             </div>
 
                                             <div class="text-center">
-                                                <p:commandButton value="Process Upload &amp; Review"
+                                                <p:commandButton id="btnProcessUpload"
+                                                               value="Process Upload &amp; Review"
                                                                icon="fa fa-upload"
                                                                styleClass="ui-button-success ui-button-lg"
                                                                action="#{pharmacyStockTakeController.parseAndPersistNavigate}"
-                                                               ajax="false"/>
+                                                               ajax="false"
+                                                               onclick="document.getElementById('uploadOverlay').style.display='block';"/>
                                             </div>
                                         </div>
                                     </div>

@@ -1,0 +1,300 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+
+                <h:form >
+                    <p:panel header="Opd Credit DUE Report Print" styleClass="w-100">
+                        <f:facet name="header"  >
+                            <div class="d-flex justify-content-between">
+                                <h:outputText value="Opd Credit DUE Report Print" class="mt-2"/>
+                                <div class="d-flex gap-2">
+                                    <p:commandButton 
+                                        icon="fa-solid fa-print"
+                                        class="ui-button-info"
+                                        style="width: 150px"
+                                        ajax="false" 
+                                        value="Print">
+                                        <p:printer target="reportView" />
+                                    </p:commandButton>
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        value="Back to Report" 
+                                        style="width: 200px"
+                                        icon="fa fa-arrow-left"
+                                        class="ui-button-warning"
+                                        action="credit_company_opd_due?faces-redirect=true" >
+                                    </p:commandButton>
+                                </div>
+
+                            </div>
+                        </f:facet>
+
+                        <style>
+
+                            @media screen{
+                                .paper{
+                                    position: static !important;
+                                    width: 297mm!important;
+                                    zoom: 2.0;
+                                }
+
+                                table {
+                                    border-collapse: collapse;
+                                    width: 99.8%;
+                                    font-size: 10px!important;
+                                    margin-top: 1mm!important;
+                                }
+
+                                th, td {
+                                    border: 1px solid #000;
+                                    padding: 0px!important;
+                                    margin: 2px!important;
+                                    text-align: left;
+                                    margin-left: 10mm!important;
+                                }
+
+                                .header{
+                                    font-size: 16px!important;
+                                }
+
+                                tfoot{
+                                    font-weight: 700!important;
+                                    font-size: 11px!important;
+                                }
+                            }
+
+                            @media print {
+                                @page {
+                                    @bottom-right {
+                                        content: "Page " counter(page) " of " counter(pages);
+                                        font-family: Arial, sans-serif;
+                                        font-size: 10pt;
+                                    }
+                                }
+
+                                body {
+                                    counter-reset: page;
+                                }
+
+                                .paper{
+                                    position: static !important;
+                                    width: 297mm!important;
+                                    size: A4 landscape!important;
+
+                                }
+
+                                .header{
+                                    line-height: 1.1;
+                                    margin: 0mm!important;
+                                    font-size: 13px!important;
+                                }
+
+                                table {
+                                    border-collapse: collapse;
+                                    width: 99.9%;
+                                    font-size: 12px!important;
+                                    margin-top: 1mm!important;
+                                }
+                                th, td {
+                                    border: 1px solid #000;
+                                    padding: 0px!important;
+                                    margin: 2px!important;
+                                    text-align: left;
+                                    margin-left: 10mm!important;
+                                }
+                                th {
+
+                                }
+                                tfoot{
+                                    font-weight: 700!important;
+                                    font-size: 11px!important;
+                                }
+                            }
+                        </style>
+
+                        <h:panelGroup id="reportView" class="d-flex justify-content-center">
+                            <div class="paper">
+                                <div class="header" >
+
+                                    <!-- Credit Company -->
+                                    <div class="d-flex justify-content-center text-5 gap-2" style="font-weight: 700; font-size: 16px;"
+                                         >
+                                        <h:outputText value="#{not empty creditCompanyDueController.creditCompany 
+                                                               ? creditCompanyDueController.creditCompany.name 
+                                                               : 'All Credit Companies'}" />
+                                    </div>
+
+                                    <div class="text-center" style="font-size:10px; margin-top:5px;">
+
+                                        From Date :
+                                        <h:outputText value="#{creditCompanyDueController.fromDate}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                        </h:outputText>
+
+                                        |
+
+                                        To Date :
+                                        <h:outputText value="#{creditCompanyDueController.toDate}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                        </h:outputText>
+
+                                    </div>
+
+                                    <div class="text-center mb-1" style="font-size:10px;">
+                                        Bill Type :
+                                        <h:outputText value="#{not empty creditCompanyDueController.billType ? creditCompanyDueController.billType : 'All'}" />
+                                    </div>
+
+                                    <!-- Report Name -->
+                                    <div class="d-flex justify-content-center text-5 gap-2 mb-2" style="font-weight: 700; font-size: 12px;">
+                                        <h:outputText value="Opd Credit DUE Report" />
+                                    </div>
+
+                                </div>
+
+                                <div>
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th style="width: 32mm; font-weight: 700; text-align: center;">
+                                                    <h:outputText value="Bill No" />
+                                                </th>
+                                                <th style="width: 17mm;font-weight: 700; text-align: center;">
+                                                    <h:outputText value="Policy No" />
+                                                </th>
+                                                <th style="width: 17mm; font-weight: 700; text-align: center;">
+                                                    <h:outputText value="Ref No" />
+                                                </th>
+                                                <th style="width: 17mm; font-weight: 700; text-align: center;">
+                                                    <h:outputText value="Client Name" />
+                                                </th>
+                                                <th style="width: 12mm; font-weight: 700; text-align: center;">
+                                                    <h:outputText value="Bill Date" />
+                                                </th>
+                                                <th style="width: 17mm; font-weight: 700; text-align: center;">
+                                                    <h:outputText value="Billed Amount"/>
+                                                </th>
+                                                <ui:fragment rendered="#{!configOptionApplicationController.getBooleanValueByKey('OPD Due Search - Hide Staff Fee',false)}">
+                                                    <th style=" font-weight: 700; text-align: center;">
+                                                        <h:outputText value="Staff Fee" />
+                                                    </th>
+                                                </ui:fragment>
+                                                <th style="width: 17mm; font-weight: 700; text-align: center;">
+                                                    <h:outputText value="Paid Amount" />
+                                                </th>
+                                                <th style="width: 17mm; font-weight: 700; text-align: center;">
+                                                    <h:outputText value="Due Amount" />
+                                                </th>
+
+                                            </tr>
+                                        </thead>
+
+                                        <tbody>
+                                            <ui:repeat value="#{creditCompanyDueController.items}" var="i">
+                                                <tr>
+                                                    <td colspan="#{configOptionApplicationController.getBooleanValueByKey('OPD Due Search - Hide Staff Fee', false) ? 8 : 9}"
+                                                        style="font-weight:bold; text-align: left;">
+
+                                                        <h:outputText value="#{i.institution.name}" style="margin-left: 1mm;" />
+                                                    </td>
+                                                </tr>
+
+                                                <ui:repeat value="#{i.payments}" var="p" >
+                                                    <tr>
+                                                        <td style="width: 32mm; text-align: left;" >
+                                                            <h:outputText value="#{p.bill.deptId}" style="margin-left: 1mm;"/>
+
+                                                        </td>
+                                                        <td style="width: 17mm; text-align: left;">
+                                                            <h:outputText value="#{not empty p.policyNo ? p.policyNo : 'N/A'}" style="margin-left: 1mm;"/>
+                                                        </td>
+                                                        <td style="width: 17mm; text-align: left;">
+                                                            <h:outputText value="#{not empty p.referenceNo ? p.referenceNo : 'N/A'}" style="margin-left: 1mm;"/>
+                                                        </td>
+                                                        <td style="width: 17mm; text-align: left;">
+                                                            <h:outputText value="#{p.bill.patient.person.nameWithTitle}" style="margin-left: 1mm;"/>
+                                                        </td>
+                                                        <td style="width: 12mm; text-align: center;">
+                                                            <h:outputText value="#{p.bill.createdAt}">
+                                                                <f:convertDateTime pattern="yyyy-MM-dd"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                        <td style="width: 17mm; text-align: right;">
+                                                            <h:outputText value="#{p.bill.netTotal}" style="margin-right: 1mm;">
+                                                                <f:convertNumber pattern="#,##0.00" />
+                                                            </h:outputText>
+                                                        </td>
+                                                        <ui:fragment rendered="#{!configOptionApplicationController.getBooleanValueByKey('OPD Due Search - Hide Staff Fee',false)}">
+                                                            <td style="width: 17mm; text-align:right;">
+                                                                <h:outputText value="#{p.bill.staffFee}">
+                                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                                </h:outputText>
+                                                            </td>
+                                                        </ui:fragment>
+                                                        <td style="width: 17mm; text-align: right;">
+                                                            <h:outputText value="#{p.bill.paidAmount}" style="margin-right: 1mm;">
+                                                                <f:convertNumber pattern="#,##0.00" />
+                                                            </h:outputText>
+                                                        </td>
+                                                        <td style="width: 17mm; text-align: right;">
+                                                            <h:outputText value="#{p.bill.netTotal - p.bill.paidAmount}" style="margin-right: 1mm;">
+                                                                <f:convertNumber pattern="#,##0.00" />
+                                                            </h:outputText>
+                                                        </td>
+
+                                                    </tr>
+                                                </ui:repeat>
+                                                <tr style="font-weight:bold;">
+                                                    <td style="text-align:left;" colspan="5">
+                                                        <h:outputLabel value="Total " style="margin-left:1mm;" />
+                                                    </td>
+
+                                                    <td style="text-align:right;">
+                                                        <h:outputText value="#{i.total}" style="margin-right: 1mm;">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
+                                                    </td>
+
+                                                    <ui:fragment rendered="#{!configOptionApplicationController.getBooleanValueByKey('OPD Due Search - Hide Staff Fee',false)}">
+                                                        <td></td>
+                                                    </ui:fragment>
+
+                                                    <td style="text-align:right;">
+                                                        <h:outputText value="#{i.paidTotal}" style="margin-right: 1mm;">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
+                                                    </td>
+
+                                                    <td style="text-align:right;">
+                                                        <h:outputText value="#{i.total - i.paidTotal}" style="margin-right: 1mm;">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
+                                                    </td>
+                                                </tr>
+
+                                            </ui:repeat>
+
+                                        </tbody>
+
+                                    </table>
+
+                                </div>
+
+                            </div>
+                        </h:panelGroup>
+
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>

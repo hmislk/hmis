@@ -67,8 +67,13 @@ public class DrawerAdjustmentController implements Serializable {
 
     // <editor-fold defaultstate="collapsed" desc="Navigation">
     public String navigateToRequestAdjustment() {
+        WebUser loggedUser = sessionController.getLoggedUser();
+        if (requestService.hasPendingDrawerAdjustmentRequest(loggedUser)) {
+            JsfUtil.addErrorMessage("You already have a pending drawer adjustment request. Please wait for it to be approved or rejected before submitting a new one.");
+            return "";
+        }
         makeNull();
-        targetDrawerUser = sessionController.getLoggedUser();
+        targetDrawerUser = loggedUser;
         return "/cashier/drawer_adjustment_request?faces-redirect=true";
     }
 
@@ -84,6 +89,10 @@ public class DrawerAdjustmentController implements Serializable {
 
     // <editor-fold defaultstate="collapsed" desc="Cashier Self-Request">
     public String submitAdjustmentRequest() {
+        if (requestService.hasPendingDrawerAdjustmentRequest(sessionController.getLoggedUser())) {
+            JsfUtil.addErrorMessage("You already have a pending drawer adjustment request. Please wait for it to be approved or rejected before submitting a new one.");
+            return "";
+        }
         if (!validateInput(true)) {
             return "";
         }
@@ -190,6 +199,10 @@ public class DrawerAdjustmentController implements Serializable {
         paymentMethod = null;
         adjustmentDelta = null;
         reason = null;
+    }
+
+    public boolean isHasPendingRequest() {
+        return requestService.hasPendingDrawerAdjustmentRequest(sessionController.getLoggedUser());
     }
 
     public Double getCurrentBalance() {

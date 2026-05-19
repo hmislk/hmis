@@ -34,7 +34,7 @@ public class Payment implements Serializable, RetirableEntity {
     static final long serialVersionUID = 1L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
 
     @ManyToOne
@@ -133,6 +133,7 @@ public class Payment implements Serializable, RetirableEntity {
     private boolean paymentRecordCompleted;
 
     private boolean selectedForHandover;
+    private boolean handoverProofMissing;
     private boolean selectedForCashbookEntry;
     private boolean selectedForRecording;
     private boolean selectedForRecordingConfirmation;
@@ -154,6 +155,8 @@ public class Payment implements Serializable, RetirableEntity {
     private CashBookEntry cashbookEntry;
     @ManyToOne
     private CashBook cashbook;
+
+    private boolean deposited;
 
     private boolean cancelled;
     @ManyToOne
@@ -190,6 +193,9 @@ public class Payment implements Serializable, RetirableEntity {
     private Institution fromInstitution;
     @ManyToOne
     private Institution toInstitution;
+
+    @ManyToOne
+    private WebUser floatRecipient;
 
     private Staff toStaff;
 
@@ -725,6 +731,14 @@ public class Payment implements Serializable, RetirableEntity {
         this.selectedForHandover = selectedForHandover;
     }
 
+    public boolean isHandoverProofMissing() {
+        return handoverProofMissing;
+    }
+
+    public void setHandoverProofMissing(boolean handoverProofMissing) {
+        this.handoverProofMissing = handoverProofMissing;
+    }
+
     public boolean isSelectedForRecording() {
         return selectedForRecording;
     }
@@ -758,6 +772,22 @@ public class Payment implements Serializable, RetirableEntity {
 
     public void setCurrentHolder(WebUser currentHolder) {
         this.currentHolder = currentHolder;
+    }
+
+    public WebUser getFloatRecipient() {
+        return floatRecipient;
+    }
+
+    public void setFloatRecipient(WebUser floatRecipient) {
+        this.floatRecipient = floatRecipient;
+    }
+
+    public boolean isDeposited() {
+        return deposited;
+    }
+
+    public void setDeposited(boolean deposited) {
+        this.deposited = deposited;
     }
 
     public boolean isCancelled() {

@@ -6474,11 +6474,12 @@ public class PatientInvestigationController implements Serializable {
                 + " from PatientInvestigation pi "
                 + " where pi.cancelled=:can "
                 + " and pi.billItem.bill=:bill";
+        
         List<PatientInvestigation> pis = ejbFacade.findByJpql(j, m);
         if (pis == null) {
             return null;
         }
-
+        
         for (PatientInvestigation ptix : pis) {
             Investigation ix = ptix.getInvestigation();
             if (ix.getReportedAs() != null) {
@@ -6489,6 +6490,7 @@ public class PatientInvestigationController implements Serializable {
             if (ix == null) {
                 continue;
             }
+            
             ptix.setSampleGenerated(true);
             ptix.setSampleGeneratedBy(wu);
             ptix.setSampleGeneratedAt(new Date());
@@ -6538,6 +6540,7 @@ public class PatientInvestigationController implements Serializable {
                     if (ixi.getSampleComponent() == null) {
                         ixi.setSampleComponent(ixSampleComponant);
                     }
+
                     j = "select ps "
                             + " from PatientSample ps "
                             + " where ps.tube=:tube "
@@ -6583,8 +6586,10 @@ public class PatientInvestigationController implements Serializable {
                         pts.setSentToAnalyzer(false);
                         pts.setReceivedFromAnalyzer(false);
                         pts.setRetired(false);
-                        patientSampleFacade.create(pts);
+                        patientSampleFacade.createAndFlush(pts);
+                        
                     }
+                    
                     rPatientSamplesMap.put(pts.getId(), pts);
 
                     PatientSampleComponant ptsc;
@@ -6603,6 +6608,7 @@ public class PatientInvestigationController implements Serializable {
                     m.put("pts", pts);
 
                     ptsc = patientSampleComponantFacade.findFirstByJpql(j, m);
+
                     if (ptsc == null) {
                         ptsc = new PatientSampleComponant();
                         ptsc.setPatientSample(pts);
@@ -6619,9 +6625,8 @@ public class PatientInvestigationController implements Serializable {
         }
 
         if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
-
             List<PatientSampleComponant> componants = getPatientSampleComponentsByBill(barcodeBill);
-            
+
             if (barcodeBill.getStatus() == PatientInvestigationStatus.ORDERED) {
                 barcodeBill.setStatus(PatientInvestigationStatus.SAMPLE_GENERATED);
                 for (PatientSampleComponant psc : componants) {
@@ -6637,7 +6642,7 @@ public class PatientInvestigationController implements Serializable {
         }
 
         billFacade.edit(barcodeBill);
-
+        
         List<PatientSample> rPatientSamples = new ArrayList<>(rPatientSamplesMap.values());
         return rPatientSamples;
     }

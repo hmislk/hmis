@@ -53,7 +53,7 @@
                                                 immediate="true" />
 
                                             <p:commandButton
-                                                value="Admission Profile"
+                                                value="Inpatient Dashboard"
                                                 rendered="#{admissionController.current ne null and admissionController.current.id ne null}"
                                                 action="#{patientController.saveAndNavigateToAdmissionProfile()}"
                                                 ajax="false"
@@ -138,10 +138,9 @@
                                     <div class="row form-group mb-1">
                                         <div class="col-md-3">
                                             <p:outputLabel value="Phone Number:"  class="form-label" />
-                                            <p:inputText 
-                                                required="true"
-                                                value="#{patientController.current.phoneNumberStringTransient}" 
-                                                class="form-control" 
+                                            <p:inputText
+                                                value="#{patientController.current.phoneNumberStringTransient}"
+                                                class="form-control"
                                                 validatorMessage="Please enter Valid Phone Number."
                                                 validator="#{patientController.validateMobile}"
                                                 >

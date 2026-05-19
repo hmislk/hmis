@@ -1230,6 +1230,7 @@ public class OpdReportController implements Serializable {
         List<BillTypeAtomic> voucherDeductionBillTypeAtomics = new ArrayList<>();
         voucherDeductionBillTypeAtomics.add(BillTypeAtomic.FUND_TRANSFER_BILL);
         voucherDeductionBillTypeAtomics.add(BillTypeAtomic.FUND_TRANSFER_BILL_CANCELLED);
+        voucherDeductionBillTypeAtomics.add(BillTypeAtomic.FUND_TRANSFER_BILL_DECLINED);
 
         fetchedBills = billService.fetchBills(fromDate, toDate, institution, site, department, null, voucherDeductionBillTypeAtomics, null, null, null, null, null);
         IncomeRow floatTransferDeductionRow = new IncomeRow();
@@ -1305,6 +1306,7 @@ public class OpdReportController implements Serializable {
         List<BillTypeAtomic> voucherDeductionBillTypeAtomics = new ArrayList<>();
         voucherDeductionBillTypeAtomics.add(BillTypeAtomic.FUND_TRANSFER_BILL);
         voucherDeductionBillTypeAtomics.add(BillTypeAtomic.FUND_TRANSFER_BILL_CANCELLED);
+        voucherDeductionBillTypeAtomics.add(BillTypeAtomic.FUND_TRANSFER_BILL_DECLINED);
 
         List<Bill> fetchedBills = billService.fetchBills(fromDate, toDate, institution, site, department, null, voucherDeductionBillTypeAtomics, null, null, null, null, null);
         IncomeRow floatTransferDeductionRow = new IncomeRow();

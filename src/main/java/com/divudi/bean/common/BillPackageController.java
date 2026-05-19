@@ -1711,6 +1711,10 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     }
 
     public void settleBill() {
+        if (printPreview) {
+            JsfUtil.addErrorMessage("Bill already settled");
+            return;
+        }
 //        if (validatePaymentMethodDeta()) {
 //            return;
 //        }

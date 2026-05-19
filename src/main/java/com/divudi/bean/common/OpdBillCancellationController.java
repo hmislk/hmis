@@ -800,6 +800,18 @@ public class OpdBillCancellationController implements Serializable, ControllerWi
 
         // Create payments using PaymentService
         List<Payment> ps = paymentService.createPayment(cancellationBill, paymentMethodData);
+
+        // For Multi payment methods, restore non-drawer balances (Staff Welfare,
+        // Patient Deposit, Staff Credit, Company Credit) per component. The 5-arg
+        // createPayment overload only writes Payment rows + drawer/cashbook; it does
+        // not touch these balances. The post-create Staff_Welfare/Credit/PatientDeposit
+        // blocks below only fire when the cancellation bill's top-level method matches,
+        // so Multi(Cash + Staff Welfare) would otherwise leave the welfare balance
+        // un-refunded. Mirrors OpdBatchBillCancellationController.cancelOpdBatchBill.
+        if (cancellationBill.getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
+            paymentService.updateBalances(ps);
+        }
+
         List<BillItem> list = cancelBillItems(getBill(), cancellationBill, ps);
 
         try {
@@ -822,7 +834,10 @@ public class OpdBillCancellationController implements Serializable, ControllerWi
         // Update batch bill balance for credit payment method
         updateBatchBillFinancialFieldsForIndividualCancellation(bill, cancellationBill);
 
-        drawerController.updateDrawerForOuts(ps);
+        // NOTE: Do NOT call drawerController.updateDrawerForOuts(ps) here.
+        // paymentService.createPayment() already calls drawerService.updateDrawer() internally
+        // for each payment. A second call would create duplicate DrawerEntry records and
+        // double-deduct from the drawer balance. See issue #19796.
         JsfUtil.addSuccessMessage("Cancelled");
 
         if (cancellationBill.getPaymentMethod() == PaymentMethod.Credit) {

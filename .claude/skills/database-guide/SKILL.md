@@ -45,9 +45,25 @@ String jpql = "SELECT SUM(b.netTotal) FROM Bill b WHERE ...";
 - Use DTOs instead of full entities for display
 - Limit result sets with pagination
 
+## Local Development Databases
+
+Each developer machine may have different Payara JDBC pool names and JNDI names. Common local databases:
+
+- **`rh`** — primary dev database (JNDI typically `jdbc/rhDS`)
+- **`ruhunu`** — useful as a testing environment with richer data coverage
+
+When a restored database has **lowercase table names**, it must be converted to uppercase before the app can use it. Generate and run the rename script:
+```sql
+SELECT CONCAT('RENAME TABLE `', table_name, '` TO `temp_', table_name, '`; ',
+              'RENAME TABLE `temp_', table_name, '` TO `', UPPER(table_name), '`;')
+FROM information_schema.tables
+WHERE table_schema = '<db_name>' AND table_name != UPPER(table_name);
+```
+Then pipe the output into mysql for that database. See `src/main/webapp/resources/sql/UpperCase.sql` for reference (note: that file targets a specific schema — always generate fresh from the actual database).
+
 ## Persistence Configuration
 
-- **Development**: Use hardcoded JNDI (`jdbc/rhDS`)
+- **Development**: Use hardcoded JNDI (machine-specific — check your local Payara setup)
 - **Before push**: Must use environment variables (`${JDBC_DATASOURCE}`)
 
 For complete reference, read [developer_docs/database/mysql-developer-guide.md](../../developer_docs/database/mysql-developer-guide.md).

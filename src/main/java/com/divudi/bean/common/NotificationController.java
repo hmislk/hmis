@@ -110,6 +110,9 @@ public class NotificationController implements Serializable {
             case PHARMACY_ORDER_APPROVAL:
                 createPharmacyPurcheseOrderApprovelNotifications(bill);
                 break;
+            case FUND_TRANSFER_REQUEST:
+                createFloatTransferRequestNotifications(bill);
+                break;
             default:
                 throw new AssertionError();
         }
@@ -147,6 +150,20 @@ public class NotificationController implements Serializable {
     private void createPharmacyTransferRequestNotifications(Bill bill) {
         Date date = new Date();
         for (TriggerType tt : TriggerType.getTriggersByParent(TriggerTypeParent.TRANSFER_REQUEST)) {
+            Notification nn = new Notification();
+            nn.setCreatedAt(date);
+            nn.setBill(bill);
+            nn.setTriggerType(tt);
+            nn.setCreater(sessionController.getLoggedUser());
+            nn.setMessage(createTemplateForNotificationMessage(bill.getBillTypeAtomic()));
+            getFacade().create(nn);
+            userNotificationController.createUserNotifications(nn);
+        }
+    }
+
+    private void createFloatTransferRequestNotifications(Bill bill) {
+        Date date = new Date();
+        for (TriggerType tt : TriggerType.getTriggersByParent(TriggerTypeParent.FLOAT_TRANSFER_REQUEST)) {
             Notification nn = new Notification();
             nn.setCreatedAt(date);
             nn.setBill(bill);
@@ -226,6 +243,10 @@ public class NotificationController implements Serializable {
             message = configOptionController.getLongTextValueByKey("Message Template for OPD Bill Cancellation During Batch Bill Cancellation Notification", OptionScope.APPLICATION, null, null, null);
         }
 
+        if (bt == BillTypeAtomic.FUND_TRANSFER_REQUEST) {
+            message = configOptionController.getLongTextValueByKey("Message Template for Float Transfer Request Notification", OptionScope.APPLICATION, null, null, null);
+        }
+
         if (message == null || message == "" || message.isEmpty()) {
             message = "New Request from ";
         }
@@ -256,20 +277,14 @@ public class NotificationController implements Serializable {
         Calendar c = Calendar.getInstance();
         c.add(Calendar.MONTH, 1);
 
-        String temId = bill.getId() + "";
-        temId = securityController.encrypt(temId);
+        String token = securityController.createBillToken(bill.getId(), c.getTime(), securityController.obtainHmacSigningKey(sessionController));
+        String encodedToken;
         try {
-            temId = URLEncoder.encode(temId, "UTF-8");
+            encodedToken = URLEncoder.encode(token, "UTF-8");
         } catch (UnsupportedEncodingException ignored) {
+            encodedToken = token;
         }
-
-        String ed = CommonFunctions.getDateFormat(c.getTime(), sessionController.getApplicationPreference().getLongDateFormat());
-        ed = securityController.encrypt(ed);
-        try {
-            ed = URLEncoder.encode(ed, "UTF-8");
-        } catch (UnsupportedEncodingException ignored) {
-        }
-        String url = CommonFunctions.getBaseUrl() + "faces/requests/bill.xhtml?id=" + temId + "&user=" + ed;
+        String url = CommonFunctions.getBaseUrl() + "faces/requests/bill.xhtml?id=" + encodedToken;
         messageBody += "<p>"
                 + "Your Report is attached"
                 + "<br/>"
@@ -332,20 +347,14 @@ public class NotificationController implements Serializable {
         Calendar c = Calendar.getInstance();
         c.add(Calendar.MONTH, 1);
 
-        String temId = bill.getId() + "";
-        temId = securityController.encrypt(temId);
+        String token2 = securityController.createBillToken(bill.getId(), c.getTime(), securityController.obtainHmacSigningKey(sessionController));
+        String encodedToken2;
         try {
-            temId = URLEncoder.encode(temId, "UTF-8");
-        } catch (UnsupportedEncodingException ex) {
-        }
-
-        String ed = CommonFunctions.getDateFormat(c.getTime(), sessionController.getApplicationPreference().getLongDateFormat());
-        ed = securityController.encrypt(ed);
-        try {
-            ed = URLEncoder.encode(ed, "UTF-8");
+            encodedToken2 = URLEncoder.encode(token2, "UTF-8");
         } catch (UnsupportedEncodingException ignored) {
+            encodedToken2 = token2;
         }
-        String url = CommonFunctions.getBaseUrl() + "faces/requests/bill.xhtml?id=" + temId + "&user=" + ed;
+        String url = CommonFunctions.getBaseUrl() + "faces/requests/bill.xhtml?id=" + encodedToken2;
         messageBody += "<p>"
                 + "Your Report is attached"
                 + "<br/>"

@@ -10,6 +10,7 @@ import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Item;
 import com.divudi.core.entity.ItemFee;
 import com.divudi.core.entity.Staff;
+import com.divudi.core.entity.AuditEvent;
 import com.divudi.core.facade.DepartmentFacade;
 import com.divudi.core.facade.ItemFacade;
 import com.divudi.core.facade.ItemFeeFacade;
@@ -31,6 +32,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import com.google.gson.Gson;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.context.FacesContext;
@@ -87,6 +89,8 @@ public class ItemFeeManager implements Serializable {
     SessionController sessionController;
     @Inject
     ItemController itemController;
+    @Inject
+    AuditEventController auditEventController;
 
     List<Department> departments;
     List<Staff> staffs;
@@ -433,10 +437,12 @@ public class ItemFeeManager implements Serializable {
             JsfUtil.addErrorMessage("Select a fee");
             return;
         }
+        String beforeJson = toItemFeeAuditJson(removingFee);
         removingFee.setRetired(true);
         removingFee.setRetiredAt(new Date());
         removingFee.setRetirer(sessionController.getLoggedUser());
         itemFeeFacade.edit(removingFee);
+        completeItemFeeAuditEvent("Fee Retired", removingFee, beforeJson);
         itemFees = null;
         updateTotal();
         JsfUtil.addSuccessMessage("Removed. Reload Items");
@@ -447,10 +453,12 @@ public class ItemFeeManager implements Serializable {
             JsfUtil.addErrorMessage("Select a fee");
             return;
         }
+        String beforeJson = toItemFeeAuditJson(removingFee);
         removingFee.setRetired(true);
         removingFee.setRetiredAt(new Date());
         removingFee.setRetirer(sessionController.getLoggedUser());
         itemFeeFacade.edit(removingFee);
+        completeItemFeeAuditEvent("Site Fee Retired", removingFee, beforeJson);
         itemFees = null;
         updateTotal();
         feeValueController.updateFeeValue(item, forSite, totalItemFee, totalItemFeeForForeigners);
@@ -462,10 +470,12 @@ public class ItemFeeManager implements Serializable {
             JsfUtil.addErrorMessage("Select a fee");
             return;
         }
+        String beforeJson = toItemFeeAuditJson(removingFee);
         removingFee.setRetired(true);
         removingFee.setRetiredAt(new Date());
         removingFee.setRetirer(sessionController.getLoggedUser());
         itemFeeFacade.edit(removingFee);
+        completeItemFeeAuditEvent("Department Fee Retired", removingFee, beforeJson);
         itemFees = null;
         updateItemAndDepartmentFees();
         feeValueController.updateFeeValue(item, forDepartment, totalItemFee, totalItemFeeForForeigners);
@@ -639,7 +649,7 @@ public class ItemFeeManager implements Serializable {
                 .sum();
         feeValueController.updateFeeValue(ti, dept, tlf, tfff);
     }
-    
+
     public void updateDepartmentFeeValues(Item item, Department dept, List<ItemFee> tfs) {
         double localFeeTotal = tfs.stream()
                 .filter(Objects::nonNull)
@@ -1030,6 +1040,7 @@ public class ItemFeeManager implements Serializable {
 
         getItemFee().setItem(item);
         itemFeeFacade.edit(itemFee);
+        completeItemFeeAuditEvent("Fee Created", itemFee, null);
 
         itemFee = new ItemFee();
         itemFees = null;
@@ -1075,6 +1086,7 @@ public class ItemFeeManager implements Serializable {
         itemFeeFacade.create(itemFee);
         getItemFee().setItem(item);
         itemFeeFacade.edit(itemFee);
+        completeItemFeeAuditEvent("Collecting Centre Fee Created", itemFee, null);
         itemFee = new ItemFee();
         itemFees = null;
         updateItemAndCollectingCentreFees();;
@@ -1110,6 +1122,20 @@ public class ItemFeeManager implements Serializable {
                 return;
             }
         }
+
+        if (itemFee.isPrimaryFee()) {
+            for (ItemFee f : itemFees) {
+                if (f.isPrimaryFee()) {
+                    JsfUtil.addErrorMessage("You can't set PrimaryFee");
+                    return;
+                }
+            }
+        }
+        
+        if (itemFee.getFeeType() != FeeType.Staff) {
+            itemFee.setPrimaryFee(false);
+        }
+
         // Validation no longer rejects zero value fees for site specific
         // settings.
         getItemFee().setCreatedAt(new Date());
@@ -1118,6 +1144,7 @@ public class ItemFeeManager implements Serializable {
         itemFeeFacade.create(itemFee);
         getItemFee().setItem(item);
         itemFeeFacade.edit(itemFee);
+        completeItemFeeAuditEvent("Site Fee Created", itemFee, null);
         itemFee = new ItemFee();
         itemFees = null;
 
@@ -1156,6 +1183,7 @@ public class ItemFeeManager implements Serializable {
         itemFeeFacade.create(itemFee);
         getItemFee().setItem(item);
         itemFeeFacade.edit(itemFee);
+        completeItemFeeAuditEvent("Department Fee Created", itemFee, null);
         itemFee = new ItemFee();
         itemFees = null;
 
@@ -1202,6 +1230,7 @@ public class ItemFeeManager implements Serializable {
 
         getItemFee().setItem(item);
         itemFeeFacade.edit(itemFee);
+        completeItemFeeAuditEvent("Fee List Fee Created", itemFee, null);
 
         itemFee = new ItemFee();
         itemFees = null;
@@ -1220,6 +1249,7 @@ public class ItemFeeManager implements Serializable {
 
         inputFee.setItem(inputItem);
         itemFeeFacade.edit(inputFee);
+        completeItemFeeAuditEvent("Fee Created", inputFee, null);
 
         List<ItemFee> inputFees = fillFees(inputItem);
         updateTotal(inputItem, inputFees);
@@ -1234,10 +1264,13 @@ public class ItemFeeManager implements Serializable {
             inputFee.setCreatedAt(new Date());
             inputFee.setCreater(sessionController.getLoggedUser());
             itemFeeFacade.create(inputFee);
+            completeItemFeeAuditEvent("Fee Created", inputFee, null);
         } else {
+            String beforeJson = toItemFeeAuditJson(inputFee);
             inputFee.setEditedAt(new Date());
             inputFee.setEditer(sessionController.getLoggedUser());
             itemFeeFacade.edit(inputFee);
+            completeItemFeeAuditEvent("Fee Updated", inputFee, beforeJson);
         }
 
         List<ItemFee> inputFees = fillFees(inputFee.getItem());
@@ -1246,18 +1279,35 @@ public class ItemFeeManager implements Serializable {
     }
 
     public void updateFee(ItemFee f) {
+        String beforeJson = toItemFeeAuditJson(f);
+        if (f.isPrimaryFee()) {
+            boolean hasOtherPrimaryFee = itemFees.stream()
+                    .anyMatch(fee -> fee.isPrimaryFee() && fee.getId() != f.getId());
+
+            if (hasOtherPrimaryFee) {
+                f.setPrimaryFee(false);
+                JsfUtil.addErrorMessage("You can't set PrimaryFee: another primary fee already exists");
+                return ;
+            }
+        }
         itemFeeFacade.edit(f);
+        completeItemFeeAuditEvent("Fee Updated", f, beforeJson);
         updateTotal();
+        JsfUtil.addSuccessMessage("Update Fee Successfully.");
     }
 
     public void updateFeeForSites(ItemFee f) {
+        String beforeJson = toItemFeeAuditJson(f);
         itemFeeFacade.edit(f);
+        completeItemFeeAuditEvent("Site Fee Updated", f, beforeJson);
         calculateFeesForSitesByProvidingFees();
         feeValueController.updateFeeValue(item, forSite, totalItemFee, totalItemFeeForForeigners);
     }
 
     public void updateFeeForDepartments(ItemFee f) {
+        String beforeJson = toItemFeeAuditJson(f);
         itemFeeFacade.edit(f);
+        completeItemFeeAuditEvent("Department Fee Updated", f, beforeJson);
         calculateFeesForDepartmentsByProvidingFees();
         feeValueController.updateFeeValue(item, forDepartment, totalItemFee, totalItemFeeForForeigners);
     }
@@ -1269,13 +1319,44 @@ public class ItemFeeManager implements Serializable {
         double t = 0.0;
         double tf = 0.0;
         for (ItemFee f : itemFees) {
+            String beforeJson = toItemFeeAuditJson(f);
             t += f.getFee();
             tf += f.getFfee();
             itemFeeFacade.edit(f);
+            completeItemFeeAuditEvent("Fee Updated", f, beforeJson);
         }
         getItem().setTotal(t);
         getItem().setTotalForForeigner(tf);
         itemFacade.edit(getItem());
+    }
+
+    private String toItemFeeAuditJson(ItemFee fee) {
+        if (fee == null) {
+            return "";
+        }
+        Map<String, Object> snapshot = new HashMap<>();
+        snapshot.put("id", fee.getId());
+        snapshot.put("name", fee.getName());
+        snapshot.put("feeType", fee.getFeeType() == null ? null : fee.getFeeType().name());
+        snapshot.put("fee", fee.getFee());
+        snapshot.put("ffee", fee.getFfee());
+        snapshot.put("retired", fee.isRetired());
+        snapshot.put("itemId", fee.getItem() == null ? null : fee.getItem().getId());
+        snapshot.put("itemName", fee.getItem() == null ? null : fee.getItem().getName());
+        snapshot.put("forInstitutionId", fee.getForInstitution() == null ? null : fee.getForInstitution().getId());
+        snapshot.put("forDepartmentId", fee.getForDepartment() == null ? null : fee.getForDepartment().getId());
+        snapshot.put("forCategoryId", fee.getForCategory() == null ? null : fee.getForCategory().getId());
+        return new Gson().toJson(snapshot);
+    }
+
+    private void completeItemFeeAuditEvent(String action, ItemFee fee, String beforeJson) {
+        if (fee == null) {
+            return;
+        }
+        String itemName = fee.getItem() != null ? fee.getItem().getName() : fee.getName();
+        String eventName = action + " - " + itemName;
+        AuditEvent ae = auditEventController.createNewAuditEvent(eventName, beforeJson == null ? "" : beforeJson, fee.getId(), "Fee");
+        auditEventController.completeAuditEvent(ae, toItemFeeAuditJson(fee));
     }
 
     public void updateTotal(Item inputItem, List<ItemFee> inputItemFees) {
@@ -1368,7 +1449,7 @@ public class ItemFeeManager implements Serializable {
     public void setForDepartment(Department forDepartment) {
         this.forDepartment = forDepartment;
     }
-    
+
     public void onFeeListChange() {
         fillFeeListItemFees();
     }
@@ -1378,14 +1459,14 @@ public class ItemFeeManager implements Serializable {
         Map<String, Object> m = new HashMap<>();
         m.put("ret", false);
         m.put("ccType", InstitutionType.CollectingCentre);
-        
+
         List<ItemFee> ccItemFees = itemFeeFacade.findByJpql(jpql, m);
-        
+
         if (ccItemFees == null || ccItemFees.isEmpty()) {
             JsfUtil.addErrorMessage("No active item fees found for collecting centres");
             return;
         }
-        
+
         int retiredCount = 0;
         for (ItemFee fee : ccItemFees) {
             fee.setRetired(true);
@@ -1395,9 +1476,9 @@ public class ItemFeeManager implements Serializable {
             itemFeeFacade.edit(fee);
             retiredCount++;
         }
-        
+
         JsfUtil.addSuccessMessage("Successfully retired " + retiredCount + " collecting centre item fees");
-        
+
         // Refresh the count after retirement
         loadCollectingCentreItemFeeCounts();
     }
@@ -1408,7 +1489,7 @@ public class ItemFeeManager implements Serializable {
 
     private List<CollectingCentreItemFeeCountDTO> collectingCentreItemFeeCounts;
     private Long totalActiveCollectingCentreItemFeesCount;
-    
+
     // Fee Assignment functionality
     private List<CollectingCentreFeeAssignmentDTO> collectingCentresForFeeAssignment;
     private List<CollectingCentreFeeAssignmentDTO> filteredCollectingCentres;
@@ -1427,13 +1508,13 @@ public class ItemFeeManager implements Serializable {
                 + "AND f.forInstitution.institutionType = :ccType "
                 + "GROUP BY f.forInstitution.id, f.forInstitution.name, f.forInstitution.code "
                 + "ORDER BY f.forInstitution.name";
-        
+
         Map<String, Object> m = new HashMap<>();
         m.put("ret", false);
         m.put("ccType", InstitutionType.CollectingCentre);
-        
-        collectingCentreItemFeeCounts =  (List<CollectingCentreItemFeeCountDTO>) itemFeeFacade.findLightsByJpql(jpql, m);
-        
+
+        collectingCentreItemFeeCounts = (List<CollectingCentreItemFeeCountDTO>) itemFeeFacade.findLightsByJpql(jpql, m);
+
         // Calculate total count
         totalActiveCollectingCentreItemFeesCount = 0L;
         if (collectingCentreItemFeeCounts != null) {
@@ -1441,7 +1522,7 @@ public class ItemFeeManager implements Serializable {
                 totalActiveCollectingCentreItemFeesCount += dto.getActiveItemFeesCount();
             }
         }
-        
+
         if (totalActiveCollectingCentreItemFeesCount == 0) {
             JsfUtil.addSuccessMessage("No active item fees found for collecting centres");
         } else {
@@ -1479,20 +1560,20 @@ public class ItemFeeManager implements Serializable {
                 + "WHERE i.retired = :ret "
                 + "AND i.institutionType = :ccType "
                 + "ORDER BY i.name";
-        
+
         Map<String, Object> m = new HashMap<>();
         m.put("ret", false);
         m.put("ccType", InstitutionType.CollectingCentre);
-        
+
         try {
             collectingCentresForFeeAssignment = (List<CollectingCentreFeeAssignmentDTO>) institutionFacade.findLightsByJpql(jpql, m);
-            
+
             // Clear previous selections
             selectedCollectingCentres = new ArrayList<>();
             filteredCollectingCentres = null;
             globalFilterValue = null;
             selectedFeeListForAssignment = null;
-            
+
             if (collectingCentresForFeeAssignment == null || collectingCentresForFeeAssignment.isEmpty()) {
                 JsfUtil.addErrorMessage("No collecting centres found in the system");
             } else {
@@ -1524,17 +1605,17 @@ public class ItemFeeManager implements Serializable {
             JsfUtil.addErrorMessage("Please select a fee list to assign");
             return;
         }
-        
+
         if (selectedCollectingCentres == null || selectedCollectingCentres.isEmpty()) {
             JsfUtil.addErrorMessage("Please select at least one collecting centre");
             return;
         }
-        
+
         int totalUpdatedCount = 0;
-        
+
         // Use performant bulk update for each selected centre
         String jpql = "UPDATE Institution i SET i.feeListType = :feeList, i.editer = :user, i.editedAt = :date WHERE i.id = :id";
-        
+
         for (CollectingCentreFeeAssignmentDTO dto : selectedCollectingCentres) {
             try {
                 Map<String, Object> params = new HashMap<>();
@@ -1542,10 +1623,10 @@ public class ItemFeeManager implements Serializable {
                 params.put("user", sessionController.getLoggedUser());
                 params.put("date", new Date());
                 params.put("id", dto.getInstitutionId());
-                
+
                 // Use the new performant update method from AbstractFacade
                 int updatedCount = institutionFacade.updateByJpql(jpql, params);
-                
+
                 if (updatedCount > 0) {
                     // Update the DTO to reflect the change
                     dto.setCurrentFeeListType(selectedFeeListForAssignment);
@@ -1557,7 +1638,7 @@ public class ItemFeeManager implements Serializable {
                 JsfUtil.addErrorMessage("Failed to update " + dto.getInstitutionName() + ": " + e.getMessage());
             }
         }
-        
+
         if (totalUpdatedCount > 0) {
             JsfUtil.addSuccessMessage("Successfully assigned fee list '" + selectedFeeListForAssignment.getName() + "' to " + totalUpdatedCount + " collecting centre(s)");
             // Clear selections
@@ -1568,7 +1649,6 @@ public class ItemFeeManager implements Serializable {
     }
 
     // Getters and setters for fee assignment functionality
-    
     public List<CollectingCentreFeeAssignmentDTO> getCollectingCentresForFeeAssignment() {
         return collectingCentresForFeeAssignment;
     }

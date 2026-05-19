@@ -17,6 +17,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.Temporal;
+import javax.persistence.Transient;
 
 /**
  *
@@ -28,7 +29,7 @@ public class PaymentScheme implements Serializable {
 
     static final long serialVersionUID = 1L;
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     //Main Properties
     Long id;
     String name;
@@ -70,6 +71,12 @@ public class PaymentScheme implements Serializable {
     private boolean seniorCitizenRequired;
     private boolean pregnantMotherRequired;
 
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date expiryDate;
+
+    @Transient
+    private Boolean expired;
+
     public int getOrderNo() {
         return orderNo;
     }
@@ -101,7 +108,6 @@ public class PaymentScheme implements Serializable {
 //    public void setValidForCrBills(boolean validForCrBills) {
 //        this.validForCrBills = validForCrBills;
 //    }
-
     public Long getId() {
         return id;
     }
@@ -323,6 +329,26 @@ public class PaymentScheme implements Serializable {
 
     public void setPregnantMotherRequired(boolean pregnantMotherRequired) {
         this.pregnantMotherRequired = pregnantMotherRequired;
+    }
+
+    public Date getExpiryDate() {
+        return expiryDate;
+    }
+
+    public void setExpirayDate(Date expiryDate) {
+        this.expiryDate = expiryDate;
+    }
+
+    public Boolean getExpired() {
+        if (expiryDate == null) {
+            return false;
+        }
+        expired = new Date().after(expiryDate);
+        return expired;
+    }
+
+    public void setExpiryDate(Date expiryDate) {
+        this.expiryDate = expiryDate;
     }
 
 }

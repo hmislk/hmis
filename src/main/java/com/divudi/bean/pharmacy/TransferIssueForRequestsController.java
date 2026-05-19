@@ -403,7 +403,11 @@ public class TransferIssueForRequestsController implements Serializable {
         }
     }
 
-    public void settle() {
+    public synchronized void settle() {
+        if (getIssuedBill() != null && getIssuedBill().getId() != null) {
+            JsfUtil.addErrorMessage("This bill has already been saved.");
+            return;
+        }
         if (getIssuedBill().getToDepartment() == null) {
             JsfUtil.addErrorMessage("Please Select Department to Issue");
             return;
@@ -451,6 +455,10 @@ public class TransferIssueForRequestsController implements Serializable {
         if (getBillItems() == null || getBillItems().isEmpty()) {
             JsfUtil.addErrorMessage("No Bill Items are added to Transfer");
             return;
+        }
+
+        if (getIssuedBill().getDepartmentType() == null && getRequestedBill() != null) {
+            getIssuedBill().setDepartmentType(getRequestedBill().getDepartmentType());
         }
 
         saveBill();

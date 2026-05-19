@@ -75,6 +75,14 @@
                                                 styleClass="mx-1">
                                             </p:commandButton>
                                             <p:commandButton
+                                                rendered="#{patientController.navigatedFromAdmissionProfile}"
+                                                value="Inpatient Dashboard"
+                                                action="#{patientController.navigateToInpatientDashboard()}"
+                                                ajax="false"
+                                                icon="fa fa-hospital"
+                                                styleClass="mx-1">
+                                            </p:commandButton>
+                                            <p:commandButton
                                                 style="float: right;"
                                                 value="Lookup"
                                                 ajax="false"

@@ -49,19 +49,26 @@ public class DepartmentApiService implements Serializable {
      * Uses DTO constructor queries for optimal performance
      */
     public List<DepartmentDTO> searchDepartments(String query, DepartmentType type, Long institutionId, Integer limit) throws Exception {
-        if (query == null || query.trim().isEmpty()) {
-            throw new Exception("Department search query is required");
+        boolean hasQuery = query != null && !query.trim().isEmpty();
+
+        // At least one filter (query or institutionId) must be provided so we
+        // don't return the entire department table. Either alone is sufficient.
+        if (!hasQuery && institutionId == null) {
+            throw new Exception("Either query or institutionId is required");
         }
 
         Map<String, Object> params = new HashMap<>();
-        params.put("query", "%" + query.toUpperCase() + "%");
 
         StringBuilder jpql = new StringBuilder();
         jpql.append("SELECT new com.divudi.core.data.dto.search.DepartmentDTO(")
             .append("d.id, d.name, d.code) ")
             .append("FROM Department d ")
-            .append("WHERE d.retired = false ")
-            .append("AND (upper(d.name) LIKE :query OR upper(d.code) LIKE :query) ");
+            .append("WHERE d.retired = false ");
+
+        if (hasQuery) {
+            jpql.append("AND (upper(d.name) LIKE :query OR upper(d.code) LIKE :query) ");
+            params.put("query", "%" + query.toUpperCase() + "%");
+        }
 
         // Add type filter if provided
         if (type != null) {
@@ -163,8 +170,9 @@ public class DepartmentApiService implements Serializable {
         department.setCreatedAt(Calendar.getInstance().getTime());
         department.setRetired(false);
 
-        // Save department
-        departmentFacade.create(department);
+        // Save department and flush so the IDENTITY-generated id is populated
+        // before we build the response DTO (issue #20276)
+        departmentFacade.createAndFlush(department);
 
         return buildDepartmentResponseDTO(department, "Department created successfully");
     }
@@ -237,8 +245,8 @@ public class DepartmentApiService implements Serializable {
             department.setPharmacyMarginFromPurchaseRate(request.getPharmacyMarginFromPurchaseRate());
         }
 
-        // Save updated department
-        departmentFacade.edit(department);
+        // Save updated department and flush so response reflects persisted state
+        departmentFacade.editAndFlush(department);
 
         return buildDepartmentResponseDTO(department, "Department updated successfully");
     }
@@ -268,8 +276,8 @@ public class DepartmentApiService implements Serializable {
         department.setRetiredAt(Calendar.getInstance().getTime());
         department.setRetireComments(retireComments);
 
-        // Save retired department
-        departmentFacade.edit(department);
+        // Save retired department and flush so response reflects persisted state
+        departmentFacade.editAndFlush(department);
 
         return buildDepartmentResponseDTO(department, "Department retired successfully");
     }
@@ -321,8 +329,8 @@ public class DepartmentApiService implements Serializable {
             department.setSuperDepartment(superDepartment);
         }
 
-        // Save updated department
-        departmentFacade.edit(department);
+        // Save updated department and flush so response reflects persisted state
+        departmentFacade.editAndFlush(department);
 
         return buildDepartmentResponseDTO(department, "Department relationships updated successfully");
     }

@@ -173,7 +173,6 @@
                                 <h:outputLabel value="Visit Type" for="type" class="m-3"/>
                             </h:panelGroup>
                             <p:selectOneMenu id="type" class="w-100 " value="#{reportController.reportType}">
-                                <f:selectItem itemValue="Any" itemLabel="Any" ></f:selectItem>
                                 <f:selectItem itemValue="OP" itemLabel="Out Patients (OP)" />
                                 <f:selectItem itemValue="IP" itemLabel="In Patients (IP)" />
                             </p:selectOneMenu>
@@ -214,7 +213,7 @@
 
                         </div>
 
-                        <p:panel header="BHT Issue Value Report" styleClass="my-2">
+                        <p:panel header="#{reportController.reportType eq 'IP' ? 'BHT Issue (IP Sale) Report' : (reportController.reportType eq 'OP' ? 'OP Sale Report' : 'Pharmacy Sale Report (OP/IP)')}" styleClass="my-2">
 
                             <!-- Report Info Summary -->
                             <table class="table table-bordered table-sm mb-3">
@@ -311,10 +310,10 @@
                                         <thead>
                                             <tr>
                                                 <th style="min-width: 120px;">
-                                                    <h:outputText value="MRNO" />
+                                                    <h:outputText value="MRNO" rendered="#{reportController.reportType ne 'OP'}" />
                                                 </th>
                                                 <th style="min-width: 130px;">
-                                                    <h:outputText value="BHT No." />
+                                                    <h:outputText value="BHT No." rendered="#{reportController.reportType ne 'OP'}" />
                                                 </th>
                                                 <th style="min-width: 100px;">
                                                     <h:outputText value="Invoice No." />
@@ -442,7 +441,7 @@
                                                 <!-- BHT Subtotal Row -->
                                                 <tr style="background-color: #fff3cd; font-weight: bold;">
                                                     <td colspan="5" style="text-align: right;">
-                                                        <h:outputText value="BHT Total:" />
+                                                        <h:outputText value="#{reportController.reportType eq 'OP' ? 'Total:' : 'BHT Total:'}" />
                                                     </td>
                                                     <td></td>
                                                     <td></td>

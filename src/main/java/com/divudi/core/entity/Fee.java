@@ -29,7 +29,7 @@ public class Fee implements Serializable {
 
     static final long serialVersionUID = 1L;
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     //Main Properties
     Long id;
     String name;
@@ -103,7 +103,11 @@ public class Fee implements Serializable {
     Speciality fromSpeciality;
     @ManyToOne
     Speciality toSpaciality;
+    
+    private boolean primaryFee;
+    
     private boolean discountAllowed;
+    private Boolean marginAllowed;
 
     public Fee() {
     }
@@ -432,6 +436,14 @@ public class Fee implements Serializable {
         this.discountAllowed = discountAllowed;
     }
 
+    public Boolean getMarginAllowed() {
+        return marginAllowed;
+    }
+
+    public void setMarginAllowed(Boolean marginAllowed) {
+        this.marginAllowed = marginAllowed;
+    }
+
     public double getCcFee() {
         return ccFee;
     }
@@ -462,6 +474,14 @@ public class Fee implements Serializable {
 
     public void setForDepartment(Department forDepartment) {
         this.forDepartment = forDepartment;
+    }
+
+    public boolean isPrimaryFee() {
+        return primaryFee;
+    }
+
+    public void setPrimaryFee(boolean primaryFee) {
+        this.primaryFee = primaryFee;
     }
 
     

@@ -213,7 +213,8 @@
                             <p:dataExporter
                                     type="xlsx"
                                     target="tbl"
-                                    fileName="pharmacy_income_by_bill_#{pharmacySummaryReportController.getFromDateFormatted()}_to_#{pharmacySummaryReportController.getToDateFormatted()}"/>
+                                    fileName="pharmacy_income_by_bill_#{pharmacySummaryReportController.getFromDateFormatted()}_to_#{pharmacySummaryReportController.getToDateFormatted()}"
+                                    postProcessor="#{pharmacySummaryReportController.postProcessExcel}"/>
                         </p:commandButton>
                         <p:commandButton
                                 value="To Print"
@@ -245,9 +246,6 @@
                                 rowsPerPageTemplate="#{pharmacySummaryReportController.rowsPerPageForScreen}, 5,10,15,50,100,500,1000,2000,5000,10000"
                                 paginatorPosition="bottom">
                             <!-- use for the add title for the excel-->
-                            <f:facet name="header" >
-                                     <h:outputText value="#{pharmacySummaryReportController.reportHeader}" style="display:none !important; font-size:15px;" />
-                            </f:facet>
                             <p:column headerText="Bill No" width="16em"
                                       style="padding: 0px!important; margin: 0px!important;">
                                 <h:outputText value="#{row.bill.deptId}"
@@ -693,7 +691,8 @@
                             <p:dataExporter
                                     type="xlsx"
                                     target="tblBillType"
-                                    fileName="pharmacy_income_by_bill_type_#{pharmacySummaryReportController.getFromDateFormatted()}_to_#{pharmacySummaryReportController.getToDateFormatted()}"/>
+                                    fileName="pharmacy_income_by_bill_type_#{pharmacySummaryReportController.getFromDateFormatted()}_to_#{pharmacySummaryReportController.getToDateFormatted()}"
+                                    postProcessor="#{pharmacySummaryReportController.postProcessExcel}"/>
                         </p:commandButton>
                         <p:commandButton 
                             value="To Print"
@@ -725,9 +724,6 @@
                                 rowsPerPageTemplate="#{pharmacySummaryReportController.rowsPerPageForScreen}, 5,10,15,50,100"
                                 paginatorPosition="bottom">
                             <!-- use for the add title for the excel-->
-                            <f:facet name="header" >
-                                     <h:outputText value="#{pharmacySummaryReportController.reportHeader}" style="display:none !important; font-size:15px;" />
-                            </f:facet>
                             <p:column headerText="Bill Type" width="18em">
                                 <h:outputText value="#{row.billTypeAtomic}"/>
                             </p:column>
@@ -987,7 +983,8 @@
                             <p:dataExporter
                                     type="xlsx"
                                     target="tblGroupedByDiscountAndAdmission"
-                                    fileName="pharmacy_income_by_discount_and_admission_#{pharmacySummaryReportController.getFromDateFormatted()}_to_#{pharmacySummaryReportController.getToDateFormatted()}"/>
+                                    fileName="pharmacy_income_by_discount_and_admission_#{pharmacySummaryReportController.getFromDateFormatted()}_to_#{pharmacySummaryReportController.getToDateFormatted()}"
+                                    postProcessor="#{pharmacySummaryReportController.postProcessExcel}"/>
                         </p:commandButton>
                         <p:commandButton
                             value="To Print"
@@ -1019,9 +1016,6 @@
                                 rowsPerPageTemplate="#{pharmacySummaryReportController.rowsPerPageForScreen}, 5,10,15,50,100"
                                 paginatorPosition="bottom">
                             <!-- use for the add title for the excel-->
-                            <f:facet name="header" >
-                                     <h:outputText value="#{pharmacySummaryReportController.reportHeader}" style="display:none !important; font-size:15px;" />
-                            </f:facet>
                             <p:column headerText="Group" width="24em">
                                 <h:outputText value="#{row.rowType}"/>
                             </p:column>
@@ -1278,7 +1272,8 @@
                             <p:dataExporter
                                     type="xlsx"
                                     target="tblGroupedByBillTypeAndDiscountAdmission"
-                                    fileName="pharmacy_income_by_bill_type_and_discount_admission_#{pharmacySummaryReportController.getFromDateFormatted()}_to_#{pharmacySummaryReportController.getToDateFormatted()}"/>
+                                    fileName="pharmacy_income_by_bill_type_and_discount_admission_#{pharmacySummaryReportController.getFromDateFormatted()}_to_#{pharmacySummaryReportController.getToDateFormatted()}"
+                                    postProcessor="#{pharmacySummaryReportController.postProcessExcel}"/>
                         </p:commandButton>
                         <p:commandButton 
                             value="To Print"
@@ -1310,9 +1305,6 @@
                                 rowsPerPageTemplate="#{pharmacySummaryReportController.rowsPerPageForScreen},5,10,15,50,100"
                                 paginatorPosition="bottom">
                             <!-- use for the add title for the excel-->
-                            <f:facet name="header" >
-                                     <h:outputText value="#{pharmacySummaryReportController.reportHeader}" style="display:none !important; font-size:18px;" />
-                            </f:facet>
                             <p:column headerText="Bill Type + Group" width="32em">
                                 <h:outputText value="#{row.rowType}"/>
                             </p:column>

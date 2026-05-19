@@ -17,14 +17,17 @@
                             <p:outputLabel value="From Date" for="fromDate" class="m-3">
                             </p:outputLabel>
                         </h:panelGroup>
-                        <p:calendar
+                        <p:datePicker
                                 styleClass="w-100"
                                 inputStyleClass="w-100 form-control"
                                 id="fromDate"
                                 value="#{pharmacyReportController.fromDate}"
-                                navigator="false"
-                                pattern="#{sessionController.applicationPreference.longDateFormat}"
-                        />
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                showTime="true"                                                           
+                                monthNavigator="true"           
+                                yearNavigator="true"                              
+                                timeInput="true"                
+                                />
 
                         <p:spacer width="20"/>
 
@@ -33,14 +36,17 @@
                             <p:outputLabel value="To Date" for="toDate" class="m-3">
                             </p:outputLabel>
                         </h:panelGroup>
-                        <p:calendar
+                        <p:datePicker
                                 styleClass="w-100"
                                 inputStyleClass="w-100 form-control"
                                 id="toDate"
                                 value="#{pharmacyReportController.toDate}"
-                                navigator="false"
-                                pattern="#{sessionController.applicationPreference.longDateFormat}"
-                        />
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                showTime="true"                                                           
+                                monthNavigator="true"           
+                                yearNavigator="true"                              
+                                timeInput="true"                
+                                />
 
                         <p:spacer width="20"/>
 

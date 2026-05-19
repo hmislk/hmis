@@ -333,6 +333,16 @@
                                             value="#{investigationController.current.bypassSampleWorkflow}" />
                                     </div>
                                 </div>
+                                
+                                <div class="row mt-2">
+                                    <div class="col-md-3"><h:outputText value="Calculated Requerd (Before the Aprovel)" /></div>
+                                    <div class="col-md-1"><h:outputLabel value=" : " style="text-align: center"/></div>
+                                    <div class="col-md-6">
+                                        <p:selectBooleanCheckbox
+                                            itemLabel="Calculated Requerd"
+                                            value="#{investigationController.current.calculatedRequerd}" />
+                                    </div>
+                                </div>
 
                                 <div class="row mt-2">
                                     <div class="col-md-3"><h:outputText value="Master Item Reference" ></h:outputText></div>

@@ -27,6 +27,24 @@
                             <p:calendar class="mx-2" id="toDate" value="#{mdInwardReportController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                                 <f:ajax event="dateSelect"   render="tbl" execute="@this fromDate" listener="#{mdInwardReportController.makeBillNull}"/>
                             </p:calendar>
+
+                            <p:outputLabel value="Admission Type"/>
+                            <p:selectOneMenu class="w-100 mx-2" id="admType"
+                                             value="#{mdInwardReportController.admissionType}">
+                                <f:selectItem itemLabel="All Admission Types" itemValue="#{null}" />
+                                <f:selectItems value="#{admissionTypeController.items}"
+                                               var="at" itemValue="#{at}" itemLabel="#{at.name}" />
+                                <f:ajax event="change" listener="#{mdInwardReportController.makeBillNull}"/>
+                            </p:selectOneMenu>
+
+                            <p:outputLabel value="Payment Method"/>
+                            <p:selectOneMenu class="w-100 mx-2" id="pm"
+                                             value="#{mdInwardReportController.paymentMethod}">
+                                <f:selectItem itemLabel="All Payment Methods"/>
+                                <f:selectItems value="#{mdInwardReportController.paymentMethods}"/>
+                                <f:ajax event="change" listener="#{mdInwardReportController.makeBillNull}"/>
+                            </p:selectOneMenu>
+
                             <p:outputLabel value="Institution"/>
                             <p:autoComplete
                                 id="ins"
@@ -41,6 +59,15 @@
                                     #{ix.name}
                                 </p:column>
                             </p:autoComplete>
+
+                            <p:outputLabel value="Site"/>
+                            <p:selectOneMenu class="w-100 mx-2" id="siteMenu"
+                                             value="#{mdInwardReportController.site}"
+                                             filter="true">
+                                <f:selectItem itemLabel="All Sites" />
+                                <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
+                                <f:ajax event="change" listener="#{mdInwardReportController.makeBillNull}"/>
+                            </p:selectOneMenu>
 
                             <p:outputLabel value="Department"/>
                             <p:autoComplete

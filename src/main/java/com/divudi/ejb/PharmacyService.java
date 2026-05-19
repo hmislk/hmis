@@ -209,6 +209,72 @@ public class PharmacyService {
         return "";
     }
 
+    /**
+     * Allergy check that takes an {@link Item} directly, for callers that do not
+     * have a {@link BillItem} available (e.g. native-SQL retail sale flow).
+     * Uses the same VTM-hierarchy traversal as {@link #getAllergyMessageForPatient}.
+     */
+    public String getAllergyMessageForItem(Patient patient, Item item, List<ClinicalFindingValue> allergyListOfPatient) {
+        if (item == null) {
+            return "";
+        }
+        if (allergyListOfPatient == null || allergyListOfPatient.isEmpty()) {
+            allergyListOfPatient = getAllergyListForPatient(patient);
+        }
+        if (allergyListOfPatient.isEmpty()) {
+            return "";
+        }
+
+        Amp amp = null;
+        Vmp vmp = null;
+        if (item instanceof Ampp) {
+            amp = ((Ampp) item).getAmp();
+        } else if (item instanceof Amp) {
+            amp = (Amp) item;
+        } else if (item instanceof Vmp) {
+            vmp = (Vmp) item;
+        }
+
+        Atm atm = null;
+        Vtm vtm = null;
+        if (amp != null) {
+            atm = amp.getAtm();
+            vmp = amp.getVmp();
+        } else if (vmp != null) {
+            vtm = (Vtm) vmp.getVtm();
+        }
+        if (atm != null && vtm == null) {
+            vtm = (Vtm) atm.getVtm();
+        }
+        if (vtm == null && vmp != null) {
+            vtm = (Vtm) vmp.getVtm();
+        }
+        if (vtm == null) {
+            vtm = (Vtm) item.getVtm();
+        }
+
+        for (ClinicalFindingValue c : allergyListOfPatient) {
+            if (c.getItemValue() == null) continue;
+            Item allergyItem = c.getItemValue();
+            Vtm allergyVtm = null;
+            if (allergyItem instanceof Vtm) {
+                allergyVtm = (Vtm) allergyItem;
+            } else if (allergyItem instanceof Amp) {
+                allergyVtm = allergyItem.getVmp() != null ? (Vtm) allergyItem.getVmp().getVtm() : (Vtm) allergyItem.getVtm();
+            } else if (allergyItem instanceof Vmp) {
+                allergyVtm = (Vtm) allergyItem.getVtm();
+            } else if (allergyItem instanceof Atm) {
+                allergyVtm = (Vtm) allergyItem.getVtm();
+            } else {
+                allergyVtm = (Vtm) allergyItem.getVtm();
+            }
+            if (vtm != null && allergyVtm != null && vtm.equals(allergyVtm)) {
+                return item.getName() + " is not allowed as patient has allergic to " + allergyVtm.getName();
+            }
+        }
+        return "";
+    }
+
     public void addBillItemInstructions(BillItem billItem) {
         if (billItem == null) {
             return;
@@ -347,10 +413,31 @@ public class PharmacyService {
         PharmacyBundle bundle;
 
         List<BillTypeAtomic> billTypeAtomics = getPharmacyIncomeBillTypes();
-        for (BillTypeAtomic bta : billTypeAtomics) {
-        }
 
         List<BillLight> pharmacyIncomeBillLights = billService.fetchBillLightsWithFinanceDetailsAndPaymentScheme(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
+
+        bundle = new PharmacyBundle(pharmacyIncomeBillLights);
+
+        bundle.generatePaymentDetailsGroupedByBillTypeAndDiscountSchemeAndAdmissionTypeDto();
+
+        return bundle;
+    }
+
+    /**
+     * F15 drill-down (Level 1) variant of fetchPharmacyIncomeByBillTypeAndDiscountTypeAndAdmissionTypeDto.
+     * Accepts a caller-supplied list of BillTypeAtomic so Level 1 can summarise a user-chosen
+     * subset of sales atomics without affecting F15. Falls back to getPharmacyIncomeBillTypes()
+     * when the list is null or empty. F15 itself does NOT call this method.
+     */
+    public PharmacyBundle fetchPharmacyIncomeByBillTypeAndDiscountTypeAndAdmissionTypeDtoForAtomics(Date fromDate, Date toDate, Institution institution, Institution site, Department department, WebUser webUser, AdmissionType admissionType, PaymentScheme paymentScheme, List<BillTypeAtomic> billTypeAtomics) {
+
+        PharmacyBundle bundle;
+
+        List<BillTypeAtomic> effectiveAtomics = (billTypeAtomics == null || billTypeAtomics.isEmpty())
+                ? getPharmacyIncomeBillTypes()
+                : billTypeAtomics;
+
+        List<BillLight> pharmacyIncomeBillLights = billService.fetchBillLightsWithFinanceDetailsAndPaymentScheme(fromDate, toDate, institution, site, department, webUser, effectiveAtomics, admissionType, paymentScheme);
 
         bundle = new PharmacyBundle(pharmacyIncomeBillLights);
 
@@ -390,6 +477,23 @@ public class PharmacyService {
         return bundle;
     }
 
+    /**
+     * F15 drill-down (Level 1) variant of fetchPharmacyStockPurchaseValueByBillTypeDtoCompleted.
+     * Accepts a caller-supplied list of BillTypeAtomic so Level 1 can summarise a user-chosen
+     * subset of purchase atomics without affecting F15. Falls back to getPharmacyPurchaseBillTypes()
+     * when the list is null or empty. F15 itself does NOT call this method.
+     */
+    public PharmacyBundle fetchPharmacyStockPurchaseValueByBillTypeDtoCompletedForAtomics(Date fromDate, Date toDate, Institution institution, Institution site, Department department, WebUser webUser, AdmissionType admissionType, PaymentScheme paymentScheme, List<BillTypeAtomic> billTypeAtomics) {
+        PharmacyBundle bundle;
+        List<BillTypeAtomic> effectiveAtomics = (billTypeAtomics == null || billTypeAtomics.isEmpty())
+                ? getPharmacyPurchaseBillTypes()
+                : billTypeAtomics;
+        List<BillLight> pharmacyIncomeBillLights = billService.fetchBillLightsWithFinanceDetailsCompleted(fromDate, toDate, institution, site, department, webUser, effectiveAtomics, admissionType, paymentScheme);
+        bundle = new PharmacyBundle(pharmacyIncomeBillLights);
+        bundle.generatePharmacyPurchaseGroupedByBillTypeDtos();
+        return bundle;
+    }
+
     public PharmacyBundle fetchPharmacyTransferValueByBillType(Date fromDate, Date toDate, Institution institution, Institution site, Department department, WebUser webUser, AdmissionType admissionType, PaymentScheme paymentScheme) {
         PharmacyBundle bundle;
         List<BillTypeAtomic> billTypeAtomics = getPharmacyInternalTransferBillTypes();
@@ -403,6 +507,24 @@ public class PharmacyService {
         PharmacyBundle bundle;
         List<BillTypeAtomic> billTypeAtomics = getPharmacyInternalTransferBillTypes();
         List<BillLight> pharmacyIncomeBillLights = billService.fetchBillLightsWithFinanceDetails(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
+        bundle = new PharmacyBundle(pharmacyIncomeBillLights);
+        bundle.generatePharmacyPurchaseGroupedByBillTypeDtos();
+        return bundle;
+    }
+
+    /**
+     * F15 drill-down (Level 1) variant of fetchPharmacyTransferValueByBillTypeDto.
+     * Accepts a caller-supplied list of BillTypeAtomic so Level 1 can summarise a user-chosen
+     * subset of transfer atomics without affecting F15. Falls back to
+     * getPharmacyInternalTransferBillTypes() when the list is null or empty.
+     * F15 itself does NOT call this method.
+     */
+    public PharmacyBundle fetchPharmacyTransferValueByBillTypeDtoForAtomics(Date fromDate, Date toDate, Institution institution, Institution site, Department department, WebUser webUser, AdmissionType admissionType, PaymentScheme paymentScheme, List<BillTypeAtomic> billTypeAtomics) {
+        PharmacyBundle bundle;
+        List<BillTypeAtomic> effectiveAtomics = (billTypeAtomics == null || billTypeAtomics.isEmpty())
+                ? getPharmacyInternalTransferBillTypes()
+                : billTypeAtomics;
+        List<BillLight> pharmacyIncomeBillLights = billService.fetchBillLightsWithFinanceDetails(fromDate, toDate, institution, site, department, webUser, effectiveAtomics, admissionType, paymentScheme);
         bundle = new PharmacyBundle(pharmacyIncomeBillLights);
         bundle.generatePharmacyPurchaseGroupedByBillTypeDtos();
         return bundle;
@@ -426,6 +548,87 @@ public class PharmacyService {
         bundle = new PharmacyBundle(pharmacyIncomeBillLights);
         bundle.generatePharmacyPurchaseGroupedByBillTypeDtos();
         return bundle;
+    }
+
+    /**
+     * F15 drill-down (Level 1) variant of fetchPharmacyAdjustmentValueByBillTypeDto.
+     * Accepts a caller-supplied list of BillTypeAtomic so Level 1 can summarise a user-chosen
+     * subset of adjustment atomics without affecting F15. Falls back to
+     * getPharmacyAdjustmentBillTypes() when the list is null or empty.
+     * F15 itself does NOT call this method.
+     */
+    public PharmacyBundle fetchPharmacyAdjustmentValueByBillTypeDtoForAtomics(Date fromDate, Date toDate, Institution institution, Institution site, Department department, WebUser webUser, AdmissionType admissionType, PaymentScheme paymentScheme, List<BillTypeAtomic> billTypeAtomics) {
+        PharmacyBundle bundle;
+        List<BillTypeAtomic> effectiveAtomics = (billTypeAtomics == null || billTypeAtomics.isEmpty())
+                ? getPharmacyAdjustmentBillTypes()
+                : billTypeAtomics;
+        // Use the adjustment-specific fetch that prefers bfd.grossTotal/netTotal over bill.total/netTotal
+        // because some adjustment bills (e.g. retail rate adjustment) have bill.total=0 but correct BFD values
+        List<BillLight> pharmacyIncomeBillLights = billService.fetchBillLightsForAdjustmentsWithFinanceDetails(fromDate, toDate, institution, site, department, webUser, effectiveAtomics, admissionType, paymentScheme);
+        bundle = new PharmacyBundle(pharmacyIncomeBillLights);
+        bundle.generatePharmacyPurchaseGroupedByBillTypeDtos();
+        return bundle;
+    }
+
+    /**
+     * F15 drill-down (Level 2) — fetch the individual sales BillLights behind a single
+     * Level 1 sales row. Returns the raw, ungrouped BillLight list so the L2 page can
+     * render one row per bill. AdmissionType + PaymentScheme are required because L1
+     * groups sales by BillTypeAtomic + AdmissionType + PaymentScheme.
+     * F15 itself does NOT call this method.
+     *
+     * Issue: #20240. Parent epic: #20236.
+     */
+    public List<BillLight> fetchPharmacyIncomeBillLightsForLevel2(Date fromDate, Date toDate, Institution institution, Institution site, Department department, WebUser webUser, AdmissionType admissionType, PaymentScheme paymentScheme, BillTypeAtomic billTypeAtomic) {
+        if (billTypeAtomic == null) {
+            return new ArrayList<>();
+        }
+        return billService.fetchBillLightsWithFinanceDetailsAndPaymentScheme(fromDate, toDate, institution, site, department, webUser, Arrays.asList(billTypeAtomic), admissionType, paymentScheme);
+    }
+
+    /**
+     * F15 drill-down (Level 2) — fetch the individual purchase BillLights behind a single
+     * Level 1 purchase row. Returns the raw, ungrouped BillLight list. Mirrors
+     * fetchPharmacyStockPurchaseValueByBillTypeDtoCompletedForAtomics so the L2 figures
+     * tally with L1 (completed bills only).
+     * F15 itself does NOT call this method.
+     *
+     * Issue: #20240. Parent epic: #20236.
+     */
+    public List<BillLight> fetchPharmacyPurchaseBillLightsForLevel2(Date fromDate, Date toDate, Institution institution, Institution site, Department department, WebUser webUser, AdmissionType admissionType, PaymentScheme paymentScheme, BillTypeAtomic billTypeAtomic) {
+        if (billTypeAtomic == null) {
+            return new ArrayList<>();
+        }
+        return billService.fetchBillLightsWithFinanceDetailsCompleted(fromDate, toDate, institution, site, department, webUser, Arrays.asList(billTypeAtomic), admissionType, paymentScheme);
+    }
+
+    /**
+     * F15 drill-down (Level 2) — fetch the individual transfer BillLights behind a single
+     * Level 1 transfer row. Returns the raw, ungrouped BillLight list.
+     * F15 itself does NOT call this method.
+     *
+     * Issue: #20240. Parent epic: #20236.
+     */
+    public List<BillLight> fetchPharmacyTransferBillLightsForLevel2(Date fromDate, Date toDate, Institution institution, Institution site, Department department, WebUser webUser, AdmissionType admissionType, PaymentScheme paymentScheme, BillTypeAtomic billTypeAtomic) {
+        if (billTypeAtomic == null) {
+            return new ArrayList<>();
+        }
+        return billService.fetchBillLightsWithFinanceDetails(fromDate, toDate, institution, site, department, webUser, Arrays.asList(billTypeAtomic), admissionType, paymentScheme);
+    }
+
+    /**
+     * F15 drill-down (Level 2) — fetch the individual adjustment BillLights behind a single
+     * Level 1 adjustment row. Returns the raw, ungrouped BillLight list. Uses the
+     * adjustment-specific fetch (BFD-aware) so the L2 figures tally with L1.
+     * F15 itself does NOT call this method.
+     *
+     * Issue: #20240. Parent epic: #20236.
+     */
+    public List<BillLight> fetchPharmacyAdjustmentBillLightsForLevel2(Date fromDate, Date toDate, Institution institution, Institution site, Department department, WebUser webUser, AdmissionType admissionType, PaymentScheme paymentScheme, BillTypeAtomic billTypeAtomic) {
+        if (billTypeAtomic == null) {
+            return new ArrayList<>();
+        }
+        return billService.fetchBillLightsForAdjustmentsWithFinanceDetails(fromDate, toDate, institution, site, department, webUser, Arrays.asList(billTypeAtomic), admissionType, paymentScheme);
     }
 
     public List<BillTypeAtomic> getPharmacyIncomeBillTypes() {
@@ -517,6 +720,7 @@ public class PharmacyService {
                 BillTypeAtomic.PHARMACY_COST_RATE_ADJUSTMENT,
                 BillTypeAtomic.PHARMACY_WHOLESALE_RATE_ADJUSTMENT,
                 BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT,
+                BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT_BILL,
                 BillTypeAtomic.PHARMACY_ADJUSTMENT,
                 BillTypeAtomic.PHARMACY_ADJUSTMENT_CANCELLED
         );

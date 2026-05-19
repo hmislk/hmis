@@ -22,7 +22,15 @@
                         <div class="row">
                             <div class="col-9">
 
-                                <p:dataTable 
+                                <h:panelGroup id="itemHistoryAboveWrapper" layout="block">
+                                    <h:panelGroup rendered="#{purchaseOrderRequestController.itemHistoryVisible and configOptionApplicationController.getBooleanValueByKey('Pharmacy PO - Show Item History Above Items', false)}" layout="block">
+                                        <ph:history id="itemHistoryAbove"
+                                            closeActionListener="#{purchaseOrderRequestController.closeItemHistory()}"
+                                            updateOnClose=":form:itemHistoryAboveWrapper"/>
+                                    </h:panelGroup>
+                                </h:panelGroup>
+
+                                <p:dataTable
                                     styleClass="noBorder" 
                                     rowIndexVar="i" 
                                     style="padding: 0;"
@@ -34,11 +42,22 @@
                                     selection="#{purchaseOrderRequestController.selectedBillItems}"
                                     id="itemList" >  
 
-                                    <f:facet name="header">  
+                                    <f:facet name="header">
                                         <div class="d-flex justify-content-between">
                                             <h:outputLabel  value="Purchase Order Items"/>
-                                            <p:commandButton ajax="false" class="ui-button-danger" value="Remove Selected" 
-                                                             action="#{purchaseOrderRequestController.removeSelected()}"/>
+                                            <div class="d-flex gap-1">
+                                                <h:panelGroup rendered="#{webUserController.hasPrivilege('Admin')}">
+                                                    <p:commandButton
+                                                        value="Config"
+                                                        icon="fa fa-cog"
+                                                        title="Page Configuration Management"
+                                                        action="#{pageAdminController.navigateToPageAdmin('pharmacy/pharmacy_purhcase_order_request')}"
+                                                        ajax="false"
+                                                        styleClass="ui-button-secondary"/>
+                                                </h:panelGroup>
+                                                <p:commandButton ajax="false" class="ui-button-danger" value="Remove Selected"
+                                                                 action="#{purchaseOrderRequestController.removeSelected()}"/>
+                                            </div>
                                         </div>
                                     </f:facet>  
 
@@ -57,7 +76,7 @@
                                             id="btnViewSelectedItemDetails"
                                             title="View Item Details"
                                             action="#{purchaseOrderRequestController.displayItemDetails(bi)}"
-                                            update=":#{p:resolveFirstComponentWithId('tab',view).clientId}"
+                                            update=":form:itemHistoryAboveWrapper :form:itemHistoryBelowWrapper"
                                             process="@this"
                                             class="ui-button-icon-only mx-3"/>
                                     </p:column>
@@ -176,7 +195,7 @@
                                             class="ui-button-danger" 
                                             icon="fas fa-trash"
                                             process="itemList"
-                                            update="itemList :#{p:resolveFirstComponentWithId('tot',view).clientId}"
+                                            update="itemList :#{p:resolveFirstComponentWithId('tot',view).clientId} :form:itemHistoryAboveWrapper :form:itemHistoryBelowWrapper"
                                             tabindex="-1"
                                             style="padding: 0;"
                                             action="#{purchaseOrderRequestController.removeItem(bi)}"/>
@@ -184,9 +203,13 @@
 
                                 </p:dataTable> 
 
-                                <div >
-                                    <ph:history id="itemHistory"/>
-                                </div>
+                                <h:panelGroup id="itemHistoryBelowWrapper" layout="block">
+                                    <h:panelGroup rendered="#{purchaseOrderRequestController.itemHistoryVisible and !configOptionApplicationController.getBooleanValueByKey('Pharmacy PO - Show Item History Above Items', false)}" layout="block">
+                                        <ph:history id="itemHistoryBelow"
+                                            closeActionListener="#{purchaseOrderRequestController.closeItemHistory()}"
+                                            updateOnClose=":form:itemHistoryBelowWrapper"/>
+                                    </h:panelGroup>
+                                </h:panelGroup>
 
 
                             </div>

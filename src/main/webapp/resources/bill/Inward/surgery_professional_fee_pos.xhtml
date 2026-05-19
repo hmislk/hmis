@@ -1,0 +1,127 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+    <cc:interface>
+        <cc:attribute name="bill" type="com.divudi.core.entity.Bill"/>
+        <cc:attribute name="encounterComponents" type="java.util.List"/>
+        <cc:attribute name="cancelled" type="java.lang.Boolean" default="false"/>
+    </cc:interface>
+
+    <cc:implementation>
+        <h:outputStylesheet library="css" name="pharmacypos.css"/>
+
+        <div class="posbillBreak">
+
+            <div class="institutionName" style="text-align: center; font-weight: bold; font-size: 14px;">
+                <h:outputLabel value="#{cc.attrs.bill.department.printingName}"/>
+            </div>
+            <div class="institutionContact" style="text-align: center; font-size: 10px;">
+                <div><h:outputLabel value="#{cc.attrs.bill.department.address}"/></div>
+                <div>
+                    <h:outputLabel value="#{cc.attrs.bill.department.telephone1}"/>
+                    <h:outputLabel value=" / #{cc.attrs.bill.department.telephone2}"
+                                   rendered="#{!empty cc.attrs.bill.department.telephone2}"/>
+                </div>
+            </div>
+
+            <div class="headingBill" style="text-align: center; font-weight: bold;">
+                <h:outputLabel value="Professional Fee Receipt"/>
+                <h:outputLabel value=" ** CANCELLED **" rendered="#{cc.attrs.cancelled}"
+                               style="color: red;"/>
+            </div>
+
+            <div class="billline">
+                <h:outputLabel value="------------------------------------------------"/>
+            </div>
+
+            <!-- Patient details -->
+            <div class="billDetails" style="font-size: 10px;">
+                <table style="width: 100%;">
+                    <tr>
+                        <td style="width: 35%;"><h:outputLabel value="Patient"/></td>
+                        <td style="width: 5%;">:</td>
+                        <td><h:outputLabel value="#{cc.attrs.bill.patient.person.nameWithTitle}"/></td>
+                    </tr>
+                    <tr>
+                        <td><h:outputLabel value="BHT No"/></td>
+                        <td>:</td>
+                        <td><h:outputLabel value="#{cc.attrs.bill.patientEncounter.bhtNo}"/></td>
+                    </tr>
+                    <tr>
+                        <td><h:outputLabel value="Surgery"/></td>
+                        <td>:</td>
+                        <td><h:outputLabel value="#{cc.attrs.bill.forwardReferenceBill.procedure.item.name}"/></td>
+                    </tr>
+                    <tr>
+                        <td><h:outputLabel value="Bill No"/></td>
+                        <td>:</td>
+                        <td><h:outputLabel value="#{cc.attrs.bill.deptId}"/></td>
+                    </tr>
+                    <tr>
+                        <td><h:outputLabel value="Date"/></td>
+                        <td>:</td>
+                        <td>
+                            <h:outputLabel value="#{cc.attrs.bill.createdAt}">
+                                <f:convertDateTime timeZone="Asia/Colombo" pattern="dd/MMM/yyyy HH:mm"/>
+                            </h:outputLabel>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="billline">
+                <h:outputLabel value="------------------------------------------------"/>
+            </div>
+
+            <!-- Fee lines -->
+            <div style="font-size: 10px;">
+                <ui:repeat value="#{cc.attrs.encounterComponents}" var="ec">
+                    <div style="display: flex; justify-content: space-between; margin: 2px 0;">
+                        <span>
+                            <h:outputLabel value="#{ec.patientEncounterComponentType}"/>
+                            <h:outputLabel value=" - #{ec.staff.person.nameWithTitle}"/>
+                        </span>
+                        <span style="text-align: right; min-width: 60px;">
+                            <h:outputLabel value="#{ec.billFee.feeValue}">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputLabel>
+                        </span>
+                    </div>
+                </ui:repeat>
+            </div>
+
+            <div class="billline">
+                <h:outputLabel value="------------------------------------------------"/>
+            </div>
+
+            <!-- Total -->
+            <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: bold; padding: 2px 0;">
+                <span><h:outputLabel value="TOTAL"/></span>
+                <span>
+                    <h:outputLabel value="#{cc.attrs.bill.total}">
+                        <f:convertNumber pattern="#,##0.00"/>
+                    </h:outputLabel>
+                </span>
+            </div>
+
+            <div class="billline">
+                <h:outputLabel value="------------------------------------------------"/>
+            </div>
+
+            <div style="font-size: 9px; margin-top: 4px;">
+                <h:outputLabel value="Issued by: #{cc.attrs.bill.creater.webUserPerson.name}"/>
+            </div>
+            <div class="footer" style="text-align: center; font-size: 9px;">
+                <br/>
+                <h:outputLabel value="#{sessionController.userPreference.pharmacyBillFooter}"/>
+            </div>
+
+        </div>
+    </cc:implementation>
+</html>

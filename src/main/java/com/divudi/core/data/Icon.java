@@ -64,6 +64,7 @@ public enum Icon {
     wholesale_add_to_stock("Wholesale - Add to Stock", WHOLESALE),
     wholesale_purchase("Wholesale - Wholesale Purchase", WHOLESALE),
     direct_issue_to_BHTs("Direct Issue to BHTs", INPATIENT_DIRECT_ISSUES),
+    direct_issue_to_BHTs_native("Direct Issue to BHTs (Native SQL)", INPATIENT_DIRECT_ISSUES),
     direct_issue_to_theatre("Direct Issue to Theatre", INPATIENT_DIRECT_ISSUES),
     BHT_issue_requests("BHT Issue Request", INPATIENT_DIRECT_ISSUES),
     search_inpatint_direct_issue_by_bill("Search Inpatint Direct Issues by Bill", INPATIENT_DIRECT_ISSUES),

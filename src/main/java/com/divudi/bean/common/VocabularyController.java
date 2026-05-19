@@ -50,7 +50,7 @@ public class VocabularyController implements Serializable {
 
     public String navigateToManageVocabularies(){
         getItems();
-        return "/emr/admin/vocabularies";
+        return "/emr/admin/vocabularies?faces-redirect=true";
     }
 
     // Method to generate the Excel file and initiate the download
@@ -122,6 +122,11 @@ public class VocabularyController implements Serializable {
     }
 
     public void saveSelected() {
+        if (getCurrent().getName() == null || getCurrent().getName().trim().isEmpty()){
+            JsfUtil.addErrorMessage("Please enter Vocabulary Name before saving.");
+            return;
+        }       
+            
         if (getCurrent().getId() != null) {
             getFacade().edit(current);
             JsfUtil.addSuccessMessage("Updated Successfully.");

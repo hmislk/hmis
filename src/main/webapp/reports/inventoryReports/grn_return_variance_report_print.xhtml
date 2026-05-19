@@ -8,87 +8,8 @@
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
+                <h:outputStylesheet library="css" name="printing/reportprint.css"/>
                 <h:form >
-                    <style>
-                            @media screen{
-                                .paper {
-                                    position: static !important;
-                                    width: 297mm!important;
-                                    zoom: 2.0;
-                                }
-                                
-                                
-                            }
-                            
-                            @media print {
-                                @page {
-                                    size: A4 landscape!important;
-                                    @bottom-right {
-                                        content: "Page " counter(page) " of " counter(pages);
-                                        font-family: Arial, sans-serif;
-                                        font-size: 8pt;
-                                    }
-                                }
-
-                                body {
-                                    counter-reset: page;
-                                }
-                                
-                                .paper {
-                                    position: static !important;
-                                    width: 297mm!important;
-                                }
-                                
-                            }
-
-                            @media screen, print {
-                                .header{
-                                    line-height: 1.1;
-                                    margin: 0mm!important;
-                                }
-
-                                table {
-                                    width: 99.9%;
-                                    font-size: 9pt!important;
-                                    margin-top: 3mm!important;
-                                    border-collapse: collapse !important;
-                                }
-                                
-                                th, td {
-                                    border: 1pt solid #000000 !important;
-                                    padding: 1pt!important;
-                                    text-align: left;
-                                    overflow-wrap: break-word;
-                                    white-space: normal;
-                                }
-
-                                .report-header-table {
-                                    border-collapse: collapse;
-                                }
-
-                                .report-header-table .label {
-                                    font-weight: 600;
-                                    padding-right: 5px;
-                                    white-space: nowrap;
-                                }
-
-                                .report-header-table td {
-                                    padding: 3px 8px;
-                                    vertical-align: top;
-                                }
-
-                                /* Hide PrimeFaces sort icons in datatable headers */
-                                .ui-sortable-column .ui-sortable-column-icon,
-                                .ui-sortable-column .ui-sortable-icon,
-                                .ui-sortable-column .pi-sort,
-                                .ui-sortable-column .ui-sort-up,
-                                .ui-sortable-column .ui-sort-down,
-                                .ui-sortable-column .ui-column-title .pi-sort {
-                                    display: none !important;
-                                }
-                            }
-                            
-                        </style>
                         <h:panelGroup>
                             <p:panel header="Grn Return Variance Report" styleClass="my-2" >
                                 <f:facet name="header">
@@ -131,12 +52,12 @@
                                                 <!-- Row 1 -->
                                                 <h:outputText value="From Date:" styleClass="label"/>
                                                 <h:outputText value="#{pharmacyController.fromDate}">
-                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                                 </h:outputText>
 
                                                 <h:outputText value="To Date:" styleClass="label"/>
                                                 <h:outputText value="#{pharmacyController.toDate}">
-                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                                 </h:outputText>
 
                                                 <h:outputText value="Supplier:" styleClass="label"/>
@@ -164,8 +85,7 @@
                                                 value="#{pharmacyController.bills}"
                                                 var="b"
                                                 rendered="#{pharmacyController.bills != null and not empty pharmacyController.bills}"
-                                                styleClass="table-small"
-                                                class="w-100">
+                                                styleClass="table table-sm">
 
                                         <p:column 
                                             headerText="Supplier" 

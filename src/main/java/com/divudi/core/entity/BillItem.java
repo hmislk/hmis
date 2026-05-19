@@ -41,7 +41,7 @@ import javax.persistence.Transient;
 public class BillItem implements Serializable, RetirableEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
 
     static final long serialVersionUID = 1L;
@@ -182,6 +182,8 @@ public class BillItem implements Serializable, RetirableEntity {
     private double previousRecieveFreeQtyInUnit;
     @Transient
     private double issuedPhamaceuticalItemQty;
+    @ManyToOne
+    private Staff primaryStaff;
 
     public double getIssuedPhamaceuticalItemQty() {
         return issuedPhamaceuticalItemQty;
@@ -285,6 +287,7 @@ public class BillItem implements Serializable, RetirableEntity {
         vatPlusNetValue = billItem.getVatPlusNetValue();
         collectingCentreFee = billItem.getCollectingCentreFee();
         consideredForCosting = billItem.isConsideredForCosting();
+        primaryStaff = billItem.getPrimaryStaff();
         //  referanceBillItem=billItem.getReferanceBillItem();
         // Copy BillItemFinanceDetails if present (access field directly to avoid auto-creation)
         if (billItem.billItemFinanceDetails != null) {
@@ -327,6 +330,7 @@ public class BillItem implements Serializable, RetirableEntity {
         vatPlusNetValue = billItem.getVatPlusNetValue();
         collectingCentreFee = billItem.getCollectingCentreFee();
         consideredForCosting = billItem.isConsideredForCosting();
+        primaryStaff = billItem.getPrimaryStaff();
 
         // Access field directly to avoid auto-creation, then use getter for cloning
         if (billItem.billItemFinanceDetails != null) {
@@ -359,6 +363,7 @@ public class BillItem implements Serializable, RetirableEntity {
         priceMatrix = billItem.getPriceMatrix();
         agentRefNo = billItem.getAgentRefNo();
         consideredForCosting = billItem.isConsideredForCosting();
+        primaryStaff = billItem.getPrimaryStaff();
     }
 
     public void resetValue() {
@@ -1229,6 +1234,14 @@ public class BillItem implements Serializable, RetirableEntity {
 
     public void setConsideredForCosting(boolean consideredForCosting) {
         this.consideredForCosting = consideredForCosting;
+    }
+
+    public Staff getPrimaryStaff() {
+        return primaryStaff;
+    }
+
+    public void setPrimaryStaff(Staff primaryStaff) {
+        this.primaryStaff = primaryStaff;
     }
 
 }

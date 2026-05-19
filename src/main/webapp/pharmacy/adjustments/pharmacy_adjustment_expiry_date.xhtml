@@ -93,7 +93,7 @@
                                             id="acAmp"
                                             class="w-100"
                                             inputStyleClass="w-100"
-                                            completeMethod="#{ampController.completeAmp}"
+                                            completeMethod="#{ampController.completeAmpAny}"
                                             var="amp"
                                             itemLabel="#{amp.name}"
                                             itemValue="#{amp}"
@@ -309,6 +309,7 @@
                                     <p:inputTextarea value="#{pharmacyAdjustmentController.comment}"  class="w-100"/>
 
                                     <p:commandButton id="btnAdjust" value="Make Adjustment" ajax="false"  class="mt-2 ui-button-warning" icon="fa-solid fa-sliders"
+                                                     onclick="return confirm('Are you sure you want to make this adjustment?');"
                                                      action="#{pharmacyAdjustmentController.adjustExDate()}" />
                                     <p:defaultCommand target="btnAdjust"/>
                                 </p:panel>

@@ -81,7 +81,7 @@ public class OptimizedPharmacyBean {
                 + "SUM(CASE WHEN s.department.institution = :inst THEN s.stock ELSE 0 END), "
                 + "SUM(s.stock) FROM Stock s WHERE s.itemBatch.item = :item";
 
-        List<Object[]> res = stockFacade.findObjectsArrayByJpql(jpql, params, null);
+        List<Object[]> res = stockFacade.findObjectArrayByJpql(jpql, params, null);
         double deptStock = 0;
         double instStock = 0;
         double totalStock = 0;

@@ -81,6 +81,22 @@
                                         </p:selectCheckboxMenu>
                                     </h:panelGroup>
                                 </h:panelGroup>
+                            </h:panelGroup>
+                        </h:panelGroup>
+
+                        <h:panelGroup id="panelZeroStock" layout="block" styleClass="container-fluid my-2">
+                            <h:panelGroup layout="block" styleClass="row">
+                                <!-- Include Zero Stock Filter -->
+                                <h:panelGroup layout="block" styleClass="col-lg-4 col-md-6 col-sm-12 mb-3">
+                                    <h:panelGroup layout="block" styleClass="form-group">
+                                        <h:panelGroup layout="block" styleClass="d-flex align-items-center mb-2">
+                                            <h:outputText styleClass="fa fa-box-open mr-2" />
+                                            <h:outputLabel value="Include Zero Stock" styleClass="mb-0"/>
+                                        </h:panelGroup>
+                                        <h:selectBooleanCheckbox id="includeZeroStockFilter" value="#{reportsStock.includeZeroStock}" />
+                                        <h:outputLabel for="includeZeroStockFilter" value=" Include batches with zero stock" styleClass="ms-1"/>
+                                    </h:panelGroup>
+                                </h:panelGroup>
                                 <!-- Action Buttons -->
                                 <h:panelGroup layout="block" styleClass="col-lg-8 col-md-6 col-sm-12 mb-3">
                                     <h:panelGroup layout="block" styleClass="d-flex align-items-center mb-2">

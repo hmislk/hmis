@@ -19,6 +19,7 @@ import com.divudi.bean.common.ItemFeeManager;
 import com.divudi.bean.common.ItemMappingController;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.inward.BhtSummeryController;
 
 import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillNumberSuffix;
@@ -93,6 +94,8 @@ public class BillBhtController implements Serializable {
     private static final long serialVersionUID = 1L;
     @Inject
     SessionController sessionController;
+    @Inject
+    BhtSummeryController bhtSummeryController;
     @Inject
     ItemController itemController;
     @Inject
@@ -178,6 +181,7 @@ public class BillBhtController implements Serializable {
     private List<ItemLight> inwardItem;
     
     private Priority currentBillItemPriority;
+    private Double currentBillItemQty;
 
     public String navigateToAddServiceFromMenu() {
         resetBillData();
@@ -280,6 +284,7 @@ public class BillBhtController implements Serializable {
         bills = null;
         referredBy = null;
         currentBillItemPriority = null;
+        currentBillItemQty = null;
     }
 
     public InwardBeanController getInwardBean() {
@@ -326,6 +331,8 @@ public class BillBhtController implements Serializable {
         batchBill = null;
         bills = null;
         referredBy = null;
+        currentBillItemQty = null;
+        bhtSummeryController.setInstitution(sessionController.getInstitution());
         return "/inward/inward_bill_service?faces-redirect=true";
     }
 
@@ -352,6 +359,8 @@ public class BillBhtController implements Serializable {
         bills = null;
         referredBy = null;
         marginTotal = 0.0;
+        currentBillItemQty = null;
+        bhtSummeryController.setInstitution(sessionController.getInstitution());
         return "/inward/inward_bill_service?faces-redirect=true";
     }
 
@@ -405,7 +414,7 @@ public class BillBhtController implements Serializable {
 
     }
 
-    public void putToBills(Department matrixDepartment) {
+    public void putToBills(Department matrixDepartment, PaymentMethod paymentMethod) {
 
         Set<Department> billDepts = new HashSet<>();
         for (BillEntry e : lstBillEntries) {
@@ -415,15 +424,14 @@ public class BillBhtController implements Serializable {
             BilledBill myBill = new BilledBill();
             saveBill(d, myBill, matrixDepartment);
             List<BillEntry> tmp = new ArrayList<>();
-            List<BillItem> tmpBis = new ArrayList<>();
             for (BillEntry e : lstBillEntries) {
                 if (e.getBillItem().getItem().getDepartment().equals(d)) {
-                    BillItem bi = saveBillItems(myBill, e.getBillItem(), e, e.getLstBillFees(), getSessionController().getLoggedUser(), matrixDepartment);
-                    bi.setSearialNo(tmpBis.size());
-                    //getBillBean().calculateBillItem(myBill, e);
-                    tmpBis.add(bi);
                     tmp.add(e);
                 }
+            }
+            List<BillItem> tmpBis = saveBillItems(myBill, tmp, getSessionController().getLoggedUser(), matrixDepartment, paymentMethod);
+            for (int i = 0; i < tmpBis.size(); i++) {
+                tmpBis.get(i).setSearialNo(i);
             }
             getBillBean().calculateBillItems(myBill, tmp);
             myBill.setBillItems(tmpBis);
@@ -437,6 +445,11 @@ public class BillBhtController implements Serializable {
         billItem.setCreatedAt(new Date());
         billItem.setCreater(wu);
         billItem.setBill(bill);
+
+        if (billItem.getInwardChargeType() == null && billItem.getItem() != null
+                && billItem.getItem().getInwardChargeType() != null) {
+            billItem.setInwardChargeType(billItem.getItem().getInwardChargeType());
+        }
 
         if (billItem.getId() == null) {
             getBillItemFacade().create(billItem);
@@ -479,22 +492,20 @@ public class BillBhtController implements Serializable {
             billItem.setSearialNo(list.size());
 
             for (BillFee bf : billItem.getBillFees()) {
-                PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(billItem, bf.getFeeGrossValue(), matrixDepartment, paymentMethod);
-                getInwardBean().setBillFeeMargin(bf, bf.getBillItem().getItem(), priceMatrix,bill.getPatientEncounter());
+                PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(billItem, bf.getFeeUnitGrossValue() != null ? bf.getFeeUnitGrossValue() : bf.getFeeGrossValue(), matrixDepartment, paymentMethod);
+                getInwardBean().setBillFeeMargin(bf, bf.getBillItem().getItem(), priceMatrix, bill.getPatientEncounter());
                 getBillFeeFacade().edit(bf);
 
                 if (bf.getFee().getFeeType() == FeeType.CollectingCentre) {
                     collectingCentreFee += bf.getFeeValue();
                 } else if (bf.getFee().getFeeType() == FeeType.Staff) {
                     staffFee += bf.getFeeValue();
-                } else {
-                    hospitalFee += bf.getFeeValue();
-                }
-
-                if (bf.getFee().getFeeType() == FeeType.Chemical) {
+                } else if (bf.getFee().getFeeType() == FeeType.Chemical) {
                     reagentFee += bf.getFeeValue();
                 } else if (bf.getFee().getFeeType() == FeeType.Additional) {
                     otherFee += bf.getFeeValue();
+                } else {
+                    hospitalFee += bf.getFeeValue();
                 }
 
                 marginFee += bf.getFeeMargin();
@@ -559,7 +570,7 @@ public class BillBhtController implements Serializable {
             getBillBean().calculateBillItems(b, getLstBillEntries());
             getBills().add(b);
         } else {
-            putToBills(matrixDepartment);
+            putToBills(matrixDepartment, paymentMethod);
         }
 
         printPreview = true;
@@ -844,45 +855,58 @@ public class BillBhtController implements Serializable {
             }
         }
 
-        if (getCurrentBillItem().getQty() == null) {
-            getCurrentBillItem().setQty(1.0);
+        if (getCurrentBillItem().getItem().isRequestForQuentity()) {
+            if (currentBillItemQty == null || currentBillItemQty == 0.0) {
+                currentBillItemQty = null;
+                JsfUtil.addErrorMessage("Quantity is missing.");
+                return;
+            }
+            if (currentBillItemQty < 0) {
+                currentBillItemQty = null;
+                JsfUtil.addErrorMessage("Quantity cannot be negative.");
+                return;
+            }
+            if (currentBillItemQty % 1 != 0) {
+                currentBillItemQty = null;
+                JsfUtil.addErrorMessage("Quantity cannot be a decimal. Please enter a whole number.");
+                return;
+            }
+        } else {
+            currentBillItemQty = 1.0;
         }
-        
+
         if (getCurrentBillItem().getItem().isAllowedForBillingPriority()) {
             if (currentBillItemPriority == null) {
                 currentBillItemPriority = Priority.NORMAL;
             }
-        }else{
+        } else {
             currentBillItemPriority = null;
         }
 
-        for (int i = 0; i < getCurrentBillItem().getQty(); i++) {
-            BillEntry addingEntry = new BillEntry();
-            BillItem bItem = new BillItem();
+        BillEntry addingEntry = new BillEntry();
+        BillItem bItem = new BillItem();
+        bItem.copy(currentBillItem);
+        bItem.setQty(currentBillItemQty);
+        if (currentBillItemPriority != null) {
+            bItem.setPriority(currentBillItemPriority);
+        }
+        addingEntry.setBillItem(bItem);
+        addingEntry.setLstBillComponents(getBillBean().billComponentsFromBillItem(bItem));
+        if (patientEncounter.getAdmissionType().isRoomChargesAllowed() || getPatientEncounter().getCurrentPatientRoom() != null) {
+            addingEntry.setLstBillFees(billFeeFromBillItemWithMatrix(bItem, getPatientEncounter(), getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment(), getPatientEncounter().getPaymentMethod()));
+        } else {
+            addingEntry.setLstBillFees(billFeeFromBillItemWithMatrix(bItem, getPatientEncounter(), getPatientEncounter().getDepartment(), getPatientEncounter().getPaymentMethod()));
+        }
+        addingEntry.setLstBillSessions(getBillBean().billSessionsfromBillItem(bItem));
+        bItem.setMarginValue(getBillBean().calBillItemMargin(addingEntry));
+        lstBillEntries.add(addingEntry);
 
-            bItem.copy(currentBillItem);
-            bItem.setQty(1.0);
-            if(currentBillItemPriority != null){
-                bItem.setPriority(currentBillItemPriority);
-            }
-            addingEntry.setBillItem(bItem);
-            addingEntry.setLstBillComponents(getBillBean().billComponentsFromBillItem(bItem));
-            if (patientEncounter.getAdmissionType().isRoomChargesAllowed() || getPatientEncounter().getCurrentPatientRoom() != null) {
-                addingEntry.setLstBillFees(billFeeFromBillItemWithMatrix(bItem, getPatientEncounter(), getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment(), getPatientEncounter().getPaymentMethod()));
-            } else {
-                addingEntry.setLstBillFees(billFeeFromBillItemWithMatrix(bItem, getPatientEncounter(), getPatientEncounter().getDepartment(), getPatientEncounter().getPaymentMethod()));
-            }
-            addingEntry.setLstBillSessions(getBillBean().billSessionsfromBillItem(bItem));
-            bItem.setMarginValue(getBillBean().calBillItemMargin(addingEntry));
-            lstBillEntries.add(addingEntry);
+        bItem.setRate(getBillBean().billItemRate(addingEntry));
 
-            bItem.setRate(getBillBean().billItemRate(addingEntry));
-
-            calTotals();
-            if (bItem.getNetValue() == 0.0) {
-                JsfUtil.addErrorMessage("Please enter the rate");
-                return;
-            }
+        calTotals();
+        if (bItem.getNetValue() == 0.0) {
+            JsfUtil.addErrorMessage("Please enter the rate");
+            return;
         }
 
         clearBillItemValues();
@@ -961,6 +985,7 @@ public class BillBhtController implements Serializable {
     public void clearBillItemValues() {
         setCurrentBillItem(null);
         setItemLight(null);
+        currentBillItemQty = null;
         recreateBillItems();
     }
 
@@ -980,23 +1005,27 @@ public class BillBhtController implements Serializable {
 
         for (BillEntry be : getLstBillEntries()) {
             BillItem bi = be.getBillItem();
+
             bi.setDiscount(0.0);
             bi.setGrossValue(0.0);
             bi.setNetValue(0.0);
+            bi.setMarginValue(0.0);
 
             for (BillFee bf : be.getLstBillFees()) {
                 tot += bf.getFeeGrossValue();
                 net += bf.getFeeValue();
-                bf.getBillItem().setNetValue(bf.getBillItem().getNetValue() + bf.getFeeValue());
-                //    bf.getBillItem().setNetValue(bf.getBillItem().getNetValue());
-                bf.getBillItem().setGrossValue(bf.getBillItem().getGrossValue() + bf.getFeeGrossValue());
+                bi.setNetValue(bi.getNetValue() + bf.getFeeValue());
+                bi.setGrossValue(bi.getGrossValue() + bf.getFeeGrossValue());
                 margin += bf.getFeeMargin();
-                
+                bi.setMarginValue(bi.getMarginValue() + bf.getFeeMargin());
             }
+
+            bi.setDiscount(bi.getGrossValue() + bi.getMarginValue() - bi.getNetValue());
         }
 
         setTotal(tot);
         setMarginTotal(margin);
+        setDiscount(tot + margin - net);
         setNetTotal(net);
     }
 
@@ -1012,7 +1041,13 @@ public class BillBhtController implements Serializable {
         lstBillItems = null;
         getLstBillItems();
 
-        PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(bf.getBillItem(), bf.getFeeGrossValue(), getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment(), getPatientEncounter().getPaymentMethod());
+        // Recalculate the per-unit gross from the edited total so that setBillFeeMargin
+        // uses the current unit rate rather than the stale creation-time value.
+        double qty = (bf.getBillItem() != null && bf.getBillItem().getQty() != null && bf.getBillItem().getQty() > 0)
+                ? bf.getBillItem().getQty() : 1.0;
+        bf.setFeeUnitGrossValue(bf.getFeeGrossValue() / qty);
+
+        PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(bf.getBillItem(), bf.getFeeUnitGrossValue(), getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment(), getPatientEncounter().getPaymentMethod());
 
         getInwardBean().updateBillItemMargin(bf, bf.getFeeGrossValue(), getPatientEncounter(), getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment(), priceMatrix);
 
@@ -1289,6 +1324,9 @@ public class BillBhtController implements Serializable {
         this.itemLight = itemLight;
         if (itemLight != null) {
             getCurrentBillItem().setItem(itemController.findItem(itemLight.getId()));
+            if (currentBillItemQty == null) {
+                currentBillItemQty = 1.0;
+            }
         }
     }
 
@@ -1604,6 +1642,14 @@ public class BillBhtController implements Serializable {
 
     public void setCurrentBillItemPriority(Priority currentBillItemPriority) {
         this.currentBillItemPriority = currentBillItemPriority;
+    }
+
+    public Double getCurrentBillItemQty() {
+        return currentBillItemQty;
+    }
+
+    public void setCurrentBillItemQty(Double currentBillItemQty) {
+        this.currentBillItemQty = currentBillItemQty;
     }
 
 }

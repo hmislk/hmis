@@ -239,7 +239,7 @@
                             paginatorAlwaysVisible="false">
                             <p:column headerText="Date" sortBy="#{bi.bill.createdAt}" width="9em">
                                 <h:outputText value="#{bi.bill.createdAt}">
-                                    <f:convertDateTime pattern="dd/MM/yyyy"/>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                                 </h:outputText>
                                 <f:facet name="footer">
                                     <h:outputText value="Net Amount" styleClass="fw-bold" />

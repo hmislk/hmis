@@ -127,7 +127,7 @@
                                         <h:outputText value="#{sessionController.institution.name}"/>
                                     </div>
                                     <div class="d-flex justify-content-center text-5 gap-2" style="font-weight: 700; font-size: 18px;">
-                                        <h:outputText value="All Sales Report"/>
+                                        <h:outputText value="Pharmacy Income Report - By Discount and Admission"/>
                                         <h:panelGroup  rendered="#{pharmacySummaryReportController.department ne null}">
                                             <div class="d-flex gap-2">
                                                 <h:outputText value="-" style="width: 1em!important;" class="text-center"/>
@@ -140,14 +140,14 @@
                                         <div class="d-flex gap-2">
                                             <h:outputText value="From Date" style="font-weight:600;"/>
                                             <h:outputText value="#{pharmacySummaryReportController.fromDate}">
-                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                             </h:outputText>
                                         </div>
 
                                         <div class="d-flex gap-2">
                                             <h:outputText value="To Date" style="font-weight:600;"/>
                                             <h:outputText value="#{pharmacySummaryReportController.toDate}">
-                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                             </h:outputText>
                                         </div>
 

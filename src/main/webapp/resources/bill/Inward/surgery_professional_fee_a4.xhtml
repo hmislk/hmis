@@ -1,0 +1,157 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+    <cc:interface>
+        <cc:attribute name="bill" type="com.divudi.core.entity.Bill"/>
+        <cc:attribute name="encounterComponents" type="java.util.List"/>
+        <cc:attribute name="cancelled" type="java.lang.Boolean" default="false"/>
+    </cc:interface>
+
+    <cc:implementation>
+        <h:outputStylesheet library="css" name="inwardpayments.css"/>
+
+        <div class="a4bill1" style="max-width: 210mm; margin: 0 auto; padding: 10mm; font-family: Arial, sans-serif;">
+
+            <!-- Header -->
+            <div class="institutionName" style="text-align: center; font-size: 18pt; font-weight: bold;">
+                <h:outputLabel value="#{cc.attrs.bill.department.printingName}"/>
+            </div>
+            <div class="institutionContact" style="text-align: center; font-size: 9pt; margin-bottom: 4px;">
+                <div><h:outputLabel value="#{cc.attrs.bill.department.address}"/></div>
+                <div>
+                    <h:outputLabel value="#{cc.attrs.bill.department.telephone1}"/>
+                    <h:outputLabel value=" / #{cc.attrs.bill.department.telephone2}"
+                                   rendered="#{!empty cc.attrs.bill.department.telephone2}"/>
+                </div>
+            </div>
+
+            <hr/>
+
+            <div style="text-align: center; font-size: 14pt; font-weight: bold; margin: 6px 0;">
+                <h:outputLabel value="SURGERY PROFESSIONAL FEE RECEIPT"/>
+                <br/>
+                <h:outputLabel value="** CANCELLED **" rendered="#{cc.attrs.cancelled}"
+                               style="color: red; font-size: 12pt;"/>
+            </div>
+
+            <hr/>
+
+            <!-- Patient + Bill details side by side -->
+            <table style="width: 100%; font-size: 10pt; margin: 8px 0;">
+                <tr>
+                    <td style="width: 50%; vertical-align: top; padding-right: 10px;">
+                        <table style="width: 100%;">
+                            <tr>
+                                <td style="width: 35%;"><h:outputLabel value="Patient Name"/></td>
+                                <td style="width: 5%;">:</td>
+                                <td><h:outputLabel value="#{cc.attrs.bill.patient.person.nameWithTitle}"/></td>
+                            </tr>
+                            <tr>
+                                <td><h:outputLabel value="BHT No"/></td>
+                                <td>:</td>
+                                <td><h:outputLabel value="#{cc.attrs.bill.patientEncounter.bhtNo}"/></td>
+                            </tr>
+                            <tr>
+                                <td><h:outputLabel value="Age / Sex"/></td>
+                                <td>:</td>
+                                <td>
+                                    <h:outputLabel value="#{cc.attrs.bill.patient.age}"/>
+                                    <h:outputLabel value=" / #{cc.attrs.bill.patient.person.sex}"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><h:outputLabel value="Surgery"/></td>
+                                <td>:</td>
+                                <td><h:outputLabel value="#{cc.attrs.bill.forwardReferenceBill.procedure.item.name}"/></td>
+                            </tr>
+                        </table>
+                    </td>
+                    <td style="width: 50%; vertical-align: top; padding-left: 10px;">
+                        <table style="width: 100%;">
+                            <tr>
+                                <td style="width: 35%;"><h:outputLabel value="Bill No"/></td>
+                                <td style="width: 5%;">:</td>
+                                <td><h:outputLabel value="#{cc.attrs.bill.deptId}"/></td>
+                            </tr>
+                            <tr>
+                                <td><h:outputLabel value="Date"/></td>
+                                <td>:</td>
+                                <td>
+                                    <h:outputLabel value="#{cc.attrs.bill.createdAt}">
+                                        <f:convertDateTime timeZone="Asia/Colombo"
+                                                           pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                    </h:outputLabel>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><h:outputLabel value="Issued By"/></td>
+                                <td>:</td>
+                                <td><h:outputLabel value="#{cc.attrs.bill.creater.webUserPerson.name}"/></td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+
+            <hr/>
+
+            <!-- Fee lines table -->
+            <table style="width: 100%; font-size: 10pt; border-collapse: collapse; margin: 8px 0;">
+                <thead>
+                    <tr style="background-color: #f0f0f0; font-weight: bold;">
+                        <th style="text-align: left; padding: 4px 6px; border-bottom: 1px solid #999;">Role</th>
+                        <th style="text-align: left; padding: 4px 6px; border-bottom: 1px solid #999;">Doctor / Staff</th>
+                        <th style="text-align: right; padding: 4px 6px; border-bottom: 1px solid #999;">Fee (Rs.)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <ui:repeat value="#{cc.attrs.encounterComponents}" var="ec">
+                        <tr>
+                            <td style="padding: 4px 6px; border-bottom: 1px solid #ddd;">
+                                <h:outputLabel value="#{ec.patientEncounterComponentType}"/>
+                            </td>
+                            <td style="padding: 4px 6px; border-bottom: 1px solid #ddd;">
+                                <h:outputLabel value="#{ec.staff.person.nameWithTitle}"/>
+                            </td>
+                            <td style="padding: 4px 6px; border-bottom: 1px solid #ddd; text-align: right;">
+                                <h:outputLabel value="#{ec.billFee.feeValue}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                            </td>
+                        </tr>
+                    </ui:repeat>
+                </tbody>
+            </table>
+
+            <hr/>
+
+            <!-- Total -->
+            <table style="width: 100%; font-size: 13pt; font-weight: bold; margin: 6px 0;">
+                <tr>
+                    <td style="text-align: left; padding: 4px 0;">Total</td>
+                    <td style="text-align: right; padding: 4px 0;">
+                        <h:outputLabel value="#{cc.attrs.bill.total}">
+                            <f:convertNumber pattern="#,##0.00"/>
+                        </h:outputLabel>
+                    </td>
+                </tr>
+            </table>
+
+            <hr/>
+
+            <!-- Footer -->
+            <div style="font-size: 9pt; margin-top: 8px;">
+                <h:outputLabel value="Issued by: #{cc.attrs.bill.creater.webUserPerson.name}"/>
+                <br/>
+                <h:outputLabel value="#{sessionController.userPreference.pharmacyBillFooter}"/>
+            </div>
+
+        </div>
+    </cc:implementation>
+</html>

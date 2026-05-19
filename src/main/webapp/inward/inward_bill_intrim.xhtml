@@ -21,77 +21,170 @@
             <ui:define name="content">
                 <h:form id="pageForm" >
 
-                    <p:panel rendered="#{bhtSummeryController.patientEncounter eq null}">
+                    <p:panel rendered="#{bhtSummeryController.patientEncounter eq null}" styleClass="shadow-sm">
                         <f:facet name="header">
-                            <p:outputLabel value="Interim Bill" />
+                            <div class="d-flex align-items-center">
+                                <i class="fa-solid fa-file-invoice-dollar fa-lg text-primary me-3"></i>
+                                <div>
+                                    <h:outputText value="Interim Bill" styleClass="mb-1 text-primary" /><br/>
+                                    <h:outputText value="Search and select an inpatient to generate interim bill" styleClass="mb-0 text-muted small" />
+                                </div>
+                            </div>
                         </f:facet>
 
-                        <h:panelGrid columns="10">
-                            <p:outputLabel value="Type Patient Name or BHT : " ></p:outputLabel>
-                            <p:autoComplete  
-                                widgetVar="aPt" 
-                                id="acPt" 
-                                forceSelection="true"
-                                required="true" 
-                                requiredMessage="Please select a patient"
-                                value="#{bhtSummeryController.patientEncounter}"
-                                completeMethod="#{admissionController.completePatientDishcargedNotFinalized}"
-                                var="myItem" 
-                                itemValue="#{myItem}"
-                                itemLabel="#{myItem.bhtNo}"
-                                size="30"
-                                class="m-2">
+                        <div class="row justify-content-center">
+                            <div class="col-12 col-lg-10 col-xl-8">
+                                <div class="card border-0 bg-light">
+                                    <div class="card-body p-4">
+                                        <div class="text-center mb-4">
+                                            <i class="fa-solid fa-search fa-3x text-info mb-3"></i>
+                                            <h5 class="text-dark mb-2">Find Inpatient</h5>
+                                            <p class="text-muted">Search by patient name, BHT number, or PHN to generate an interim bill</p>
+                                        </div>
 
-                                <p:column headerText="PHN" style="padding: 6px; width: 8em;">
-                                    <h:outputLabel value="#{myItem.patient.phn}"/>
-                                </p:column>
-                                <p:column headerText="BHT No" style="padding: 6px; width: 8em;">
-                                    <h:outputLabel value="#{myItem.bhtNo}"/>
-                                </p:column>
-                                <p:column headerText="Patient" style="padding: 6px; width: 400px;">
-                                    <h:outputLabel value="#{myItem.patient.person.nameWithTitle}"/>
-                                </p:column>
-                                <p:column headerText="Room" style="padding: 6px; width: 8em;">
-                                    <h:outputLabel value="#{myItem.currentPatientRoom.roomFacilityCharge.name}"/>
-                                </p:column>
-                                <p:column headerText="Discharged" style="padding: 6px; width: 10em;">
-                                    <div class="d-flex justify-content-center">
-                                        <span class="#{myItem.discharged ? 'discharged-badge' : 'not-discharged-badge'}">
-                                            #{myItem.discharged ? 'Discharged' : 'Not Discharged'}
-                                        </span>
+                                        <div class="row mb-3">
+                                            <div class="col-12">
+                                                <h:outputLabel for="insSelect" styleClass="form-label fw-bold text-dark mb-2">
+                                                    <i class="fa-solid fa-hospital me-2 text-primary"></i>
+                                                    Institution
+                                                </h:outputLabel>
+                                                <p:selectOneMenu id="insSelect"
+                                                                 label="Institution"
+                                                                 value="#{bhtSummeryController.institution}"
+                                                                 style="width:100%">
+                                                    <f:selectItem itemLabel="All Institutions" itemValue="#{null}" />
+                                                    <f:selectItems value="#{sessionController.loggableInstitutions}"
+                                                                   var="ins"
+                                                                   itemLabel="#{ins.name}"
+                                                                   itemValue="#{ins}" />
+                                                    <p:ajax listener="#{bhtSummeryController.onInstitutionChange}" update="acPt" />
+                                                </p:selectOneMenu>
+                                            </div>
+                                        </div>
+
+                                        <div class="row mb-3">
+                                            <div class="col-12">
+                                                <h:outputLabel for="acPt" styleClass="form-label fw-bold text-dark mb-2">
+                                                    <i class="fa-solid fa-user me-2 text-primary"></i>
+                                                    Patient Search
+                                                </h:outputLabel>
+                                                <p:autoComplete
+                                                    widgetVar="aPt"
+                                                    id="acPt"
+                                                    label="Patient Search"
+                                                    forceSelection="true"
+                                                    required="true"
+                                                    requiredMessage="Please select a patient"
+                                                    value="#{bhtSummeryController.patientEncounter}"
+                                                    completeMethod="#{bhtSummeryController.completeAdmissionNotFinalized}"
+                                                    var="myItem"
+                                                    itemValue="#{myItem}"
+                                                    itemLabel="#{myItem.bhtNo}"
+                                                    placeholder="Type patient name, BHT number, or PHN..."
+                                                    minQueryLength="2"
+                                                    style="width: 100%;"
+                                                    inputStyleClass="form-control form-control-lg">
+                                                    <p:ajax event="itemSelect" update="pnlPatientPreview" />
+
+                                                    <p:column headerText="PHN" style="padding: 8px; min-width: 100px;">
+                                                        <div class="d-flex align-items-center">
+                                                            <i class="fa-solid fa-id-card me-2 text-info"></i>
+                                                            <strong>#{myItem.patient.phn}</strong>
+                                                        </div>
+                                                    </p:column>
+                                                    <p:column headerText="BHT No" style="padding: 8px; min-width: 120px;">
+                                                        <div class="d-flex align-items-center">
+                                                            <i class="fa-solid fa-hospital me-2 text-warning"></i>
+                                                            <strong class="text-primary">#{myItem.bhtNo}</strong>
+                                                        </div>
+                                                    </p:column>
+                                                    <p:column headerText="Patient Name" style="padding: 8px; min-width: 250px;">
+                                                        <div class="d-flex align-items-center">
+                                                            <i class="fa-solid fa-user me-2 text-success"></i>
+                                                            <span class="fw-medium">#{myItem.patient.person.nameWithTitle}</span>
+                                                        </div>
+                                                    </p:column>
+                                                    <p:column headerText="Room" style="padding: 8px; min-width: 150px;">
+                                                        <h:panelGroup rendered="#{myItem.currentPatientRoom ne null}">
+                                                            <div class="d-flex align-items-center">
+                                                                <i class="fa-solid fa-bed me-2 text-secondary"></i>
+                                                                <span>#{myItem.currentPatientRoom.roomFacilityCharge.name}</span>
+                                                            </div>
+                                                        </h:panelGroup>
+                                                        <h:panelGroup rendered="#{myItem.currentPatientRoom eq null}">
+                                                            <span class="text-muted">
+                                                                <i class="fa-solid fa-question-circle me-1"></i>No room assigned
+                                                            </span>
+                                                        </h:panelGroup>
+                                                    </p:column>
+                                                    <p:column headerText="Status" style="padding: 8px; min-width: 120px;">
+                                                        <p:badge value="Discharged" styleClass="ui-badge-danger" rendered="#{myItem.discharged}" />
+                                                        <p:badge value="Active" styleClass="ui-badge-success" rendered="#{!myItem.discharged}" />
+                                                    </p:column>
+                                                </p:autoComplete>
+                                            </div>
+                                        </div>
+
+                                        <h:panelGroup id="pnlPatientPreview">
+                                            <h:panelGroup rendered="#{bhtSummeryController.patientEncounter ne null}" layout="block">
+                                                <div class="card border-primary mt-3 mb-3">
+                                                    <div class="card-header bg-primary text-white py-2">
+                                                        <div class="d-flex align-items-center">
+                                                            <i class="fa-solid fa-user-check me-2"></i>
+                                                            <strong>Selected Patient</strong>
+                                                        </div>
+                                                    </div>
+                                                    <div class="card-body py-3">
+                                                        <div class="row">
+                                                            <div class="col-md-3 mb-2">
+                                                                <small class="text-muted d-block">Patient Name</small>
+                                                                <strong>#{bhtSummeryController.patientEncounter.patient.person.nameWithTitle}</strong>
+                                                            </div>
+                                                            <div class="col-md-2 mb-2">
+                                                                <small class="text-muted d-block">BHT No</small>
+                                                                <strong class="text-primary">#{bhtSummeryController.patientEncounter.bhtNo}</strong>
+                                                            </div>
+                                                            <div class="col-md-2 mb-2">
+                                                                <small class="text-muted d-block">PHN</small>
+                                                                <strong>#{bhtSummeryController.patientEncounter.patient.phn}</strong>
+                                                            </div>
+                                                            <div class="col-md-2 mb-2">
+                                                                <small class="text-muted d-block">Room</small>
+                                                                <h:panelGroup rendered="#{bhtSummeryController.patientEncounter.currentPatientRoom ne null}">
+                                                                    <strong>#{bhtSummeryController.patientEncounter.currentPatientRoom.roomFacilityCharge.name}</strong>
+                                                                </h:panelGroup>
+                                                                <h:panelGroup rendered="#{bhtSummeryController.patientEncounter.currentPatientRoom eq null}">
+                                                                    <span class="text-muted">Not assigned</span>
+                                                                </h:panelGroup>
+                                                            </div>
+                                                            <div class="col-md-3 mb-2">
+                                                                <small class="text-muted d-block">Status</small>
+                                                                <p:badge value="Discharged" styleClass="ui-badge-danger" rendered="#{bhtSummeryController.patientEncounter.discharged}" />
+                                                                <p:badge value="Active" styleClass="ui-badge-success" rendered="#{!bhtSummeryController.patientEncounter.discharged}" />
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </h:panelGroup>
+                                        </h:panelGroup>
+
+                                        <div class="row">
+                                            <div class="col-12 text-center">
+                                                <p:commandButton
+                                                    id="btnSelect"
+                                                    ajax="false"
+                                                    value="Continue"
+                                                    icon="fa-solid fa-arrow-right"
+                                                    class="ui-button-success btn-lg"
+                                                    style="min-width: 200px; height: 50px;"
+                                                    title="Continue to generate interim bill"
+                                                    action="#{bhtSummeryController.createIntrimBillTable()}" />
+                                            </div>
+                                        </div>
                                     </div>
-                                </p:column>
-
-                            </p:autoComplete>
-
-                            <p:commandButton 
-                                ajax="false"
-                                value="Select"
-                                class="ml-2"
-                                action="#{bhtSummeryController.createIntrimBillTable()}" >
-                            </p:commandButton>
-
-                            <style>
-                                .discharged-badge {
-                                    background-color: #f44336;
-                                    color: white;
-                                    padding: 2px 8px;
-                                    border-radius: 12px;
-                                    font-size: 1em;
-                                    font-weight: bold;
-                                }
-
-                                .not-discharged-badge {
-                                    background-color: #2196F3;
-                                    color: white;
-                                    padding: 2px 8px;
-                                    border-radius: 12px;
-                                    font-size: 1em;
-                                    font-weight: bold;
-                                }
-                            </style>
-
-                        </h:panelGrid>
+                                </div>
+                            </div>
+                        </div>
                     </p:panel>
 
 
@@ -112,6 +205,7 @@
                                     value="Settle Bill"
                                     icon="fa fa-check"
                                     class="ui-button-success mx-1"
+                                    onclick="PF('settleBillLoadingDlg').show();"
                                     action="#{bhtSummeryController.toSettle()}"  />
 
                                 <p:commandButton
@@ -141,6 +235,7 @@
                                 </p:commandButton>
                                 <p:commandButton
                                     ajax="false"
+                                    value="Inpatient Dashboard"
                                     icon="fas fa-id-card"
                                     class="ui-button-secondary  mx-1"
                                     action="#{bhtSummeryController.navigateToInpatientProfile()}"
@@ -176,12 +271,13 @@
                                             <p:outputLabel value="Summary" class="mx-2"/>
                                         </f:facet>
 
-                                        <h:panelGroup id="crd" class="w-100" style="display: #{bhtSummeryController.patientEncounter.paymentMethod eq 'Credit' ? 'block' : 'none'} ; ">
-                                            <credit:outputCredit  class="w-100" patientEncounter="#{bhtSummeryController.patientEncounter}"/>
+                                        <h:panelGroup id="crd" layout="block" class="w-100"
+                                                      rendered="#{bhtSummeryController.patientEncounter.paymentMethod eq 'Credit'}">
+                                            <credit:creditCompanyListView controller="#{bhtSummeryController}"/>
                                         </h:panelGroup>
 
 
-                                        <h:panelGrid columns="3" >
+                                        <h:panelGrid columns="3" class="text-end">
                                             <h:outputLabel  value="Total Charges"/>
                                             <h:outputLabel value=":" class="mx-2"/>
                                             <h:outputLabel value="#{bhtSummeryController.grantTotal}" style="font-weight: bold">
@@ -263,7 +359,7 @@
                                         <p:outputLabel value="Charges" class="mx-2"/>
                                     </f:facet>
 
-                                    <p:dataTable 
+                                        <p:dataTable 
                                         id="sum"
                                         value="#{bhtSummeryController.chargeItemTotals}"
                                         var="c"
@@ -274,9 +370,9 @@
                                         >
 
                                         <p:column headerText="Charge Type" rendered="#{c.total > 0}">
-                                            <h:outputLabel value="#{c.inwardChargeType.name}"/>
+                                            <h:outputLabel value="#{bhtSummeryController.getChargeTypeLabel(c.inwardChargeType)}"/>
                                         </p:column>
-                                        <p:column  sortBy="#{c.total}"  headerText="Total" rendered="#{c.total > 0}">
+                                        <p:column  sortBy="#{c.total}"  headerText="Total" rendered="#{c.total > 0}" styleClass="text-end">
                                             <h:outputLabel value="#{c.total}" style="font-weight: bold">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
@@ -293,125 +389,108 @@
                             </f:facet>
                             <p:tabView  id="tvPt"  rendered="#{bhtSummeryController.patientEncounter ne null}" >
                                 <p:tab id="tabNewPt" title="Room Details" >
+                                    <div class="d-flex justify-content-end mb-2">
+                                        <p:commandButton
+                                            ajax="false"
+                                            value="View / Edit Room Details"
+                                            icon="fa-solid fa-bed"
+                                            class="ui-button-info"
+                                            action="#{bhtSummeryController.navigateToPatientRoomDetails()}"/>
+                                    </div>
                                     <h:panelGroup rendered="#{!bhtSummeryController.patientEncounter.roomAdmitted}">
-                                        <div class="d-flex justify-content-center">
-                                            <h:outputLabel value="Patient not admitted to the Room"/>
+                                        <div class="d-flex justify-content-center text-muted py-2">
+                                            <i class="fa-solid fa-info-circle me-2"/>
+                                            <h:outputLabel value="Patient not admitted to any room."/>
                                         </div>
                                     </h:panelGroup>
                                     <h:panelGroup rendered="#{bhtSummeryController.patientEncounter.roomAdmitted}">
-                                        <p:dataTable  value="#{bhtSummeryController.patientRooms}" var="rm" style="min-width:10em;">
-                                            <p:column headerText="Room">
-                                                <h:outputLabel value="#{rm.roomFacilityCharge.name}" style="display: inline;"/>
-
-                                                <h:outputText value="&#xf058;" escape="false"
-                                                              styleClass="fa"
-                                                              rendered="#{rm.discharged}"
-                                                              title="Discharged" style="color: green; margin-left: 5px; display: inline;"/>
-
-                                                <h:outputText value="&#xf057;" escape="false"
-                                                              styleClass="fa"
-                                                              rendered="#{not rm.discharged}"
-                                                              title="Not Discharged" style="color: red; margin-left: 5px; display: inline;"/>
-
-                                                <h:outputLabel value="&nbsp;-&nbsp;GAURDIAN ROOM" style="color: #008000; display: inline;"
-                                                               rendered="#{rm.patientRoomClass eq 'class com.divudi.core.entity.inward.GuardianRoom'}"/>
+                                        <p:dataTable value="#{bhtSummeryController.patientRooms}" var="rm" style="min-width:10em;">
+                                            <p:column headerText="Room" styleClass="text-start">
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <h:outputLabel value="#{rm.roomFacilityCharge.name}" style="display: inline;"/>
+                                                    <h:panelGroup rendered="#{rm.discharged}">
+                                                        <p:badge value="Left" severity="info"/>
+                                                    </h:panelGroup>
+                                                    <h:panelGroup rendered="#{not rm.discharged}">
+                                                        <p:badge value="Active" severity="warning"/>
+                                                    </h:panelGroup>
+                                                    <h:panelGroup rendered="#{rm.patientRoomClass eq 'class com.divudi.core.entity.inward.GuardianRoom'}">
+                                                        <p:badge value="Guardian" severity="success"/>
+                                                    </h:panelGroup>
+                                                </div>
                                             </p:column>
-                                            <p:column headerText="Admission" style="min-width:10em;">
-                                                <p:datePicker
-                                                    id="roomAdmittedTimeStamp"
-                                                    value="#{rm.admittedAt}"
-                                                    showTime="true"
-                                                    showButtonBar="true"
-                                                    timeInput="true"
-                                                    pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"
-                                                    size="11"/>
+                                            <p:column headerText="Admission" style="min-width:10em;" styleClass="text-start">
+                                                <h:outputText value="#{rm.admittedAt}">
+                                                    <f:convertDateTime timeZone="Asia/Colombo"
+                                                        pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
+                                                </h:outputText>
                                             </p:column>
-                                            <p:column headerText="Discharge" style="min-width:10em;" >
-                                                <p:datePicker
-                                                    showTime="true"
-                                                    showButtonBar="true"
-                                                    timeInput="true"
-                                                    id="roomDischargeTimeStamp"
-                                                    value="#{rm.dischargedAt}"
-                                                    pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"
-                                                    size="11"/>
+                                            <p:column headerText="Discharge" style="min-width:10em;" styleClass="text-start">
+                                                <h:panelGroup rendered="#{rm.dischargedAt ne null}">
+                                                    <h:outputText value="#{rm.dischargedAt}">
+                                                        <f:convertDateTime timeZone="Asia/Colombo"
+                                                            pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
+                                                    </h:outputText>
+                                                </h:panelGroup>
+                                                <h:panelGroup rendered="#{rm.dischargedAt eq null}">
+                                                    <span class="text-muted fst-italic">—</span>
+                                                </h:panelGroup>
                                             </p:column>
-                                            <p:column headerText="Room"   style="width: 5em; text-align: right;" >
-                                                <h:outputLabel value="#{rm.calculatedRoomCharge}" style="text-align: center" >
+                                            <p:column headerText="Room" style="width: 5em;" styleClass="text-end">
+                                                <h:outputLabel value="#{rm.calculatedRoomCharge}">
                                                     <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputLabel>
                                             </p:column>
-                                            <p:column headerText="Maintain"  style="width: 5em; text-align: right;" >
+                                            <p:column headerText="Maintain" style="width: 5em;" styleClass="text-end">
                                                 <h:outputLabel value="#{rm.calculatedMaintainCharge}">
                                                     <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputLabel>
                                             </p:column>
-                                            <p:column headerText="MO"   style="width: 5em; text-align: right;">
-                                                <h:outputLabel  value="#{rm.calculatedMoCharge}">
+                                            <p:column headerText="MO" style="width: 5em;" styleClass="text-end">
+                                                <h:outputLabel value="#{rm.calculatedMoCharge}">
                                                     <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputLabel>
                                             </p:column>
-                                            <p:column headerText="Nursing"   style="width: 5em; text-align: right;">
+                                            <p:column headerText="Nursing" style="width: 5em;" styleClass="text-end">
                                                 <h:outputLabel value="#{rm.calculatedNursingCharge}">
                                                     <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputLabel>
                                             </p:column>
-                                            <p:column headerText="Linen"  style="width: 5em; text-align: right;">
+                                            <p:column headerText="Linen" style="width: 5em;" styleClass="text-end">
                                                 <h:outputLabel value="#{rm.calculatedLinenCharge}">
                                                     <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputLabel>
                                             </p:column>
-                                            <p:column headerText="Admin"  style="width: 5em; text-align: right;">
+                                            <p:column headerText="Admin" style="width: 5em;" styleClass="text-end">
                                                 <h:outputLabel value="#{rm.calculatedAdministrationCharge}">
                                                     <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputLabel>
                                             </p:column>
-                                            <p:column headerText="Madical" style="width: 5em; text-align: right;">
+                                            <p:column headerText="Medical" style="width: 5em;" styleClass="text-end">
                                                 <h:outputLabel value="#{rm.calculatedMedicalCareCharge}">
                                                     <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputLabel>
                                             </p:column>
-                                            <p:column headerText="Actions"  style="width: 10em;">
-                                                <div class="d-inline-flex"> <!-- Bootstrap class for inline flex container -->
-                                                    <!-- Discharge Button -->
-                                                    <p:commandButton 
-                                                        ajax="false"
-                                                        icon="fa fa-check-square"
-                                                        title="Discharge"
-                                                        class="ui-button-warning"
-                                                        action="#{roomChangeController.dischargeWithCurrentTime(rm)}" >
-                                                    </p:commandButton>
-
-                                                    <!-- Cancel Discharge Button -->
-                                                    <p:commandButton 
-                                                        ajax="false"
-                                                        icon="fa fa-times-circle"
-                                                        title="Cancel Discharge"
-                                                        class="ui-button-warning mx-2"
-                                                        action="#{roomChangeController.dischargeCancel(rm)}" >
-                                                    </p:commandButton>
-                                                    <!-- Update Charges Button -->
-                                                    <p:commandButton 
-                                                        ajax="false"
-                                                        icon="fa fa-pencil-square"
-                                                        title="Update Charges"
-                                                        action="#{bhtSummeryController.updatePatientRoom(rm)}"
-                                                        class="ui-button-info" >
-                                                    </p:commandButton>
-
-                                                </div>
+                                            <p:column headerText="Discount" style="width: 5em;" styleClass="text-end">
+                                                <h:outputLabel value="#{rm.discountRoomCharge + rm.discountMaintainCharge + rm.discountLinenCharge + rm.discountNursingCharge + rm.discountMoCharge + rm.discountAdministrationCharge + rm.discountMedicalCareCharge}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputLabel>
                                             </p:column>
-
+                                            <p:column headerText="Net" style="width: 5em;" styleClass="text-end">
+                                                <h:outputLabel value="#{rm.adjustedRoomCharge + rm.adjustedMaintainCharge + rm.ajdustedLinenCharge + rm.ajdustedNursingCharge + rm.adjustedMoCharge + rm.ajdustedAdministrationCharge + rm.ajdustedMedicalCareCharge}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputLabel>
+                                            </p:column>
                                         </p:dataTable>
                                     </h:panelGroup>
                                 </p:tab>
 
                                 <p:tab id="tabTimed" title="Timed Service Details"  >
-                                    <p:dataTable  value="#{bhtSummeryController.patientItems}" var="pt">
-                                        <p:column headerText="Service Name">
+                                        <p:dataTable  value="#{bhtSummeryController.patientItems}" var="pt">
+                                        <p:column headerText="Service Name" styleClass="text-start">
                                             <h:outputLabel value="#{pt.item.name}"/>
                                         </p:column>
-                                        <p:column headerText="Start Time">
+                                        <p:column headerText="Start Time" styleClass="text-start">
                                             <p:datePicker 
                                                 showTime="true"
                                                 timeInput="true"
@@ -420,7 +499,7 @@
                                                 pattern="dd/MM/yyyy  hh:mm:ss a" >
                                             </p:datePicker>
                                         </p:column>
-                                        <p:column headerText="Stopped Time">
+                                        <p:column headerText="Stopped Time" styleClass="text-start">
                                             <p:datePicker 
                                                 showTime="true"
                                                 timeInput="true"
@@ -429,12 +508,12 @@
                                                 pattern="dd/MM/yyyy  hh:mm:ss a" >
                                             </p:datePicker>
                                         </p:column>
-                                        <p:column headerText="Total" >
+                                        <p:column headerText="Total" styleClass="text-end">
                                             <h:outputLabel value="#{pt.serviceValue}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
                                         </p:column>
-                                        <p:column headerText="Creator" >
+                                        <p:column headerText="Creator" styleClass="text-start" >
                                             <h:outputLabel value="#{pt.creater.webUserPerson.name}"/>
                                             <br/>
                                             <h:panelGroup rendered="#{ti.retired}" >
@@ -443,7 +522,7 @@
                                                 </h:outputLabel>
                                             </h:panelGroup>
                                         </p:column>
-                                        <p:column headerText="Inward Charge Type">
+                                        <p:column headerText="Inward Charge Type" styleClass="text-start">
                                             <h:outputLabel value="#{pt.item.inwardChargeType}"/>
                                         </p:column>
                                         <p:column >
@@ -505,19 +584,19 @@
                                             <f:facet name="header">
                                                 <h:outputLabel value="#{dep.department.name}"/>
                                             </f:facet>
-                                            <p:column>
+                                            <p:column styleClass="text-start">
                                                 <h:outputLabel value="#{ser.name}" rendered="#{ser.transBillItemCount ne 0}"/>
                                             </p:column>
-                                            <p:column>
+                                            <p:column styleClass="text-end">
                                                 <h:outputLabel value="#{ser.transBillItemCount}" rendered="#{ser.transBillItemCount ne 0}"/>
                                             </p:column>
-                                            <p:column>
+                                            <p:column styleClass="text-end">
                                                 <h:outputLabel value="#{ser.transCheckedCount}" rendered="#{ser.transBillItemCount ne 0}"/>
                                             </p:column>
-                                            <p:column>
+                                            <p:column styleClass="text-start">
                                                 <h:outputLabel value="#{ser.inwardChargeType}" rendered="#{ser.transBillItemCount ne 0}"/>
                                             </p:column>
-                                            <p:column>
+                                            <p:column styleClass="text-start">
                                                 <p:commandButton 
                                                     ajax="false" 
                                                     rendered="#{ser.transBillItemCount ne 0}"
@@ -532,7 +611,7 @@
 
                                 <p:tab title="Medicine Issue">
                                     <p:dataTable 
-                                        value="#{bhtSummeryController.medicineOnlyIssues}" 
+                                        value="#{bhtSummeryController.pharmacyIssues}" 
                                         var="iss" 
                                         scrollable="true"
                                         scrollHeight="300"
@@ -1034,9 +1113,22 @@
 
                     </p:panel>
                     <p:messages id="pageMessages" ></p:messages>
+
+                    <p:dialog widgetVar="settleBillLoadingDlg"
+                              modal="true"
+                              closable="false"
+                              showHeader="true"
+                              header="Processing - Please Wait"
+                              style="min-width: 320px; text-align: center;">
+                        <div style="padding: 20px;">
+                            <i class="pi pi-spin pi-spinner" style="font-size: 3rem; color: #4CAF50;"></i>
+                            <p style="margin-top: 15px; font-size: 1rem;">Settling the bill, please wait...</p>
+                            <p style="color: #888; font-size: 0.85rem;">Do not refresh or close this page.</p>
+                        </div>
+                    </p:dialog>
+
                 </h:form>
             </ui:define>
         </ui:composition>
     </h:body>
 </html>
-

@@ -295,6 +295,10 @@ public class PatientDepositController implements Serializable, ControllerWithPat
     }
 
     public void settlePatientDeposit() {
+        if (printPreview) {
+            JsfUtil.addErrorMessage("Bill already settled");
+            return;
+        }
         if (patient == null) {
             JsfUtil.addErrorMessage("Please Select a Patient");
             return;

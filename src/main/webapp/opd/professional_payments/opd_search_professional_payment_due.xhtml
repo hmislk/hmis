@@ -96,7 +96,13 @@
                                         <p:commandLink
                                             action="#{staffPaymentBillController.navigateToStaffPaymentFromDuePayment(bf.staff)}"
                                             value="#{bf.staff.person.name}">
+                                            <f:setPropertyActionListener value="#{searchController.fromDate}" target="#{staffPaymentBillController.fromDate}" ></f:setPropertyActionListener>
+                                            <f:setPropertyActionListener value="#{searchController.toDate}" target="#{staffPaymentBillController.toDate}" ></f:setPropertyActionListener>
                                         </p:commandLink>
+                                    </p:column>
+                                    
+                                    <p:column headerText="MRN" width="5em;">
+                                        <h:outputLabel value="#{bf.bill.patient.phn}"/>
                                     </p:column>
 
                                     <p:column headerText="Patient" >
@@ -127,7 +133,7 @@
                                         <h:outputLabel value="#{bf.billItem.item.name}" />
                                     </p:column>
 
-                                    <p:column headerText="Charge" class="text-end">
+                                    <p:column headerText="Charge" class="text-end"  width="6em;">
                                         <h:outputLabel value="#{bf.feeValue}" class="text-end">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>

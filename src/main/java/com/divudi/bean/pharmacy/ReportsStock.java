@@ -296,7 +296,10 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
             jpql.append("from Stock s ");
             jpql.append("left join s.itemBatch.item.category cat ");
             jpql.append("left join s.itemBatch.item.dosageForm df ");
-            jpql.append("where s.stock > 0");
+            jpql.append("where 1=1");
+            if (!includeZeroStock) {
+                jpql.append(" and s.stock > 0");
+            }
 
             if (department != null) {
                 jpql.append(" and s.department=:d");
@@ -1057,30 +1060,52 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
 
     public void fillDepartmentNonEmptyItemStocks() {
         reportTimerController.trackReportExecution(() -> {
-            if (department == null) {
-                JsfUtil.addErrorMessage("Please select a department");
-                return;
-            }
-            Map m = new HashMap();
-            String sql;
-            sql = "select new com.divudi.core.data.dto.StockReportByItemDTO"
-                    + "(s.itemBatch.item.code, "
+            Map<String, Object> m = new HashMap<>();
+            StringBuilder jpql = new StringBuilder(
+                    "select new com.divudi.core.data.dto.StockReportByItemDTO("
+                    + "s.itemBatch.item.code, "
                     + "s.itemBatch.item.name, "
                     + "sum(s.stock), "
                     + "sum(s.itemBatch.purcahseRate * s.stock), "
-                    + "sum(s.itemBatch.retailsaleRate * s.stock))  "
-                    + "from Stock s where s.stock>:z and s.department=:d "
-                    + "group by s.itemBatch.item.name, s.itemBatch.item.code "
-                    + "order by s.itemBatch.item.name";
-            m.put("d", department);
-            m.put("z", 0.0);
-            List<StockReportByItemDTO> lsts = (List) getStockFacade().findLightsByJpql(sql, m);
+                    + "sum(s.itemBatch.retailsaleRate * s.stock)) "
+                    + "from Stock s "
+                    + "left join s.itemBatch.item.category cat "
+                    + "left join s.itemBatch.item.dosageForm df "
+                    + "where 1=1");
+            if (!includeZeroStock) {
+                jpql.append(" and s.stock > 0");
+            }
+            if (department != null) {
+                jpql.append(" and s.department=:d");
+                m.put("d", department);
+            }
+            if (site != null) {
+                jpql.append(" and s.department.site=:site");
+                m.put("site", site);
+            }
+            if (institution != null) {
+                jpql.append(" and s.department.institution=:ins");
+                m.put("ins", institution);
+            }
+            if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
+                jpql.append(" and s.itemBatch.item.departmentType IN :departmentTypes");
+                m.put("departmentTypes", selectedDepartmentTypes);
+            }
+            if (category != null) {
+                jpql.append(" and s.itemBatch.item.category=:cat");
+                m.put("cat", category);
+            }
+            if (dosageForm != null) {
+                jpql.append(" and s.itemBatch.item.dosageForm=:df");
+                m.put("df", dosageForm);
+            }
+            jpql.append(" group by s.itemBatch.item.name, s.itemBatch.item.code order by s.itemBatch.item.name");
+            List<StockReportByItemDTO> lsts = (List) getStockFacade().findLightsByJpql(jpql.toString(), m);
             stockPurchaseValue = 0.0;
             stockSaleValue = 0.0;
             for (StockReportByItemDTO r : lsts) {
                 stockPurchaseValue += r.getPurchaseValue();
                 stockSaleValue += r.getSaleValue();
-
             }
             stockReportByItemDTOS = lsts;
         }, PharmacyReports.STOCK_REPORT_BY_ITEM, sessionController.getLoggedUser());
@@ -1472,6 +1497,82 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
     }
 
     private Date date;
+
+    public void fillDepartmentExpiaryStockDtos() {
+        reportTimerController.trackReportExecution(() -> {
+            Map<String, Object> m = new HashMap<>();
+            StringBuilder jpql = new StringBuilder("select new com.divudi.core.data.dto.StockDTO(");
+            jpql.append("s.id, ");
+            jpql.append("cat.name, ");
+            jpql.append("s.itemBatch.item.name, ");
+            jpql.append("s.itemBatch.item.departmentType, ");
+            jpql.append("s.itemBatch.item.code, ");
+            jpql.append("s.itemBatch.dateOfExpire, ");
+            jpql.append("s.itemBatch.batchNo, ");
+            jpql.append("s.stock, ");
+            jpql.append("s.itemBatch.purcahseRate, ");
+            jpql.append("s.itemBatch.costRate, ");
+            jpql.append("s.itemBatch.retailsaleRate, ");
+            jpql.append("df.name) ");
+            jpql.append("from Stock s ");
+            jpql.append("left join s.itemBatch.item.category cat ");
+            jpql.append("left join s.itemBatch.item.dosageForm df ");
+            jpql.append("where s.stock > 0");
+            jpql.append(" and s.itemBatch.dateOfExpire between :fd and :td");
+            m.put("fd", getFromDate());
+            m.put("td", getToDate());
+
+            if (department != null) {
+                jpql.append(" and s.department=:d");
+                m.put("d", department);
+            }
+            if (site != null) {
+                jpql.append(" and s.department.site=:site");
+                m.put("site", site);
+            }
+            if (institution != null) {
+                jpql.append(" and s.department.institution=:ins");
+                m.put("ins", institution);
+            }
+            if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
+                jpql.append(" and s.itemBatch.item.departmentType IN :departmentTypes");
+                m.put("departmentTypes", selectedDepartmentTypes);
+            }
+            if (category != null) {
+                jpql.append(" and s.itemBatch.item.category=:cat");
+                m.put("cat", category);
+            }
+            if (dosageForm != null) {
+                jpql.append(" and s.itemBatch.item.dosageForm=:df");
+                m.put("df", dosageForm);
+            }
+            jpql.append(" order by s.itemBatch.dateOfExpire");
+
+            stockDtos = (List<StockDTO>) stockFacade.findLightsByJpql(jpql.toString(), m);
+
+            stockPurchaseValue = stockDtos.stream()
+                    .mapToDouble(s -> {
+                        Double pr = s.getPurchaseRate();
+                        Double qty = s.getStockQty();
+                        return (pr == null ? 0.0 : pr) * (qty == null ? 0.0 : qty);
+                    })
+                    .sum();
+            stockSaleValue = stockDtos.stream()
+                    .mapToDouble(s -> {
+                        Double rr = s.getRetailRate();
+                        Double qty = s.getStockQty();
+                        return (rr == null ? 0.0 : rr) * (qty == null ? 0.0 : qty);
+                    })
+                    .sum();
+            stockCostValue = stockDtos.stream()
+                    .mapToDouble(s -> {
+                        Double cr = s.getCostRate();
+                        Double qty = s.getStockQty();
+                        return (cr == null ? 0.0 : cr) * (qty == null ? 0.0 : qty);
+                    })
+                    .sum();
+        }, PharmacyReports.STOCK_REPORT_BY_EXPIRY, sessionController.getLoggedUser());
+    }
 
     public void fillDepartmentExpiaryStocks() {
         reportTimerController.trackReportExecution(() -> {
@@ -2218,7 +2319,7 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
         Calendar c = Calendar.getInstance();
         c.set(Calendar.MONTH, c.get(Calendar.MONTH) + 3);
         toDate = c.getTime();
-        fillDepartmentExpiaryStocks();;
+        fillDepartmentExpiaryStockDtos();
     }
 
     public void fillSixMonthsExpiary() {
@@ -2226,7 +2327,7 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
         Calendar c = Calendar.getInstance();
         c.set(Calendar.MONTH, c.get(Calendar.MONTH) + 6);
         toDate = c.getTime();
-        fillDepartmentExpiaryStocks();;
+        fillDepartmentExpiaryStockDtos();
     }
 
     public void fillOneYearExpiary() {
@@ -2234,7 +2335,7 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
         Calendar c = Calendar.getInstance();
         c.set(Calendar.YEAR, c.get(Calendar.YEAR) + 1);
         toDate = c.getTime();
-        fillDepartmentExpiaryStocks();;
+        fillDepartmentExpiaryStockDtos();
     }
 
     public void fillThreeMonthsExpiaryOfSupplier() {

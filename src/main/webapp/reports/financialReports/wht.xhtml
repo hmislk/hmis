@@ -8,15 +8,23 @@
     <h:body class="w-100 border">
         <ui:composition template="/reports/index.xhtml" class="w-100 border">
             <ui:define name="subcontent">
+                <h:outputStylesheet library="css" name="eight_col_filter_panel.css" />
                 <h:form class="w-100">
                     <p:panel header="Withholding Tax Report" class="w-100">
 
+                        <h:panelGrid 
+                            columns="8" 
+                            class="ui-fluid"
+                            style="table-layout: fixed; width: 100%;" 
+                            columnClasses="fp-col-label1,fp-col-input1,fp-col-space1,
+                                        fp-col-extraWidth-label2,fp-col-input2,fp-col-space2,
+                                        fp-col-label3,fp-col-input3">
 
-
-                        <h:panelGrid columns="8" styleClass="w-100 form-grid" columnClasses="label-icon-column, input-column">
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf073;" styleClass="fa ml-5" /> <!-- FontAwesome calendar icon -->
-                                <h:outputLabel value="From" for="fromDate" class="mx-3"/>
+                            <h:panelGroup layout="block" styleClass="form-group fp-label">
+                                <h:outputText value="&#xf073;" styleClass="fa" /> <!-- FontAwesome calendar icon -->
+                                <div class="fp-label-text">
+                                    <h:outputLabel value="From" for="fromDate"/>
+                                </div>
                             </h:panelGroup>
                             <p:calendar 
                                 styleClass="w-100" 
@@ -28,9 +36,11 @@
 
                             <p:spacer width="50" ></p:spacer>
 
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf073;" styleClass="fa mr-2" /> <!-- FontAwesome calendar icon -->
-                                <h:outputLabel value="To" for="toDate" class="mx-3"/>
+                            <h:panelGroup layout="block" styleClass="form-group fp-label">
+                                <h:outputText value="&#xf073;" styleClass="fa"/> <!-- FontAwesome calendar icon -->
+                                <div class="fp-label-text">
+                                    <h:outputLabel value="To" for="toDate"/>
+                                </div>
                             </h:panelGroup>
                             <p:calendar 
                                 styleClass="w-100" 
@@ -46,9 +56,11 @@
                             <p:spacer width="50" ></p:spacer>
                             <p:spacer width="50" ></p:spacer>
 
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> <!-- FontAwesome building icon -->
-                                <h:outputLabel value="Institution" for="cmbIns" class="mx-3"/>
+                            <h:panelGroup layout="block" styleClass="form-group fp-label">
+                                <h:outputText value="&#xf19c;" styleClass="fa" /> <!-- FontAwesome building icon -->
+                                <div class="fp-label-text">
+                                    <h:outputLabel value="Institution" for="cmbIns" />
+                                </div>
                             </h:panelGroup>
                             <p:selectOneMenu
                                 id="cmbIns"
@@ -64,9 +76,11 @@
 
 
 
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf3c5;" styleClass="fa mr-2" /> <!-- FontAwesome map marker icon -->
-                                <h:outputLabel value="Site" for="siteMenu" class="mx-3"/>
+                            <h:panelGroup layout="block" styleClass="form-group fp-label">
+                                <h:outputText value="&#xf3c5;" styleClass="fa" /> <!-- FontAwesome map marker icon -->
+                                <div class="fp-label-text">
+                                    <h:outputLabel value="Site" for="siteMenu"/>
+                                </div>
                             </h:panelGroup>
                             <p:selectOneMenu
                                 id="siteMenu"
@@ -81,9 +95,11 @@
 
                             <p:spacer ></p:spacer>
 
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf0e8;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
-                                <h:outputLabel value="Department" for="cmbDept" class="mx-3"/>
+                            <h:panelGroup layout="block" styleClass="form-group fp-label">
+                                <h:outputText value="&#xf0e8;" styleClass="fa" /> <!-- FontAwesome sitemap icon -->
+                                <div class="fp-label-text">
+                                    <h:outputLabel value="Department" for="cmbDept"/>
+                                </div>
                             </h:panelGroup>
                             <p:selectOneMenu
                                 id="cmbDept"
@@ -94,15 +110,12 @@
                                 <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite(searchController.institution, searchController.site)}" var="d" itemLabel="#{d.name}" itemValue="#{d}" />
                             </p:selectOneMenu>
 
-
-
-
-
-
                             <!-- New Speciality Field with Icon -->
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf2b9;" styleClass="fa mr-2" /> <!-- FontAwesome user-md icon for Speciality -->
-                                <h:outputLabel value="Speciality" for="acSpeciality" class="mx-3" />
+                            <h:panelGroup layout="block" styleClass="form-group fp-label">
+                                <h:outputText value="&#xf2b9;" styleClass="fa" /> <!-- FontAwesome user-md icon for Speciality -->
+                                <div class="fp-label-text">
+                                    <h:outputLabel value="Speciality" for="acSpeciality" />
+                                </div>
                             </h:panelGroup>
                             <p:autoComplete id="acSpeciality" 
                                             value="#{searchController.speciality}" 
@@ -119,9 +132,11 @@
                             <p:spacer ></p:spacer>
 
                             <!-- New Doctor Field with Icon -->
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf0f0;" styleClass="fa mr-2" /> 
-                                <h:outputLabel value="Doctor" for="scStaff" class="mx-3" />
+                            <h:panelGroup layout="block" styleClass="form-group fp-label">
+                                <h:outputText value="&#xf0f0;" styleClass="fa" /> 
+                                <div class="fp-label-text">
+                                    <h:outputLabel value="Doctor" for="scStaff" />
+                                </div>
                             </h:panelGroup>
                             <h:panelGroup id="scStaff">
                                 <p:autoComplete  
@@ -156,9 +171,11 @@
 
 
 
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf007;" styleClass="fa mr-2" /> 
-                                <h:outputLabel value="Visit Type" for="cmbVisitType" class="mx-3"/>
+                            <h:panelGroup layout="block" styleClass="form-group fp-label">
+                                <h:outputText value="&#xf007;" styleClass="fa" /> 
+                                <div class="fp-label-text">
+                                    <h:outputLabel value="Visit Type" for="cmbVisitType"/>
+                                </div>
                             </h:panelGroup>
                             <p:selectOneMenu value="#{searchController.searchType}" filter="true"  class="w-100 " >
                                 <f:selectItem itemLabel="All" ></f:selectItem>
@@ -177,9 +194,12 @@
                             </p:selectOneMenu>
 
                             <p:spacer width="50" ></p:spacer>
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf007;" styleClass="fa mr-2" /> 
-                                <h:outputLabel value="Report Type" for="cmbReportType" class="mx-3"/>
+
+                            <h:panelGroup layout="block" styleClass="form-group fp-label">
+                                <h:outputText value="&#xf007;" styleClass="fa" /> 
+                                <div class="fp-label-text">
+                                    <h:outputLabel value="Report Type" for="cmbReportType"/>
+                                </div>
                             </h:panelGroup>
                             <p:selectOneMenu
                                 id="cmbReportType"
@@ -199,15 +219,12 @@
                                     ></f:selectItem>
                             </p:selectOneMenu>
 
-
-
-
                         </h:panelGrid> 
 
-                        <div class="d-flex align-items-center">
+                        <div class="d-flex align-items-center my-3">
                             <p:commandButton 
                                 id="btnSearch" 
-                                class="m-1 ui-button-danger"
+                                class="m-1 ui-button-warning"
                                 icon="fas fa-list"
                                 ajax="false" 
                                 value="Process Report"
@@ -233,8 +250,7 @@
                                 value="PDF" 
                                 ajax="false" 
                                 icon="fas fa-file-pdf"
-                                class="ui-button-danger mx-1"
-                                style="background-color: #17a2b8; border-color: #17a2b8;" >
+                                class="ui-button-danger mx-1">
                                 <p:fileDownload value="#{searchController.whtReportAsPdf}" />
                             </p:commandButton>
 
@@ -257,7 +273,8 @@
                                 currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
                                 rowsPerPageTemplate="20,50,{ShowAll|'All'}"
                                 scrollable="true"
-                                scrollWidth="100%">
+                                scrollWidth="100%"
+                                tableStyle="table-layout: fixed;">
 
                                 <f:facet name="header">
                                     <div class="row w-100" style="flex-wrap: wrap;">
@@ -301,7 +318,7 @@
                                     <p:outputLabel value="#{row.bill.id}" />
                                 </p:column>
 
-                                <p:column headerText="Type" width="10em"   rendered="#{webUserController.hasPrivilege('Developers')}" >
+                                <p:column headerText="Type" width="10em"   rendered="#{webUserController.hasPrivilege('Developers')}" style="word-break: break-word; white-space: normal;">
                                     <p:outputLabel value="#{row.bill.billTypeAtomic}" >
                                     </p:outputLabel>
                                 </p:column>
@@ -314,7 +331,7 @@
 
 
 
-                                <p:column headerText="Time" width="5em" style="text-align: center;" sortBy="#{row.bill.billTime}">
+                                <p:column headerText="Time" width="4em" style="text-align: center;" sortBy="#{row.bill.billTime}">
                                     <p:outputLabel value="#{row.bill.billTime}" >
                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.shortTimeFormat}" ></f:convertDateTime>
                                     </p:outputLabel>
@@ -345,7 +362,7 @@
                                 </p:column>
 
 
-                                <p:column headerText="Cashier" width="10em" style="text-align: left;" 
+                                <p:column headerText="Cashier" width="9em" style="text-align: left;" 
                                           sortBy="#{row.bill.creater.webUserPerson.name}" 
                                           filterBy="#{row.bill.creater.webUserPerson.name}">
                                     <p:outputLabel value="#{row.bill.creater.webUserPerson.name}" />
@@ -364,7 +381,8 @@
                                     sortBy="#{row.bill.toStaff.speciality.name}"
                                     filterBy="#{row.bill.toStaff.speciality.name}"
                                     filterMatchMode="contains"
-                                    style="text-align: left;">
+                                    style="text-align: left;"
+                                    width="8em">
                                     <h:outputLabel value="#{row.bill.toStaff.speciality.name}" />
                                 </p:column>
 
@@ -373,11 +391,17 @@
                                     sortBy="#{row.bill.staff.person.name}"
                                     filterBy="#{row.bill.staff.person.name}"
                                     filterMatchMode="contains"
-                                    style="text-align: left;">
+                                    style="text-align: left;"
+                                    width="9em">
                                     <h:outputLabel value="#{row.bill.toStaff.person.name}" />
                                 </p:column>
 
-                                <p:column style="text-align: right;" headerText="Gross" width="100" sortBy="#{row.bill.total}" filterBy="#{row.bill.total}" >                              
+                                <p:column 
+                                    style="text-align: right;" 
+                                    headerText="Gross" 
+                                    width="8em" 
+                                    sortBy="#{row.bill.total}" 
+                                    filterBy="#{row.bill.total}" >                              
                                     <h:outputLabel value="#{row.bill.total}" >
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                     </h:outputLabel>
@@ -391,7 +415,9 @@
                                 <p:column 
                                     style="text-align: right;" 
                                     headerText="WHT" 
-                                    sortBy="#{row.bill.tax}" filterBy="#{row.bill.tax}" >                              
+                                    sortBy="#{row.bill.tax}" 
+                                    filterBy="#{row.bill.tax}"
+                                    width="8em">                              
                                     <h:outputLabel value="#{row.bill.tax}" >
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                     </h:outputLabel>
@@ -403,8 +429,11 @@
                                 </p:column>
 
                                 <p:column 
-                                    style="text-align: right;" headerText="Value" 
-                                    sortBy="#{row.bill.netTotal}" filterBy="#{row.bill.netTotal}" >                              
+                                    style="text-align: right;" 
+                                    headerText="Value" 
+                                    sortBy="#{row.bill.netTotal}" 
+                                    filterBy="#{row.bill.netTotal}"
+                                    width="8em">                              
                                     <h:outputLabel value="#{row.bill.netTotal}" >
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                     </h:outputLabel>
@@ -459,7 +488,10 @@
                                     </div>
                                 </p:column>
 
-                                <p:column title="Actions" rendered="#{webUserController.hasPrivilege('Developers')}">
+                                <p:column 
+                                    title="Actions" 
+                                    rendered="#{webUserController.hasPrivilege('Developers')}"
+                                    width="7em">
                                     <p:commandButton 
                                         value="Admin" 
                                         icon="fa fa-shield-alt" 

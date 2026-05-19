@@ -12,82 +12,78 @@
 <ui:composition template="/reports/index.xhtml">
 <ui:define name="subcontent">
 
-<h:form class="w-100">
+<h:form >
 
-    <p:panel header="Duration Service Report" styleClass="w-100 shadow-2 border-round-lg p-3">
-        <p:panel styleClass="mb-3 p-3 border-round-lg">
-            <h:panelGrid columns="6" styleClass="w-100"
-                         columnClasses="col-2,col-2,col-1,col-2,col-2,col-1">
-                <h:panelGroup layout="block" styleClass="form-group mb-3">
+    <p:panel header="Duration Service Report" styleClass="w-100">
+            <h:panelGrid columns="5" styleClass=""
+                         columnClasses="col-md-2,col-md-3,col-md-1,col-md-2,col-md-3">
+                <h:panelGroup >
                     <h:outputText value="&#xf133;" styleClass="fa mr-2" />
                     <p:outputLabel value="Discharge Date From" class="mx-3"/>
                 </h:panelGroup>
 
-                <p:datePicker showTime="true" value="" 
+                <p:datePicker showTime="true" 
                     pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
                     styleClass="w-100" inputStyleClass="w-100 mb-3"/>
 
-                <p:spacer width="20"/>
+                <p:spacer />
 
-                <h:panelGroup layout="block" styleClass="form-group mb-3">
+                <h:panelGroup >
                     <h:outputText value="&#xf133;" styleClass="fa mr-2" />
                     <p:outputLabel value="Discharge Date To" class="mx-3"/>
                 </h:panelGroup>
 
-                <p:datePicker showTime="true" value="" 
+                <p:datePicker showTime="true" 
                     pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
                     styleClass="w-100" inputStyleClass="w-100 mb-3"/>
 
-                <p:spacer width="20"/>
 
                 
-                <h:panelGroup layout="block" styleClass="form-group mb-3">
+                <h:panelGroup >
                     <h:outputText value="&#xf133;" styleClass="fa mr-2" />
                     <p:outputLabel value="Service Added Date From" class="mx-3"/>
                 </h:panelGroup>
 
-                <p:datePicker showTime="true" value="" 
+                <p:datePicker showTime="true" 
                     pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
                     styleClass="w-100" inputStyleClass="w-100 mb-3"/>
 
-                <p:spacer width="20"/>
+                <p:spacer/>
 
-                <h:panelGroup layout="block" styleClass="form-group mb-3">
+                <h:panelGroup >
                     <h:outputText value="&#xf133;" styleClass="fa mr-2" />
                     <p:outputLabel value="Service Added Date To" class="mx-3"/>
                 </h:panelGroup>
 
-                <p:datePicker showTime="true" value="" 
+                <p:datePicker showTime="true" 
                     pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
                     styleClass="w-100" inputStyleClass="w-100 mb-3"/>
 
-                <p:spacer width="20"/>
 
            
-                <h:panelGroup layout="block" styleClass="form-group mb-3">
+                <h:panelGroup >
                     <h:outputText value="&#xf133;" styleClass="fa mr-2" />
                     <p:outputLabel value="Invoice Date From" class="mx-3"/>
                 </h:panelGroup>
 
-                <p:datePicker showTime="true" value="" 
+                <p:datePicker showTime="true" 
                     pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
                     styleClass="w-100" inputStyleClass="w-100 mb-3"/>
 
-                <p:spacer width="20"/>
+                <p:spacer />
 
-                <h:panelGroup layout="block" styleClass="form-group mb-3">
+                <h:panelGroup >
                     <h:outputText value="&#xf133;" styleClass="fa mr-2" />
                     <p:outputLabel value="Invoice Date To" class="mx-3"/>
                 </h:panelGroup>
 
-                <p:datePicker showTime="true" value="" 
+                <p:datePicker showTime="true"  
                     pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
                     styleClass="w-100" inputStyleClass="w-100 mb-3"/>
 
-                <p:spacer width="20"/>
 
            
-                <h:panelGroup layout="block" styleClass="form-group mb-3">
+                <h:panelGroup >
                     <h:outputText value="&#xf19c;" styleClass="fa mr-2"/> 
                     <h:outputLabel value="Service Name" class="mx-3"/>
                 </h:panelGroup>
@@ -99,9 +95,9 @@
                                    itemLabel="#{s.name}" itemValue="#{s}"/>
                 </p:selectOneMenu>
 
-                <p:spacer width="20"/>
+                <p:spacer />
 
-                <h:panelGroup layout="block" styleClass="form-group mb-3">
+                <h:panelGroup >
                     <h:outputText value="&#xf084;" styleClass="fa mr-2"/> 
                     <h:outputLabel value="Admission Types" for="admType" class="mx-3"/>
                 </h:panelGroup>
@@ -117,10 +113,9 @@
                     <f:selectItem itemLabel="Cath Lab" itemValue="K"/>
                 </p:selectCheckboxMenu>
 
-                <p:spacer width="20"/>
 
             
-                <h:panelGroup layout="block" styleClass="form-group mb-3">
+                <h:panelGroup >
                     <h:outputText value="&#xf236;" styleClass="fa mr-2"/> 
                     <h:outputLabel value="Room Categories" for="roomCat" class="mx-3"/>
                 </h:panelGroup>
@@ -136,10 +131,10 @@
                     <f:selectItem itemLabel="King Court" itemValue="K"/>
                 </p:selectCheckboxMenu>
 
-                <p:spacer width="20"/>
+                <p:spacer />
 
              
-                <h:panelGroup layout="block" styleClass="form-group mb-3">
+                <h:panelGroup >
                     <h:outputText styleClass="fa fa-hotel mr-2"/> 
                     <h:outputLabel value="Service Department" class="mx-3"/>
                 </h:panelGroup>
@@ -149,10 +144,9 @@
                     <f:selectItems/>
                 </p:selectOneMenu>
 
-                <p:spacer width="20"/>
 
                
-                <h:panelGroup layout="block" styleClass="form-group mb-3">
+                <h:panelGroup >
                     <h:outputText styleClass="fa fa-hotel mr-2"/> 
                     <h:outputLabel value="Billed Department" class="mx-3"/>
                 </h:panelGroup>
@@ -162,10 +156,10 @@
                     <f:selectItems/>
                 </p:selectOneMenu>
 
-                <p:spacer width="20"/>
+                <p:spacer />
 
     
-                <h:panelGroup layout="block" styleClass="form-group mb-3">
+                <h:panelGroup >
                     <h:outputText styleClass="fa fa-hotel mr-2"/> 
                     <h:outputLabel value="Visit Type" class="mx-3"/>
                 </h:panelGroup>
@@ -175,30 +169,17 @@
                     <f:selectItem itemLabel="IP"/>
                 </p:selectOneMenu>
 
-                <p:spacer width="20"/>
 
            
-                <h:panelGroup layout="block" styleClass="form-group mb-3">
+                <h:panelGroup >
                     <h:outputText styleClass="fa fa-hotel mr-2"/> 
                     <h:outputLabel value="Service Group" class="mx-3"/>
                 </h:panelGroup>
 
                 <p:inputText styleClass="w-100 mb-3"/>
 
-                <p:spacer width="20"/>
-
-        
-                <h:panelGroup layout="block" styleClass="form-group mb-3">
-                    <h:outputText styleClass="fa fa-hotel mr-2"/> 
-                    <h:outputLabel value="Service Name" class="mx-3"/>
-                </h:panelGroup>
-
-                <p:inputText styleClass="w-100 mb-3"/>
-
-                <p:spacer width="20"/>
-
             </h:panelGrid>
-        </p:panel>
+
 
       
         <h:panelGrid columns="6" styleClass="my-3">
@@ -226,10 +207,22 @@
                              styleClass="ui-button-danger mx-1"/>
         </h:panelGrid>
 
-        <!-- TABLE -->
-        <p:panel styleClass="m-3 border-round-md shadow-1">
-            <p:dataTable value="#{null}" var="c" id="tbl"
-                         styleClass="p-datatable-striped p-datatable-gridlines">
+        <!-- TABLE with dual scrollbars (top + bottom) -->
+        <!-- Top mirror scrollbar -->
+        <div id="topScrollBar" style="overflow-x: auto; overflow-y: hidden; width: 100%; margin: 0 1em;">
+            <div id="topScrollBarInner" style="height: 1px;"></div>
+        </div>
+
+        <!-- Actual scrollable table container -->
+        <div id="tableScrollContainer" style="overflow-x: auto; overflow-y: visible; width: 100%; margin: 0.5em 1em 1em 1em;">
+        <p:panel styleClass="border-round-md shadow-1" style="width: 210em;">
+            <p:dataTable var="c" id="tbl"
+                         style="width:206em;"
+                         rows="10"
+                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                         currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}"
+                         rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
+           
 
            
                 <p:column headerText="BHT No" style="width: 100px">
@@ -292,6 +285,54 @@
 
             </p:dataTable>
         </p:panel>
+        </div><!-- end tableScrollContainer -->
+
+        <!-- JavaScript to sync top and bottom scrollbars -->
+        <script type="text/javascript">
+            (function() {
+                function initDualScroll() {
+                    var top    = document.getElementById('topScrollBar');
+                    var bottom = document.getElementById('tableScrollContainer');
+                    var inner  = document.getElementById('topScrollBarInner');
+
+                    if (!top || !bottom || !inner) return;
+
+                    // Match the inner div width to the scroll content width
+                    inner.style.width = bottom.scrollWidth + 'px';
+
+                    // Keep widths in sync when window resizes
+                    window.addEventListener('resize', function() {
+                        inner.style.width = bottom.scrollWidth + 'px';
+                    });
+
+                    var syncing = false;
+
+                    top.addEventListener('scroll', function() {
+                        if (syncing) return;
+                        syncing = true;
+                        bottom.scrollLeft = top.scrollLeft;
+                        syncing = false;
+                    });
+
+                    bottom.addEventListener('scroll', function() {
+                        if (syncing) return;
+                        syncing = true;
+                        top.scrollLeft = bottom.scrollLeft;
+                        inner.style.width = bottom.scrollWidth + 'px';
+                        syncing = false;
+                    });
+                }
+
+                // Run after page fully loads
+                if (document.readyState === 'complete') {
+                    initDualScroll();
+                } else {
+                    window.addEventListener('load', initDualScroll);
+                }
+                // Also try after a short delay for JSF/PrimeFaces rendering
+                setTimeout(initDualScroll, 500);
+            })();
+        </script>
 
     </p:panel>
 

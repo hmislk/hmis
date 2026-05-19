@@ -1,0 +1,4 @@
+interface:
+  display_name: "Review PRs"
+  short_description: "Investigate GitHub PR review comments and guide fixes."
+  default_prompt: "Use this skill to investigate, discuss, fix, and reply to PR review comments on HMIS."

@@ -1,0 +1,200 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:in="http://xmlns.jcp.org/jsf/composite/inward">
+
+    <ui:define name="content">
+
+        <h:panelGroup rendered="true" styleClass="opdPanel">
+            <h:form id="form">
+
+                <p:panel rendered="#{inwardProfessionalBillController.selectedSurgeryBill eq null}">
+                    <f:facet name="header">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h:outputText styleClass="fa-solid fa-scissors fa-lg"/>
+                                <p:outputLabel value="Surgery Professional Fees — List" class="m-2"/>
+                            </div>
+                            <div>
+                                <h:panelGroup rendered="#{webUserController.hasPrivilege('NursingWorkBench')}">
+                                    <p:commandButton
+                                        value="Surgery WorkBench"
+                                        action="#{surgeryBillController.navigateToAddSurgeriesFromMenu()}"
+                                        ajax="false"
+                                        class="ui-button-operating-theatre"
+                                        icon="fa fa-arrow-left">
+                                    </p:commandButton>
+                                </h:panelGroup>
+                            </div>
+                        </div>
+                    </f:facet>
+
+                    <h:outputLabel value="Type Surgery Name or BHT : "/>
+                    <p:autoComplete
+                        forceSelection="true"
+                        value="#{inwardProfessionalBillController.selectedSurgeryBill}"
+                        completeMethod="#{billController.completeSurgeryBills}"
+                        var="apt2"
+                        itemLabel="#{apt2.patientEncounter.bhtNo}"
+                        itemValue="#{apt2}"
+                        size="40"
+                        class="m-2">
+                        <p:column>
+                            #{apt2.procedure.item.name}
+                        </p:column>
+                        <p:column>
+                            #{apt2.patientEncounter.bhtNo}
+                        </p:column>
+                        <p:column>
+                            #{apt2.patientEncounter.patient.person.name}
+                        </p:column>
+                    </p:autoComplete>
+
+                    <p:commandButton
+                        id="btnSelect"
+                        value="Select"
+                        ajax="false">
+                    </p:commandButton>
+                </p:panel>
+
+                <p:panel rendered="#{inwardProfessionalBillController.selectedSurgeryBill ne null}">
+                    <f:facet name="header">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h:outputText styleClass="fa-solid fa-list"/>
+                                <p:outputLabel value="Professional Fees for Surgery: " class="mx-2"/>
+                                <p:outputLabel value="#{inwardProfessionalBillController.selectedSurgeryBill.procedure.item.name}"
+                                               style="font-weight: bold;"/>
+                                <p:outputLabel value=" — BHT: " class="mx-1"/>
+                                <p:outputLabel value="#{inwardProfessionalBillController.selectedSurgeryBill.patientEncounter.bhtNo}"
+                                               style="font-weight: bold;"/>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <p:commandButton
+                                    value="Add Professional Fee"
+                                    icon="fa fa-plus"
+                                    ajax="false"
+                                    class="ui-button-success"
+                                    action="#{inwardProfessionalBillController.navigateToSurgeryProfessionalFees(inwardProfessionalBillController.selectedSurgeryBill)}"
+                                    rendered="#{!inwardProfessionalBillController.selectedSurgeryBill.patientEncounter.paymentFinalized}">
+                                </p:commandButton>
+
+                                <h:panelGroup rendered="#{webUserController.hasPrivilege('InwardSearch')}">
+                                    <p:commandButton
+                                        ajax="false"
+                                        icon="fa-solid fa-address-card"
+                                        class="ui-button-secondary"
+                                        value="Inpatient Dashboard"
+                                        action="#{admissionController.navigateToAdmissionProfilePage}">
+                                        <f:setPropertyActionListener
+                                            value="#{inwardProfessionalBillController.selectedSurgeryBill.patientEncounter}"
+                                            target="#{admissionController.current}">
+                                        </f:setPropertyActionListener>
+                                    </p:commandButton>
+                                </h:panelGroup>
+
+                                <p:commandButton
+                                    value="Surgery WorkBench"
+                                    ajax="false"
+                                    action="/theater/surgery_workbench?faces-redirect=true"
+                                    class="ui-button-operating-theatre"
+                                    icon="fa fa-arrow-left">
+                                </p:commandButton>
+                            </div>
+                        </div>
+                    </f:facet>
+
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <in:bhtDetail admission="#{inwardProfessionalBillController.selectedSurgeryBill.patientEncounter}"/>
+                            <in:surgeryDetail procedure="#{inwardProfessionalBillController.selectedSurgeryBill.procedure}"/>
+                        </div>
+                    </div>
+
+                    <p:dataTable value="#{inwardProfessionalBillController.surgeryProfessionalFeeBills}" var="profBill"
+                                 emptyMessage="No professional fee bills found for this surgery."
+                                 rowKey="#{profBill.id}"
+                                 rowExpandMode="single">
+
+                        <p:column style="width:32px">
+                            <p:rowToggler/>
+                        </p:column>
+
+                        <p:column headerText="Bill No">
+                            <h:outputLabel value="#{profBill.deptId}"/>
+                        </p:column>
+
+                        <p:column headerText="Date">
+                            <h:outputLabel value="#{profBill.createdAt}">
+                                <f:convertDateTime timeZone="Asia/Colombo"
+                                                   pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
+                            </h:outputLabel>
+                        </p:column>
+
+                        <p:column headerText="Total" styleClass="text-end">
+                            <h:outputLabel value="#{profBill.total}">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputLabel>
+                        </p:column>
+
+                        <p:column headerText="Status">
+                            <h:panelGroup rendered="#{!profBill.cancelled}">
+                                <h:outputLabel value="Active" style="color: green; font-weight: bold;"/>
+                            </h:panelGroup>
+                            <h:panelGroup rendered="#{profBill.cancelled}">
+                                <h:outputLabel value="Cancelled" style="color: red; font-weight: bold;"/>
+                                <br/>
+                                <h:outputLabel style="color: red; font-size: 0.85em;"
+                                               value="by #{profBill.cancelledBill.creater.webUserPerson.name}"/>
+                            </h:panelGroup>
+                        </p:column>
+
+                        <p:column headerText="Added By">
+                            <h:outputLabel value="#{profBill.creater.webUserPerson.name}"/>
+                        </p:column>
+
+                        <p:column headerText="Cancel"
+                                  rendered="#{!inwardProfessionalBillController.selectedSurgeryBill.patientEncounter.paymentFinalized}">
+                            <p:commandButton
+                                value="Cancel Bill"
+                                icon="fa fa-times"
+                                class="ui-button-danger"
+                                ajax="false"
+                                rendered="#{!profBill.cancelled}"
+                                action="#{inwardProfessionalBillController.navigateToSurgeryProfessionalFeeCancel(profBill)}">
+                            </p:commandButton>
+                            <h:outputLabel value="—" rendered="#{profBill.cancelled}" style="color: grey;"/>
+                        </p:column>
+
+                        <p:rowExpansion>
+                            <p:dataTable value="#{inwardProfessionalBillController.getEncounterComponentsForBill(profBill)}"
+                                         var="ec"
+                                         emptyMessage="No fee lines found."
+                                         styleClass="mt-2 ms-4">
+                                <p:column headerText="Role">
+                                    <h:outputLabel value="#{ec.patientEncounterComponentType}"/>
+                                </p:column>
+                                <p:column headerText="Doctor/Staff">
+                                    <h:outputLabel value="#{ec.staff.person.nameWithTitle}"/>
+                                </p:column>
+                                <p:column headerText="Fee" styleClass="text-end">
+                                    <h:outputLabel value="#{ec.billFee.feeValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                </p:column>
+                            </p:dataTable>
+                        </p:rowExpansion>
+
+                    </p:dataTable>
+
+                </p:panel>
+
+            </h:form>
+        </h:panelGroup>
+    </ui:define>
+</ui:composition>

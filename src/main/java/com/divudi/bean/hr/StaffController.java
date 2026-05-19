@@ -198,6 +198,7 @@ public class StaffController implements Serializable {
     }
 
     public String navigateToListStaff() {
+        staff = null;
         fillItems();
         return "/admin/staff/staff_list?faces-redirect=true";
     }
@@ -909,6 +910,24 @@ public class StaffController implements Serializable {
         hm.put("sp", speciality);
         ss = getFacade().findByJpql(sql, hm);
 
+        return ss;
+    }
+
+    // Staff with speciality optional
+    public List<Staff> getSpecialityStaffOptional(Speciality speciality) {
+        List<Staff> ss;
+        String sql;
+        HashMap hm = new HashMap();
+        sql = "select p from Staff p where  "
+                + " p.retired=false ";
+        
+        if (speciality != null) {
+            sql += " and p.speciality=:sp ";
+            hm.put("sp", speciality);
+        } 
+        sql += " order by p.person.name";
+
+        ss = getFacade().findByJpql(sql, hm);
         return ss;
     }
 

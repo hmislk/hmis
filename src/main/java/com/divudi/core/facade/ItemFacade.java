@@ -5,9 +5,12 @@
 package com.divudi.core.facade;
 
 import com.divudi.core.entity.Item;
+import java.util.HashMap;
+import java.util.List;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.TemporalType;
 
 /**
  *
@@ -25,6 +28,10 @@ public class ItemFacade extends AbstractFacade<Item> {
 
     public ItemFacade() {
         super(Item.class);
+    }
+
+    public List<Item> findWithoutCache(String temSql, HashMap h, TemporalType temporalType) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
 
 }

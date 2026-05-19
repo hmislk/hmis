@@ -4,6 +4,8 @@ import com.divudi.core.entity.Bill;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.concurrent.ConcurrentHashMap;
+import javax.ejb.Lock;
+import javax.ejb.LockType;
 import javax.ejb.Singleton;
 
 /**
@@ -110,6 +112,7 @@ public class StockCountGenerationTracker implements Serializable {
         p.errorMessage = errorMessage;
     }
 
+    @Lock(LockType.READ)
     public Progress get(String jobId) {
         return jobs.get(jobId);
     }

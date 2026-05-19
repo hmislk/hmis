@@ -12,6 +12,8 @@ import com.divudi.core.data.BillFinanceType;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.FeeType;
+import com.divudi.core.data.IncomeBundle;
+import com.divudi.core.data.IncomeRow;
 import com.divudi.core.data.InstitutionType;
 import com.divudi.core.data.OnlineBookingStatus;
 import com.divudi.core.data.PaymentMethod;
@@ -28,6 +30,8 @@ import com.divudi.core.data.dataStructure.PaymentMethodData;
 import com.divudi.core.data.dataStructure.SearchKeyword;
 import com.divudi.core.data.dto.ChannelServiceCategorywiseDetailsDTO;
 import com.divudi.core.data.dto.ChannelServiceCategorywiseDetailsWrapperDTO;
+import com.divudi.core.data.dto.OpdIncomeReportDTO;
+import com.divudi.core.data.dto.PharmacyIncomeBillDTO;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.ServiceSessionBean;
 import com.divudi.core.entity.ApiKey;
@@ -84,10 +88,12 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -368,6 +374,12 @@ public class ChannelService {
         hh.put("ss", session);
         List<BillSession> billSessionList = getBillSessionFacade().findByJpql(sql, hh, TemporalType.DATE);
 
+        List<Integer> reservedNumbersList = CommonFunctions.convertStringToIntegerList(session.getReserveNumbers());
+        if (reservedNumbersList == null) {
+             reservedNumbersList = Collections.emptyList();
+        }
+        Set<Integer> reservedNumbers = new HashSet<>(reservedNumbersList);
+
         int nextNumber = 0;
         int activePatientCount = 0;
 
@@ -383,9 +395,15 @@ public class ChannelService {
                 }
             }
         }
+        nextNumber++;
+
+        // check for reserved numbers
+        while (reservedNumbers.contains(nextNumber)) {
+            nextNumber++;
+        }
 
         Map data = new HashMap();
-        data.put("nextNumber", ++nextNumber);
+        data.put("nextNumber", nextNumber);
         data.put("activePatients", activePatientCount);
 
         return data;
@@ -439,7 +457,7 @@ public class ChannelService {
                 + " END), "
                 + " SUM(CASE"
                 + "        WHEN b.cancelled = true THEN 0 "
-                + "        WHEN b.cancelled = false AND b.refunded = false THEN b.staffFee "
+                + "        WHEN b.cancelled = false THEN b.staffFee "
                 + "        ELSE 0"
                 + " END))"
                 + " FROM Bill b "
@@ -455,7 +473,7 @@ public class ChannelService {
 
         params.put("bta", billTypeAtomics);
         params.put("shiftStartBillId", shiftStartBillId);
-        
+
         params.put("createrId", createrId);
         params.put("Cash", PaymentMethod.Cash);
         params.put("Card", PaymentMethod.Card);
@@ -482,8 +500,8 @@ public class ChannelService {
         }
 
         Object[] billMetaData = fetchShiftEndBillDetails(shiftStartBillId);
-        
-        if(billMetaData == null){
+
+        if (billMetaData == null) {
             return null;
         }
 
@@ -495,12 +513,45 @@ public class ChannelService {
 
         List<ChannelServiceCategorywiseDetailsDTO> dtoList = fetchChannelCategorywiseDetailsForShiftEnd(shiftStartBillId, shiftEndBillId, creatorId);
         
+        List<PharmacyIncomeBillDTO> pharmacyIncomeDtos = billService.fetchBillsAsPharmacyIncomeBillDTOs(shiftStartBillId, shiftEndBillId, creatorId);
+
+        IncomeBundle pharmacyBundle = new IncomeBundle(pharmacyIncomeDtos);
+
+        pharmacyBundle.fixDiscountsAndMarginsInRows();
+        for (IncomeRow r : pharmacyBundle.getRows()) {
+            if (r.getBill() == null) {
+                continue;
+            }
+            if (r.getBill().getPaymentMethod() == null) {
+                continue;
+            }
+            if (r.getBill().getPaymentMethod().equals(PaymentMethod.MultiplePaymentMethods)) {
+                r.setPayments(billService.fetchBillPayments(r.getBill()));
+            }
+        }
+        pharmacyBundle.generatePaymentDetailsForBills();
+        
+        List<OpdIncomeReportDTO> opdIncomeReportDtos = billService.fetchOpdIncomeReportDTOs(shiftStartBillId, shiftEndBillId, creatorId);
+
+        IncomeBundle opdBundle = new IncomeBundle(opdIncomeReportDtos);
+        for (IncomeRow dto : opdBundle.getRows()) {
+            if (dto.getBill().getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
+                Bill batchBill = billService.fetchBatchBillOfIndividualBill(dto.getBill());
+                dto.setBatchBill(batchBill);
+                dto.setPayments(billService.fetchBillPayments(dto.getBill(), dto.getBatchBill()));
+            }
+        }
+
+        opdBundle.generatePaymentDetailsForBillsAndBatchBills();
+
         ChannelServiceCategorywiseDetailsWrapperDTO wrapperDto = new ChannelServiceCategorywiseDetailsWrapperDTO();
+        wrapperDto.setOpdBundle(opdBundle);
+        wrapperDto.setPharmacyBundle(pharmacyBundle);
         wrapperDto.setDtoList(dtoList);
         wrapperDto.setBillingEndDate(shiftEndAt);
         wrapperDto.setCashierUserName(creatorName);
         wrapperDto.setBillingStartDate(shiftStartAt);
-        
+
         return wrapperDto;
 
     }
@@ -994,7 +1045,36 @@ public class ChannelService {
         return getBillSessionFacade().findByJpql(sql, hh, TemporalType.DATE);
     }
 
-    public List getReleasedAppoinmentNumbersForApiBookings(SessionInstance ss) {
+    private List<Integer> getAllBillSessionSerialNumbersForSessionInstance(SessionInstance ss) {
+        List<BillSession> allBillSessions = new ArrayList<>();
+        BillType[] billTypes = {
+            BillType.ChannelAgent,
+            BillType.ChannelCash,
+            BillType.ChannelOnCall,
+            BillType.ChannelStaff,
+            BillType.ChannelCredit,
+            BillType.ChannelResheduleWithPayment,
+            BillType.ChannelResheduleWithOutPayment,};
+
+        List<BillType> bts = Arrays.asList(billTypes);
+        String sql = "Select bs.serialNo "
+                + " From BillSession bs "
+                + " where bs.retired=false"
+                + " and bs.bill.billType in :bts"
+                + " and type(bs.bill)=:class "
+                + " and bs.sessionInstance=:ss "
+                + " order by bs.serialNo ";
+        HashMap<String, Object> hh = new HashMap<>();
+
+        Bill b = new Bill();
+        b.getBillTypeAtomic();
+        hh.put("bts", bts);
+        hh.put("class", BilledBill.class);
+        hh.put("ss", ss);
+        return (List<Integer>) getBillSessionFacade().findLightsByJpql(sql, hh, TemporalType.DATE);
+    }
+
+    public List getReleasedAppoinmentNumbersForApiBookings(SessionInstance ss, List<Integer> reservedNumbers) {
         long nextNumber = 1L;
 
         if (ss.getNextAvailableAppointmentNumber() != null) {
@@ -1003,22 +1083,13 @@ public class ChannelService {
 
         List releasedNumberList = new ArrayList();
 
-        List<BillSession> allBillSessions = getAllBillSessionForSessionInstance(ss);
+        List<Integer> reservedSerialNumbers = getAllBillSessionSerialNumbersForSessionInstance(ss);
 
-        List<Integer> reservedSerialNumbers = allBillSessions.stream()
-                .map(BillSession::getSerialNo)
-                .collect(Collectors.toList());
+        Set<Integer> unavailableNumbers = new HashSet<>(reservedSerialNumbers);
+        unavailableNumbers.addAll(reservedNumbers);
 
         for (int i = 1; i < nextNumber; ++i) {
-            boolean isAssign = false;
-            for (Integer number : reservedSerialNumbers) {
-                if (i == number) {
-                    isAssign = true;
-
-                }
-            }
-
-            if (!isAssign) {
+            if (!unavailableNumbers.contains(i)) {
                 releasedNumberList.add(i);
             }
         }
@@ -1226,17 +1297,20 @@ public class ChannelService {
         bs.setSessionTime(session.getSessionTime());
         bs.setStaff(session.getStaff());
 
-        // List<Integer> reservedNumbers = CommonFunctions.convertStringToIntegerList(session.getOriginatingSession().getReserveNumbers());
+        List<Integer> reservedNumbers = CommonFunctions.convertStringToIntegerList(session.getReserveNumbers());
+        if (reservedNumbers == null) {
+            reservedNumbers = Collections.emptyList();
+        }
         Integer count = null;
 
-        List<Integer> availableReleasedApoinmentNumbers = getReleasedAppoinmentNumbersForApiBookings(session);
+        List<Integer> availableReleasedApoinmentNumbers = getReleasedAppoinmentNumbersForApiBookings(session, reservedNumbers);
         Random rand = new Random();
         if (availableReleasedApoinmentNumbers != null && !availableReleasedApoinmentNumbers.isEmpty()) {
             count = availableReleasedApoinmentNumbers.get(rand.nextInt(availableReleasedApoinmentNumbers.size()));
         }
 
         if (count == null) {
-            count = serviceSessionBean.getNextNonReservedSerialNumber(session, Collections.EMPTY_LIST);
+            count = serviceSessionBean.getNextNonReservedSerialNumber(session, reservedNumbers);
         }
 
         if (count != null) {
@@ -1364,6 +1438,87 @@ public class ChannelService {
 
     }
 
+    // Channel Income Card Payments Report: Using ChannelIncomeDetailDto
+    public ChannelReportController.WrapperDtoForChannelFutureIncome fetchCardPaymentDetailsForChannelIncome(Date fromDate, Date toDate, Institution institution, String reportStatus) {
+        String jpql = "Select new com.divudi.bean.channel.ChannelReportController.ChannelIncomeDetailDto( "
+                + " p.bill.id, "
+                + " p.bill.createdAt, "
+                + " p.bill.deptId, "
+                + " p.bill.billTypeAtomic, "
+                + " p.bill.billType, "
+                + " COALESCE(pe.name, ''), "
+                + " COALESCE(cr.name, ''), "
+                + " p.bill.cancelled, "
+                + " COALESCE(cb.deptId, ''), "
+                + " p.bill.refunded,  "
+                + " COALESCE(rb.deptId, ''), "
+                + " COALESCE(p.bill.hospitalFee, 0), "
+                + " COALESCE(p.bill.staffFee, 0), "
+                + " COALESCE(p.bill.total, 0),"
+                + " p.paidValue, "
+                + " p.creditCardRefNo, "
+                + " COALESCE(ba.name, '')) "
+                + " from Payment p "
+                + " left join p.bill.patient pa "
+                + " left join pa.person pe "
+                + " left join p.bill.creater cr "
+                + " left join p.bill.cancelledBill cb "
+                + " left join p.bill.refundedBill rb "
+                + " left join p.bank ba "
+                + " where p.bill.billType in :bt and p.bill.billTypeAtomic in :bta "
+                + " and p.paymentMethod = :type"
+                + " and p.retired = false "
+                + " and p.bill.retired = false "
+                + " and p.bill.createdAt between :fromDate and :toDate ";
+
+        Map params = new HashMap();
+        List<BillType> bts = new ArrayList<>();
+        bts.add(BillType.ChannelCash);
+        bts.add(BillType.ChannelPaid);
+        params.put("bt", bts);
+
+        List<BillTypeAtomic> bta = new ArrayList<>();
+        bta.add(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
+        bta.add(BillTypeAtomic.CHANNEL_PAYMENT_FOR_BOOKING_BILL);
+
+        if (reportStatus != null && reportStatus.equalsIgnoreCase("Details")) {
+            bta.add(BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT);
+            bta.add(BillTypeAtomic.CHANNEL_REFUND_WITH_PAYMENT);
+        }
+
+        params.put("bta", bta);
+        params.put("type", PaymentMethod.Card);
+        params.put("fromDate", fromDate);
+        params.put("toDate", toDate);
+
+        if (institution != null) {
+            jpql += "and p.bill.institution = :ins";
+            params.put("ins", institution);
+        }
+
+        jpql += " order by p.bill.createdAt desc";
+
+        List<ChannelReportController.ChannelIncomeDetailDto> dtoList = (List<ChannelReportController.ChannelIncomeDetailDto>) billSessionFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+
+        if (dtoList == null || dtoList.isEmpty()) {
+            return null;
+        }
+
+        ChannelReportController.WrapperDtoForChannelFutureIncome wrapperDto = new ChannelReportController.WrapperDtoForChannelFutureIncome();
+        wrapperDto.setIncomeDtos(dtoList);
+        wrapperDto.setProcessDate(new Date());
+
+        for (ChannelReportController.ChannelIncomeDetailDto dto : dtoList) {
+            wrapperDto.setAllHosFeeTotal(wrapperDto.getAllHosFeeTotal() + dto.getHosFee());
+            wrapperDto.setAllDoctorFeeTotal(wrapperDto.getAllDoctorFeeTotal() + dto.getDoctorFee());
+            wrapperDto.setAllTotalAmount(wrapperDto.getAllTotalAmount() + dto.getTotalAppoinmentFee());
+            wrapperDto.setAllCardTotal(wrapperDto.getAllCardTotal() + dto.getCardFee());
+        }
+
+        return wrapperDto;
+
+    }
+
     public ChannelReportController.WrapperDtoForChannelFutureIncome fetchChannelIncomeByUser(Date fromDate, Date toDate, Institution institution, WebUser user, List<Category> categoryList, String reportStatus, String paidStatus) {
 
         String sql = "select new com.divudi.bean.channel.ChannelReportController.ChannelIncomeDetailDto(bs.id, "
@@ -1459,6 +1614,17 @@ public class ChannelService {
                 wrapperDto.setAllCancelAppoinments(wrapperDto.getAllCancelAppoinments() + summery.getTotalCancelAppoinments());
                 wrapperDto.setAllRefundAppoinments(wrapperDto.getAllRefundAppoinments() + summery.getTotalRefundAppoinments());
                 wrapperDto.setTotalValidAppoinments(wrapperDto.getTotalValidAppoinments() + summery.getTotalActiveAppoinments());
+
+                // fee total calculation
+                wrapperDto.setAllHosFeeTotal(wrapperDto.getAllHosFeeTotal() + summery.getTotalHosFee());
+                wrapperDto.setAllDoctorFeeTotal(wrapperDto.getAllDoctorFeeTotal() + summery.getTotalDocFee());
+                wrapperDto.setAllTotalAmount(wrapperDto.getAllTotalAmount() + summery.getTotalAmount());
+            }
+        } else {
+            for (ChannelReportController.ChannelIncomeDetailDto dto : dtoList) {
+                wrapperDto.setAllHosFeeTotal(wrapperDto.getAllHosFeeTotal() + dto.getHosFee());
+                wrapperDto.setAllDoctorFeeTotal(wrapperDto.getAllDoctorFeeTotal() + dto.getDoctorFee());
+                wrapperDto.setAllTotalAmount(wrapperDto.getAllTotalAmount() + dto.getTotalAppoinmentFee());
             }
         }
 
@@ -2460,13 +2626,14 @@ public class ChannelService {
             if (ss.getBookedPatientCount() != null) {
                 int maxNo = ss.getMaxNo();
                 long bookedPatientCount = ss.getBookedPatientCount();
+                long reservedBookingCount = ss.getReservedBookingCount() != null ? ss.getReservedBookingCount() : 0L;
                 long totalPatientCount;
 
                 List<Integer> reservedNumbers = CommonFunctions.convertStringToIntegerList(ss.getReserveNumbers());
                 if (false) {
                     bookedPatientCount = bookedPatientCount;
                 } else {
-                    bookedPatientCount = bookedPatientCount + reservedNumbers.size();
+                    bookedPatientCount = bookedPatientCount + reservedNumbers.size() - reservedBookingCount;
                 }
 
                 if (ss.getCancelPatientCount() != null) {
@@ -2720,7 +2887,7 @@ public class ChannelService {
 
         List<Payment> p = createPayment(paidBill, paidBill.getPaymentMethod());
 
-        OnlineBooking bookingDetails = paidBill.getReferenceBill().getOnlineBooking();
+        OnlineBooking bookingDetails = preBillSession.getBill().getOnlineBooking();
         bookingDetails.setOnlineBookingPayment(agencyCharge);
         bookingDetails.setHospitalFee(paidBill.getHospitalFee());
         bookingDetails.setDoctorFee(paidBill.getStaffFee());
@@ -2728,7 +2895,7 @@ public class ChannelService {
         bookingDetails.setOnlineBookingStatus(OnlineBookingStatus.ACTIVE);
         bookingDetails.setAppoinmentTotalAmount(paidBill.getNetTotal());
 
-        getOnlineBookingFacade().edit(paidBill.getReferenceBill().getOnlineBooking());
+        getOnlineBookingFacade().edit(bookingDetails);
 
         fillBillSessionsAndUpdateBookingsCountInSessionInstance(preBillSession.getSessionInstance());
 
@@ -2772,8 +2939,8 @@ public class ChannelService {
         bi.copy(bs.getBillItem());
         bi.setCreatedAt(new Date());
         bi.setBill(b);
-        getBillItemFacade().create(bi);
-        return getBillItemFacade().find(bi.getId());
+        getBillItemFacade().createAndFlush(bi);
+        return bi;
     }
 
     private void savePaidBillFee(Bill b, BillItem bi, BillSession bs) {

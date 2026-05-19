@@ -1,5 +1,6 @@
 package com.divudi.bean.common;
 
+import com.divudi.bean.membership.OpdMemberShipDiscountController;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
@@ -20,6 +21,9 @@ public class NavigationController implements Serializable {
 
     @Inject
     InstitutionController institutionController;
+    
+    @Inject
+    OpdMemberShipDiscountController OpdMemberShipDiscountController;
 
     public NavigationController() {
     }
@@ -153,9 +157,27 @@ public class NavigationController implements Serializable {
     public String navigateToPaymentSchemeDiscountOpdByDepartment() {
         return "/admin/pricing/payment_scheme_discount_opd_by_department?faces-redirect=true";
     }
-
+    
     public String navigateToPaymentSchemeDiscountOpdBySite() {
         return "/admin/pricing/payment_scheme_discount_opd_by_site?faces-redirect=true";
+    }
+    
+    public String navigateToPaymentSchemeDiscountforCreditCompany() {
+        OpdMemberShipDiscountController.setItems(null);
+        OpdMemberShipDiscountController.setPaymentScheme(null);
+        OpdMemberShipDiscountController.clearCreditCompanyDiscountData();
+        OpdMemberShipDiscountController.setCreditCompanyForSearch(null);
+        OpdMemberShipDiscountController.setPaymentSchemeForSearch(null);
+        return "/admin/pricing/payment_scheme_discount_credit_company?faces-redirect=true";
+    }
+    
+    public String navigateToPaymentSchemeDiscountforCreditCompanyItems() {
+        OpdMemberShipDiscountController.setItems(null);
+        OpdMemberShipDiscountController.setPaymentScheme(null);
+        OpdMemberShipDiscountController.clearCreditCompanyDiscountData();
+        OpdMemberShipDiscountController.setCreditCompanyForSearch(null);
+        OpdMemberShipDiscountController.setPaymentSchemeForSearch(null);
+        return "/admin/pricing/payment_scheme_discount_credit_company_items?faces-redirect=true";
     }
 
     public String navigateToPaymentSchemeDiscountOpdByItem() {

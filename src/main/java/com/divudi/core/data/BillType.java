@@ -171,10 +171,14 @@ public enum BillType {
     RecordShiftEndCash,
     FundTransferBill, // For transferring the total balance from one shift to another
     FundTransferReceivedBill, // For receiving the transferred balance from one shift to another
+    FundTransferRequestBill, // For requesting a float transfer from another cashier
     DepositFundBill, // For processing deposits of all payment types into the bank by the main or bulk cashier
     WithdrawalFundBill, // For handling withdrawal transactions from the bank for operational purposes
     ShiftShortage,
+    ShiftShortageSettlement,
     ShiftExcess,
+    HandoverProofMissing,
+    HandoverProofMissingSettlement,
     PaymentTransfer,
     @Deprecated
     TransactionHandoverBill, // For handling the handover of all transaction types at the end of a cashier's shift
@@ -329,6 +333,8 @@ public enum BillType {
                 return "Financial Auditing Bill";
             case FundTransferReceivedBill:
                 return "Fund Transfer Received Bill";
+            case FundTransferRequestBill:
+                return "Fund Transfer Request Bill";
             case RecordShiftEndCash:
                 return "Shift End Cash Record";
             default:

@@ -97,13 +97,16 @@
                                     <p:column headerText="OPD Bill No" width="7em" filterBy="#{bi.paidForBillFee.bill.deptId}" filterMatchMode="contains">
                                         <h:outputLabel value="#{bi.paidForBillFee.bill.deptId}" ></h:outputLabel>
                                     </p:column>
-                                    <p:column headerText="Billed At" width="3em" >
+                                    <p:column headerText="Billed At" width="5em" >
                                         <h:outputLabel value="#{bi.paidForBillFee.bill.createdAt}" >
                                             <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                         </h:outputLabel>
                                     </p:column> 
                                     <p:column headerText="Credit Company" width="5em" filterBy="#{bi.paidForBillFee.bill.creditCompany.name}" filterMatchMode="contains" >
                                         <h:outputLabel value="#{bi.paidForBillFee.bill.creditCompany.name}" ></h:outputLabel>
+                                    </p:column>
+                                    <p:column headerText="MRN" width="4em" filterBy="#{bi.paidForBillFee.bill.patient.phn}" filterMatchMode="contains">
+                                        <h:outputLabel value="#{bi.paidForBillFee.bill.patient.phn}" ></h:outputLabel>
                                     </p:column>
                                     <p:column headerText="Client" width="4em" filterBy="#{bi.paidForBillFee.bill.patient.person.name}" filterMatchMode="contains">
                                         <h:outputLabel value="#{bi.paidForBillFee.bill.patient.person.name}" ></h:outputLabel>

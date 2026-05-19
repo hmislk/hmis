@@ -1,0 +1,39 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <cc:interface>
+        <cc:attribute name="controller" />
+    </cc:interface>
+
+    <cc:implementation>
+        <p:dataTable
+            value="#{cc.attrs.controller.encounterCreditCompanys}"
+            var="ecc"
+            rowIndexVar="i"
+            emptyMessage="No credit companies assigned">
+            <p:column headerText="#" width="2em">
+                <h:outputText value="#{i+1}" />
+            </p:column>
+            <p:column headerText="Credit Company">
+                <h:outputText value="#{ecc.institution.name}" />
+            </p:column>
+            <p:column headerText="Credit Limit" style="text-align:right">
+                <h:outputText value="#{ecc.creditLimit}">
+                    <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                </h:outputText>
+            </p:column>
+            <p:column headerText="Policy No">
+                <h:outputText value="#{ecc.policyNo}" />
+            </p:column>
+            <p:column headerText="Reference No">
+                <h:outputText value="#{ecc.referanceNo}" />
+            </p:column>
+        </p:dataTable>
+    </cc:implementation>
+</html>

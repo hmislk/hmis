@@ -105,7 +105,9 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
     private double total;
     private Patient patient;
     private PaymentMethodData paymentMethodData;
-    
+    /** Net total of the inward final bill; populated by bhtListener for display on the co-payment page. */
+    private double finalBillTotal;
+
     // </editor-fold>
 
     public PaymentMethod[] getPaymentMethods() {
@@ -118,10 +120,56 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
             return;
         }
         due = getFinalBillDue();
+        finalBillTotal = getFinalBillNetTotal();
         patient = current.getPatientEncounter().getPatient();
         paymentMethod = null;
         paymentMethodData = new PaymentMethodData();
 
+    }
+
+    /** Navigate to the inward patient co-payment collection page. */
+    public String navigateToInwardPatientCopayment() {
+        makeNull();
+        return "/credit/inward_patient_copay_payment?faces-redirect=true";
+    }
+
+    /** CC amount committed against this admission (sum of CC commitment bills created at finalization). */
+    public double getCcCommittedAmount() {
+        if (current == null || current.getPatientEncounter() == null) {
+            return 0.0;
+        }
+        return current.getPatientEncounter().getCreditUsedAmount();
+    }
+
+    /** CC amount already received from credit companies for this admission. */
+    public double getCcPaidAmount() {
+        if (current == null || current.getPatientEncounter() == null) {
+            return 0.0;
+        }
+        return current.getPatientEncounter().getCreditPaidAmount();
+    }
+
+    public double getFinalBillTotal() {
+        return finalBillTotal;
+    }
+
+    public void setFinalBillTotal(double finalBillTotal) {
+        this.finalBillTotal = finalBillTotal;
+    }
+
+    /** Fetch only the net total of the final bill (no due calculation). */
+    private double getFinalBillNetTotal() {
+        String sql = "Select b From BilledBill b where"
+                + " b.retired=false "
+                + " and b.cancelled=false "
+                + " and b.billType=:btp "
+                + " and b.patientEncounter=:pe "
+                + " order by b.id desc";
+        HashMap hm = new HashMap();
+        hm.put("btp", BillType.InwardFinalBill);
+        hm.put("pe", getCurrent().getPatientEncounter());
+        Bill b = getBilledBillFacade().findFirstByJpql(sql, hm);
+        return b != null ? b.getNetTotal() : 0.0;
     }
 
     public String navigateToInpationDashbord() {
@@ -149,16 +197,11 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
         if (b == null) {
             return 0;
         }
-
-        return b.getNetTotal() - (b.getPaidAmount() + getCurrent().getPatientEncounter().getCreditPaidAmount());
-
-//        double billValue = Math.abs(b.getNetTotal());
-//        double paidByPatient = Math.abs(b.getPaidAmount());
-//        double creditUsedAmount = Math.abs(getCurrent().getPatientEncounter().getCreditUsedAmount());
-//        double creditPaidAmount = Math.abs(getCurrent().getPatientEncounter().getCreditPaidAmount());
-//        double netCredit = creditUsedAmount - creditPaidAmount;
-//
-//        return billValue - (paidByPatient + netCredit);
+        // Patient portion = bill total minus the CC committed amount (not paid yet).
+        // This correctly shows patient due before the company has actually remitted.
+        PatientEncounter pe = getCurrent().getPatientEncounter();
+        double patientPortion = Math.max(0.0, b.getNetTotal() - pe.getCreditUsedAmount());
+        return Math.max(0.0, patientPortion - b.getPaidAmount());
     }
 
     private boolean errorCheck() {
@@ -782,6 +825,8 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
         comment = null;
         paymentMethod = null;
         total = 0.0;
+        finalBillTotal = 0.0;
+        due = 0.0;
     }
 
     private void saveBill() {

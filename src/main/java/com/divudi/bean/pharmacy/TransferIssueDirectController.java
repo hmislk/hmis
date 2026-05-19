@@ -177,6 +177,18 @@ public class TransferIssueDirectController implements Serializable {
 
         billItem.setSearialNo(getBillItems().size());
 
+        if (billItem.getItem() != null) {
+            DepartmentType itemDeptType = billItem.getItem().getDepartmentType();
+            if (issuedBill.getDepartmentType() == null) {
+                issuedBill.setDepartmentType(itemDeptType);
+            } else if (itemDeptType != null && !itemDeptType.equals(issuedBill.getDepartmentType())) {
+                JsfUtil.addErrorMessage("Cannot add items from different department types. "
+                        + "Bill is set for " + issuedBill.getDepartmentType().getLabel()
+                        + " items, but you are trying to add a " + itemDeptType.getLabel() + " item.");
+                return;
+            }
+        }
+
         // Set the transfer rate based on configuration
         BigDecimal itemTransferRate = determineTransferRate(getTmpStock().getItemBatch());
         BigDecimal lineGrossRate = itemTransferRate.multiply(billItem.getBillItemFinanceDetails().getUnitsPerPack());
@@ -212,7 +224,11 @@ public class TransferIssueDirectController implements Serializable {
     /**
      * Settles the direct issue transaction
      */
-    public void settleDirectIssue() {
+    public synchronized void settleDirectIssue() {
+        if (issuedBill != null && issuedBill.getId() != null) {
+            JsfUtil.addErrorMessage("This bill has already been saved.");
+            return;
+        }
         if (issuedBill.getToDepartment() == null) {
             JsfUtil.addErrorMessage("Please Select Department to Issue");
             return;

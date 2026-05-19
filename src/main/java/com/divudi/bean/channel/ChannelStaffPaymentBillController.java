@@ -1621,6 +1621,10 @@ public class ChannelStaffPaymentBillController implements Serializable {
         this.paymentFacade = paymentFacade;
     }
 
+    public void newPayment() {
+        makenull();
+    }
+
     /**
      *
      */

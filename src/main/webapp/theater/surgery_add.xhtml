@@ -1,0 +1,221 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:in="http://xmlns.jcp.org/jsf/composite/inward"
+                xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common">
+
+    <ui:define name="content">
+
+        <h:panelGroup styleClass="opdPanel">
+            <h:form id="form">
+
+                <!-- Patient search panel — shown when no admission is selected -->
+                <p:panel rendered="#{surgeryBillController.surgeryBill.patientEncounter eq null}">
+                    <f:facet name="header">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h:outputText styleClass="fa-solid fa-address-card fa-lg"/>
+                                <p:outputLabel value="Patient Details" class="m-2"/>
+                            </div>
+                        </div>
+                    </f:facet>
+
+                    <h:outputLabel value="Type Patient Name or BHT : " class="mx-2"/>
+                    <p:autoComplete
+                        forceSelection="true"
+                        value="#{surgeryBillController.surgeryBill.patientEncounter}"
+                        completeMethod="#{admissionController.completePatient}"
+                        var="apt2"
+                        itemLabel="#{apt2.patient.person.name}"
+                        itemValue="#{apt2}"
+                        size="40"
+                        class="m-2">
+                        <p:column headerText="PHN" style="padding: 6px; width: 8em;">
+                            <h:outputLabel value="#{apt2.patient.phn}"/>
+                        </p:column>
+                        <p:column headerText="BHT No" style="padding: 6px; width: 8em;">
+                            <h:outputLabel value="#{apt2.bhtNo}"/>
+                        </p:column>
+                        <p:column headerText="Patient" style="padding: 6px; width: 400px;">
+                            <h:outputLabel value="#{apt2.patient.person.nameWithTitle}"/>
+                        </p:column>
+                        <p:column headerText="Room" style="padding: 6px; width: 8em;">
+                            <h:outputLabel value="#{apt2.currentPatientRoom.roomFacilityCharge.name}"/>
+                        </p:column>
+                    </p:autoComplete>
+                    <p:commandButton value="Select" ajax="false" id="btnSelect"/>
+                </p:panel>
+
+                <!-- Add Surgery panel — shown when admission is selected -->
+                <p:panel rendered="#{surgeryBillController.surgeryBill.patientEncounter ne null}">
+                    <f:facet name="header">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h:outputText styleClass="fa-solid fa-scissors fa-lg"/>
+                                <h:outputLabel value="Add Surgery — BHT " class="mx-2"/>
+                                <h:outputLabel value="#{surgeryBillController.surgeryBill.patientEncounter.bhtNo}"
+                                               style="font-weight: bold;"/>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <p:commandButton
+                                    value="Surgery List"
+                                    icon="fa fa-list"
+                                    class="ui-button-secondary"
+                                    ajax="false"
+                                    action="#{surgeryBillController.navigateToSurgeryListFromAdmissionProfile()}">
+                                </p:commandButton>
+                                <h:panelGroup rendered="#{webUserController.hasPrivilege('InwardSearch')}">
+                                    <p:commandButton
+                                        value="Inpatient Dashboard"
+                                        icon="fa fa-id-card"
+                                        class="ui-button-secondary"
+                                        ajax="false"
+                                        action="#{admissionController.navigateToAdmissionProfilePage()}">
+                                        <f:setPropertyActionListener
+                                            value="#{surgeryBillController.surgeryBill.patientEncounter}"
+                                            target="#{admissionController.current}"/>
+                                    </p:commandButton>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{webUserController.hasPrivilege('NursingWorkBench')}">
+                                    <p:commandButton
+                                        value="Nursing WorkBench"
+                                        action="#{nursingWorkBenchController.navigateToBackNursingWorkBench()}"
+                                        ajax="false"
+                                        class="ui-button-operating-theatre"
+                                        icon="fa fa-arrow-left">
+                                    </p:commandButton>
+                                </h:panelGroup>
+                            </div>
+                        </div>
+                    </f:facet>
+
+                    <div class="row">
+
+                        <!-- Left: patient details summary -->
+                        <div class="col-4">
+                            <p:panel class="w-100 m-1">
+                                <f:facet name="header">
+                                    <h:outputText styleClass="fas fa-user"/>
+                                    <h:outputLabel value="Patient Details" class="mx-4"/>
+                                </f:facet>
+                                <div class="row">
+                                    <div class="col-md-5"><p:outputLabel value="Name"/></div>
+                                    <div class="col-md-1 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
+                                    <div class="col-md-6"><h:outputText value="#{surgeryBillController.surgeryBill.patientEncounter.patient.person.nameWithTitle}"/></div>
+
+                                    <div class="col-md-5"><p:outputLabel value="Gender"/></div>
+                                    <div class="col-md-1 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
+                                    <div class="col-md-6"><h:outputText value="#{surgeryBillController.surgeryBill.patientEncounter.patient.person.sex}"/></div>
+
+                                    <div class="col-md-5"><p:outputLabel value="Age"/></div>
+                                    <div class="col-md-1 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
+                                    <div class="col-md-6"><h:outputText value="#{surgeryBillController.surgeryBill.patientEncounter.patient.person.ageAsString}"/></div>
+
+                                    <div class="col-md-5"><p:outputLabel value="Mobile No."/></div>
+                                    <div class="col-md-1 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
+                                    <div class="col-md-6"><h:outputText value="#{surgeryBillController.surgeryBill.patientEncounter.patient.person.mobile}"/></div>
+
+                                    <div class="col-md-5"><p:outputLabel value="Phone No."/></div>
+                                    <div class="col-md-1 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
+                                    <div class="col-md-6"><h:outputText value="#{surgeryBillController.surgeryBill.patientEncounter.patient.person.phone}"/></div>
+
+                                    <div class="col-md-5"><p:outputLabel value="NIC"/></div>
+                                    <div class="col-md-1 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
+                                    <div class="col-md-6"><h:outputText value="#{empty surgeryBillController.surgeryBill.patientEncounter.patient.person.nic ? 'N/A' : surgeryBillController.surgeryBill.patientEncounter.patient.person.nic}"/></div>
+                                </div>
+                            </p:panel>
+                            <common:admission_details admission="#{surgeryBillController.surgeryBill.patientEncounter}" class="w-100 m-1"/>
+                        </div>
+
+                        <!-- Right: prominent Add Surgery form -->
+                        <div class="col-8">
+                            <p:panel class="m-1" style="height: 100%;">
+                                <f:facet name="header">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <h:outputText styleClass="fa-solid fa-plus-circle fa-lg"/>
+                                        <h:outputLabel value="Add New Surgery" class="mx-2"
+                                                       style="font-size: 1.1em; font-weight: 600;"/>
+                                    </div>
+                                </f:facet>
+
+                                <div class="p-3">
+                                    <div class="mb-3">
+                                        <h:outputLabel value="Surgery Name" for="surgeryNameAC"
+                                                       style="font-weight: 500; display: block; margin-bottom: 0.4rem;"/>
+                                        <p:autoComplete
+                                            id="surgeryNameAC"
+                                            forceSelection="true"
+                                            value="#{surgeryBillController.surgeryBill.procedure.item}"
+                                            completeMethod="#{procedureController.completeProcedures}"
+                                            var="apt2"
+                                            itemLabel="#{apt2.name}"
+                                            itemValue="#{apt2}"
+                                            style="width: 100%;"
+                                            styleClass="w-100"
+                                            inputStyle="width: 100%;">
+                                        </p:autoComplete>
+                                    </div>
+
+                                    <p:commandButton
+                                        value="Add New Surgery"
+                                        icon="fa fa-plus"
+                                        class="ui-button-success"
+                                        style="font-size: 1.05em;"
+                                        action="#{surgeryBillController.checkBeforeSave()}"
+                                        update="@form"
+                                        disabled="#{surgeryBillController.surgeryBill.patientEncounter.paymentFinalized}">
+                                    </p:commandButton>
+                                </div>
+                            </p:panel>
+                        </div>
+
+                    </div>
+
+                    <!-- Duplicate Surgery confirmation dialog -->
+                    <p:dialog id="dlgDupConfirm"
+                              widgetVar="dlgDupConfirm"
+                              header="&#9888; Duplicate Surgery Warning"
+                              modal="true"
+                              resizable="false"
+                              closable="true"
+                              style="width:480px">
+                        <div style="padding:12px">
+                            <p style="color:#b71c1c; font-weight:bold; font-size:1.1em;">
+                                &#9888; WARNING: This surgery is already recorded for this admission.
+                            </p>
+                            <p>
+                                Adding the same surgery twice is <strong>highly unusual</strong> and may indicate a data-entry error.
+                                Duplicate entries can lead to incorrect billing and audit issues.
+                            </p>
+                            <p style="font-weight:bold;">
+                                Are you absolutely sure this surgery was genuinely performed a second time on this patient?
+                            </p>
+                            <div class="d-flex justify-content-end gap-2 mt-3">
+                                <p:commandButton
+                                    value="Cancel — Do Not Add"
+                                    icon="fa fa-times"
+                                    class="ui-button-secondary"
+                                    onclick="PF('dlgDupConfirm').hide(); return false;"/>
+                                <p:commandButton
+                                    value="Yes, Add Duplicate Surgery"
+                                    icon="fa fa-exclamation-triangle"
+                                    class="ui-button-danger"
+                                    action="#{surgeryBillController.saveConfirmed()}"
+                                    ajax="false"
+                                    onclick="PF('dlgDupConfirm').hide();"/>
+                            </div>
+                        </div>
+                    </p:dialog>
+
+                </p:panel>
+
+            </h:form>
+        </h:panelGroup>
+
+    </ui:define>
+</ui:composition>

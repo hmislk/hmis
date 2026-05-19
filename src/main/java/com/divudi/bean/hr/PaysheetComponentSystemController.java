@@ -98,7 +98,17 @@ public class PaysheetComponentSystemController implements Serializable {
 
     public void saveSelected() {
 
-        if (getCurrent().getComponentType() == null) {
+        // FIX: Added name validation. A blank name produces an empty row in the listbox.
+        if (getCurrent().getName() == null || getCurrent().getName().trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Please enter a component name.");
+            return;
+        }
+
+        // FIX: Added empty string check alongside null check. noSelectionOption on the
+        // menu submits an empty string, not null, so the original null-only check
+        // never triggered when the placeholder was selected.
+        if (getCurrent().getComponentType() == null
+                || getCurrent().getComponentType().toString().trim().isEmpty()) {
             JsfUtil.addErrorMessage("Pls Select Compnent Type");
             return;
         }
@@ -106,21 +116,10 @@ public class PaysheetComponentSystemController implements Serializable {
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
             JsfUtil.addSuccessMessage("Updated Successfully.");
-        }else{
+        } else {
             getFacade().create(current);
             JsfUtil.addSuccessMessage("Save New Successfull");
         }
-//        else {
-//            if (checkComponent()) {
-//                JsfUtil.addErrorMessage("This Component Type Already Exist");
-//                return;
-//            }
-//
-//            current.setCreatedAt(new Date());
-//            current.setCreater(getSessionController().getLoggedUser());
-//            getFacade().create(current);
-//            JsfUtil.addSuccessMessage("Saved Successfully");
-//        }
         recreateModel();
         getItems();
     }
@@ -157,6 +156,13 @@ public class PaysheetComponentSystemController implements Serializable {
 
     public void setCurrent(PaysheetComponent current) {
         this.current = current;
+    }
+
+    // FIX: Added helper to drive the disabled state of the Delete button in the UI.
+    // The controller already handles null current with an error message but the
+    // button had no visual guard, leaving the user with no feedback.
+    public boolean isNothingSelected() {
+        return current == null || current.getId() == null;
     }
 
     public void delete() {
@@ -232,6 +238,5 @@ public class PaysheetComponentSystemController implements Serializable {
             }
         }
     }
-
 
 }

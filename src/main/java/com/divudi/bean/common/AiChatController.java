@@ -195,6 +195,7 @@ public class AiChatController implements Serializable {
             Integer maxTokensConfig = configOptionApplicationController.getIntegerValueByKey("AI Chat - Max Tokens", 4096);
             int maxTokens = (maxTokensConfig != null) ? maxTokensConfig : 4096;
             String githubBranch = configOptionApplicationController.getShortTextValueByKey("AI Chat - GitHub Branch", "development");
+            String githubToken = configOptionApplicationController.getShortTextValueByKey("AI Chat - GitHub Token", "");
             String hmisApiBaseUrl = resolveHmisBaseUrl();
 
             if (claudeApiKey == null || claudeApiKey.trim().isEmpty()) {
@@ -227,7 +228,11 @@ public class AiChatController implements Serializable {
                         history,
                         userMsg.getContent(),
                         pendingAttachmentBase64,
-                        pendingAttachmentMimeType
+                        pendingAttachmentMimeType,
+                        githubToken,
+                        githubBranch,
+                        hmisApiBaseUrl,
+                        userHmisApiKey
                 );
 
                 AiMessage assistantMsg = new AiMessage();
