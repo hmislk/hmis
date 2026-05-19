@@ -16,7 +16,9 @@ public class ChannelIncomeDTO {
         private BillType billType;
         private Date appoinmentDate;
         private Date billedDate;
+        
         private String billedBy;
+        private Long cashierId;
         private String patientName;
         private Title patientTitle;
         private String patientPhone;
@@ -42,8 +44,6 @@ public class ChannelIncomeDTO {
 
         private boolean refunded;
         private String refundBillDeptId;
-
-
 
         public ChannelIncomeDTO( ) {
             doctorFee = 0.0;
@@ -76,6 +76,18 @@ public class ChannelIncomeDTO {
             this.toDepartment = toDepartment;
             this.institution = institution;
             this.department = department;
+        }
+
+        public ChannelIncomeDTO(Long billId, Date billedDate, BillTypeAtomic billTypeAtomic, Long cashierId, String cashierName, PaymentMethod paymentMethod, Double hospitalFee, Double staffFee, Double netTotal) {
+            this.billId = billId;
+            this.billedDate = billedDate;
+            this.cashierId = cashierId;
+            this.billedBy = cashierName;
+            this.hosFee = hospitalFee;
+            this.doctorFee = staffFee;
+            this.paymentFee = netTotal;
+            this.billTypeAtomic = billTypeAtomic;
+            this.paymentMethod = paymentMethod;
         }
 
         public BillTypeAtomic getBillTypeAtomic() {
@@ -301,6 +313,14 @@ public class ChannelIncomeDTO {
 
         public void setGrossTotal(double grossTotal) {
             this.grossTotal = grossTotal;
+        }
+
+        public Long getCashierId() {
+            return cashierId;
+        }
+
+        public void setCashierId(Long cashierId) {
+            this.cashierId = cashierId;
         }
 
         public String getBookedFrom() {

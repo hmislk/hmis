@@ -2952,13 +2952,10 @@ public class BookingControllerViewScopeMonth implements Serializable {
             return;
         }
 
-        if (configOptionApplicationController.getBooleanValueByKey("Enable blacklist patient management in the system", false)
-                && configOptionApplicationController.getBooleanValueByKey("Enable blacklist patient management for Channeling from the system", false)) {
-            if (patient.isBlacklisted()) {
-                JsfUtil.addErrorMessage("This patient is blacklisted from the system. Can't Bill.");
-                settleSucessFully = false;
-                return;
-            }
+        if (patient.isBlacklisted()) {
+            JsfUtil.addErrorMessage("This patient is blacklisted from the system. Can't Bill.");
+            settleSucessFully = false;
+            return;
         }
 
         if (paymentMethodErrorPresent()) {

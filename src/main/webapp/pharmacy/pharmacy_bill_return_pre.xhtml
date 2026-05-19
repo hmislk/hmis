@@ -93,10 +93,11 @@
                                             <h:outputLabel value="Return Details" class="mx-2"></h:outputLabel>
                                         </div>
                                         <div>
-                                            <p:commandButton  
-                                                value="Return Items" 
-                                                action="#{preReturnController.settle}" 
-                                                ajax="false" 
+                                            <p:commandButton
+                                                value="Return Items"
+                                                action="#{preReturnController.settle}"
+                                                ajax="false"
+                                                onclick="if (!confirm('Are you sure you want to process this return?')) return false"
                                                 icon="fa-solid fa-rotate-left"
                                                 class="ui-button-warning mx-2">
                                             </p:commandButton>

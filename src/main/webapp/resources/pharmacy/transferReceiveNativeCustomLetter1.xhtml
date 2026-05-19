@@ -77,42 +77,104 @@
             </div>
 
             <div>
-                <table id="tblBis" class="simple-table">
-                    <thead>
-                        <tr>
-                            <th style="width:2em;">No</th>
-                            <th style="width:15em;">Item Name</th>
-                            <th style="width:5em;">Code</th>
-                            <th style="width:7em;">D O E</th>
-                            <th style="width:6em;">Received Qty</th>
-                            <th style="width:6em;">Issued Qty</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <ui:repeat value="#{cc.attrs.dto.items}" var="bip" varStatus="rowIndex">
-                            <tr>
-                                <td class="left-col">#{rowIndex.index + 1}</td>
-                                <td class="left-col">#{bip.itemName}</td>
-                                <td class="left-col">#{bip.itemCode}</td>
-                                <td class="right-col">
-                                    <h:outputText value="#{bip.dateOfExpire}">
-                                        <f:convertDateTime pattern="dd/MMM/yyyy" />
-                                    </h:outputText>
-                                </td>
-                                <td class="right-col">
-                                    <h:outputLabel value="#{bip.qty}">
-                                        <f:convertNumber />
-                                    </h:outputLabel>
-                                </td>
-                                <td class="right-col">
-                                    <h:outputLabel value="#{bip.issuedQty}">
-                                        <f:convertNumber />
-                                    </h:outputLabel>
-                                </td>
-                            </tr>
-                        </ui:repeat>
-                    </tbody>
-                </table>
+                <p:dataTable
+                    rowIndexVar="rowIndex"
+                    styleClass="no-border-table compact-table"
+                    style="border: none !important; font-size: 10pt !important; line-height: 1.1 !important;"
+                    value="#{cc.attrs.dto.items}"
+                    var="bip">
+
+                    <p:column width="2em" style="margin: 0px; padding: 1px 2px; line-height: 1.1;">
+                        <f:facet name="header"><h:outputLabel value="No"/></f:facet>
+                        <h:outputLabel value="#{rowIndex+1}"/>
+                    </p:column>
+
+                    <p:column style="margin: 0px; padding: 1px 2px; line-height: 1.1;" width="15em">
+                        <f:facet name="header"><h:outputLabel value="Item Name"/></f:facet>
+                        <h:outputLabel value="#{bip.itemName}"/>
+                    </p:column>
+
+                    <p:column width="5em" style="margin: 0px; padding: 1px 2px; line-height: 1.1;">
+                        <f:facet name="header"><h:outputLabel value="Code"/></f:facet>
+                        <h:outputLabel value="#{bip.itemCode}"/>
+                    </p:column>
+
+                    <p:column width="7em" style="margin: 0px; padding: 1px 2px; line-height: 1.1;">
+                        <f:facet name="header"><h:outputLabel value="D O E"/></f:facet>
+                        <h:outputText value="#{bip.dateOfExpire}">
+                            <f:convertDateTime pattern="dd/MMM/yyyy" />
+                        </h:outputText>
+                    </p:column>
+
+                    <p:column width="6em" class="text-end" style="margin: 0px; padding: 1px 2px; line-height: 1.1;">
+                        <f:facet name="header"><h:outputLabel value="Received Qty"/></f:facet>
+                        <h:outputLabel value="#{bip.qty}">
+                            <f:convertNumber pattern="#0.00"/>
+                        </h:outputLabel>
+                    </p:column>
+
+                    <p:column width="6em" class="text-end" style="margin: 0px; padding: 1px 2px; line-height: 1.1;">
+                        <f:facet name="header"><h:outputLabel value="Issued Qty"/></f:facet>
+                        <h:outputLabel value="#{bip.issuedQty}">
+                            <f:convertNumber pattern="#0.00"/>
+                        </h:outputLabel>
+                    </p:column>
+
+                    <p:column
+                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disbursement Reports - Display Purchase Rate', false) and configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Receive - Show Rate and Value', false) and webUserController.hasPrivilege('PharmacyTransferViewRates')}"
+                        width="6em" class="text-end" style="margin: 0px; padding: 1px 2px; line-height: 1.1;">
+                        <f:facet name="header"><h:outputLabel value="Purchase Rate"/></f:facet>
+                        <h:outputText value="#{bip.purchaseRate}">
+                            <f:convertNumber pattern="#,##0.00"/>
+                        </h:outputText>
+                    </p:column>
+
+                    <p:column
+                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disbursement Reports - Display Purchase Value', false) and configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Receive - Show Rate and Value', false) and webUserController.hasPrivilege('PharmacyTransferViewRates')}"
+                        width="6em" class="text-end" style="margin: 0px; padding: 1px 2px; line-height: 1.1;">
+                        <f:facet name="header"><h:outputLabel value="Purchase Value"/></f:facet>
+                        <h:outputText value="#{bip.valueAtPurchaseRate}">
+                            <f:convertNumber pattern="#,##0.00"/>
+                        </h:outputText>
+                    </p:column>
+
+                    <p:column
+                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disbursement Reports - Display Retail Sale Rate', false) and configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Receive - Show Rate and Value', false) and webUserController.hasPrivilege('PharmacyTransferViewRates')}"
+                        width="6em" class="text-end" style="margin: 0px; padding: 1px 2px; line-height: 1.1;">
+                        <f:facet name="header"><h:outputLabel value="Retail Rate"/></f:facet>
+                        <h:outputText value="#{bip.retailRate}">
+                            <f:convertNumber pattern="#,##0.00"/>
+                        </h:outputText>
+                    </p:column>
+
+                    <p:column
+                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disbursement Reports - Display Retail Sale Value', false) and configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Receive - Show Rate and Value', false) and webUserController.hasPrivilege('PharmacyTransferViewRates')}"
+                        width="6em" class="text-end" style="margin: 0px; padding: 1px 2px; line-height: 1.1;">
+                        <f:facet name="header"><h:outputLabel value="Retail Value"/></f:facet>
+                        <h:outputText value="#{bip.valueAtRetailRate}">
+                            <f:convertNumber pattern="#,##0.00"/>
+                        </h:outputText>
+                    </p:column>
+
+                    <p:column
+                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disbursement Reports - Display Transfer Rate', false) and configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Receive - Show Rate and Value', false) and webUserController.hasPrivilege('PharmacyTransferViewRates')}"
+                        width="6em" class="text-end" style="margin: 0px; padding: 1px 2px; line-height: 1.1;">
+                        <f:facet name="header"><h:outputLabel value="Transfer Rate"/></f:facet>
+                        <h:outputText value="#{bip.rate}">
+                            <f:convertNumber pattern="#,##0.00"/>
+                        </h:outputText>
+                    </p:column>
+
+                    <p:column
+                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disbursement Reports - Display Transfer Value', false) and configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Receive - Show Rate and Value', false) and webUserController.hasPrivilege('PharmacyTransferViewRates')}"
+                        width="6em" class="text-end" style="margin: 0px; padding: 1px 2px; line-height: 1.1;">
+                        <f:facet name="header"><h:outputLabel value="Transfer Value"/></f:facet>
+                        <h:outputText value="#{bip.netValue}">
+                            <f:convertNumber pattern="#,##0.00"/>
+                        </h:outputText>
+                    </p:column>
+
+                </p:dataTable>
             </div>
 
             <div class="row mt-3">

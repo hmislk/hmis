@@ -48,3 +48,10 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 - **Check persistence.xml** - if it's in the staged files, verify it uses environment variables
 - **No credentials** - warn if .env or credentials files are staged
 - JSF-only changes (XHTML only, no Java) do not require compilation
+
+## After Every Push
+
+After every successful `git push`, **immediately** restore the local JNDI names in `persistence.xml`
+— swap `${JDBC_DATASOURCE}` and `${JDBC_AUDIT_DATASOURCE}` back to whatever local names were
+there before (e.g. `jdbc/ruhunu` and `jdbc/ruhunuAudit`). Leave the change unstaged.
+This lets the developer run and test without any manual step.

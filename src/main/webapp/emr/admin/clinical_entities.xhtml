@@ -16,7 +16,7 @@
             <p:focus id="selectFocus" context="gpSelect" />
             <p:focus id="detailFocus" context="gpDetail" />
 
-            <p:panel header="Manage Signs" >
+            <p:panel header="#{clinicalEntityController.filterSymanticType ne null ? 'Manage '.concat(clinicalEntityController.filterSymanticType.toString().replace('_', ' ')).concat('s') : 'Manage Clinical Entities'}" >
                 <div class="row" >
                     <div class="col-md-5" >
                         <h:panelGrid id="gpSelect" columns="1"   class="w-100">

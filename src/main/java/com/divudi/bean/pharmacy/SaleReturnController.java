@@ -911,6 +911,9 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
      * @param returnAmount The absolute value of the return amount
      */
     private void updateBillFinancialFields(Bill billToUpdate, double returnAmount) {
+        if (billToUpdate == null) {
+            return;
+        }
         // Update refundAmount - add the return amount
         double currentRefundAmount = billToUpdate.getRefundAmount();
         billToUpdate.setRefundAmount(currentRefundAmount + returnAmount);
@@ -927,6 +930,8 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
         if (currentBalance > 0) {
             billToUpdate.setBalance(Math.max(0d, currentBalance - returnAmount));
         }
+
+        billToUpdate.setRefunded(true);
 
         // Save the updated bill
         getBillFacade().edit(billToUpdate);

@@ -2090,7 +2090,7 @@ public class HumanResourceBean {
     }
 
     public void setEtf(StaffSalaryComponant ssc, double etf, double etfCompany) {
-        if (ssc.getStaffPaysheetComponent().getPaysheetComponent().isIncludedForEpf()) {
+        if (ssc.getStaffPaysheetComponent().getPaysheetComponent().isIncludedForEtf()) {
             double tmp = ssc.getComponantValue() * (etf / 100.0);
             ssc.setEtfValue(tmp);
 

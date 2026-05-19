@@ -1,0 +1,164 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <cc:interface>
+        <!-- No attributes needed — uses patientInsuranceController directly -->
+    </cc:interface>
+
+    <cc:implementation>
+        <p:panel id="insurancePanel">
+            <f:facet name="header">
+                <h:outputText styleClass="fa fa-shield-alt me-2"/>
+                <h:outputLabel value="Insurance Profiles"/>
+            </f:facet>
+
+            <!-- Add new profile form -->
+            <h:panelGroup id="gpAddInsurance" layout="block" class="mb-3">
+                <div class="row g-2 align-items-end">
+                    <div class="col-12 col-md-3">
+                        <h:outputLabel value="Insurer / Credit Company" styleClass="form-label"/>
+                        <p:autoComplete
+                            id="acInsurer"
+                            class="w-100"
+                            inputStyleClass="w-100"
+                            forceSelection="true"
+                            value="#{patientInsuranceController.newInsurance.creditCompany}"
+                            completeMethod="#{creditCompanyController.completeCredit}"
+                            var="ix"
+                            itemLabel="#{ix.name}"
+                            itemValue="#{ix}"/>
+                    </div>
+                    <div class="col-6 col-md-2">
+                        <h:outputLabel value="Member ID" styleClass="form-label"/>
+                        <p:inputText class="w-100" autocomplete="off"
+                                     value="#{patientInsuranceController.newInsurance.memberId}"/>
+                    </div>
+                    <div class="col-6 col-md-2">
+                        <h:outputLabel value="Policy No" styleClass="form-label"/>
+                        <p:inputText class="w-100" autocomplete="off"
+                                     value="#{patientInsuranceController.newInsurance.policyNo}"/>
+                    </div>
+                    <div class="col-6 col-md-2">
+                        <h:outputLabel value="Reference No" styleClass="form-label"/>
+                        <p:inputText class="w-100" autocomplete="off"
+                                     value="#{patientInsuranceController.newInsurance.referenceNo}"/>
+                    </div>
+                    <div class="col-6 col-md-1">
+                        <h:outputLabel value="Credit Limit" styleClass="form-label"/>
+                        <p:inputText class="w-100" autocomplete="off" onclick="this.select();"
+                                     value="#{patientInsuranceController.newInsurance.creditLimit}"/>
+                    </div>
+                    <div class="col-6 col-md-2">
+                        <h:outputLabel value="Valid From" styleClass="form-label"/>
+                        <p:datePicker class="w-100"
+                                      value="#{patientInsuranceController.newInsurance.validFrom}"
+                                      pattern="dd/MM/yyyy"/>
+                    </div>
+                    <div class="col-6 col-md-2">
+                        <h:outputLabel value="Valid To" styleClass="form-label"/>
+                        <p:datePicker class="w-100"
+                                      value="#{patientInsuranceController.newInsurance.validTo}"
+                                      pattern="dd/MM/yyyy"/>
+                    </div>
+                    <div class="col-6 col-md-1 d-flex align-items-end">
+                        <div>
+                            <h:outputLabel value="Primary" styleClass="form-label d-block"/>
+                            <h:selectBooleanCheckbox
+                                value="#{patientInsuranceController.newInsurance.primary}"/>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-2">
+                        <p:commandButton
+                            value="Add"
+                            icon="fa fa-plus"
+                            class="w-100 ui-button-success"
+                            process="gpAddInsurance"
+                            update="gpAddInsurance tblInsurance"
+                            action="#{patientInsuranceController.addInsurance()}"/>
+                    </div>
+                </div>
+            </h:panelGroup>
+
+            <!-- Profiles table -->
+            <p:dataTable id="tblInsurance"
+                         value="#{patientInsuranceController.insuranceProfiles}"
+                         var="pi"
+                         emptyMessage="No insurance profiles recorded for this patient"
+                         rowStyleClass="#{pi.expired ? 'ui-state-error' : ''}">
+                <p:column headerText="Insurer" style="min-width:140px;">
+                    <h:outputText value="#{pi.creditCompany.name}"/>
+                </p:column>
+                <p:column headerText="Member ID" style="width:120px;">
+                    <p:inputText class="w-100" autocomplete="off"
+                                 value="#{pi.memberId}"/>
+                </p:column>
+                <p:column headerText="Policy No" style="width:120px;">
+                    <p:inputText class="w-100" autocomplete="off"
+                                 value="#{pi.policyNo}"/>
+                </p:column>
+                <p:column headerText="Reference No" style="width:120px;">
+                    <p:inputText class="w-100" autocomplete="off"
+                                 value="#{pi.referenceNo}"/>
+                </p:column>
+                <p:column headerText="Credit Limit" style="width:100px;text-align:right;">
+                    <p:inputText class="w-100" autocomplete="off" onclick="this.select();"
+                                 style="text-align:right;"
+                                 value="#{pi.creditLimit}">
+                        <f:convertNumber pattern="#,##0.00"/>
+                    </p:inputText>
+                </p:column>
+                <p:column headerText="Valid From" style="width:110px;">
+                    <p:datePicker class="w-100"
+                                  value="#{pi.validFrom}"
+                                  pattern="dd/MM/yyyy"/>
+                </p:column>
+                <p:column headerText="Valid To" style="width:110px;">
+                    <h:panelGroup>
+                        <p:datePicker class="w-100"
+                                      value="#{pi.validTo}"
+                                      pattern="dd/MM/yyyy"/>
+                        <h:outputText value=" (Expired)"
+                                      rendered="#{pi.expired}"
+                                      styleClass="text-danger small fw-bold"/>
+                    </h:panelGroup>
+                </p:column>
+                <p:column headerText="Primary" style="width:60px;text-align:center;">
+                    <h:selectBooleanCheckbox value="#{pi.primary}"/>
+                </p:column>
+                <p:column headerText="Active" style="width:60px;text-align:center;">
+                    <h:outputText value="#{pi.active ? 'Yes' : 'No'}"
+                                  styleClass="#{pi.active ? 'text-success' : 'text-muted'}"/>
+                </p:column>
+                <p:column headerText="Actions" style="width:100px;">
+                    <div class="d-flex gap-1">
+                        <p:commandButton
+                            icon="fa fa-save"
+                            title="Save changes"
+                            class="ui-button-success"
+                            process="tblInsurance"
+                            update="tblInsurance"
+                            action="#{patientInsuranceController.saveInsurance(pi)}"/>
+                        <p:commandButton
+                            icon="fa fa-ban"
+                            title="Deactivate"
+                            class="ui-button-warning"
+                            rendered="#{pi.active}"
+                            process="@this"
+                            update="tblInsurance"
+                            action="#{patientInsuranceController.deactivateInsurance(pi)}">
+                            <p:confirm header="Deactivate Profile"
+                                       message="Deactivate this insurance profile? It will no longer be auto-suggested."
+                                       icon="pi pi-exclamation-triangle"/>
+                        </p:commandButton>
+                    </div>
+                </p:column>
+            </p:dataTable>
+        </p:panel>
+    </cc:implementation>
+</html>
