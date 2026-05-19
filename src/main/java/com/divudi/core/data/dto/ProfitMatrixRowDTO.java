@@ -157,6 +157,33 @@ public class ProfitMatrixRowDTO {
                 : null;
     }
 
+    public ProfitMatrixRowDTO(
+            String invoiceNo,
+            String admissionNo,
+            String mrn,
+            String patientName,
+            String visitType,
+            String referringDoctorName,
+            double invoiceAmount,
+            RoomCategory roomCategory,
+            double finalAmount
+    ) {
+        this.invoiceNo = invoiceNo;
+        this.admissionNo = admissionNo;
+        this.mrn = mrn;
+        this.patientName = patientName;
+        this.visitType = visitType;
+        this.referringDoctorName = referringDoctorName;
+        this.invoiceAmount = invoiceAmount;
+        this.roomCategory = roomCategory;
+        this.finalAmount = finalAmount;
+
+        this.profitMargin = invoiceAmount - finalAmount;
+        this.matrixPercentage = invoiceAmount != 0.0
+                ? (this.profitMargin * 100.0 / invoiceAmount)
+                : null;
+    }
+
     public String getInvoiceNo() {
         return invoiceNo;
     }
