@@ -1,0 +1,358 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:c="http://java.sun.com/jsp/jstl/core">
+
+<h:body>
+    <ui:composition template="/resources/template/template.xhtml">
+        <ui:define name="content">
+            <h:form>
+                <p:panel header="Route Analysis Report Print" styleClass="w-100">
+                    <f:facet name="header">
+                        <div class="d-flex justify-content-between">
+                            <h:outputText value="Route Analysis Report Print" class="mt-2"/>
+                            <div class="d-flex gap-2">
+                                <p:commandButton
+                                        icon="fa-solid fa-print"
+                                        class="ui-button-info"
+                                        style="width: 150px"
+                                        ajax="false"
+                                        value="Print"
+                                        onclick="printRouteAnalysisPreview(); return false;"/>
+                                <p:commandButton
+                                        ajax="false"
+                                        value="Back to Report"
+                                        style="width: 200px"
+                                        icon="fa fa-arrow-left"
+                                        class="ui-button-warning"
+                                        action="route_analysis_report?faces-redirect=true">
+                                </p:commandButton>
+                            </div>
+                        </div>
+                    </f:facet>
+
+                    <style>
+                        @media screen {
+                            .paper {
+                                position: static !important;
+                                width: 297mm !important;
+                                zoom: 1.35;
+                            }
+
+                            .route-chart {
+                                width: 100%;
+                                height: 85mm;
+                                margin-top: 4mm;
+                            }
+
+                            .route-chart-block {
+                                display: block;
+                                width: 100%;
+                                min-height: 88mm;
+                                margin-top: 4mm;
+                                margin-bottom: 6mm;
+                            }
+
+                            .route-chart-block canvas,
+                            .route-chart-block img {
+                                display: block !important;
+                                width: 100% !important;
+                                height: 85mm !important;
+                            }
+
+                            table {
+                                border-collapse: collapse;
+                                width: 100%;
+                                font-size: 12px !important;
+                                margin-top: 4mm !important;
+                            }
+
+                            th, td {
+                                border: 1px solid #000;
+                                padding: 1mm !important;
+                                text-align: left;
+                            }
+
+                            tfoot {
+                                font-weight: 700 !important;
+                            }
+                        }
+
+                        @media print {
+                            @page {
+                                @bottom-right {
+                                    content: "Page " counter(page) " of " counter(pages);
+                                    font-family: Arial, sans-serif;
+                                    font-size: 10pt;
+                                }
+                                size: A4 landscape;
+                            }
+
+                            body * {
+                                visibility: hidden !important;
+                            }
+
+                            .route-print-area,
+                            .route-print-area * {
+                                visibility: visible !important;
+                            }
+
+                            .route-print-area {
+                                position: absolute !important;
+                                left: 0;
+                                top: 0;
+                                width: 100%;
+                            }
+
+                            .paper {
+                                position: static !important;
+                                width: 297mm !important;
+                            }
+
+                            .header {
+                                line-height: 1.1;
+                                margin: 0mm !important;
+                                font-size: 12px !important;
+                            }
+
+                            .route-chart {
+                                width: 100%;
+                                height: 70mm;
+                                margin-top: 3mm;
+                                page-break-inside: avoid;
+                            }
+
+                            .route-chart-block {
+                                display: block;
+                                width: 100%;
+                                min-height: 73mm;
+                                margin-top: 3mm;
+                                margin-bottom: 8mm;
+                                page-break-inside: avoid;
+                                break-inside: avoid;
+                            }
+
+                            .route-chart-block canvas,
+                            .route-chart-block img {
+                                display: block !important;
+                                width: 100% !important;
+                                height: 70mm !important;
+                            }
+
+                            table {
+                                border-collapse: collapse;
+                                width: 99.9%;
+                                font-size: 10px !important;
+                                margin-top: 8mm !important;
+                                clear: both;
+                            }
+
+                            th, td {
+                                border: 1px solid #000;
+                                padding: 0.5mm !important;
+                                text-align: left;
+                            }
+
+                            tfoot {
+                                font-weight: 700 !important;
+                            }
+                        }
+                    </style>
+
+                    <h:outputScript>
+                        function convertRouteAnalysisChartToImage(widgetVarName) {
+                            return new Promise(function (resolve) {
+                                var chartWidget = PF(widgetVarName);
+                                if (!chartWidget || !chartWidget.cfg || !chartWidget.cfg.chart) {
+                                    resolve();
+                                    return;
+                                }
+
+                                var chart = chartWidget.cfg.chart;
+                                var canvas = chart.canvas;
+                                if (!canvas || canvas.tagName !== 'CANVAS') {
+                                    resolve();
+                                    return;
+                                }
+
+                                var image = document.createElement('img');
+                                image.className = canvas.className;
+                                image.style.cssText = canvas.style.cssText;
+                                image.style.width = '100%';
+                                image.style.height = canvas.style.height || '70mm';
+                                image.onload = function () {
+                                    if (canvas.parentNode) {
+                                        canvas.parentNode.replaceChild(image, canvas);
+                                    }
+                                    resolve();
+                                };
+                                image.onerror = function () {
+                                    resolve();
+                                };
+                                image.src = chart.toBase64Image();
+                            });
+                        }
+
+                        function printRouteAnalysisPreview() {
+                            Promise.all([
+                                convertRouteAnalysisChartToImage('printCountChartWidget'),
+                                convertRouteAnalysisChartToImage('printServiceChartWidget')
+                            ]).then(function () {
+                                setTimeout(function () {
+                                    window.print();
+                                }, 300);
+                            });
+                        }
+                    </h:outputScript>
+
+                    <h:panelGroup id="reportView" layout="block" styleClass="d-flex justify-content-center route-print-area">
+                        <div class="paper">
+                            <div class="header">
+                                <div class="d-flex justify-content-center text-5 gap-2" style="font-weight: 700; font-size: 22px;">
+                                    <h:outputText value="#{sessionController.institution.name}"/>
+                                </div>
+                                <div class="d-flex justify-content-center text-5 gap-2" style="font-weight: 700; font-size: 18px;">
+                                    <h:outputText value="#{reportsController.reportType eq 'detail' ? 'Route Analysis Report - Detail' : 'Route Analysis Report - Summary'}"/>
+                                </div>
+                                <div class="d-flex justify-content-center mt-2" style="font-size:12px; flex-wrap:wrap; gap:16px;">
+                                    <div class="d-flex gap-2">
+                                        <h:outputText value="From Date" style="font-weight:600;"/>
+                                        <h:outputText value="#{reportsController.fromDate}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                        </h:outputText>
+                                    </div>
+                                    <div class="d-flex gap-2">
+                                        <h:outputText value="To Date" style="font-weight:600;"/>
+                                        <h:outputText value="#{reportsController.toDate}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                        </h:outputText>
+                                    </div>
+                                    <div class="d-flex gap-2">
+                                        <h:outputText value="Report Type" style="font-weight:600;"/>
+                                        <h:outputText value="#{reportsController.reportType eq 'detail' ? 'Detail' : 'Summary'}"/>
+                                    </div>
+                                    <div class="d-flex gap-2">
+                                        <h:outputText value="Institution" style="font-weight:600;"/>
+                                        <h:outputText value="#{empty reportsController.institution ? 'All Institutions' : reportsController.institution.name}"/>
+                                    </div>
+                                    <div class="d-flex gap-2">
+                                        <h:outputText value="Site" style="font-weight:600;"/>
+                                        <h:outputText value="#{empty reportsController.site ? 'All Sites' : reportsController.site.name}"/>
+                                    </div>
+                                    <div class="d-flex gap-2">
+                                        <h:outputText value="Department" style="font-weight:600;"/>
+                                        <h:outputText value="#{empty reportsController.department ? 'All Departments' : reportsController.department.name}"/>
+                                    </div>
+                                    <div class="d-flex gap-2">
+                                        <h:outputText value="Route" style="font-weight:600;"/>
+                                        <h:outputText value="#{empty reportsController.route ? 'All Routes' : reportsController.route.name}"/>
+                                    </div>
+                                    <div class="d-flex gap-2">
+                                        <h:outputText value="Collection Center" style="font-weight:600;"/>
+                                        <h:outputText value="#{empty reportsController.collectingCentre ? 'All Collection Centers' : reportsController.collectingCentre.name}"/>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <h:panelGroup layout="block" styleClass="route-chart-block" rendered="#{reportsController.bundle ne null and reportsController.reportType ne null}">
+                                <p:lineChart id="countChart"
+                                             widgetVar="printCountChartWidget"
+                                             model="#{chartJsView.countChartModel}"
+                                             styleClass="route-chart">
+                                </p:lineChart>
+                            </h:panelGroup>
+
+                            <h:panelGroup layout="block" styleClass="route-chart-block" rendered="#{reportsController.bundle ne null and reportsController.reportType ne null}">
+                                <p:lineChart id="serviceChart"
+                                             widgetVar="printServiceChartWidget"
+                                             model="#{chartJsView.serviceChartModel}"
+                                             styleClass="route-chart">
+                                </p:lineChart>
+                            </h:panelGroup>
+
+                            <h:panelGroup layout="block" rendered="#{reportsController.reportType eq 'detail'}">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th><h:outputText value="S. No"/></th>
+                                            <th><h:outputText value="Collecting Center Code"/></th>
+                                            <th><h:outputText value="Collecting Center"/></th>
+                                            <c:forEach items="#{reportsController.yearMonths}" var="yearmonth">
+                                                <th><h:outputText value="#{yearmonth} - Sample Count"/></th>
+                                                <th><h:outputText value="#{yearmonth} - Service Amount"/></th>
+                                            </c:forEach>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <ui:repeat value="#{reportsController.groupedCollectingCenterWiseBillsMonthly.entrySet()}" var="entryset" varStatus="n">
+                                            <tr>
+                                                <td><h:outputText value="#{n.index + 1}"/></td>
+                                                <td><h:outputText value="#{entryset.key.code}"/></td>
+                                                <td><h:outputText value="#{entryset.key.name}"/></td>
+                                                <c:forEach items="#{reportsController.yearMonths}" var="yearmonth">
+                                                    <td style="text-align: right;">
+                                                        <h:outputText value="#{reportsController.groupedCollectingCenterWiseBillsMonthly.get(entryset.key).get(yearmonth) ne null ? reportsController.groupedCollectingCenterWiseBillsMonthly.get(entryset.key).get(yearmonth).qty : 0}">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td style="text-align: right;">
+                                                        <h:outputText value="#{reportsController.groupedCollectingCenterWiseBillsMonthly.get(entryset.key).get(yearmonth) ne null ? reportsController.groupedCollectingCenterWiseBillsMonthly.get(entryset.key).get(yearmonth).totalHospitalFee : 0}">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
+                                                    </td>
+                                                </c:forEach>
+                                            </tr>
+                                        </ui:repeat>
+                                    </tbody>
+                                </table>
+                            </h:panelGroup>
+
+                            <h:panelGroup layout="block" rendered="#{reportsController.reportType eq 'summery'}">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th><h:outputText value="S. No"/></th>
+                                            <th><h:outputText value="Route Code"/></th>
+                                            <th><h:outputText value="Route"/></th>
+                                            <c:forEach items="#{reportsController.yearMonths}" var="yearmonth">
+                                                <th><h:outputText value="#{yearmonth} - Sample Count"/></th>
+                                                <th><h:outputText value="#{yearmonth} - Service Amount"/></th>
+                                            </c:forEach>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <ui:repeat value="#{reportsController.groupedRouteWiseBillsMonthly.entrySet()}" var="entryset" varStatus="n">
+                                            <tr>
+                                                <td><h:outputText value="#{n.index + 1}"/></td>
+                                                <td><h:outputText value="#{entryset.key.code}"/></td>
+                                                <td><h:outputText value="#{entryset.key.name}"/></td>
+                                                <c:forEach items="#{reportsController.yearMonths}" var="yearmonth">
+                                                    <td style="text-align: right;">
+                                                        <h:outputText value="#{reportsController.groupedRouteWiseBillsMonthly.get(entryset.key).get(yearmonth) ne null ? reportsController.groupedRouteWiseBillsMonthly.get(entryset.key).get(yearmonth).qty : 0}">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td style="text-align: right;">
+                                                        <h:outputText value="#{reportsController.groupedRouteWiseBillsMonthly.get(entryset.key).get(yearmonth) ne null ? reportsController.groupedRouteWiseBillsMonthly.get(entryset.key).get(yearmonth).totalHospitalFee : 0}">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
+                                                    </td>
+                                                </c:forEach>
+                                            </tr>
+                                        </ui:repeat>
+                                    </tbody>
+                                </table>
+                            </h:panelGroup>
+                        </div>
+                    </h:panelGroup>
+                </p:panel>
+            </h:form>
+        </ui:define>
+    </ui:composition>
+</h:body>
+</html>

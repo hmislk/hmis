@@ -1327,12 +1327,9 @@ public class PharmacyWholeSaleController implements Serializable, ControllerWith
         Patient pt = savePatient();
 
         if (pt != null) {
-            if (configOptionApplicationController.getBooleanValueByKey("Enable blacklist patient management in the system", false)
-                    && configOptionApplicationController.getBooleanValueByKey("Enable blacklist patient management for Pharmacy from the system", false)) {
-                if (pt.isBlacklisted()) {
-                    JsfUtil.addErrorMessage("This patient is blacklisted from the system. Can't Bill.");
-                    return;
-                }
+            if (pt.isBlacklisted()) {
+                JsfUtil.addErrorMessage("This patient is blacklisted from the system. Can't Bill.");
+                return;
             }
         }
 
@@ -1454,12 +1451,9 @@ public class PharmacyWholeSaleController implements Serializable, ControllerWith
             }
         }
 
-        if (configOptionApplicationController.getBooleanValueByKey("Enable blacklist patient management in the system", false)
-                && configOptionApplicationController.getBooleanValueByKey("Enable blacklist patient management for Pharmacy from the system", false)) {
-            if (getPatient() != null && getPatient().isBlacklisted()) {
-                JsfUtil.addErrorMessage("This patient is blacklisted from the system. Can't Bill.");
-                return;
-            }
+        if (getPatient() != null && getPatient().isBlacklisted()) {
+            JsfUtil.addErrorMessage("This patient is blacklisted from the system. Can't Bill.");
+            return;
         }
 
         if (configOptionApplicationController.getBooleanValueByKey("Referring Doctor is required in Pharmacy Retail Sale", false)) {

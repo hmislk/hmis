@@ -6,12 +6,10 @@
 package com.divudi.bean.common;
 
 import com.divudi.core.entity.Institution;
-import com.divudi.core.facade.InstitutionFacade;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
-import javax.inject.Inject;
 
 /**
  * JSF converter for Institution entities, enabling safe use in select
@@ -19,11 +17,8 @@ import javax.inject.Inject;
  *
  * @author Dr M H B Ariyaratne
  */
-@FacesConverter(value = "institutionConverter", managed = true)
+@FacesConverter(value = "institutionConverter")
 public class InstitutionConverter implements Converter {
-
-    @Inject
-    private InstitutionFacade institutionFacade;
 
     @Override
     public Object getAsObject(FacesContext context, UIComponent component, String value) {
@@ -32,7 +27,9 @@ public class InstitutionConverter implements Converter {
         }
         try {
             Long id = Long.valueOf(value.trim());
-            return institutionFacade.find(id);
+            InstitutionController controller = (InstitutionController) context.getApplication()
+                    .getELResolver().getValue(context.getELContext(), null, "institutionController");
+            return controller.getEjbFacade().find(id);
         } catch (NumberFormatException e) {
             return null;
         }

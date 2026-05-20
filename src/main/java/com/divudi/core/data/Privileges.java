@@ -485,6 +485,8 @@ public enum Privileges {
     ClinicalMembershipAdd("Clinical Membership Add"),
     ClinicalMembershipEdit("Clinical Membership Edit"),
     ClinicalPatientPhoneNumberEdit("Clinical Patient Phone Number Edit"),
+    ClinicalPatientBlacklist("Clinical Patient Blacklist"),
+    ClinicalPatientPseudonymise("Clinical Patient Pseudonymise"),
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Pharmacy">
@@ -690,6 +692,8 @@ public enum Privileges {
     AdminStaff("Admin Staff"),
     AdminItems("Admin Items"),
     AdminPrices("Admin Prices"),
+    AdminPatientRelationships("Manage Patient Relationships"),
+    AdminInactivePatients("Manage Inactive Patients"),
     ManageCreditCompany("Manage Credit Company"),
     AdminFilterWithoutDepartment("Admin Filter Without Department"),
     //</editor-fold>
@@ -711,6 +715,7 @@ public enum Privileges {
     CancelOwnFundTransfer("Cancel Own Float Transfer"),
     CancelOthersFundTransfer("Cancel Others Float Transfer"),
     ViewFundTransferReports("View Float Transfer Reports"),
+    ViewAllShiftShortageBills("View All Shift Shortage Bills"),
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Developers">
@@ -1033,6 +1038,7 @@ public enum Privileges {
             case CancelOwnFundTransfer:
             case CancelOthersFundTransfer:
             case ViewFundTransferReports:
+            case ViewAllShiftShortageBills:
                 return "Float Transfer";
 
             case NursingWorkBench:
@@ -1048,6 +1054,9 @@ public enum Privileges {
             case InpatientClinicalAssessment:
             case InpatientClinicalDischarge:
                 return "Inward";
+
+            case AdminInactivePatients:
+                return "Admin";
 
             default:
                 return this.toString();

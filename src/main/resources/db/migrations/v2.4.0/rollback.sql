@@ -14,19 +14,25 @@ SET @idx_exists = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.STATISTICS
     WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @pbi_table AND INDEX_NAME = 'idx_pbi_createdat_retired');
 SET @sql = IF(@pbi_table IS NULL OR @idx_exists = 0, 'SELECT 1',
     CONCAT('ALTER TABLE ', @pbi_table, ' DROP INDEX idx_pbi_createdat_retired'));
-PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
 
 SET @idx_exists = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.STATISTICS
     WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @pbi_table AND INDEX_NAME = 'idx_pbi_stock_createdat');
 SET @sql = IF(@pbi_table IS NULL OR @idx_exists = 0, 'SELECT 1',
     CONCAT('ALTER TABLE ', @pbi_table, ' DROP INDEX idx_pbi_stock_createdat'));
-PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
 
 SET @idx_exists = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.STATISTICS
     WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @pbi_table AND INDEX_NAME = 'idx_pbi_batch_createdat');
 SET @sql = IF(@pbi_table IS NULL OR @idx_exists = 0, 'SELECT 1',
     CONCAT('ALTER TABLE ', @pbi_table, ' DROP INDEX idx_pbi_batch_createdat'));
-PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
 
 SELECT 'Rollback v2.4.0 completed — three idx_pbi_* indexes dropped' AS status;
 SELECT 'NOTE: BILLITEM_BILLITEMSTATUS_idx was 100% NULL and intentionally not restored' AS note;

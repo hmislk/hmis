@@ -34,7 +34,7 @@
                                             icon="fa fa-plus"
                                             class="ui-button-success float-end"
                                             process="btnAddCash txtCashRefNo txtCashValue"
-                                            update="tblPayments txtTotalDepositValue"
+                                            update="tblPayments txtTotalDepositValue txtCashRefNo txtCashValue"
                                             action="#{financialTransactionController.addPaymentToFundDepositBill()}"/>
                                     </f:facet>
 
@@ -148,7 +148,7 @@
                                         value="#{financialTransactionController.depositCashBook}"
                                         var="cb"
                                         forceSelection="true"
-                                        itemLabel="#{cb.department.name} - #{cb.institution.name}"
+                                        itemLabel="#{cashBookController.getCashBookLabel(cb)}"
                                         itemValue="#{cb}"
                                         required="true"
                                         requiredMessage="Please select a cashbook"/>
