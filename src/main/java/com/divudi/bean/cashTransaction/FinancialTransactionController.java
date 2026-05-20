@@ -3003,8 +3003,23 @@ public class FinancialTransactionController implements Serializable {
             currentBillPayments.add(np);
 
         }
-        fundTransferDenominationTransactions = denominationTransactionController.createDefaultDenominationTransaction();
-        fundTransferDenominationTotal = 0.0;
+        // Load denominations from the issued float transfer bill, if any
+        Bill denoBill = billSearch.fetchReferredBill(BillTypeAtomic.FUND_TRANSFER_DENOMINATION_BILL, selectedBill);
+        List<DenominationTransaction> issuedDenos = billService.fetchDenominationTransactionFromBill(denoBill);
+        if (issuedDenos != null && !issuedDenos.isEmpty()) {
+            fundTransferDenominationTransactions = new ArrayList<>();
+            for (DenominationTransaction dt : issuedDenos) {
+                DenominationTransaction copy = new DenominationTransaction();
+                copy.setDenomination(dt.getDenomination());
+                copy.setDenominationQty(dt.getDenominationQty());
+                copy.setDenominationValue(dt.getDenominationValue());
+                fundTransferDenominationTransactions.add(copy);
+            }
+            calculateFundTransferDenominationTotal();
+        } else {
+            fundTransferDenominationTransactions = denominationTransactionController.createDefaultDenominationTransaction();
+            fundTransferDenominationTotal = 0.0;
+        }
     }
 
     // </editor-fold>
