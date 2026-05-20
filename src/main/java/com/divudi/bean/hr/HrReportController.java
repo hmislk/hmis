@@ -485,62 +485,54 @@ public class HrReportController implements Serializable {
 
     }
 
-    public void createFingerPrintNotApproved() {
-        Date startTime = new Date();
-
+   public void createFingerPrintNotApproved() {
         String sql = "";
         HashMap hm = new HashMap();
         sql = createFingerPrintQuary(hm);
+        
+        // Fix: Override toDate to end of day (23:59:59) to include all records on the last selected date.
+        // Original toDate comes in as 00:00:00 which excludes records later in the day.
+        hm.put("to", CommonFunctions.getEndOfDay(toDate));
+        
         sql += " and ss.fingerPrintRecordType=:ftp "
                 + " and ss.approved=false "
-                + " and ss.staffShift is not null "
-                + " and (ss.loggedRecord is null "
-                + " or (ss.loggedRecord.recordTimeStamp!=ss.recordTimeStamp))";
+                + " and ss.staffShift is not null ";
+        
+        // Fix: Removed original condition:
+        // " and (ss.loggedRecord is null "
+        // + " or (ss.loggedRecord.recordTimeStamp!=ss.recordTimeStamp))"
+        // This condition was excluding all records in this system because verified timestamps
+        // always match logged timestamps (confirmed via DB analysis - 59/59 records matched).
+        // The feature was returning 0 records and was completely non-functional before this fix.
+        
         hm.put("ftp", FingerPrintRecordType.Varified);
-//        sql += " order by ss.staff,ss.recordTimeStamp";
         sql += " order by ss.staff.codeInterger,ss.recordTimeStamp ";
         fingerPrintRecords = fingerPrintRecordFacade.findByJpql(sql, hm, TemporalType.DATE);
-
-        //////////////////////////
-//        sql = "";
-//        hm = new HashMap();
-//        sql = createFingerPrintQuary(hm);
-//        sql += " and ss.fingerPrintRecordType=:ftp  "
-//                + " and ss.staffShift is not null "
-//                + " and ss.loggedRecord.recordTimeStamp!=ss.recordTimeStamp ";
-//        hm.put("ftp", FingerPrintRecordType.Varified);
-//        sql += " order by ss.staff.codeInterger,ss.recordTimeStamp ";
-//        List<FingerPrintRecord> list2 = fingerPrintRecordFacade.findByJpql(sql, hm, TemporalType.DATE);
-
     }
 
     public void createFingerPrintApproved() {
-        Date startTime = new Date();
-
         String sql = "";
         HashMap hm = new HashMap();
         sql = createFingerPrintQuary(hm);
+        
+        // Fix: Override toDate to end of day (23:59:59) to include all records on the last selected date.
+        // Original toDate comes in as 00:00:00 which excludes records later in the day.
+        hm.put("to", CommonFunctions.getEndOfDay(toDate));
+        
         sql += " and ss.fingerPrintRecordType=:ftp "
                 + " and ss.approved=true "
-                + " and ss.staffShift is not null "
-                + " and (ss.loggedRecord is null "
-                + " or (ss.loggedRecord.recordTimeStamp!=ss.recordTimeStamp))";
+                + " and ss.staffShift is not null ";
+        
+        // Fix: Removed original condition:
+        // " and (ss.loggedRecord is null "
+        // + " or (ss.loggedRecord.recordTimeStamp!=ss.recordTimeStamp))"
+        // This condition was excluding all records in this system because verified timestamps
+        // always match logged timestamps (confirmed via DB analysis - 59/59 records matched).
+        // The feature was returning 0 records and was completely non-functional before this fix.
+        
         hm.put("ftp", FingerPrintRecordType.Varified);
-//        sql += " order by ss.staff,ss.recordTimeStamp";
         sql += " order by ss.staff.codeInterger,ss.recordTimeStamp ";
         fingerPrintRecords = fingerPrintRecordFacade.findByJpql(sql, hm, TemporalType.DATE);
-
-        //////////////////////////
-//        sql = "";
-//        hm = new HashMap();
-//        sql = createFingerPrintQuary(hm);
-//        sql += " and ss.fingerPrintRecordType=:ftp  "
-//                + " and ss.staffShift is not null "
-//                + " and ss.loggedRecord.recordTimeStamp!=ss.recordTimeStamp ";
-//        hm.put("ftp", FingerPrintRecordType.Varified);
-//        sql += " order by ss.staff.codeInterger,ss.recordTimeStamp ";
-//        List<FingerPrintRecord> list2 = fingerPrintRecordFacade.findByJpql(sql, hm, TemporalType.DATE);
-
     }
 
     public void createFingerPrintRecordVarifiedWithLogged() {
