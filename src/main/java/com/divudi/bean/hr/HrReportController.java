@@ -507,7 +507,7 @@ public class HrReportController implements Serializable {
         
         hm.put("ftp", FingerPrintRecordType.Varified);
         sql += " order by ss.staff.codeInterger,ss.recordTimeStamp ";
-        fingerPrintRecords = fingerPrintRecordFacade.findByJpql(sql, hm, TemporalType.DATE);
+        fingerPrintRecords = fingerPrintRecordFacade.findByJpql(sql, hm, TemporalType.TIMESTAMP);
     }
 
     public void createFingerPrintApproved() {
@@ -532,7 +532,7 @@ public class HrReportController implements Serializable {
         
         hm.put("ftp", FingerPrintRecordType.Varified);
         sql += " order by ss.staff.codeInterger,ss.recordTimeStamp ";
-        fingerPrintRecords = fingerPrintRecordFacade.findByJpql(sql, hm, TemporalType.DATE);
+        fingerPrintRecords = fingerPrintRecordFacade.findByJpql(sql, hm, TemporalType.TIMESTAMP);
     }
 
     public void createFingerPrintRecordVarifiedWithLogged() {
