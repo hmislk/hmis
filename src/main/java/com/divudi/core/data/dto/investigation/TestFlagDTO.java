@@ -10,18 +10,18 @@ public class TestFlagDTO {
     private Long investigationItemOfFlagTypeId;
     private String flagItemName;
     private String sex;
-    private long fromAge;
-    private long toAge;
-    private double fromVal;
-    private double toVal;
+    private Long fromAge;
+    private Long toAge;
+    private Double fromVal;
+    private Double toVal;
     private String flagMessage;
     private String highMessage;
     private String lowMessage;
     private String normalMessage;
-    private boolean displayFlagMessage;
-    private boolean displayHighMessage;
-    private boolean displayLowMessage;
-    private boolean displayNormalMessage;
+    private Boolean displayFlagMessage;
+    private Boolean displayHighMessage;
+    private Boolean displayLowMessage;
+    private Boolean displayNormalMessage;
     private String message;
 
     public TestFlagDTO() {
@@ -43,14 +43,14 @@ public class TestFlagDTO {
     public void setFlagItemName(String flagItemName) { this.flagItemName = flagItemName; }
     public String getSex() { return sex; }
     public void setSex(String sex) { this.sex = sex; }
-    public long getFromAge() { return fromAge; }
-    public void setFromAge(long fromAge) { this.fromAge = fromAge; }
-    public long getToAge() { return toAge; }
-    public void setToAge(long toAge) { this.toAge = toAge; }
-    public double getFromVal() { return fromVal; }
-    public void setFromVal(double fromVal) { this.fromVal = fromVal; }
-    public double getToVal() { return toVal; }
-    public void setToVal(double toVal) { this.toVal = toVal; }
+    public Long getFromAge() { return fromAge; }
+    public void setFromAge(Long fromAge) { this.fromAge = fromAge; }
+    public Long getToAge() { return toAge; }
+    public void setToAge(Long toAge) { this.toAge = toAge; }
+    public Double getFromVal() { return fromVal; }
+    public void setFromVal(Double fromVal) { this.fromVal = fromVal; }
+    public Double getToVal() { return toVal; }
+    public void setToVal(Double toVal) { this.toVal = toVal; }
     public String getFlagMessage() { return flagMessage; }
     public void setFlagMessage(String flagMessage) { this.flagMessage = flagMessage; }
     public String getHighMessage() { return highMessage; }
@@ -59,14 +59,14 @@ public class TestFlagDTO {
     public void setLowMessage(String lowMessage) { this.lowMessage = lowMessage; }
     public String getNormalMessage() { return normalMessage; }
     public void setNormalMessage(String normalMessage) { this.normalMessage = normalMessage; }
-    public boolean isDisplayFlagMessage() { return displayFlagMessage; }
-    public void setDisplayFlagMessage(boolean displayFlagMessage) { this.displayFlagMessage = displayFlagMessage; }
-    public boolean isDisplayHighMessage() { return displayHighMessage; }
-    public void setDisplayHighMessage(boolean displayHighMessage) { this.displayHighMessage = displayHighMessage; }
-    public boolean isDisplayLowMessage() { return displayLowMessage; }
-    public void setDisplayLowMessage(boolean displayLowMessage) { this.displayLowMessage = displayLowMessage; }
-    public boolean isDisplayNormalMessage() { return displayNormalMessage; }
-    public void setDisplayNormalMessage(boolean displayNormalMessage) { this.displayNormalMessage = displayNormalMessage; }
+    public Boolean getDisplayFlagMessage() { return displayFlagMessage; }
+    public void setDisplayFlagMessage(Boolean displayFlagMessage) { this.displayFlagMessage = displayFlagMessage; }
+    public Boolean getDisplayHighMessage() { return displayHighMessage; }
+    public void setDisplayHighMessage(Boolean displayHighMessage) { this.displayHighMessage = displayHighMessage; }
+    public Boolean getDisplayLowMessage() { return displayLowMessage; }
+    public void setDisplayLowMessage(Boolean displayLowMessage) { this.displayLowMessage = displayLowMessage; }
+    public Boolean getDisplayNormalMessage() { return displayNormalMessage; }
+    public void setDisplayNormalMessage(Boolean displayNormalMessage) { this.displayNormalMessage = displayNormalMessage; }
     public String getMessage() { return message; }
     public void setMessage(String message) { this.message = message; }
 }

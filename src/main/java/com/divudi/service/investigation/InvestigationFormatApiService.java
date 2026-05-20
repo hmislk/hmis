@@ -68,9 +68,9 @@ public class InvestigationFormatApiService implements Serializable {
                 ? req.getCode().trim() : CommonFunctions.nameToCode(req.getName()));
         if (req.getDescription() != null) item.setDescription(req.getDescription());
         if (req.getOrderNo() != null) item.setOrderNo(req.getOrderNo());
-        item.setIxItemType(InvestigationItemType.valueOf(req.getIxItemType().trim()));
+        item.setIxItemType(parseEnum(InvestigationItemType.class, req.getIxItemType(), "ixItemType"));
         if (req.getIxItemValueType() != null && !req.getIxItemValueType().trim().isEmpty()) {
-            item.setIxItemValueType(InvestigationItemValueType.valueOf(req.getIxItemValueType().trim()));
+            item.setIxItemValueType(parseEnum(InvestigationItemValueType.class, req.getIxItemValueType(), "ixItemValueType"));
         }
         if (req.getAutomated() != null) item.setAutomated(req.getAutomated());
         if (req.getResultCode() != null) item.setResultCode(req.getResultCode());
@@ -86,10 +86,10 @@ public class InvestigationFormatApiService implements Serializable {
         if (req.getRiHeight() != null) item.setRiHeight(req.getRiHeight());
         if (req.getRiFontSize() != null) item.setRiFontSize(req.getRiFontSize());
         if (req.getCssTextAlign() != null && !req.getCssTextAlign().trim().isEmpty()) {
-            item.setCssTextAlign(CssTextAlign.valueOf(req.getCssTextAlign().trim()));
+            item.setCssTextAlign(parseEnum(CssTextAlign.class, req.getCssTextAlign(), "cssTextAlign"));
         }
         if (req.getCssFontStyle() != null && !req.getCssFontStyle().trim().isEmpty()) {
-            item.setCssFontStyle(CssFontStyle.valueOf(req.getCssFontStyle().trim()));
+            item.setCssFontStyle(parseEnum(CssFontStyle.class, req.getCssFontStyle(), "cssFontStyle"));
         }
         item.setCreater(user);
         item.setCreatedAt(new Date());
@@ -108,10 +108,10 @@ public class InvestigationFormatApiService implements Serializable {
         if (req.getDescription() != null) item.setDescription(req.getDescription());
         if (req.getOrderNo() != null) item.setOrderNo(req.getOrderNo());
         if (req.getIxItemType() != null && !req.getIxItemType().trim().isEmpty()) {
-            item.setIxItemType(InvestigationItemType.valueOf(req.getIxItemType().trim()));
+            item.setIxItemType(parseEnum(InvestigationItemType.class, req.getIxItemType(), "ixItemType"));
         }
         if (req.getIxItemValueType() != null && !req.getIxItemValueType().trim().isEmpty()) {
-            item.setIxItemValueType(InvestigationItemValueType.valueOf(req.getIxItemValueType().trim()));
+            item.setIxItemValueType(parseEnum(InvestigationItemValueType.class, req.getIxItemValueType(), "ixItemValueType"));
         }
         if (req.getAutomated() != null) item.setAutomated(req.getAutomated());
         if (req.getResultCode() != null) item.setResultCode(req.getResultCode());
@@ -127,10 +127,10 @@ public class InvestigationFormatApiService implements Serializable {
         if (req.getRiHeight() != null) item.setRiHeight(req.getRiHeight());
         if (req.getRiFontSize() != null) item.setRiFontSize(req.getRiFontSize());
         if (req.getCssTextAlign() != null && !req.getCssTextAlign().trim().isEmpty()) {
-            item.setCssTextAlign(CssTextAlign.valueOf(req.getCssTextAlign().trim()));
+            item.setCssTextAlign(parseEnum(CssTextAlign.class, req.getCssTextAlign(), "cssTextAlign"));
         }
         if (req.getCssFontStyle() != null && !req.getCssFontStyle().trim().isEmpty()) {
-            item.setCssFontStyle(CssFontStyle.valueOf(req.getCssFontStyle().trim()));
+            item.setCssFontStyle(parseEnum(CssFontStyle.class, req.getCssFontStyle(), "cssFontStyle"));
         }
         investigationItemFacade.edit(item);
         return toItemDTO(item, "Item updated successfully");
@@ -226,7 +226,7 @@ public class InvestigationFormatApiService implements Serializable {
         InvestigationItem calItem = loadItem(req.getCalIxItemId(), investigationId);
         IxCal cal = new IxCal();
         cal.setCalIxItem(calItem);
-        cal.setCalculationType(CalculationType.valueOf(req.getCalculationType().trim()));
+        cal.setCalculationType(parseEnum(CalculationType.class, req.getCalculationType(), "calculationType"));
         if (req.getValIxItemId() != null) {
             cal.setValIxItem(loadItem(req.getValIxItemId(), investigationId));
         }
@@ -250,7 +250,7 @@ public class InvestigationFormatApiService implements Serializable {
             cal.setValIxItem(loadItem(req.getValIxItemId(), investigationId));
         }
         if (req.getCalculationType() != null && !req.getCalculationType().trim().isEmpty()) {
-            cal.setCalculationType(CalculationType.valueOf(req.getCalculationType().trim()));
+            cal.setCalculationType(parseEnum(CalculationType.class, req.getCalculationType(), "calculationType"));
         }
         if (req.getConstantValue() != null) cal.setConstantValue(req.getConstantValue());
         if (req.getMaleConstantValue() != null) cal.setMaleConstantValue(req.getMaleConstantValue());
@@ -279,7 +279,7 @@ public class InvestigationFormatApiService implements Serializable {
         Map<String, Object> m = new HashMap<>();
         m.put("ixId", investigationId);
         String j = "select f from TestFlag f where f.retired=false "
-                + "and f.investigationItem.item.id=:ixId order by f.orderNo";
+                + "and f.item.id=:ixId order by f.orderNo";
         List<TestFlag> rows = testFlagFacade.findByJpql(j, m, TemporalType.TIMESTAMP);
         List<TestFlagDTO> out = new ArrayList<>();
         for (TestFlag row : rows) {
@@ -293,28 +293,28 @@ public class InvestigationFormatApiService implements Serializable {
                 || req.getInvestigationItemOfFlagTypeId() == null) {
             throw new Exception("investigationItemOfValueTypeId and investigationItemOfFlagTypeId are required");
         }
-        loadInvestigation(investigationId);
+        Investigation ix = loadInvestigation(investigationId);
         InvestigationItem valueItem = loadItem(req.getInvestigationItemOfValueTypeId(), investigationId);
         InvestigationItem flagItem = loadItem(req.getInvestigationItemOfFlagTypeId(), investigationId);
         TestFlag flag = new TestFlag();
-        flag.setInvestigationItem(valueItem);
+        flag.setItem(ix);
         flag.setInvestigationItemOfValueType(valueItem);
         flag.setInvestigationItemOfFlagType(flagItem);
         if (req.getSex() != null && !req.getSex().trim().isEmpty()) {
-            flag.setSex(Sex.valueOf(req.getSex().trim()));
+            flag.setSex(parseEnum(Sex.class, req.getSex(), "sex"));
         }
-        flag.setFromAge(req.getFromAge());
-        flag.setToAge(req.getToAge());
-        flag.setFromVal(req.getFromVal());
-        flag.setToVal(req.getToVal());
+        if (req.getFromAge() != null) flag.setFromAge(req.getFromAge());
+        if (req.getToAge() != null) flag.setToAge(req.getToAge());
+        if (req.getFromVal() != null) flag.setFromVal(req.getFromVal());
+        if (req.getToVal() != null) flag.setToVal(req.getToVal());
         if (req.getFlagMessage() != null) flag.setFlagMessage(req.getFlagMessage());
         if (req.getHighMessage() != null) flag.setHighMessage(req.getHighMessage());
         if (req.getLowMessage() != null) flag.setLowMessage(req.getLowMessage());
         if (req.getNormalMessage() != null) flag.setNormalMessage(req.getNormalMessage());
-        flag.setDisplayFlagMessage(req.isDisplayFlagMessage());
-        flag.setDisplayHighMessage(req.isDisplayHighMessage());
-        flag.setDisplayLowMessage(req.isDisplayLowMessage());
-        flag.setDisplayNormalMessage(req.isDisplayNormalMessage());
+        if (req.getDisplayFlagMessage() != null) flag.setDisplayFlagMessage(req.getDisplayFlagMessage());
+        if (req.getDisplayHighMessage() != null) flag.setDisplayHighMessage(req.getDisplayHighMessage());
+        if (req.getDisplayLowMessage() != null) flag.setDisplayLowMessage(req.getDisplayLowMessage());
+        if (req.getDisplayNormalMessage() != null) flag.setDisplayNormalMessage(req.getDisplayNormalMessage());
         flag.setCreater(user);
         flag.setCreatedAt(new Date());
         flag.setRetired(false);
@@ -334,20 +334,20 @@ public class InvestigationFormatApiService implements Serializable {
             flag.setInvestigationItemOfFlagType(flagItem);
         }
         if (req.getSex() != null && !req.getSex().trim().isEmpty()) {
-            flag.setSex(Sex.valueOf(req.getSex().trim()));
+            flag.setSex(parseEnum(Sex.class, req.getSex(), "sex"));
         }
-        flag.setFromAge(req.getFromAge());
-        flag.setToAge(req.getToAge());
-        flag.setFromVal(req.getFromVal());
-        flag.setToVal(req.getToVal());
+        if (req.getFromAge() != null) flag.setFromAge(req.getFromAge());
+        if (req.getToAge() != null) flag.setToAge(req.getToAge());
+        if (req.getFromVal() != null) flag.setFromVal(req.getFromVal());
+        if (req.getToVal() != null) flag.setToVal(req.getToVal());
         if (req.getFlagMessage() != null) flag.setFlagMessage(req.getFlagMessage());
         if (req.getHighMessage() != null) flag.setHighMessage(req.getHighMessage());
         if (req.getLowMessage() != null) flag.setLowMessage(req.getLowMessage());
         if (req.getNormalMessage() != null) flag.setNormalMessage(req.getNormalMessage());
-        flag.setDisplayFlagMessage(req.isDisplayFlagMessage());
-        flag.setDisplayHighMessage(req.isDisplayHighMessage());
-        flag.setDisplayLowMessage(req.isDisplayLowMessage());
-        flag.setDisplayNormalMessage(req.isDisplayNormalMessage());
+        if (req.getDisplayFlagMessage() != null) flag.setDisplayFlagMessage(req.getDisplayFlagMessage());
+        if (req.getDisplayHighMessage() != null) flag.setDisplayHighMessage(req.getDisplayHighMessage());
+        if (req.getDisplayLowMessage() != null) flag.setDisplayLowMessage(req.getDisplayLowMessage());
+        if (req.getDisplayNormalMessage() != null) flag.setDisplayNormalMessage(req.getDisplayNormalMessage());
         testFlagFacade.edit(flag);
         return toFlagDTO(flag, "Flag updated successfully");
     }
@@ -370,7 +370,7 @@ public class InvestigationFormatApiService implements Serializable {
         Map<String, Object> m = new HashMap<>();
         m.put("ixId", investigationId);
         String j = "select f from InvestigationItemValueFlag f where f.retired=false "
-                + "and f.investigationItem.item.id=:ixId order by f.orderNo";
+                + "and f.investigationItemOfLabelType.item.id=:ixId order by f.orderNo";
         List<InvestigationItemValueFlag> rows = investigationItemValueFlagFacade.findByJpql(j, m, TemporalType.TIMESTAMP);
         List<DynamicLabelDTO> out = new ArrayList<>();
         for (InvestigationItemValueFlag row : rows) {
@@ -386,13 +386,12 @@ public class InvestigationFormatApiService implements Serializable {
         loadInvestigation(investigationId);
         InvestigationItem labelItem = loadItem(req.getInvestigationItemOfLabelTypeId(), investigationId);
         InvestigationItemValueFlag dl = new InvestigationItemValueFlag();
-        dl.setInvestigationItem(labelItem);
         dl.setInvestigationItemOfLabelType(labelItem);
         if (req.getSex() != null && !req.getSex().trim().isEmpty()) {
-            dl.setSex(Sex.valueOf(req.getSex().trim()));
+            dl.setSex(parseEnum(Sex.class, req.getSex(), "sex"));
         }
-        dl.setFromAge(req.getFromAge());
-        dl.setToAge(req.getToAge());
+        if (req.getFromAge() != null) dl.setFromAge(req.getFromAge());
+        if (req.getToAge() != null) dl.setToAge(req.getToAge());
         if (req.getFlagMessage() != null) dl.setFlagMessage(req.getFlagMessage());
         dl.setCreater(user);
         dl.setCreatedAt(new Date());
@@ -409,10 +408,10 @@ public class InvestigationFormatApiService implements Serializable {
             dl.setInvestigationItemOfLabelType(labelItem);
         }
         if (req.getSex() != null && !req.getSex().trim().isEmpty()) {
-            dl.setSex(Sex.valueOf(req.getSex().trim()));
+            dl.setSex(parseEnum(Sex.class, req.getSex(), "sex"));
         }
-        dl.setFromAge(req.getFromAge());
-        dl.setToAge(req.getToAge());
+        if (req.getFromAge() != null) dl.setFromAge(req.getFromAge());
+        if (req.getToAge() != null) dl.setToAge(req.getToAge());
         if (req.getFlagMessage() != null) dl.setFlagMessage(req.getFlagMessage());
         investigationItemValueFlagFacade.edit(dl);
         return toDynamicLabelDTO(dl, "Dynamic label updated successfully");
@@ -430,6 +429,15 @@ public class InvestigationFormatApiService implements Serializable {
     // =========================================================================
     // Private helpers
     // =========================================================================
+
+    private <E extends Enum<E>> E parseEnum(Class<E> enumClass, String raw, String field) throws Exception {
+        try {
+            return Enum.valueOf(enumClass, raw.trim());
+        } catch (IllegalArgumentException ex) {
+            throw new Exception("Invalid " + field + ": " + raw
+                    + ". Valid values: " + Arrays.toString(enumClass.getEnumConstants()));
+        }
+    }
 
     private Investigation loadInvestigation(Long id) throws Exception {
         Investigation ix = investigationFacade.find(id);
@@ -479,8 +487,7 @@ public class InvestigationFormatApiService implements Serializable {
         if (flag == null || flag.isRetired()) {
             throw new Exception("Flag not found with ID: " + flagId);
         }
-        if (flag.getInvestigationItem() == null || flag.getInvestigationItem().getItem() == null
-                || !flag.getInvestigationItem().getItem().getId().equals(investigationId)) {
+        if (flag.getItem() == null || !flag.getItem().getId().equals(investigationId)) {
             throw new Exception("Flag " + flagId + " does not belong to investigation " + investigationId);
         }
         return flag;
@@ -491,8 +498,9 @@ public class InvestigationFormatApiService implements Serializable {
         if (dl == null || dl.isRetired()) {
             throw new Exception("Dynamic label not found with ID: " + labelId);
         }
-        if (dl.getInvestigationItem() == null || dl.getInvestigationItem().getItem() == null
-                || !dl.getInvestigationItem().getItem().getId().equals(investigationId)) {
+        if (dl.getInvestigationItemOfLabelType() == null
+                || dl.getInvestigationItemOfLabelType().getItem() == null
+                || !dl.getInvestigationItemOfLabelType().getItem().getId().equals(investigationId)) {
             throw new Exception("Dynamic label " + labelId + " does not belong to investigation " + investigationId);
         }
         return dl;
@@ -564,10 +572,6 @@ public class InvestigationFormatApiService implements Serializable {
     private TestFlagDTO toFlagDTO(TestFlag flag, String msg) {
         TestFlagDTO dto = new TestFlagDTO();
         dto.setId(flag.getId());
-        if (flag.getInvestigationItem() != null) {
-            dto.setInvestigationItemId(flag.getInvestigationItem().getId());
-            dto.setInvestigationItemName(flag.getInvestigationItem().getName());
-        }
         if (flag.getInvestigationItemOfValueType() != null) {
             dto.setInvestigationItemOfValueTypeId(flag.getInvestigationItemOfValueType().getId());
             dto.setValueItemName(flag.getInvestigationItemOfValueType().getName());
@@ -596,10 +600,6 @@ public class InvestigationFormatApiService implements Serializable {
     private DynamicLabelDTO toDynamicLabelDTO(InvestigationItemValueFlag dl, String msg) {
         DynamicLabelDTO dto = new DynamicLabelDTO();
         dto.setId(dl.getId());
-        if (dl.getInvestigationItem() != null) {
-            dto.setInvestigationItemId(dl.getInvestigationItem().getId());
-            dto.setInvestigationItemName(dl.getInvestigationItem().getName());
-        }
         if (dl.getInvestigationItemOfLabelType() != null) {
             dto.setInvestigationItemOfLabelTypeId(dl.getInvestigationItemOfLabelType().getId());
             dto.setLabelItemName(dl.getInvestigationItemOfLabelType().getName());

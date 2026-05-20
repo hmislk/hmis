@@ -8,8 +8,8 @@ public class DynamicLabelDTO {
     private Long investigationItemOfLabelTypeId;
     private String labelItemName;
     private String sex;
-    private long fromAge;
-    private long toAge;
+    private Long fromAge;
+    private Long toAge;
     private String flagMessage;
     private String message;
 
@@ -28,10 +28,10 @@ public class DynamicLabelDTO {
     public void setLabelItemName(String labelItemName) { this.labelItemName = labelItemName; }
     public String getSex() { return sex; }
     public void setSex(String sex) { this.sex = sex; }
-    public long getFromAge() { return fromAge; }
-    public void setFromAge(long fromAge) { this.fromAge = fromAge; }
-    public long getToAge() { return toAge; }
-    public void setToAge(long toAge) { this.toAge = toAge; }
+    public Long getFromAge() { return fromAge; }
+    public void setFromAge(Long fromAge) { this.fromAge = fromAge; }
+    public Long getToAge() { return toAge; }
+    public void setToAge(Long toAge) { this.toAge = toAge; }
     public String getFlagMessage() { return flagMessage; }
     public void setFlagMessage(String flagMessage) { this.flagMessage = flagMessage; }
     public String getMessage() { return message; }

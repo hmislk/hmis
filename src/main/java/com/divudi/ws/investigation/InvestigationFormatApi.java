@@ -78,7 +78,7 @@ public class InvestigationFormatApi {
             if (user == null) return errorResponse("Not a valid key", 401);
             InvestigationItemCreateDTO req = gson.fromJson(body, InvestigationItemCreateDTO.class);
             InvestigationItemDTO dto = formatService.createItem(investigationId, req, user);
-            return Response.status(201).entity(gson.toJson(successData(dto))).build();
+            return Response.status(201).entity(gson.toJson(successData(dto, 201))).build();
         } catch (Exception e) {
             return errorResponse("An error occurred: " + e.getMessage(), 500);
         }
@@ -143,7 +143,7 @@ public class InvestigationFormatApi {
             if (user == null) return errorResponse("Not a valid key", 401);
             InvestigationItemValueDTO req = gson.fromJson(body, InvestigationItemValueDTO.class);
             InvestigationItemValueDTO dto = formatService.createValue(investigationId, itemId, req, user);
-            return Response.status(201).entity(gson.toJson(successData(dto))).build();
+            return Response.status(201).entity(gson.toJson(successData(dto, 201))).build();
         } catch (Exception e) {
             return errorResponse("An error occurred: " + e.getMessage(), 500);
         }
@@ -206,7 +206,7 @@ public class InvestigationFormatApi {
             if (user == null) return errorResponse("Not a valid key", 401);
             IxCalDTO req = gson.fromJson(body, IxCalDTO.class);
             IxCalDTO dto = formatService.createCalculation(investigationId, req, user);
-            return Response.status(201).entity(gson.toJson(successData(dto))).build();
+            return Response.status(201).entity(gson.toJson(successData(dto, 201))).build();
         } catch (Exception e) {
             return errorResponse("An error occurred: " + e.getMessage(), 500);
         }
@@ -269,7 +269,7 @@ public class InvestigationFormatApi {
             if (user == null) return errorResponse("Not a valid key", 401);
             TestFlagDTO req = gson.fromJson(body, TestFlagDTO.class);
             TestFlagDTO dto = formatService.createFlag(investigationId, req, user);
-            return Response.status(201).entity(gson.toJson(successData(dto))).build();
+            return Response.status(201).entity(gson.toJson(successData(dto, 201))).build();
         } catch (Exception e) {
             return errorResponse("An error occurred: " + e.getMessage(), 500);
         }
@@ -332,7 +332,7 @@ public class InvestigationFormatApi {
             if (user == null) return errorResponse("Not a valid key", 401);
             DynamicLabelDTO req = gson.fromJson(body, DynamicLabelDTO.class);
             DynamicLabelDTO dto = formatService.createDynamicLabel(investigationId, req, user);
-            return Response.status(201).entity(gson.toJson(successData(dto))).build();
+            return Response.status(201).entity(gson.toJson(successData(dto, 201))).build();
         } catch (Exception e) {
             return errorResponse("An error occurred: " + e.getMessage(), 500);
         }
@@ -400,9 +400,13 @@ public class InvestigationFormatApi {
     }
 
     private Map<String, Object> successData(Object data) {
+        return successData(data, 200);
+    }
+
+    private Map<String, Object> successData(Object data, int statusCode) {
         Map<String, Object> map = new HashMap<>();
         map.put("status", "success");
-        map.put("code", 200);
+        map.put("code", statusCode);
         map.put("timestamp", new Date());
         map.put("data", data);
         return map;
