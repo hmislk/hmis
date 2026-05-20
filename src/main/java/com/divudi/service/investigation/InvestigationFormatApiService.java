@@ -94,7 +94,7 @@ public class InvestigationFormatApiService implements Serializable {
         item.setCreater(user);
         item.setCreatedAt(new Date());
         item.setRetired(false);
-        investigationItemFacade.create(item);
+        investigationItemFacade.createAndFlush(item);
         return toItemDTO(item, "Item created successfully");
     }
 
@@ -177,7 +177,7 @@ public class InvestigationFormatApiService implements Serializable {
         val.setCreater(user);
         val.setCreatedAt(new Date());
         val.setRetired(false);
-        investigationItemValueFacade.create(val);
+        investigationItemValueFacade.createAndFlush(val);
         return toValueDTO(val, "Value created successfully");
     }
 
@@ -236,7 +236,7 @@ public class InvestigationFormatApiService implements Serializable {
         if (req.getJavascript() != null) cal.setJavascript(req.getJavascript());
         if (req.getOrderNo() != null) cal.setOrderNo(req.getOrderNo());
         cal.setRetired(false);
-        ixCalFacade.create(cal);
+        ixCalFacade.createAndFlush(cal);
         return toCalDTO(cal, "Calculation created successfully");
     }
 
@@ -318,7 +318,7 @@ public class InvestigationFormatApiService implements Serializable {
         flag.setCreater(user);
         flag.setCreatedAt(new Date());
         flag.setRetired(false);
-        testFlagFacade.create(flag);
+        testFlagFacade.createAndFlush(flag);
         return toFlagDTO(flag, "Flag created successfully");
     }
 
@@ -397,7 +397,7 @@ public class InvestigationFormatApiService implements Serializable {
         dl.setCreater(user);
         dl.setCreatedAt(new Date());
         dl.setRetired(false);
-        investigationItemValueFlagFacade.create(dl);
+        investigationItemValueFlagFacade.createAndFlush(dl);
         return toDynamicLabelDTO(dl, "Dynamic label created successfully");
     }
 
