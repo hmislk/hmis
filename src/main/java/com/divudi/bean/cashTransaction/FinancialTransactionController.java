@@ -198,6 +198,8 @@ public class FinancialTransactionController implements Serializable {
     private ReportTemplateRowBundle bundle;
     private ReportTemplateRowBundle selectedBundle;
     private PaymentMethod selectedPaymentMethod;
+    private double handoverAcceptSelectTotalValue;
+    private double handoverAcceptSelectSelectedTotal;
 
     private Boolean patientDepositsAreConsideredInHandingover;
 
@@ -1266,6 +1268,7 @@ public class FinancialTransactionController implements Serializable {
         }
         selectedBundle = inputBundle;
         selectedPaymentMethod = inputPaymentMethod;
+        initHandoverAcceptSelectTotals();
         return "/cashier/handover_accept_select?faces-redirect=true";
     }
 
@@ -1280,7 +1283,6 @@ public class FinancialTransactionController implements Serializable {
             try {
                 pm = PaymentMethod.valueOf(paymentMethodStr);
             } catch (IllegalArgumentException e) {
-                // Try mapping common string variations to enum values
                 switch (paymentMethodStr) {
                     case "StaffWelfare":
                         pm = PaymentMethod.Staff_Welfare;
@@ -1293,7 +1295,66 @@ public class FinancialTransactionController implements Serializable {
         }
         selectedBundle = inputBundle;
         selectedPaymentMethod = pm;
+        initHandoverAcceptSelectTotals();
         return "/cashier/handover_accept_select?faces-redirect=true";
+    }
+
+    private void initHandoverAcceptSelectTotals() {
+        handoverAcceptSelectSelectedTotal = 0.0;
+        handoverAcceptSelectTotalValue = 0.0;
+        if (selectedPaymentMethod == PaymentMethod.Cash) {
+            if (selectedBundle != null && selectedBundle.getDenominationTransactions() != null) {
+                for (DenominationTransaction dt : selectedBundle.getDenominationTransactions()) {
+                    dt.setSelected(false);
+                    if (dt.getDenominationValue() != null) {
+                        handoverAcceptSelectTotalValue += dt.getDenominationValue();
+                    }
+                }
+            }
+        } else {
+            if (selectedBundle != null) {
+                List<ReportTemplateRow> rows = selectedBundle.getPaymentRows(selectedPaymentMethod);
+                if (rows != null) {
+                    for (ReportTemplateRow row : rows) {
+                        row.setSelected(false);
+                        if (row.getPayment() != null) {
+                            handoverAcceptSelectTotalValue += row.getPayment().getPaidValue();
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public void calculateHandoverAcceptSelectSelectedTotal() {
+        handoverAcceptSelectSelectedTotal = 0.0;
+        if (selectedPaymentMethod == PaymentMethod.Cash) {
+            if (selectedBundle != null && selectedBundle.getDenominationTransactions() != null) {
+                for (DenominationTransaction dt : selectedBundle.getDenominationTransactions()) {
+                    if (dt.isSelected() && dt.getDenominationValue() != null) {
+                        handoverAcceptSelectSelectedTotal += dt.getDenominationValue();
+                    }
+                }
+            }
+        } else {
+            if (selectedBundle != null) {
+                List<ReportTemplateRow> rows = selectedBundle.getPaymentRows(selectedPaymentMethod);
+                if (rows != null) {
+                    for (ReportTemplateRow row : rows) {
+                        if (row.isSelected() && row.getPayment() != null) {
+                            handoverAcceptSelectSelectedTotal += row.getPayment().getPaidValue();
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public int getHandoverAcceptSelectProgressPercent() {
+        if (handoverAcceptSelectTotalValue == 0) {
+            return 0;
+        }
+        return (int) Math.round((handoverAcceptSelectSelectedTotal / handoverAcceptSelectTotalValue) * 100);
     }
 
     public String navigateBackToPaymentHandoverCreate() {
@@ -2911,6 +2972,8 @@ public class FinancialTransactionController implements Serializable {
             currentBillPayments.add(np);
 
         }
+        fundTransferDenominationTransactions = denominationTransactionController.createDefaultDenominationTransaction();
+        fundTransferDenominationTotal = 0.0;
     }
 
     // </editor-fold>
@@ -7516,6 +7579,36 @@ public class FinancialTransactionController implements Serializable {
         currentBill.getReferenceBill().setReferenceBill(currentBill);
         billController.save(currentBill.getReferenceBill());
 
+        // Save denomination transactions for the receive bill
+        if (hasFundTransferDenominationEntries()) {
+            Bill denoBill = new Bill();
+            denoBill.setBillTypeAtomic(BillTypeAtomic.FUND_TRANSFER_RECEIVED_DENOMINATION_BILL);
+            denoBill.setBillType(BillType.FundTransferReceivedBill);
+            denoBill.setBillClassType(BillClassType.Bill);
+            denoBill.setReferenceBill(currentBill);
+            denoBill.setDepartment(currentBill.getDepartment());
+            denoBill.setInstitution(currentBill.getInstitution());
+            denoBill.setStaff(currentBill.getStaff());
+            denoBill.setFromWebUser(currentBill.getReferenceBill().getFromWebUser());
+            denoBill.setToWebUser(sessionController.getLoggedUser());
+            denoBill.setBillDate(currentBill.getBillDate());
+            denoBill.setBillTime(currentBill.getBillTime());
+            billController.save(denoBill);
+            double denoTotal = 0.0;
+            for (DenominationTransaction d : fundTransferDenominationTransactions) {
+                if (d.getDenominationQty() != null && d.getDenominationQty() > 0) {
+                    d.setBill(denoBill);
+                    denominationTransactionController.save(d);
+                    if (d.getDenominationValue() != null) {
+                        denoTotal += d.getDenominationValue();
+                    }
+                }
+            }
+            denoBill.setTotal(denoTotal);
+            denoBill.setNetTotal(denoTotal);
+            billController.save(denoBill);
+        }
+
         // Transfer ownership of original non-cash payments to the receiving user
         List<Payment> fundTransferBillPayments = findPaymentsForBill(currentBill.getReferenceBill());
         if (fundTransferBillPayments != null) {
@@ -10061,6 +10154,14 @@ public class FinancialTransactionController implements Serializable {
 
     public void setSelectedPaymentMethod(PaymentMethod selectedPaymentMethod) {
         this.selectedPaymentMethod = selectedPaymentMethod;
+    }
+
+    public double getHandoverAcceptSelectTotalValue() {
+        return handoverAcceptSelectTotalValue;
+    }
+
+    public double getHandoverAcceptSelectSelectedTotal() {
+        return handoverAcceptSelectSelectedTotal;
     }
 
     public DetailedFinancialBill getCurrentDetailedFinancialBill() {
