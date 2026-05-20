@@ -357,17 +357,21 @@ public class FinancialTransactionController implements Serializable {
         if (!sessionController.getPaymentManagementAfterShiftStart()) {
             return;
         }
+        FacesContext fc = FacesContext.getCurrentInstance();
+        // Skip the check on postbacks — the shift was already verified on initial load
+        if (fc.isPostback()) {
+            return;
+        }
         findNonClosedShiftStartFundBillIsAvailable();
         if (nonClosedShiftStartFundBill != null) {
             return;
         }
         try {
+            // Preserve the error message across the redirect
+            fc.getExternalContext().getFlash().setKeepMessages(true);
             JsfUtil.addErrorMessage("Start Your Shift First !");
-            FacesContext.getCurrentInstance()
-                    .getExternalContext()
-                    .redirect(FacesContext.getCurrentInstance()
-                            .getExternalContext()
-                            .getRequestContextPath() + "/cashier/index.xhtml");
+            fc.getExternalContext().redirect(
+                    fc.getExternalContext().getRequestContextPath() + "/faces/cashier/index.xhtml");
         } catch (java.io.IOException e) {
             // redirect failed — nothing further we can do at render time
         }
