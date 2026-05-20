@@ -7582,6 +7582,19 @@ public class FinancialTransactionController implements Serializable {
         // Save denomination transactions for the receive bill
         if (hasFundTransferDenominationEntries()) {
             calculateFundTransferDenominationTotal();
+            double receivedCashTotal = 0.0;
+            for (Payment p : currentBillPayments) {
+                if (p.getPaymentMethod() == PaymentMethod.Cash) {
+                    receivedCashTotal += Math.abs(p.getPaidValue());
+                }
+            }
+            if (Math.abs(fundTransferDenominationTotal - receivedCashTotal) > 0.001) {
+                JsfUtil.addErrorMessage(
+                        "Denomination total (" + fundTransferDenominationTotal
+                        + ") does not match the received cash total (" + receivedCashTotal
+                        + "). Please correct the denominations.");
+                return "";
+            }
             Bill denoBill = new Bill();
             denoBill.setBillTypeAtomic(BillTypeAtomic.FUND_TRANSFER_RECEIVED_DENOMINATION_BILL);
             denoBill.setBillType(BillType.FundTransferReceivedBill);
