@@ -7581,6 +7581,7 @@ public class FinancialTransactionController implements Serializable {
 
         // Save denomination transactions for the receive bill
         if (hasFundTransferDenominationEntries()) {
+            calculateFundTransferDenominationTotal();
             Bill denoBill = new Bill();
             denoBill.setBillTypeAtomic(BillTypeAtomic.FUND_TRANSFER_RECEIVED_DENOMINATION_BILL);
             denoBill.setBillType(BillType.FundTransferReceivedBill);

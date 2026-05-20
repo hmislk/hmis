@@ -235,7 +235,7 @@
                                         <h:panelGroup rendered="#{cc.attrs.bundle.cashFloatOutTotal gt 0}">
                                             <tr>
                                                 <td>Float Sent (Cash)</td>
-                                                <td class="text-end" style="color: red;"><h:outputText value="-#{cc.attrs.bundle.cashFloatOutTotal}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                                <td class="text-end" style="color: red;"><h:outputText value="#{-cc.attrs.bundle.cashFloatOutTotal}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
                                                 <td class="text-end">-</td>
                                                 <td class="text-end">-</td>
                                             </tr>
