@@ -346,6 +346,37 @@ public class FinancialTransactionController implements Serializable {
         }
     }
 
+    /**
+     * Page-level shift guard. Call from f:event type="preRenderView" on any
+     * financial transaction page. When the config is enabled and no active
+     * shift bill exists for the current user, shows an error and redirects to
+     * the cashier index. Safe to call on every page load — does nothing when
+     * the config is disabled.
+     */
+    public void redirectIfShiftNotStarted() {
+        if (!sessionController.getPaymentManagementAfterShiftStart()) {
+            return;
+        }
+        FacesContext fc = FacesContext.getCurrentInstance();
+        // Skip the check on postbacks — the shift was already verified on initial load
+        if (fc.isPostback()) {
+            return;
+        }
+        findNonClosedShiftStartFundBillIsAvailable();
+        if (nonClosedShiftStartFundBill != null) {
+            return;
+        }
+        try {
+            // Preserve the error message across the redirect
+            fc.getExternalContext().getFlash().setKeepMessages(true);
+            JsfUtil.addErrorMessage("Start Your Shift First !");
+            fc.getExternalContext().redirect(
+                    fc.getExternalContext().getRequestContextPath() + "/faces/cashier/index.xhtml");
+        } catch (java.io.IOException e) {
+            // redirect failed — nothing further we can do at render time
+        }
+    }
+
     public String navigateToNewIncomeBill() {
         resetClassVariables();
         currentBill = new Bill();
