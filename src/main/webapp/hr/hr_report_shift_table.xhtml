@@ -1,139 +1,354 @@
 <?xml version='1.0' encoding='UTF-8' ?>
-<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 <ui:composition template="/resources/template/template.xhtml"
                 xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://xmlns.jcp.org/jsf/core">
 
-
     <ui:define name="content">
         <h:outputStylesheet library="css" name="printing.css" />
-        <h:form id="form">  
-            <h:panelGrid columns="2">
-                <h:outputLabel value="From Date"/>
-                <p:calendar navigator="true" id="frmDate" value="#{shiftTableController.fromDate}" pattern="#{sessionController.applicationPreference.longDateFormat}" />
-                <h:outputLabel value="To Date"/>
-                <p:calendar navigator="true" id="toDate" value="#{shiftTableController.toDate}" pattern="#{sessionController.applicationPreference.longDateFormat}" />
-                <h:outputLabel value="Roster"/>
-                <p:selectOneMenu id="roster" value="#{shiftTableController.roster}">
-                    <f:selectItem itemLabel="Select Roster"/>
-                    <f:selectItems value="#{rosterController.items}" var="r" itemLabel="#{r.name}" itemValue="#{r}"/>
-                    <f:ajax event="change" execute="@this" render="lst" 
-                            listener="#{shiftTableController.selectRosterLstener()}" />
-                </p:selectOneMenu>
+        <h:form id="form">
 
+            <h:outputStylesheet>
+                .roster-form {
+                    padding: 2rem 1.75rem;
+                }
 
-            </h:panelGrid>
+                .page-header {
+                    margin-bottom: 1.75rem;
+                }
 
-            <h:panelGrid columns="4">                
-                <p:commandButton ajax="false" value="Fill Roster"
-                                 actionListener="#{shiftTableController.makeTableNull()}"
-                                 action="#{shiftTableController.fetchShiftTableForCheck()}"
-                                  />   
-                <p:commandButton value="Print" ajax="false" action="#"  >
-                    <p:printer target="print2" ></p:printer>
-                </p:commandButton>
-                <p:commandButton value="Check(Only For Developers)" ajax="false" action="#{shiftTableController.fetchStaffShiftMoreThan()}" rendered="true" />
+                .page-title {
+                    font-size: 18px;
+                    font-weight: 600;
+                    margin: 0 0 4px 0;
+                }
 
-            </h:panelGrid>
+                .page-subtitle {
+                    font-size: 13px;
+                    color: #888;
+                    margin: 0;
+                }
 
-            <p:panel id="print2" styleClass="noBorder summeryBorder">
-                <f:facet name="header">
-                    <h:outputLabel value="Roster Of #{shiftTableController.roster.name}"/><br/>
-                    <h:outputLabel value="#{shiftTableController.fromDate}">
-                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
-                    </h:outputLabel>
-                    <h:outputLabel value="   To  "/>
-                    <h:outputLabel value="#{shiftTableController.toDate}">
-                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
-                    </h:outputLabel>
-                    <br/>
-                    <h:outputLabel value="* This report consider only analized Times Only for Time" style="color: red;"/>
-                </f:facet>
-                <p:dataGrid  id="lst" columns="#{shiftTableController.dateRange}"
-                             var="data" value="#{shiftTableController.shiftTables}" >
-                    <p:dataTable value="#{data.staffShift}" var="sts" styleClass="singleLine," >
-                        <p:column headerText="Staff Name" rendered="#{data.flag eq true}" style="text-align: left; 
-                                  white-space: nowrap!important; 
-                                  width: 10em!important; 
-                                  overflow: hidden!important;
-                                  text-overflow: clip!important; 
-                                  " >                      
-                            <h:outputLabel value="#{sts.staff.person.name}" />
-                        </p:column>
-                        
-                        <p:column headerText="Staff Code" rendered="#{data.flag eq true}" style="text-align: right;">                        
-                            <h:outputLabel value="#{sts.staff.code}"/>                           
-                        </p:column>
+                .controls-panel .ui-panel-content {
+                    padding: 1.5rem 1.75rem !important;
+                }
 
-                        <p:column rendered="#{data.date ne null}" style="text-align: right;">
-                            <f:facet name="header">                            
-                                <h:outputLabel value="#{data.date}" styleClass="#{data.ph ? 'yellowtext':data.merch ? 'redText':''}" >
-                                    <f:convertDateTime pattern="dd/MM/yy  E"/>
-                                </h:outputLabel>
-                            </f:facet>
-                            <h:outputLabel id="lbl1" value="#{sts.shift.durationMin}" rendered="#{sts.shift.durationMin ne 0.0}"/>
-                            <h:outputLabel value="#{sts.shift.name}" rendered="#{sts.shift.durationMin eq 0.0}"/>
-                            <h:outputLabel value="---" rendered="#{sts.shift.durationMin eq null and sts.shift eq null}"/>
-                            <p:tooltip for="lbl1" >
-                                <h:panelGrid columns="2" >
-                                    <h:outputLabel value="Shift " />
-                                    <h:outputLabel value=": #{sts.shift.name}" />
-                                    <h:outputLabel value="Shift Duration(H) " />
-                                    <h:outputLabel value=": #{sts.shift.durationMin/60}" />
-                                    <h:outputLabel value="Shift Duration(M) " />
-                                    <h:outputLabel value=": #{sts.shift.durationMin}" />
-                                </h:panelGrid>
-                                             
-                                
-                            </p:tooltip>
-                        </p:column>
-                        
-                        <p:column rendered="#{data.date ne null}" style="text-align: right;">
-                            <f:facet name="header">                            
-                                <h:outputLabel value="Time" />
-                            </f:facet>
-                            <h:outputLabel value="#{sts.transWorkTime/60}">
-                                <f:convertNumber pattern="#0.00"/>
-                            </h:outputLabel>
-                        </p:column>
-                        
-                        <p:column rendered="#{data.date eq null}" style="text-align: right;">
-                            <f:facet name="header">                            
-                                <h:outputLabel value="Total Roster Time" />
-                            </f:facet>
-                            <h:outputLabel value="#{sts.transShiftTime}">
-                                <f:convertNumber pattern="#0.00"/>
-                            </h:outputLabel>
-                        </p:column>
-                        
-                        <p:column rendered="#{data.date eq null}" style="text-align: right;">
-                            <f:facet name="header">                            
-                                <h:outputLabel value="Total work Time" />
-                            </f:facet>
-                            <h:outputLabel value="#{sts.transWorkTime/60}">
-                                <f:convertNumber pattern="#0.00"/>
-                            </h:outputLabel>
-                        </p:column>
+                .controls-grid {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 1.25rem;
+                }
 
+                .fields-grid {
+                    display: grid;
+                    grid-template-columns: repeat(2, 1fr);
+                    gap: 1rem 1.5rem;
+                }
 
-                    </p:dataTable>  
-                </p:dataGrid>
+                .field-group {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 6px;
+                }
 
+                .field-label {
+                    font-size: 11.5px !important;
+                    font-weight: 600 !important;
+                    text-transform: uppercase;
+                    letter-spacing: 0.05em;
+                    color: #888 !important;
+                }
 
+                .controls-actions {
+                    display: flex;
+                    gap: 10px;
+                    align-items: center;
+                    flex-wrap: wrap;
+                }
 
-            </p:panel>
+                .controls-actions-secondary {
+                    display: flex;
+                    gap: 10px;
+                    align-items: center;
+                    flex-wrap: wrap;
+                    padding-top: 0.75rem;
+                    border-top: 1px solid #e8e8e8;
+                }
 
+                .btn-action {
+                    height: 36px !important;
+                    padding: 0 18px !important;
+                    font-size: 13px !important;
+                }
 
+                .report-panel {
+                    margin-top: 1.5rem;
+                }
 
+                .report-panel .ui-panel-content {
+                    padding: 0 !important;
+                }
 
-        </h:form>  
+                .report-header-wrap {
+                    text-align: center;
+                    padding: 1.5rem 1.5rem 1rem;
+                    border-bottom: 1px solid #e8e8e8;
+                }
 
+                .report-title-label {
+                    font-size: 14px;
+                    font-weight: 600;
+                    color: #333;
+                    display: block;
+                    margin-bottom: 2px;
+                }
 
+                .report-meta {
+                    font-size: 13px;
+                    color: #555;
+                    margin-top: 4px;
+                }
 
+                .notice-text {
+                    font-size: 12px;
+                    color: #c0392b;
+                    margin-top: 6px;
+                    display: block;
+                }
+
+                .roster-table-wrap {
+                    overflow-x: auto;
+                    width: 100%;
+                }
+
+                .roster-table {
+                    border-collapse: collapse;
+                    font-size: 13px;
+                    min-width: 100%;
+                }
+
+                .roster-table th {
+                    background: #f9f9f9;
+                    font-size: 11px;
+                    font-weight: 700;
+                    text-transform: uppercase;
+                    letter-spacing: 0.04em;
+                    color: #888;
+                    padding: 8px 12px;
+                    border-bottom: 2px solid #e8e8e8;
+                    white-space: nowrap;
+                    text-align: center;
+                }
+
+                .roster-table th.shift-col {
+                    text-align: left;
+                    min-width: 120px;
+                }
+
+                .roster-table td {
+                    padding: 8px 12px;
+                    border-bottom: 1px solid #f0f0f0;
+                    border-right: 1px solid #f0f0f0;
+                    vertical-align: top;
+                    white-space: nowrap;
+                }
+
+                .roster-table td.shift-name {
+                    font-weight: 600;
+                    background: #f9f9f9;
+                    color: #444;
+                    white-space: nowrap;
+                }
+
+                .roster-table td.dayoff-cell {
+                    background: #f5f5f5;
+                    color: #bbb;
+                    text-align: center;
+                }
+
+                .roster-table td.understaffed {
+                    background: #fff5f5 !important;
+                }
+
+                .roster-table tr:hover td {
+                    background: #f5f7ff;
+                }
+
+                .roster-table tr:hover td.shift-name {
+                    background: #eef1fa;
+                }
+
+                .empty-state {
+                    padding: 2rem;
+                    text-align: center;
+                    color: #aaa;
+                    font-size: 13px;
+                }
+            </h:outputStylesheet>
+
+            <div class="roster-form">
+
+                <div class="page-header">
+                    <p class="page-title"><h:outputText value="Roster Shift Table" /></p>
+                    <p class="page-subtitle"><h:outputText value="Select a date range and roster then click Fill Roster" /></p>
+                </div>
+
+                <p:panel styleClass="controls-panel">
+                    <div class="controls-grid">
+
+                        <div class="fields-grid">
+                            <div class="field-group">
+                                <p:outputLabel for="frmDate" value="From date" styleClass="field-label" />
+                                <p:calendar id="frmDate"
+                                            navigator="true"
+                                            value="#{shiftTableController.fromDate}"
+                                            pattern="#{sessionController.applicationPreference.longDateFormat}"
+                                            style="width: 100%;" />
+                            </div>
+
+                            <div class="field-group">
+                                <p:outputLabel for="toDate" value="To date" styleClass="field-label" />
+                                <p:calendar id="toDate"
+                                            navigator="true"
+                                            value="#{shiftTableController.toDate}"
+                                            pattern="#{sessionController.applicationPreference.longDateFormat}"
+                                            style="width: 100%;" />
+                            </div>
+
+                            <div class="field-group">
+                                <p:outputLabel for="roster" value="Roster" styleClass="field-label" />
+                                <p:selectOneMenu id="roster"
+                                                 value="#{shiftTableController.roster}"
+                                                 style="width: 100%;">
+                                    <f:selectItem itemLabel="Select roster" />
+                                    <f:selectItems value="#{rosterController.items}"
+                                                   var="r"
+                                                   itemLabel="#{r.name}"
+                                                   itemValue="#{r}" />
+                                    <f:ajax event="change"
+                                            execute="@this"
+                                            render="reportPanel"
+                                            listener="#{shiftTableController.selectRosterLstener()}" />
+                                </p:selectOneMenu>
+                            </div>
+                        </div>
+
+                        <div class="controls-actions">
+                            <p:commandButton value="Fill Roster"
+                                             ajax="false"
+                                             icon="pi pi-sync"
+                                             styleClass="btn-action"
+                                             actionListener="#{shiftTableController.makeTableNull()}"
+                                             action="#{shiftTableController.fetchShiftTable()}" />
+                        </div>
+
+                        <div class="controls-actions-secondary">
+                            <p:commandButton value="Print"
+                                             type="button"
+                                             icon="pi pi-print"
+                                             styleClass="btn-action">
+                                <p:printer target="print2" />
+                            </p:commandButton>
+                        </div>
+
+                    </div>
+                </p:panel>
+
+                <p:panel id="reportPanel">
+                    <p:panel id="print2" styleClass="report-panel noBorder summeryBorder">
+
+                        <f:facet name="header">
+                            <div class="report-header-wrap">
+                                <h:panelGroup rendered="#{shiftTableController.roster ne null}">
+                                    <span class="report-title-label">
+                                        <h:outputText value="Roster: " />
+                                        <h:outputText value="#{shiftTableController.roster.name}" />
+                                    </span>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{shiftTableController.fromDate ne null and shiftTableController.toDate ne null}">
+                                    <p class="report-meta">
+                                        <h:outputText value="#{shiftTableController.fromDate}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                        </h:outputText>
+                                        <h:outputText value=" — " />
+                                        <h:outputText value="#{shiftTableController.toDate}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                        </h:outputText>
+                                    </p>
+                                </h:panelGroup>
+                                <span class="notice-text">
+                                    <h:outputText value="* This report considers only analysed times" />
+                                </span>
+                            </div>
+                        </f:facet>
+
+                        <!-- Empty state -->
+                        <h:panelGroup rendered="#{shiftTableController.rosterTable eq null
+                                                   or shiftTableController.rosterTable.rows eq null
+                                                   or shiftTableController.rosterTable.rows.isEmpty()}">
+                            <div class="empty-state">
+                                <h:outputText value="No roster data. Select a roster and date range then click Fill Roster." />
+                            </div>
+                        </h:panelGroup>
+
+                        <!-- Roster table -->
+                        <h:panelGroup rendered="#{shiftTableController.rosterTable ne null
+                                                   and not shiftTableController.rosterTable.rows.isEmpty()}">
+                            <div class="roster-table-wrap">
+                                <table class="roster-table">
+                                    <thead>
+                                        <tr>
+                                            <th class="shift-col">Shift</th>
+                                            <ui:repeat value="#{shiftTableController.rosterTable.dates}" var="d">
+                                                <th>
+                                                    <h:outputText value="#{d}">
+                                                        <f:convertDateTime pattern="dd/MM" />
+                                                    </h:outputText>
+                                                    <br />
+                                                    <h:outputText value="#{d}">
+                                                        <f:convertDateTime pattern="EEE" />
+                                                    </h:outputText>
+                                                </th>
+                                            </ui:repeat>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <ui:repeat value="#{shiftTableController.rosterTable.rows}" var="row">
+                                            <tr>
+                                                <td class="shift-name">
+                                                    <h:outputText value="#{row.shiftName}" />
+                                                </td>
+                                                <ui:repeat value="#{row.cells}" var="cell">
+                                                    <td class="#{row.dayOff ? 'dayoff-cell' : cell.understaffed ? 'understaffed' : ''}">
+                                                        <h:outputText value="#{row.dayOff ? 'OFF' : cell.staffNames}"
+                                                                      style="#{cell.understaffed ? 'color:#c0392b;' : ''}" />
+                                                    </td>
+                                                </ui:repeat>
+                                            </tr>
+                                        </ui:repeat>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div style="display:flex; justify-content:flex-end; align-items:center; gap:6px;
+                                        padding: 0.85rem 1.5rem; border-top: 1px solid #e8e8e8;
+                                        font-size: 12px; color: #999;">
+                                <p:outputLabel value="Print by: #{sessionController.loggedUser.webUserPerson.name}" />
+                                <span>·</span>
+                                <p:outputLabel value="#{commonFunctionsProxy.currentDateTime}">
+                                    <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a" />
+                                </p:outputLabel>
+                            </div>
+                        </h:panelGroup>
+
+                    </p:panel>
+                </p:panel>
+
+            </div>
+
+        </h:form>
     </ui:define>
-
-
 
 </ui:composition>
