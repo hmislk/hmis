@@ -231,6 +231,13 @@ public class CapabilityStatementResource {
                         "Investigation master management including search, create, update, and activate/deactivate for item import workflows",
                         "API Key",
                         "GET", "POST", "PUT", "PATCH"))
+                .add(resource("Investigation Format", "/api/investigations/{investigationId}/format",
+                        "Manage investigation report format: items (Label, Value, Calculation, Flag, DynamicLabel types), "
+                        + "item values (dropdown options for List-type items), calculations (formulas referencing other items), "
+                        + "flags (reference range flags by age/sex), and dynamic labels (conditional labels by age/sex). "
+                        + "Sub-resources: /items, /items/{itemId}/values, /calculations, /flags, /dynamic-labels.",
+                        "API Key",
+                        "GET", "POST", "PUT", "DELETE"))
                 .add(resource("Services", "/api/services",
                         "OPD and Inward service management including fees and categories",
                         "API Key",
