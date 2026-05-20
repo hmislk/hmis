@@ -65,7 +65,8 @@
                                     currentPageReportTemplate="(Page {currentPage} of {totalPages})">
 
                                     <p:column headerText="Bill No" sortBy="#{row.payment.bill.deptId}">
-                                        <h:outputText value="#{row.payment.bill.deptId}" />
+                                        <h:outputText value="#{row.payment.bill.deptId}" rendered="#{row.payment.bill.deptId ne null}" />
+                                        <h:outputText value="#{row.payment.bill.id}" rendered="#{row.payment.bill.deptId eq null}" />
                                     </p:column>
 
                                     <p:column headerText="Date" sortBy="#{row.payment.createdAt}">
@@ -134,7 +135,8 @@
                                 currentPageReportTemplate="(Page {currentPage} of {totalPages})">
 
                                 <p:column headerText="Bill No" sortBy="#{row.payment.bill.deptId}">
-                                    <h:outputText value="#{row.payment.bill.deptId}" />
+                                    <h:outputText value="#{row.payment.bill.deptId}" rendered="#{row.payment.bill.deptId ne null}" />
+                                    <h:outputText value="#{row.payment.bill.id}" rendered="#{row.payment.bill.deptId eq null}" />
                                 </p:column>
 
                                 <p:column headerText="Date" sortBy="#{row.payment.createdAt}">
