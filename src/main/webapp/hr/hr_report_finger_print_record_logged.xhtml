@@ -301,7 +301,7 @@
                     </p:column>
 
                     <p:column headerText="Time type" styleClass="col-text">
-                        <p:outputLabel value="#{ss.verifiedRecord.times}" />
+                        <h:outputText value="#{empty ss.verifiedRecord ? '-' : ss.verifiedRecord.times}" />
                     </p:column>
 
                     <p:column headerText="Logged date" styleClass="col-text">
@@ -317,15 +317,19 @@
                     </p:column>
 
                     <p:column headerText="Verified date" styleClass="col-text">
-                        <h:outputText value="#{ss.verifiedRecord.recordTimeStamp}">
+                        <h:outputText value="#{ss.verifiedRecord.recordTimeStamp}"
+                                      rendered="#{not empty ss.verifiedRecord}">
                             <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                         </h:outputText>
+                        <h:outputText value="-" rendered="#{empty ss.verifiedRecord}" />
                     </p:column>
 
                     <p:column headerText="Verified time" styleClass="col-text">
-                        <h:outputText value="#{ss.verifiedRecord.recordTimeStamp}">
+                        <h:outputText value="#{ss.verifiedRecord.recordTimeStamp}"
+                                      rendered="#{not empty ss.verifiedRecord}">
                             <f:convertDateTime pattern="hh:mm:ss a" />
                         </h:outputText>
+                        <h:outputText value="-" rendered="#{empty ss.verifiedRecord}" />
                     </p:column>
 
                     <f:facet name="footer">
