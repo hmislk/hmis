@@ -334,11 +334,15 @@
                             </p:column>
 
                             <p:column headerText="Created Date" styleClass="col-text">
-                                #{ss.createdAt}
+                                <h:outputText value="#{ss.createdAt}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                </h:outputText>
                             </p:column>
 
                             <p:column headerText="Leave Date" styleClass="col-text">
-                                #{ss.leaveDate}
+                                <h:outputText value="#{ss.leaveDate}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                </h:outputText>
                             </p:column>
 
                             <p:column headerText="Qty" styleClass="col-num">
