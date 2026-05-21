@@ -276,7 +276,9 @@
 
                         <f:facet name="header">
                             <div class="report-header-wrap">
-                                <span class="report-title-label">Employee Working Time and Overtime Report</span>
+                                <span class="report-title-label">
+                                    <h:outputText value="Employee Working Time and Overtime Report" />
+                                </span>
 
                                 <h:panelGroup rendered="#{hrReportController.fromDate ne null}">
                                     <p class="report-meta">
@@ -296,27 +298,27 @@
                                 </h:panelGroup>
                                 <h:panelGroup rendered="#{hrReportController.reportKeyWord.department ne null}">
                                     <p class="report-meta">
-                                        Department: <h:outputText value="#{hrReportController.reportKeyWord.department.name}" />
+                                        <h:outputText value="Department: " /><h:outputText value="#{hrReportController.reportKeyWord.department.name}" />
                                     </p>
                                 </h:panelGroup>
                                 <h:panelGroup rendered="#{hrReportController.reportKeyWord.staff ne null}">
                                     <p class="report-meta">
-                                        Employee: <h:outputText value="#{hrReportController.reportKeyWord.staff.person.name}" />
+                                        <h:outputText value="Employee: " /><h:outputText value="#{hrReportController.reportKeyWord.staff.person.name}" />
                                     </p>
                                 </h:panelGroup>
                                 <h:panelGroup rendered="#{hrReportController.reportKeyWord.staffCategory ne null}">
                                     <p class="report-meta">
-                                        Staff category: <h:outputText value="#{hrReportController.reportKeyWord.staffCategory.name}" />
+                                        <h:outputText value="Staff category: " /><h:outputText value="#{hrReportController.reportKeyWord.staffCategory.name}" />
                                     </p>
                                 </h:panelGroup>
                                 <h:panelGroup rendered="#{hrReportController.reportKeyWord.designation ne null}">
                                     <p class="report-meta">
-                                        Designation: <h:outputText value="#{hrReportController.reportKeyWord.designation.name}" />
+                                        <h:outputText value="Designation: " /><h:outputText value="#{hrReportController.reportKeyWord.designation.name}" />
                                     </p>
                                 </h:panelGroup>
                                 <h:panelGroup rendered="#{hrReportController.reportKeyWord.roster ne null}">
                                     <p class="report-meta">
-                                        Roster: <h:outputText value="#{hrReportController.reportKeyWord.roster.name}" />
+                                        <h:outputText value="Roster: " /><h:outputText value="#{hrReportController.reportKeyWord.roster.name}" />
                                     </p>
                                 </h:panelGroup>
                             </div>
@@ -478,7 +480,8 @@
 
                             <f:facet name="footer">
                                 <div class="report-table-footer">
-                                    <p:outputLabel value="Print by: #{sessionController.loggedUser.webUserPerson.name}" />
+                                    <h:outputText value="Print by: " />
+                                    <h:outputText value="#{sessionController.loggedUser.webUserPerson.name}" />
                                     <span>·</span>
                                     <p:outputLabel value="#{commonFunctionsProxy.currentDateTime}">
                                         <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a" />
