@@ -3104,6 +3104,9 @@ public class HrReportController implements Serializable {
 //            List<Object[]> list = fetchWorkedTime(stf);
 
             List<Object[]> list = fetchWorkedTimeByDateOnly(stf); // Added by Buddhika
+            if (list == null) {
+                list = new ArrayList<>();
+            }
 
 //            fetchWorkedTimeTemporary(stf); // For Testing
             int i = 0;
@@ -3117,6 +3120,9 @@ public class HrReportController implements Serializable {
                 Double valueExtra = (Double) obj[2] != null ? (Double) obj[2] : 0;
                 Double totalExtraDuty = (Double) obj[3] != null ? (Double) obj[3] : 0;
                 StaffShift ss = (StaffShift) obj[4] != null ? (StaffShift) obj[4] : new StaffShift();
+                if (ss.getStaff() == null || ss.getShiftDate() == null) {
+                    continue;
+                }
                 List<StaffLeave> staffLeaves = humanResourceBean.fetchStaffLeave(ss.getStaff(), ss.getShiftDate());
 //                //System.out.println("ss.getLeaveType().isFullDayLeave() = " + ss.getLeaveType().isFullDayLeave());
                 //System.out.println("staffLeaves.size() = " + staffLeaves.size());
@@ -3124,13 +3130,12 @@ public class HrReportController implements Serializable {
                     double d = 0.0;
                     for (StaffLeave sl : staffLeaves) {
                         if (sl.getLeaveType() != LeaveType.No_Pay_Half) {
-                            d += (ss.getShift().getLeaveHourHalf() * 60 * 60);
-                            //System.out.println("d = " + d);
+                            if (ss.getShift() != null) {          // add this guard
+                                d += (ss.getShift().getLeaveHourHalf() * 60 * 60);
+                            }
                         }
                     }
                     if (d > 0) {
-                        //System.out.println("d = " + d);
-                        //System.out.println("value = " + value);
                         value = d;
                     }
                 }
@@ -3288,6 +3293,9 @@ public class HrReportController implements Serializable {
                 Double valueExtra = (Double) obj[2] != null ? (Double) obj[2] : 0;
                 Double totalExtraDuty = (Double) obj[3] != null ? (Double) obj[3] : 0;
                 StaffShift ss = (StaffShift) obj[4] != null ? (StaffShift) obj[4] : new StaffShift();
+                if (ss.getStaff() == null || ss.getShiftDate() == null || ss.getShift() == null) {
+                    continue;
+                }
                 //System.out.println("ss = " + ss);
                 //System.out.println("ss.isAutoLeave() = " + ss.isAutoLeave());
                 Double value = 0.0;
@@ -3297,6 +3305,9 @@ public class HrReportController implements Serializable {
                     value = (Double) obj[1] != null ? (Double) obj[1] : 0;
                 }
                 List<StaffLeave> staffLeaves = humanResourceBean.fetchStaffLeave(ss.getStaff(), ss.getShiftDate());
+                if (staffLeaves == null) {
+                    staffLeaves = new ArrayList<>();
+                }
 //                //System.out.println("ss.getLeaveType().isFullDayLeave() = " + ss.getLeaveType().isFullDayLeave());
                 //System.out.println("staffLeaves.size() = " + staffLeaves.size());
                 //System.out.println("value = " + value);
