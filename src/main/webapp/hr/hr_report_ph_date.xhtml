@@ -233,7 +233,7 @@
                         <span class="report-title-label">
                             <h:outputText value="#{sessionController.loggedUser.institution.name}" />
                         </span>
-                        <span class="report-title-label">Holiday Report</span>
+                        <span class="report-title-label"><h:outputText value="Holiday Report" /></span>
                         <h:panelGroup rendered="#{phDateController.frDate ne null}">
                             <p class="report-meta">
                                 <h:outputText value="#{phDateController.frDate}">
