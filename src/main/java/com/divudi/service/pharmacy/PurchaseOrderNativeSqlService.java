@@ -170,6 +170,10 @@ public class PurchaseOrderNativeSqlService {
         if (rows == null || rows.isEmpty()) {
             return null;
         }
+        if (!rows.isEmpty()) {
+            Object[] dbg = rows.get(0);
+            System.out.println(">>>PO_NATIVE_SERVICE: col[4]=createdAt=" + dbg[4] + " col[7]=approveAt=" + dbg[7] + " col[22]=rb.createdAt=" + dbg[22] + " col[23]=rb.comments=" + dbg[23] + " col[24]=rb.checkeAt=" + dbg[24]);
+        }
         Object[] r = rows.get(0);
         int col = 0;
 
