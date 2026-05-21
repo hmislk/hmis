@@ -30,6 +30,7 @@ public class PurchaseOrderNativeSqlController implements Serializable {
 
     private PurchaseOrderPrintDto printDto;
     private boolean printPreview;
+    private Long currentBillId;
 
     @Inject
     private SessionController sessionController;
@@ -47,6 +48,7 @@ public class PurchaseOrderNativeSqlController implements Serializable {
             return null;
         }
         makeNull();
+        currentBillId = billId;
         printDto = purchaseOrderNativeSqlService.loadPrintDtoByBillId(billId);
         if (printDto == null) {
             JsfUtil.addErrorMessage("Purchase Order not found");
@@ -63,6 +65,7 @@ public class PurchaseOrderNativeSqlController implements Serializable {
     public void makeNull() {
         printDto = null;
         printPreview = false;
+        currentBillId = null;
     }
 
     // -----------------------------------------------------------------------
@@ -74,4 +77,7 @@ public class PurchaseOrderNativeSqlController implements Serializable {
 
     public boolean isPrintPreview() { return printPreview; }
     public void setPrintPreview(boolean printPreview) { this.printPreview = printPreview; }
+
+    public Long getCurrentBillId() { return currentBillId; }
+    public void setCurrentBillId(Long currentBillId) { this.currentBillId = currentBillId; }
 }
