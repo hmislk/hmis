@@ -257,7 +257,7 @@
 
                 <f:facet name="header">
                     <div class="report-header-wrap">
-                        <span class="report-title-label">Staff Shift</span>
+                        <span class="report-title-label"><h:outputText value="Staff Shift" /></span>
                         <h:panelGroup rendered="#{staffShiftController.fromDate ne null}">
                             <p class="report-meta">
                                 <h:outputText value="#{staffShiftController.fromDate}">
@@ -276,7 +276,8 @@
                         </h:panelGroup>
                         <h:panelGroup rendered="#{staffShiftController.reportKeyWord.department ne null}">
                             <p class="report-meta">
-                                Department: <h:outputText value="#{staffShiftController.reportKeyWord.department.name}" />
+                                <h:outputText value="Department: " />
+                                <h:outputText value="#{staffShiftController.reportKeyWord.department.name}" />
                             </p>
                         </h:panelGroup>
                     </div>
