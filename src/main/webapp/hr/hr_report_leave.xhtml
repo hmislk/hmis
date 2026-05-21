@@ -5,7 +5,6 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
-
       xmlns:hr="http://xmlns.jcp.org/jsf/composite/autocomplete">
 
     <h:body>
@@ -14,112 +13,353 @@
 
             <ui:define name="content">
 
-                <h:form >
-                    <p:panel >
-                        <f:facet name="header" >
-                            <h:outputLabel value="Leave Report" />
+                <h:form styleClass="leave-report-form">
+
+                    <h:outputStylesheet>
+                        .leave-report-form {
+                            padding: 2rem 1.75rem;
+                        }
+
+                        .page-header {
+                            margin-bottom: 1.75rem;
+                        }
+
+                        .page-title {
+                            font-size: 18px;
+                            font-weight: 600;
+                            margin: 0 0 4px 0;
+                        }
+
+                        .page-subtitle {
+                            font-size: 13px;
+                            color: #888;
+                            margin: 0;
+                        }
+
+                        .controls-panel .ui-panel-content {
+                            padding: 1.5rem 1.75rem !important;
+                        }
+
+                        .controls-grid {
+                            display: flex;
+                            flex-direction: column;
+                            gap: 1.25rem;
+                        }
+
+                        .fields-grid {
+                            display: grid;
+                            grid-template-columns: repeat(2, 1fr);
+                            gap: 1rem 1.5rem;
+                        }
+
+                        .field-group {
+                            display: flex;
+                            flex-direction: column;
+                            gap: 6px;
+                        }
+
+                        .field-label {
+                            font-size: 11.5px !important;
+                            font-weight: 600 !important;
+                            text-transform: uppercase;
+                            letter-spacing: 0.05em;
+                            color: #888 !important;
+                        }
+
+                        .controls-actions {
+                            display: flex;
+                            gap: 10px;
+                            align-items: center;
+                            flex-wrap: wrap;
+                        }
+
+                        .controls-actions-secondary {
+                            display: flex;
+                            gap: 10px;
+                            align-items: center;
+                            flex-wrap: wrap;
+                            padding-top: 0.75rem;
+                            border-top: 1px solid #e8e8e8;
+                        }
+
+                        .btn-action {
+                            height: 36px !important;
+                            padding: 0 18px !important;
+                            font-size: 13px !important;
+                        }
+
+                        .report-panel {
+                            margin-top: 1.5rem;
+                        }
+
+                        .report-panel .ui-panel-content {
+                            padding: 0 !important;
+                        }
+
+                        .report-header-wrap {
+                            text-align: center;
+                            padding: 1.5rem 1.5rem 1rem;
+                            border-bottom: 1px solid #e8e8e8;
+                        }
+
+                        .report-title-label {
+                            font-size: 13px;
+                            color: #666;
+                            display: block;
+                            margin-bottom: 2px;
+                        }
+
+                        .report-meta {
+                            font-size: 13px;
+                            color: #555;
+                            margin-top: 4px;
+                        }
+
+                        .wt-table .ui-datatable-tablewrapper {
+                            overflow-x: auto !important;
+                            width: 100% !important;
+                        }
+
+                        .wt-table table {
+                            width: auto !important;
+                            table-layout: auto !important;
+                        }
+
+                        .wt-table .ui-datatable-data td,
+                        .wt-table .ui-datatable-thead th {
+                            padding: 10px 14px !important;
+                            white-space: nowrap;
+                            font-size: 13px !important;
+                            width: auto !important;
+                        }
+
+                        .wt-table .ui-datatable-thead th {
+                            font-size: 12px !important;
+                            font-weight: 600 !important;
+                            text-transform: uppercase;
+                            letter-spacing: 0.03em;
+                            color: #888 !important;
+                            background: #f9f9f9 !important;
+                            border-bottom: 1px solid #e8e8e8 !important;
+                        }
+
+                        .wt-table .ui-datatable-data tr:hover td {
+                            background: #f5f7ff !important;
+                        }
+
+                        .wt-table .col-text {
+                            text-align: left !important;
+                        }
+
+                        .wt-table .col-num {
+                            text-align: right !important;
+                        }
+
+                        .wt-table tfoot td {
+                            background: #f9f9f9 !important;
+                            font-size: 12px !important;
+                            border-top: 2px solid #e0e0e0 !important;
+                            padding: 10px 14px !important;
+                            color: #999;
+                        }
+
+                        .report-table-footer {
+                            display: flex;
+                            justify-content: flex-end;
+                            align-items: center;
+                            gap: 6px;
+                            padding: 0.85rem 1.5rem;
+                            border-top: 1px solid #e8e8e8;
+                            font-size: 12px;
+                            color: #999;
+                        }
+                    </h:outputStylesheet>
+
+                    <div class="page-header">
+                        <p class="page-title"><h:outputText value="Leave Report" /></p>
+                        <p class="page-subtitle"><h:outputText value="Filter by date range, employee, department or leave type and process to generate" /></p>
+                    </div>
+
+                    <p:panel styleClass="controls-panel">
+                        <div class="controls-grid">
+
+                            <div class="fields-grid">
+                                <div class="field-group">
+                                    <p:outputLabel for="fromDate" value="From" styleClass="field-label" />
+                                    <p:calendar id="fromDate"
+                                                value="#{hrReportController.fromDate}"
+                                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                                style="width: 100%;" />
+                                </div>
+
+                                <div class="field-group">
+                                    <p:outputLabel for="toDate" value="To" styleClass="field-label" />
+                                    <p:calendar id="toDate"
+                                                value="#{hrReportController.toDate}"
+                                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                                style="width: 100%;" />
+                                </div>
+
+                                <div class="field-group">
+                                    <p:outputLabel value="Department" styleClass="field-label" />
+                                    <hr:department value="#{hrReportController.reportKeyWord.department}" />
+                                </div>
+
+                                <div class="field-group">
+                                    <p:outputLabel value="Employee" styleClass="field-label" />
+                                    <hr:completeStaff value="#{hrReportController.reportKeyWord.staff}" />
+                                </div>
+
+                                <div class="field-group">
+                                    <p:outputLabel value="Staff category" styleClass="field-label" />
+                                    <hr:completeStaffCategory value="#{hrReportController.reportKeyWord.staffCategory}" />
+                                </div>
+
+                                <div class="field-group">
+                                    <p:outputLabel value="Staff designation" styleClass="field-label" />
+                                    <hr:completeDesignation value="#{hrReportController.reportKeyWord.designation}" />
+                                </div>
+
+                                <div class="field-group">
+                                    <p:outputLabel value="Staff roster" styleClass="field-label" />
+                                    <hr:completeRoster value="#{hrReportController.reportKeyWord.roster}" />
+                                </div>
+
+                                <div class="field-group">
+                                    <p:outputLabel for="leaveType" value="Leave type" styleClass="field-label" />
+                                    <p:selectOneMenu id="leaveType"
+                                                     value="#{hrReportController.reportKeyWord.leaveType}"
+                                                     appendTo="@body"
+                                                     autoWidth="false"
+                                                     style="width: 100%;">
+                                        <f:selectItem itemLabel="Select leave type" />
+                                        <f:selectItems value="#{enumController.leaveType}" />
+                                    </p:selectOneMenu>
+                                </div>
+                            </div>
+
+                            <div class="controls-actions">
+                                <p:commandButton value="Process"
+                                                 ajax="false"
+                                                 action="#{hrReportController.createStaffLeave()}"
+                                                 icon="pi pi-sync"
+                                                 styleClass="btn-action" />
+                            </div>
+
+                            <div class="controls-actions-secondary">
+                                <p:commandButton value="Print"
+                                                 type="button"
+                                                 icon="pi pi-print"
+                                                 styleClass="btn-action">
+                                    <p:printer target="gpBillPreview" />
+                                </p:commandButton>
+                                <p:commandButton value="Export Excel"
+                                                 ajax="false"
+                                                 icon="pi pi-file-excel"
+                                                 styleClass="btn-action noPrintButton">
+                                    <p:dataExporter type="xlsx" target="tb1" fileName="hr_report_leave" />
+                                </p:commandButton>
+                            </div>
+
+                        </div>
+                    </p:panel>
+
+                    <p:panel id="gpBillPreview" styleClass="report-panel noBorder summeryBorder">
+
+                        <f:facet name="header">
+                            <div class="report-header-wrap">
+                                <span class="report-title-label">
+                                    <h:outputText value="#{sessionController.loggedUser.institution.name}" />
+                                </span>
+                                <span class="report-title-label">Leave Report</span>
+                                <h:panelGroup rendered="#{hrReportController.fromDate ne null}">
+                                    <p class="report-meta">
+                                        <h:outputText value="#{hrReportController.fromDate}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                        </h:outputText>
+                                        —
+                                        <h:outputText value="#{hrReportController.toDate}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                        </h:outputText>
+                                    </p>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{hrReportController.reportKeyWord.department ne null}">
+                                    <p class="report-meta">
+                                        Department: <h:outputText value="#{hrReportController.reportKeyWord.department.name}" />
+                                    </p>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{hrReportController.reportKeyWord.staff ne null}">
+                                    <p class="report-meta">
+                                        Employee: <h:outputText value="#{hrReportController.reportKeyWord.staff.person.name}" />
+                                    </p>
+                                </h:panelGroup>
+                            </div>
                         </f:facet>
-                        <h:panelGrid columns="2" >
-                            <h:outputLabel value="From : " />
-                            <p:calendar value="#{hrReportController.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
-                            <h:outputLabel value="To : " />
-                            <p:calendar value="#{hrReportController.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
-                            <h:outputLabel value="Department : "/>
-                            <hr:department value="#{hrReportController.reportKeyWord.department}"/>
-                            <h:outputLabel value="Employee : "/>
-                            <hr:completeStaff value="#{hrReportController.reportKeyWord.staff}"/>
-                            <h:outputLabel value="Staff Category : "/>
-                            <hr:completeStaffCategory value="#{hrReportController.reportKeyWord.staffCategory}"/>
-                            <h:outputLabel value="Staff Designation : "/>
-                            <hr:completeDesignation value="#{hrReportController.reportKeyWord.designation}"/>
-                            <h:outputLabel value="Staff Roster : "/>
-                            <hr:completeRoster value="#{hrReportController.reportKeyWord.roster}"/>
-                            <h:outputLabel value="Leave Type : "/>
-                            <p:selectOneMenu  value="#{hrReportController.reportKeyWord.leaveType}">
-                                <f:selectItem itemLabel="Select Day Type : "/>
-                                <f:selectItems value="#{enumController.leaveType}"/>
-                            </p:selectOneMenu>
-                        </h:panelGrid>
 
-                        <p:commandButton ajax="false" value="Process" action="#{hrReportController.createStaffLeave()}"/>
-                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton"  >
-                            <p:dataExporter type="xlsx" target="tb1" fileName="hr_report_leave"  />
-                        </p:commandButton>
-                        <p:commandButton value="Print" ajax="false" action="#" >
-                            <p:printer target="gpBillPreview" ></p:printer>
-                        </p:commandButton>
-                        <p:panel id="gpBillPreview"  styleClass="noBorder summeryBorder" >
-                            <p:dataTable id="tb1" value="#{hrReportController.staffLeaves}" var="ss">
-                                <f:facet name="header">
-                                    <h:outputLabel value="#{sessionController.loggedUser.institution.name}" /><br></br>
-                                    <h:outputLabel value="Leave Report" /><br/>
-                                    <h:outputLabel value="  From : "  />
-                                    <h:outputLabel  value="#{hrReportController.fromDate}" >
-                                        <f:convertDateTime pattern="dd MM yy "/>
-                                    </h:outputLabel>
-                                    <h:outputLabel/>
-                                    <h:outputLabel/>
-                                    <h:outputLabel value="  To : "/>
-                                    <h:outputLabel  value="#{hrReportController.toDate}">
-                                        <f:convertDateTime pattern="dd MM yy "/>
-                                    </h:outputLabel><br/>
-                                    <h:panelGroup rendered="#{hrReportController.reportKeyWord.department ne null}" >
-                                        <h:outputLabel value="Department : #{hrReportController.reportKeyWord.department.name}"/>
-                                        <br/>
-                                    </h:panelGroup>
-                                    <h:panelGroup rendered="#{hrReportController.reportKeyWord.staff ne null}" >
-                                        <h:outputLabel value="Staff : #{hrReportController.reportKeyWord.staff.person.name}"/>
-                                        <br/>
-                                    </h:panelGroup>
-                                </f:facet>
+                        <p:dataTable id="tb1"
+                                     value="#{hrReportController.staffLeaves}"
+                                     var="ss"
+                                     styleClass="wt-table">
 
-                                <p:column headerText="Form No">
-                                    #{ss.form.code}
-                                </p:column>
-                                <p:column headerText="Emp No">
-                                    #{ss.staff.code}
-                                </p:column>
-                                <p:column headerText="Emp Name">
-                                    #{ss.staff.person.nameWithTitle}
-                                </p:column>
-                                <p:column headerText="Department Name">
-                                    #{ss.staff.department.name}
-                                </p:column>
-                                <p:column headerText="Staff Category">
-                                    #{ss.staff.staffCategory.name}
-                                </p:column>
-                                <p:column headerText="Staff Designation">
-                                    #{ss.staff.designation.name}
-                                </p:column>
-                                <p:column headerText="Staff Roster" >
-                                    #{ss.staff.roster.name}
-                                </p:column>
-                                <p:column headerText="Leave Type" >
-                                    #{ss.leaveType}
-                                </p:column>
+                            <p:column headerText="Form No" styleClass="col-text">
+                                #{ss.form.code}
+                            </p:column>
 
-                                <p:column headerText="Crated Date" >
-                                    #{ss.createdAt}
-                                </p:column>
-                                <p:column headerText="Leave Date" >
-                                    #{ss.leaveDate}
-                                </p:column>
-                                <p:column headerText="Leave Qty" >
-                                    #{ss.qty}
-                                </p:column>
-                                <p:column headerText="Comments" >
-                                    #{ss.form.comments}
-                                </p:column>
-                                 <f:facet name="footer">
-                                    <p:outputLabel value="Print By : #{sessionController.loggedUser.webUserPerson.name} - " />
-                                    <p:outputLabel value="Print At : " />
-                                    <p:outputLabel value="#{commonFunctionsProxy.currentDateTime}" >
-                                        <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a " />
+                            <p:column headerText="Emp No" styleClass="col-text">
+                                #{ss.staff.code}
+                            </p:column>
+
+                            <p:column headerText="Emp Name" styleClass="col-text" style="min-width: 180px;">
+                                #{ss.staff.person.nameWithTitle}
+                            </p:column>
+
+                            <p:column headerText="Department" styleClass="col-text">
+                                #{ss.staff.department.name}
+                            </p:column>
+
+                            <p:column headerText="Category" styleClass="col-text">
+                                #{ss.staff.staffCategory.name}
+                            </p:column>
+
+                            <p:column headerText="Designation" styleClass="col-text">
+                                #{ss.staff.designation.name}
+                            </p:column>
+
+                            <p:column headerText="Roster" styleClass="col-text">
+                                #{ss.staff.roster.name}
+                            </p:column>
+
+                            <p:column headerText="Leave Type" styleClass="col-text">
+                                #{ss.leaveType}
+                            </p:column>
+
+                            <p:column headerText="Created Date" styleClass="col-text">
+                                #{ss.createdAt}
+                            </p:column>
+
+                            <p:column headerText="Leave Date" styleClass="col-text">
+                                #{ss.leaveDate}
+                            </p:column>
+
+                            <p:column headerText="Qty" styleClass="col-num">
+                                #{ss.qty}
+                            </p:column>
+
+                            <p:column headerText="Comments" styleClass="col-text">
+                                #{ss.form.comments}
+                            </p:column>
+
+                            <f:facet name="footer">
+                                <div class="report-table-footer">
+                                    <p:outputLabel value="Print by: #{sessionController.loggedUser.webUserPerson.name}" />
+                                    <span>·</span>
+                                    <p:outputLabel value="#{commonFunctionsProxy.currentDateTime}">
+                                        <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a" />
                                     </p:outputLabel>
-                                 </f:facet>
-                            </p:dataTable>
-                        </p:panel>
+                                </div>
+                            </f:facet>
 
+                        </p:dataTable>
 
                     </p:panel>
 
