@@ -1904,7 +1904,7 @@ public class InwardReportController implements Serializable {
                 params.put("site", site);
             }
 
-            jpql.append(" Group By FUNCTION('MONTH', a.dateOfDischarge), s.item.category.name ");
+            jpql.append(" Group By FUNCTION('MONTH', a.dateOfDischarge), COALESCE(c.name, 'Uncategorized') ");
 
         } else if (reportType.equals("DETAIL")) {
 
