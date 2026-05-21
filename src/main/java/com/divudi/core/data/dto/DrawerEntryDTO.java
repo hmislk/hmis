@@ -27,6 +27,11 @@ public class DrawerEntryDTO implements Serializable {
     private Long paymentId;
     private Date createdAt;
     private String createrName;
+    private String billTypeAtomic;
+    private Double beforeShortageExcess;
+    private Double afterShortageExcess;
+    private Long webUserId;
+    private String webUserName;
 
     // Constructors
     public DrawerEntryDTO() {
@@ -143,6 +148,46 @@ public class DrawerEntryDTO implements Serializable {
 
     public void setCreaterName(String createrName) {
         this.createrName = createrName;
+    }
+
+    public String getBillTypeAtomic() {
+        return billTypeAtomic;
+    }
+
+    public void setBillTypeAtomic(String billTypeAtomic) {
+        this.billTypeAtomic = billTypeAtomic;
+    }
+
+    public Double getBeforeShortageExcess() {
+        return beforeShortageExcess;
+    }
+
+    public void setBeforeShortageExcess(Double beforeShortageExcess) {
+        this.beforeShortageExcess = beforeShortageExcess;
+    }
+
+    public Double getAfterShortageExcess() {
+        return afterShortageExcess;
+    }
+
+    public void setAfterShortageExcess(Double afterShortageExcess) {
+        this.afterShortageExcess = afterShortageExcess;
+    }
+
+    public Long getWebUserId() {
+        return webUserId;
+    }
+
+    public void setWebUserId(Long webUserId) {
+        this.webUserId = webUserId;
+    }
+
+    public String getWebUserName() {
+        return webUserName;
+    }
+
+    public void setWebUserName(String webUserName) {
+        this.webUserName = webUserName;
     }
 
     @Override
