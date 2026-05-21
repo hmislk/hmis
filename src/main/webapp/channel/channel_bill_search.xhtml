@@ -46,6 +46,15 @@
                                                     inputStyleClass="form-control">
                                         </p:calendar>
 
+                                        <hr/>
+                                        <p:selectBooleanButton 
+                                            onLabel="Filter by Appointment Date" 
+                                            offLabel="Filter by Bill Date"
+                                            value="#{searchController.filterChannelBillsByAppointmentDate}"
+                                            class="w-100">
+                                        </p:selectBooleanButton>
+                                        <hr/>
+
                                         <p:commandButton
                                             icon="fas fa-search"
                                             id="btnSearch"
@@ -156,6 +165,8 @@
                                     paginatorPosition="bottom"
                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                     rowsPerPageTemplate="5,10,25,50"
+                                    tableStyle="table-layout: auto;"
+                                    widgetVar="billsTable"
                                     >
                                     <p:column
                                         headerText="No"
@@ -192,24 +203,43 @@
                                                                              <p:outputLabel value="#{bill.billTypeAtomic}"/>
                                                                         </p:column>-->
 
-                                    <p:column headerText="Billed At" filterBy="#{bill.billDate}" sortBy="#{bill.billDate}">
-                                        <h:panelGroup rendered="#{fn:substring(searchController.fromDate, 0, 10) eq fn:substring(searchController.toDate, 0, 10)}">
-                                            <p:outputLabel id="billTime1" value="#{bill.createdAt}" >
-                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}" ></f:convertDateTime>
-                                            </p:outputLabel>
-                                            <div>
-                                                <p:outputLabel value="#{bill.cancelledBill.createdAt}" rendered="#{bill.cancelled}" style="color: red">
+                                    <p:column 
+                                        headerText="Billed At"
+                                        filterBy="#{bill.createdAt}"
+                                        sortBy="#{bill.createdAt}" 
+                                        filterFunction="#{searchController.filterBySingleDate}"
+                                        style="min-width: 100px;">
+                                        <h:panelGroup rendered="#{!searchController.filterChannelBillsByAppointmentDate}">
+                                            <h:panelGroup rendered="#{fn:substring(searchController.fromDate, 0, 10) eq fn:substring(searchController.toDate, 0, 10)}">
+                                                <p:outputLabel id="billTime1" value="#{bill.createdAt}" >
                                                     <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}" ></f:convertDateTime>
                                                 </p:outputLabel>
-                                                <p:outputLabel value="#{bill.refundedBill.createdAt}" style="color: orange">
-                                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}" ></f:convertDateTime>
-                                                </p:outputLabel>
-                                            </div>
+                                                <div>
+                                                    <p:outputLabel value="#{bill.cancelledBill.createdAt}" rendered="#{bill.cancelled}" style="color: red">
+                                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}" ></f:convertDateTime>
+                                                    </p:outputLabel>
+                                                    <p:outputLabel value="#{bill.refundedBill.createdAt}" rendered="#{bill.refunded}" style="color: orange">
+                                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}" ></f:convertDateTime>
+                                                    </p:outputLabel>
+                                                </div>
 
+                                            </h:panelGroup>
+
+                                            <h:panelGroup rendered="#{fn:substring(searchController.fromDate, 0, 10) ne fn:substring(searchController.toDate, 0, 10)}">
+                                                <p:outputLabel id="billTime2" value="#{bill.createdAt}">
+                                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" ></f:convertDateTime>
+                                                </p:outputLabel>
+                                                <p:outputLabel value="#{bill.cancelledBill.createdAt}" rendered="#{bill.cancelled}" style="color: red">
+                                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" ></f:convertDateTime>
+                                                </p:outputLabel>
+                                                <p:outputLabel value="#{bill.refundedBill.createdAt}" rendered="#{bill.refunded}" style="color: orange">
+                                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" ></f:convertDateTime>
+                                                </p:outputLabel>
+                                            </h:panelGroup>
                                         </h:panelGroup>
 
-                                        <h:panelGroup rendered="#{fn:substring(searchController.fromDate, 0, 10) ne fn:substring(searchController.toDate, 0, 10)}">
-                                            <p:outputLabel id="billTime2" value="#{bill.createdAt}">
+                                        <h:panelGroup rendered="#{searchController.filterChannelBillsByAppointmentDate}">
+                                            <p:outputLabel value="#{bill.createdAt}">
                                                 <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" ></f:convertDateTime>
                                             </p:outputLabel>
                                             <p:outputLabel value="#{bill.cancelledBill.createdAt}" rendered="#{bill.cancelled}" style="color: red">
@@ -220,13 +250,48 @@
                                             </p:outputLabel>
                                         </h:panelGroup>
 
+                                        <f:facet name="filter">
+                                            <p:datePicker
+                                                showButtonBar="true"
+                                                showClearButton="true"
+                                                inputStyleClass="form-control" 
+                                                selectionMode="single" 
+                                                onchange="PF('billsTable').filter()" 
+                                                pattern="dd/MM/yy"/>
+                                        </f:facet>
+
                                     </p:column>
 
-                                    <p:column headerText="Session" sortBy="#{bill.fromDepartment.name}" filterBy="#{bill.fromDepartment.name}" filterMatchMode="contains">
+                                    <p:column
+                                        filterBy="#{bill.singleBillSession.sessionInstance.sessionDate}"
+                                        headerText="Appointment Date"
+                                        filterFunction="#{searchController.filterBySingleDate}"
+                                        sortBy="#{bill.singleBillSession.sessionInstance.sessionDate}"
+                                        style="min-width: 100px;">
+                                        <h:outputLabel value="#{bill.singleBillSession.sessionInstance.sessionDate}">
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}"></f:convertDateTime>
+                                        </h:outputLabel>
+                                        <f:facet name="filter">
+                                            <p:datePicker
+                                                showButtonBar="true"
+                                                showClearButton="true"
+                                                inputStyleClass="form-control"
+                                                selectionMode="single"
+                                                onchange="PF('billsTable').filter()"
+                                                pattern="dd/MM/yy"/>
+                                        </f:facet>
+                                    </p:column>
+
+                                    <p:column
+                                        headerText="Session"
+                                        sortBy="#{bill.singleBillSession.sessionInstance.originatingSession.name}"
+                                        filterBy="#{bill.singleBillSession.sessionInstance.originatingSession.name}"
+                                        filterMatchMode="contains"
+                                        style="min-width: 100px;">
                                         <h:outputLabel id="byDep" value="#{bill.singleBillSession.sessionInstance.originatingSession.name}" />
                                     </p:column>
                                     <p:column headerText="Billed For" sortBy="#{bill.toDepartment.name}"
-                                              filterBy="#{bill.toDepartment.name}" filterMatchMode="contains" >
+                                              filterBy="#{bill.toDepartment.name}" filterMatchMode="contains" style="min-width: 200px;">
                                         <h:outputLabel id="insDep" value="#{bill.toInstitution.name}" />
                                     </p:column>
 
@@ -246,7 +311,8 @@
                                     </p:column>
                                     <p:column
                                         headerText="Payment Method"
-                                        filterMatchMode="contains" >
+                                        filterMatchMode="contains"
+                                        filterBy="#{bill.paymentMethod}" >
                                         <h:outputLabel value="#{bill.paymentMethod}">
                                         </h:outputLabel>
                                     </p:column>

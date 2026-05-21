@@ -32,6 +32,22 @@ public class NavigationController implements Serializable {
         return "/admin/institutions/institution_branch?faces-redirect=true";
     }
 
+    public String navigateToManageBanks() {
+        return "/admin/institutions/manage_banks?faces-redirect=true";
+    }
+
+    public String navigateToBankingBranch() {
+        return "/admin/institutions/banking_branch?faces-redirect=true";
+    }
+
+    public String navigateToListBanks() {
+        return "/admin/institutions/list_banks?faces-redirect=true";
+    }
+
+    public String navigateToListBankAccounts() {
+        return "/admin/institutions/list_bank_accounts?faces-redirect=true";
+    }
+
     public String navigateToManageDepartment() {
         return "/admin/institutions/department_management?faces-redirect=true";
     }

@@ -198,6 +198,8 @@ public class FinancialTransactionController implements Serializable {
     private ReportTemplateRowBundle bundle;
     private ReportTemplateRowBundle selectedBundle;
     private PaymentMethod selectedPaymentMethod;
+    private double handoverAcceptSelectTotalValue;
+    private double handoverAcceptSelectSelectedTotal;
 
     private Boolean patientDepositsAreConsideredInHandingover;
 
@@ -284,6 +286,7 @@ public class FinancialTransactionController implements Serializable {
 
     private List<Payment> fundTransferAvailablePayments;
     private List<Payment> depositableNonCashPayments;
+    private CashBook depositCashBook;
 
     // Shortage Bill Cancellation Properties
     private String shortageCancellationComment;
@@ -342,6 +345,37 @@ public class FinancialTransactionController implements Serializable {
             }
         } else {
             return "/payments/pay_index?faces-redirect=true";
+        }
+    }
+
+    /**
+     * Page-level shift guard. Call from f:event type="preRenderView" on any
+     * financial transaction page. When the config is enabled and no active
+     * shift bill exists for the current user, shows an error and redirects to
+     * the cashier index. Safe to call on every page load — does nothing when
+     * the config is disabled.
+     */
+    public void redirectIfShiftNotStarted() {
+        if (!sessionController.getPaymentManagementAfterShiftStart()) {
+            return;
+        }
+        FacesContext fc = FacesContext.getCurrentInstance();
+        // Skip the check on postbacks — the shift was already verified on initial load
+        if (fc.isPostback()) {
+            return;
+        }
+        findNonClosedShiftStartFundBillIsAvailable();
+        if (nonClosedShiftStartFundBill != null) {
+            return;
+        }
+        try {
+            // Preserve the error message across the redirect
+            fc.getExternalContext().getFlash().setKeepMessages(true);
+            JsfUtil.addErrorMessage("Start Your Shift First !");
+            fc.getExternalContext().redirect(
+                    fc.getExternalContext().getRequestContextPath() + "/faces/cashier/index.xhtml");
+        } catch (java.io.IOException e) {
+            // redirect failed — nothing further we can do at render time
         }
     }
 
@@ -583,7 +617,7 @@ public class FinancialTransactionController implements Serializable {
     }
 
     public String navigateToMyServiceDepartmentRevenueReportByPeriod() {
-        return "/cashier/my_service_department_revenue_report_by_period";
+        return "/cashier/my_service_department_revenue_report_by_period?faces-redirect=true";
     }
 
     public void processMyServiceDepartmentRevenueReportByPeriod() {
@@ -1265,6 +1299,7 @@ public class FinancialTransactionController implements Serializable {
         }
         selectedBundle = inputBundle;
         selectedPaymentMethod = inputPaymentMethod;
+        initHandoverAcceptSelectTotals();
         return "/cashier/handover_accept_select?faces-redirect=true";
     }
 
@@ -1279,7 +1314,6 @@ public class FinancialTransactionController implements Serializable {
             try {
                 pm = PaymentMethod.valueOf(paymentMethodStr);
             } catch (IllegalArgumentException e) {
-                // Try mapping common string variations to enum values
                 switch (paymentMethodStr) {
                     case "StaffWelfare":
                         pm = PaymentMethod.Staff_Welfare;
@@ -1292,7 +1326,66 @@ public class FinancialTransactionController implements Serializable {
         }
         selectedBundle = inputBundle;
         selectedPaymentMethod = pm;
+        initHandoverAcceptSelectTotals();
         return "/cashier/handover_accept_select?faces-redirect=true";
+    }
+
+    private void initHandoverAcceptSelectTotals() {
+        handoverAcceptSelectSelectedTotal = 0.0;
+        handoverAcceptSelectTotalValue = 0.0;
+        if (selectedPaymentMethod == PaymentMethod.Cash) {
+            if (selectedBundle != null && selectedBundle.getDenominationTransactions() != null) {
+                for (DenominationTransaction dt : selectedBundle.getDenominationTransactions()) {
+                    dt.setSelected(false);
+                    if (dt.getDenominationValue() != null) {
+                        handoverAcceptSelectTotalValue += dt.getDenominationValue();
+                    }
+                }
+            }
+        } else {
+            if (selectedBundle != null) {
+                List<ReportTemplateRow> rows = selectedBundle.getPaymentRows(selectedPaymentMethod);
+                if (rows != null) {
+                    for (ReportTemplateRow row : rows) {
+                        row.setSelected(false);
+                        if (row.getPayment() != null) {
+                            handoverAcceptSelectTotalValue += row.getPayment().getPaidValue();
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public void calculateHandoverAcceptSelectSelectedTotal() {
+        handoverAcceptSelectSelectedTotal = 0.0;
+        if (selectedPaymentMethod == PaymentMethod.Cash) {
+            if (selectedBundle != null && selectedBundle.getDenominationTransactions() != null) {
+                for (DenominationTransaction dt : selectedBundle.getDenominationTransactions()) {
+                    if (dt.isSelected() && dt.getDenominationValue() != null) {
+                        handoverAcceptSelectSelectedTotal += dt.getDenominationValue();
+                    }
+                }
+            }
+        } else {
+            if (selectedBundle != null) {
+                List<ReportTemplateRow> rows = selectedBundle.getPaymentRows(selectedPaymentMethod);
+                if (rows != null) {
+                    for (ReportTemplateRow row : rows) {
+                        if (row.isSelected() && row.getPayment() != null) {
+                            handoverAcceptSelectSelectedTotal += row.getPayment().getPaidValue();
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public int getHandoverAcceptSelectProgressPercent() {
+        if (handoverAcceptSelectTotalValue == 0) {
+            return 0;
+        }
+        return (int) Math.round((handoverAcceptSelectSelectedTotal / handoverAcceptSelectTotalValue) * 100);
     }
 
     public String navigateBackToPaymentHandoverCreate() {
@@ -1366,11 +1459,46 @@ public class FinancialTransactionController implements Serializable {
         return "/cashier/record_shift_excess?faces-redirect=true";
     }
 
-    public String navigateToViewDetailsOfSelectedBundleDuringHandoverInNewWindow() {
+    public String navigateToViewDetailsOfSelectedBundleDuringHandover() {
         if (selectedBundle == null) {
             return null;
         }
+        if (selectedBundle.isFloatRow()) {
+            populateFloatBundleRows(selectedBundle);
+        } else if (selectedBundle.getPaymentHandover() == PaymentHandover.FLOATS) {
+            // Shortage rows already have reportTemplateRows from generatePaymentBundleForHandovers;
+            // nothing extra needed.
+        }
         return "/cashier/handover_start_all_bill_type_details?faces-redirect=true";
+    }
+
+    private void populateFloatBundleRows(ReportTemplateRowBundle floatBundle) {
+        if (floatBundle == null || bundle == null || bundle.getStartBill() == null) {
+            return;
+        }
+        if (!floatBundle.getReportTemplateRows().isEmpty()) {
+            return;
+        }
+        Bill startBill = bundle.getStartBill();
+        Bill endBill = bundle.getEndBill();
+        List<Payment> fundTransferPayments = fetchFundTransferPaymentsForShift(startBill, endBill, startBill.getCreater());
+        if (fundTransferPayments == null) {
+            return;
+        }
+        // The net float bundle (FLOAT_IN) represents received minus sent, so both
+        // FUND_TRANSFER_BILL (sent) and FUND_TRANSFER_RECEIVED_BILL (received) rows
+        // must appear so the user can see the full breakdown that produces the net value.
+        for (Payment fp : fundTransferPayments) {
+            if (fp.getBill() == null) {
+                continue;
+            }
+            BillTypeAtomic bta = fp.getBill().getBillTypeAtomic();
+            if (bta == BillTypeAtomic.FUND_TRANSFER_BILL || bta == BillTypeAtomic.FUND_TRANSFER_RECEIVED_BILL) {
+                ReportTemplateRow row = new ReportTemplateRow();
+                row.setPayment(fp);
+                floatBundle.getReportTemplateRows().add(row);
+            }
+        }
     }
 
     public String navigateToCashierShiftBillSearch() {
@@ -1860,9 +1988,17 @@ public class FinancialTransactionController implements Serializable {
             }
 
             childBundle.calculateTotalsByPaymentsAndDenominations();
-            // Shortage component bills have negative cash — mark them so the accept page
-            // can display the "Shift Shortage" label in the Institution/Type column.
-            if (childBundle.getCashValue() < -0.001) {
+            // Mark shortage-related component bills so the accept page displays the
+            // "Shift Shortage" label in the Institution/Type column.  The sign-only
+            // check misses two cases: (a) a cancellation-only row (positive cashValue)
+            // and (b) a merged row where the original shortage and its same-day
+            // cancellation net to zero.  Checking the bill type of any linked payment
+            // covers all three cases reliably.
+            boolean isShortageRelated = payments != null && payments.stream().anyMatch(p ->
+                    p.getBill() != null && (
+                            p.getBill().getBillTypeAtomic() == BillTypeAtomic.FUND_SHIFT_SHORTAGE_BILL
+                            || p.getBill().getBillTypeAtomic() == BillTypeAtomic.FUND_SHIFT_SHORTAGE_BILL_CANCELLED));
+            if (childBundle.getCashValue() < -0.001 || isShortageRelated) {
                 childBundle.setPaymentHandover(PaymentHandover.FLOATS);
             }
             bundle.getBundles().add(childBundle);
@@ -1992,9 +2128,17 @@ public class FinancialTransactionController implements Serializable {
             }
 
             childBundle.calculateTotalsByPaymentsAndDenominations();
-            // Shortage component bills have negative cash — mark them so the reprint
-            // composite can display the "Shift Shortage" label in Institution/Type column.
-            if (childBundle.getCashValue() < -0.001) {
+            // Mark shortage-related component bills so the reprint composite displays
+            // the "Shift Shortage" label in the Institution/Type column.  The sign-only
+            // check misses two cases: (a) a cancellation-only row (positive cashValue)
+            // and (b) a merged row where the original shortage and its same-day
+            // cancellation net to zero.  Checking the bill type of any linked payment
+            // covers all three cases reliably.
+            boolean isShortageRelated = payments != null && payments.stream().anyMatch(p ->
+                    p.getBill() != null && (
+                            p.getBill().getBillTypeAtomic() == BillTypeAtomic.FUND_SHIFT_SHORTAGE_BILL
+                            || p.getBill().getBillTypeAtomic() == BillTypeAtomic.FUND_SHIFT_SHORTAGE_BILL_CANCELLED));
+            if (childBundle.getCashValue() < -0.001 || isShortageRelated) {
                 childBundle.setPaymentHandover(PaymentHandover.FLOATS);
             }
             bundle.getBundles().add(childBundle);
@@ -2836,6 +2980,8 @@ public class FinancialTransactionController implements Serializable {
         currentBill.setBillType(BillType.DepositFundBill);
         currentBill.setBillTypeAtomic(BillTypeAtomic.FUND_DEPOSIT_BILL);
         currentBill.setBillClassType(BillClassType.Bill);
+        currentPayment = new Payment();
+        currentPayment.setPaymentMethod(PaymentMethod.Cash);
     }
 
     private void prepareToAddNewFundTransferReceiveBill() {
@@ -2857,6 +3003,23 @@ public class FinancialTransactionController implements Serializable {
             currentBillPayments.add(np);
 
         }
+        // Load denominations from the issued float transfer bill, if any
+        Bill denoBill = billSearch.fetchReferredBill(BillTypeAtomic.FUND_TRANSFER_DENOMINATION_BILL, selectedBill);
+        List<DenominationTransaction> issuedDenos = billService.fetchDenominationTransactionFromBill(denoBill);
+        if (issuedDenos != null && !issuedDenos.isEmpty()) {
+            fundTransferDenominationTransactions = new ArrayList<>();
+            for (DenominationTransaction dt : issuedDenos) {
+                DenominationTransaction copy = new DenominationTransaction();
+                copy.setDenomination(dt.getDenomination());
+                copy.setDenominationQty(dt.getDenominationQty());
+                copy.setDenominationValue(dt.getDenominationValue());
+                fundTransferDenominationTransactions.add(copy);
+            }
+            calculateFundTransferDenominationTotal();
+        } else {
+            fundTransferDenominationTransactions = denominationTransactionController.createDefaultDenominationTransaction();
+            fundTransferDenominationTotal = 0.0;
+        }
     }
 
     // </editor-fold>
@@ -2875,6 +3038,7 @@ public class FinancialTransactionController implements Serializable {
         fundTransferAvailablePayments = null;
         department = null;
         selectedFundTransferRequest = null;
+        depositCashBook = null;
         searchController.setBills(null);
     }
 
@@ -3114,6 +3278,14 @@ public class FinancialTransactionController implements Serializable {
 
     public void setDepositableNonCashPayments(List<Payment> depositableNonCashPayments) {
         this.depositableNonCashPayments = depositableNonCashPayments;
+    }
+
+    public CashBook getDepositCashBook() {
+        return depositCashBook;
+    }
+
+    public void setDepositCashBook(CashBook depositCashBook) {
+        this.depositCashBook = depositCashBook;
     }
 
     public void addPaymentToShiftEndFundBill() {
@@ -3827,14 +3999,19 @@ public class FinancialTransactionController implements Serializable {
         List<Payment> allUniquePayments = new ArrayList<>(uniquePaymentSet);
         boolean selectAllHandoverPayments = configOptionApplicationController.getBooleanValueByKey("Select all payments by default for Handing over of the shift.", false);
 
+        // Pass the locally fetched startBill (not the class field nonClosedShiftStartFundBill,
+        // which is null at this point after resetClassVariables()). The startBill is needed
+        // inside generatePaymentBundleForHandovers to identify the shift owner so that
+        // FUND_TRANSFER_BILL payments where floatRecipient == shiftOwner are correctly
+        // treated as incoming transfers and excluded from cashFloatOutAcc (fix for #20719).
         if (selectAllHandoverPayments) {
-            bundle = generatePaymentBundleForHandovers(nonClosedShiftStartFundBill,
+            bundle = generatePaymentBundleForHandovers(startBill,
                     null,
                     allUniquePayments,
                     PaymentSelectionMode.SELECT_ALL_FOR_HANDOVER_CREATION
             );
         } else {
-            bundle = generatePaymentBundleForHandovers(nonClosedShiftStartFundBill,
+            bundle = generatePaymentBundleForHandovers(startBill,
                     null,
                     allUniquePayments,
                     PaymentSelectionMode.SELECT_NONE_FOR_HANDOVER_CREATION
@@ -4534,6 +4711,12 @@ public class FinancialTransactionController implements Serializable {
 
     public String navigateToViewIndividualShiftForHandover(ReportTemplateRowBundle childBundle) {
         selectedBundle = childBundle;
+        if (selectedBundle.isFloatRow()
+                && selectedBundle.getReportTemplateRows().isEmpty()
+                && bundle != null
+                && !bundle.getReportTemplateRows().isEmpty()) {
+            selectedBundle.getReportTemplateRows().addAll(bundle.getReportTemplateRows());
+        }
         return "/cashier/handover_accept_row_detail?faces-redirect=true";
     }
 
@@ -5047,10 +5230,24 @@ public class FinancialTransactionController implements Serializable {
                         if (bta == BillTypeAtomic.FUND_TRANSFER_BILL
                                 && p.getBill().getReferenceBill() != null
                                 && !p.getBill().isCancelled()) {
-                            // Accepted float out — deducted from this user's drawer when recipient accepted
-                            floatOutAcc += Math.abs(p.getPaidValue());
-                            if (p.getPaymentMethod() == PaymentMethod.Cash) {
-                                cashFloatOutAcc += Math.abs(p.getPaidValue());
+                            // fetchShiftFloatsFromShiftStartToEnd queries with
+                            // (p.creater=user OR p.floatRecipient=user), so it returns
+                            // FUND_TRANSFER_BILLs where this user is the RECIPIENT (floatRecipient=user)
+                            // as well as ones where this user is the SENDER (creater=user).
+                            // Only count the payment as a float-out when this user is the SENDER.
+                            // When floatRecipient == shiftOwner the bill was created by someone else
+                            // to send cash TO this user; the corresponding FUND_TRANSFER_RECEIVED_BILL
+                            // already adds it to cashFloatInAcc, so skip it here to avoid netting to zero.
+                            // Fix for: https://github.com/hmislk/hmis/issues/20719
+                            WebUser shiftOwner = startBill != null ? startBill.getCreater() : null;
+                            if (shiftOwner != null && shiftOwner.equals(p.getFloatRecipient())) {
+                                // Incoming transfer — not this user's outgoing float, skip
+                            } else {
+                                // Accepted float out — deducted from this user's drawer when recipient accepted
+                                floatOutAcc += Math.abs(p.getPaidValue());
+                                if (p.getPaymentMethod() == PaymentMethod.Cash) {
+                                    cashFloatOutAcc += Math.abs(p.getPaidValue());
+                                }
                             }
                         } else if (bta == BillTypeAtomic.FUND_TRANSFER_RECEIVED_BILL) {
                             // Float in received by this user
@@ -7428,6 +7625,50 @@ public class FinancialTransactionController implements Serializable {
         currentBill.getReferenceBill().setReferenceBill(currentBill);
         billController.save(currentBill.getReferenceBill());
 
+        // Save denomination transactions for the receive bill
+        if (hasFundTransferDenominationEntries()) {
+            calculateFundTransferDenominationTotal();
+            double receivedCashTotal = 0.0;
+            for (Payment p : currentBillPayments) {
+                if (p.getPaymentMethod() == PaymentMethod.Cash) {
+                    receivedCashTotal += Math.abs(p.getPaidValue());
+                }
+            }
+            if (Math.abs(fundTransferDenominationTotal - receivedCashTotal) > 0.001) {
+                JsfUtil.addErrorMessage(
+                        "Denomination total (" + fundTransferDenominationTotal
+                        + ") does not match the received cash total (" + receivedCashTotal
+                        + "). Please correct the denominations.");
+                return "";
+            }
+            Bill denoBill = new Bill();
+            denoBill.setBillTypeAtomic(BillTypeAtomic.FUND_TRANSFER_RECEIVED_DENOMINATION_BILL);
+            denoBill.setBillType(BillType.FundTransferReceivedBill);
+            denoBill.setBillClassType(BillClassType.Bill);
+            denoBill.setReferenceBill(currentBill);
+            denoBill.setDepartment(currentBill.getDepartment());
+            denoBill.setInstitution(currentBill.getInstitution());
+            denoBill.setStaff(currentBill.getStaff());
+            denoBill.setFromWebUser(currentBill.getReferenceBill().getFromWebUser());
+            denoBill.setToWebUser(sessionController.getLoggedUser());
+            denoBill.setBillDate(currentBill.getBillDate());
+            denoBill.setBillTime(currentBill.getBillTime());
+            billController.save(denoBill);
+            double denoTotal = 0.0;
+            for (DenominationTransaction d : fundTransferDenominationTransactions) {
+                if (d.getDenominationQty() != null && d.getDenominationQty() > 0) {
+                    d.setBill(denoBill);
+                    denominationTransactionController.save(d);
+                    if (d.getDenominationValue() != null) {
+                        denoTotal += d.getDenominationValue();
+                    }
+                }
+            }
+            denoBill.setTotal(denoTotal);
+            denoBill.setNetTotal(denoTotal);
+            billController.save(denoBill);
+        }
+
         // Transfer ownership of original non-cash payments to the receiving user
         List<Payment> fundTransferBillPayments = findPaymentsForBill(currentBill.getReferenceBill());
         if (fundTransferBillPayments != null) {
@@ -8087,9 +8328,14 @@ public class FinancialTransactionController implements Serializable {
             JsfUtil.addErrorMessage("Select a Payment Method");
             return;
         }
+        if (currentPayment.getPaymentMethod() != PaymentMethod.Cash) {
+            JsfUtil.addErrorMessage("Only Cash is allowed in bank deposits. Cheque deposits are handled separately.");
+            return;
+        }
         getCurrentBillPayments().add(currentPayment);
         calculateFundDepositBillTotal();
-        currentPayment = null;
+        currentPayment = new Payment();
+        currentPayment.setPaymentMethod(PaymentMethod.Cash);
     }
 
     public void addPaymentToIncomeBill() {
@@ -8233,6 +8479,12 @@ public class FinancialTransactionController implements Serializable {
         currentBill.setFromStaff(sessionController.getLoggedUser().getStaff());
         currentBill.setFromWebUser(sessionController.getLoggedUser());
 
+        String deptId = billNumberGenerator.departmentBillNumberGeneratorYearly(
+                sessionController.getDepartment(),
+                BillTypeAtomic.FUND_SHIFT_SHORTAGE_BILL);
+        currentBill.setDeptId(deptId);
+        currentBill.setInsId(deptId);
+
         try {
             billController.save(currentBill);  // Save the bill
             // Save each payment linked to this bill
@@ -8281,6 +8533,12 @@ public class FinancialTransactionController implements Serializable {
         currentBill.setFromInstitution(sessionController.getInstitution());
         currentBill.setFromStaff(sessionController.getLoggedUser().getStaff());
         currentBill.setFromWebUser(sessionController.getLoggedUser());
+
+        String deptId = billNumberGenerator.departmentBillNumberGeneratorYearly(
+                sessionController.getDepartment(),
+                BillTypeAtomic.FUND_SHIFT_SHORTAGE_BILL);
+        currentBill.setDeptId(deptId);
+        currentBill.setInsId(deptId);
 
         try {
             billController.save(currentBill);
@@ -8573,6 +8831,18 @@ public class FinancialTransactionController implements Serializable {
             JsfUtil.addErrorMessage("Cannot cancel a shortage bill that already has settlements.");
             return "";
         }
+        // Block cancellation once the shortage bill's payments have been included
+        // in a handover — either pending (handingOverStarted=true) or already
+        // accepted/completed (handingOverCompleted=true, handingOverStarted cleared
+        // to false by settleHandoverAcceptBill). Allowing cancellation after either
+        // state would cause handover totals to become inconsistent.
+        List<Payment> shortageBillPayments = findPaymentsForBill(freshBill);
+        boolean includedInHandover = shortageBillPayments.stream()
+                .anyMatch(p -> p.isHandingOverStarted() || p.isHandingOverCompleted());
+        if (includedInHandover) {
+            JsfUtil.addErrorMessage("Cannot cancel a shortage bill that is already included in a handover.");
+            return "";
+        }
         if (freshBill.getFromWebUser() == null
                 || !freshBill.getFromWebUser().getId().equals(sessionController.getLoggedUser().getId())) {
             JsfUtil.addErrorMessage("You can only cancel your own shortage bills.");
@@ -8756,6 +9026,11 @@ public class FinancialTransactionController implements Serializable {
             }
         }
 
+        if (depositCashBook == null) {
+            JsfUtil.addErrorMessage("Please select a cashbook for this deposit");
+            return "";
+        }
+
         currentBill.setNetTotal(0 - Math.abs(netTotal));
         currentBill.setTotal(0 - Math.abs(netTotal));
         billController.save(currentBill);
@@ -8767,6 +9042,7 @@ public class FinancialTransactionController implements Serializable {
             p.setCurrentHolder(null);
             paymentController.save(p);
             drawerController.updateDrawerForOuts(p);
+            cashBookEntryController.writeCashBookEntryAtBankDeposit(p, depositCashBook, currentBill);
             Payment original = p.getReferancePayment();
             if (original != null) {
                 original.setDeposited(true);
@@ -9940,6 +10216,14 @@ public class FinancialTransactionController implements Serializable {
         this.selectedPaymentMethod = selectedPaymentMethod;
     }
 
+    public double getHandoverAcceptSelectTotalValue() {
+        return handoverAcceptSelectTotalValue;
+    }
+
+    public double getHandoverAcceptSelectSelectedTotal() {
+        return handoverAcceptSelectSelectedTotal;
+    }
+
     public DetailedFinancialBill getCurrentDetailedFinancialBill() {
         return currentDetailedFinancialBill;
     }
@@ -10232,12 +10516,6 @@ public class FinancialTransactionController implements Serializable {
         ));
 
         fundTransferMetadata.addConfigOption(new ConfigOptionInfo(
-                "Shift Shortage Bills are enabled",
-                "When enabled, allows recording and tracking of shift shortage bills in cashier operations.",
-                OptionScope.APPLICATION
-        ));
-
-        fundTransferMetadata.addConfigOption(new ConfigOptionInfo(
                 "Shift Excess Bills are enabled",
                 "When enabled, allows recording and tracking of shift excess bills in cashier operations.",
                 OptionScope.APPLICATION
@@ -10305,12 +10583,6 @@ public class FinancialTransactionController implements Serializable {
         ));
 
         receiveTransferMetadata.addConfigOption(new ConfigOptionInfo(
-                "Shift Shortage Bills are enabled",
-                "When enabled, allows recording and tracking of shift shortage bills, affecting overall cashier workflow including fund transfer receiving.",
-                OptionScope.APPLICATION
-        ));
-
-        receiveTransferMetadata.addConfigOption(new ConfigOptionInfo(
                 "Shift Excess Bills are enabled",
                 "When enabled, allows recording and tracking of shift excess bills, affecting overall cashier workflow including fund transfer receiving.",
                 OptionScope.APPLICATION
@@ -10366,12 +10638,6 @@ public class FinancialTransactionController implements Serializable {
         cashierIndexMetadata.addConfigOption(new ConfigOptionInfo(
                 "Completed Shift Handover is enabled",
                 "When enabled, shows 'My Shifts' button in the Shift Management tab to view completed shift handovers.",
-                OptionScope.APPLICATION
-        ));
-
-        cashierIndexMetadata.addConfigOption(new ConfigOptionInfo(
-                "Shift Shortage Bills are enabled",
-                "When enabled, shows 'Record Shift Shortage' and 'Shift Shortage Bill Search' buttons in the Shift Management tab for tracking cash shortages.",
                 OptionScope.APPLICATION
         ));
 
@@ -10579,12 +10845,6 @@ public class FinancialTransactionController implements Serializable {
         shiftEndMetadata.addConfigOption(new ConfigOptionInfo(
                 "Recording Shift End Cash is Required Before Viewing Shift Reports",
                 "When enabled, affects the overall shift ending workflow requiring cash recording steps before accessing reports from this page.",
-                OptionScope.APPLICATION
-        ));
-
-        shiftEndMetadata.addConfigOption(new ConfigOptionInfo(
-                "Shift Shortage Bills are enabled",
-                "When enabled, allows tracking of cash shortage transactions that may be identified during the shift ending process.",
                 OptionScope.APPLICATION
         ));
 

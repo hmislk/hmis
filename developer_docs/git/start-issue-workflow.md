@@ -55,6 +55,7 @@ Project board manipulation requires the `project` OAuth scope. If the `gh` CLI r
 
 | Step | Command / Action |
 |------|-----------------|
+| Check current branch | `git branch --show-current` — must NOT be `master` before branching |
 | Fetch & branch | `git checkout -b <branch> origin/development` |
 | Push branch | `git push -u origin <branch>` |
 | Local persistence | Replace `${JDBC_DATASOURCE}` → `jdbc/ruhunu` in `persistence.xml` |

@@ -131,7 +131,6 @@ public class StaffSalaryAdvanceController implements Serializable {
     }
 
     public void save() {
-
         if (getCurrent().getTransAdvanceSalary() != 0) {
             StaffSalaryComponant ss = fetchSalaryAdvance(getCurrent().getStaff());
 
@@ -140,6 +139,7 @@ public class StaffSalaryAdvanceController implements Serializable {
             }
 
             ss.setStaff(getCurrent().getStaff());
+            ss.setStaffSalary(getCurrent());  // ← add this line
             ss.setComponantValue(getCurrent().getTransAdvanceSalary());
             getHumanResourceBean().setEpf(ss, getHrmVariablesController().getCurrent().getEpfRate(), getHrmVariablesController().getCurrent().getEpfCompanyRate());
             getHumanResourceBean().setEtf(ss, getHrmVariablesController().getCurrent().getEtfRate(), getHrmVariablesController().getCurrent().getEtfCompanyRate());
@@ -150,8 +150,21 @@ public class StaffSalaryAdvanceController implements Serializable {
                 staffSalaryComponantFacade.edit(ss);
             }
         }
-
     }
+
+    public void fetchItems() {
+        if (getSalaryCycle() == null) {
+            JsfUtil.addErrorMessage("Please Select Salary Cycle");
+            return;
+        }
+        String sql = "SELECT ss FROM StaffSalary ss "
+                + " WHERE ss.retired=false "
+                + " and ss.salaryCycle=:sc ";
+        HashMap hm = new HashMap();
+        hm.put("sc", getSalaryCycle());
+        items = getStaffSalaryFacade().findByJpql(sql, hm);
+    }
+
 
 //    private void updateComponent(List<StaffSalaryComponant> list) {
 //        for (StaffSalaryComponant ssc : list) {
@@ -849,10 +862,12 @@ public class StaffSalaryAdvanceController implements Serializable {
         String sql = "select sc from StaffSalaryComponant sc "
                 + " where sc.retired=false "
                 + " and sc.salaryCycle=:sc "
-                + " and sc.staff=:stf";
+                + " and sc.staff=:stf"
+                + " and sc.staffPaysheetComponent.paysheetComponent.componentType=:ct";
         HashMap hm = new HashMap();
         hm.put("sc", getSalaryCycle());
         hm.put("stf", getCurrent().getStaff());
+        hm.put("ct", PaysheetComponentType.Salary_Advance_Deduction);
         StaffSalaryComponant salaryComponant = staffSalaryComponantFacade.findFirstByJpql(sql, hm);
 
         if (salaryComponant != null) {
@@ -866,14 +881,13 @@ public class StaffSalaryAdvanceController implements Serializable {
         String sql = "select sc from StaffSalaryComponant sc "
                 + " where sc.retired=false "
                 + " and sc.salaryCycle=:sc "
-                + " and sc.staff=:stf";
+                + " and sc.staff=:stf"
+                + " and sc.staffPaysheetComponent.paysheetComponent.componentType=:ct";
         HashMap hm = new HashMap();
         hm.put("sc", getSalaryCycle());
         hm.put("stf", staff);
-        StaffSalaryComponant salaryComponant = staffSalaryComponantFacade.findFirstByJpql(sql, hm);
-
-        return salaryComponant;
-
+        hm.put("ct", PaysheetComponentType.Salary_Advance_Deduction);
+        return staffSalaryComponantFacade.findFirstByJpql(sql, hm);
     }
 
     public void deleteAll() {
@@ -1220,37 +1234,59 @@ public class StaffSalaryAdvanceController implements Serializable {
     }
 
     public void saveSalary() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
-
         if (getStaffController().getSelectedList() == null) {
             return;
         }
-
         if (dateCheck()) {
             return;
         }
-
         if (items == null) {
             return;
         }
 
         for (StaffSalary stf : items) {
             if (stf.getId() != null) {
+                getStaffSalaryFacade().edit(stf);
+                current = stf;
+                save();
+                current = null;
                 continue;
             }
             current = stf;
+
+            current.setInstitution(current.getStaff().getInstitution());
+            current.setDepartment(current.getStaff().getWorkingDepartment());
+            current.setSalaryCycle(salaryCycle);
+            current.setCreatedAt(new Date());
+            current.setCreater(getSessionController().getLoggedUser());
+
+            List<StaffSalaryComponant> list = current.getStaffSalaryComponants();
+            // Detach components temporarily so JPA cascade does not try to persist
+            // them before the parent StaffSalary has been assigned an ID.
+            current.setStaffSalaryComponants(null);
+            getStaffSalaryFacade().create(current);
+            current.setStaffSalaryComponants(list);
+
+            for (StaffSalaryComponant ssc : list) {
+                ssc.setStaffSalary(current);
+                if (ssc.getId() == null) {
+                    getStaffSalaryComponantFacade().create(ssc);
+                } else {
+                    getStaffSalaryComponantFacade().edit(ssc);
+                }
+            }
+
+            // Removed redundant current.setStaffSalaryComponants(list) here —
+            // list reference was already restored above before the loop.
+            getStaffSalaryFacade().edit(current);
+
             save();
-//            updateStaffShift(stf.getStaff(), getSalaryCycle().getWorkedFromDate(), getSalaryCycle().getWorkedToDate());
+
             current = null;
         }
-
-        //   createStaffSalaryTable();
-
-
-
     }
+
+    
 
     private void updateStaffShift(Staff staff, Date fromDate, Date toDate) {
         List<StaffShift> staffShiftsLiePaymentAllowed = humanResourceBean.fetchStaffShiftLiePaymentAllowed(fromDate, toDate, staff);

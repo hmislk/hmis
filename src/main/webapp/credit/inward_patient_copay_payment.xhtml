@@ -13,6 +13,7 @@
         xmlns:bill="http://xmlns.jcp.org/jsf/composite/inward/bill/payment">
 
     <ui:define name="admin">
+        <f:event type="preRenderView" listener="#{financialTransactionController.redirectIfShiftNotStarted()}"/>
         <h:panelGroup rendered="#{webUserController.hasPrivilege('InwardBilling')}">
         <h:panelGroup>
             <h:form id="copayForm">
