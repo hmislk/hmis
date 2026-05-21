@@ -179,11 +179,11 @@ public class PurchaseOrderNativeSqlService {
         dto.setPaymentMethod(str(r[col++]));
         dto.setCreditDuration(r[col] != null ? ((Number) r[col]).intValue() : 0); col++;
         dto.setPoTime(toDate(r[col++]));
-        dto.setConsignment(r[col] != null && ((Number) r[col]).intValue() != 0); col++;
+        dto.setConsignment(toBool(r[col++]));
         dto.setApproveComments(str(r[col++]));
         dto.setApprovedAt(toDate(r[col++]));
         dto.setNetTotal(r[col] != null ? ((Number) r[col]).doubleValue() : 0.0); col++;
-        dto.setCancelled(r[col] != null && ((Number) r[col]).intValue() != 0); col++;
+        dto.setCancelled(toBool(r[col++]));
 
         dto.setApprovedByName(str(r[col++]));
 
@@ -268,6 +268,13 @@ public class PurchaseOrderNativeSqlService {
 
     private String str(Object o) {
         return o != null ? o.toString().trim() : "";
+    }
+
+    private boolean toBool(Object o) {
+        if (o == null) return false;
+        if (o instanceof Boolean) return (Boolean) o;
+        if (o instanceof Number) return ((Number) o).intValue() != 0;
+        return false;
     }
 
     private Date toDate(Object o) {

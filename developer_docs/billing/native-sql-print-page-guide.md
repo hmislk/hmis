@@ -92,7 +92,17 @@ Create `<Module>NativeSqlService` in `com.divudi.service.pharmacy`:
 - Use a `str(Object o)` helper: `return o != null ? o.toString().trim() : "";`
 - Use a `toDate(Object o)` helper that handles both `Timestamp` and `java.util.Date`.
 - For numbers: `r[col] != null ? ((Number) r[col]).doubleValue() : 0.0`.
-- For booleans: `r[col] != null && ((Number) r[col]).intValue() != 0`.
+- For booleans: use a `toBool(Object o)` helper — MySQL JDBC returns `BIT(1)` columns as
+  `Boolean`, not `Number`, so casting to `Number` throws `ClassCastException` at runtime:
+  ```java
+  private boolean toBool(Object o) {
+      if (o == null) return false;
+      if (o instanceof Boolean) return (Boolean) o;
+      if (o instanceof Number) return ((Number) o).intValue() != 0;
+      return false;
+  }
+  ```
+  Never use `((Number) r[col]).intValue() != 0` for boolean columns.
 
 **Column ordering**: list columns in the SELECT in the same order as you read them in Java
 (sequential `col++` index). Keep them in sync — a shifted column is a silent bug.
