@@ -17,6 +17,7 @@ public enum Analyzer {
     IndikoPlus("Indiko Plus"),
     BioRadD10("Bio-Rad D10"),
     MindrayBC5150("Mindray BC 5150"),
+    MindrayCL1000i("Mindray CL-1000i"),
     SmartLytePlus("SmartLyte Plus"),
     SwelabLumi("Swelab Lumi"),
     HumaCount5D("HumaCount5D"),
