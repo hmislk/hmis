@@ -111,7 +111,7 @@ public class PurchaseOrderNativeSqlService {
         String sql =
             "SELECT " +
             "  ab.ID, ab.deptId, ab.paymentMethod, ab.creditDuration, " +
-            "  ab.createdAt, ab.consignment, ab.comments, ab.approveAt, " +
+            "  ab.createdAt AS approvalCreatedAt, ab.consignment, ab.comments AS approvalComments, ab.approveAt, " +
             "  ab.netTotal, ab.cancelled, " +
             // approver
             "  approverPerson.name            AS approvedByName, " +
@@ -130,8 +130,8 @@ public class PurchaseOrderNativeSqlService {
             "  supplier.name                  AS supplierName, " +
             "  supplier.code                  AS supplierCode, " +
             // request pre-bill
-            "  rb.createdAt                   AS poDate, " +
-            "  rb.comments                    AS requestComments, " +
+            "  rb.createdAt                   AS rbCreatedAt, " +
+            "  rb.comments                    AS rbComments, " +
             "  rb.checkeAt                    AS preparedAt, " +
             "  preparerPerson.name            AS preparedByName, " +
             // institution from request creater
