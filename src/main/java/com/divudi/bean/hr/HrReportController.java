@@ -3284,6 +3284,9 @@ public class HrReportController implements Serializable {
 //            List<Object[]> list = fetchWorkedTime(stf);
 
             List<Object[]> list = fetchWorkedTimeByDateOnly(stf, frDate, tDate);
+            if (list == null) {
+                list = new ArrayList<>();
+            }
 
 
 //            fetchWorkedTimeTemporary(stf); // For Testing
