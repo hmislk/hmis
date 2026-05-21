@@ -67,6 +67,58 @@
                                 </p:dataTable>
                             </div>
                         </div>
+
+                        <!-- Denomination Entry Section -->
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <p:panel header="Count Received Denominations" class="m-1">
+                                    <p:dataTable
+                                        id="tblDenoReceive"
+                                        value="#{financialTransactionController.fundTransferDenominationTransactions}"
+                                        var="deno"
+                                        emptyMessage="No denominations configured"
+                                        styleClass="mb-2">
+                                        <p:column headerText="Denomination">
+                                            <p:outputLabel value="#{deno.denomination.displayName}"/>
+                                        </p:column>
+                                        <p:column headerText="Quantity">
+                                            <p:inputText
+                                                class="text-end w-100"
+                                                id="txtDenoQtyReceive"
+                                                value="#{deno.denominationQty}"
+                                                onfocus="this.select()"
+                                                oninput="this.value=this.value.replace(/[^0-9]/g,'');">
+                                                <f:convertNumber integerOnly="true"/>
+                                                <f:validateLongRange minimum="0" />
+                                                <p:ajax
+                                                    event="blur"
+                                                    process="txtDenoQtyReceive"
+                                                    listener="#{financialTransactionController.calculateFundTransferDenominationTotal()}"
+                                                    update="txtDenoValReceive txtDenoTotalReceive"/>
+                                            </p:inputText>
+                                        </p:column>
+                                        <p:column headerText="Value" styleClass="text-end">
+                                            <p:outputLabel
+                                                id="txtDenoValReceive"
+                                                class="w-100 text-end"
+                                                value="#{deno.denominationValue eq null ? 0.00 : deno.denominationValue}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </p:outputLabel>
+                                        </p:column>
+                                    </p:dataTable>
+
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <h:outputText value="Denomination Total: "/>
+                                        <h:outputText
+                                            id="txtDenoTotalReceive"
+                                            styleClass="fw-bold"
+                                            value="#{financialTransactionController.fundTransferDenominationTotal}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </div>
+                                </p:panel>
+                            </div>
+                        </div>
                         <!-- Comment Section -->
                         <div class="row mt-3">
                             <div class="col-12">
