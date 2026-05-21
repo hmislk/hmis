@@ -277,7 +277,7 @@
 
                         <f:facet name="header">
                             <div class="report-header-wrap">
-                                <span class="report-title-label">Leave Report Extra</span>
+                                <h:outputText value="Leave Report Extra" styleClass="report-title-label" />
                                 <h:panelGroup rendered="#{hrReportController.fromDate ne null}">
                                     <p class="report-meta">
                                         <h:outputText value="#{hrReportController.fromDate}">
@@ -296,12 +296,14 @@
                                 </h:panelGroup>
                                 <h:panelGroup rendered="#{hrReportController.reportKeyWord.department ne null}">
                                     <p class="report-meta">
-                                        Department: <h:outputText value="#{hrReportController.reportKeyWord.department.name}" />
+                                        <h:outputText value="Department: " />
+                                        <h:outputText value="#{hrReportController.reportKeyWord.department.name}" />
                                     </p>
                                 </h:panelGroup>
                                 <h:panelGroup rendered="#{hrReportController.reportKeyWord.staff ne null}">
                                     <p class="report-meta">
-                                        Employee: <h:outputText value="#{hrReportController.reportKeyWord.staff.person.name}" />
+                                        <h:outputText value="Employee: " />
+                                        <h:outputText value="#{hrReportController.reportKeyWord.staff.person.name}" />
                                     </p>
                                 </h:panelGroup>
                             </div>
