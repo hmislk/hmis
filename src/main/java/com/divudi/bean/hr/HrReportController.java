@@ -3124,6 +3124,9 @@ public class HrReportController implements Serializable {
                     continue;
                 }
                 List<StaffLeave> staffLeaves = humanResourceBean.fetchStaffLeave(ss.getStaff(), ss.getShiftDate());
+                if (staffLeaves == null) {
+                    staffLeaves = new ArrayList<>();
+                }
 //                //System.out.println("ss.getLeaveType().isFullDayLeave() = " + ss.getLeaveType().isFullDayLeave());
                 //System.out.println("staffLeaves.size() = " + staffLeaves.size());
                 if (staffLeaves.size() > 1) {
