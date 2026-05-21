@@ -46,9 +46,13 @@ public class PurchaseOrderNativeSqlService {
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public PurchaseOrderPrintDto loadPrintDtoByBillId(long billId) {
+        System.out.println(">>>PO_NATIVE_SERVICE: loadPrintDtoByBillId called, billId=" + billId);
         try {
-            return doLoad(billId);
+            PurchaseOrderPrintDto result = doLoad(billId);
+            System.out.println(">>>PO_NATIVE_SERVICE: result=" + (result == null ? "NULL" : "OK"));
+            return result;
         } catch (Exception e) {
+            System.out.println(">>>PO_NATIVE_SERVICE: EXCEPTION " + e.getMessage());
             LOGGER.log(Level.SEVERE, "Failed to load PO print DTO for billId=" + billId, e);
             return null;
         }
@@ -69,27 +73,40 @@ public class PurchaseOrderNativeSqlService {
         // and get the approval bill ID either way.
         String resolveAtomicSql =
             "SELECT billTypeAtomic, referenceBill_ID FROM bill WHERE ID = ?1 AND retired = 0 LIMIT 1";
+        System.out.println(">>>PO_NATIVE_SERVICE: resolve SQL=" + resolveAtomicSql + " param=" + billId);
         List<Object[]> atomicRows;
         try {
             atomicRows = em.createNativeQuery(resolveAtomicSql)
                     .setParameter(1, billId)
                     .getResultList();
         } catch (Exception e) {
+            System.out.println(">>>PO_NATIVE_SERVICE: resolve EXCEPTION " + e.getMessage());
             LOGGER.log(Level.WARNING, "Could not resolve bill atomic for billId=" + billId, e);
             return null;
         }
+        System.out.println(">>>PO_NATIVE_SERVICE: atomicRows size=" + (atomicRows == null ? "null" : atomicRows.size()));
         if (atomicRows == null || atomicRows.isEmpty()) {
             return null;
         }
         Object[] atomicRow = atomicRows.get(0);
         String billTypeAtomic = atomicRow[0] != null ? atomicRow[0].toString() : "";
+        System.out.println(">>>PO_NATIVE_SERVICE: billTypeAtomic=" + billTypeAtomic + " referenceBill_ID=" + atomicRow[1]);
         long approvalBillId;
         if ("PHARMACY_ORDER_APPROVAL".equals(billTypeAtomic)) {
             approvalBillId = billId;
+        } else if ("PHARMACY_ORDER".equals(billTypeAtomic)) {
+            if (atomicRow[1] == null) {
+                LOGGER.log(Level.WARNING, "No approval bill linked for request billId=" + billId);
+                System.out.println(">>>PO_NATIVE_SERVICE: no approval bill linked, returning null");
+                return null;
+            }
+            approvalBillId = ((Number) atomicRow[1]).longValue();
         } else {
-            // PHARMACY_ORDER — get the approval sibling via referenceBill_ID
-            approvalBillId = atomicRow[1] != null ? ((Number) atomicRow[1]).longValue() : billId;
+            LOGGER.log(Level.WARNING, "Unsupported billTypeAtomic for native PO print: " + billTypeAtomic + ", billId=" + billId);
+            System.out.println(">>>PO_NATIVE_SERVICE: unsupported billTypeAtomic=" + billTypeAtomic);
+            return null;
         }
+        System.out.println(">>>PO_NATIVE_SERVICE: approvalBillId=" + approvalBillId);
 
         String sql =
             "SELECT " +
@@ -129,7 +146,7 @@ public class PurchaseOrderNativeSqlService {
             "LEFT JOIN person  approverPerson  ON approverPerson.ID = approverWU.person_ID " +
             "LEFT JOIN department orderDept    ON orderDept.ID = ab.department_ID " +
             "LEFT JOIN institution orderInst   ON orderInst.ID = orderDept.institution_ID " +
-            "LEFT JOIN department  orderSite   ON orderSite.ID = orderDept.site_ID " +
+            "LEFT JOIN institution orderSite    ON orderSite.ID = orderDept.site_ID " +
             "LEFT JOIN institution supplier    ON supplier.ID = ab.toInstitution_ID " +
             "LEFT JOIN webuser checkedByWU     ON checkedByWU.ID = rb.checkedBy_ID " +
             "LEFT JOIN person  preparerPerson  ON preparerPerson.ID = checkedByWU.person_ID " +
@@ -145,9 +162,11 @@ public class PurchaseOrderNativeSqlService {
                     .setParameter(1, approvalBillId)
                     .getResultList();
         } catch (Exception e) {
+            System.out.println(">>>PO_NATIVE_SERVICE: header query EXCEPTION " + e.getMessage());
             LOGGER.log(Level.SEVERE, "Header query failed for approvalBillId=" + approvalBillId, e);
             return null;
         }
+        System.out.println(">>>PO_NATIVE_SERVICE: header rows size=" + (rows == null ? "null" : rows.size()));
         if (rows == null || rows.isEmpty()) {
             return null;
         }
@@ -210,7 +229,7 @@ public class PurchaseOrderNativeSqlService {
             "  COALESCE(bifd.lineGrossTotal, 0)   AS lineTotal " +
             "FROM billitem bi " +
             "LEFT JOIN item i                    ON i.ID = bi.item_ID " +
-            "LEFT JOIN item iu                   ON iu.ID = i.issueUnit_ID " +
+            "LEFT JOIN category iu               ON iu.ID = i.issueUnit_ID " +
             "LEFT JOIN billitemfinancedetails bifd ON bifd.ID = bi.BILLITEMFINANCEDETAILS_ID " +
             "WHERE bi.bill_ID = ?1 " +
             "  AND bi.retired = 0 " +

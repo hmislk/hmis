@@ -100,7 +100,8 @@ Create `<Module>NativeSqlService` in `com.divudi.service.pharmacy`:
 **Bill resolution** — some BillTypeAtomics come in pairs (request/approval). The service must
 resolve which bill is which before querying, e.g.:
 ```java
-String atomicSql = "SELECT billTypeAtomic, referenceBill_ID FROM bill WHERE ID = :id AND retired = 0 LIMIT 1";
+String atomicSql = "SELECT billTypeAtomic, referenceBill_ID FROM bill WHERE ID = ?1 AND retired = 0 LIMIT 1";
+em.createNativeQuery(atomicSql).setParameter(1, billId).getResultList();
 ```
 Then branch on the atomic value to get the approval bill ID before the main query.
 
