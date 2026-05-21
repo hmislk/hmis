@@ -285,6 +285,9 @@ public class InwardProfessionalBillController implements Serializable {
             bill.setBillDate(new Date());
             bill.setBillTime(new Date());
             bill.setPatientEncounter(getBatchBill().getPatientEncounter());
+            if (getBatchBill().getPatientEncounter() != null) {
+                bill.setPatient(getBatchBill().getPatientEncounter().getPatient());
+            }
             bill.setProcedure(getBatchBill().getProcedure());
             bill.setDepartment(getSessionController().getDepartment());
             bill.setInstitution(getSessionController().getInstitution());

@@ -23,7 +23,7 @@
                             <!-- Left: input panels -->
                             <div class="col-8">
 
-                                <!-- Cash (free entry) -->
+                                <!-- Cash Deposit -->
                                 <p:panel class="m-1 w-100">
                                     <f:facet name="header">
                                         <h:outputText value="Cash Deposit"/>
@@ -33,148 +33,30 @@
                                             value="Add Cash"
                                             icon="fa fa-plus"
                                             class="ui-button-success float-end"
-                                            process="btnAddCash cmdPayment paymentDetails"
-                                            update="tblPayments txtTotalDepositValue"
+                                            process="btnAddCash txtCashRefNo txtCashValue"
+                                            update="tblPayments txtTotalDepositValue txtCashRefNo txtCashValue"
                                             action="#{financialTransactionController.addPaymentToFundDepositBill()}"/>
                                     </f:facet>
 
                                     <div class="row">
-                                        <div class="col-md-3">
-                                            <p:outputLabel value="Payment Method"/>
-                                            <p:selectOneMenu
+                                        <div class="col-md-6">
+                                            <p:outputLabel value="Reference"/>
+                                            <p:inputText
                                                 class="w-100"
-                                                id="cmdPayment"
-                                                value="#{financialTransactionController.currentPayment.paymentMethod}">
-                                                <f:selectItem itemLabel="Select Payment Method"/>
-                                                <f:selectItems value="#{enumController.paymentMethods}"/>
-                                                <p:ajax process="cmdPayment" update="paymentDetails"/>
-                                            </p:selectOneMenu>
+                                                id="txtCashRefNo"
+                                                onfocus="this.select()"
+                                                placeholder="Reference Number"
+                                                value="#{financialTransactionController.currentPayment.chequeRefNo}"/>
                                         </div>
-                                        <div class="col-md-4">
-                                            <h:panelGroup id="paymentDetails">
-                                                <h:panelGrid
-                                                    columns="6"
-                                                    id="cheque"
-                                                    rendered="#{financialTransactionController.currentPayment.paymentMethod eq 'Cheque'}">
-                                                    <p:inputText
-                                                        id="txtChqValue"
-                                                        onfocus="this.select()"
-                                                        value="#{financialTransactionController.currentPayment.paidValue}"/>
-                                                    <p:inputText class="mx-2" autocomplete="off" value="#{financialTransactionController.currentPayment.chequeRefNo}" id="chequNo">
-                                                        <p:ajax process="@this"/>
-                                                    </p:inputText>
-                                                    <p:datePicker value="#{financialTransactionController.currentPayment.chequeDate}" id="ChequeDate">
-                                                        <p:ajax process="@this"/>
-                                                    </p:datePicker>
-                                                    <p:selectOneMenu value="#{financialTransactionController.currentPayment.bank}">
-                                                        <f:selectItem itemLabel="Select Bank"/>
-                                                        <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
-                                                        <p:ajax process="@this"/>
-                                                    </p:selectOneMenu>
-                                                </h:panelGrid>
-                                                <h:panelGrid
-                                                    class="w-100"
-                                                    columns="2"
-                                                    id="cash"
-                                                    rendered="#{financialTransactionController.currentPayment.paymentMethod eq 'Cash'}">
-                                                    <h:panelGroup>
-                                                        <p:outputLabel value="Reference"/>
-                                                        <p:inputText
-                                                            class="w-100"
-                                                            id="txtCashRefNo"
-                                                            onfocus="this.select()"
-                                                            placeholder="Reference Number"
-                                                            value="#{financialTransactionController.currentPayment.chequeRefNo}"/>
-                                                    </h:panelGroup>
-                                                    <h:panelGroup>
-                                                        <p:outputLabel value="Value"/><br/>
-                                                        <p:inputText
-                                                            class="w-100 text-end"
-                                                            id="txtCashValue"
-                                                            onfocus="this.select()"
-                                                            value="#{financialTransactionController.currentPayment.paidValue}"/>
-                                                    </h:panelGroup>
-                                                </h:panelGrid>
-                                                <h:panelGrid
-                                                    columns="6"
-                                                    class="row my-1"
-                                                    id="card"
-                                                    rendered="#{financialTransactionController.currentPayment.paymentMethod eq 'Card'}">
-                                                    <p:outputLabel value="Value"/>
-                                                    <p:inputText
-                                                        class="mx-2"
-                                                        id="txtCardValue"
-                                                        value="#{financialTransactionController.currentPayment.paidValue}"/>
-                                                    <p:inputText
-                                                        class="mx-2"
-                                                        id="txtCardRefNo"
-                                                        onfocus="this.select()"
-                                                        value="#{financialTransactionController.currentPayment.creditCardRefNo}"/>
-                                                    <p:selectOneMenu value="#{financialTransactionController.currentPayment.bank}" class="mx-2" id="cardBank">
-                                                        <f:selectItem itemLabel="Select Bank"/>
-                                                        <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
-                                                        <p:ajax process="@this"/>
-                                                    </p:selectOneMenu>
-                                                </h:panelGrid>
-                                                <h:panelGrid
-                                                    columns="2"
-                                                    class="row my-1"
-                                                    id="other"
-                                                    rendered="#{financialTransactionController.currentPayment.paymentMethod ne 'Cheque'
-                                                                and financialTransactionController.currentPayment.paymentMethod ne 'Cash'
-                                                                and financialTransactionController.currentPayment.paymentMethod ne 'Card'
-                                                                and financialTransactionController.currentPayment.paymentMethod ne null}">
-                                                    <p:outputLabel value="Value"/>
-                                                    <p:inputText
-                                                        class="mx-2"
-                                                        id="txtOtherValue"
-                                                        value="#{financialTransactionController.currentPayment.paidValue}"/>
-                                                </h:panelGrid>
-                                            </h:panelGroup>
+                                        <div class="col-md-3">
+                                            <p:outputLabel value="Value"/>
+                                            <p:inputText
+                                                class="w-100 text-end"
+                                                id="txtCashValue"
+                                                onfocus="this.select()"
+                                                value="#{financialTransactionController.currentPayment.paidValue}"/>
                                         </div>
                                     </div>
-                                </p:panel>
-
-                                <!-- Non-Cash: selectable list from held payments -->
-                                <p:panel class="m-1 w-100">
-                                    <f:facet name="header">
-                                        <h:outputText value="Non-Cash Payments in Hold (Card / Cheque / Slip / Other)"/>
-                                    </f:facet>
-
-                                    <p:dataTable
-                                        id="tblNonCash"
-                                        value="#{financialTransactionController.depositableNonCashPayments}"
-                                        var="np"
-                                        emptyMessage="No non-cash payments in your hold">
-                                        <p:column headerText="Date">
-                                            <h:outputText value="#{np.createdAt}">
-                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
-                                            </h:outputText>
-                                        </p:column>
-                                        <p:column headerText="Method">
-                                            <h:outputText value="#{np.paymentMethod}"/>
-                                        </p:column>
-                                        <p:column headerText="Reference No">
-                                            <h:outputText value="#{np.referenceNo}"/>
-                                        </p:column>
-                                        <p:column headerText="Bank">
-                                            <h:outputText value="#{np.bank.name}"/>
-                                        </p:column>
-                                        <p:column headerText="Amount" class="text-end">
-                                            <h:outputText value="#{np.paidValue}">
-                                                <f:convertNumber pattern="#,##0.00"/>
-                                            </h:outputText>
-                                        </p:column>
-                                        <p:column headerText="Action" class="text-center" width="6em">
-                                            <p:commandButton
-                                                icon="fa fa-plus"
-                                                class="ui-button-success"
-                                                title="Add to Deposit"
-                                                process="@this"
-                                                update="tblPayments tblNonCash txtTotalDepositValue"
-                                                action="#{financialTransactionController.addNonCashPaymentToDepositBill(np)}"/>
-                                        </p:column>
-                                    </p:dataTable>
                                 </p:panel>
 
                                 <!-- Already-added deposits list -->
@@ -232,7 +114,7 @@
                                                 id="btnRemove"
                                                 title="Remove"
                                                 process="@this"
-                                                update="tblPayments tblNonCash txtTotalDepositValue"
+                                                update="tblPayments txtTotalDepositValue"
                                                 action="#{financialTransactionController.removeNonCashPaymentFromDepositBill(bp)}">
                                             </p:commandButton>
                                         </p:column>
@@ -258,6 +140,19 @@
                                             ajax="false"
                                             action="#{financialTransactionController.settleFundDepositBill()}"/>
                                     </f:facet>
+                                    <p:outputLabel value="Cashbook"/>
+                                    <p:autoComplete
+                                        class="w-100"
+                                        inputStyleClass="w-100"
+                                        completeMethod="#{cashBookController.completeCashBook}"
+                                        value="#{financialTransactionController.depositCashBook}"
+                                        var="cb"
+                                        forceSelection="true"
+                                        itemLabel="#{cashBookController.getCashBookLabel(cb)}"
+                                        itemValue="#{cb}"
+                                        required="true"
+                                        requiredMessage="Please select a cashbook"/>
+
                                     <p:outputLabel value="Deposit To"/>
                                     <p:autoComplete
                                         class="w-100"

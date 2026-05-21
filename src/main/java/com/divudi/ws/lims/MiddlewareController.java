@@ -174,10 +174,6 @@ public class MiddlewareController {
                 Analyzer analyzer = Analyzer.valueOf(analyzerDetails.getAnalyzerName().replace(" ", "_")); // Ensuring enum compatibility
                 System.out.println("analyzer = " + analyzer);
                 switch (analyzer) {
-                    case BioRadD10:
-                        return processBioRadD10(dataBundle);
-
-
                     case Dimension_Clinical_Chemistry_System:
                         return processDimensionClinicalChemistrySystem(dataBundle);
                     case Gallery_Indiko:
@@ -188,6 +184,7 @@ public class MiddlewareController {
                         return processBA400(dataBundle);
                     case Sysmex_XS_Series:
 //                         return processSysmexXSSeries(dataBundle);
+                    case BioRadD10:
                     case MaglumiX3HL7:
                     case MindrayBC5150:
                     case IndikoPlus:
@@ -198,6 +195,7 @@ public class MiddlewareController {
                     case HumaStar600:
                     case XL_200:
                     case AIA_360:
+                    case MindrayCL1000i:
                         System.out.println("going to direct to processResultsCommon");
                         return processResultsCommon(dataBundle);
                     default:
