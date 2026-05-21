@@ -14,7 +14,7 @@
                 xmlns:pt="http://xmlns.jcp.org/jsf/composite/ezcomp/patient_transactions">
 
     <ui:define name="subcontent">
-
+        <f:event type="preRenderView" listener="#{financialTransactionController.redirectIfShiftNotStarted()}"/>
 
         <h:panelGroup rendered="#{!patientDepositController.printPreview}" >
             <h:form  >
