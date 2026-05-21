@@ -143,13 +143,13 @@ public class PurchaseOrderNativeSqlService {
             "FROM bill ab " +
             "LEFT JOIN bill rb                ON rb.ID = ab.referenceBill_ID " +
             "LEFT JOIN webuser approverWU      ON approverWU.ID = ab.creater_ID " +
-            "LEFT JOIN person  approverPerson  ON approverPerson.ID = approverWU.person_ID " +
+            "LEFT JOIN person  approverPerson  ON approverPerson.ID = approverWU.webUserPerson_ID " +
             "LEFT JOIN department orderDept    ON orderDept.ID = ab.department_ID " +
             "LEFT JOIN institution orderInst   ON orderInst.ID = orderDept.institution_ID " +
             "LEFT JOIN institution orderSite    ON orderSite.ID = orderDept.site_ID " +
             "LEFT JOIN institution supplier    ON supplier.ID = ab.toInstitution_ID " +
             "LEFT JOIN webuser checkedByWU     ON checkedByWU.ID = rb.checkedBy_ID " +
-            "LEFT JOIN person  preparerPerson  ON preparerPerson.ID = checkedByWU.person_ID " +
+            "LEFT JOIN person  preparerPerson  ON preparerPerson.ID = checkedByWU.webUserPerson_ID " +
             "LEFT JOIN webuser reqCreaterWU    ON reqCreaterWU.ID = rb.creater_ID " +
             "LEFT JOIN department reqCreaterDept ON reqCreaterDept.ID = reqCreaterWU.department_ID " +
             "LEFT JOIN institution reqCreaterInst ON reqCreaterInst.ID = reqCreaterDept.institution_ID " +

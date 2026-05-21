@@ -123,7 +123,7 @@ not the field name. Several are non-obvious:
 | `Department.site` | `Institution` | `institution` | `department` |
 | `Item.issueUnit` | `MeasurementUnit extends Category` | `category` | `item` |
 | `Item.category` | `Category` | `category` | — |
-| `WebUser.person` (EL: `webUserPerson`) | `Person` | `person` | — |
+| `WebUser.webUserPerson` | `Person` | `person` | FK column is `webUserPerson_ID` not `person_ID` |
 | `Department.institution` | `Institution` | `institution` | — |
 
 To verify: grep the entity class for the field, then check the Java type.
