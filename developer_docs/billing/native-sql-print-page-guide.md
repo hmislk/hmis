@@ -103,7 +103,33 @@ resolve which bill is which before querying, e.g.:
 String atomicSql = "SELECT billTypeAtomic, referenceBill_ID FROM bill WHERE ID = ?1 AND retired = 0 LIMIT 1";
 em.createNativeQuery(atomicSql).setParameter(1, billId).getResultList();
 ```
-Then branch on the atomic value to get the approval bill ID before the main query.
+Fail fast on unsupported atomics and missing links — do **not** fall back to `billId`:
+```java
+if ("PHARMACY_ORDER_APPROVAL".equals(billTypeAtomic)) {
+    approvalBillId = billId;
+} else if ("PHARMACY_ORDER".equals(billTypeAtomic)) {
+    if (atomicRow[1] == null) { return null; }  // not yet approved
+    approvalBillId = ((Number) atomicRow[1]).longValue();
+} else {
+    return null;  // unsupported type — do not guess
+}
+```
+
+**Verify entity field types before writing JOINs** — the Java field type determines the DB table,
+not the field name. Several are non-obvious:
+
+| Entity field | Java type | DB table | Common wrong join |
+|---|---|---|---|
+| `Department.site` | `Institution` | `institution` | `department` |
+| `Item.issueUnit` | `MeasurementUnit extends Category` | `category` | `item` |
+| `Item.category` | `Category` | `category` | — |
+| `WebUser.person` (EL: `webUserPerson`) | `Person` | `person` | — |
+| `Department.institution` | `Institution` | `institution` | — |
+
+To verify: grep the entity class for the field, then check the Java type.
+```bash
+grep -n "private.*fieldName" src/main/java/com/divudi/core/entity/SomeEntity.java
+```
 
 Reference: `PurchaseOrderNativeSqlService.java`.
 
@@ -247,7 +273,28 @@ load incorrectly initially when rendered inside a dialog. See `jsf-ajax` skill.
 
 Always call `makeNull()` at the start of `viewByBillId()` to clear stale state.
 
-### 6. Named parameters in native queries cause a SQL syntax error
+### 6. Joining the wrong table for a relation field
+
+The Java field name looks like one table but the actual type maps to another. Silent — LEFT JOIN
+returns null columns rather than an error, so the bug only shows up as blank data on the print page.
+
+```sql
+-- WRONG: Department.site is Institution, not Department
+LEFT JOIN department orderSite ON orderSite.ID = orderDept.site_ID
+
+-- CORRECT
+LEFT JOIN institution orderSite ON orderSite.ID = orderDept.site_ID
+
+-- WRONG: Item.issueUnit is MeasurementUnit extends Category, not Item
+LEFT JOIN item iu ON iu.ID = i.issueUnit_ID
+
+-- CORRECT
+LEFT JOIN category iu ON iu.ID = i.issueUnit_ID
+```
+
+Always grep the entity field to confirm its Java type before writing the JOIN.
+
+### 7. Named parameters in native queries cause a SQL syntax error
 
 EclipseLink's `createNativeQuery` does **not** support named parameters (`:name`). Use positional
 parameters `?1`, `?2`, ... and set them with `.setParameter(1, value)`.
