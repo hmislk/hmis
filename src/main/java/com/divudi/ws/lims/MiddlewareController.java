@@ -195,6 +195,7 @@ public class MiddlewareController {
                     case HumaStar600:
                     case XL_200:
                     case AIA_360:
+                    case MindrayCL1000i:
                         System.out.println("going to direct to processResultsCommon");
                         return processResultsCommon(dataBundle);
                     default:
