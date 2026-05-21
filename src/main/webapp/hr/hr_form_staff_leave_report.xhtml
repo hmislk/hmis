@@ -5,182 +5,388 @@
                 xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://xmlns.jcp.org/jsf/core"
-
                 xmlns:au="http://xmlns.jcp.org/jsf/composite/autocomplete">
 
     <ui:define name="content">
-        <h:form>
-            <p:panel header="Leave Application Form">
 
+        <h:form styleClass="leave-application-form">
 
-                <p:panel header="Search Leave Forms" >
-                    <p:panel>
-                        <p:panelGrid columns="2" >
-                            <h:outputLabel value="From Date"/>
-                            <p:calendar value="#{staffLeaveApplicationFormController.fromDate}"
-                                        pattern="#{sessionController.applicationPreference.longDateFormat}">
-                            </p:calendar>
-                            <h:outputLabel value="To Date"/>
-                            <p:calendar value="#{staffLeaveApplicationFormController.toDate}"
-                                        pattern="#{sessionController.applicationPreference.longDateFormat}">
-                            </p:calendar>
-                            <h:outputLabel value="Staff : "/>
-                            <au:completeStaff value="#{staffLeaveApplicationFormController.staff}"/>
-                            <h:outputLabel value="Leave Type"/>
-                            <p:selectOneMenu  value="#{staffLeaveApplicationFormController.leaveType}">
-                                <f:selectItem itemLabel="Select Day Type"/>
-                                <f:selectItems value="#{enumController.leaveType}"/>
+            <h:outputStylesheet>
+                .leave-application-form {
+                    padding: 2rem 1.75rem;
+                }
+
+                .page-header {
+                    margin-bottom: 1.75rem;
+                }
+
+                .page-title {
+                    font-size: 18px;
+                    font-weight: 600;
+                    margin: 0 0 4px 0;
+                }
+
+                .page-subtitle {
+                    font-size: 13px;
+                    color: #888;
+                    margin: 0;
+                }
+
+                .controls-panel .ui-panel-content {
+                    padding: 1.5rem 1.75rem !important;
+                }
+
+                .controls-grid {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 1.25rem;
+                }
+
+                .fields-grid {
+                    display: grid;
+                    grid-template-columns: repeat(2, 1fr);
+                    gap: 1rem 1.5rem;
+                }
+
+                .field-group {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 6px;
+                }
+
+                .field-label {
+                    font-size: 11.5px !important;
+                    font-weight: 600 !important;
+                    text-transform: uppercase;
+                    letter-spacing: 0.05em;
+                    color: #888 !important;
+                }
+
+                .checkbox-group {
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    padding-top: 4px;
+                }
+
+                .controls-actions {
+                    display: flex;
+                    gap: 10px;
+                    align-items: center;
+                    flex-wrap: wrap;
+                }
+
+                .controls-actions-secondary {
+                    display: flex;
+                    gap: 10px;
+                    align-items: center;
+                    flex-wrap: wrap;
+                    padding-top: 0.75rem;
+                    border-top: 1px solid #e8e8e8;
+                }
+
+                .btn-action {
+                    height: 36px !important;
+                    padding: 0 18px !important;
+                    font-size: 13px !important;
+                }
+
+                .report-panel {
+                    margin-top: 1.5rem;
+                }
+
+                .report-panel .ui-panel-content {
+                    padding: 0 !important;
+                }
+
+                .report-header-wrap {
+                    text-align: center;
+                    padding: 1.5rem 1.5rem 1rem;
+                    border-bottom: 1px solid #e8e8e8;
+                }
+
+                .report-title-label {
+                    font-size: 13px;
+                    color: #666;
+                    display: block;
+                    margin-bottom: 2px;
+                }
+
+                .report-meta {
+                    font-size: 13px;
+                    color: #555;
+                    margin-top: 4px;
+                }
+
+                .wt-table .ui-datatable-tablewrapper {
+                    overflow-x: auto !important;
+                    width: 100% !important;
+                }
+
+                .wt-table table {
+                    width: auto !important;
+                    table-layout: auto !important;
+                }
+
+                .wt-table .ui-datatable-data td,
+                .wt-table .ui-datatable-thead th {
+                    padding: 10px 14px !important;
+                    white-space: nowrap;
+                    font-size: 13px !important;
+                    width: auto !important;
+                }
+
+                .wt-table .ui-datatable-thead th {
+                    font-size: 12px !important;
+                    font-weight: 600 !important;
+                    text-transform: uppercase;
+                    letter-spacing: 0.03em;
+                    color: #888 !important;
+                    background: #f9f9f9 !important;
+                    border-bottom: 1px solid #e8e8e8 !important;
+                }
+
+                .wt-table .ui-datatable-data tr:hover td {
+                    background: #f5f7ff !important;
+                }
+
+                .wt-table .col-text {
+                    text-align: left !important;
+                }
+
+                .wt-table .col-num {
+                    text-align: right !important;
+                }
+
+                .wt-table .col-name .ui-outputlabel {
+                    font-weight: 500;
+                }
+
+                .wt-table tfoot td {
+                    background: #f9f9f9 !important;
+                    font-size: 12px !important;
+                    border-top: 2px solid #e0e0e0 !important;
+                    padding: 10px 14px !important;
+                    color: #999;
+                }
+
+                .report-table-footer {
+                    display: flex;
+                    justify-content: flex-end;
+                    align-items: center;
+                    gap: 6px;
+                    padding: 0.85rem 1.5rem;
+                    border-top: 1px solid #e8e8e8;
+                    font-size: 12px;
+                    color: #999;
+                }
+            </h:outputStylesheet>
+
+            <div class="page-header">
+                <p class="page-title"><h:outputText value="Leave Application Form" /></p>
+                <p class="page-subtitle"><h:outputText value="Filter by date range, staff, leave type or approved person and process to generate" /></p>
+            </div>
+
+            <p:panel styleClass="controls-panel">
+                <div class="controls-grid">
+
+                    <div class="fields-grid">
+                        <div class="field-group">
+                            <p:outputLabel for="fromDate" value="From date" styleClass="field-label" />
+                            <p:calendar id="fromDate"
+                                        value="#{staffLeaveApplicationFormController.fromDate}"
+                                        pattern="#{sessionController.applicationPreference.longDateFormat}"
+                                        style="width: 100%;" />
+                        </div>
+
+                        <div class="field-group">
+                            <p:outputLabel for="toDate" value="To date" styleClass="field-label" />
+                            <p:calendar id="toDate"
+                                        value="#{staffLeaveApplicationFormController.toDate}"
+                                        pattern="#{sessionController.applicationPreference.longDateFormat}"
+                                        style="width: 100%;" />
+                        </div>
+
+                        <div class="field-group">
+                            <p:outputLabel value="Staff" styleClass="field-label" />
+                            <au:completeStaff value="#{staffLeaveApplicationFormController.staff}" />
+                        </div>
+
+                        <div class="field-group">
+                            <p:outputLabel for="leaveType" value="Leave type" styleClass="field-label" />
+                            <p:selectOneMenu id="leaveType"
+                                             value="#{staffLeaveApplicationFormController.leaveType}"
+                                             appendTo="@body"
+                                             autoWidth="false"
+                                             style="width: 100%;">
+                                <f:selectItem itemLabel="Select leave type" />
+                                <f:selectItems value="#{enumController.leaveType}" />
                             </p:selectOneMenu>
-                            <h:outputLabel value="With Out Cancel"/>
-                            <p:selectBooleanCheckbox value="#{staffLeaveApplicationFormController.withOutretRierd}"
-                                                     itemLabel="With Out Cancel"/>
-                            <h:outputLabel value="Leave Approved Person"/>
-                            <au:completeStaff value="#{staffLeaveApplicationFormController.approvedStaff}"/>
-                            <p:commandButton value="Search Created Date" ajax="false" action="#{staffLeaveApplicationFormController.createleaveTable()}" />
-                            <p:commandButton value="Search Approved Date" ajax="false" action="#{staffLeaveApplicationFormController.createleaveTableApprovedDate()}" />
-                            <p:commandButton value="Search Shift Date" ajax="false" action="#{staffLeaveApplicationFormController.createleaveTableShiftDate()}" />
-                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton"  >
-                                <p:dataExporter type="xlsx" target="tb1" fileName="hr_form_staff_leave_report"  />
-                            </p:commandButton>
-                            <p:commandButton value="Print" ajax="false" action="#" >
-                                <p:printer target="gpBillPreview" ></p:printer>
-                            </p:commandButton>
-                        </p:panelGrid>
-                    </p:panel>
-                    <p:panel id="gpBillPreview" styleClass="noBorder summeryBorder" >
-                        <p:dataTable  value="#{staffLeaveApplicationFormController.leaveForms}" var="l"
-                                      rowStyleClass="#{l.retired eq true ? 'redText':''}" id="tb1">
+                        </div>
 
-                            <f:facet name="header">
-                                <h:outputLabel value="#{sessionController.loggedUser.institution.name}" /><br></br>
-                                <h:outputLabel value="Leave Application Form Report " /><br/>
-                                <h:outputLabel value="  From : "  />
-                                <h:outputLabel  value="#{staffLeaveApplicationFormController.fromDate}" >
-                                    <f:convertDateTime pattern="dd MM yy "/>
-                                </h:outputLabel>
-                                <h:outputLabel/>
-                                <h:outputLabel/>
-                                <h:outputLabel value="  To : "/>
-                                <h:outputLabel  value="#{staffLeaveApplicationFormController.toDate}">
-                                    <f:convertDateTime pattern="dd MM yy "/>
-                                </h:outputLabel><br/>
-                                <h:panelGroup rendered="#{staffLeaveApplicationFormController.reportKeyWord.staff ne null}" >
-                                    <h:outputLabel value="Staff : #{staffLeaveApplicationFormController.reportKeyWord.staff.person.name}"/>
-                                    <br/>
-                                </h:panelGroup>
+                        <div class="field-group">
+                            <p:outputLabel value="Leave approved person" styleClass="field-label" />
+                            <au:completeStaff value="#{staffLeaveApplicationFormController.approvedStaff}" />
+                        </div>
 
-                            </f:facet>
-                            <p:column headerText="Form Number" sortBy="#{l.code}">
-                                <f:facet name="header">
-                                    <h:outputLabel value="Form Number"/>
-                                </f:facet>
-                                <p:outputLabel value="#{l.code}" ></p:outputLabel>
-                            </p:column>
-                            <p:column headerText="Staff" >
-                                <f:facet name="header">
-                                    <h:outputLabel value="Staff"  />
-                                </f:facet>
-                                <p:outputLabel value="#{l.staff.person.nameWithTitle}" ></p:outputLabel>
-                            </p:column>
+                        <div class="field-group">
+                            <p:outputLabel value="Options" styleClass="field-label" />
+                            <div class="checkbox-group">
+                                <p:selectBooleanCheckbox id="withOutCancel"
+                                                         value="#{staffLeaveApplicationFormController.withOutretRierd}" />
+                                <h:outputLabel for="withOutCancel" value="Without cancel" styleClass="field-label" />
+                            </div>
+                        </div>
+                    </div>
 
-                            <p:column headerText="Code" sortBy="#{l.staff.codeInterger}">
-                                <f:facet name="header">
-                                    <h:outputLabel value="Code"  />
-                                </f:facet>
-                                <p:outputLabel value="#{l.staff.codeInterger}" ></p:outputLabel>
-                            </p:column>
+                    <div class="controls-actions">
+                        <p:commandButton value="Search Created Date"
+                                         ajax="false"
+                                         action="#{staffLeaveApplicationFormController.createleaveTable()}"
+                                         icon="pi pi-search"
+                                         styleClass="btn-action" />
+                        <p:commandButton value="Search Approved Date"
+                                         ajax="false"
+                                         action="#{staffLeaveApplicationFormController.createleaveTableApprovedDate()}"
+                                         icon="pi pi-search"
+                                         styleClass="btn-action" />
+                        <p:commandButton value="Search Shift Date"
+                                         ajax="false"
+                                         action="#{staffLeaveApplicationFormController.createleaveTableShiftDate()}"
+                                         icon="pi pi-search"
+                                         styleClass="btn-action" />
+                    </div>
 
-                            <p:column headerText="Created At" sortBy="#{l.createdAt}">
-                                <f:facet name="header">
-                                    <h:outputLabel value="Created At"/>
-                                </f:facet>
-                                <p:outputLabel value="#{l.createdAt}" >
-                                    <f:convertDateTime pattern="yyyy MM dd HH:mm:ss" />
-                                </p:outputLabel>
-                            </p:column>
+                    <div class="controls-actions-secondary">
+                        <p:commandButton value="Print"
+                                         type="button"
+                                         icon="pi pi-print"
+                                         styleClass="btn-action">
+                            <p:printer target="gpBillPreview" />
+                        </p:commandButton>
+                        <p:commandButton value="Export Excel"
+                                         ajax="false"
+                                         icon="pi pi-file-excel"
+                                         styleClass="btn-action noPrintButton">
+                            <p:dataExporter type="xlsx" target="tb1" fileName="hr_form_staff_leave_report" />
+                        </p:commandButton>
+                    </div>
 
-                            <p:column headerText="From">
-                                <f:facet name="header">
-                                    <h:outputLabel value="From"  />
-                                </f:facet>
-                                <p:outputLabel value="#{l.fromDate}" >
-                                    <f:convertDateTime pattern="yyyy MM dd HH:mm:ss" />
-                                </p:outputLabel>
-                            </p:column>
-                            <p:column headerText="To">
-                                <f:facet name="header">
-                                    <h:outputLabel value="To"  />
-                                </f:facet>
-                                <p:outputLabel value="#{l.toDate}" >
-                                    <f:convertDateTime pattern="yyyy MM dd HH:mm:ss" />
-                                </p:outputLabel>
-                            </p:column>
+                </div>
+            </p:panel>
 
-                            <p:column headerText="Leave Type">
-                                <f:facet name="header">
-                                    <h:outputLabel value="Leave Type"  />
-                                </f:facet>
-                                <p:outputLabel value="#{l.leaveType}" ></p:outputLabel>
-                            </p:column>
+            <p:panel id="gpBillPreview" styleClass="report-panel noBorder summeryBorder">
 
-                            <p:column headerText="Shift Name">
-                                <f:facet name="header">
-                                    <h:outputLabel value="Shift Name"  />
-                                </f:facet>
-                                <p:outputLabel value="#{l.staffShift.shift.name}" ></p:outputLabel>
-                            </p:column>
+                <f:facet name="header">
+                    <div class="report-header-wrap">
+                        <span class="report-title-label">
+                            <h:outputText value="#{sessionController.loggedUser.institution.name}" />
+                        </span>
+                        <span class="report-title-label">Leave Application Form Report</span>
+                        <h:panelGroup rendered="#{staffLeaveApplicationFormController.fromDate ne null}">
+                            <p class="report-meta">
+                                <h:outputText value="#{staffLeaveApplicationFormController.fromDate}">
+                                    <f:convertDateTime pattern="dd MM yy" />
+                                </h:outputText>
+                                —
+                                <h:outputText value="#{staffLeaveApplicationFormController.toDate}">
+                                    <f:convertDateTime pattern="dd MM yy" />
+                                </h:outputText>
+                            </p>
+                        </h:panelGroup>
+                        <h:panelGroup rendered="#{staffLeaveApplicationFormController.reportKeyWord.staff ne null}">
+                            <p class="report-meta">
+                                Employee: <h:outputText value="#{staffLeaveApplicationFormController.reportKeyWord.staff.person.name}" />
+                            </p>
+                        </h:panelGroup>
+                    </div>
+                </f:facet>
 
-                            <p:column headerText="Request Date">
-                                <f:facet name="header">
-                                    <h:outputLabel value="Request Date"  />
-                                </f:facet>
-                                <p:outputLabel value="#{l.requestedDate}" >
-                                    <f:convertDateTime pattern="yyyy MM dd HH:mm:ss" />
-                                </p:outputLabel>
-                            </p:column>
+                <p:dataTable id="tb1"
+                             value="#{staffLeaveApplicationFormController.leaveForms}"
+                             var="l"
+                             rowStyleClass="#{l.retired eq true ? 'redText':''}"
+                             styleClass="wt-table">
 
-                            <p:column headerText="Aproved By">
-                                <f:facet name="header">
-                                    <h:outputLabel value="Aproved By"  />
-                                </f:facet>
-                                <p:outputLabel value="#{l.approvedStaff.person.nameWithTitle}" ></p:outputLabel>
-                            </p:column>
+                    <p:column headerText="Form No" styleClass="col-text" sortBy="#{l.code}">
+                        <p:outputLabel value="#{l.code}" />
+                    </p:column>
 
-                            <p:column headerText="Leave Approved Date">
-                                <f:facet name="header">
-                                    <h:outputLabel value="Leave Approved Date"  />
-                                </f:facet>
-                                <p:outputLabel value="#{l.approvedAt}" >
-                                    <f:convertDateTime pattern="yyyy MM dd HH:mm:ss" />
-                                </p:outputLabel>
-                            </p:column>
+                    <p:column headerText="Staff" styleClass="col-text col-name" style="min-width: 180px;">
+                        <p:outputLabel value="#{l.staff.person.nameWithTitle}" />
+                    </p:column>
 
-                            <p:column headerText="Comment">
-                                <f:facet name="header">
-                                    <h:outputLabel value="Comment"  />
-                                </f:facet>
-                                <p:outputLabel value="#{l.comments}" ></p:outputLabel>
-                            </p:column>
-                            <p:column headerText="Creator">
-                                <f:facet name="header">
-                                    <h:outputLabel value="Creator"  />
-                                </f:facet>
-                                <p:outputLabel value="#{l.creater.webUserPerson.nameWithTitle}" > <br/></p:outputLabel>
+                    <p:column headerText="Code" styleClass="col-text" sortBy="#{l.staff.codeInterger}">
+                        <p:outputLabel value="#{l.staff.codeInterger}" />
+                    </p:column>
 
-                                <p:outputLabel value="Deleted By  #{l.retirer.webUserPerson.nameWithTitle}" rendered="#{l.retired}" style="color: blue;"/>
-                            </p:column>
-                            <f:facet name="footer">
-                                <p:outputLabel value="Print By : #{sessionController.loggedUser.webUserPerson.name} - " />
-                                <p:outputLabel value="Print At : " />
-                                <p:outputLabel value="#{commonFunctionsProxy.currentDateTime}" >
-                                    <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a " />
-                                </p:outputLabel>
-                            </f:facet>
-                        </p:dataTable>
-                    </p:panel>
-                </p:panel>
+                    <p:column headerText="Created At" styleClass="col-text" sortBy="#{l.createdAt}">
+                        <p:outputLabel value="#{l.createdAt}">
+                            <f:convertDateTime pattern="yyyy MM dd HH:mm:ss" />
+                        </p:outputLabel>
+                    </p:column>
+
+                    <p:column headerText="From" styleClass="col-text">
+                        <p:outputLabel value="#{l.fromDate}">
+                            <f:convertDateTime pattern="yyyy MM dd HH:mm:ss" />
+                        </p:outputLabel>
+                    </p:column>
+
+                    <p:column headerText="To" styleClass="col-text">
+                        <p:outputLabel value="#{l.toDate}">
+                            <f:convertDateTime pattern="yyyy MM dd HH:mm:ss" />
+                        </p:outputLabel>
+                    </p:column>
+
+                    <p:column headerText="Leave Type" styleClass="col-text">
+                        <p:outputLabel value="#{l.leaveType}" />
+                    </p:column>
+
+                    <p:column headerText="Shift" styleClass="col-text">
+                        <p:outputLabel value="#{l.staffShift.shift.name}" />
+                    </p:column>
+
+                    <p:column headerText="Request Date" styleClass="col-text">
+                        <p:outputLabel value="#{l.requestedDate}">
+                            <f:convertDateTime pattern="yyyy MM dd HH:mm:ss" />
+                        </p:outputLabel>
+                    </p:column>
+
+                    <p:column headerText="Approved By" styleClass="col-text">
+                        <p:outputLabel value="#{l.approvedStaff.person.nameWithTitle}" />
+                    </p:column>
+
+                    <p:column headerText="Approved Date" styleClass="col-text">
+                        <p:outputLabel value="#{l.approvedAt}">
+                            <f:convertDateTime pattern="yyyy MM dd HH:mm:ss" />
+                        </p:outputLabel>
+                    </p:column>
+
+                    <p:column headerText="Comment" styleClass="col-text">
+                        <p:outputLabel value="#{l.comments}" />
+                    </p:column>
+
+                    <p:column headerText="Creator" styleClass="col-text">
+                        <p:outputLabel value="#{l.creater.webUserPerson.nameWithTitle}"><br /></p:outputLabel>
+                        <p:outputLabel value="Deleted By  #{l.retirer.webUserPerson.nameWithTitle}"
+                                       rendered="#{l.retired}"
+                                       style="color: blue;" />
+                    </p:column>
+
+                    <f:facet name="footer">
+                        <div class="report-table-footer">
+                            <p:outputLabel value="Print by: #{sessionController.loggedUser.webUserPerson.name}" />
+                            <span>·</span>
+                            <p:outputLabel value="#{commonFunctionsProxy.currentDateTime}">
+                                <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a" />
+                            </p:outputLabel>
+                        </div>
+                    </f:facet>
+
+                </p:dataTable>
 
             </p:panel>
+
         </h:form>
     </ui:define>
 
