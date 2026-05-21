@@ -5,7 +5,6 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
-
       xmlns:hr="http://xmlns.jcp.org/jsf/composite/autocomplete">
 
     <h:body>
@@ -14,271 +13,480 @@
 
             <ui:define name="content">
 
-                <h:form >
-                    <p:panel >
-                        <f:facet name="header" >
-                            <h:outputLabel value="Employee Working Time and Over Time Report" />
+                <h:form styleClass="wt-report-form">
+
+                    <h:outputStylesheet>
+                        .wt-report-form {
+                            padding: 2rem 1.75rem;
+                        }
+
+                        .page-header {
+                            margin-bottom: 1.75rem;
+                        }
+
+                        .page-title {
+                            font-size: 18px;
+                            font-weight: 600;
+                            margin: 0 0 4px 0;
+                        }
+
+                        .page-subtitle {
+                            font-size: 13px;
+                            color: #888;
+                            margin: 0;
+                        }
+
+                        .controls-panel .ui-panel-content {
+                            padding: 1.5rem 1.75rem !important;
+                        }
+
+                        .controls-grid {
+                            display: flex;
+                            flex-direction: column;
+                            gap: 1.25rem;
+                        }
+
+                        .fields-grid {
+                            display: grid;
+                            grid-template-columns: repeat(2, 1fr);
+                            gap: 1rem 1.5rem;
+                        }
+
+                        .field-group {
+                            display: flex;
+                            flex-direction: column;
+                            gap: 6px;
+                        }
+
+                        .field-label {
+                            font-size: 11.5px !important;
+                            font-weight: 600 !important;
+                            text-transform: uppercase;
+                            letter-spacing: 0.05em;
+                            color: #888 !important;
+                        }
+
+                        .controls-actions {
+                            display: flex;
+                            gap: 10px;
+                            align-items: center;
+                            flex-wrap: wrap;
+                        }
+
+                        .controls-actions-secondary {
+                            display: flex;
+                            gap: 10px;
+                            align-items: center;
+                            flex-wrap: wrap;
+                            padding-top: 0.75rem;
+                            border-top: 1px solid #e8e8e8;
+                        }
+
+                        .btn-action {
+                            height: 36px !important;
+                            padding: 0 18px !important;
+                            font-size: 13px !important;
+                        }
+
+                        .btn-link-action {
+                            font-size: 12px;
+                            color: #666;
+                            text-decoration: underline;
+                            cursor: pointer;
+                        }
+
+                        .report-panel {
+                            margin-top: 1.5rem;
+                        }
+
+                        .report-panel .ui-panel-content {
+                            padding: 0 !important;
+                        }
+
+                        .report-header-wrap {
+                            text-align: center;
+                            padding: 1.5rem 1.5rem 1rem;
+                            border-bottom: 1px solid #e8e8e8;
+                        }
+
+                        .report-title-label {
+                            font-size: 13px;
+                            color: #666;
+                            display: block;
+                            margin-bottom: 2px;
+                        }
+
+                        .report-meta {
+                            font-size: 13px;
+                            color: #555;
+                            margin-top: 4px;
+                        }
+
+                        .wt-table .ui-datatable-tablewrapper {
+                            overflow-x: auto !important;
+                            width: 100% !important;
+                        }
+
+                        .wt-table table {
+                            width: auto !important;
+                            table-layout: auto !important;
+                        }
+
+                        .wt-table .ui-datatable-data td,
+                        .wt-table .ui-datatable-thead th {
+                            padding: 10px 14px !important;
+                            white-space: nowrap;
+                            font-size: 13px !important;
+                            width: auto !important;
+                        }
+
+                        .wt-table .ui-datatable-thead th {
+                            font-size: 12px !important;
+                            font-weight: 600 !important;
+                            text-transform: uppercase;
+                            letter-spacing: 0.03em;
+                            color: #888 !important;
+                            background: #f9f9f9 !important;
+                            border-bottom: 1px solid #e8e8e8 !important;
+                        }
+
+                        .wt-table .ui-datatable-data tr:hover td {
+                            background: #f5f7ff !important;
+                        }
+
+                        .wt-table .col-num {
+                            text-align: right !important;
+                        }
+
+                        .wt-table .col-text {
+                            text-align: left !important;
+                        }
+
+                        .wt-table .col-name .ui-outputlabel {
+                            font-weight: 500;
+                        }
+
+                        .wt-table tfoot td {
+                            background: #f9f9f9 !important;
+                            font-size: 12px !important;
+                            border-top: 2px solid #e0e0e0 !important;
+                            padding: 10px 14px !important;
+                            color: #999;
+                        }
+
+                        .report-table-footer {
+                            display: flex;
+                            justify-content: flex-end;
+                            align-items: center;
+                            gap: 6px;
+                            padding: 0.85rem 1.5rem;
+                            border-top: 1px solid #e8e8e8;
+                            font-size: 12px;
+                            color: #999;
+                        }
+                    </h:outputStylesheet>
+
+                    <div class="page-header">
+                        <p class="page-title"><h:outputText value="Employee Working Time and Overtime Report" /></p>
+                        <p class="page-subtitle"><h:outputText value="Filter by date range, employee, department or roster and process to generate" /></p>
+                    </div>
+
+                    <p:panel styleClass="controls-panel">
+                        <div class="controls-grid">
+
+                            <div class="fields-grid">
+                                <div class="field-group">
+                                    <p:outputLabel for="fromDate" value="From" styleClass="field-label" />
+                                    <p:calendar id="fromDate"
+                                                value="#{hrReportController.fromDate}"
+                                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                                style="width: 100%;" />
+                                </div>
+
+                                <div class="field-group">
+                                    <p:outputLabel for="toDate" value="To" styleClass="field-label" />
+                                    <p:calendar id="toDate"
+                                                value="#{hrReportController.toDate}"
+                                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                                style="width: 100%;" />
+                                </div>
+
+                                <div class="field-group">
+                                    <p:outputLabel value="Employee" styleClass="field-label" />
+                                    <hr:completeStaff value="#{hrReportController.reportKeyWord.staff}" />
+                                </div>
+
+                                <div class="field-group">
+                                    <p:outputLabel value="Institution" styleClass="field-label" />
+                                    <hr:institution value="#{hrReportController.reportKeyWord.institution}" />
+                                </div>
+
+                                <div class="field-group">
+                                    <p:outputLabel value="Department" styleClass="field-label" />
+                                    <hr:department value="#{hrReportController.reportKeyWord.department}" />
+                                </div>
+
+                                <div class="field-group">
+                                    <p:outputLabel value="Staff category" styleClass="field-label" />
+                                    <hr:completeStaffCategory value="#{hrReportController.reportKeyWord.staffCategory}" />
+                                </div>
+
+                                <div class="field-group">
+                                    <p:outputLabel value="Staff designation" styleClass="field-label" />
+                                    <hr:completeDesignation value="#{hrReportController.reportKeyWord.designation}" />
+                                </div>
+
+                                <div class="field-group">
+                                    <p:outputLabel value="Staff roster" styleClass="field-label" />
+                                    <hr:completeRoster value="#{hrReportController.reportKeyWord.roster}" />
+                                </div>
+                            </div>
+
+                            <div class="controls-actions">
+                                <p:commandButton value="Process"
+                                                 ajax="false"
+                                                 action="#{hrReportController.createMonthEndWorkTimeReport()}"
+                                                 icon="pi pi-sync"
+                                                 styleClass="btn-action" />
+                            </div>
+
+                            <div class="controls-actions-secondary">
+                                <p:commandButton value="Print"
+                                                 type="button"
+                                                 icon="pi pi-print"
+                                                 styleClass="btn-action">
+                                    <p:printer target="gpBillPreview" />
+                                </p:commandButton>
+                                <p:commandButton value="Export Excel"
+                                                 ajax="false"
+                                                 icon="pi pi-file-excel"
+                                                 styleClass="btn-action noPrintButton">
+                                    <p:dataExporter type="xlsx" target="tb1" fileName="hr_report_month_end_work_time_miniuts" />
+                                </p:commandButton>
+                                <p:commandLink ajax="false"
+                                               value="New Method"
+                                               action="#{hrReportController.createMonthEndWorkTimeReportBySalaryGenerationMethod()}"
+                                               styleClass="btn-link-action noPrintButton" />
+                            </div>
+
+                        </div>
+                    </p:panel>
+
+                    <p:panel id="gpBillPreview" styleClass="report-panel noBorder summeryBorder">
+
+                        <f:facet name="header">
+                            <div class="report-header-wrap">
+                                <span class="report-title-label">Employee Working Time and Overtime Report</span>
+
+                                <h:panelGroup rendered="#{hrReportController.fromDate ne null}">
+                                    <p class="report-meta">
+                                        <h:outputText value="#{hrReportController.fromDate}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                        </h:outputText>
+                                        —
+                                        <h:outputText value="#{hrReportController.toDate}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                        </h:outputText>
+                                    </p>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{hrReportController.reportKeyWord.institution ne null}">
+                                    <p class="report-meta">
+                                        <h:outputText value="#{hrReportController.reportKeyWord.institution.name}" />
+                                    </p>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{hrReportController.reportKeyWord.department ne null}">
+                                    <p class="report-meta">
+                                        Department: <h:outputText value="#{hrReportController.reportKeyWord.department.name}" />
+                                    </p>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{hrReportController.reportKeyWord.staff ne null}">
+                                    <p class="report-meta">
+                                        Employee: <h:outputText value="#{hrReportController.reportKeyWord.staff.person.name}" />
+                                    </p>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{hrReportController.reportKeyWord.staffCategory ne null}">
+                                    <p class="report-meta">
+                                        Staff category: <h:outputText value="#{hrReportController.reportKeyWord.staffCategory.name}" />
+                                    </p>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{hrReportController.reportKeyWord.designation ne null}">
+                                    <p class="report-meta">
+                                        Designation: <h:outputText value="#{hrReportController.reportKeyWord.designation.name}" />
+                                    </p>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{hrReportController.reportKeyWord.roster ne null}">
+                                    <p class="report-meta">
+                                        Roster: <h:outputText value="#{hrReportController.reportKeyWord.roster.name}" />
+                                    </p>
+                                </h:panelGroup>
+                            </div>
                         </f:facet>
-                        <h:panelGrid columns="2" >
-                            <h:outputLabel value="From : " />
-                            <p:calendar value="#{hrReportController.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
-                            <h:outputLabel value="To : " />
-                            <p:calendar value="#{hrReportController.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
-                            <h:outputLabel value="Employee : "/>
-                            <hr:completeStaff value="#{hrReportController.reportKeyWord.staff}"/>
-                            <h:outputLabel value="Institution : "/>
-                            <hr:institution value="#{hrReportController.reportKeyWord.institution}"/>
-                            <h:outputLabel value="Department : "/>
-                            <hr:department value="#{hrReportController.reportKeyWord.department}"/>
-                            <h:outputLabel value="Staff Category : "/>
-                            <hr:completeStaffCategory value="#{hrReportController.reportKeyWord.staffCategory}"/>
-                            <h:outputLabel value="Staff Designation : "/>
-                            <hr:completeDesignation value="#{hrReportController.reportKeyWord.designation}"/>
-                            <h:outputLabel value="Staff Roster : "/>
-                            <hr:completeRoster value="#{hrReportController.reportKeyWord.roster}"/>
-                        </h:panelGrid>
 
-                        <h:panelGrid columns="4" >
-                            <p:commandButton ajax="false" value="Process" action="#{hrReportController.createMonthEndWorkTimeReport()}"/>
-                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton"  >
-                                <p:dataExporter type="xlsx" target="tb1" fileName="hr_report_month_end_work_time_miniuts"  />
-                            </p:commandButton>
-                            <p:commandButton value="Print" ajax="false" action="#" >
-                                <p:printer target="gpBillPreview" ></p:printer>
-                            </p:commandButton>
+                        <p:dataTable id="tb1"
+                                     value="#{hrReportController.weekDayWorks}"
+                                     var="ss"
+                                     editable="true"
+                                     styleClass="wt-table">
 
-                            <p:commandLink ajax="false" value="New Method"
-                                           action="#{hrReportController.createMonthEndWorkTimeReportBySalaryGenerationMethod()}"
-                                           styleClass="tinyText" style="float: right;"/>
+                            <p:column headerText="Code" styleClass="col-text">
+                                <h:outputLabel value="#{ss.staff.codeInterger}" />
+                            </p:column>
 
-                        </h:panelGrid>
-                        <p:panel id="gpBillPreview" styleClass="noBorder summeryBorder" >
-                            <p:dataTable id="tb1" value="#{hrReportController.weekDayWorks}" var="ss"  editable="true">
-                                <f:facet name="header" >
+                            <p:column headerText="Staff" styleClass="col-text col-name" style="min-width: 180px;">
+                                <p:commandLink value="#{ss.staff.person.name}"
+                                               action="#{hrReportController.fromWeekelyOverTimeReportToStaffFingerPrintAnalysis(ss.staff)}"
+                                               ajax="false" />
+                            </p:column>
 
-                                    <h:panelGroup rendered="#{hrReportController.reportKeyWord.roster ne null}">
-                                        <h:outputLabel value="#{hrReportController.reportKeyWord.roster.name} Roster" rendered="#{hrReportController.reportKeyWord.roster ne null}"/>
-                                        <br />
-                                    </h:panelGroup>
-                                    <h:panelGroup rendered="#{hrReportController.reportKeyWord.staff ne null}">
-                                        <h:outputLabel value="Employee #{hrReportController.reportKeyWord.staff.person.name}" rendered="#{hrReportController.reportKeyWord.staff ne null}"/>
-                                        <br />
-                                    </h:panelGroup>
-
-                                    <h:panelGroup rendered="#{hrReportController.reportKeyWord.institution ne null}">
-                                        <h:outputLabel value="#{hrReportController.reportKeyWord.institution.name}" rendered="#{hrReportController.reportKeyWord.institution ne null}"/>
-                                        <br />
-                                    </h:panelGroup>
-
-                                    <h:panelGroup rendered="#{hrReportController.reportKeyWord.department ne null}">
-                                        <h:outputLabel value="#{hrReportController.reportKeyWord.department.name} Department" rendered="#{hrReportController.reportKeyWord.department ne null}"/>
-                                        <br />
-                                    </h:panelGroup>
-
-                                    <h:panelGroup rendered="#{hrReportController.reportKeyWord.staffCategory ne null}">
-                                        <h:outputLabel value="Staff Category #{hrReportController.reportKeyWord.staffCategory.name}" rendered="#{hrReportController.reportKeyWord.staffCategory ne null}"/>
-                                        <br />
-                                    </h:panelGroup>
-
-                                    <h:panelGroup rendered="#{hrReportController.reportKeyWord.designation ne null}">
-                                        <h:outputLabel value="Staff Designation #{hrReportController.reportKeyWord.designation.name}" rendered="#{hrReportController.reportKeyWord.designation ne null}"/>
-                                        <br />
-                                    </h:panelGroup>
-
-                                    <h:outputLabel value="Employee Working Time and Over Time Report " />
-                                    <h:outputLabel value="From : "/>
-                                    <h:outputLabel value="#{hrReportController.fromDate}">
-                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
-                                    </h:outputLabel>
-                                    <h:outputLabel value=" To : "/>
-                                    <h:outputLabel value="#{hrReportController.toDate}">
-                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
-                                    </h:outputLabel>
-                                </f:facet>
-                                <p:column  styleClass="shortNumericColumn">
-                                    <f:facet name="header" >
-                                        <h:outputLabel value="Code" />
-                                    </f:facet>
-                                    <h:outputLabel value="#{ss.staff.codeInterger}" />
-                                </p:column>
-                                <p:column headerText="Staff">
-                                    <f:facet name="header" >
-                                        <h:outputLabel value="Staff" />
-                                    </f:facet>
-                                    <p:commandLink value="#{ss.staff.person.name}"
-                                                   action="#{hrReportController.fromWeekelyOverTimeReportToStaffFingerPrintAnalysis(ss.staff)}" ajax="false" ></p:commandLink>
-                                </p:column>
-                                <p:column styleClass="shortNumericColumn" >
-                                    <f:facet name="header" >
-                                        <h:outputLabel value="Sun" />
-                                    </f:facet>
-                                    <h:outputLabel id="lblSun" value="#{ss.sunDay/60}">
-                                        <f:convertNumber pattern="0"/>
-                                    </h:outputLabel>
-                                    <p:tooltip for="lblSun" >
-                                        <h:outputLabel  value="#{ss.sunDay/3600}">
-                                            <f:convertNumber pattern="0.00"/>
-                                        </h:outputLabel>
-                                        <h:outputLabel value="hrs" ></h:outputLabel>
-                                    </p:tooltip>
-                                </p:column>
-                                <p:column styleClass="shortNumericColumn" >
-                                    <f:facet name="header" >
-                                        <h:outputLabel value="Mon" />
-                                    </f:facet>
-                                    <h:outputLabel id="lblMon" value="#{ss.monDay/60}">
-                                        <f:convertNumber pattern="0"/>
-                                    </h:outputLabel>
-                                    <p:tooltip for="lblMon" >
-                                        <h:outputLabel  value="#{ss.monDay/3600}">
-                                            <f:convertNumber pattern="0.00"/>
-                                        </h:outputLabel>
-                                        <h:outputLabel value="hrs" ></h:outputLabel>
-                                    </p:tooltip>
-                                </p:column>
-                                <p:column styleClass="shortNumericColumn" >
-                                    <f:facet name="header" >
-                                        <h:outputLabel value="Tue" />
-                                    </f:facet>
-                                    <h:outputLabel id="lblTue" value="#{ss.tuesDay/60}">
-                                        <f:convertNumber pattern="0"/>
-                                    </h:outputLabel>
-                                    <p:tooltip for="lblTue" >
-                                        <h:outputLabel  value="#{ss.tuesDay/3600}">
-                                            <f:convertNumber pattern="0.00"/>
-                                        </h:outputLabel>
-                                        <h:outputLabel value="hrs" ></h:outputLabel>
-                                    </p:tooltip>
-                                </p:column>
-                                <p:column styleClass="shortNumericColumn">
-                                    <f:facet name="header" >
-                                        <h:outputLabel value="Wed" />
-                                    </f:facet>
-                                    <h:outputLabel id="lblWed" value="#{ss.wednesDay/60}">
-                                        <f:convertNumber pattern="0"/>
-                                    </h:outputLabel>
-                                    <p:tooltip for="lblWed" >
-                                        <h:outputLabel  value="#{ss.wednesDay/3600}">
-                                            <f:convertNumber pattern="0.00"/>
-                                        </h:outputLabel>
-                                        <h:outputLabel value="hrs" ></h:outputLabel>
-                                    </p:tooltip>
-                                </p:column>
-                                <p:column styleClass="shortNumericColumn">
-                                    <f:facet name="header" >
-                                        <h:outputLabel value="Thur" />
-                                    </f:facet>
-                                    <h:outputLabel id="lblThu"  value="#{ss.thursDay/60}">
-                                        <f:convertNumber pattern="0"/>
-                                    </h:outputLabel>
-                                    <p:tooltip for="lblThu" >
-                                        <h:outputLabel  value="#{ss.thursDay/3600}">
-                                            <f:convertNumber pattern="0.00"/>
-                                        </h:outputLabel>
-                                        <h:outputLabel value="hrs" ></h:outputLabel>
-                                    </p:tooltip>
-                                </p:column>
-                                <p:column styleClass="shortNumericColumn" >
-                                    <f:facet name="header" >
-                                        <h:outputLabel value="Fri" />
-                                    </f:facet>
-                                    <h:outputLabel id="lblFri" value="#{ss.friDay/60}">
-                                        <f:convertNumber pattern="0"/>
-                                    </h:outputLabel>
-                                    <p:tooltip for="lblFri" >
-                                        <h:outputLabel  value="#{ss.friDay/3600}">
-                                            <f:convertNumber pattern="0.00"/>
-                                        </h:outputLabel>
-                                        <h:outputLabel value="hrs" ></h:outputLabel>
-                                    </p:tooltip>
-                                </p:column>
-                                <p:column styleClass="shortNumericColumn">
-                                    <f:facet name="header" >
-                                        <h:outputLabel value="Sat" />
-                                    </f:facet>
-                                    <h:outputLabel id="lblSat"  value="#{ss.saturDay/60}">
-                                        <f:convertNumber pattern="0"/>
-                                    </h:outputLabel>
-                                    <p:tooltip for="lblSat" >
-                                        <h:outputLabel  value="#{ss.saturDay/3600}">
-                                            <f:convertNumber pattern="0.00"/>
-                                        </h:outputLabel>
-                                        <h:outputLabel value="hrs" ></h:outputLabel>
-                                    </p:tooltip>
-                                </p:column>
-                                <p:column styleClass="shortNumericColumn">
-                                    <f:facet name="header" >
-                                        <h:outputLabel id="lblTotTitle" value="Total" />
-                                        <p:tooltip for="lblTotTitle" >
-                                            <h:outputLabel value="Total Work Time" />
-                                        </p:tooltip>
-                                    </f:facet>
-                                    <h:outputLabel id="lblTot" value="#{ss.total/60}">
-                                        <f:convertNumber pattern="0"/>
-                                    </h:outputLabel>
-                                    <p:tooltip for="lblTot" >
-                                        <h:outputLabel  value="#{ss.total/3600}">
-                                            <f:convertNumber pattern="0.00"/>
-                                        </h:outputLabel>
-                                        <h:outputLabel value="hrs" ></h:outputLabel>
-                                    </p:tooltip>
-                                </p:column>
-                                <p:column styleClass="shortNumericColumn" >
-                                    <f:facet name="header" >
-                                        <h:outputLabel value="Entitled" />
-                                    </f:facet>
-                                    <h:outputLabel id="lblEnt" value="#{ss.staff.workingTimeForOverTimePerWeek*60}">
-                                        <f:convertNumber pattern="0"/>
-                                    </h:outputLabel>
-                                    <p:tooltip for="lblEnt" >
-                                        <h:outputLabel  value="#{ss.staff.workingTimeForOverTimePerWeek}">
-                                            <f:convertNumber pattern="0.00"/>
-                                        </h:outputLabel>
-                                        <h:outputLabel value="hrs" ></h:outputLabel>
-                                    </p:tooltip>
-                                </p:column>
-
-                                <p:column styleClass="shortNumericColumn">
-                                    <f:facet name="header" >
-                                        <h:outputLabel id="lblOtTitle" value="OT" />
-                                        <p:tooltip for="lblOtTitle" >
-                                            <h:outputLabel value="Weekely Overtime (Minutes)" />
-                                        </p:tooltip>
-                                    </f:facet>
-                                    <h:outputLabel id="lblOt" value="#{ss.overTime/60}">
-                                        <f:convertNumber pattern="0"/>
-                                    </h:outputLabel>
-                                    <p:tooltip for="lblOt" >
-                                        <h:outputLabel  value="#{ss.overTime/3600}">
-                                            <f:convertNumber pattern="0.00"/>
-                                        </h:outputLabel>
-                                        <h:outputLabel value="hrs" ></h:outputLabel>
-                                    </p:tooltip>
-                                </p:column>
-
-                                <p:column styleClass="shortNumericColumn">
-                                    <f:facet name="header" >
-                                        <h:outputLabel id="lblOtValTitle" value="Value" />
-                                        <p:tooltip for="lblOtValTitle" >
-                                            <h:outputLabel value="Weekely Orvertime Value" />
-                                        </p:tooltip>
-                                    </f:facet>
-                                    <h:outputLabel value="#{ss.overTime*ss.basicPerSecond*1.5}">
+                            <p:column headerText="Sun" styleClass="col-num">
+                                <h:outputLabel id="lblSun" value="#{ss.sunDay/60}">
+                                    <f:convertNumber pattern="0" />
+                                </h:outputLabel>
+                                <p:tooltip for="lblSun">
+                                    <h:outputLabel value="#{ss.sunDay/3600}">
                                         <f:convertNumber pattern="0.00" />
                                     </h:outputLabel>
-                                </p:column>
+                                    <h:outputLabel value=" hrs" />
+                                </p:tooltip>
+                            </p:column>
 
-                                <f:facet name="footer">
-                                    <p:outputLabel value="Print By : #{sessionController.loggedUser.webUserPerson.name} - " />
-                                    <p:outputLabel value="Print At : " />
-                                    <p:outputLabel value="#{commonFunctionsProxy.currentDateTime}" >
-                                        <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a " />
-                                    </p:outputLabel>
+                            <p:column headerText="Mon" styleClass="col-num">
+                                <h:outputLabel id="lblMon" value="#{ss.monDay/60}">
+                                    <f:convertNumber pattern="0" />
+                                </h:outputLabel>
+                                <p:tooltip for="lblMon">
+                                    <h:outputLabel value="#{ss.monDay/3600}">
+                                        <f:convertNumber pattern="0.00" />
+                                    </h:outputLabel>
+                                    <h:outputLabel value=" hrs" />
+                                </p:tooltip>
+                            </p:column>
+
+                            <p:column headerText="Tue" styleClass="col-num">
+                                <h:outputLabel id="lblTue" value="#{ss.tuesDay/60}">
+                                    <f:convertNumber pattern="0" />
+                                </h:outputLabel>
+                                <p:tooltip for="lblTue">
+                                    <h:outputLabel value="#{ss.tuesDay/3600}">
+                                        <f:convertNumber pattern="0.00" />
+                                    </h:outputLabel>
+                                    <h:outputLabel value=" hrs" />
+                                </p:tooltip>
+                            </p:column>
+
+                            <p:column headerText="Wed" styleClass="col-num">
+                                <h:outputLabel id="lblWed" value="#{ss.wednesDay/60}">
+                                    <f:convertNumber pattern="0" />
+                                </h:outputLabel>
+                                <p:tooltip for="lblWed">
+                                    <h:outputLabel value="#{ss.wednesDay/3600}">
+                                        <f:convertNumber pattern="0.00" />
+                                    </h:outputLabel>
+                                    <h:outputLabel value=" hrs" />
+                                </p:tooltip>
+                            </p:column>
+
+                            <p:column headerText="Thu" styleClass="col-num">
+                                <h:outputLabel id="lblThu" value="#{ss.thursDay/60}">
+                                    <f:convertNumber pattern="0" />
+                                </h:outputLabel>
+                                <p:tooltip for="lblThu">
+                                    <h:outputLabel value="#{ss.thursDay/3600}">
+                                        <f:convertNumber pattern="0.00" />
+                                    </h:outputLabel>
+                                    <h:outputLabel value=" hrs" />
+                                </p:tooltip>
+                            </p:column>
+
+                            <p:column headerText="Fri" styleClass="col-num">
+                                <h:outputLabel id="lblFri" value="#{ss.friDay/60}">
+                                    <f:convertNumber pattern="0" />
+                                </h:outputLabel>
+                                <p:tooltip for="lblFri">
+                                    <h:outputLabel value="#{ss.friDay/3600}">
+                                        <f:convertNumber pattern="0.00" />
+                                    </h:outputLabel>
+                                    <h:outputLabel value=" hrs" />
+                                </p:tooltip>
+                            </p:column>
+
+                            <p:column headerText="Sat" styleClass="col-num">
+                                <h:outputLabel id="lblSat" value="#{ss.saturDay/60}">
+                                    <f:convertNumber pattern="0" />
+                                </h:outputLabel>
+                                <p:tooltip for="lblSat">
+                                    <h:outputLabel value="#{ss.saturDay/3600}">
+                                        <f:convertNumber pattern="0.00" />
+                                    </h:outputLabel>
+                                    <h:outputLabel value=" hrs" />
+                                </p:tooltip>
+                            </p:column>
+
+                            <p:column headerText="Total" styleClass="col-num">
+                                <h:outputLabel id="lblTot" value="#{ss.total/60}">
+                                    <f:convertNumber pattern="0" />
+                                </h:outputLabel>
+                                <p:tooltip for="lblTot">
+                                    <h:outputLabel value="#{ss.total/3600}">
+                                        <f:convertNumber pattern="0.00" />
+                                    </h:outputLabel>
+                                    <h:outputLabel value=" hrs" />
+                                </p:tooltip>
+                            </p:column>
+
+                            <p:column headerText="Entitled" styleClass="col-num">
+                                <h:outputLabel id="lblEnt" value="#{ss.staff.workingTimeForOverTimePerWeek*60}">
+                                    <f:convertNumber pattern="0" />
+                                </h:outputLabel>
+                                <p:tooltip for="lblEnt">
+                                    <h:outputLabel value="#{ss.staff.workingTimeForOverTimePerWeek}">
+                                        <f:convertNumber pattern="0.00" />
+                                    </h:outputLabel>
+                                    <h:outputLabel value=" hrs" />
+                                </p:tooltip>
+                            </p:column>
+
+                            <p:column styleClass="col-num">
+                                <f:facet name="header">
+                                    <h:outputLabel id="lblOtTitle" value="OT" />
+                                    <p:tooltip for="lblOtTitle">
+                                        <h:outputLabel value="Weekly Overtime (Minutes)" />
+                                    </p:tooltip>
                                 </f:facet>
+                                <h:outputLabel id="lblOt" value="#{ss.overTime/60}">
+                                    <f:convertNumber pattern="0" />
+                                </h:outputLabel>
+                                <p:tooltip for="lblOt">
+                                    <h:outputLabel value="#{ss.overTime/3600}">
+                                        <f:convertNumber pattern="0.00" />
+                                    </h:outputLabel>
+                                    <h:outputLabel value=" hrs" />
+                                </p:tooltip>
+                            </p:column>
 
-                            </p:dataTable>
-                        </p:panel>
+                            <p:column styleClass="col-num">
+                                <f:facet name="header">
+                                    <h:outputLabel id="lblOtValTitle" value="Value" />
+                                    <p:tooltip for="lblOtValTitle">
+                                        <h:outputLabel value="Weekly Overtime Value" />
+                                    </p:tooltip>
+                                </f:facet>
+                                <h:outputLabel value="#{ss.overTime*ss.basicPerSecond*1.5}">
+                                    <f:convertNumber pattern="0.00" />
+                                </h:outputLabel>
+                            </p:column>
 
+                            <f:facet name="footer">
+                                <div class="report-table-footer">
+                                    <p:outputLabel value="Print by: #{sessionController.loggedUser.webUserPerson.name}" />
+                                    <span>·</span>
+                                    <p:outputLabel value="#{commonFunctionsProxy.currentDateTime}">
+                                        <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a" />
+                                    </p:outputLabel>
+                                </div>
+                            </f:facet>
+
+                        </p:dataTable>
 
                     </p:panel>
 
