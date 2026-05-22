@@ -4,6 +4,8 @@ public class InvestigationItemUpdateDTO {
 
     private String name;
     private String code;
+    private Long machineId;
+    private Long testId;
     private String description;
     private Integer orderNo;
     private String ixItemType;
@@ -31,7 +33,8 @@ public class InvestigationItemUpdateDTO {
                 || htmltext != null || canNotApproveIfValueIsEmpty != null
                 || absoluteLowValue != null || absoluteHighValue != null
                 || riTop != null || riLeft != null || riWidth != null || riHeight != null
-                || riFontSize != null || cssTextAlign != null || cssFontStyle != null;
+                || riFontSize != null || cssTextAlign != null || cssFontStyle != null
+                || machineId != null || testId != null;
     }
 
     public String getName() { return name; }
@@ -76,4 +79,8 @@ public class InvestigationItemUpdateDTO {
     public void setCssTextAlign(String cssTextAlign) { this.cssTextAlign = cssTextAlign; }
     public String getCssFontStyle() { return cssFontStyle; }
     public void setCssFontStyle(String cssFontStyle) { this.cssFontStyle = cssFontStyle; }
+    public Long getMachineId() { return machineId; }
+    public void setMachineId(Long machineId) { this.machineId = machineId; }
+    public Long getTestId() { return testId; }
+    public void setTestId(Long testId) { this.testId = testId; }
 }

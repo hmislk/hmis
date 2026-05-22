@@ -4,6 +4,8 @@ public class InvestigationItemCreateDTO {
 
     private String name;
     private String code;
+    private Long machineId;
+    private Long testId;
     private String description;
     private Integer orderNo;
     private String ixItemType;
@@ -70,4 +72,8 @@ public class InvestigationItemCreateDTO {
     public void setCssTextAlign(String cssTextAlign) { this.cssTextAlign = cssTextAlign; }
     public String getCssFontStyle() { return cssFontStyle; }
     public void setCssFontStyle(String cssFontStyle) { this.cssFontStyle = cssFontStyle; }
+    public Long getMachineId() { return machineId; }
+    public void setMachineId(Long machineId) { this.machineId = machineId; }
+    public Long getTestId() { return testId; }
+    public void setTestId(Long testId) { this.testId = testId; }
 }
