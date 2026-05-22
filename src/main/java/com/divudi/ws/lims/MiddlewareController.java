@@ -196,6 +196,7 @@ public class MiddlewareController {
                     case XL_200:
                     case AIA_360:
                     case MindrayCL1000i:
+                    case AutoLumo:
                         System.out.println("going to direct to processResultsCommon");
                         return processResultsCommon(dataBundle);
                     default:
