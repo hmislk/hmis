@@ -104,14 +104,21 @@ git branch -d <branch-name>
 
 ## Posting PR Comments via gh CLI
 
-> **⚠️ Reply only after you have fixed (or explicitly dismissed) the comment.**
+> **⚠️ THE CARDINAL RULES**
 >
-> Bots (CodeRabbit, Codex) **cannot fix anything** — they only identify issues. Replying "please resolve" / "please address" / "please add the null guard" treats the bot as if it were an assignee, which it is not. Every reply you post under a reviewer's comment must describe action **taken**:
+> 1. **Do NOT create new top-level inline comments** on a PR. Every new top-level inline comment becomes its own discussion thread that the PR author must manually resolve. Filing 7 self-review items as new top-level inline comments creates 7 chores for the author. This is noise, not review.
 >
-> - **Valid + fixed** → "Fixed in `<commit-sha>`: `<what was changed>`"
-> - **Dismissed** → "Dismissed because: `<specific reasoning>`"
+> 2. **Reply only after you have fixed (or explicitly dismissed) the comment.** Bots (CodeRabbit, Codex) **cannot fix anything** — they only identify issues. Replying "please resolve" / "please address" / "please add the null guard" treats the bot as if it were an assignee, which it is not. Reply content must describe action **taken**, not action **requested**:
+>    - **Valid + fixed** → "Fixed in `<commit-sha>`: `<what was changed>`"
+>    - **Dismissed** → "Dismissed because: `<specific reasoning>`"
 >
-> The sequence is always: **discuss → fix → push → reply → re-request review**. Never reply before pushing the fix. Same rule applies to your own standalone review items — once filed, *you* (or the PR author) must do the work, not the bot.
+> 3. **Replies go UNDER existing reviewer threads** (`POST /pulls/{pr}/comments/{id}/replies`) — never as new top-level comments. The reply stays in the parent's thread and the bot/reviewer can resolve their own thread on detection.
+>
+> 4. **Self-review items go in the commit message and/or PR description**, NOT as new top-level inline comments. If you spot something while reviewing your own PR, fix it (or document the decision to defer) in the commit message and update the PR description checklist. Don't sprinkle review items as new inline comments — that creates manual-resolve noise.
+>
+> 5. **ONE re-review request at the end**, not one per item. After all fixes are pushed and all existing reviewer threads have been replied to, click **"Re-request review"** (or post a single summary comment if no human reviewer is assigned). Do not nag reviewers per-item.
+>
+> The sequence is always: **discuss → fix → push → reply to existing threads → one re-review request**. Never reply before pushing the fix. Never file new top-level inline comments as a substitute for a commit-message note.
 
 Four different ways exist to post comments on a PR. Picking the wrong one is the most common mistake. Each behaves differently in the GitHub UI:
 
@@ -124,29 +131,28 @@ Four different ways exist to post comments on a PR. Picking the wrong one is the
 
 ### When to use which
 
-- **Replying to a bot comment** (CodeRabbit / Codex / human reviewer) → always use the `/replies` endpoint. The reply stays in the parent's thread and the bot can detect the conversation correctly.
-- **Filing a new review item on a specific line** → use `POST /pulls/{pr}/comments` directly. This produces an individual standalone inline comment, the same shape as CodeRabbit/Codex post. Each one is its own resolvable thread.
-- **A PR-wide observation** (e.g. "this PR needs a Linear ticket") → `gh pr comment` is acceptable, but prefer inline if it can be tied to a line.
-- **Avoid** `POST /pulls/{pr}/reviews` with bundled `comments[]` unless you're submitting a formal review pass — it groups all comments under one "review" wrapper, which makes them harder to resolve individually and does not match how bots post.
+- **Replying to a bot/human reviewer comment** → use the `/replies` endpoint. The reply stays in the parent thread, the bot/reviewer can auto-resolve their own thread on detection, and the author does NOT have to manually resolve it. **This is the only acceptable place to post a reply on a PR review.**
+- **A new review item from your own self-review** → do **NOT** post it as a new top-level inline comment. Put it in the **commit message** that fixes it (preferred) or note it in the **PR description** if it's being deferred. Creating new top-level threads forces the author to manually resolve each one, which is noise. This was the wrong move on PR #20977 and PR #20983 — both required cleanup.
+- **A genuinely PR-wide announcement** (e.g. "merge blocked pending Linear ticket") → `gh pr comment` is acceptable for actual PR-wide observations only, and used sparingly.
+- **Avoid** `POST /pulls/{pr}/reviews` with bundled `comments[]`. It groups comments under one "review" wrapper that doesn't match how bots post, and on your own PR you cannot even use `event: REQUEST_CHANGES`.
+
+### How to handle self-review items (the right way)
+
+If you spot a problem in your own PR after pushing:
+
+1. **Fix it** in the next commit on the same branch.
+2. **Reference the file:line in the commit message** so reviewers can find the change in the diff:
+   ```
+   refactor(cashier): address self-review items
+   
+   - PaymentSettlementController.java:117 — add comment on shallow snapshot
+   - settle_non_cash.xhtml:203 — use lastSettlementBill.institution.name
+   - PaymentSettlementController.java:150 — drop redundant state reset
+   ```
+3. **Push.** Reviewers see the new commit in the PR diff. No new threads created. No manual resolves needed.
+4. If you're deferring an item rather than fixing it, **add a line to the PR description** explaining the decision — do not file an inline comment.
 
 ### Practical recipes
-
-**Standalone inline comment on a specific line:**
-```bash
-SHA=$(git rev-parse HEAD)
-gh api -X POST "repos/hmislk/hmis/pulls/<PR>/comments" \
-  -f commit_id="$SHA" \
-  -f path="src/main/java/.../Foo.java" \
-  -F line=42 \
-  -f side="RIGHT" \
-  -f body="Body text here."
-```
-
-**Threaded reply under an existing comment (id from `/comments` list):**
-```bash
-gh api -X POST "repos/hmislk/hmis/pulls/<PR>/comments/<COMMENT_ID>/replies" \
-  -f body="Please resolve — <action>."
-```
 
 **List existing inline comments with IDs (find a parent to reply to):**
 ```bash
@@ -154,9 +160,17 @@ gh api "repos/hmislk/hmis/pulls/<PR>/comments" \
   --jq '.[] | "\(.id) \(.user.login) \(.path):\(.line // .original_line)"'
 ```
 
-**Cannot do** `event: REQUEST_CHANGES` on your own PR. Use `event: COMMENT` instead, or post standalone comments without a review wrapper.
+**Threaded reply under an existing comment** (this is the only legitimate reply form):
+```bash
+gh api -X POST "repos/hmislk/hmis/pulls/<PR>/comments/<COMMENT_ID>/replies" \
+  -f body="Fixed in <commit-sha>: <what was changed>."
+```
 
-### Cleanup
+> **Do not** post new top-level inline comments (`POST /pulls/{pr}/comments`) on your own PR — those create new threads that the author must manually resolve. Use a follow-up commit instead.
+
+**Cannot do** `event: REQUEST_CHANGES` on your own PR. Use `event: COMMENT` if you must use the reviews endpoint, but prefer threaded replies to existing reviewer comments and a single follow-up commit for your own findings.
+
+### Cleanup (when you've already made the mistake)
 
 - Delete an inline comment: `gh api -X DELETE repos/<o>/<r>/pulls/comments/<id>`
 - Delete a general PR comment: `gh api -X DELETE repos/<o>/<r>/issues/comments/<id>`
@@ -165,6 +179,7 @@ gh api "repos/hmislk/hmis/pulls/<PR>/comments" \
 ## Notes
 
 - All PRs target `development`, never `master`
-- "Re-request review" is distinct from just pushing — always click it
-- Replying to each comment individually maintains a clean audit trail
+- "Re-request review" is distinct from just pushing — always click it once, at the end
+- Replying ONLY UNDER existing reviewer threads maintains a clean audit trail without creating new manual-resolve chores
+- Self-review items go in commit messages, not as new inline comments
 - The `/review-pr` skill automates the investigation and fix steps of this workflow

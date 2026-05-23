@@ -86,25 +86,37 @@ git push
 
 Verify CI passes before proceeding.
 
-### 8. Reply to Each Comment
+### 8. Reply to Existing Reviewer Threads
 
-> **⚠️ Only reply after you have fixed (or explicitly dismissed) the comment.** Bots cannot fix anything. Replies must describe action **taken**, not action **requested**.
+> **⚠️ Cardinal rules — read before posting anything:**
 >
-> - Valid + fixed → "Fixed in `<commit-sha>`: `<what was changed>`"
-> - Dismissed → "Dismissed because: `<specific reasoning>`"
+> 1. **Do NOT create new top-level inline comments** on the PR. Each one becomes a thread the author must manually resolve. This is noise.
+> 2. **Reply only after fixing** (or explicitly dismissing). Bots cannot fix anything — describe action taken, not requested.
+>    - Valid + fixed → "Fixed in `<commit-sha>`: `<what was changed>`"
+>    - Dismissed → "Dismissed because: `<specific reasoning>`"
+> 3. **Replies go UNDER existing reviewer threads only** (`/replies` endpoint). Never as new top-level comments.
+> 4. **Self-review items go in the commit message** (or PR description if deferred). Never as new inline comments.
+> 5. **ONE re-review request at the end**, not per item.
 >
-> Order: **discuss → fix → push → reply → re-request review**. Never reply before pushing.
+> Order: **discuss → fix → push → reply to existing threads → one re-review request**.
 
-For each comment on GitHub, post an **individual threaded reply under the parent comment** — not a new top-level comment, not a bundled review, not a general PR comment. The four options are easy to confuse:
+For each existing reviewer comment, post a threaded reply under the parent. The four endpoints are easy to confuse:
 
-| Want | Endpoint | gh command |
+| Want | Endpoint | Use? |
 |---|---|---|
-| Reply under a bot/human comment (threaded) | `POST /pulls/{pr}/comments/{id}/replies` | `gh api -X POST repos/hmislk/hmis/pulls/<PR>/comments/<COMMENT_ID>/replies -f body="..."` |
-| New standalone inline comment on a line | `POST /pulls/{pr}/comments` | `gh api -X POST repos/hmislk/hmis/pulls/<PR>/comments -f commit_id=<sha> -f path=<file> -F line=<n> -f side=RIGHT -f body="..."` |
-| Bundled review (avoid) | `POST /pulls/{pr}/reviews` | `gh api -X POST repos/.../reviews --input <json>` |
-| General PR comment (only PR-wide notes) | `POST /issues/{n}/comments` | `gh pr comment <PR> --body "..."` |
+| **Reply under existing reviewer comment (threaded)** | `POST /pulls/{pr}/comments/{id}/replies` | **YES — this is the only legitimate reply form** |
+| New standalone inline comment on a line | `POST /pulls/{pr}/comments` | NO — creates a fresh thread the author must manually resolve |
+| Bundled review | `POST /pulls/{pr}/reviews` | NO — grouping wrapper, doesn't match how bots post |
+| General PR comment (only genuine PR-wide notes) | `POST /issues/{n}/comments` | Sparingly — only for actual PR-wide announcements |
 
-**When replying to bot comments, always use the threaded reply form** so the bot can detect the conversation correctly and so the thread stays scoped to the original issue. Each individual reply maintains a clean audit trail.
+For self-review items you spot on your own PR — **don't post a new inline comment**. Fix in the next commit and reference the file:line in the commit message:
+
+```
+refactor(cashier): address self-review items
+
+- PaymentSettlementController.java:117 — add comment on shallow snapshot
+- settle_non_cash.xhtml:203 — use lastSettlementBill.institution.name
+```
 
 Find existing comment IDs to reply to:
 ```bash
@@ -112,9 +124,11 @@ gh api "repos/hmislk/hmis/pulls/<PR>/comments" \
   --jq '.[] | "\(.id) \(.user.login) \(.path):\(.line // .original_line)"'
 ```
 
-Reply content:
-- Valid + fixed: describe what was changed
-- Dismissed: explain why (with reasoning)
+Post a threaded reply:
+```bash
+gh api -X POST "repos/hmislk/hmis/pulls/<PR>/comments/<COMMENT_ID>/replies" \
+  -f body="Fixed in <commit-sha>: <what was changed>."
+```
 
 Do NOT resolve other reviewers' conversations. CodeRabbit auto-resolves on detection.
 
