@@ -1,0 +1,121 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:head>
+        <title>Archive Expired ItemBatch Records</title>
+    </h:head>
+    <h:body>
+        <ui:composition template="/dataAdmin/admin_data_administration.xhtml">
+            <ui:define name="subcontent">
+                <h:form id="archiveForm" rendered="#{webUserController.hasPrivilege('ArchiveOldItemBatch')}">
+                    <p:panel>
+                        <f:facet name="header">
+                            <h:outputLabel value="Archive Expired Zero-Stock ItemBatch Records" />
+                        </f:facet>
+
+                        <p:messages id="messages" showDetail="true" closable="true" />
+
+                        <div class="row">
+                            <div class="col-md-7">
+                                <p:panel header="Archive Settings">
+                                    <p:panelGrid columns="2" layout="tabular" class="w-100">
+                                        <p:outputLabel for="cutoff" value="Cutoff Date (archive batches expired before this)" />
+                                        <p:calendar id="cutoff" value="#{itemBatchArchivalController.cutoffDate}"
+                                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                                    navigator="true" showOn="button" class="w-100" inputStyleClass="w-100" />
+
+                                        <p:outputLabel for="batch" value="Batch Size (ItemBatch rows per transaction)" />
+                                        <p:inputNumber id="batch" value="#{itemBatchArchivalController.batchSize}"
+                                                       minValue="1" maxValue="50000" decimalPlaces="0" thousandSeparator=""
+                                                       class="w-100" />
+
+                                        <p:outputLabel for="maxBatches" value="Max Batches Per Run" />
+                                        <p:inputNumber id="maxBatches" value="#{itemBatchArchivalController.maxBatches}"
+                                                       minValue="1" maxValue="1000" decimalPlaces="0" thousandSeparator=""
+                                                       class="w-100" />
+
+                                        <p:outputLabel for="dry" value="Dry Run (count only, do not move rows)" />
+                                        <p:selectBooleanCheckbox id="dry" value="#{itemBatchArchivalController.dryRun}" />
+                                    </p:panelGrid>
+
+                                    <f:facet name="footer">
+                                        <p:commandButton id="previewBtn" value="Preview Count" icon="fa fa-search"
+                                                         class="ui-button-info m-1"
+                                                         action="#{itemBatchArchivalController.preview}"
+                                                         update="archiveForm" />
+                                        <p:commandButton id="runBtn" value="Run" icon="fa fa-play"
+                                                         class="ui-button-success m-1"
+                                                         action="#{itemBatchArchivalController.run}"
+                                                         update="archiveForm"
+                                                         onclick="return confirm('Run archive now? Non-dry-run moves ItemBatch and Stock rows out of the live tables.');" />
+                                    </f:facet>
+                                </p:panel>
+
+                                <p:panel header="Eligibility Criteria" styleClass="mt-2">
+                                    <ul>
+                                        <li>ItemBatch.dateOfExpire is strictly before the cutoff date</li>
+                                        <li>No linked Stock record has stock &gt; 0 in any department</li>
+                                    </ul>
+                                    <p>Archived ItemBatch rows remain accessible for historical bill viewing
+                                       via the archive reference on PharmaceuticalBillItem.</p>
+                                </p:panel>
+                            </div>
+
+                            <div class="col-md-5">
+                                <p:panel header="Last Result"
+                                         rendered="#{itemBatchArchivalController.lastResult ne null}">
+                                    <p:panelGrid columns="2" layout="tabular" class="w-100">
+                                        <h:outputLabel value="Mode" />
+                                        <h:outputText value="#{itemBatchArchivalController.lastResult.dryRun ? 'Dry run' : 'Live run'}" />
+
+                                        <h:outputLabel value="Candidates" />
+                                        <h:outputText value="#{itemBatchArchivalController.lastResult.candidateCount}" />
+
+                                        <h:outputLabel value="Archived" />
+                                        <h:outputText value="#{itemBatchArchivalController.lastResult.archivedCount}" />
+
+                                        <h:outputLabel value="Batches Run" />
+                                        <h:outputText value="#{itemBatchArchivalController.lastResult.batchesRun}" />
+
+                                        <h:outputLabel value="Reached Batch Limit" />
+                                        <h:outputText value="#{itemBatchArchivalController.lastResult.reachedBatchLimit ? 'Yes' : 'No'}" />
+
+                                        <h:outputLabel value="Started" />
+                                        <h:outputText value="#{itemBatchArchivalController.lastResult.startedAt}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                        </h:outputText>
+
+                                        <h:outputLabel value="Ended" />
+                                        <h:outputText value="#{itemBatchArchivalController.lastResult.endedAt}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                        </h:outputText>
+
+                                        <h:outputLabel value="Duration (ms)" />
+                                        <h:outputText value="#{itemBatchArchivalController.lastResult.durationMillis}" />
+
+                                        <h:outputLabel value="Message" />
+                                        <h:outputText value="#{itemBatchArchivalController.lastResult.message}" />
+                                    </p:panelGrid>
+                                </p:panel>
+
+                                <p:panel header="Preview"
+                                         rendered="#{itemBatchArchivalController.candidateCount ne null and itemBatchArchivalController.lastResult eq null}">
+                                    <h:outputText value="#{itemBatchArchivalController.candidateCount} ItemBatch row(s) eligible for archival" />
+                                </p:panel>
+                            </div>
+                        </div>
+                    </p:panel>
+                </h:form>
+
+                <h:panelGroup rendered="#{not webUserController.hasPrivilege('ArchiveOldItemBatch')}">
+                    <p:messages />
+                    <h:outputText value="You do not have permission to access this page." />
+                </h:panelGroup>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

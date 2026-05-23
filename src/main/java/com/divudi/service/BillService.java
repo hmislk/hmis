@@ -60,6 +60,7 @@ import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.entity.lab.PatientInvestigation;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.core.entity.pharmacy.ItemBatch;
+import com.divudi.core.entity.pharmacy.ItemBatchArchive;
 
 import com.divudi.core.data.dto.PharmacyIncomeCostBillDTO;
 import com.divudi.core.data.dto.PharmacyReturnWithoutTrasingBillDTO;
@@ -800,7 +801,31 @@ public class BillService {
                 + " WHERE pbi.billItem.bill=:bl "
                 + " order by pbi.id";
         params.put("bl", b);
-        return pharmaceuticalBillItemFacade.findByJpql(jpql, params);
+        List<PharmaceuticalBillItem> pbis = pharmaceuticalBillItemFacade.findByJpql(jpql, params);
+        resolveArchivedItemBatches(pbis);
+        return pbis;
+    }
+
+    private void resolveArchivedItemBatches(List<PharmaceuticalBillItem> pbis) {
+        for (PharmaceuticalBillItem pbi : pbis) {
+            if (pbi.getItemBatch() != null || pbi.getArchivedItemBatch() == null) {
+                continue;
+            }
+            ItemBatchArchive arch = pbi.getArchivedItemBatch();
+            ItemBatch transient_ = new ItemBatch();
+            transient_.setId(arch.getId());
+            transient_.setBatchNo(arch.getBatchNo());
+            transient_.setDateOfExpire(arch.getDateOfExpire());
+            transient_.setDateOfManufacture(arch.getDateOfManufacture());
+            transient_.setItem(arch.getItem());
+            transient_.setPurcahseRate(arch.getPurcahseRate());
+            transient_.setRetailsaleRate(arch.getRetailsaleRate());
+            transient_.setWholesaleRate(arch.getWholesaleRate());
+            transient_.setCostRate(arch.getCostRate());
+            transient_.setBarcode(arch.getBarcode());
+            transient_.setDescription(arch.getDescription());
+            pbi.setItemBatch(transient_);
+        }
     }
 
     public Long fetchBillItemCount(Bill b) {
