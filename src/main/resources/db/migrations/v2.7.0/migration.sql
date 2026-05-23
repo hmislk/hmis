@@ -65,7 +65,9 @@ SET @sql = IF(@sha_table IS NOT NULL AND @idx1_exists = 0,
            ' (ITEMBATCH_ID, CREATEDAT, RETIRED)'),
     'SELECT "SKIPPED: idx_stockhistoryarchive_batch_date_retired already exists or table not found" AS status'
 );
-PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
 
 SELECT IF(
     (SELECT COUNT(*) FROM INFORMATION_SCHEMA.STATISTICS
@@ -94,7 +96,9 @@ SET @sql = IF(@sha_table IS NOT NULL AND @idx2_exists = 0,
            ' (CREATEDAT, DEPARTMENT_ID, RETIRED)'),
     'SELECT "SKIPPED: idx_stockhistoryarchive_date_dept_retired already exists or table not found" AS status'
 );
-PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
 
 SELECT IF(
     (SELECT COUNT(*) FROM INFORMATION_SCHEMA.STATISTICS
@@ -123,7 +127,9 @@ SET @sql = IF(@sha_table IS NOT NULL AND @idx3_exists = 0,
            ' (HISTORYTYPE, DEPARTMENT_ID, CREATEDAT)'),
     'SELECT "SKIPPED: idx_stockhistoryarchive_historytype_dept_createdat already exists or table not found" AS status'
 );
-PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
 
 SELECT IF(
     (SELECT COUNT(*) FROM INFORMATION_SCHEMA.STATISTICS
