@@ -63,4 +63,4 @@ PREPARE stmt FROM @sql;
 EXECUTE stmt;
 DEALLOCATE PREPARE stmt;
 
-SELECT 'Rollback v2.5.0 completed — all five v2.5.0 indexes dropped' AS status;
+SELECT 'Rollback v2.5.0 completed — requested index-drop steps processed (missing tables/indexes skipped)' AS status;

@@ -58,12 +58,19 @@ SELECT CONCAT('StockHistory table: ', COALESCE(@sh_table,   'NOT FOUND')) AS inf
 
 SELECT 'BEFORE: Table sizes' AS status;
 
-SET @size_sql = CONCAT(
-    'SELECT TABLE_NAME, TABLE_ROWS AS est_rows, ',
-    'ROUND(DATA_LENGTH/1024/1024,1) AS data_mb, ',
-    'ROUND(INDEX_LENGTH/1024/1024,1) AS index_mb ',
-    'FROM INFORMATION_SCHEMA.TABLES ',
-    'WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME IN (''', @bill_table, ''',''', @sh_table, ''')'
+SET @size_sql = IF(@bill_table IS NULL AND @sh_table IS NULL,
+    'SELECT "SKIPPED: Bill and StockHistory tables not found" AS status',
+    CONCAT(
+        'SELECT TABLE_NAME, TABLE_ROWS AS est_rows, ',
+        'ROUND(DATA_LENGTH/1024/1024,1) AS data_mb, ',
+        'ROUND(INDEX_LENGTH/1024/1024,1) AS index_mb ',
+        'FROM INFORMATION_SCHEMA.TABLES ',
+        'WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME IN (''',
+        COALESCE(@bill_table, '__missing_bill__'),
+        ''',''',
+        COALESCE(@sh_table, '__missing_stockhistory__'),
+        ''')'
+    )
 );
 PREPARE stmt FROM @size_sql;
 EXECUTE stmt;
