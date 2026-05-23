@@ -321,6 +321,9 @@ public class PharmacyBillSearch implements Serializable {
     }
 
     public String navigatePharmacyReprintRetailBill() {
+        if (bill == null && billId != null) {
+            bill = billService.reloadBill(billId);
+        }
         if (bill == null) {
             JsfUtil.addErrorMessage("No Bill Selected");
             return null;
