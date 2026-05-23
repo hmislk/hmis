@@ -104,6 +104,15 @@ git branch -d <branch-name>
 
 ## Posting PR Comments via gh CLI
 
+> **⚠️ Reply only after you have fixed (or explicitly dismissed) the comment.**
+>
+> Bots (CodeRabbit, Codex) **cannot fix anything** — they only identify issues. Replying "please resolve" / "please address" / "please add the null guard" treats the bot as if it were an assignee, which it is not. Every reply you post under a reviewer's comment must describe action **taken**:
+>
+> - **Valid + fixed** → "Fixed in `<commit-sha>`: `<what was changed>`"
+> - **Dismissed** → "Dismissed because: `<specific reasoning>`"
+>
+> The sequence is always: **discuss → fix → push → reply → re-request review**. Never reply before pushing the fix. Same rule applies to your own standalone review items — once filed, *you* (or the PR author) must do the work, not the bot.
+
 Four different ways exist to post comments on a PR. Picking the wrong one is the most common mistake. Each behaves differently in the GitHub UI:
 
 | What you want | Endpoint | gh / API command | Visible as |

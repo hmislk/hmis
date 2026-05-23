@@ -88,6 +88,13 @@ Verify CI passes before proceeding.
 
 ### 8. Reply to Each Comment
 
+> **⚠️ Only reply after you have fixed (or explicitly dismissed) the comment.** Bots cannot fix anything. Replies must describe action **taken**, not action **requested**.
+>
+> - Valid + fixed → "Fixed in `<commit-sha>`: `<what was changed>`"
+> - Dismissed → "Dismissed because: `<specific reasoning>`"
+>
+> Order: **discuss → fix → push → reply → re-request review**. Never reply before pushing.
+
 For each comment on GitHub, post an **individual threaded reply under the parent comment** — not a new top-level comment, not a bundled review, not a general PR comment. The four options are easy to confuse:
 
 | Want | Endpoint | gh command |
