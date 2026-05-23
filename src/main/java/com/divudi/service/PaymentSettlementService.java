@@ -15,6 +15,7 @@ import com.divudi.core.facade.PaymentFacade;
 import com.divudi.ejb.BillNumberGenerator;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -60,6 +61,10 @@ public class PaymentSettlementService {
         if (holder == null) {
             return new ArrayList<>();
         }
+        // Note: ORDER BY p.department.name is illegal under JPA when used with DISTINCT
+        // on a projection that does not include the ordered field — EclipseLink throws,
+        // and paymentFacade.findObjects swallows the exception and returns null.
+        // Sort in Java after the fetch.
         String jpql = "SELECT DISTINCT p.department FROM Payment p"
                 + " WHERE p.paymentMethod IN :methods"
                 + " AND p.paymentSettled = false"
@@ -67,18 +72,23 @@ public class PaymentSettlementService {
                 + " AND p.cashbookEntryCompleted = true"
                 + " AND p.retired = false"
                 + " AND p.cancelled = false"
-                + " AND p.department IS NOT NULL"
-                + " ORDER BY p.department.name";
+                + " AND p.department IS NOT NULL";
         Map<String, Object> params = new HashMap<>();
         params.put("methods", NON_CASH_METHODS);
         params.put("holder", holder);
         List<?> raw = paymentFacade.findObjects(jpql, params);
         List<Department> departments = new ArrayList<>();
+        if (raw == null) {
+            return departments;
+        }
         for (Object o : raw) {
             if (o instanceof Department) {
                 departments.add((Department) o);
             }
         }
+        departments.sort(Comparator.comparing(
+                Department::getName,
+                Comparator.nullsLast(Comparator.naturalOrder())));
         return departments;
     }
 
