@@ -73,6 +73,7 @@ public class ItemBatchArchivalController implements Serializable {
     }
 
     public void preview() {
+        lastResult = null;
         if (!validateInputs()) {
             return;
         }

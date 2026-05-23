@@ -63,19 +63,27 @@ public class ItemBatchArchivalBatchTx {
             return 0;
         }
 
-        // Step 1 — copy ItemBatch rows to archive
+        // Step 1 — copy ItemBatch rows to archive, skipping any that gained stock
+        // between fetchNextBatchIds() and this transaction (race condition guard).
+        String archivedSubquery = "SELECT ID FROM " + itemBatchArchive + " WHERE ID IN (:ids)";
         Query q1 = em.createNativeQuery(
                 "INSERT INTO " + itemBatchArchive + " (" + itemBatchCols + ", ARCHIVEDAT) "
                 + "SELECT " + itemBatchCols + ", NOW() FROM " + itemBatchTable
-                + " WHERE ID IN (:ids)");
+                + " WHERE ID IN (:ids)"
+                + " AND NOT EXISTS ("
+                + "   SELECT 1 FROM " + stockTable
+                + "   WHERE ITEMBATCH_ID = " + itemBatchTable + ".ID AND STOCK > 0)");
         q1.setParameter("ids", ids);
         q1.executeUpdate();
+
+        // Steps 2-6 operate only on IDs actually inserted in step 1, so any batch
+        // that was skipped by the race-condition guard above is automatically excluded.
 
         // Step 2 — copy linked Stock rows to archive
         Query q2 = em.createNativeQuery(
                 "INSERT INTO " + stockArchive + " (" + stockCols + ", ARCHIVEDAT) "
                 + "SELECT " + stockCols + ", NOW() FROM " + stockTable
-                + " WHERE ITEMBATCH_ID IN (:ids)");
+                + " WHERE ITEMBATCH_ID IN (" + archivedSubquery + ")");
         q2.setParameter("ids", ids);
         q2.executeUpdate();
 
@@ -83,7 +91,7 @@ public class ItemBatchArchivalBatchTx {
         Query q3 = em.createNativeQuery(
                 "UPDATE " + pbiTable
                 + " SET ARCHIVEDITEMBATCH_ID = ITEMBATCH_ID"
-                + " WHERE ITEMBATCH_ID IN (:ids)");
+                + " WHERE ITEMBATCH_ID IN (" + archivedSubquery + ")");
         q3.setParameter("ids", ids);
         q3.executeUpdate();
 
@@ -91,19 +99,21 @@ public class ItemBatchArchivalBatchTx {
         Query q4 = em.createNativeQuery(
                 "UPDATE " + pbiTable
                 + " SET ITEMBATCH_ID = NULL"
-                + " WHERE ITEMBATCH_ID IN (:ids)");
+                + " WHERE ITEMBATCH_ID IN (" + archivedSubquery + ")");
         q4.setParameter("ids", ids);
         q4.executeUpdate();
 
-        // Step 5 — delete live Stock rows (FK to ItemBatch is already cleared above)
+        // Step 5 — delete live Stock rows
         Query q5 = em.createNativeQuery(
-                "DELETE FROM " + stockTable + " WHERE ITEMBATCH_ID IN (:ids)");
+                "DELETE FROM " + stockTable
+                + " WHERE ITEMBATCH_ID IN (" + archivedSubquery + ")");
         q5.setParameter("ids", ids);
         q5.executeUpdate();
 
         // Step 6 — delete live ItemBatch rows (PBI FK nullified in step 4)
         Query q6 = em.createNativeQuery(
-                "DELETE FROM " + itemBatchTable + " WHERE ID IN (:ids)");
+                "DELETE FROM " + itemBatchTable
+                + " WHERE ID IN (" + archivedSubquery + ")");
         q6.setParameter("ids", ids);
         return q6.executeUpdate();
     }

@@ -85,6 +85,8 @@ import java.util.HashMap;
 import javax.annotation.security.PermitAll;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import javax.persistence.TemporalType;
 
 import com.google.gson.GsonBuilder;
@@ -106,6 +108,9 @@ import java.util.Map;
  */
 @Stateless
 public class BillService {
+
+    @PersistenceContext(unitName = "hmisPU")
+    private EntityManager em;
 
     @EJB
     private DepartmentFacade departmentFacade;
@@ -824,6 +829,9 @@ public class BillService {
             transient_.setCostRate(arch.getCostRate());
             transient_.setBarcode(arch.getBarcode());
             transient_.setDescription(arch.getDescription());
+            // Detach before mutating so EclipseLink does not flush ITEMBATCH_ID
+            // back to the DB (the live row no longer exists after archival).
+            em.detach(pbi);
             pbi.setItemBatch(transient_);
         }
     }
