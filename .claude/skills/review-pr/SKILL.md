@@ -88,11 +88,30 @@ Verify CI passes before proceeding.
 
 ### 8. Reply to Each Comment
 
-For each comment on GitHub, post an individual reply:
+For each comment on GitHub, post an **individual threaded reply under the parent comment** — not a new top-level comment, not a bundled review, not a general PR comment. The four options are easy to confuse:
+
+| Want | Endpoint | gh command |
+|---|---|---|
+| Reply under a bot/human comment (threaded) | `POST /pulls/{pr}/comments/{id}/replies` | `gh api -X POST repos/hmislk/hmis/pulls/<PR>/comments/<COMMENT_ID>/replies -f body="..."` |
+| New standalone inline comment on a line | `POST /pulls/{pr}/comments` | `gh api -X POST repos/hmislk/hmis/pulls/<PR>/comments -f commit_id=<sha> -f path=<file> -F line=<n> -f side=RIGHT -f body="..."` |
+| Bundled review (avoid) | `POST /pulls/{pr}/reviews` | `gh api -X POST repos/.../reviews --input <json>` |
+| General PR comment (only PR-wide notes) | `POST /issues/{n}/comments` | `gh pr comment <PR> --body "..."` |
+
+**When replying to bot comments, always use the threaded reply form** so the bot can detect the conversation correctly and so the thread stays scoped to the original issue. Each individual reply maintains a clean audit trail.
+
+Find existing comment IDs to reply to:
+```bash
+gh api "repos/hmislk/hmis/pulls/<PR>/comments" \
+  --jq '.[] | "\(.id) \(.user.login) \(.path):\(.line // .original_line)"'
+```
+
+Reply content:
 - Valid + fixed: describe what was changed
 - Dismissed: explain why (with reasoning)
 
 Do NOT resolve other reviewers' conversations. CodeRabbit auto-resolves on detection.
+
+Full API recipes and cleanup commands: see [Posting PR Comments via gh CLI](../../developer_docs/git/pr-review-workflow.md#posting-pr-comments-via-gh-cli).
 
 ### 9. Re-Request Review
 

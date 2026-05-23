@@ -82,6 +82,8 @@ Then on GitHub, reply to **each reviewer comment individually** with:
 
 Do **not** resolve other reviewers' conversations yourself. CodeRabbit auto-resolves when it detects the fix. For human reviewers, let them resolve.
 
+See [§ Posting PR Comments via gh CLI](#posting-pr-comments-via-gh-cli) below for the correct API endpoints — using the wrong one bundles comments under a review wrapper or posts them as general PR comments that aren't tied to a line.
+
 ### 7. Re-Request Review
 
 After pushing fixes, click **"Re-request review"** on the PR page to notify reviewers. Do not wait for them to notice the new push.
@@ -99,6 +101,57 @@ Check that CI is green after pushing before replying to comments. A fix that bre
 ```bash
 git branch -d <branch-name>
 ```
+
+## Posting PR Comments via gh CLI
+
+Four different ways exist to post comments on a PR. Picking the wrong one is the most common mistake. Each behaves differently in the GitHub UI:
+
+| What you want | Endpoint | gh / API command | Visible as |
+|---|---|---|---|
+| Reply UNDER an existing inline comment (threaded) | `POST /pulls/{pr}/comments/{id}/replies` | `gh api -X POST repos/<o>/<r>/pulls/<pr>/comments/<id>/replies -f body="..."` | Nested reply in the thread |
+| Standalone inline comment on a specific line | `POST /pulls/{pr}/comments` | `gh api -X POST repos/<o>/<r>/pulls/<pr>/comments -f commit_id=<sha> -f path=<file> -F line=<n> -f side=RIGHT -f body="..."` | Top-level inline comment (same shape as CodeRabbit/Codex) |
+| Multiple inline comments grouped under a "review" | `POST /pulls/{pr}/reviews` with `comments[]` | `gh pr review` or `gh api -X POST repos/<o>/<r>/pulls/<pr>/reviews --input <json>` | All grouped under a single review wrapper — NOT what bots do |
+| General PR-level comment (conversation tab) | `POST /issues/{n}/comments` | `gh pr comment <pr> --body "..."` | NOT tied to a line; lands in the Conversation tab |
+
+### When to use which
+
+- **Replying to a bot comment** (CodeRabbit / Codex / human reviewer) → always use the `/replies` endpoint. The reply stays in the parent's thread and the bot can detect the conversation correctly.
+- **Filing a new review item on a specific line** → use `POST /pulls/{pr}/comments` directly. This produces an individual standalone inline comment, the same shape as CodeRabbit/Codex post. Each one is its own resolvable thread.
+- **A PR-wide observation** (e.g. "this PR needs a Linear ticket") → `gh pr comment` is acceptable, but prefer inline if it can be tied to a line.
+- **Avoid** `POST /pulls/{pr}/reviews` with bundled `comments[]` unless you're submitting a formal review pass — it groups all comments under one "review" wrapper, which makes them harder to resolve individually and does not match how bots post.
+
+### Practical recipes
+
+**Standalone inline comment on a specific line:**
+```bash
+SHA=$(git rev-parse HEAD)
+gh api -X POST "repos/hmislk/hmis/pulls/<PR>/comments" \
+  -f commit_id="$SHA" \
+  -f path="src/main/java/.../Foo.java" \
+  -F line=42 \
+  -f side="RIGHT" \
+  -f body="Body text here."
+```
+
+**Threaded reply under an existing comment (id from `/comments` list):**
+```bash
+gh api -X POST "repos/hmislk/hmis/pulls/<PR>/comments/<COMMENT_ID>/replies" \
+  -f body="Please resolve — <action>."
+```
+
+**List existing inline comments with IDs (find a parent to reply to):**
+```bash
+gh api "repos/hmislk/hmis/pulls/<PR>/comments" \
+  --jq '.[] | "\(.id) \(.user.login) \(.path):\(.line // .original_line)"'
+```
+
+**Cannot do** `event: REQUEST_CHANGES` on your own PR. Use `event: COMMENT` instead, or post standalone comments without a review wrapper.
+
+### Cleanup
+
+- Delete an inline comment: `gh api -X DELETE repos/<o>/<r>/pulls/comments/<id>`
+- Delete a general PR comment: `gh api -X DELETE repos/<o>/<r>/issues/comments/<id>`
+- A review wrapper itself can be dismissed but its comments persist — delete each comment individually if you need to remove them.
 
 ## Notes
 
