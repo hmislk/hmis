@@ -221,10 +221,13 @@ public class PaymentSettlementService {
         if (settlementBill.isCancelled()) {
             throw new IllegalStateException("Settlement bill is already cancelled");
         }
+        if (actor == null) {
+            throw new IllegalArgumentException("Actor is required");
+        }
 
         String jpql = "SELECT p FROM Payment p WHERE p.paymentSettlementBill = :b";
         Map<String, Object> params = new HashMap<>();
-        params.put("b", settlementBill);
+
         List<Payment> settledPayments = paymentFacade.findByJpql(jpql, params);
 
         for (Payment p : settledPayments) {
