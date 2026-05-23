@@ -42,6 +42,9 @@ public class PharmaceuticalBillItem implements Serializable {
     private Date doe;
     @ManyToOne
     private ItemBatch itemBatch;
+
+    @ManyToOne
+    private ItemBatchArchive archivedItemBatch;
     private String stringValue;
 
     private double qty;
@@ -453,6 +456,14 @@ public class PharmaceuticalBillItem implements Serializable {
         this.itemBatch = itemBatch;
         this.retailRate = retailRate;
         this.purchaseRate = purchaseRate;
+    }
+
+    public ItemBatchArchive getArchivedItemBatch() {
+        return archivedItemBatch;
+    }
+
+    public void setArchivedItemBatch(ItemBatchArchive archivedItemBatch) {
+        this.archivedItemBatch = archivedItemBatch;
     }
 
     public double getQty() {

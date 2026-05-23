@@ -796,6 +796,8 @@ public class UserPrivilageController implements Serializable {
         new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyAdjustmentCreateBatch, "Pharmacy Adjustment Create Batch"), PharmacyAdjustment);
         // Archive Old StockHistory Records (issue #20726)
         new DefaultTreeNode(new PrivilegeHolder(Privileges.ArchiveOldStockHistory, "Archive Old StockHistory Records"), PharmacyAdjustment);
+        // Archive Old ItemBatch Records (issue #20724)
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.ArchiveOldItemBatch, "Archive Old ItemBatch Records"), PharmacyAdjustment);
 
         TreeNode pharmacyDisposalNode = new DefaultTreeNode(new PrivilegeHolder(null, "Pharmacy Disposal"), pharmacyNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyDisposalMenue, "Pharmacy Disposal Menu"), pharmacyDisposalNode);

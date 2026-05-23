@@ -558,6 +558,7 @@ public enum Privileges {
     PharmacyPhysicalCountApprove("Pharmacy Physical Count Approve"),
     PharmacyStockTakeApprove("Pharmacy Stock Take Approve"),
     ArchiveOldStockHistory("Archive Old StockHistory Records"),
+    ArchiveOldItemBatch("Archive Old ItemBatch Records"),
     // Pharmacy Dealer Payments
     PharmacyDealerPaymentMenue("Pharmacy Dealer Payment Menu"),
     PharmacyDealerDueSearch("Pharmacy Dealer Due Search"),
@@ -973,6 +974,7 @@ public enum Privileges {
             case PharmacyPhysicalCountApprove:
             case PharmacyStockTakeApprove:
             case ArchiveOldStockHistory:
+            case ArchiveOldItemBatch:
 
             // Pharmacy Dealer Payments
             case PharmacyDealerDueSearch:
