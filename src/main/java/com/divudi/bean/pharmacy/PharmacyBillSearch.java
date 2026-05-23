@@ -4601,12 +4601,15 @@ public class PharmacyBillSearch implements Serializable {
     }
 
     /**
-     * Fetches native PHARMACY_RETAIL_SALE bills (not linked to a PreBill) as DTOs.
+     * Fetches PHARMACY_RETAIL_SALE and PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER bills as DTOs.
      */
     @SuppressWarnings("unchecked")
     public void fetchSaleSearchDtosFromNativeBills(boolean maxNum) {
+        List<com.divudi.core.data.BillTypeAtomic> btas = new ArrayList<>();
+        btas.add(com.divudi.core.data.BillTypeAtomic.PHARMACY_RETAIL_SALE);
+        btas.add(com.divudi.core.data.BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER);
         Map<String, Object> m = new HashMap<>();
-        m.put("bta", com.divudi.core.data.BillTypeAtomic.PHARMACY_RETAIL_SALE);
+        m.put("btas", btas);
         m.put("fd", searchController.getFromDate());
         m.put("td", searchController.getToDate());
         m.put("ins", sessionController.getInstitution());
@@ -4629,7 +4632,7 @@ public class PharmacyBillSearch implements Serializable {
                 + "LEFT JOIN b.referredBy referredBy "
                 + "LEFT JOIN referredBy.person refDoctorPerson "
                 + "LEFT JOIN b.paymentScheme ps "
-                + "WHERE b.billTypeAtomic = :bta "
+                + "WHERE b.billTypeAtomic IN :btas "
                 + "AND b.createdAt BETWEEN :fd AND :td "
                 + "AND b.institution = :ins "
                 + "AND b.department = :ldep";
