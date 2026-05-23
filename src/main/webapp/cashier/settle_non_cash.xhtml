@@ -25,7 +25,8 @@
                     </h:panelGroup>
 
                     <h:panelGroup layout="block"
-                                  rendered="#{webUserController.hasPrivilege('SettleNonCashPayments')}">
+                                  rendered="#{webUserController.hasPrivilege('SettleNonCashPayments')
+                                              and not paymentSettlementController.printPreview}">
 
                         <p:panel>
                             <f:facet name="header">
@@ -89,9 +90,20 @@
                                              selection="#{paymentSettlementController.selectedPayments}"
                                              rowKey="#{p.id}"
                                              paginator="true"
+                                             selectionMode="multiple"
                                              rows="20"
                                              styleClass="mb-3">
-                                    <p:column selectionMode="multiple" style="width: 3rem; text-align: center;"/>
+                                    <p:ajax event="rowSelect"
+                                            update=":#{p:resolveFirstComponentWithId('selectedTotalPanel',view).clientId}"/>
+                                    <p:ajax event="rowUnselect"
+                                            update=":#{p:resolveFirstComponentWithId('selectedTotalPanel',view).clientId}"/>
+                                    <p:ajax event="rowSelectCheckbox"
+                                            update=":#{p:resolveFirstComponentWithId('selectedTotalPanel',view).clientId}"/>
+                                    <p:ajax event="rowUnselectCheckbox"
+                                            update=":#{p:resolveFirstComponentWithId('selectedTotalPanel',view).clientId}"/>
+                                    <p:ajax event="toggleSelect"
+                                            update=":#{p:resolveFirstComponentWithId('selectedTotalPanel',view).clientId}"/>
+                                    <p:column selectionBox="true" style="width: 3rem; text-align: center;"/>
                                     <p:column headerText="Method">
                                         <h:outputText value="#{p.paymentMethod}"/>
                                     </p:column>
@@ -135,10 +147,12 @@
                                     </div>
                                     <div class="col-md-3">
                                         <h:outputText value="Selected Total" styleClass="fw-medium mb-1 d-block"/>
-                                        <h:outputText value="#{paymentSettlementController.selectedTotal}"
-                                                      styleClass="fw-bold fs-5">
-                                            <f:convertNumber pattern="#,##0.00"/>
-                                        </h:outputText>
+                                        <h:panelGroup id="selectedTotalPanel" layout="block">
+                                            <h:outputText value="#{paymentSettlementController.selectedTotal}"
+                                                          styleClass="fw-bold fs-5">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </h:panelGroup>
                                     </div>
                                 </div>
 
@@ -148,6 +162,129 @@
                                                      styleClass="ui-button-success"
                                                      ajax="false"
                                                      action="#{paymentSettlementController.settleSelected()}"/>
+                                </div>
+                            </h:panelGroup>
+                        </p:panel>
+                    </h:panelGroup>
+
+                    <!-- ============================================================== -->
+                    <!-- Print preview — shown only after a successful settlement.     -->
+                    <!-- printPreview is reset to false on (re)load of this view.       -->
+                    <!-- ============================================================== -->
+                    <h:panelGroup layout="block"
+                                  rendered="#{webUserController.hasPrivilege('SettleNonCashPayments')
+                                              and paymentSettlementController.printPreview}">
+                        <p:panel>
+                            <f:facet name="header">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <div>
+                                        <i class="fa fa-file-alt me-2"/>
+                                        <h:outputText value="Payment Settlement Bill"/>
+                                    </div>
+                                    <div>
+                                        <p:commandButton value="Print"
+                                                         icon="fa fa-print"
+                                                         styleClass="ui-button-info me-2"
+                                                         ajax="false">
+                                            <p:printer target="settlementPrintArea"/>
+                                        </p:commandButton>
+                                        <p:commandButton value="Prepare New Settlement"
+                                                         icon="fa fa-plus"
+                                                         styleClass="ui-button-warning"
+                                                         ajax="false"
+                                                         action="#{paymentSettlementController.prepareNewSettlement()}"/>
+                                    </div>
+                                </div>
+                            </f:facet>
+
+                            <h:panelGroup id="settlementPrintArea" layout="block" styleClass="p-3">
+
+                                <div class="text-center mb-3">
+                                    <h:outputText value="#{sessionController.institution.name}"
+                                                  styleClass="d-block fw-bold fs-4"/>
+                                    <h:outputText value="#{paymentSettlementController.lastSettlementBill.department.name}"
+                                                  styleClass="d-block text-muted"/>
+                                    <h:outputText value="Payment Settlement Bill"
+                                                  styleClass="d-block fw-bold fs-5 mt-2"/>
+                                </div>
+
+                                <div class="row g-2 mb-3">
+                                    <div class="col-sm-6">
+                                        <h:outputText value="Bill No: " styleClass="fw-medium"/>
+                                        <h:outputText value="#{paymentSettlementController.lastSettlementBill.deptId}"
+                                                      styleClass="fw-bold"/>
+                                    </div>
+                                    <div class="col-sm-6 text-sm-end">
+                                        <h:outputText value="Date: " styleClass="fw-medium"/>
+                                        <h:outputText value="#{paymentSettlementController.lastSettlementBill.createdAt}">
+                                            <f:convertDateTime pattern="yyyy-MM-dd HH:mm"/>
+                                        </h:outputText>
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <h:outputText value="Settled By: " styleClass="fw-medium"/>
+                                        <h:outputText value="#{paymentSettlementController.lastSettlementBill.fromWebUser.webUserPerson.nameWithTitle}"/>
+                                    </div>
+                                    <div class="col-sm-6 text-sm-end">
+                                        <h:outputText value="Reference: " styleClass="fw-medium"/>
+                                        <h:outputText value="#{paymentSettlementController.lastSettlementBill.referenceNumber}"
+                                                      styleClass="fw-bold"/>
+                                    </div>
+                                    <h:panelGroup layout="block"
+                                                  rendered="#{not empty paymentSettlementController.lastSettlementBill.comments}"
+                                                  styleClass="col-12">
+                                        <h:outputText value="Comments: " styleClass="fw-medium"/>
+                                        <h:outputText value="#{paymentSettlementController.lastSettlementBill.comments}"/>
+                                    </h:panelGroup>
+                                </div>
+
+                                <p:dataTable id="settledPaymentsTable"
+                                             value="#{paymentSettlementController.lastSettledPayments}"
+                                             var="sp"
+                                             rowIndexVar="rowIx"
+                                             styleClass="mb-3">
+                                    <p:column headerText="#" style="width: 3rem;">
+                                        <h:outputText value="#{rowIx + 1}"/>
+                                    </p:column>
+                                    <p:column headerText="Method">
+                                        <h:outputText value="#{sp.paymentMethod}"/>
+                                    </p:column>
+                                    <p:column headerText="Bill">
+                                        <h:outputText value="#{sp.bill.deptId}"/>
+                                    </p:column>
+                                    <p:column headerText="Reference">
+                                        <h:outputText value="#{sp.referenceNo}"/>
+                                    </p:column>
+                                    <p:column headerText="Bank">
+                                        <h:outputText value="#{sp.bank.name}"/>
+                                    </p:column>
+                                    <p:column headerText="Amount" style="text-align: right;">
+                                        <h:outputText value="#{sp.paidValue}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </p:column>
+                                </p:dataTable>
+
+                                <div class="d-flex justify-content-end mb-4">
+                                    <div class="text-end">
+                                        <h:outputText value="Total Settled" styleClass="d-block text-muted"/>
+                                        <h:outputText value="#{paymentSettlementController.lastSettledTotal}"
+                                                      styleClass="fw-bold fs-4">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </div>
+                                </div>
+
+                                <div class="row g-4 mt-4 pt-4">
+                                    <div class="col-6 text-center">
+                                        <div style="border-top: 1px solid #333; padding-top: 0.25rem;">
+                                            <h:outputText value="Settled By"/>
+                                        </div>
+                                    </div>
+                                    <div class="col-6 text-center">
+                                        <div style="border-top: 1px solid #333; padding-top: 0.25rem;">
+                                            <h:outputText value="Verified By"/>
+                                        </div>
+                                    </div>
                                 </div>
                             </h:panelGroup>
                         </p:panel>

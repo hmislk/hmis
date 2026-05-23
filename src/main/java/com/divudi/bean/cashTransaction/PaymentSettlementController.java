@@ -43,13 +43,20 @@ public class PaymentSettlementController implements Serializable {
     private String referenceNumber;
     private String comments;
     private Bill lastSettlementBill;
+    private List<Payment> lastSettledPayments = new ArrayList<>();
     private boolean settling;
+    private boolean printPreview;
 
     /**
      * Loads the list of departments where the logged-in user has pending
      * non-cash payments. Called on initial page load.
      */
     public void loadPending() {
+        // Always reset the print-preview flag on entry so a fresh navigation
+        // (or back-button) lands on the form, not on a stale preview.
+        printPreview = false;
+        lastSettlementBill = null;
+        lastSettledPayments = new ArrayList<>();
         if (!webUserController.hasPrivilege(PRIVILEGE)) {
             JsfUtil.addErrorMessage("You do not have the required privilege to settle non-cash payments.");
             availableDepartments = new ArrayList<>();
@@ -63,7 +70,13 @@ public class PaymentSettlementController implements Serializable {
         selectedPayments = new ArrayList<>();
         referenceNumber = null;
         comments = null;
-        lastSettlementBill = null;
+    }
+
+    /**
+     * Closes the print preview and returns the page to a fresh settlement form.
+     */
+    public void prepareNewSettlement() {
+        loadPending();
     }
 
     /**
@@ -102,14 +115,18 @@ public class PaymentSettlementController implements Serializable {
         }
         try {
             settling = true;
+            // Snapshot the payments before settlement mutates currentHolder etc,
+            // so the print preview shows what was actually settled.
+            List<Payment> snapshot = new ArrayList<>(selectedPayments);
             lastSettlementBill = paymentSettlementService.settlePayments(
                     selectedPayments,
                     referenceNumber.trim(),
                     comments,
                     sessionController.getLoggedUser());
-            JsfUtil.addSuccessMessage("Settled " + selectedPayments.size() + " payment(s) for "
+            lastSettledPayments = snapshot;
+            JsfUtil.addSuccessMessage("Settled " + snapshot.size() + " payment(s) for "
                     + selectedDepartment.getName() + ".");
-            loadPending();
+            printPreview = true;
             return "";
         } catch (IllegalArgumentException | IllegalStateException e) {
             JsfUtil.addErrorMessage(e.getMessage());
@@ -121,13 +138,36 @@ public class PaymentSettlementController implements Serializable {
 
     /**
      * Navigation entry point — invoked from cashier/index.xhtml.
+     * Ensures a fresh state so the page is never left on a stale print preview.
      */
     public String navigateToSettleNonCash() {
+        printPreview = false;
+        lastSettlementBill = null;
+        lastSettledPayments = new ArrayList<>();
         return "/cashier/settle_non_cash?faces-redirect=true";
     }
 
     public boolean isSettling() {
         return settling;
+    }
+
+    public boolean isPrintPreview() {
+        return printPreview;
+    }
+
+    public List<Payment> getLastSettledPayments() {
+        return lastSettledPayments;
+    }
+
+    public double getLastSettledTotal() {
+        if (lastSettledPayments == null) {
+            return 0.0;
+        }
+        double t = 0.0;
+        for (Payment p : lastSettledPayments) {
+            t += p.getPaidValue();
+        }
+        return t;
     }
 
     public double getSelectedTotal() {
