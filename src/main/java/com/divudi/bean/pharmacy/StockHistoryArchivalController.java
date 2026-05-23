@@ -41,6 +41,7 @@ public class StockHistoryArchivalController implements Serializable {
     private ConfigOptionApplicationController configOptionController;
 
     private Date cutoffDate;
+    private int retentionDays;
     private int batchSize;
     private int maxBatches;
     private boolean dryRun;
@@ -55,17 +56,21 @@ public class StockHistoryArchivalController implements Serializable {
     }
 
     private void resetDefaults() {
-        int retentionDays = sanitisePositive(configOptionController.getIntegerValueByKey(
+        retentionDays = sanitisePositive(configOptionController.getIntegerValueByKey(
                 "StockHistory Archive - Retention Days", 730), 730);
-        Calendar cal = Calendar.getInstance();
-        cal.add(Calendar.DATE, -retentionDays);
-        cutoffDate = cal.getTime();
+        recalculateCutoff();
 
         batchSize = sanitisePositive(configOptionController.getIntegerValueByKey(
                 "StockHistory Archive - Batch Size", 2000), 2000);
         maxBatches = sanitisePositive(configOptionController.getIntegerValueByKey(
                 "StockHistory Archive - Max Batches Per Run", 50), 50);
         dryRun = true;
+    }
+
+    public void recalculateCutoff() {
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.DATE, -retentionDays);
+        cutoffDate = cal.getTime();
     }
 
     private static int sanitisePositive(Integer raw, int fallback) {
@@ -126,6 +131,9 @@ public class StockHistoryArchivalController implements Serializable {
 
     public Date getCutoffDate() { return cutoffDate; }
     public void setCutoffDate(Date cutoffDate) { this.cutoffDate = cutoffDate; }
+
+    public int getRetentionDays() { return retentionDays; }
+    public void setRetentionDays(int retentionDays) { this.retentionDays = retentionDays; }
 
     public int getBatchSize() { return batchSize; }
     public void setBatchSize(int batchSize) { this.batchSize = batchSize; }
