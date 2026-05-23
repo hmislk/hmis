@@ -111,7 +111,7 @@ For each existing reviewer comment, post a threaded reply under the parent. The 
 
 For self-review items you spot on your own PR — **don't post a new inline comment**. Fix in the next commit and reference the file:line in the commit message:
 
-```
+```text
 refactor(cashier): address self-review items
 
 - PaymentSettlementController.java:117 — add comment on shallow snapshot
@@ -132,7 +132,7 @@ gh api -X POST "repos/hmislk/hmis/pulls/<PR>/comments/<COMMENT_ID>/replies" \
 
 Do NOT resolve other reviewers' conversations. CodeRabbit auto-resolves on detection.
 
-Full API recipes and cleanup commands: see [Posting PR Comments via gh CLI](../../developer_docs/git/pr-review-workflow.md#posting-pr-comments-via-gh-cli).
+Full API recipes and cleanup commands: see [Posting PR Comments via gh CLI](../../../developer_docs/git/pr-review-workflow.md#posting-pr-comments-via-gh-cli).
 
 ### 9. Re-Request Review
 

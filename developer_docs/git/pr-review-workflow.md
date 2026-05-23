@@ -142,7 +142,7 @@ If you spot a problem in your own PR after pushing:
 
 1. **Fix it** in the next commit on the same branch.
 2. **Reference the file:line in the commit message** so reviewers can find the change in the diff:
-   ```
+   ```text
    refactor(cashier): address self-review items
    
    - PaymentSettlementController.java:117 — add comment on shallow snapshot
