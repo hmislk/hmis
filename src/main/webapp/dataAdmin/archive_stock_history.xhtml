@@ -30,7 +30,7 @@
                                                            inputStyleClass="w-100" style="flex:1" />
                                             <p:commandButton value="Apply" icon="fa fa-sync" class="ui-button-secondary mx-1"
                                                              action="#{stockHistoryArchivalController.recalculateCutoff}"
-                                                             update="cutoff messages" process="retDays"
+                                                             update="cutoff messages" process="@form"
                                                              title="Recalculate cutoff date from retention days" />
                                         </h:panelGroup>
 

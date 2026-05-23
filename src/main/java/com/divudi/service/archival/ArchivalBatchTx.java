@@ -11,6 +11,8 @@ import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * Transaction-bounded executor for a single archival batch.
@@ -52,16 +54,26 @@ public class ArchivalBatchTx {
             return 0;
         }
 
+        // JPA native queries do not support binding a List to a named IN parameter;
+        // expand to individual positional placeholders (?,?,?,...) instead.
+        String placeholders = IntStream.range(0, ids.size())
+                .mapToObj(i -> "?")
+                .collect(Collectors.joining(","));
+
         String insertSql = "INSERT INTO " + archiveTable + " (" + columnList + ", ARCHIVEDAT) "
                 + "SELECT " + columnList + ", NOW() FROM " + sourceTable
-                + " WHERE ID IN (:ids)";
+                + " WHERE ID IN (" + placeholders + ")";
         Query insertQ = em.createNativeQuery(insertSql);
-        insertQ.setParameter("ids", ids);
+        for (int i = 0; i < ids.size(); i++) {
+            insertQ.setParameter(i + 1, ids.get(i));
+        }
         insertQ.executeUpdate();
 
-        String deleteSql = "DELETE FROM " + sourceTable + " WHERE ID IN (:ids)";
+        String deleteSql = "DELETE FROM " + sourceTable + " WHERE ID IN (" + placeholders + ")";
         Query deleteQ = em.createNativeQuery(deleteSql);
-        deleteQ.setParameter("ids", ids);
+        for (int i = 0; i < ids.size(); i++) {
+            deleteQ.setParameter(i + 1, ids.get(i));
+        }
         return deleteQ.executeUpdate();
     }
 }
