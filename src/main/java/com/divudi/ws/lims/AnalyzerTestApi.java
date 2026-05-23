@@ -39,6 +39,8 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * REST API for Analyzer Test Item management (Items with itemType=AnalyzerTest linked to a Machine).
@@ -62,6 +64,8 @@ public class AnalyzerTestApi {
 
     @EJB
     private MachineFacade machineFacade;
+
+    private static final Logger logger = Logger.getLogger(AnalyzerTestApi.class.getName());
 
     private static final Gson gson = new GsonBuilder()
             .setDateFormat("yyyy-MM-dd HH:mm:ss")
@@ -110,9 +114,11 @@ public class AnalyzerTestApi {
             return successResponse(payload);
 
         } catch (IllegalArgumentException e) {
-            return errorResponse(e.getMessage(), 400);
+            logger.log(Level.WARNING, "Invalid argument in list()", e);
+            return errorResponse("Invalid request", 400);
         } catch (Exception e) {
-            return errorResponse("An error occurred: " + e.getMessage(), 500);
+            logger.log(Level.SEVERE, "Error in list()", e);
+            return errorResponse("Internal server error", 500);
         }
     }
 
@@ -136,7 +142,7 @@ public class AnalyzerTestApi {
             }
 
             Item item = itemFacade.find(id);
-            if (item == null || item.isRetired()) {
+            if (item == null || item.isRetired() || item.getItemType() != ItemType.AnalyzerTest) {
                 return errorResponse("Analyzer test not found: " + id, 404);
             }
             if (item.getMachine() == null || !item.getMachine().getId().equals(machineId)) {
@@ -145,7 +151,8 @@ public class AnalyzerTestApi {
 
             return successResponse(toDto(item));
         } catch (Exception e) {
-            return errorResponse("An error occurred: " + e.getMessage(), 500);
+            logger.log(Level.SEVERE, "Error in getById()", e);
+            return errorResponse("Internal server error", 500);
         }
     }
 
@@ -213,12 +220,14 @@ public class AnalyzerTestApi {
             item.setCreater(user);
             itemFacade.create(item);
 
-            return Response.status(201).entity(gson.toJson(successData(toDto(item)))).build();
+            return Response.status(201).entity(gson.toJson(successData(201, toDto(item)))).build();
 
         } catch (IllegalArgumentException e) {
-            return errorResponse(e.getMessage(), 400);
+            logger.log(Level.WARNING, "Invalid argument in create()", e);
+            return errorResponse("Invalid request", 400);
         } catch (Exception e) {
-            return errorResponse("An error occurred: " + e.getMessage(), 500);
+            logger.log(Level.SEVERE, "Error in create()", e);
+            return errorResponse("Internal server error", 500);
         }
     }
 
@@ -244,7 +253,7 @@ public class AnalyzerTestApi {
             }
 
             Item item = itemFacade.find(id);
-            if (item == null || item.isRetired()) {
+            if (item == null || item.isRetired() || item.getItemType() != ItemType.AnalyzerTest) {
                 return errorResponse("Analyzer test not found: " + id, 404);
             }
             if (item.getMachine() == null || !item.getMachine().getId().equals(machineId)) {
@@ -293,9 +302,11 @@ public class AnalyzerTestApi {
             return successResponse(toDto(item));
 
         } catch (IllegalArgumentException e) {
-            return errorResponse(e.getMessage(), 400);
+            logger.log(Level.WARNING, "Invalid argument in update()", e);
+            return errorResponse("Invalid request", 400);
         } catch (Exception e) {
-            return errorResponse("An error occurred: " + e.getMessage(), 500);
+            logger.log(Level.SEVERE, "Error in update()", e);
+            return errorResponse("Internal server error", 500);
         }
     }
 
@@ -319,7 +330,7 @@ public class AnalyzerTestApi {
             }
 
             Item item = itemFacade.find(id);
-            if (item == null) {
+            if (item == null || item.getItemType() != ItemType.AnalyzerTest) {
                 return errorResponse("Analyzer test not found: " + id, 404);
             }
             if (item.isRetired()) {
@@ -344,7 +355,8 @@ public class AnalyzerTestApi {
             return successResponse(resp);
 
         } catch (Exception e) {
-            return errorResponse("An error occurred: " + e.getMessage(), 500);
+            logger.log(Level.SEVERE, "Error in retire()", e);
+            return errorResponse("Internal server error", 500);
         }
     }
 
@@ -412,9 +424,13 @@ public class AnalyzerTestApi {
     }
 
     private Map<String, Object> successData(Object data) {
+        return successData(200, data);
+    }
+
+    private Map<String, Object> successData(int code, Object data) {
         Map<String, Object> response = new HashMap<>();
         response.put("status", "success");
-        response.put("code", 200);
+        response.put("code", code);
         response.put("data", data);
         return response;
     }

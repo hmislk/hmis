@@ -36,6 +36,8 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * REST API for Machine (Analyzer) management.
@@ -56,6 +58,8 @@ public class MachineApi {
 
     @EJB
     private MachineFacade machineFacade;
+
+    private static final Logger logger = Logger.getLogger(MachineApi.class.getName());
 
     private static final Gson gson = new GsonBuilder()
             .setDateFormat("yyyy-MM-dd HH:mm:ss")
@@ -96,9 +100,11 @@ public class MachineApi {
             return successResponse(payload);
 
         } catch (IllegalArgumentException e) {
-            return errorResponse(e.getMessage(), 400);
+            logger.log(Level.WARNING, "Invalid argument in list()", e);
+            return errorResponse("Invalid request", 400);
         } catch (Exception e) {
-            return errorResponse("An error occurred: " + e.getMessage(), 500);
+            logger.log(Level.SEVERE, "Error in list()", e);
+            return errorResponse("Internal server error", 500);
         }
     }
 
@@ -121,7 +127,8 @@ public class MachineApi {
             }
             return successResponse(toDto(machine));
         } catch (Exception e) {
-            return errorResponse("An error occurred: " + e.getMessage(), 500);
+            logger.log(Level.SEVERE, "Error in getById()", e);
+            return errorResponse("Internal server error", 500);
         }
     }
 
@@ -182,12 +189,14 @@ public class MachineApi {
             machine.setCreater(user);
             machineFacade.create(machine);
 
-            return Response.status(201).entity(gson.toJson(successData(toDto(machine)))).build();
+            return Response.status(201).entity(gson.toJson(successData(201, toDto(machine)))).build();
 
         } catch (IllegalArgumentException e) {
-            return errorResponse(e.getMessage(), 400);
+            logger.log(Level.WARNING, "Invalid argument in create()", e);
+            return errorResponse("Invalid request", 400);
         } catch (Exception e) {
-            return errorResponse("An error occurred: " + e.getMessage(), 500);
+            logger.log(Level.SEVERE, "Error in create()", e);
+            return errorResponse("Internal server error", 500);
         }
     }
 
@@ -254,9 +263,11 @@ public class MachineApi {
             return successResponse(toDto(machine));
 
         } catch (IllegalArgumentException e) {
-            return errorResponse(e.getMessage(), 400);
+            logger.log(Level.WARNING, "Invalid argument in update()", e);
+            return errorResponse("Invalid request", 400);
         } catch (Exception e) {
-            return errorResponse("An error occurred: " + e.getMessage(), 500);
+            logger.log(Level.SEVERE, "Error in update()", e);
+            return errorResponse("Internal server error", 500);
         }
     }
 
@@ -297,7 +308,8 @@ public class MachineApi {
             return successResponse(resp);
 
         } catch (Exception e) {
-            return errorResponse("An error occurred: " + e.getMessage(), 500);
+            logger.log(Level.SEVERE, "Error in retire()", e);
+            return errorResponse("Internal server error", 500);
         }
     }
 
@@ -358,9 +370,13 @@ public class MachineApi {
     }
 
     private Map<String, Object> successData(Object data) {
+        return successData(200, data);
+    }
+
+    private Map<String, Object> successData(int code, Object data) {
         Map<String, Object> response = new HashMap<>();
         response.put("status", "success");
-        response.put("code", 200);
+        response.put("code", code);
         response.put("data", data);
         return response;
     }

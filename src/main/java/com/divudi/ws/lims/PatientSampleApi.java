@@ -33,6 +33,8 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * REST API for PatientSample search and retrieval.
@@ -53,6 +55,8 @@ public class PatientSampleApi {
 
     @EJB
     private PatientSampleFacade patientSampleFacade;
+
+    private static final Logger logger = Logger.getLogger(PatientSampleApi.class.getName());
 
     private static final Gson gson = new GsonBuilder()
             .setDateFormat("yyyy-MM-dd HH:mm:ss")
@@ -78,7 +82,7 @@ public class PatientSampleApi {
             String fromDateStr = param("fromDate");
             String toDateStr = param("toDate");
             String billNumber = param("billNumber");
-            int size = intParam("size", 50, 1, 500);
+            int size = intParam("size", 200, 1, 1000);
 
             StringBuilder jpql = new StringBuilder(
                     "select ps from PatientSample ps where ps.retired = false");
@@ -135,9 +139,11 @@ public class PatientSampleApi {
             return successResponse(payload);
 
         } catch (IllegalArgumentException e) {
-            return errorResponse(e.getMessage(), 400);
+            logger.log(Level.WARNING, "Invalid argument in search()", e);
+            return errorResponse("Invalid request", 400);
         } catch (Exception e) {
-            return errorResponse("An error occurred: " + e.getMessage(), 500);
+            logger.log(Level.SEVERE, "Error in search()", e);
+            return errorResponse("Internal server error", 500);
         }
     }
 
@@ -162,7 +168,8 @@ public class PatientSampleApi {
             return successResponse(toDto(ps, true));
 
         } catch (Exception e) {
-            return errorResponse("An error occurred: " + e.getMessage(), 500);
+            logger.log(Level.SEVERE, "Error in getById()", e);
+            return errorResponse("Internal server error", 500);
         }
     }
 
@@ -256,7 +263,9 @@ public class PatientSampleApi {
 
     private Date parseDate(String s) {
         try {
-            return new SimpleDateFormat("yyyy-MM-dd").parse(s);
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+            sdf.setLenient(false);
+            return sdf.parse(s);
         } catch (ParseException e) {
             return null;
         }
