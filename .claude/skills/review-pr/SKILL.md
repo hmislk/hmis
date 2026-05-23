@@ -86,13 +86,53 @@ git push
 
 Verify CI passes before proceeding.
 
-### 8. Reply to Each Comment
+### 8. Reply to Existing Reviewer Threads
 
-For each comment on GitHub, post an individual reply:
-- Valid + fixed: describe what was changed
-- Dismissed: explain why (with reasoning)
+> **⚠️ Cardinal rules — read before posting anything:**
+>
+> 1. **Do NOT create new top-level inline comments** on the PR. Each one becomes a thread the author must manually resolve. This is noise.
+> 2. **Reply only after fixing** (or explicitly dismissing). Bots cannot fix anything — describe action taken, not requested.
+>    - Valid + fixed → "Fixed in `<commit-sha>`: `<what was changed>`"
+>    - Dismissed → "Dismissed because: `<specific reasoning>`"
+> 3. **Replies go UNDER existing reviewer threads only** (`/replies` endpoint). Never as new top-level comments.
+> 4. **Self-review items go in the commit message** (or PR description if deferred). Never as new inline comments.
+> 5. **ONE re-review request at the end**, not per item.
+>
+> Order: **discuss → fix → push → reply to existing threads → one re-review request**.
+
+For each existing reviewer comment, post a threaded reply under the parent. The four endpoints are easy to confuse:
+
+| Want | Endpoint | Use? |
+|---|---|---|
+| **Reply under existing reviewer comment (threaded)** | `POST /pulls/{pr}/comments/{id}/replies` | **YES — this is the only legitimate reply form** |
+| New standalone inline comment on a line | `POST /pulls/{pr}/comments` | NO — creates a fresh thread the author must manually resolve |
+| Bundled review | `POST /pulls/{pr}/reviews` | NO — grouping wrapper, doesn't match how bots post |
+| General PR comment (only genuine PR-wide notes) | `POST /issues/{n}/comments` | Sparingly — only for actual PR-wide announcements |
+
+For self-review items you spot on your own PR — **don't post a new inline comment**. Fix in the next commit and reference the file:line in the commit message:
+
+```text
+refactor(cashier): address self-review items
+
+- PaymentSettlementController.java:117 — add comment on shallow snapshot
+- settle_non_cash.xhtml:203 — use lastSettlementBill.institution.name
+```
+
+Find existing comment IDs to reply to:
+```bash
+gh api "repos/hmislk/hmis/pulls/<PR>/comments" \
+  --jq '.[] | "\(.id) \(.user.login) \(.path):\(.line // .original_line)"'
+```
+
+Post a threaded reply:
+```bash
+gh api -X POST "repos/hmislk/hmis/pulls/<PR>/comments/<COMMENT_ID>/replies" \
+  -f body="Fixed in <commit-sha>: <what was changed>."
+```
 
 Do NOT resolve other reviewers' conversations. CodeRabbit auto-resolves on detection.
+
+Full API recipes and cleanup commands: see [Posting PR Comments via gh CLI](../../../developer_docs/git/pr-review-workflow.md#posting-pr-comments-via-gh-cli).
 
 ### 9. Re-Request Review
 

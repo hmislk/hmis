@@ -32,10 +32,38 @@ Use this skill when working a PR review loop on HMIS: collect review comments, v
    - Verify `persistence.xml` placeholders remain `${JDBC_DATASOURCE}` and `${JDBC_AUDIT_DATASOURCE}`.
    - For JSF/XHTML fixes, keep standard `<!DOCTYPE html>` and use `h:outputText` for static ERP labels.
 
-6. Push, reply, and re-request review.
-   - Push only after the fix is ready.
-   - Reply to each reviewer thread individually with what changed or why the comment was dismissed.
-   - Ask for another review pass after the push.
+6. Push, reply, and re-request review — by the cardinal rules below.
+
+## Cardinal Rules for Posting on a PR
+
+1. **Do NOT create new top-level inline comments** on the PR. Each one becomes a thread the author must manually resolve. Self-review noise is the most common offender.
+2. **Reply only after fixing** (or explicitly dismissing). Bots cannot fix anything — describe action taken, not requested.
+   - Valid + fixed → "Fixed in `<commit-sha>`: `<what was changed>`"
+   - Dismissed → "Dismissed because: `<specific reasoning>`"
+3. **Replies go UNDER existing reviewer threads only** — use `POST /pulls/{pr}/comments/{id}/replies`. Never as new top-level comments.
+4. **Self-review items go in the commit message** (or PR description if deferred). Never as new inline comments. Reference file:line in the commit message so reviewers can find the change in the diff.
+5. **ONE re-review request at the end** — click "Re-request review" once after all fixes are pushed and all existing threads have replies. Not per item.
+
+Order: **discuss → fix → push → reply to existing threads → one re-review request**.
+
+## Endpoint Cheat Sheet
+
+| Want | Endpoint | Use? |
+|---|---|---|
+| Reply under existing reviewer comment | `POST /pulls/{pr}/comments/{id}/replies` | YES |
+| New standalone inline comment | `POST /pulls/{pr}/comments` | NO — creates a fresh thread |
+| Bundled review wrapper | `POST /pulls/{pr}/reviews` | NO |
+| General PR comment | `POST /issues/{n}/comments` | Sparingly, only for actual PR-wide notes |
+
+```bash
+# List existing comments to find a parent ID
+gh api "repos/hmislk/hmis/pulls/<PR>/comments" \
+  --jq '.[] | "\(.id) \(.user.login) \(.path):\(.line // .original_line)"'
+
+# Post a threaded reply (the only legitimate reply form)
+gh api -X POST "repos/hmislk/hmis/pulls/<PR>/comments/<COMMENT_ID>/replies" \
+  -f body="Fixed in <commit-sha>: <what was changed>."
+```
 
 ## Common Review Patterns
 
