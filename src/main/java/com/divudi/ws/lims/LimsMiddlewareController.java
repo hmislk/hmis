@@ -1208,26 +1208,9 @@ public class LimsMiddlewareController {
                                     temFlag = true;
                                     valueToSave = true;
                                 } else {
-                                    // // System.out.println("3 result = " + result);
-                                    priv.setStrValue(result);
-
-                                    Double dbl = 0d;
-                                    try {
-                                        dbl = Double.parseDouble(result);
-                                        // // System.out.println("3 dbl = " + dbl);
-                                    } catch (Exception e) {
-                                    }
-                                    priv.setDoubleValue(dbl);
-                                    // // System.out.println("3 priv.getDoubleValue() = " + priv.getDoubleValue());
-                                    if (priv.getId() == null) {
-                                        // // System.out.println("3 new priv created = " + dbl);
-                                        patientReportItemValueFacade.create(priv);
-                                    } else {
-                                        // // System.out.println("3 new priv Updates = " + dbl);
-                                        patientReportItemValueFacade.edit(priv);
-                                    }
-                                    temFlag = true;
-                                    valueToSave = true;
+                                    // Both ps.investigationComponant and priv.sampleComponent are set
+                                    // but they don't match — this row belongs to a different time point.
+                                    // Skip it; the correct row will be handled in a later iteration.
                                 }
                             }
 
