@@ -2,7 +2,7 @@
 <persistence version="2.2" xmlns="http://java.sun.com/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/persistence http://xmlns.jcp.org/xml/ns/persistence/persistence_2_2.xsd">
     <persistence-unit name="hmisPU" transaction-type="JTA">
         <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
-        <jta-data-source>${JDBC_DATASOURCE}</jta-data-source>
+        <jta-data-source>jdbc/ruhunu</jta-data-source>
         <exclude-unlisted-classes>false</exclude-unlisted-classes>
         <properties>
             <property name="eclipselink.logging.level.sql" value="SEVERE"/>
@@ -48,11 +48,31 @@
             <!-- already in the L2 cache. Avoids fetching large blobs on        -->
             <!-- every cache hit.                                               -->
             <property name="eclipselink.jdbc.result-set-access-optimization" value="true"/>
+            
+            <!-- ================================================================ -->
+            <!-- DDL GENERATION (sql-script only, NOT applied to the database)  -->
+            <!-- ================================================================ -->
+            <!-- Strategy options:                                              -->
+            <!--   drop-and-create-tables  full schema (use for a clean DDL)   -->
+            <!--   create-tables           only CREATE for missing tables      -->
+            <!--   create-or-extend-tables CREATE + ALTER for added columns    -->
+            <!--   none                    disable (set after generation)      -->
+            <property name="eclipselink.ddl-generation" value="drop-and-create-tables"/>
+            <property name="eclipselink.ddl-generation.output-mode" value="sql-script"/>
+            <!-- Output directory: project-local tmp/ folder (per CLAUDE.md).  -->
+            <!-- EclipseLink requires a trailing slash on application-location. -->
+            <property name="eclipselink.application-location" value="/home/buddhika/development/rh/tmp/"/>
+            <!-- Explicit script filenames so the generated artifacts are       -->
+            <!-- easy to find and don't collide with EclipseLink defaults.     -->
+            <property name="eclipselink.create-ddl-jdbc-file-name" value="hmis-create.sql"/>
+            <property name="eclipselink.drop-ddl-jdbc-file-name" value="hmis-drop.sql"/>
+            <!-- After generation, set ddl-generation to 'none' -->
+            <!-- <property name="eclipselink.ddl-generation" value="none"/> -->
 
         </properties>
     </persistence-unit>
     <persistence-unit name="hmisAuditPU" transaction-type="JTA">
-        <jta-data-source>${JDBC_AUDIT_DATASOURCE}</jta-data-source>
+        <jta-data-source>jdbc/rhAuditDS</jta-data-source>
         <exclude-unlisted-classes>false</exclude-unlisted-classes>
         <properties>
             <property name="eclipselink.logging.level.sql" value="SEVERE"/>
