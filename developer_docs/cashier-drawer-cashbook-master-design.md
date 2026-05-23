@@ -3,7 +3,7 @@
 **Master Issue:** [#17532 — Cash Handover & Drawer System](https://github.com/hmislk/hmis/issues/17532)
 **Priority:** Critical
 **Status:** 11 completed, 52 open of 63 sub-issues
-**Last Updated:** 2026-03-25
+**Last Updated:** 2026-05-23 (Phase 4 — Non-Cash Settlement model simplified)
 
 ---
 
@@ -480,87 +480,130 @@ This is the umbrella design above. Implementation order:
 
 ---
 
-## Phase 4 — Cashbook & Deposit Improvements
+## Phase 4 — Cashbook, Deposit & Non-Cash Settlement
 
-**Issues:** #18911, #18919, #17958–#17962, #17964 (8 issues)
+**Issues:** #18911, #18919, #17958–#17962, #17964, #18915 (9 issues)
 
-### Current Problems
+### Conceptual Model
 
-1. `CashbookService.updateBalances()` is **incomplete** — method body doesn't finish balance calculations
-2. Department cashbook doesn't track per-payment-method per handover (#18911)
-3. Deposit process lacks reference numbers, user selection, approval (#18919, #17959, #17962)
-4. Non-cash deposits (card, cheque settlements) have no completion marking (#17964)
+Money flows through two distinct terminal events:
 
-### Design
+| Tender | Terminal event | Bill type | UI label |
+|---|---|---|---|
+| Cash | Physically deposited at bank | `FUND_DEPOSIT_BILL` (existing) | **Bank Deposit** |
+| Card / Cheque / Slip / eWallet / Online | Confirmed by bank or processor | `PAYMENT_SETTLEMENT_BILL` (new) | **Settlement** |
 
-#### 4.1 Complete CashbookService.updateBalances()
+Non-cash items accumulate at the holder (typically main cashier) across multiple shift handovers until they are formally **settled** with the bank or processor. They re-appear in every subsequent handover until settled, because they are individually-identified physical documents that move with the holder.
 
-The current method queries the last entry but returns without updating. Fix:
+Cash is different — once handed over, its individual `Payment` records are NOT re-listed in subsequent handovers. Cash is reconciled by denomination count and flows through the Drawer balance.
+
+### 4.1 Why Non-Cash Items Keep Appearing in Handovers
+
+A non-cash `Payment` carries through handovers as long as `currentHolder` points to a real user. The holder is responsible for handing it on (or settling it) until it is externally confirmed.
+
+### 4.2 The Settlement Event (#17964, supersedes #18915 conceptually)
+
+The holder of one or more non-cash payments selects them, records the external reference (POS batch ID, deposit slip number, cheque number, eWallet receipt), and submits a `PAYMENT_SETTLEMENT_BILL`. This:
+
+- Sets `payment.paymentSettled = true`
+- Sets `payment.paymentSettlementBill = <this bill>`
+- Sets `payment.currentHolder = null`
+
+From that point onward the payment is excluded from every handover query (the existing `currentHolder = :user` filter handles this automatically — no handover query change needed).
+
+**Cash Book is NOT touched at settlement.** The payment was already added to the cash book at first handover (existing behaviour). The settlement is a status transition, not a financial event.
+
+### 4.3 Validation Rule
+
+A `Payment` may only be settled if it has already been recorded in the cash book — i.e. has been through first handover. Concrete check:
 
 ```java
-public void updateBalances(PaymentMethod pm, Double value, CashBookEntry entry) {
-    // Query previous entry for this cashbook + payment method
-    CashBookEntry lastEntry = findLastEntry(entry.getCashBook(), pm);
-
-    // Set before-balances from last entry (or 0 if first)
-    if (lastEntry != null) {
-        entry.setFromDepartmentBalanceBefore(lastEntry.getFromDepartmentBalanceAfter());
-        entry.setFromSiteBalanceBefore(lastEntry.getFromSiteBalanceAfter());
-        entry.setFromInstitutionBalanceBefore(lastEntry.getFromInstitutionBalanceAfter());
-    }
-
-    // Calculate after-balances
-    entry.setFromDepartmentBalanceAfter(entry.getFromDepartmentBalanceBefore() + value);
-    entry.setFromSiteBalanceAfter(entry.getFromSiteBalanceBefore() + value);
-    entry.setFromInstitutionBalanceAfter(entry.getFromInstitutionBalanceBefore() + value);
-
-    // Update CashBook totals
-    updateCashBookBalance(entry.getCashBook(), pm, value);
+if (!payment.isCashbookEntryCompleted()) {
+    throw new IllegalStateException("Cannot settle a payment that has no cash book entry");
 }
 ```
 
-#### 4.2 Department Cashbook Per-Method Tracking (#18911)
+This prevents the team from settling payments that were never properly handed over.
 
-Currently, cashbook entries are created per payment but not summarized by payment method per handover at department level.
+### 4.4 Settlement Cancellation
 
-**Design:**
-- When handover is accepted and cashbook entries are written, create summary entries per payment method
-- Use existing `CashBookEntry` fields: `cashValue`, `cardValue`, `chequeValue`, etc.
-- Department cashbook summary page should aggregate by method
+Standard bill cancellation pattern. Reverses the three field updates so the payment re-enters the handover flow next time:
 
-#### 4.3 Deposit Workflow Enhancement
+- `paymentSettled = false`
+- `paymentSettlementBill = null`
+- `currentHolder` restored to the user who held it at the time of settlement (recorded on the original settlement bill)
 
-**Current flow:** Simple deposit bill creation
-**New flow:**
+Cash Book is not touched on cancellation either. Discrepancies (bounced cheque, processor chargeback, lost payment) are out of scope for this design and handled via a separate, planned reconciliation process — these cases are rare.
+
+### 4.5 Entity Changes
+
+**`Payment`** — add two fields:
+
+| Field | Type | Default | Meaning |
+|---|---|---|---|
+| `paymentSettled` | boolean | false | True once non-cash settled. Always false for cash. |
+| `paymentSettlementBill` | `@ManyToOne Bill` | null | FK to the settlement bill. Null for cash or unsettled non-cash. |
+
+**`BillTypeAtomic`** — add two values:
+
+```java
+PAYMENT_SETTLEMENT_BILL("Payment Settlement Bill", BillCategory.BILL,
+    ServiceType.OTHER, BillFinanceType.NO_FINANCE_TRANSACTIONS,
+    CountedServiceType.OTHER, PaymentCategory.NO_PAYMENT,
+    BillType.PaymentSettlementBill),
+
+PAYMENT_SETTLEMENT_BILL_CANCELLED("Payment Settlement Bill - Cancelled", BillCategory.CANCELLATION,
+    ServiceType.OTHER, BillFinanceType.NO_FINANCE_TRANSACTIONS,
+    CountedServiceType.OTHER, PaymentCategory.NO_PAYMENT,
+    BillType.PaymentSettlementBill),
+```
+
+`BillFinanceType.NO_FINANCE_TRANSACTIONS` because the settlement does NOT move drawer or cash book balances — the payment is already in the cash book from first handover.
+
+**`BillType`** (legacy enum) — add `PaymentSettlementBill` value to keep the existing pattern intact.
+
+### 4.6 Workflow Summary
 
 ```
-Deposit Initiated
-  → Select cashbook (#17958)
-  → Select user whose payments to deposit (#17959)
-  → Select specific payments to deposit (#17960)
-  → Enter slip reference number (#18919)
-  → Mark porter for physical cash transport (#17961)
-  → Submit for approval (#17962)
-  → Approver confirms deposit completion
-  → CashBook negative entry created
+Pre-condition: Payment is non-cash, cashbookEntryCompleted=true, currentHolder=<holder>
+
+Holder opens "Settle Non-Cash" page
+  → Page lists payments where: paymentMethod != Cash
+                                AND paymentSettled = false
+                                AND currentHolder = :loggedInUser
+                                AND cashbookEntryCompleted = true
+  → Holder selects payments, enters external references
+  → Submits → PAYMENT_SETTLEMENT_BILL created
+  → For each payment:
+      paymentSettled = true
+      paymentSettlementBill = <bill>
+      currentHolder = null
+
+Cancellation:
+  → PAYMENT_SETTLEMENT_BILL_CANCELLED created via standard cancellation
+  → For each payment in the original bill:
+      paymentSettled = false
+      paymentSettlementBill = null
+      currentHolder = <holder at time of settlement, restored from settlement bill metadata>
 ```
 
-**Entity changes to Bill for deposit context:**
-- `referenceNumber` (existing field) — use for slip reference
-- `toWebUser` (existing field) — use for porter marking
-- Bill approval tracked via `referenceBill` pointing to approval bill
+### 4.7 What This Replaces / Defers
 
-**New BillTypeAtomic values:**
-```
-FUND_DEPOSIT_APPROVAL    — Deposit approved by authorized person
-```
+This simplified design **supersedes** the earlier proposal in this document for:
 
-#### 4.4 Non-Cash Deposit Completion (#17964)
+- A separate `SettlementBatch` entity (not needed — `Bill` + new `BillTypeAtomic` suffices)
+- A Payment lifecycle status enum (not needed — boolean + FK + existing `currentHolder` suffices)
+- Cash-book adjustment entries on settlement (not done — separate reconciliation handles discrepancies)
+- Approval workflow for non-cash settlement (deferred to a later issue if needed)
 
-Non-cash payments (card settlements, cheque clearings) need a "mark as complete" step:
-- Add "Mark Complete" button in deposit funds page for non-cash items
-- Updates `Payment.cashbookEntryCompleted = true`
-- Writes negative CashBookEntry to close the cashbook entry
+### 4.8 Deferred Items in This Phase
+
+The following Phase-4 items remain open but are NOT part of the initial Settlement PR:
+
+- `CashbookService.updateBalances()` completion (independent fix)
+- Department cash book per-method tracking (#18911) — partly satisfied by Settlement giving a clean "what is unsettled" view
+- Deposit funds enhancements (#17958–#17962, #18919) — for the existing cash-deposit workflow, separate from Settlement
+- eWallet at handover (#18915) — verify that the first-handover cash-book write already populates the eWallet column; if not, that is a small follow-up fix
 
 ---
 
@@ -654,6 +697,7 @@ Even during extended shifts, allow:
 |--------|--------|-------|
 | `PaymentHandoverItem` | Add `verified` (boolean) | Phase 2 |
 | `Payment` | Ensure `floatPending` / use existing flags correctly | Phase 1 |
+| `Payment` | Add `paymentSettled` (boolean) and `paymentSettlementBill` (FK → Bill) | Phase 4 |
 
 ### New BillTypeAtomic Values
 
@@ -671,6 +715,8 @@ Even during extended shifts, allow:
 | `FUND_SHIFT_EXCESS_SETTLE` | Phase 3 | Excess settled |
 | `FUND_SHIFT_EXCESS_CANCEL` | Phase 3 | Excess bill cancelled |
 | `FUND_DEPOSIT_APPROVAL` | Phase 4 | Deposit approved |
+| `PAYMENT_SETTLEMENT_BILL` | Phase 4 | Non-cash payment settled with bank/processor |
+| `PAYMENT_SETTLEMENT_BILL_CANCELLED` | Phase 4 | Non-cash payment settlement cancelled |
 
 ### New Configuration Keys
 

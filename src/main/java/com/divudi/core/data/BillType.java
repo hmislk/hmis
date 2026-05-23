@@ -179,6 +179,7 @@ public enum BillType {
     ShiftExcess,
     HandoverProofMissing,
     HandoverProofMissingSettlement,
+    PaymentSettlementBill, // For settling non-cash payments (card/cheque/slip/eWallet) with bank or processor
     PaymentTransfer,
     @Deprecated
     TransactionHandoverBill, // For handling the handover of all transaction types at the end of a cashier's shift

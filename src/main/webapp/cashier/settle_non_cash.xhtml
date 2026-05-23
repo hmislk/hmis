@@ -1,0 +1,130 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="/cashier/index.xhtml">
+            <ui:define name="subcontent">
+                <f:metadata>
+                    <f:viewAction action="#{paymentSettlementController.loadPending()}"/>
+                </f:metadata>
+
+                <h:form id="settleNonCashForm">
+
+                    <h:panelGroup layout="block"
+                                  rendered="#{not webUserController.hasPrivilege('SettleNonCashPayments')}">
+                        <p:panel header="Settle Non-Cash Payments">
+                            <p:messages/>
+                            <h:outputText value="You do not have the required privilege to settle non-cash payments."
+                                          styleClass="d-block mb-3 text-danger"/>
+                        </p:panel>
+                    </h:panelGroup>
+
+                    <h:panelGroup layout="block"
+                                  rendered="#{webUserController.hasPrivilege('SettleNonCashPayments')}">
+
+                        <p:panel>
+                            <f:facet name="header">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <div>
+                                        <i class="fa fa-check-double me-2"/>
+                                        <h:outputText value="Settle Non-Cash Payments"/>
+                                    </div>
+                                    <p:commandButton icon="fa fa-sync"
+                                                     value="Refresh"
+                                                     actionListener="#{paymentSettlementController.loadPending()}"
+                                                     update="settleNonCashForm"
+                                                     styleClass="ui-button-secondary"/>
+                                </div>
+                            </f:facet>
+
+                            <p:messages id="msgs"/>
+
+                            <h:panelGroup layout="block"
+                                          rendered="#{empty paymentSettlementController.pendingPayments}"
+                                          styleClass="text-muted text-center my-4">
+                                <i class="fa fa-info-circle me-2"/>
+                                <h:outputText value="No non-cash payments are currently pending settlement under your name."/>
+                            </h:panelGroup>
+
+                            <h:panelGroup layout="block"
+                                          rendered="#{not empty paymentSettlementController.pendingPayments}">
+
+                                <p:dataTable id="pendingTable"
+                                             value="#{paymentSettlementController.pendingPayments}"
+                                             var="p"
+                                             selection="#{paymentSettlementController.selectedPayments}"
+                                             rowKey="#{p.id}"
+                                             paginator="true"
+                                             rows="20"
+                                             styleClass="mb-3">
+                                    <p:column selectionMode="multiple" style="width: 3rem; text-align: center;"/>
+                                    <p:column headerText="Method">
+                                        <h:outputText value="#{p.paymentMethod}"/>
+                                    </p:column>
+                                    <p:column headerText="Bill">
+                                        <h:outputText value="#{p.bill.deptId}"/>
+                                    </p:column>
+                                    <p:column headerText="Reference">
+                                        <h:outputText value="#{p.referenceNo}"/>
+                                    </p:column>
+                                    <p:column headerText="Bank">
+                                        <h:outputText value="#{p.bank.name}"/>
+                                    </p:column>
+                                    <p:column headerText="Amount" style="text-align: right;">
+                                        <h:outputText value="#{p.paidValue}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Collected">
+                                        <h:outputText value="#{p.createdAt}">
+                                            <f:convertDateTime pattern="yyyy-MM-dd HH:mm"/>
+                                        </h:outputText>
+                                    </p:column>
+                                </p:dataTable>
+
+                                <div class="row g-3 mb-3">
+                                    <div class="col-md-4">
+                                        <h:outputLabel for="txtReference" value="Settlement Reference *"
+                                                       styleClass="fw-medium mb-1 d-block"/>
+                                        <p:inputText id="txtReference"
+                                                     styleClass="w-100"
+                                                     placeholder="Bank slip / POS batch / processor ref"
+                                                     value="#{paymentSettlementController.referenceNumber}"/>
+                                    </div>
+                                    <div class="col-md-5">
+                                        <h:outputLabel for="txtComments" value="Comments"
+                                                       styleClass="fw-medium mb-1 d-block"/>
+                                        <p:inputTextarea id="txtComments"
+                                                         styleClass="w-100"
+                                                         rows="2"
+                                                         value="#{paymentSettlementController.comments}"/>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <h:outputLabel value="Selected Total" styleClass="fw-medium mb-1 d-block"/>
+                                        <h:outputText value="#{paymentSettlementController.selectedTotal}"
+                                                      styleClass="fw-bold fs-5">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </div>
+                                </div>
+
+                                <div class="text-end">
+                                    <p:commandButton icon="fa fa-check"
+                                                     value="Confirm Settlement"
+                                                     styleClass="ui-button-success"
+                                                     ajax="false"
+                                                     action="#{paymentSettlementController.settleSelected()}"/>
+                                </div>
+                            </h:panelGroup>
+                        </p:panel>
+                    </h:panelGroup>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

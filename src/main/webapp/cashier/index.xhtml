@@ -144,6 +144,15 @@
                                     </p:commandButton>
 
                                     <p:commandButton
+                                        class="my-1 w-100 ui-button-success"
+                                        value="Settle Non-Cash Payments"
+                                        icon="pi pi-check-circle"
+                                        ajax="false"
+                                        action="/cashier/settle_non_cash?faces-redirect=true"
+                                        rendered="#{webUserController.hasPrivilege('SettleNonCashPayments')}">
+                                    </p:commandButton>
+
+                                    <p:commandButton
                                         class="my-1 w-100 ui-button-danger"
                                         value="Withdrawals"
                                         icon="pi pi-upload"
