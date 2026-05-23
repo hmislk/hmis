@@ -513,6 +513,8 @@ From that point onward the payment is excluded from every handover query (the ex
 
 **Cash Book is NOT touched at settlement.** The payment was already added to the cash book at first handover (existing behaviour). The settlement is a status transition, not a financial event.
 
+**One settlement bill — one department.** A `PAYMENT_SETTLEMENT_BILL` may only contain payments that share the same `Payment.department`. The settlement bill's `department` / `fromDepartment` / `institution` / `fromInstitution` are derived from the payments, not from the actor. The settlement bill number (`deptId` / `insId`) is generated via `BillNumberGenerator.departmentBillNumberGeneratorYearly(...)` scoped to that department. This keeps department-level cashbooks, reports, and audit trails coherent. The UI presents a department dropdown (built from `findPendingSettlementDepartments(holder)`); the holder picks a department and settles within it.
+
 ### 4.3 Validation Rule
 
 A `Payment` may only be settled if it has already been recorded in the cash book — i.e. has been through first handover. Concrete check:

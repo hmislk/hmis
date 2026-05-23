@@ -3,6 +3,7 @@ package com.divudi.bean.cashTransaction;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.WebUserController;
 import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Payment;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.service.PaymentSettlementService;
@@ -34,29 +35,56 @@ public class PaymentSettlementController implements Serializable {
     @Inject
     private WebUserController webUserController;
 
+    private List<Department> availableDepartments = new ArrayList<>();
+    private Department selectedDepartment;
     private List<Payment> pendingPayments = new ArrayList<>();
     private List<Payment> selectedPayments = new ArrayList<>();
     private String referenceNumber;
     private String comments;
     private Bill lastSettlementBill;
 
+    /**
+     * Loads the list of departments where the logged-in user has pending
+     * non-cash payments. Called on initial page load.
+     */
     public void loadPending() {
         if (!webUserController.hasPrivilege(PRIVILEGE)) {
             JsfUtil.addErrorMessage("You do not have the required privilege to settle non-cash payments.");
+            availableDepartments = new ArrayList<>();
             pendingPayments = new ArrayList<>();
             return;
         }
-        pendingPayments = paymentSettlementService.findPendingSettlementPayments(
+        availableDepartments = paymentSettlementService.findPendingSettlementDepartments(
                 sessionController.getLoggedUser());
+        selectedDepartment = null;
+        pendingPayments = new ArrayList<>();
         selectedPayments = new ArrayList<>();
         referenceNumber = null;
         comments = null;
         lastSettlementBill = null;
     }
 
+    /**
+     * Reloads the pending-payment table for the currently selected department.
+     * Invoked when the user picks a department from the dropdown.
+     */
+    public void onDepartmentChange() {
+        selectedPayments = new ArrayList<>();
+        if (selectedDepartment == null) {
+            pendingPayments = new ArrayList<>();
+            return;
+        }
+        pendingPayments = paymentSettlementService.findPendingSettlementPayments(
+                sessionController.getLoggedUser(), selectedDepartment);
+    }
+
     public String settleSelected() {
         if (!webUserController.hasPrivilege(PRIVILEGE)) {
             JsfUtil.addErrorMessage("You do not have the required privilege to settle non-cash payments.");
+            return "";
+        }
+        if (selectedDepartment == null) {
+            JsfUtil.addErrorMessage("Select a department first.");
             return "";
         }
         if (selectedPayments == null || selectedPayments.isEmpty()) {
@@ -73,7 +101,8 @@ public class PaymentSettlementController implements Serializable {
                     referenceNumber.trim(),
                     comments,
                     sessionController.getLoggedUser());
-            JsfUtil.addSuccessMessage("Settled " + selectedPayments.size() + " payment(s).");
+            JsfUtil.addSuccessMessage("Settled " + selectedPayments.size() + " payment(s) for "
+                    + selectedDepartment.getName() + ".");
             loadPending();
             return "";
         } catch (IllegalArgumentException | IllegalStateException e) {
@@ -91,6 +120,18 @@ public class PaymentSettlementController implements Serializable {
             t += p.getPaidValue();
         }
         return t;
+    }
+
+    public List<Department> getAvailableDepartments() {
+        return availableDepartments;
+    }
+
+    public Department getSelectedDepartment() {
+        return selectedDepartment;
+    }
+
+    public void setSelectedDepartment(Department selectedDepartment) {
+        this.selectedDepartment = selectedDepartment;
     }
 
     public List<Payment> getPendingPayments() {

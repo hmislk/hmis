@@ -44,11 +44,40 @@
 
                             <p:messages id="msgs"/>
 
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-6">
+                                    <h:outputLabel for="ddDepartment" value="Department *"
+                                                   styleClass="fw-medium mb-1 d-block"/>
+                                    <p:selectOneMenu id="ddDepartment"
+                                                     value="#{paymentSettlementController.selectedDepartment}"
+                                                     styleClass="w-100"
+                                                     filter="true"
+                                                     filterMatchMode="contains">
+                                        <f:selectItem itemLabel="-- Select a department --" itemValue="#{null}" noSelectionOption="true"/>
+                                        <f:selectItems value="#{paymentSettlementController.availableDepartments}"
+                                                       var="d"
+                                                       itemLabel="#{d.name}"
+                                                       itemValue="#{d}"/>
+                                        <p:ajax listener="#{paymentSettlementController.onDepartmentChange()}"
+                                                update="settleNonCashForm"/>
+                                    </p:selectOneMenu>
+                                </div>
+                            </div>
+
                             <h:panelGroup layout="block"
-                                          rendered="#{empty paymentSettlementController.pendingPayments}"
+                                          rendered="#{empty paymentSettlementController.availableDepartments}"
                                           styleClass="text-muted text-center my-4">
                                 <i class="fa fa-info-circle me-2"/>
                                 <h:outputText value="No non-cash payments are currently pending settlement under your name."/>
+                            </h:panelGroup>
+
+                            <h:panelGroup layout="block"
+                                          rendered="#{not empty paymentSettlementController.availableDepartments
+                                                      and not empty paymentSettlementController.selectedDepartment
+                                                      and empty paymentSettlementController.pendingPayments}"
+                                          styleClass="text-muted text-center my-4">
+                                <i class="fa fa-info-circle me-2"/>
+                                <h:outputText value="No pending non-cash payments in the selected department."/>
                             </h:panelGroup>
 
                             <h:panelGroup layout="block"

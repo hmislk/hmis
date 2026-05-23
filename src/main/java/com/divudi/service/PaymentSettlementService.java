@@ -12,6 +12,7 @@ import com.divudi.core.entity.Payment;
 import com.divudi.core.entity.WebUser;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.PaymentFacade;
+import com.divudi.ejb.BillNumberGenerator;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -39,6 +40,8 @@ public class PaymentSettlementService {
     private PaymentFacade paymentFacade;
     @EJB
     private BillFacade billFacade;
+    @EJB
+    private BillNumberGenerator billNumberGenerator;
 
     private static final List<PaymentMethod> NON_CASH_METHODS = Arrays.asList(
             PaymentMethod.Card,
@@ -50,24 +53,57 @@ public class PaymentSettlementService {
     );
 
     /**
-     * Returns the non-cash payments currently held by the given user that are
-     * eligible for settlement.
+     * Returns the distinct departments where the given holder currently has
+     * non-cash payments eligible for settlement. Drives the department selector
+     * on the Settle Non-Cash page.
+     */
+    public List<Department> findPendingSettlementDepartments(WebUser holder) {
+        if (holder == null) {
+            return new ArrayList<>();
+        }
+        String jpql = "SELECT DISTINCT p.department FROM Payment p"
+                + " WHERE p.paymentMethod IN :methods"
+                + " AND p.paymentSettled = false"
+                + " AND p.currentHolder = :holder"
+                + " AND p.cashbookEntryCompleted = true"
+                + " AND p.retired = false"
+                + " AND p.cancelled = false"
+                + " AND p.department IS NOT NULL"
+                + " ORDER BY p.department.name";
+        Map<String, Object> params = new HashMap<>();
+        params.put("methods", NON_CASH_METHODS);
+        params.put("holder", holder);
+        List<?> raw = paymentFacade.findObjects(jpql, params);
+        List<Department> departments = new ArrayList<>();
+        for (Object o : raw) {
+            if (o instanceof Department) {
+                departments.add((Department) o);
+            }
+        }
+        return departments;
+    }
+
+    /**
+     * Returns the non-cash payments currently held by the given user, in the
+     * given department, that are eligible for settlement.
      *
      * Eligibility:
      *  - paymentMethod is one of the non-cash methods
      *  - paymentSettled is false
      *  - currentHolder is the given user
+     *  - department is the given department
      *  - cashbookEntryCompleted is true (i.e. has been through first handover)
      *  - not retired, not cancelled
      */
-    public List<Payment> findPendingSettlementPayments(WebUser holder) {
-        if (holder == null) {
+    public List<Payment> findPendingSettlementPayments(WebUser holder, Department department) {
+        if (holder == null || department == null) {
             return new ArrayList<>();
         }
         String jpql = "SELECT p FROM Payment p"
                 + " WHERE p.paymentMethod IN :methods"
                 + " AND p.paymentSettled = false"
                 + " AND p.currentHolder = :holder"
+                + " AND p.department = :department"
                 + " AND p.cashbookEntryCompleted = true"
                 + " AND p.retired = false"
                 + " AND p.cancelled = false"
@@ -75,6 +111,7 @@ public class PaymentSettlementService {
         Map<String, Object> params = new HashMap<>();
         params.put("methods", NON_CASH_METHODS);
         params.put("holder", holder);
+        params.put("department", department);
         return paymentFacade.findByJpql(jpql, params);
     }
 
@@ -99,8 +136,11 @@ public class PaymentSettlementService {
             throw new IllegalArgumentException("Actor is required");
         }
 
-        Department department = actor.getDepartment();
-        Institution institution = department == null ? null : department.getInstitution();
+        Department settlementDepartment = payments.get(0).getDepartment();
+        if (settlementDepartment == null) {
+            throw new IllegalStateException(
+                    "Payment " + payments.get(0).getId() + " has no department — cannot settle");
+        }
 
         double total = 0.0;
         for (Payment p : payments) {
@@ -116,8 +156,15 @@ public class PaymentSettlementService {
                 throw new IllegalStateException(
                         "Payment " + p.getId() + " is not a non-cash payment — settlement does not apply");
             }
+            if (p.getDepartment() == null || !p.getDepartment().equals(settlementDepartment)) {
+                throw new IllegalStateException(
+                        "All payments in a settlement must belong to the same department"
+                                + " — payment " + p.getId() + " belongs to a different department");
+            }
             total += p.getPaidValue();
         }
+
+        Institution settlementInstitution = settlementDepartment.getInstitution();
 
         Bill settlementBill = new Bill();
         settlementBill.setBillType(BillType.PaymentSettlementBill);
@@ -127,14 +174,20 @@ public class PaymentSettlementService {
         settlementBill.setCreatedAt(new Date());
         settlementBill.setCreater(actor);
         settlementBill.setFromWebUser(actor);
-        settlementBill.setFromDepartment(department);
-        settlementBill.setFromInstitution(institution);
-        settlementBill.setDepartment(department);
-        settlementBill.setInstitution(institution);
+        settlementBill.setFromDepartment(settlementDepartment);
+        settlementBill.setFromInstitution(settlementInstitution);
+        settlementBill.setDepartment(settlementDepartment);
+        settlementBill.setInstitution(settlementInstitution);
         settlementBill.setReferenceNumber(referenceNumber);
         settlementBill.setComments(comments);
         settlementBill.setTotal(total);
         settlementBill.setNetTotal(total);
+
+        String deptId = billNumberGenerator.departmentBillNumberGeneratorYearly(
+                settlementDepartment, BillTypeAtomic.PAYMENT_SETTLEMENT_BILL);
+        settlementBill.setDeptId(deptId);
+        settlementBill.setInsId(deptId);
+
         billFacade.create(settlementBill);
 
         for (Payment p : payments) {
@@ -187,6 +240,8 @@ public class PaymentSettlementService {
         cancellationBill.setBillClassType(BillClassType.CancelledBill);
         cancellationBill.setDepartment(settlementBill.getDepartment());
         cancellationBill.setInstitution(settlementBill.getInstitution());
+        cancellationBill.setFromDepartment(settlementBill.getFromDepartment());
+        cancellationBill.setFromInstitution(settlementBill.getFromInstitution());
         cancellationBill.setFromWebUser(settlementBill.getFromWebUser());
         cancellationBill.setCreater(actor);
         cancellationBill.setCreatedAt(new Date());
@@ -197,6 +252,14 @@ public class PaymentSettlementService {
         cancellationBill.setBackwardReferenceBill(settlementBill);
         cancellationBill.setTotal(-settlementBill.getTotal());
         cancellationBill.setNetTotal(-settlementBill.getNetTotal());
+
+        if (settlementBill.getDepartment() != null) {
+            String cancelDeptId = billNumberGenerator.departmentBillNumberGeneratorYearly(
+                    settlementBill.getDepartment(), BillTypeAtomic.PAYMENT_SETTLEMENT_BILL_CANCELLED);
+            cancellationBill.setDeptId(cancelDeptId);
+            cancellationBill.setInsId(cancelDeptId);
+        }
+
         billFacade.create(cancellationBill);
 
         settlementBill.setCancelled(true);
