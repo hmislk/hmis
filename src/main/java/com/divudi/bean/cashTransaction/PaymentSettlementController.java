@@ -2,6 +2,7 @@ package com.divudi.bean.cashTransaction;
 
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.WebUserController;
+import com.divudi.core.data.Privileges;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Payment;
@@ -25,7 +26,7 @@ import javax.inject.Named;
 public class PaymentSettlementController implements Serializable {
 
     private static final long serialVersionUID = 1L;
-    private static final String PRIVILEGE = "SettleNonCashPayments";
+    private static final String PRIVILEGE = Privileges.SettleNonCashPayments.name();
 
     @EJB
     private PaymentSettlementService paymentSettlementService;
@@ -42,6 +43,7 @@ public class PaymentSettlementController implements Serializable {
     private String referenceNumber;
     private String comments;
     private Bill lastSettlementBill;
+    private boolean settling;
 
     /**
      * Loads the list of departments where the logged-in user has pending
@@ -79,6 +81,9 @@ public class PaymentSettlementController implements Serializable {
     }
 
     public String settleSelected() {
+        if (settling) {
+            return "";
+        }
         if (!webUserController.hasPrivilege(PRIVILEGE)) {
             JsfUtil.addErrorMessage("You do not have the required privilege to settle non-cash payments.");
             return "";
@@ -96,6 +101,7 @@ public class PaymentSettlementController implements Serializable {
             return "";
         }
         try {
+            settling = true;
             lastSettlementBill = paymentSettlementService.settlePayments(
                     selectedPayments,
                     referenceNumber.trim(),
@@ -108,7 +114,20 @@ public class PaymentSettlementController implements Serializable {
         } catch (IllegalArgumentException | IllegalStateException e) {
             JsfUtil.addErrorMessage(e.getMessage());
             return "";
+        } finally {
+            settling = false;
         }
+    }
+
+    /**
+     * Navigation entry point — invoked from cashier/index.xhtml.
+     */
+    public String navigateToSettleNonCash() {
+        return "/cashier/settle_non_cash?faces-redirect=true";
+    }
+
+    public boolean isSettling() {
+        return settling;
     }
 
     public double getSelectedTotal() {

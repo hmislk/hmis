@@ -48,8 +48,7 @@ public class PaymentSettlementService {
             PaymentMethod.Cheque,
             PaymentMethod.Slip,
             PaymentMethod.ewallet,
-            PaymentMethod.OnlineSettlement,
-            PaymentMethod.OnCall
+            PaymentMethod.OnlineSettlement
     );
 
     /**
@@ -136,14 +135,21 @@ public class PaymentSettlementService {
             throw new IllegalArgumentException("Actor is required");
         }
 
-        Department settlementDepartment = payments.get(0).getDepartment();
-        if (settlementDepartment == null) {
-            throw new IllegalStateException(
-                    "Payment " + payments.get(0).getId() + " has no department — cannot settle");
-        }
+        // Re-fetch each payment from the DB inside this transaction (addresses CodeRabbit
+        // concurrency concern + Codex holder-ownership concern). Validate against the
+        // authoritative state, not the request-carried entities.
+        List<Payment> authoritativePayments = new ArrayList<>();
+        Department settlementDepartment = null;
 
         double total = 0.0;
-        for (Payment p : payments) {
+        for (Payment incoming : payments) {
+            if (incoming == null || incoming.getId() == null) {
+                throw new IllegalArgumentException("Invalid payment in selection");
+            }
+            Payment p = paymentFacade.find(incoming.getId());
+            if (p == null) {
+                throw new IllegalStateException("Payment " + incoming.getId() + " not found");
+            }
             if (!p.getCashbookEntryCompleted()) {
                 throw new IllegalStateException(
                         "Payment " + p.getId() + " has no cash book entry — cannot settle"
@@ -156,11 +162,25 @@ public class PaymentSettlementService {
                 throw new IllegalStateException(
                         "Payment " + p.getId() + " is not a non-cash payment — settlement does not apply");
             }
-            if (p.getDepartment() == null || !p.getDepartment().equals(settlementDepartment)) {
+            // Holder ownership: the user submitting the settlement must currently hold each
+            // payment. Guards against a race where the payment changed hands between the page
+            // load and submit, or against a privileged user manipulating the form payload.
+            if (p.getCurrentHolder() == null || !p.getCurrentHolder().equals(actor)) {
+                throw new IllegalStateException(
+                        "Payment " + p.getId() + " is not currently held by you — cannot settle");
+            }
+            if (p.getDepartment() == null) {
+                throw new IllegalStateException(
+                        "Payment " + p.getId() + " has no department — cannot settle");
+            }
+            if (settlementDepartment == null) {
+                settlementDepartment = p.getDepartment();
+            } else if (!p.getDepartment().equals(settlementDepartment)) {
                 throw new IllegalStateException(
                         "All payments in a settlement must belong to the same department"
                                 + " — payment " + p.getId() + " belongs to a different department");
             }
+            authoritativePayments.add(p);
             total += p.getPaidValue();
         }
 
@@ -190,7 +210,7 @@ public class PaymentSettlementService {
 
         billFacade.create(settlementBill);
 
-        for (Payment p : payments) {
+        for (Payment p : authoritativePayments) {
             p.setPaymentSettled(true);
             p.setPaymentSettlementBill(settlementBill);
             p.setCurrentHolder(null);
@@ -215,11 +235,23 @@ public class PaymentSettlementService {
         if (settlementBill == null) {
             throw new IllegalArgumentException("Settlement bill is required");
         }
+        if (actor == null) {
+            throw new IllegalArgumentException("Actor is required");
+        }
         if (settlementBill.getBillTypeAtomic() != BillTypeAtomic.PAYMENT_SETTLEMENT_BILL) {
             throw new IllegalStateException("Bill is not a payment settlement bill");
         }
         if (settlementBill.isCancelled()) {
             throw new IllegalStateException("Settlement bill is already cancelled");
+        }
+
+        // Restore each payment to the holder it had at the time of settlement.
+        // The settlement bill's fromWebUser is the user who created it, which is the
+        // holder who owned the payments when they were settled.
+        WebUser originalHolder = settlementBill.getFromWebUser();
+        if (originalHolder == null) {
+            throw new IllegalStateException(
+                    "Settlement bill " + settlementBill.getId() + " has no fromWebUser — cannot restore holder");
         }
 
         String jpql = "SELECT p FROM Payment p WHERE p.paymentSettlementBill = :b";
@@ -230,7 +262,7 @@ public class PaymentSettlementService {
         for (Payment p : settledPayments) {
             p.setPaymentSettled(false);
             p.setPaymentSettlementBill(null);
-            p.setCurrentHolder(actor);
+            p.setCurrentHolder(originalHolder);
             paymentFacade.edit(p);
         }
 
@@ -264,6 +296,8 @@ public class PaymentSettlementService {
 
         settlementBill.setCancelled(true);
         settlementBill.setCancelledBill(cancellationBill);
+        settlementBill.setEditor(actor);
+        settlementBill.setEditedAt(new Date());
         billFacade.edit(settlementBill);
 
         return cancellationBill;

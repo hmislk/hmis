@@ -16,7 +16,7 @@
 5. [Phase 1 — Float Management](#phase-1--float-management)
 6. [Phase 2 — Handover Process Improvements](#phase-2--handover-process-improvements)
 7. [Phase 3 — Shortage/Excess Settlement](#phase-3--shortageexcess-settlement)
-8. [Phase 4 — Cashbook & Deposit Improvements](#phase-4--cashbook--deposit-improvements)
+8. [Phase 4 — Cashbook, Deposit & Non-Cash Settlement](#phase-4--cashbook-deposit--non-cash-settlement)
 9. [Phase 5 — Staff Welfare Billing](#phase-5--staff-welfare-billing)
 10. [Phase 6 — Shift Duration & Notifications](#phase-6--shift-duration--notifications)
 11. [Entity Change Summary](#entity-change-summary)
@@ -491,7 +491,7 @@ Money flows through two distinct terminal events:
 | Tender | Terminal event | Bill type | UI label |
 |---|---|---|---|
 | Cash | Physically deposited at bank | `FUND_DEPOSIT_BILL` (existing) | **Bank Deposit** |
-| Card / Cheque / Slip / eWallet / Online | Confirmed by bank or processor | `PAYMENT_SETTLEMENT_BILL` (new) | **Settlement** |
+| Card / Cheque / Slip / eWallet / OnlineSettlement | Confirmed by bank or processor | `PAYMENT_SETTLEMENT_BILL` (new) | **Settlement** |
 
 Non-cash items accumulate at the holder (typically main cashier) across multiple shift handovers until they are formally **settled** with the bank or processor. They re-appear in every subsequent handover until settled, because they are individually-identified physical documents that move with the holder.
 
@@ -566,7 +566,7 @@ PAYMENT_SETTLEMENT_BILL_CANCELLED("Payment Settlement Bill - Cancelled", BillCat
 
 ### 4.6 Workflow Summary
 
-```
+```text
 Pre-condition: Payment is non-cash, cashbookEntryCompleted=true, currentHolder=<holder>
 
 Holder opens "Settle Non-Cash" page

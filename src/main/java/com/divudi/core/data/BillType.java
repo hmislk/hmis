@@ -201,6 +201,8 @@ public enum BillType {
 
     public String getLabel() {
         switch (this) {
+            case PaymentSettlementBill:
+                return "Payment Settlement Bill";
             case OpdBill:
                 return "OPD Bill";
             case PaymentBill:

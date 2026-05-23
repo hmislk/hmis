@@ -46,8 +46,8 @@
 
                             <div class="row g-3 mb-3">
                                 <div class="col-md-6">
-                                    <h:outputLabel for="ddDepartment" value="Department *"
-                                                   styleClass="fw-medium mb-1 d-block"/>
+                                    <h:outputText value="Department *"
+                                                  styleClass="fw-medium mb-1 d-block"/>
                                     <p:selectOneMenu id="ddDepartment"
                                                      value="#{paymentSettlementController.selectedDepartment}"
                                                      styleClass="w-100"
@@ -118,23 +118,23 @@
 
                                 <div class="row g-3 mb-3">
                                     <div class="col-md-4">
-                                        <h:outputLabel for="txtReference" value="Settlement Reference *"
-                                                       styleClass="fw-medium mb-1 d-block"/>
+                                        <h:outputText value="Settlement Reference *"
+                                                      styleClass="fw-medium mb-1 d-block"/>
                                         <p:inputText id="txtReference"
                                                      styleClass="w-100"
                                                      placeholder="Bank slip / POS batch / processor ref"
                                                      value="#{paymentSettlementController.referenceNumber}"/>
                                     </div>
                                     <div class="col-md-5">
-                                        <h:outputLabel for="txtComments" value="Comments"
-                                                       styleClass="fw-medium mb-1 d-block"/>
+                                        <h:outputText value="Comments"
+                                                      styleClass="fw-medium mb-1 d-block"/>
                                         <p:inputTextarea id="txtComments"
                                                          styleClass="w-100"
                                                          rows="2"
                                                          value="#{paymentSettlementController.comments}"/>
                                     </div>
                                     <div class="col-md-3">
-                                        <h:outputLabel value="Selected Total" styleClass="fw-medium mb-1 d-block"/>
+                                        <h:outputText value="Selected Total" styleClass="fw-medium mb-1 d-block"/>
                                         <h:outputText value="#{paymentSettlementController.selectedTotal}"
                                                       styleClass="fw-bold fs-5">
                                             <f:convertNumber pattern="#,##0.00"/>
