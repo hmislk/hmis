@@ -115,8 +115,14 @@ public class PaymentSettlementController implements Serializable {
         }
         try {
             settling = true;
-            // Snapshot the payments before settlement mutates currentHolder etc,
-            // so the print preview shows what was actually settled.
+            // Snapshot the list before settlePayments mutates the Payment objects.
+            // NOTE: this is a SHALLOW copy — the snapshot holds references to the
+            // same Payment instances the service then mutates (it sets
+            // paymentSettled=true and currentHolder=null on each). The preview only
+            // reads fields the service does NOT touch (paymentMethod, bill.deptId,
+            // referenceNo, bank.name, paidValue, createdAt). Do not add any
+            // currentHolder / paymentSettled bindings to the preview without
+            // first deep-copying or projecting to a DTO.
             List<Payment> snapshot = new ArrayList<>(selectedPayments);
             lastSettlementBill = paymentSettlementService.settlePayments(
                     selectedPayments,
@@ -138,12 +144,10 @@ public class PaymentSettlementController implements Serializable {
 
     /**
      * Navigation entry point — invoked from cashier/index.xhtml.
-     * Ensures a fresh state so the page is never left on a stale print preview.
+     * State is reset by loadPending(), which the page's f:viewAction fires on
+     * every entry — no explicit reset needed here.
      */
     public String navigateToSettleNonCash() {
-        printPreview = false;
-        lastSettlementBill = null;
-        lastSettledPayments = new ArrayList<>();
         return "/cashier/settle_non_cash?faces-redirect=true";
     }
 
