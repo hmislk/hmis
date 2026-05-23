@@ -208,7 +208,7 @@ public class ItemBatchArchivalService extends ArchivalServiceBase {
             }
         }
         if (batchesRun == maxBatches) {
-            reachedLimit = totalArchived < candidates;
+            reachedLimit = !fetchNextBatchIds(cutoff, 1).isEmpty();
         }
 
         String msg = "Archived " + totalArchived + " ItemBatch row(s) across " + batchesRun + " batch(es)"
