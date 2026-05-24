@@ -21,14 +21,12 @@
                                 <h:outputText value="Surgery Count (Doctor Wise)" class="mt-2"/>
 
                                 <div class="d-flex gap-2">
-                                    <p:commandButton
-                                        icon="fa-solid fa-print"
-                                        class="ui-button-info"
-                                        style="width:150px"
-                                        ajax="false"
-                                        value="Print">
-                                        <p:printer target="reportView"/>
-                                    </p:commandButton>
+                                    <button type="button"
+                                            onclick="printReport(); return false;"
+                                            class="ui-button ui-button-info"
+                                            style="width:150px; cursor:pointer;">
+                                        <i class="fa-solid fa-print"></i> Print
+                                    </button>
 
                                     <p:commandButton
                                         ajax="false"
@@ -76,7 +74,61 @@
                                 }
                             }
                         </style>
+                        <script type="text/javascript">
+//<![CDATA[
+                            function printReport() {
+                                var container = document.querySelector('.paper');
+                                if (!container) {
+                                    alert('Report container not found.');
+                                    return;
+                                }
 
+                                var canvases = container.querySelectorAll('canvas');
+                                if (canvases.length === 0) {
+                                    window.print();
+                                    return;
+                                }
+
+                                var replacements = [];
+
+                                canvases.forEach(function (canvas) {
+                                    try {
+                                        var tempCanvas = document.createElement('canvas');
+                                        tempCanvas.width = canvas.width;
+                                        tempCanvas.height = canvas.height;
+                                        var ctx = tempCanvas.getContext('2d');
+                                        ctx.fillStyle = '#ffffff';
+                                        ctx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+                                        ctx.drawImage(canvas, 0, 0);
+
+                                        var imgDataUrl = tempCanvas.toDataURL('image/png');
+                                        var img = document.createElement('img');
+                                        img.src = imgDataUrl;
+                                        img.style.width = '100%';
+                                        img.style.height = canvas.offsetHeight + 'px';
+                                        img.style.display = 'block';
+                                        canvas.parentNode.insertBefore(img, canvas);
+                                        canvas.style.display = 'none';
+                                        replacements.push({canvas: canvas, img: img});
+                                    } catch (e) {
+                                        console.warn('Canvas snapshot failed:', e);
+                                    }
+                                });
+
+                                setTimeout(function () {
+                                    window.print();
+                                    setTimeout(function () {
+                                        replacements.forEach(function (pair) {
+                                            pair.canvas.style.display = '';
+                                            if (pair.img && pair.img.parentNode) {
+                                                pair.img.parentNode.removeChild(pair.img);
+                                            }
+                                        });
+                                    }, 1500);
+                                }, 400);
+                            }
+//]]>
+                        </script>
                         <h:panelGroup id="reportView" class="d-flex justify-content-center">
                             <div class="paper">
 
