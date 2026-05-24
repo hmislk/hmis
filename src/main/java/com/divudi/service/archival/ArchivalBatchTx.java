@@ -4,6 +4,7 @@
  */
 package com.divudi.service.archival;
 
+import java.sql.SQLException;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -67,14 +68,16 @@ public class ArchivalBatchTx {
                     throw ex;
                 }
                 lastEx = ex;
-                LOGGER.log(Level.WARNING,
-                        "Archival batch lock timeout (attempt {0}/{1}), retrying in {2}ms",
-                        new Object[]{attempt, MAX_RETRIES, RETRY_SLEEP_MS});
-                try {
-                    Thread.sleep(RETRY_SLEEP_MS);
-                } catch (InterruptedException ie) {
-                    Thread.currentThread().interrupt();
-                    throw ex;
+                if (attempt < MAX_RETRIES) {
+                    LOGGER.log(Level.WARNING,
+                            "Archival batch lock timeout (attempt {0}/{1}), retrying in {2}ms",
+                            new Object[]{attempt, MAX_RETRIES, RETRY_SLEEP_MS});
+                    try {
+                        Thread.sleep(RETRY_SLEEP_MS);
+                    } catch (InterruptedException ie) {
+                        Thread.currentThread().interrupt();
+                        throw ex;
+                    }
                 }
             }
         }
@@ -109,10 +112,9 @@ public class ArchivalBatchTx {
     }
 
     private static boolean isLockTimeout(PersistenceException ex) {
-        Throwable cause = ex.getCause();
+        Throwable cause = ex;
         while (cause != null) {
-            if (cause.getMessage() != null
-                    && cause.getMessage().contains("Lock wait timeout exceeded")) {
+            if (cause instanceof SQLException && ((SQLException) cause).getErrorCode() == 1205) {
                 return true;
             }
             cause = cause.getCause();
