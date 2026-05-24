@@ -5,11 +5,14 @@
 package com.divudi.service.archival;
 
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.PersistenceException;
 import javax.persistence.Query;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -28,6 +31,11 @@ import java.util.stream.IntStream;
 @Stateless
 public class ArchivalBatchTx {
 
+    private static final Logger LOGGER = Logger.getLogger(ArchivalBatchTx.class.getName());
+
+    private static final int MAX_RETRIES = 3;
+    private static final long RETRY_SLEEP_MS = 2000;
+
     @PersistenceContext(unitName = "hmisPU")
     private EntityManager em;
 
@@ -36,24 +44,45 @@ public class ArchivalBatchTx {
      * {@code archiveTable}, then delete them from {@code sourceTable}. All
      * within one new transaction.
      *
+     * Retries up to {@value #MAX_RETRIES} times on MySQL lock wait timeout
+     * (error 1205) — the competing transaction will have committed by then.
+     * Each retry opens a fresh REQUIRES_NEW transaction so the previous
+     * rolled-back state is fully discarded before we attempt again.
+     *
      * Table/column names come from concrete archival services (compile-time
      * constants), never from user input, so the direct string concatenation
      * is safe from injection.
-     *
-     * @param archiveTable   archive table name (e.g. STOCKHISTORYARCHIVE)
-     * @param sourceTable    source table name (e.g. STOCKHISTORY)
-     * @param columnList     comma-separated column list common to both tables,
-     *                       excluding ARCHIVEDAT (which is set to NOW() here)
-     * @param ids            primary-key IDs to move; must be non-null and non-empty
-     * @return number of rows deleted from the source
      */
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public int copyAndDelete(String archiveTable, String sourceTable,
                              String columnList, List<Long> ids) {
         if (ids == null || ids.isEmpty()) {
             return 0;
         }
+        PersistenceException lastEx = null;
+        for (int attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+            try {
+                return doOneBatch(archiveTable, sourceTable, columnList, ids);
+            } catch (PersistenceException ex) {
+                if (!isLockTimeout(ex)) {
+                    throw ex;
+                }
+                lastEx = ex;
+                LOGGER.log(Level.WARNING,
+                        "Archival batch lock timeout (attempt {0}/{1}), retrying in {2}ms",
+                        new Object[]{attempt, MAX_RETRIES, RETRY_SLEEP_MS});
+                try { Thread.sleep(RETRY_SLEEP_MS); } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                    throw ex;
+                }
+            }
+        }
+        throw lastEx;
+    }
 
+    /** Single attempt — runs in its own REQUIRES_NEW transaction. */
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    public int doOneBatch(String archiveTable, String sourceTable,
+                          String columnList, List<Long> ids) {
         // JPA native queries do not support binding a List to a named IN parameter;
         // expand to individual positional placeholders (?,?,?,...) instead.
         String placeholders = IntStream.range(0, ids.size())
@@ -75,5 +104,18 @@ public class ArchivalBatchTx {
             deleteQ.setParameter(i + 1, ids.get(i));
         }
         return deleteQ.executeUpdate();
+    }
+
+    private static boolean isLockTimeout(PersistenceException ex) {
+        Throwable cause = ex.getCause();
+        while (cause != null) {
+            String msg = cause.getMessage();
+            // MySQL error 1205: Lock wait timeout exceeded
+            if (msg != null && msg.contains("Lock wait timeout exceeded")) {
+                return true;
+            }
+            cause = cause.getCause();
+        }
+        return false;
     }
 }
