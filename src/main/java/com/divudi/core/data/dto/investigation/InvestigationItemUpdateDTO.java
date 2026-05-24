@@ -80,7 +80,9 @@ public class InvestigationItemUpdateDTO {
     public String getCssFontStyle() { return cssFontStyle; }
     public void setCssFontStyle(String cssFontStyle) { this.cssFontStyle = cssFontStyle; }
     public Long getMachineId() { return machineId; }
+    // null/omitted = no change; 0 or negative = clear the existing link; positive = set to that entity
     public void setMachineId(Long machineId) { this.machineId = machineId; }
     public Long getTestId() { return testId; }
+    // null/omitted = no change; 0 or negative = clear the existing link; positive = set to that entity
     public void setTestId(Long testId) { this.testId = testId; }
 }

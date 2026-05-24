@@ -148,14 +148,22 @@ public class InvestigationFormatApiService implements Serializable {
             item.setCssFontStyle(parseEnum(CssFontStyle.class, req.getCssFontStyle(), "cssFontStyle"));
         }
         if (req.getMachineId() != null) {
-            Machine machine = machineFacade.find(req.getMachineId());
-            if (machine == null) throw new Exception("Machine not found with ID: " + req.getMachineId());
-            item.setMachine(machine);
+            if (req.getMachineId() <= 0L) {
+                item.setMachine(null);
+            } else {
+                Machine machine = machineFacade.find(req.getMachineId());
+                if (machine == null) throw new Exception("Machine not found with ID: " + req.getMachineId());
+                item.setMachine(machine);
+            }
         }
         if (req.getTestId() != null) {
-            Item test = itemFacade.find(req.getTestId());
-            if (test == null) throw new Exception("Analyzer test item not found with ID: " + req.getTestId());
-            item.setTest(test);
+            if (req.getTestId() <= 0L) {
+                item.setTest(null);
+            } else {
+                Item test = itemFacade.find(req.getTestId());
+                if (test == null) throw new Exception("Analyzer test item not found with ID: " + req.getTestId());
+                item.setTest(test);
+            }
         }
         investigationItemFacade.edit(item);
         return toItemDTO(item, "Item updated successfully");
