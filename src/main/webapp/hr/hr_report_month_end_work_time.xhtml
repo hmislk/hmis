@@ -181,7 +181,7 @@
 
                     <div class="fields-grid">
                         <div class="field-group">
-                            <p:outputLabel value="From" styleClass="field-label" />
+                            <p:outputLabel for="fromDate" value="From" styleClass="field-label" />
                             <p:calendar id="fromDate"
                                         value="#{hrReportController.fromDate}"
                                         pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
@@ -189,7 +189,7 @@
                         </div>
 
                         <div class="field-group">
-                            <p:outputLabel value="To" styleClass="field-label" />
+                            <p:outputLabel for="toDate" value="To" styleClass="field-label" />
                             <p:calendar id="toDate"
                                         value="#{hrReportController.toDate}"
                                         pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
