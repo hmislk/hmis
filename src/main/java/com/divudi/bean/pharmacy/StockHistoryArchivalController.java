@@ -53,7 +53,6 @@ public class StockHistoryArchivalController implements Serializable {
 
     public String navigateToArchiveStockHistory() {
         resetDefaults();
-        lastResult = null;
         candidateCount = null;
         return "/dataAdmin/archive_stock_history?faces-redirect=true";
     }

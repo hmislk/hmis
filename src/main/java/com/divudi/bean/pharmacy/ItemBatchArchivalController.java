@@ -52,7 +52,6 @@ public class ItemBatchArchivalController implements Serializable {
 
     public String navigateToArchiveItemBatch() {
         resetDefaults();
-        lastResult = null;
         candidateCount = null;
         return "/dataAdmin/archive_item_batch?faces-redirect=true";
     }
@@ -76,7 +75,6 @@ public class ItemBatchArchivalController implements Serializable {
     }
 
     public void preview() {
-        lastResult = null;
         if (!validateInputs()) {
             return;
         }
