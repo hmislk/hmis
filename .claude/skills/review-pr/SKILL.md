@@ -94,6 +94,8 @@ Verify CI passes before proceeding.
 > 2. **Reply only after fixing** (or explicitly dismissing). Bots cannot fix anything — describe action taken, not requested.
 >    - Valid + fixed → "Fixed in `<commit-sha>`: `<what was changed>`"
 >    - Dismissed → "Dismissed because: `<specific reasoning>`"
+>
+>    **⚠️ "Please resolve" wording on a CodeRabbit thread triggers CodeRabbit Chat** — it opens a NEW PR (`📝 CodeRabbit Chat: Implement requested code changes`, branch `coderabbitai/chat/<sha>`) attempting the fix against a stale snapshot. These auto-PRs often duplicate work the author has already done and have shipped unsafe diffs (e.g. deleted a `params.put(...)` line on PR #20979). If you accidentally trigger one: **close it, delete the branch.**
 > 3. **Replies go UNDER existing reviewer threads only** (`/replies` endpoint). Never as new top-level comments.
 > 4. **Self-review items go in the commit message** (or PR description if deferred). Never as new inline comments.
 > 5. **ONE re-review request at the end**, not per item.
