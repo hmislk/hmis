@@ -195,7 +195,7 @@
                             rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Sale Block', true)}" >
                             <p:panel>
                                 <div style="background-color: #337357; padding: 10px; font-weight: bold; color: white; text-align: center;">
-                                    Pharmacy Sale
+                                    #{configOptionApplicationController.getBooleanValueByKey('Pharmacy History Lists Only Department Transactions for Sales', true) ? 'Department Sale' : 'All Departments Sale'}
                                 </div>
                                 <h:panelGroup rendered="#{empty pharmacyController.salesByBillType}">
                                     <div class="alert alert-info text-center" style="margin: 20px 0; padding: 15px;">
@@ -735,7 +735,7 @@
                         </p:tab>
 
                         <p:tab
-                            title="Sale"
+                            title="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy History Lists Only Department Transactions for Sales', true) ? 'Department Sale' : 'All Departments Sale'}"
                             id="itemDetailsTabSales"
                             rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Sale Tab', true)}">
 

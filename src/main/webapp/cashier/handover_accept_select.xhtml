@@ -11,7 +11,7 @@
         <ui:composition template="/cashier/index.xhtml">
 
             <ui:define name="subcontent">
-                <h:form>
+                <h:form id="frmAcceptSelect">
                     <p:panel class="m-1 p-1 container-flex">
                         <f:facet name="header">
                             <div class="row">
@@ -37,12 +37,50 @@
                             </div>
                         </f:facet>
 
+                        <!-- Progress Section -->
+                        <h:panelGroup id="gpProgress" layout="block" class="mb-3 p-3">
+                            <div class="row align-items-center">
+                                <div class="col-md-3">
+                                    <span class="fw-bold">Selected: </span>
+                                    <h:outputText id="txtSelectedTotal"
+                                                  value="#{financialTransactionController.handoverAcceptSelectSelectedTotal}"
+                                                  styleClass="fw-bold">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                    <span class="mx-1">/</span>
+                                    <span>Total: </span>
+                                    <h:outputText value="#{financialTransactionController.handoverAcceptSelectTotalValue}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </div>
+                                <div class="col-md-9">
+                                    <p:progressBar id="pbSelection"
+                                                   value="#{financialTransactionController.handoverAcceptSelectProgressPercent}"
+                                                   labelTemplate="{value}%"
+                                                   displayOnly="true"
+                                                   styleClass="#{financialTransactionController.handoverAcceptSelectProgressPercent eq 100 ? 'progress-complete' : (financialTransactionController.handoverAcceptSelectProgressPercent ge 50 ? 'progress-partial' : 'progress-low')}" />
+                                </div>
+                            </div>
+                        </h:panelGroup>
+
+                        <style>
+                            .progress-complete .ui-progressbar-value { background: #28a745 !important; }
+                            .progress-partial .ui-progressbar-value { background: #ffc107 !important; }
+                            .progress-low .ui-progressbar-value { background: #dc3545 !important; }
+                        </style>
+
                         <!-- Denomination table — only for Cash -->
                         <h:panelGroup rendered="#{financialTransactionController.selectedPaymentMethod eq 'Cash'}">
                             <p:dataTable
                                 value="#{financialTransactionController.selectedBundle.denominationTransactions}"
                                 var="deno"
                                 emptyMessage="No denomination records">
+                                <p:column headerText="" style="width:40px; text-align:center;">
+                                    <p:selectBooleanCheckbox value="#{deno.selected}">
+                                        <p:ajax listener="#{financialTransactionController.calculateHandoverAcceptSelectSelectedTotal()}"
+                                                update=":frmAcceptSelect:gpProgress" />
+                                    </p:selectBooleanCheckbox>
+                                </p:column>
                                 <p:column headerText="Denomination">
                                     <h:outputText value="#{deno.denomination.displayName}" />
                                 </p:column>
@@ -66,6 +104,12 @@
                                 var="row"
                                 emptyMessage="No payments found for this payment method">
 
+                                <p:column headerText="" style="width:40px; text-align:center;">
+                                    <p:selectBooleanCheckbox value="#{row.selected}">
+                                        <p:ajax listener="#{financialTransactionController.calculateHandoverAcceptSelectSelectedTotal()}"
+                                                update=":frmAcceptSelect:gpProgress" />
+                                    </p:selectBooleanCheckbox>
+                                </p:column>
                                 <p:column headerText="ID" style="width:80px">
                                     <h:outputText value="#{row.payment.id}" />
                                 </p:column>
@@ -88,6 +132,76 @@
                                 <p:column headerText="Card Ref No"
                                           rendered="#{financialTransactionController.selectedPaymentMethod eq 'Card'}">
                                     <h:outputText value="#{row.payment.creditCardRefNo}" />
+                                </p:column>
+
+                                <!-- Cheque-specific columns -->
+                                <p:column headerText="Cheque No"
+                                          rendered="#{financialTransactionController.selectedPaymentMethod eq 'Cheque'}">
+                                    <h:outputText value="#{row.payment.chequeRefNo}" />
+                                </p:column>
+                                <p:column headerText="Cheque Date"
+                                          rendered="#{financialTransactionController.selectedPaymentMethod eq 'Cheque'}">
+                                    <h:outputText value="#{row.payment.chequeDate}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="Bank"
+                                          rendered="#{financialTransactionController.selectedPaymentMethod eq 'Cheque'}">
+                                    <h:outputText value="#{row.payment.bank.name}" />
+                                </p:column>
+
+                                <!-- Slip-specific columns -->
+                                <p:column headerText="Slip No"
+                                          rendered="#{financialTransactionController.selectedPaymentMethod eq 'Slip'}">
+                                    <h:outputText value="#{row.payment.referenceNo}" />
+                                </p:column>
+                                <p:column headerText="Bank / Institution"
+                                          rendered="#{financialTransactionController.selectedPaymentMethod eq 'Slip'}">
+                                    <h:outputText value="#{row.payment.bank.name}" />
+                                </p:column>
+                                <p:column headerText="Slip Date"
+                                          rendered="#{financialTransactionController.selectedPaymentMethod eq 'Slip'}">
+                                    <h:outputText value="#{row.payment.chequeDate}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                    </h:outputText>
+                                </p:column>
+
+                                <!-- eWallet-specific columns -->
+                                <p:column headerText="eWallet Provider"
+                                          rendered="#{financialTransactionController.selectedPaymentMethod eq 'ewallet'}">
+                                    <h:outputText value="#{row.payment.bank.name}" />
+                                </p:column>
+                                <p:column headerText="Transaction Ref"
+                                          rendered="#{financialTransactionController.selectedPaymentMethod eq 'ewallet'}">
+                                    <h:outputText value="#{row.payment.referenceNo}" />
+                                </p:column>
+
+                                <!-- Credit-specific columns -->
+                                <p:column headerText="Company"
+                                          rendered="#{financialTransactionController.selectedPaymentMethod eq 'Credit'}">
+                                    <h:outputText value="#{row.payment.creditCompany.name}" />
+                                </p:column>
+                                <p:column headerText="Policy No"
+                                          rendered="#{financialTransactionController.selectedPaymentMethod eq 'Credit'}">
+                                    <h:outputText value="#{row.payment.policyNo}" />
+                                </p:column>
+                                <p:column headerText="Ref No"
+                                          rendered="#{financialTransactionController.selectedPaymentMethod eq 'Credit'}">
+                                    <h:outputText value="#{row.payment.referenceNo}" />
+                                </p:column>
+
+                                <!-- Staff Welfare-specific columns -->
+                                <p:column headerText="Staff Name"
+                                          rendered="#{financialTransactionController.selectedPaymentMethod eq 'Staff_Welfare'}">
+                                    <h:outputText value="#{row.payment.bill.toStaff.person.name}" />
+                                </p:column>
+                                <p:column headerText="Staff No"
+                                          rendered="#{financialTransactionController.selectedPaymentMethod eq 'Staff_Welfare'}">
+                                    <h:outputText value="#{row.payment.bill.toStaff.code}" />
+                                </p:column>
+                                <p:column headerText="EPF No"
+                                          rendered="#{financialTransactionController.selectedPaymentMethod eq 'Staff_Welfare'}">
+                                    <h:outputText value="#{row.payment.bill.toStaff.epfNo}" />
                                 </p:column>
 
                                 <p:column headerText="Value" class="text-end">

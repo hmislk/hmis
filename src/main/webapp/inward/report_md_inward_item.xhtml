@@ -54,14 +54,16 @@
                     </p:selectOneMenu>
 
                     <p:outputLabel for="ins" value="Institution" />
-                    <p:autoComplete class="w-100"
-                                    inputStyleClass="w-100" id="ins" value="#{mdInwardReportController.institution}"
-                                    completeMethod="#{institutionController.completeIns}"
-                                    var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" >
-                        <p:column>
-                            #{ix.name}
-                        </p:column>
-                    </p:autoComplete>
+                    <p:selectOneMenu class="w-100" id="ins"
+                                     value="#{mdInwardReportController.institution}"
+                                     filter="true"
+                                     filterMatchMode="contains"
+                                     autoWidth="false">
+                        <f:selectItem itemLabel="All Institutions" itemValue="#{null}" />
+                        <f:selectItems value="#{institutionController.items}"
+                                       var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" />
+                        <f:ajax event="change" listener="#{mdInwardReportController.makeBillNull}" />
+                    </p:selectOneMenu>
 
                     <h:outputLabel for="siteMenu" value="Site"/>
                     <p:selectOneMenu class="w-100" id="siteMenu"
@@ -73,9 +75,16 @@
                     </p:selectOneMenu>
 
                     <p:outputLabel for="dept" value="Department" />
-                    <p:autoComplete class="w-100"
-                                    inputStyleClass="w-100"  id="dept" completeMethod="#{departmentController.completeDept}" var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" value="#{mdInwardReportController.dept}"  >
-                    </p:autoComplete>
+                    <p:selectOneMenu class="w-100" id="dept"
+                                     value="#{mdInwardReportController.dept}"
+                                     filter="true"
+                                     filterMatchMode="contains"
+                                     autoWidth="false">
+                        <f:selectItem itemLabel="All Departments" itemValue="#{null}" />
+                        <f:selectItems value="#{departmentController.items}"
+                                       var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" />
+                        <f:ajax event="change" listener="#{mdInwardReportController.makeBillNull}" />
+                    </p:selectOneMenu>
                     <p:outputLabel for="ct" value="Category" />
                     <p:autoComplete value="#{mdInwardReportController.category}" id="ct"
                                     forceSelection="true"
@@ -140,7 +149,7 @@
                         value="Download Excel"
                         actionListener="#{mdInwardReportController.processInpatientServiceSummary}"
                         class="ui-button-success mx-2">
-                        <p:dataExporter type="xlsx" target="tbl" fileName="report_md_inward_item" />
+                        <p:dataExporter type="xlsx" target="tbl" fileName="service_summary_report" />
                     </p:commandButton>
                     <p:commandButton
                         icon="fas fa-print"

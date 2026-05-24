@@ -58,6 +58,7 @@ import com.divudi.core.facade.WebUserFacade;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.SpecificPatientStatus;
+import com.divudi.core.entity.AuditEvent;
 import com.divudi.core.entity.CancelledBill;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.PatientDeposit;
@@ -102,6 +103,7 @@ import net.sourceforge.barbecue.Barcode;
 import net.sourceforge.barbecue.BarcodeFactory;
 import net.sourceforge.barbecue.BarcodeImageHandler;
 import org.apache.commons.lang3.StringUtils;
+import org.primefaces.PrimeFaces;
 import org.primefaces.context.PrimeRequestContext;
 import org.primefaces.event.CaptureEvent;
 import org.primefaces.event.FileUploadEvent;
@@ -196,9 +198,13 @@ public class PatientController implements Serializable, ControllerWithPatient {
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
     @Inject
+    AuditEventController auditEventController;
+    @Inject
     PatientDepositController patientDepositController;
     @Inject
     WebUserController webUserController;
+    @Inject
+    PatientInsuranceController patientInsuranceController;
 
     /**
      *
@@ -214,6 +220,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
     Long patientId;
     private FamilyMember familyMember;
     private List<FamilyMember> familyMembers;
+    private List<FamilyMember> filteredFamilyMembers;
     private Family currentFamily;
     private List<Family> families;
     FamilyMember currentFamilyMember;
@@ -806,6 +813,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         patientEncounterController.setPatient(current);
         patientEncounterController.fillCurrentPatientLists(current);
         patientEncounterController.fillPatientInvestigations(current);
+        patientInsuranceController.initForPatient(current);
         return "/emr/patient_profile?faces-redirect=true";
     }
 
@@ -2389,6 +2397,25 @@ public class PatientController implements Serializable, ControllerWithPatient {
         return "/membership/individual_membership_search?faces-redirect=true";
     }
 
+    public String navigateToAddNewCorporateMembership() {
+        currentFamily = new Family();
+        if (institution == null) {
+            institution = sessionController.getInstitution();
+        }
+        if (department == null) {
+            department = sessionController.getDepartment();
+        }
+        currentFamily.setCreatedInstitution(institution);
+        currentFamily.setCreatedDepartment(department);
+        return "/membership/corporate_membership_new?faces-redirect=true";
+    }
+
+    public String navigateToSearchCorporateMembership() {
+        currentFamily = null;
+        currentFamilyMember = null;
+        return "/membership/corporate_membership_search?faces-redirect=true";
+    }
+
     public String searchFamily() {
         families = null;
         String jpql = "Select f "
@@ -2597,6 +2624,47 @@ public class PatientController implements Serializable, ControllerWithPatient {
         }
     }
 
+    public String searchCorporateFamilyMember() {
+        familyMembers = null;
+        if (searchText == null || searchText.trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Please enter a search term.");
+            return "";
+        }
+        String j = "Select fm "
+                + " from FamilyMember fm"
+                + " where fm.retired=false "
+                + " and fm.family.retired=false "
+                + " and fm.family.membershipScheme.institution is not null "
+                + " and (fm.family.phoneNo=:pn or fm.family.membershipCardNo=:mcn "
+                + "   or fm.patient.person.mobile=:mobile or fm.patient.person.phone=:phone "
+                + "   or fm.patient.person.name like :name or fm.patient.person.nic=:nic) ";
+        Map m = new HashMap();
+        Long mcn;
+        try {
+            mcn = Long.parseLong(searchText);
+        } catch (Exception e) {
+            mcn = 0L;
+        }
+        m.put("pn", searchText);
+        m.put("mcn", mcn);
+        m.put("mobile", searchText);
+        m.put("phone", searchText);
+        m.put("name", "%" + searchText + "%");
+        m.put("nic", searchText);
+
+        List<FamilyMember> fs = familyMemberFacade.findByJpql(j, m);
+        if (fs == null || fs.isEmpty()) {
+            JsfUtil.addErrorMessage("No matches");
+            return "";
+        } else {
+            familyMembers = fs;
+            familyMember = null;
+            current = null;
+            searchText = "";
+            return "";
+        }
+    }
+
     public void saveFamily() {
         if (currentFamily == null) {
             JsfUtil.addErrorMessage("No Family Selected to Save or Update");
@@ -2739,6 +2807,26 @@ public class PatientController implements Serializable, ControllerWithPatient {
         currentFamily = new Family();
         current = new Patient();
         return navigateToAddNewIndividualMembership();
+    }
+
+    public String saveAndClearForNewCorporateMembership() {
+        if (currentFamily == null) {
+            JsfUtil.addErrorMessage("No Membership is Selected to Save or Update");
+            return "";
+        }
+        if (current == null) {
+            JsfUtil.addErrorMessage("No Patient to Save or Update");
+            return "";
+        }
+        if (current.getPerson().getName() == null || current.getPerson().getName().isEmpty()) {
+            JsfUtil.addErrorMessage("No Patient to Save or Update");
+            return "";
+        }
+        saveIndividualMembership();
+        currentFamily = new Family();
+        current = null;
+        getCurrent();
+        return navigateToAddNewCorporateMembership();
     }
 
     //    public String toAddNewFamily() {
@@ -3101,6 +3189,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
 
     public String navigateToEmrEditPatient() {
         getCurrent();
+        patientInsuranceController.initForPatient(current);
         return "/emr/patient?faces-redirect=true";
     }
 
@@ -3125,15 +3214,22 @@ public class PatientController implements Serializable, ControllerWithPatient {
                 JsfUtil.addErrorMessage("Please provide a reason for blacklisting. ");
                 return;
             }
+            AuditEvent auditEvent = auditEventController.createNewAuditEvent(
+                    "Blacklist Patient",
+                    "{\"patientId\":" + patient.getId() + ",\"blacklisted\":false}",
+                    patient.getId(),
+                    "Patient");
             Patient newb = getFacade().find(patient.getId());
             newb.setBlacklisted(true);
             newb.setBlacklistedAt(new Date());
             getFacade().edit(newb);
             newb.setBlacklistedBy(sessionController.getLoggedUser());
-            newb.setReasonForBlacklist(newb.getReasonForBlacklist() != null ? newb.getReasonForBlacklist() + " / " + blacklistComment : blacklistComment);
+            newb.setReasonForBlacklist(blacklistComment);
 //            getFacade().edit(patient);
 
             getFacade().editAndCommit(newb);
+            auditEventController.completeAuditEvent(auditEvent,
+                    "{\"patientId\":" + newb.getId() + ",\"blacklisted\":true,\"reason\":\"" + blacklistComment + "\"}");
             this.current = getFacade().findWithoutCache(newb.getId());
             blacklistComment = null;
             JsfUtil.addSuccessMessage("Patient is blacklisted.");
@@ -3144,6 +3240,11 @@ public class PatientController implements Serializable, ControllerWithPatient {
                 return;
             }
 
+            AuditEvent auditEvent = auditEventController.createNewAuditEvent(
+                    "Revert Patient Blacklist",
+                    "{\"patientId\":" + patient.getId() + ",\"blacklisted\":true,\"reason\":\"" + patient.getReasonForBlacklist() + "\"}",
+                    patient.getId(),
+                    "Patient");
             Patient newb = getFacade().find(patient.getId());
             newb.setBlacklisted(false);
             getFacade().edit(newb);
@@ -3157,10 +3258,61 @@ public class PatientController implements Serializable, ControllerWithPatient {
             newb.setBlacklistedBy(null);
 
             getFacade().editAndCommit(newb);
-
+            auditEventController.completeAuditEvent(auditEvent,
+                    "{\"patientId\":" + newb.getId() + ",\"blacklisted\":false,\"revertComment\":\"" + blacklistComment + "\"}");
             blacklistComment = null;
             JsfUtil.addSuccessMessage("Patient blacklist is reverted.");
         }
+    }
+
+    public void pseudonymisePatient() {
+        if (!webUserController.hasPrivilege("ClinicalPatientPseudonymise")) {
+            JsfUtil.addErrorMessage("You do not have permission to pseudonymise patient records.");
+            return;
+        }
+        if (current == null || current.getId() == null) {
+            JsfUtil.addErrorMessage("No patient selected.");
+            return;
+        }
+        Patient p = getFacade().find(current.getId());
+        if (p == null) {
+            JsfUtil.addErrorMessage("Patient record not found.");
+            return;
+        }
+        AuditEvent auditEvent = auditEventController.createNewAuditEvent(
+                "Pseudonymise Patient",
+                "{\"patientId\":" + p.getId() + ",\"phn\":\"" + p.getPhn() + "\"}",
+                p.getId(),
+                "Patient");
+
+        // Use patient DB ID (not PHN) as seed — ID is a non-reversible surrogate
+        // and does not expose the original identity in visible fields.
+        String seed = String.valueOf(p.getId());
+        String namePlaceholder = "Patient " + seed;
+        // Derive a deterministic 10-digit phone from the ID digits only
+        String digits = seed.replaceAll("[^0-9]", "");
+        while (digits.length() < 9) {
+            digits = digits + "0";
+        }
+        String phonePlaceholder = "0" + digits.substring(0, 9);
+        String nicPlaceholder = seed + "V";
+        String addressPlaceholder = "Address " + seed;
+
+        p.getPerson().setName(namePlaceholder);
+        p.getPerson().setFullName(namePlaceholder);
+        p.getPerson().setNameWithInitials(namePlaceholder);
+        p.getPerson().setNic(nicPlaceholder);
+        p.getPerson().setAddress(addressPlaceholder);
+        p.getPerson().setPhone(phonePlaceholder);
+        p.getPerson().setMobile(phonePlaceholder);
+        p.getPerson().setEmail("");
+        p.setPatientPhoneNumber(null);
+        p.setPatientMobileNumber(null);
+        getFacade().editAndCommit(p);
+        auditEventController.completeAuditEvent(auditEvent,
+                "{\"patientId\":" + p.getId() + ",\"pseudonymised\":true}");
+        this.current = getFacade().findWithoutCache(p.getId());
+        JsfUtil.addSuccessMessage("Patient record has been pseudonymised.");
     }
 
     public String deletePatient() {
@@ -3230,6 +3382,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
     }
 
     List<Patient> patientList;
+    List<Patient> inactivePatients;
 
     public List<Patient> completePatientByNameOrCode(String query) {
         if (query == null) {
@@ -3305,6 +3458,32 @@ public class PatientController implements Serializable, ControllerWithPatient {
             return null;
         }
         return "/membership/add_family?faces-redirect=true";
+    }
+
+    public void checkBeforeSavePatient() {
+        if (current != null && current.getId() != null && current.isBlacklisted()) {
+            PrimeFaces.current().executeScript("PF('dlgBlacklistSaveWarning').show();");
+            return;
+        }
+        boolean savedSuccessfully = saveSelected(current);
+        if (!savedSuccessfully) {
+            return;
+        }
+        try {
+            javax.faces.context.ExternalContext ec = FacesContext.getCurrentInstance().getExternalContext();
+            ec.redirect(ec.getRequestContextPath() + "/faces/opd/patient");
+            FacesContext.getCurrentInstance().responseComplete();
+        } catch (java.io.IOException e) {
+            JsfUtil.addErrorMessage("Saved but could not redirect.");
+        }
+    }
+
+    public String checkBeforeSaveAndGoToAdmission() {
+        if (current != null && current.getId() != null && current.isBlacklisted()) {
+            PrimeFaces.current().executeScript("PF('dlgBlacklistSaveAdmissionWarning').show();");
+            return null;
+        }
+        return saveAndNavigateToAdmissionProfile();
     }
 
     public String saveAndNavigateToOpdPatientProfile() {
@@ -3690,19 +3869,46 @@ public class PatientController implements Serializable, ControllerWithPatient {
     }
 
     public void activePatient(Patient p) {
-//        p.setEditedAt(new Date());
-//        p.setEditer(getSessionController().getLoggedUser());
+        if (!webUserController.hasPrivilege("AdminInactivePatients")) {
+            JsfUtil.addErrorMessage("You do not have permission to activate inactive patients.");
+            return;
+        }
+        if (p == null || p.getId() == null) {
+            return;
+        }
+        AuditEvent auditEvent = auditEventController.createNewAuditEvent(
+                "Activate Patient",
+                "{\"patientId\":" + p.getId() + ",\"retired\":true}",
+                p.getId(),
+                "Patient");
         p.setRetired(false);
         p.setRetireComments("Re-Activated");
         getFacade().edit(p);
-
-//        p.getPerson().setEditedAt(new Date());
-//        p.getPerson().setEditer(getSessionController().getLoggedUser());
         p.getPerson().setRetired(false);
         p.getPerson().setRetireComments("Re-Activated");
         getPersonFacade().edit(p.getPerson());
-        createPatientList();
+        auditEventController.completeAuditEvent(auditEvent,
+                "{\"patientId\":" + p.getId() + ",\"retired\":false}");
+        searchInactivePatients();
         JsfUtil.addSuccessMessage("Re-Activated");
+    }
+
+    public void searchInactivePatients() {
+        if (!webUserController.hasPrivilege("AdminInactivePatients")) {
+            inactivePatients = new java.util.ArrayList<>();
+            return;
+        }
+        String j = "select p from Patient p where p.retired = true order by p.id desc";
+        inactivePatients = getFacade().findByJpql(j);
+    }
+
+    public String navigateToInactivePatients() {
+        if (!webUserController.hasPrivilege("AdminInactivePatients")) {
+            JsfUtil.addErrorMessage("You do not have permission to manage inactive patients.");
+            return null;
+        }
+        searchInactivePatients();
+        return "/admin/patients/inactive_patients?faces-redirect=true";
     }
 
     public void deActivePatient(Patient p) {
@@ -4282,6 +4488,14 @@ public class PatientController implements Serializable, ControllerWithPatient {
         this.familyMembers = familyMembers;
     }
 
+    public List<FamilyMember> getFilteredFamilyMembers() {
+        return filteredFamilyMembers;
+    }
+
+    public void setFilteredFamilyMembers(List<FamilyMember> filteredFamilyMembers) {
+        this.filteredFamilyMembers = filteredFamilyMembers;
+    }
+
     public ReportKeyWord getReportKeyWord() {
         if (reportKeyWord == null) {
             reportKeyWord = new ReportKeyWord();
@@ -4299,6 +4513,14 @@ public class PatientController implements Serializable, ControllerWithPatient {
 
     public void setPatientList(List<Patient> patientList) {
         this.patientList = patientList;
+    }
+
+    public List<Patient> getInactivePatients() {
+        return inactivePatients;
+    }
+
+    public void setInactivePatients(List<Patient> inactivePatients) {
+        this.inactivePatients = inactivePatients;
     }
 
     public BillFacade getBillFacade() {

@@ -54,6 +54,9 @@ public class DenominationTransaction implements Serializable {
     private Date retiredAt;
     private String retireComments;
 
+    @javax.persistence.Transient
+    private boolean selected;
+
     private boolean cancelled;
     @ManyToOne
     private WebUser cancelledBy;
@@ -213,6 +216,14 @@ public class DenominationTransaction implements Serializable {
 
     public void setCancelledAt(Date cancelledAt) {
         this.cancelledAt = cancelledAt;
+    }
+
+    public boolean isSelected() {
+        return selected;
+    }
+
+    public void setSelected(boolean selected) {
+        this.selected = selected;
     }
 
     public boolean isCancelled() {

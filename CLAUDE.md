@@ -80,6 +80,10 @@
 - Use `/review-pr <pr-url>` skill to automate investigation and fix steps
 - **🚨 AFTER APPLYING ANY CODERABBIT/CODEX FIX**: Always verify method names exist on the actual entity before pushing. Automated tools frequently generate wrong getter names (e.g., `getCompleted()` instead of `isCompleted()` for primitive `boolean` fields). See [PR Review Workflow §4a](developer_docs/git/pr-review-workflow.md).
 
+### When Starting Work on a New Issue
+- [Start Issue Workflow](developer_docs/git/start-issue-workflow.md) - Branch creation, local persistence swap, GitHub assignment, project board setup
+- Use `/start-issue <number>` skill to automate all steps in one command
+
 ### When Committing Code
 - [Commit Conventions](developer_docs/git/commit-conventions.md) - Message format
 

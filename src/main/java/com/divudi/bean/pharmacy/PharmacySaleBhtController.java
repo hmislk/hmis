@@ -523,7 +523,8 @@ public class PharmacySaleBhtController implements Serializable {
             JsfUtil.addErrorMessage("Invalid stock - missing batch information");
             return;
         }
-        if (tempStock.getItemBatch().getDateOfExpire().before(CommonFunctions.getCurrentDateTime())) {
+        if (tempStock.getItemBatch().getDateOfExpire() != null
+                && tempStock.getItemBatch().getDateOfExpire().before(CommonFunctions.getCurrentDateTime())) {
             JsfUtil.addErrorMessage("Please not select Expired Items");
             return;
         }
@@ -1669,7 +1670,8 @@ public class PharmacySaleBhtController implements Serializable {
             JsfUtil.addErrorMessage("Please enter a Quantity?");
             return;
         }
-        if (selectedStockDto.getDateOfExpire().before(CommonFunctions.getCurrentDateTime())) {
+        if (selectedStockDto.getDateOfExpire() != null
+                && selectedStockDto.getDateOfExpire().before(CommonFunctions.getCurrentDateTime())) {
             JsfUtil.addErrorMessage("You are NOT allowed to select Expired Items");
             return;
         }
@@ -1782,7 +1784,16 @@ public class PharmacySaleBhtController implements Serializable {
             JsfUtil.addErrorMessage("Item?");
             return;
         }
-        if (getTmpStock().getItemBatch().getDateOfExpire().before(CommonFunctions.getCurrentDateTime())) {
+        Stock loadedTmpStock = stockFacade.findWithItemBatch(tmpStock.getId());
+        if (loadedTmpStock == null) {
+            errorMessage = "Selected stock is no longer available.";
+            JsfUtil.addErrorMessage("Selected stock is no longer available.");
+            return;
+        }
+        tmpStock = loadedTmpStock;
+        if (tmpStock.getItemBatch() != null
+                && tmpStock.getItemBatch().getDateOfExpire() != null
+                && tmpStock.getItemBatch().getDateOfExpire().before(CommonFunctions.getCurrentDateTime())) {
             JsfUtil.addErrorMessage("Please not select Expired Items");
             return;
         }

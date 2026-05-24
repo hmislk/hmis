@@ -14,6 +14,7 @@
 
 
     <ui:define name="content">
+        <f:event type="preRenderView" listener="#{financialTransactionController.redirectIfShiftNotStarted()}"/>
         <h:panelGroup rendered="#{inwardPaymentController.current.patientEncounter eq null}">
             <h:form>
                 <p:panel>
@@ -348,6 +349,13 @@
                                 class="ui-button-secondary"
                                 type="button"
                                 onclick="PF('inwardPaymentConfigDialog').show();"/>
+                            <p:commandButton
+                                ajax="false"
+                                icon="fas fa-file-invoice-dollar"
+                                value="Interim Bill"
+                                class="ui-button-info mx-1"
+                                action="#{bhtSummeryController.navigateToIntrimBillRefresh()}"
+                                />
                             <p:commandButton
                                 ajax="false"
                                 icon="fas fa-id-card"

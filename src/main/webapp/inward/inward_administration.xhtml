@@ -21,11 +21,16 @@
                                                              class="w-100" 
                                                              action="#{admissionTypeController.navigateToManageAdmissionTypes}"  >
                                             </p:commandButton>
-                                            <p:commandButton 
+                                            <p:commandButton
                                                 ajax="false"
-                                                value="Admission Items and Fees" 
+                                                value="Admission Items and Fees"
                                                 class="w-100"
                                                 action="#{admissionTypeController.navigateToManageAdmissionItemsAndFees()}"  ></p:commandButton>
+                                            <p:commandButton
+                                                ajax="false"
+                                                value="BHT Number Management"
+                                                class="w-100"
+                                                action="#{admissionNumberController.navigateToManageAdmissionNumbers()}" />
                                         </div>
                                     </p:tab>
                                     

@@ -1423,6 +1423,9 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
                 // Update Lieu Leave
                 ss.calLieu();
 
+                ss.setStartRecord(startRecord);
+                ss.setEndRecord(endRecord);
+
                 getStaffShiftFacade().edit(ss);
             }
 

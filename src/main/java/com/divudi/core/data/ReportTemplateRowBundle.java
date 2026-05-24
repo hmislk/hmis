@@ -881,7 +881,13 @@ public class ReportTemplateRowBundle implements Serializable {
 
                 if (childBundle.isSelected() || selectAll) {
 
-                    if (forHandover) {
+                    // Float rows (FLOAT_OUT / FLOAT_IN) are synthetic bundles with no payment rows —
+                    // their cashValue/cashHandoverValue are set directly in generatePaymentBundleForHandovers()
+                    // and must not be recalculated. calculateTotalsByPaymentsAndDenominationsForHandover()
+                    // starts with resetTotalsAndFlags() which would zero cashValue permanently, since
+                    // there are no reportTemplateRows to re-accumulate from.
+                    // The same guard exists in calculateTotalsByChildBundlesForHandover().
+                    if (forHandover && !childBundle.isFloatRow()) {
                         childBundle.calculateTotalsByPaymentsAndDenominationsForHandover();
                     }
 
@@ -910,6 +916,24 @@ public class ReportTemplateRowBundle implements Serializable {
                 }
             }
         }
+
+        // SYNC RULE — do not remove or reverse this assignment.
+        // getHandoverTotal() reads denominatorValue for cash (see its Javadoc).
+        // The denomination-blur path writes denominatorValue directly via
+        // calculateTotalHandoverByDenominationQuantities(). This checkbox path
+        // accumulates cashHandoverValue from child rows and then syncs it into
+        // denominatorValue so both paths converge on the same field.
+        //
+        // CODEX CONCERN (addressed): reversing this to denominatorValue = cashHandoverValue
+        // would corrupt shortage calculation and settleHandoverStartBill(), both of which
+        // read getDenominatorValue() as the physically counted cash amount. The physically
+        // counted amount is correct to reset when the cashier changes row selection —
+        // they should re-enter denominations after any selection change.
+        //
+        // ACCEPT / VIEW flows are NOT affected — they set denominatorValue and
+        // cashHandoverValue directly from the persisted denomination bill and never
+        // call this method.
+        denominatorValue = cashHandoverValue;
     }
 
     public void calculateTotalsByChildBundlesForHandover() {
@@ -920,9 +944,14 @@ public class ReportTemplateRowBundle implements Serializable {
 
                 if (childBundle.isSelected()) {
 
-                    childBundle.calculateTotalsOfSelectedRowsPlusAllCashForHandover(patientDepositsAreConsideredInHandingover);
+                    // Float rows (FLOAT_OUT / FLOAT_IN) are synthetic bundles with no payment rows —
+                    // their cashValue/cashHandoverValue are set directly in generatePaymentBundleForHandovers().
+                    // Calling calculateTotalsOfSelectedRowsPlusAllCashForHandover() would reset them to 0.
+                    if (!childBundle.isFloatRow()) {
+                        childBundle.calculateTotalsOfSelectedRowsPlusAllCashForHandover(patientDepositsAreConsideredInHandingover);
+                    }
 
-                    if (childBundle.getSelectAllCashToHandover()) {
+                    if (childBundle.getSelectAllCashToHandover() || childBundle.isFloatRow()) {
                         addValueAndUpdateFlag("cash", safeDouble(childBundle.getCashValue()), safeDouble(childBundle.getCashHandoverValue()));
                     } else {
                         addValueAndUpdateFlag("cash", safeDouble(childBundle.getCashValue()), safeDouble(childBundle.getCashValue()));
@@ -952,6 +981,16 @@ public class ReportTemplateRowBundle implements Serializable {
             }
         }
 
+        // SYNC RULE — do not remove this pair of calls.
+        // On page load all denomination qtys are 0, so denominatorValue → 0
+        // and cashHandoverValue → 0. That is the correct initial state: the cashier
+        // has not counted anything yet. Once they type denomination qtys, the
+        // denomination-blur AJAX fires calculateTotalHandoverByDenominationQuantities()
+        // directly, which sets both fields from the counted notes.
+        //
+        // ACCEPT / VIEW flows are NOT affected — they set denominatorValue and
+        // cashHandoverValue directly from the persisted denomination bill and never
+        // call this method.
         calculateTotalHandoverByDenominationQuantities();
         cashHandoverValue = denominatorValue;
     }
@@ -2333,6 +2372,37 @@ public class ReportTemplateRowBundle implements Serializable {
 
     public void setTotalOut(Double totalOut) {
         this.totalOut = totalOut;
+    }
+
+    /**
+     * Returns the total being handed over, shown as "Total Handed over Value" on
+     * handover_start_all.xhtml (CREATE flow only).
+     *
+     * Uses denominatorValue for the cash portion. denominatorValue is the single
+     * authoritative cash figure — it always equals the physically counted denomination
+     * total. Two AJAX paths both converge on it:
+     *   1. Denomination-blur → calculateTotalHandoverByDenominationQuantities() sets
+     *      denominatorValue directly from counted notes.
+     *   2. Row-checkbox toggle → calculateTotalsByChildBundles() aggregates child
+     *      cashHandoverValue, then syncs denominatorValue = cashHandoverValue.
+     *
+     * WARNING — do NOT switch this method to use cashHandoverValue instead of
+     * denominatorValue. Two other callers depend on getDenominatorValue() being the
+     * physically counted cash amount:
+     *   - navigateToMarkShortagesForShiftForHandover() uses it for shortage calculation
+     *   - settleHandoverStartBill() calls setCashHandoverValue(getDenominatorValue())
+     *     before persisting the handover bill
+     * Changing this method without fixing both callers will silently persist wrong cash.
+     *
+     * ACCEPT / VIEW flows do NOT call this method — they read saved bill values directly.
+     */
+    public double getHandoverTotal() {
+        return denominatorValue + cardHandoverValue + chequeHandoverValue
+                + creditHandoverValue + staffHandoverValue + staffWelfareHandoverValue
+                + voucherHandoverValue + iouHandoverValue + agentHandoverValue
+                + slipHandoverValue + eWalletHandoverValue + onCallHandoverValue
+                + patientDepositHandoverValue + patientPointsHandoverValue
+                + onlineSettlementHandoverValue + multiplePaymentMethodsHandoverValue;
     }
 
     public Long getCountIn() {

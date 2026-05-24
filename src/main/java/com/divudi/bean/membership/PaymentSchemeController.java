@@ -65,6 +65,8 @@ public class PaymentSchemeController implements Serializable {
     PriceMatrixFacade priceMatrixFacade;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    com.divudi.bean.common.EnumController enumController;
     MembershipScheme membershipScheme;
     AllowedPaymentMethod paymentSchemeAllowedPaymentMethod;
     RestrictedPaymentMethod paymentSchemeRestrictedPaymentMethod;
@@ -237,6 +239,17 @@ public class PaymentSchemeController implements Serializable {
         items = null;
     }
 
+    public void prepareAddAllowedPaymentMethod() {
+        paymentSchemeAllowedPaymentMethod = new AllowedPaymentMethod();
+    }
+
+    public void resetAllowedPaymentMethodForm() {
+        paymentScheme = null;
+        paymentSchemeAllowedPaymentMethod = null;
+        allowedPaymentMethods = null;
+        items = null;
+    }
+
     public String navigateToManageRestrictedPaymentMethod() {
         paymentScheme = null;
         membershipScheme = null;
@@ -359,6 +372,20 @@ public class PaymentSchemeController implements Serializable {
 
         paymentSchemeRestrictedPaymentMethod = null;
         createRestrictedPaymentMethods();
+    }
+
+    public void deleteAllowedPaymentMethod() {
+        if (paymentSchemeAllowedPaymentMethod != null && paymentSchemeAllowedPaymentMethod.getId() != null) {
+            paymentSchemeAllowedPaymentMethod.setRetired(true);
+            paymentSchemeAllowedPaymentMethod.setRetiredAt(new Date());
+            paymentSchemeAllowedPaymentMethod.setRetirer(getSessionController().getLoggedUser());
+            getAllowedPaymentMethodFacade().edit(paymentSchemeAllowedPaymentMethod);
+            JsfUtil.addSuccessMessage("Deleted Successfully");
+        } else {
+            JsfUtil.addErrorMessage("Nothing to Delete");
+        }
+        paymentSchemeAllowedPaymentMethod = null;
+        createAllowedPaymentMethods();
     }
 
     public void deleteRestrictedPaymentMethod() {
@@ -637,6 +664,26 @@ public class PaymentSchemeController implements Serializable {
         this.allowedPaymentMethods = allowedPaymentMethods;
     }
 
+    public List<PaymentMethod> getAvailablePaymentMethodsForAllowed() {
+        List<PaymentMethod> available = new ArrayList<>();
+        PaymentMethod selected = paymentSchemeAllowedPaymentMethod == null
+                ? null : paymentSchemeAllowedPaymentMethod.getPaymentMethod();
+        java.util.Set<PaymentMethod> alreadyAdded = new java.util.HashSet<>();
+        if (allowedPaymentMethods != null) {
+            for (AllowedPaymentMethod a : allowedPaymentMethods) {
+                if (a.getPaymentMethod() != null) {
+                    alreadyAdded.add(a.getPaymentMethod());
+                }
+            }
+        }
+        for (PaymentMethod pm : enumController.getPaymentMethods()) {
+            if (pm.equals(selected) || !alreadyAdded.contains(pm)) {
+                available.add(pm);
+            }
+        }
+        return available;
+    }
+
     public void createRestrictedPaymentMethods() {
         if ((paymentScheme == null || paymentScheme.getId() == null)
                 && (membershipScheme == null || membershipScheme.getId() == null)) {
@@ -723,6 +770,42 @@ public class PaymentSchemeController implements Serializable {
             } else {
                 throw new IllegalArgumentException("object " + object + " is of type "
                         + object.getClass().getName() + "; expected type: " + PaymentSchemeController.class.getName());
+            }
+        }
+    }
+
+    @FacesConverter(forClass = AllowedPaymentMethod.class)
+    public static class AllowedPaymentMethodConverter implements Converter {
+
+        @Override
+        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
+            if (value == null || value.length() == 0) {
+                return null;
+            }
+            PaymentSchemeController controller = (PaymentSchemeController) facesContext.getApplication().getELResolver().
+                    getValue(facesContext.getELContext(), null, "paymentSchemeController");
+            return controller.getAllowedPaymentMethodFacade().find(getKey(value));
+        }
+
+        java.lang.Long getKey(String value) {
+            return Long.valueOf(value);
+        }
+
+        String getStringKey(java.lang.Long value) {
+            return String.valueOf(value);
+        }
+
+        @Override
+        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
+            if (object == null) {
+                return null;
+            }
+            if (object instanceof AllowedPaymentMethod) {
+                AllowedPaymentMethod o = (AllowedPaymentMethod) object;
+                return getStringKey(o.getId());
+            } else {
+                throw new IllegalArgumentException("object " + object + " is of type "
+                        + object.getClass().getName() + "; expected type: " + AllowedPaymentMethod.class.getName());
             }
         }
     }

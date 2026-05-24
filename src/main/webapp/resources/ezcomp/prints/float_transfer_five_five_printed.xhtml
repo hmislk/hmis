@@ -15,8 +15,8 @@
     <cc:implementation>
 
         <div style="#{configOptionApplicationController.getLongTextValueByKey('Float Transfer Note CSS')}">
-
-            <!-- Blank Header Space for Pre-printed Letterhead -->
+            <div style="padding-left: 10px; padding-right: 10px">
+                 <!-- Blank Header Space for Pre-printed Letterhead -->
             <div style="height: 80px;"></div>
 
             <div style="text-align: center; font-size: 18px; font-weight: bold; padding: 5px;">
@@ -26,7 +26,7 @@
 
             <hr style="border-top: 1px solid #000;"/>
 
-            <div style="padding: 10px;">
+            <div style="padding: 10px; font-size:13px ">
                 <table style="width: 100%; border-collapse: collapse;">
                     <tr>
                         <td style="font-weight: bold;">From:</td>
@@ -51,9 +51,11 @@
                 <hr style="border-top: 1px solid #000;"/>
             </div>
 
-            <div style="padding: 10px;">
-                <h3 style="text-align: center; font-weight: normal">Payment Details</h3>
-                <table style="width: 100%; border-collapse: collapse; border: 1px solid #ccc;">
+            <div style="padding-bottom: 10px;">
+                 <div style="text-align: center; font-size: 18px; font-weight: bold; padding: 5px;">
+                     <h:outputLabel value="Payment Details"/>
+                </div>
+                <table style="width: 100%; font-size: 13px; border-collapse: collapse; border: 1px solid #ccc;">
                     <tr style="background: #f2f2f2;">
                         <th style="padding: 8px; text-align: left;">Payment Method</th>
                         <th style="padding: 8px; text-align: left;">Details</th>
@@ -96,25 +98,25 @@
                 </table>
             </div>
 
-            <div style="#{configOptionApplicationController.getLongTextValueByKey('Float Transfer Note Horizontal Line CSS')}">
+<!--            <div style="#{configOptionApplicationController.getLongTextValueByKey('Float Transfer Note Horizontal Line CSS')}">
                 <hr/>
-            </div>
+            </div>-->
 
-            <div style="text-align: right; font-size: 18px; font-weight: bold; padding: 10px;">
+            <div style="text-align: right; font-size: 15px; font-weight: bold; padding: 10px;">
                 Total Amount:
                 <h:outputLabel value="#{cc.attrs.bill.absoluteNetTotalTransient}">
                     <f:convertNumber pattern="#,##0.00"/>
                 </h:outputLabel>
             </div>
 
-            <div style="#{configOptionApplicationController.getLongTextValueByKey('Float Transfer Note Horizontal Line CSS')}">
+<!--            <div style="#{configOptionApplicationController.getLongTextValueByKey('Float Transfer Note Horizontal Line CSS')}">
                 <hr style="border-top: 1px solid #000;"/>
             </div>
 
             <div style="text-align: center; font-size: 14px; padding: 10px; color: gray;">
                 <h:outputText value="#{configOptionApplicationController.getLongTextValueByKey('Float Transfer Note Footer Text')}" escape="false"></h:outputText>
+            </div>-->
             </div>
-
         </div>
     </cc:implementation>
 </html>
