@@ -109,6 +109,20 @@ import java.util.Base64;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.*;
+import org.apache.poi.xddf.usermodel.chart.AxisCrosses;
+import org.apache.poi.xddf.usermodel.chart.AxisPosition;
+import org.apache.poi.xddf.usermodel.chart.BarDirection;
+import org.apache.poi.xddf.usermodel.chart.ChartTypes;
+import org.apache.poi.xddf.usermodel.chart.LegendPosition;
+import org.apache.poi.xddf.usermodel.chart.MarkerStyle;
+import org.apache.poi.xddf.usermodel.chart.XDDFBarChartData;
+import org.apache.poi.xddf.usermodel.chart.XDDFCategoryAxis;
+import org.apache.poi.xddf.usermodel.chart.XDDFChartLegend;
+import org.apache.poi.xddf.usermodel.chart.XDDFDataSource;
+import org.apache.poi.xddf.usermodel.chart.XDDFDataSourcesFactory;
+import org.apache.poi.xddf.usermodel.chart.XDDFLineChartData;
+import org.apache.poi.xddf.usermodel.chart.XDDFNumericalDataSource;
+import org.apache.poi.xddf.usermodel.chart.XDDFValueAxis;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
 import com.itextpdf.html2pdf.HtmlConverter;
@@ -1154,6 +1168,142 @@ public class InwardReportController implements Serializable {
         img.setWidthPercentage(100);
         return img;
     }
+
+    private List<SurgeryCountDoctorWiseDTO> getDoctorChartRows() {
+        if (billList == null) {
+            return new ArrayList<>();
+        }
+        return billList.stream()
+                .filter(dto -> !dto.isSubtotal() && !dto.isGrandTotal())
+                .collect(Collectors.toList());
+    }
+
+    private List<SurgeryCountDoctorWiseDTO> getSpecialtyChartRows() {
+        if (billList == null) {
+            return new ArrayList<>();
+        }
+        return billList.stream()
+                .filter(SurgeryCountDoctorWiseDTO::isSubtotal)
+                .collect(Collectors.toList());
+    }
+
+    private int[] writeChartDataBlock(XSSFSheet sheet,
+            int startRow,
+            String seriesHeader,
+            List<SurgeryCountDoctorWiseDTO> rows,
+            boolean useSpecialtyName) {
+        int headerRowIndex = startRow;
+        Row headerRow = sheet.createRow(startRow++);
+        headerRow.createCell(0).setCellValue(seriesHeader);
+        for (int i = 0; i < MONTH_LABELS.length; i++) {
+            headerRow.createCell(i + 1).setCellValue(MONTH_LABELS[i]);
+        }
+
+        int firstDataRow = startRow;
+        for (SurgeryCountDoctorWiseDTO dto : rows) {
+            Row row = sheet.createRow(startRow++);
+            String label = useSpecialtyName
+                    ? (dto.getSpecialityName() != null ? dto.getSpecialityName() : "")
+                    : (dto.getDoctorName() != null ? dto.getDoctorName() : "");
+            row.createCell(0).setCellValue(label);
+
+            int[] monthValues = {
+                dto.getJanuary(), dto.getFebruary(), dto.getMarch(),
+                dto.getApril(), dto.getMay(), dto.getJune(),
+                dto.getJuly(), dto.getAugust(), dto.getSeptember(),
+                dto.getOctober(), dto.getNovember(), dto.getDecember()
+            };
+            for (int i = 0; i < monthValues.length; i++) {
+                row.createCell(i + 1).setCellValue(monthValues[i]);
+            }
+        }
+
+        int lastDataRow = startRow - 1;
+        return new int[]{headerRowIndex, firstDataRow, lastDataRow};
+    }
+
+    private void addLineChart(XSSFSheet sheet,
+            XSSFDrawing drawing,
+            int col,
+            int row,
+            int[] block,
+            String title) {
+        if (block[1] > block[2]) {
+            return;
+        }
+
+        XSSFClientAnchor anchor = drawing.createAnchor(0, 0, 0, 0, col, row, col + 12, row + 20);
+        XSSFChart chart = drawing.createChart(anchor);
+        chart.setTitleText(title);
+        chart.setTitleOverlay(false);
+
+        XDDFChartLegend legend = chart.getOrAddLegend();
+        legend.setPosition(LegendPosition.RIGHT);
+
+        XDDFCategoryAxis xAxis = chart.createCategoryAxis(AxisPosition.BOTTOM);
+        XDDFValueAxis yAxis = chart.createValueAxis(AxisPosition.LEFT);
+        yAxis.setCrosses(AxisCrosses.AUTO_ZERO);
+
+        XDDFDataSource<String> categories = XDDFDataSourcesFactory.fromStringCellRange(
+                sheet, new CellRangeAddress(block[0], block[0], 1, 12));
+        XDDFLineChartData data = (XDDFLineChartData) chart.createData(ChartTypes.LINE, xAxis, yAxis);
+
+        for (int r = block[1]; r <= block[2]; r++) {
+            XDDFNumericalDataSource<Double> values = XDDFDataSourcesFactory.fromNumericCellRange(
+                    sheet, new CellRangeAddress(r, r, 1, 12));
+            XDDFLineChartData.Series series = (XDDFLineChartData.Series) data.addSeries(categories, values);
+            String seriesName = "";
+            if (sheet.getRow(r) != null && sheet.getRow(r).getCell(0) != null) {
+                seriesName = sheet.getRow(r).getCell(0).getStringCellValue();
+            }
+            series.setTitle(seriesName, null);
+            series.setSmooth(false);
+            series.setMarkerStyle(MarkerStyle.CIRCLE);
+        }
+
+        chart.plot(data);
+    }
+
+    private void addBarChart(XSSFSheet sheet,
+            XSSFDrawing drawing,
+            int col,
+            int row,
+            int[] block,
+            String title) {
+        if (block[1] > block[2]) {
+            return;
+        }
+
+        XSSFClientAnchor anchor = drawing.createAnchor(0, 0, 0, 0, col, row, col + 12, row + 20);
+        XSSFChart chart = drawing.createChart(anchor);
+        chart.setTitleText(title);
+        chart.setTitleOverlay(false);
+
+        XDDFChartLegend legend = chart.getOrAddLegend();
+        legend.setPosition(LegendPosition.TOP);
+
+        XDDFCategoryAxis xAxis = chart.createCategoryAxis(AxisPosition.BOTTOM);
+        XDDFValueAxis yAxis = chart.createValueAxis(AxisPosition.LEFT);
+        yAxis.setCrosses(AxisCrosses.AUTO_ZERO);
+
+        XDDFDataSource<String> categories = XDDFDataSourcesFactory.fromStringCellRange(
+                sheet, new CellRangeAddress(block[0], block[0], 1, 12));
+        XDDFBarChartData data = (XDDFBarChartData) chart.createData(ChartTypes.BAR, xAxis, yAxis);
+        data.setBarDirection(BarDirection.COL);
+
+        for (int r = block[1]; r <= block[2]; r++) {
+            XDDFNumericalDataSource<Double> values = XDDFDataSourcesFactory.fromNumericCellRange(
+                    sheet, new CellRangeAddress(r, r, 1, 12));
+            XDDFBarChartData.Series series = (XDDFBarChartData.Series) data.addSeries(categories, values);
+            String seriesName = "";
+            if (sheet.getRow(r) != null && sheet.getRow(r).getCell(0) != null) {
+                seriesName = sheet.getRow(r).getCell(0).getStringCellValue();
+            }
+            series.setTitle(seriesName, null);
+        }
+
+        chart.plot(data);
+    }
     private static final String[] MONTH_LABELS
             = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
 
@@ -1564,6 +1714,35 @@ public class InwardReportController implements Serializable {
             for (int i = 0; i < colWidths.length; i++) {
                 sheet.setColumnWidth(i, colWidths[i]);
             }
+
+                // ── Charts sheet (native Excel charts) ─────────────────────────────
+                XSSFSheet chartSheet = workbook.createSheet("Charts");
+                XSSFDrawing drawing = chartSheet.createDrawingPatriarch();
+
+                List<SurgeryCountDoctorWiseDTO> doctorChartRows = getDoctorChartRows();
+                List<SurgeryCountDoctorWiseDTO> specialtyChartRows = getSpecialtyChartRows();
+
+                int chartRowStart = 0;
+                if (!doctorChartRows.isEmpty()) {
+                int[] doctorBlock = writeChartDataBlock(
+                    chartSheet, chartRowStart, "Doctor", doctorChartRows, false);
+                int doctorChartsStart = doctorBlock[2] + 2;
+                addLineChart(chartSheet, drawing, 0, doctorChartsStart, doctorBlock,
+                    "Doctor Wise Surgery Trend - Year " + reportYear);
+                addBarChart(chartSheet, drawing, 0, doctorChartsStart + 22, doctorBlock,
+                    "Doctor Wise Surgery Count - Year " + reportYear);
+                chartRowStart = doctorChartsStart + 45;
+                }
+
+                if (!specialtyChartRows.isEmpty()) {
+                int[] specialtyBlock = writeChartDataBlock(
+                    chartSheet, chartRowStart, "Speciality", specialtyChartRows, true);
+                int specialtyChartsStart = specialtyBlock[2] + 2;
+                addLineChart(chartSheet, drawing, 0, specialtyChartsStart, specialtyBlock,
+                    "Specialty Wise Surgery Trend - Year " + reportYear);
+                addBarChart(chartSheet, drawing, 0, specialtyChartsStart + 22, specialtyBlock,
+                    "Specialty Wise Surgery Count - Year " + reportYear);
+                }
 
             // ── Write workbook to byte array first, then stream ────────────────────
             // Avoids "IOException never thrown" by separating workbook.write()
