@@ -41,10 +41,15 @@
 
 
                                 </h:panelGrid>
+                                <div class="my-2 d-flex align-items-center">
+                                    <p:selectBooleanCheckbox id="includeArchived"
+                                                             value="#{stockHistoryController.includeArchived}"/>
+                                    <p:outputLabel for="includeArchived" value="Include Archived" class="mx-2"/>
+                                </div>
                                 <div class="my-2">
-                                    <p:commandButton ajax="false" 
+                                    <p:commandButton ajax="false"
                                                      class="ui-button-warning"
-                                                     action="#{stockHistoryController.fillHistoryAvailableDays()}" 
+                                                     action="#{stockHistoryController.fillHistoryAvailableDays()}"
                                                      value="Display Available Days"  ></p:commandButton>
                                     <p:commandButton ajax="false" 
                                                      class="ui-button-warning mx-1"
@@ -169,6 +174,72 @@
                                             <f:convertNumber pattern="#,###,##0.00" />
                                         </p:outputLabel>
                                     </f:facet>
+                                </p:column>
+                            </p:dataTable>
+                        </p:panel>
+
+                        <p:panel styleClass="noBorder summeryBorder" class="my-2"
+                                 rendered="#{not empty stockHistoryController.pharmacyStockHistoriesArchive}">
+                            <f:facet name="header">
+                                <p:outputLabel value="Archived Stock History Records" style="font-weight:bold;"/>
+                            </f:facet>
+                            <p:dataTable id="tblArchiveHistories"
+                                         value="#{stockHistoryController.pharmacyStockHistoriesArchive}"
+                                         rowKey="#{archItem.id}"
+                                         rowIndexVar="ai"
+                                         var="archItem">
+                                <p:column style="width: 40px;">
+                                    <f:facet name="header">No</f:facet>
+                                    <p:outputLabel value="#{ai + 1}"/>
+                                </p:column>
+                                <p:column rendered="#{stockHistoryController.department eq null}"
+                                          sortBy="#{archItem.department.name}"
+                                          filterBy="#{archItem.department.name}"
+                                          filterMatchMode="contains">
+                                    <f:facet name="header">
+                                        <p:outputLabel value="Department"/>
+                                    </f:facet>
+                                    <p:outputLabel value="#{archItem.department.name}"/>
+                                </p:column>
+                                <p:column sortBy="#{archItem.item.name}"
+                                          filterBy="#{archItem.item.name}"
+                                          filterMatchMode="contains">
+                                    <f:facet name="header">
+                                        <p:outputLabel value="Item"/>
+                                    </f:facet>
+                                    <p:outputLabel value="#{archItem.item.name}"/>
+                                </p:column>
+                                <p:column style="text-align: right;" styleClass="averageNumericColumn">
+                                    <f:facet name="header">
+                                        <p:outputLabel value="Stock"/>
+                                    </f:facet>
+                                    <p:outputLabel value="#{archItem.stockQty}"/>
+                                </p:column>
+                                <p:column style="text-align: right;" styleClass="averageNumericColumn">
+                                    <f:facet name="header">
+                                        <p:outputLabel value="Purchase Value"/>
+                                    </f:facet>
+                                    <p:outputLabel value="#{archItem.stockPurchaseValue}" rendered="#{archItem.stockPurchaseValue ne 0.0}">
+                                        <f:convertNumber pattern="#,###,##0.00"/>
+                                    </p:outputLabel>
+                                    <p:outputLabel value="Not Recorded." rendered="#{archItem.stockPurchaseValue eq 0.0}"/>
+                                </p:column>
+                                <p:column style="text-align: right;" styleClass="averageNumericColumn">
+                                    <f:facet name="header">
+                                        <p:outputLabel value="Retail Sale Value"/>
+                                    </f:facet>
+                                    <p:outputLabel value="#{archItem.stockSaleValue}" rendered="#{archItem.stockSaleValue ne 0.0}">
+                                        <f:convertNumber pattern="#,###,##0.00"/>
+                                    </p:outputLabel>
+                                    <p:outputLabel value="Not Recorded." rendered="#{archItem.stockSaleValue eq 0.0}"/>
+                                </p:column>
+                                <p:column style="text-align: right;" styleClass="averageNumericColumn">
+                                    <f:facet name="header">
+                                        <p:outputLabel value="Archived At"/>
+                                    </f:facet>
+                                    <p:outputLabel value="#{archItem.archivedAt}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                    </p:outputLabel>
                                 </p:column>
                             </p:dataTable>
                         </p:panel>
