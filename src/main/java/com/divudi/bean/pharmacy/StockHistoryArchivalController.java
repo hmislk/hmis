@@ -100,8 +100,6 @@ public class StockHistoryArchivalController implements Serializable {
             if (dryRun) {
                 JsfUtil.addSuccessMessage("Dry run: " + lastResult.getCandidateCount()
                         + " row(s) would be archived");
-            } else {
-                JsfUtil.addSuccessMessage(lastResult.getMessage());
             }
         } catch (Exception ex) {
             LOGGER.log(Level.SEVERE, "StockHistory archive run failed", ex);

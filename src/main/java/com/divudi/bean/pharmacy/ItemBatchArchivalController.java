@@ -96,8 +96,6 @@ public class ItemBatchArchivalController implements Serializable {
             if (dryRun) {
                 JsfUtil.addSuccessMessage("Dry run: " + lastResult.getCandidateCount()
                         + " ItemBatch row(s) would be archived");
-            } else {
-                JsfUtil.addSuccessMessage(lastResult.getMessage());
             }
         } catch (Exception ex) {
             LOGGER.log(Level.SEVERE, "ItemBatch archive run failed", ex);
