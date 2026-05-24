@@ -112,6 +112,8 @@ git branch -d <branch-name>
 >    - **Valid + fixed** → "Fixed in `<commit-sha>`: `<what was changed>`"
 >    - **Dismissed** → "Dismissed because: `<specific reasoning>`"
 >
+>    **⚠️ CodeRabbit Chat consequence:** wording like "please resolve", "please address", "please add X" on a CodeRabbit thread is interpreted as a Chat command. CodeRabbit will then **open a NEW PR** (named `📝 CodeRabbit Chat: Implement requested code changes` on branch `coderabbitai/chat/<sha>`) attempting the fix. That auto-PR is generated against a snapshot of the diff that may already be stale, often duplicates or conflicts with work the author has done, and has produced unsafe diffs (e.g. deleting a `params.put(...)` line on PR #20979). If you accidentally trigger one: **close it without merging** and delete the `coderabbitai/chat/<sha>` branch.
+>
 > 3. **Replies go UNDER existing reviewer threads** (`POST /pulls/{pr}/comments/{id}/replies`) — never as new top-level comments. The reply stays in the parent's thread and the bot/reviewer can resolve their own thread on detection.
 >
 > 4. **Self-review items go in the commit message and/or PR description**, NOT as new top-level inline comments. If you spot something while reviewing your own PR, fix it (or document the decision to defer) in the commit message and update the PR description checklist. Don't sprinkle review items as new inline comments — that creates manual-resolve noise.
