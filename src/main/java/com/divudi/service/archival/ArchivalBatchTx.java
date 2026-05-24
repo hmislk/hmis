@@ -39,20 +39,19 @@ public class ArchivalBatchTx {
     @PersistenceContext(unitName = "hmisPU")
     private EntityManager em;
 
+    // Self-injection so doOneBatch() is invoked through the EJB proxy —
+    // mandatory for @TransactionAttribute(REQUIRES_NEW) to take effect.
+    // Calling this.doOneBatch() bypasses the proxy and ignores the annotation.
+    @EJB
+    private ArchivalBatchTx self;
+
     /**
-     * Copy the rows identified by {@code ids} from {@code sourceTable} to
-     * {@code archiveTable}, then delete them from {@code sourceTable}. All
-     * within one new transaction.
-     *
-     * Retries up to {@value #MAX_RETRIES} times on MySQL lock wait timeout
-     * (error 1205) — the competing transaction will have committed by then.
-     * Each retry opens a fresh REQUIRES_NEW transaction so the previous
-     * rolled-back state is fully discarded before we attempt again.
-     *
-     * Table/column names come from concrete archival services (compile-time
-     * constants), never from user input, so the direct string concatenation
-     * is safe from injection.
+     * Copy rows from {@code sourceTable} to {@code archiveTable} then delete
+     * them from {@code sourceTable}. Retries up to {@value #MAX_RETRIES} times
+     * on MySQL lock wait timeout (error 1205) before giving up. Each retry is a
+     * completely fresh REQUIRES_NEW transaction via the EJB proxy (self).
      */
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     public int copyAndDelete(String archiveTable, String sourceTable,
                              String columnList, List<Long> ids) {
         if (ids == null || ids.isEmpty()) {
@@ -61,7 +60,7 @@ public class ArchivalBatchTx {
         PersistenceException lastEx = null;
         for (int attempt = 1; attempt <= MAX_RETRIES; attempt++) {
             try {
-                return doOneBatch(archiveTable, sourceTable, columnList, ids);
+                return self.doOneBatch(archiveTable, sourceTable, columnList, ids);
             } catch (PersistenceException ex) {
                 if (!isLockTimeout(ex)) {
                     throw ex;
@@ -70,7 +69,9 @@ public class ArchivalBatchTx {
                 LOGGER.log(Level.WARNING,
                         "Archival batch lock timeout (attempt {0}/{1}), retrying in {2}ms",
                         new Object[]{attempt, MAX_RETRIES, RETRY_SLEEP_MS});
-                try { Thread.sleep(RETRY_SLEEP_MS); } catch (InterruptedException ie) {
+                try {
+                    Thread.sleep(RETRY_SLEEP_MS);
+                } catch (InterruptedException ie) {
                     Thread.currentThread().interrupt();
                     throw ex;
                 }
@@ -79,7 +80,7 @@ public class ArchivalBatchTx {
         throw lastEx;
     }
 
-    /** Single attempt — runs in its own REQUIRES_NEW transaction. */
+    /** Single transactional attempt — called via self proxy to honour REQUIRES_NEW. */
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public int doOneBatch(String archiveTable, String sourceTable,
                           String columnList, List<Long> ids) {
@@ -109,9 +110,8 @@ public class ArchivalBatchTx {
     private static boolean isLockTimeout(PersistenceException ex) {
         Throwable cause = ex.getCause();
         while (cause != null) {
-            String msg = cause.getMessage();
-            // MySQL error 1205: Lock wait timeout exceeded
-            if (msg != null && msg.contains("Lock wait timeout exceeded")) {
+            if (cause.getMessage() != null
+                    && cause.getMessage().contains("Lock wait timeout exceeded")) {
                 return true;
             }
             cause = cause.getCause();
