@@ -16,6 +16,7 @@ import javax.persistence.PersistenceException;
 import javax.persistence.Query;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import javax.ejb.EJB;
 
 /**
  * Transaction-bounded executor for a single archival batch.
