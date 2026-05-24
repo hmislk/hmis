@@ -8,6 +8,7 @@ import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.core.data.dto.ArchiveResult;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.service.archival.ItemBatchArchivalService;
+import com.divudi.service.archival.ItemBatchArchivalTracker;
 import java.io.Serializable;
 import java.util.Calendar;
 import java.util.Date;
@@ -40,11 +41,13 @@ public class ItemBatchArchivalController implements Serializable {
     @Inject
     private ConfigOptionApplicationController configOptionController;
 
+    @Inject
+    private ItemBatchArchivalTracker tracker;
+
     private Date cutoffDate;
     private int batchSize;
     private int maxBatches;
     private boolean dryRun;
-    private ArchiveResult lastResult;
     private Long candidateCount;
 
     public String navigateToArchiveItemBatch() {
@@ -91,11 +94,19 @@ public class ItemBatchArchivalController implements Serializable {
         if (!validateInputs()) {
             return;
         }
+        if (tracker.isRunning()) {
+            JsfUtil.addErrorMessage("Archival is already in progress.");
+            return;
+        }
         try {
-            lastResult = archivalService.archive(cutoffDate, batchSize, maxBatches, dryRun);
             if (dryRun) {
-                JsfUtil.addSuccessMessage("Dry run: " + lastResult.getCandidateCount()
+                ArchiveResult result = archivalService.archive(cutoffDate, batchSize, maxBatches, true);
+                tracker.start(result.getCandidateCount(), 0);
+                tracker.finish(result);
+                JsfUtil.addSuccessMessage("Dry run: " + result.getCandidateCount()
                         + " ItemBatch row(s) would be archived");
+            } else {
+                archivalService.archiveAsync(cutoffDate, batchSize, maxBatches);
             }
         } catch (Exception ex) {
             LOGGER.log(Level.SEVERE, "ItemBatch archive run failed", ex);
@@ -135,6 +146,7 @@ public class ItemBatchArchivalController implements Serializable {
     public boolean isDryRun() { return dryRun; }
     public void setDryRun(boolean dryRun) { this.dryRun = dryRun; }
 
-    public ArchiveResult getLastResult() { return lastResult; }
+    public ArchiveResult getLastResult() { return tracker.getLastResult(); }
+    public ItemBatchArchivalTracker getTracker() { return tracker; }
     public Long getCandidateCount() { return candidateCount; }
 }

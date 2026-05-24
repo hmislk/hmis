@@ -12,6 +12,9 @@
         <ui:composition template="/dataAdmin/admin_data_administration.xhtml">
             <ui:define name="subcontent">
                 <h:form id="archiveForm" rendered="#{webUserController.hasPrivilege('ArchiveOldItemBatch')}">
+                    <p:poll interval="3" update="@form" globalStatus="false"
+                            active="#{itemBatchArchivalController.tracker.running}" />
+
                     <p:panel>
                         <f:facet name="header">
                             <h:outputLabel value="Archive Expired Zero-Stock ItemBatch Records" />
@@ -46,12 +49,14 @@
                                         <p:commandButton id="previewBtn" value="Preview Count" icon="fa fa-search"
                                                          class="ui-button-info m-1"
                                                          action="#{itemBatchArchivalController.preview}"
-                                                         update="archiveForm" />
+                                                         update="archiveForm"
+                                                         disabled="#{itemBatchArchivalController.tracker.running}" />
                                         <p:commandButton id="runBtn" value="Run" icon="fa fa-play"
                                                          class="ui-button-success m-1"
                                                          action="#{itemBatchArchivalController.run}"
                                                          update="archiveForm"
-                                                         onclick="return confirm('Run archive now? Non-dry-run moves ItemBatch and Stock rows out of the live tables.');" />
+                                                         disabled="#{itemBatchArchivalController.tracker.running}"
+                                                         onclick="if(#{itemBatchArchivalController.tracker.running}) return false; return confirm('Run archive now? Non-dry-run moves ItemBatch and Stock rows out of the live tables.');" />
                                     </f:facet>
                                 </p:panel>
 
@@ -66,8 +71,22 @@
                             </div>
 
                             <div class="col-md-5">
+                                <p:panel header="Archival in Progress"
+                                         rendered="#{itemBatchArchivalController.tracker.running}">
+                                    <p:progressBar value="#{itemBatchArchivalController.tracker.progressPercent}"
+                                                   displayOnly="true" labelTemplate="{value}%"
+                                                   style="margin-bottom:0.75em" />
+                                    <p:panelGrid columns="2" layout="tabular" class="w-100">
+                                        <h:outputLabel value="Rows archived" />
+                                        <h:outputText value="#{itemBatchArchivalController.tracker.archivedSoFar} / #{itemBatchArchivalController.tracker.candidates}" />
+
+                                        <h:outputLabel value="Batches done" />
+                                        <h:outputText value="#{itemBatchArchivalController.tracker.batchesDone} / #{itemBatchArchivalController.tracker.maxBatches}" />
+                                    </p:panelGrid>
+                                </p:panel>
+
                                 <p:panel header="Last Result"
-                                         rendered="#{itemBatchArchivalController.lastResult ne null}">
+                                         rendered="#{itemBatchArchivalController.lastResult ne null and not itemBatchArchivalController.tracker.running}">
                                     <p:panelGrid columns="2" layout="tabular" class="w-100">
                                         <h:outputLabel value="Mode" />
                                         <h:outputText value="#{itemBatchArchivalController.lastResult.dryRun ? 'Dry run' : 'Live run'}" />
