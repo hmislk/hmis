@@ -11002,7 +11002,7 @@ public class PharmacyReportController implements Serializable {
             @SuppressWarnings("unchecked")
             List<PharmacyRow> archiveDtoRows = (List<PharmacyRow>) facade.findLightsByJpql(archiveJpql, params, TemporalType.TIMESTAMP);
             java.util.Set<Long> liveItemIds = new java.util.HashSet<>();
-            for (PharmacyRow r : rows) {
+            for (PharmacyRow r : dtoRows) {
                 if (r.getItem() != null) liveItemIds.add(r.getItem().getId());
             }
             for (PharmacyRow row : archiveDtoRows) {
@@ -11256,7 +11256,7 @@ public class PharmacyReportController implements Serializable {
             @SuppressWarnings("unchecked")
             List<PharmacyRow> archiveDtoRows = (List<PharmacyRow>) facade.findLightsByJpql(archiveJpql, params, TemporalType.TIMESTAMP);
             java.util.Set<Long> liveBatchIds = new java.util.HashSet<>();
-            for (PharmacyRow r : rows) {
+            for (PharmacyRow r : dtoRows) {
                 if (r.getItemBatch() != null) liveBatchIds.add(r.getItemBatch().getId());
             }
             for (PharmacyRow row : archiveDtoRows) {
