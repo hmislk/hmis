@@ -7,6 +7,7 @@ import com.divudi.core.data.InvestigationItemType;
 import com.divudi.core.data.InvestigationItemValueType;
 import com.divudi.core.data.Sex;
 import com.divudi.core.data.dto.investigation.*;
+import com.divudi.core.entity.Item;
 import com.divudi.core.entity.WebUser;
 import com.divudi.core.entity.lab.*;
 import com.divudi.core.facade.*;
@@ -33,6 +34,10 @@ public class InvestigationFormatApiService implements Serializable {
     private TestFlagFacade testFlagFacade;
     @EJB
     private InvestigationItemValueFlagFacade investigationItemValueFlagFacade;
+    @EJB
+    private MachineFacade machineFacade;
+    @EJB
+    private ItemFacade itemFacade;
 
     // =========================================================================
     // Investigation Items
@@ -91,6 +96,16 @@ public class InvestigationFormatApiService implements Serializable {
         if (req.getCssFontStyle() != null && !req.getCssFontStyle().trim().isEmpty()) {
             item.setCssFontStyle(parseEnum(CssFontStyle.class, req.getCssFontStyle(), "cssFontStyle"));
         }
+        if (req.getMachineId() != null) {
+            Machine machine = machineFacade.find(req.getMachineId());
+            if (machine == null) throw new Exception("Machine not found with ID: " + req.getMachineId());
+            item.setMachine(machine);
+        }
+        if (req.getTestId() != null) {
+            Item test = itemFacade.find(req.getTestId());
+            if (test == null) throw new Exception("Analyzer test item not found with ID: " + req.getTestId());
+            item.setTest(test);
+        }
         item.setCreater(user);
         item.setCreatedAt(new Date());
         item.setRetired(false);
@@ -131,6 +146,24 @@ public class InvestigationFormatApiService implements Serializable {
         }
         if (req.getCssFontStyle() != null && !req.getCssFontStyle().trim().isEmpty()) {
             item.setCssFontStyle(parseEnum(CssFontStyle.class, req.getCssFontStyle(), "cssFontStyle"));
+        }
+        if (req.getMachineId() != null) {
+            if (req.getMachineId() <= 0L) {
+                item.setMachine(null);
+            } else {
+                Machine machine = machineFacade.find(req.getMachineId());
+                if (machine == null) throw new Exception("Machine not found with ID: " + req.getMachineId());
+                item.setMachine(machine);
+            }
+        }
+        if (req.getTestId() != null) {
+            if (req.getTestId() <= 0L) {
+                item.setTest(null);
+            } else {
+                Item test = itemFacade.find(req.getTestId());
+                if (test == null) throw new Exception("Analyzer test item not found with ID: " + req.getTestId());
+                item.setTest(test);
+            }
         }
         investigationItemFacade.edit(item);
         return toItemDTO(item, "Item updated successfully");
@@ -530,6 +563,15 @@ public class InvestigationFormatApiService implements Serializable {
         dto.setRiFontSize(item.getRiFontSize());
         dto.setCssTextAlign(item.getCssTextAlign() != null ? item.getCssTextAlign().name() : null);
         dto.setCssFontStyle(item.getCssFontStyle() != null ? item.getCssFontStyle().name() : null);
+        if (item.getMachine() != null) {
+            dto.setMachineId(item.getMachine().getId());
+            dto.setMachineName(item.getMachine().getName());
+        }
+        if (item.getTest() != null) {
+            dto.setTestId(item.getTest().getId());
+            dto.setTestName(item.getTest().getName());
+            dto.setTestCode(item.getTest().getCode());
+        }
         dto.setMessage(msg);
         return dto;
     }
