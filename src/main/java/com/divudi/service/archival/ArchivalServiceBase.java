@@ -5,10 +5,12 @@
 package com.divudi.service.archival;
 
 import com.divudi.core.data.dto.ArchiveResult;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import javax.persistence.EntityManager;
+import javax.persistence.PersistenceException;
 import javax.persistence.Query;
 
 /**
@@ -33,6 +35,21 @@ import javax.persistence.Query;
  * Issue #20726.
  */
 public abstract class ArchivalServiceBase {
+
+    /**
+     * Returns true when {@code ex} (or any cause in its chain) is a MySQL
+     * lock wait timeout (error 1205). Used by subclass retry logic.
+     */
+    protected static boolean isLockTimeout(PersistenceException ex) {
+        Throwable cause = ex;
+        while (cause != null) {
+            if (cause instanceof SQLException && ((SQLException) cause).getErrorCode() == 1205) {
+                return true;
+            }
+            cause = cause.getCause();
+        }
+        return false;
+    }
 
     protected abstract EntityManager em();
 
