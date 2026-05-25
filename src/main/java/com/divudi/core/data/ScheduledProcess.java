@@ -9,7 +9,8 @@ public enum ScheduledProcess {
     All_Drawer_Balances("All Drawer Balances"),
     All_Collection_Centre_Balances("All Collection Centre Balances"),
     All_Credit_Company_Balances("All Credit Company Balances"),
-    Archive_Old_StockHistory_Records("Archive Old StockHistory Records");
+    Archive_Old_StockHistory_Records("Archive Old StockHistory Records"),
+    Archive_Old_ItemBatch_Records("Archive Old ItemBatch Records");
 
     private final String label;
 

@@ -4,10 +4,16 @@
  */
 package com.divudi.service.archival;
 
+import com.divudi.core.data.dto.ArchiveResult;
+import java.util.Date;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.ejb.Asynchronous;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
+import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
@@ -32,11 +38,16 @@ import javax.persistence.PersistenceContext;
 @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
 public class StockHistoryArchivalService extends ArchivalServiceBase {
 
+    private static final Logger LOGGER = Logger.getLogger(StockHistoryArchivalService.class.getName());
+
     @PersistenceContext(unitName = "hmisPU")
     private EntityManager em;
 
     @EJB
     private ArchivalBatchTx batchTx;
+
+    @Inject
+    private StockHistoryArchivalTracker tracker;
 
     @Override
     protected EntityManager em() {
@@ -61,5 +72,27 @@ public class StockHistoryArchivalService extends ArchivalServiceBase {
     @Override
     protected String sourceEntityName() {
         return "StockHistory";
+    }
+
+    /**
+     * Fire-and-forget async wrapper for live archive runs.
+     * Progress is reported to {@link StockHistoryArchivalTracker} after each
+     * committed batch so the UI poll can display it without session locking.
+     */
+    @Asynchronous
+    public void archiveAsync(Date cutoff, int batchSize, int maxBatches) {
+        long candidates = countOlderThan(cutoff);
+        tracker.start(candidates, maxBatches);
+        try {
+            ArchiveResult result = archive(cutoff, batchSize, maxBatches, false,
+                    moved -> tracker.recordBatch(moved));
+            tracker.finish(result);
+        } catch (Exception ex) {
+            LOGGER.log(Level.SEVERE, "Async StockHistory archival failed", ex);
+            ArchiveResult err = new ArchiveResult(false, tracker.getCandidates(),
+                    tracker.getArchivedSoFar(), tracker.getBatchesDone(), false,
+                    tracker.getStartedAt(), new Date(), "Error: " + ex.getMessage());
+            tracker.finish(err);
+        }
     }
 }

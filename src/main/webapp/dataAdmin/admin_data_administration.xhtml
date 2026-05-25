@@ -150,12 +150,12 @@
                                                 styleClass="w-100 ui-button-success"
                                                 icon="fa fa-database" />
                                             <p:commandButton
-                                                value="Archive Old StockHistory"
-                                                action="#{stockHistoryArchivalController.navigateToArchiveStockHistory()}"
+                                                value="Archival"
+                                                action="admin_functions?faces-redirect=true"
                                                 ajax="false"
-                                                styleClass="w-100 ui-button-warning"
+                                                styleClass="w-100 ui-button-secondary"
                                                 icon="fa fa-archive"
-                                                rendered="#{webUserController.hasPrivilege('ArchiveOldStockHistory')}" />
+                                                rendered="#{webUserController.hasPrivilege('ArchiveOldStockHistory') or webUserController.hasPrivilege('ArchiveOldItemBatch')}" />
                                         </div>
                                     </p:tab>
 
