@@ -169,6 +169,33 @@ public class CapabilityStatementResource {
                         "LIMS middleware integration",
                         "API Key",
                         "GET", "POST"))
+                .add(resource("Machines (Analyzers)", "/api/machines",
+                        "CRUD for Machine (analyzer) entities. "
+                        + "GET lists active machines (supports ?query=&size=). "
+                        + "GET /{id} returns a single machine. "
+                        + "POST creates a machine (required: name; optional: code, description); returns 409 when duplicate name exists. "
+                        + "PUT /{id} updates name, code, or description. "
+                        + "DELETE /{id} soft-retires the machine.",
+                        "API Key",
+                        "GET", "POST", "PUT", "DELETE"))
+                .add(resource("Analyzer Tests", "/api/machines/{machineId}/tests",
+                        "CRUD for analyzer test Items (itemType=AnalyzerTest) linked to a Machine. "
+                        + "GET lists tests for the machine (supports ?query=&size=). "
+                        + "GET /{id} returns a single test. "
+                        + "POST creates a test (required: name, code); returns 409 when duplicate code exists for the machine. "
+                        + "PUT /{id} updates name or code. "
+                        + "DELETE /{id} soft-retires the test. "
+                        + "The code field matches analyzer output codes used by the LIMS middleware.",
+                        "API Key",
+                        "GET", "POST", "PUT", "DELETE"))
+                .add(resource("Patient Samples", "/api/patient-samples",
+                        "Search and retrieval of PatientSample records. "
+                        + "GET /search supports ?sampleId=&patientName=&fromDate=&toDate=&billNumber=&size= (dates: yyyy-MM-dd). "
+                        + "GET /{id} returns full sample detail including automation workflow fields "
+                        + "(sentToAnalyzer, receivedFromAnalyzer, sampleCollected, sampleReceivedAtLab, etc.) "
+                        + "and linked patientInvestigation, machine, test, and investigationComponent.",
+                        "API Key",
+                        "GET"))
                 .add(resource("Middleware", "/api/middleware",
                         "General middleware endpoints",
                         "API Key",

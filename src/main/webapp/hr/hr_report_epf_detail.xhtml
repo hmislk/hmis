@@ -1,202 +1,352 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
-      xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://xmlns.jcp.org/jsf/html"
-      xmlns:f="http://xmlns.jcp.org/jsf/core"
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:hr="http://xmlns.jcp.org/jsf/composite/autocomplete">
 
-      xmlns:hr="http://xmlns.jcp.org/jsf/composite/autocomplete">
+    <ui:define name="content">
 
-    <h:body>
+        <h:form styleClass="epf-detail-form">
 
-        <ui:composition template="/resources/template/template.xhtml">
+            <h:outputStylesheet>
+                .epf-detail-form {
+                    padding: 2rem 1.75rem;
+                }
 
-            <ui:define name="content">
+                .page-header {
+                    margin-bottom: 1.75rem;
+                }
 
-                <h:form>
-                    <p:panel header="Employe List" >
+                .page-title {
+                    font-size: 18px;
+                    font-weight: 600;
+                    margin: 0 0 4px 0;
+                }
 
-                        <h:panelGrid columns="2" >
-                            <h:outputLabel value="Institution"/>
-                            <hr:institution value="#{hrReportController.reportKeyWord.institution}"/>
-                            <h:outputLabel value="Department : "/>
-                            <hr:department value="#{hrReportController.reportKeyWord.department}"/>
-                            <h:outputLabel value="Staff Category : "/>
-                            <hr:completeStaffCategory value="#{hrReportController.reportKeyWord.staffCategory}"/>
-                            <h:outputLabel value="Staff Specility : "/>
-                            <hr:completeSpeciality value="#{hrReportController.reportKeyWord.speciality}"/>
-                            <h:outputLabel value="Staff Designation : "/>
-                            <hr:completeDesignation value="#{hrReportController.reportKeyWord.designation}"/>
-                            <h:outputLabel value="Staff Roster : "/>
-                            <hr:completeRoster value="#{hrReportController.reportKeyWord.roster}"/>
-                        </h:panelGrid>
-                        <h:panelGrid columns="3">
-                            <p:commandButton ajax="false" action="#{hrReportController.createStaffList}" value="Fill" />
-                            <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="float: right;" >
-                                <p:printer target="reportPrint"  />
-                            </p:commandButton>
+                .page-subtitle {
+                    font-size: 13px;
+                    color: #888;
+                    margin: 0;
+                }
 
-                            <p:commandButton actionListener="#{hrReportController.createStaffList}" ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
-                                <p:dataExporter type="xlsx" target="tbl2" fileName="hr_report_epf_detail"  />
-                            </p:commandButton>
-                        </h:panelGrid>
+                .controls-panel .ui-panel-content {
+                    padding: 1.5rem 1.75rem !important;
+                }
 
+                .controls-grid {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 1.25rem;
+                }
 
-                        <p:panel  id="reportPrint" styleClass="noBorder summeryBorder">
+                .fields-grid {
+                    display: grid;
+                    grid-template-columns: repeat(2, 1fr);
+                    gap: 1rem 1.5rem;
+                }
 
+                .field-group {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 6px;
+                }
 
-                            <p:dataTable value="#{hrReportController.staffs}"
-                                         var="s"
-                                         id="tbl2"
-                                         rowIndexVar="i"
-                                         rowKey="#{s.id}"
+                .field-label {
+                    font-size: 11.5px !important;
+                    font-weight: 600 !important;
+                    text-transform: uppercase;
+                    letter-spacing: 0.05em;
+                    color: #888 !important;
+                }
 
-                                         >
-                                <f:facet name="header">
+                .controls-actions {
+                    display: flex;
+                    gap: 10px;
+                    align-items: center;
+                    flex-wrap: wrap;
+                }
 
-                                    <h:outputLabel value="Employee List"/>
-                                    <br/>
-                                    <h:panelGroup rendered="#{hrReportController.reportKeyWord.institution ne null}" >
-                                        <h:outputLabel value="#{hrReportController.reportKeyWord.institution.name}" />
-                                        <br/>
-                                    </h:panelGroup>
-                                    <h:panelGroup rendered="#{hrReportController.reportKeyWord.department ne null}" >
-                                        <h:outputLabel value="Department : #{hrReportController.reportKeyWord.department.name}"/>
-                                        <br/>
-                                    </h:panelGroup>
-                                </f:facet>
+                .controls-actions-secondary {
+                    display: flex;
+                    gap: 10px;
+                    align-items: center;
+                    flex-wrap: wrap;
+                    padding-top: 0.75rem;
+                    border-top: 1px solid #e8e8e8;
+                }
 
+                .btn-action {
+                    height: 36px !important;
+                    padding: 0 18px !important;
+                    font-size: 13px !important;
+                }
 
-                                <p:column headerText="Nic Number" >
-                                    <f:facet name="header" >
-                                        <p:outputLabel value="Nic Number" />
-                                    </f:facet>
-                                    <p:outputLabel value="#{s.person.nic}" />
-                                </p:column>
+                .report-panel {
+                    margin-top: 1.5rem;
+                }
 
-                                <p:column headerText="Last Name" >
-                                    <f:facet name="header" >
-                                        <p:outputLabel value="Last Name" />
-                                    </f:facet>
-                                    <p:outputLabel />
-                                </p:column>
+                .report-panel .ui-panel-content {
+                    padding: 0 !important;
+                }
 
-                                <p:column filterBy="#{s.person.nameWithTitle}" headerText="Initials">
-                                    <f:facet name="header" >
-                                        <p:outputLabel value="Initials" />
-                                    </f:facet>
-                                    <p:outputLabel value="#{s.person.nameWithTitle}" />
-                                </p:column>
+                .report-header-wrap {
+                    text-align: center;
+                    padding: 1.5rem 1.5rem 1rem;
+                    border-bottom: 1px solid #e8e8e8;
+                }
 
-                                <p:column filterBy="#{s.accountNo}" headerText="Member AC Number">
-                                    <f:facet name="header" >
-                                        <p:outputLabel value="Member AC Number" />
-                                    </f:facet>
-                                    <p:outputLabel value="#{s.accountNo}" />
-                                </p:column>
+                .report-title-label {
+                    font-size: 13px;
+                    color: #666;
+                    display: block;
+                    margin-bottom: 2px;
+                }
 
-                                <p:column headerText="Employer’s Contribution Amount (Rs.)" >
-                                    <f:facet name="header" >
-                                        <p:outputLabel value="Employer’s Contribution Amount (Rs.)" />
-                                    </f:facet>
-                                    <p:outputLabel/>
-                                </p:column>
+                .report-meta {
+                    font-size: 13px;
+                    color: #555;
+                    margin-top: 4px;
+                }
 
-                                <p:column headerText="Member’s Contribution Amount (Rs.)" >
-                                    <f:facet name="header" >
-                                        <p:outputLabel value="Member’s Contribution Amount (Rs.)" />
-                                    </f:facet>
-                                    <p:outputLabel/>
-                                </p:column>
+                .epfd-table .ui-datatable-tablewrapper {
+                    overflow-x: auto !important;
+                    width: 100% !important;
+                }
 
+                .epfd-table table {
+                    width: auto !important;
+                    table-layout: auto !important;
+                }
 
+                .epfd-table .ui-datatable-data td,
+                .epfd-table .ui-datatable-thead th {
+                    padding: 10px 14px !important;
+                    white-space: nowrap;
+                    font-size: 13px !important;
+                    width: auto !important;
+                }
 
-                                <p:column headerText="Total Contribution Amount (Rs.)">
-                                    <f:facet name="header" >
-                                        <p:outputLabel value="Total Contribution Amount (Rs.)" />
-                                    </f:facet>
-                                    <p:outputLabel />
-                                </p:column>
+                .epfd-table .ui-datatable-thead th {
+                    font-size: 12px !important;
+                    font-weight: 600 !important;
+                    text-transform: uppercase;
+                    letter-spacing: 0.03em;
+                    color: #888 !important;
+                    background: #f9f9f9 !important;
+                    border-bottom: 1px solid #e8e8e8 !important;
+                }
 
+                .epfd-table .ui-datatable-data tr:hover td {
+                    background: #f5f7ff !important;
+                }
 
+                .epfd-table .col-text {
+                    text-align: left !important;
+                }
 
-                                <p:column headerText="Total Earnings (Rs.)">
-                                    <f:facet name="header" >
-                                        <p:outputLabel value="Total Earnings (Rs.)" />
-                                    </f:facet>
-                                    <p:outputLabel />
-                                </p:column>
+                .epfd-table .col-num {
+                    text-align: right !important;
+                }
 
-                                <p:column headerText="Member Status">
-                                    <f:facet name="header" >
-                                        <p:outputLabel value="Member Status" />
-                                    </f:facet>
-                                    <p:outputLabel value="#{s.employeeStatus.label}" />
-                                </p:column>
+                .epfd-table .col-name .ui-outputlabel {
+                    font-weight: 500;
+                }
 
-                                <p:column headerText="Zone code">
-                                    <f:facet name="header" >
-                                        <p:outputLabel value="Zone code" />
-                                    </f:facet>
-                                    <p:outputLabel />
-                                </p:column>
+                .epfd-table tfoot td {
+                    background: #f9f9f9 !important;
+                    font-weight: 600 !important;
+                    font-size: 13px !important;
+                    border-top: 2px solid #e0e0e0 !important;
+                    padding: 10px 14px !important;
+                }
 
-                                <p:column headerText="Employer Number">
-                                    <f:facet name="header" >
-                                        <p:outputLabel value="Employer Number" />
-                                    </f:facet>
-                                    <p:outputLabel value="#{s.codeInterger}"/>
-                                </p:column>
+                .report-table-footer {
+                    display: flex;
+                    justify-content: flex-end;
+                    align-items: center;
+                    gap: 6px;
+                    padding: 0.85rem 1.5rem;
+                    border-top: 1px solid #e8e8e8;
+                    font-size: 12px;
+                    color: #999;
+                }
+            </h:outputStylesheet>
 
-                                <p:column headerText="Contribution Year Month">
-                                    <f:facet name="header" >
-                                        <p:outputLabel value="Contribution Year Month" />
-                                    </f:facet>
-                                    <p:outputLabel value="#{s.dateJoined}">
-                                        <f:convertDateTime pattern="YYYY/MM"></f:convertDateTime>
-                                    </p:outputLabel>
-                                </p:column>
+            <div class="page-header">
+                <p class="page-title"><h:outputText value="Employee EPF Detail Report" /></p>
+                <p class="page-subtitle"><h:outputText value="Filter by institution, department or category and process to generate" /></p>
+            </div>
 
-                                <p:column headerText="Data Submission Number">
-                                    <f:facet name="header" >
-                                        <p:outputLabel value="Data Submission Number" />
-                                    </f:facet>
-                                    <p:outputLabel/>
-                                </p:column>
+            <p:panel styleClass="controls-panel">
+                <div class="controls-grid">
 
-                                <p:column headerText="No.of days worked">
-                                    <f:facet name="header" >
-                                        <p:outputLabel value="No.of days worked" />
-                                    </f:facet>
-                                    <p:outputLabel/>
-                                </p:column>
+                    <div class="fields-grid">
+                        <div class="field-group">
+                            <p:outputLabel value="Institution" styleClass="field-label" />
+                            <hr:institution value="#{hrReportController.reportKeyWord.institution}" />
+                        </div>
 
-                                <p:column headerText="Occupation Classification Grade(As per the classification of censes  and statistic Dept) ">
-                                    <f:facet name="header" >
-                                        <p:outputLabel value="Occupation Classification Grade(As per the classification of censes  and statistic Dept) " />
-                                    </f:facet>
-                                    <p:outputLabel/>
-                                </p:column>
+                        <div class="field-group">
+                            <p:outputLabel value="Department" styleClass="field-label" />
+                            <hr:department value="#{hrReportController.reportKeyWord.department}" />
+                        </div>
 
-                                <f:facet name="footer">
-                                    <p:outputLabel value="Print By : #{sessionController.loggedUser.webUserPerson.name} - " />
-                                    <p:outputLabel value="Print At : " />
-                                    <p:outputLabel value="#{commonFunctionsProxy.currentDateTime}" >
-                                        <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a " />
-                                    </p:outputLabel>
-                                </f:facet>
+                        <div class="field-group">
+                            <p:outputLabel value="Staff category" styleClass="field-label" />
+                            <hr:completeStaffCategory value="#{hrReportController.reportKeyWord.staffCategory}" />
+                        </div>
 
-                            </p:dataTable>
+                        <div class="field-group">
+                            <p:outputLabel value="Staff speciality" styleClass="field-label" />
+                            <hr:completeSpeciality value="#{hrReportController.reportKeyWord.speciality}" />
+                        </div>
 
+                        <div class="field-group">
+                            <p:outputLabel value="Staff designation" styleClass="field-label" />
+                            <hr:completeDesignation value="#{hrReportController.reportKeyWord.designation}" />
+                        </div>
 
-                        </p:panel>
-                    </p:panel>
-                </h:form>
-            </ui:define>
+                        <div class="field-group">
+                            <p:outputLabel value="Staff roster" styleClass="field-label" />
+                            <hr:completeRoster value="#{hrReportController.reportKeyWord.roster}" />
+                        </div>
+                    </div>
 
+                    <div class="controls-actions">
+                        <p:commandButton value="Process"
+                                         ajax="false"
+                                         action="#{hrReportController.createStaffList}"
+                                         icon="pi pi-sync"
+                                         styleClass="btn-action" />
+                    </div>
 
-        </ui:composition>
+                    <div class="controls-actions-secondary">
+                        <p:commandButton value="Print"
+                                         type="button"
+                                         icon="pi pi-print"
+                                         styleClass="btn-action">
+                            <p:printer target="reportPrint" />
+                        </p:commandButton>
+                        <p:commandButton value="Export Excel"
+                                         ajax="false"
+                                         actionListener="#{hrReportController.createStaffList}"
+                                         icon="pi pi-file-excel"
+                                         styleClass="btn-action noPrintButton">
+                            <p:dataExporter type="xlsx" target="tbl2" fileName="hr_report_epf_detail" />
+                        </p:commandButton>
+                    </div>
 
-    </h:body>
-</html>
+                </div>
+            </p:panel>
+
+            <p:panel id="reportPrint" styleClass="report-panel noBorder summeryBorder">
+
+                <f:facet name="header">
+                    <div class="report-header-wrap">
+                        <span class="report-title-label"><h:outputText value="Employee EPF Detail Report" /></span>
+                        <h:panelGroup rendered="#{hrReportController.reportKeyWord.institution ne null}">
+                            <p class="report-meta">
+                                <h:outputText value="#{hrReportController.reportKeyWord.institution.name}" />
+                            </p>
+                        </h:panelGroup>
+                        <h:panelGroup rendered="#{hrReportController.reportKeyWord.department ne null}">
+                            <p class="report-meta">
+                                <h:outputText value="Department: " />
+                                <h:outputText value="#{hrReportController.reportKeyWord.department.name}" />
+                            </p>
+                        </h:panelGroup>
+                    </div>
+                </f:facet>
+
+                <p:dataTable id="tbl2"
+                             value="#{hrReportController.staffs}"
+                             var="s"
+                             rowIndexVar="i"
+                             rowKey="#{s.id}"
+                             styleClass="epfd-table">
+
+                    <p:column headerText="NIC no" styleClass="col-text">
+                        <p:outputLabel value="#{s.person.nic}" />
+                    </p:column>
+
+                    <p:column headerText="Last name" styleClass="col-text">
+                        <p:outputLabel />
+                    </p:column>
+
+                    <p:column headerText="Initials" styleClass="col-text col-name"
+                              filterBy="#{s.person.nameWithTitle}">
+                        <p:outputLabel value="#{s.person.nameWithTitle}" />
+                    </p:column>
+
+                    <p:column headerText="Member AC no" styleClass="col-text"
+                              filterBy="#{s.accountNo}">
+                        <p:outputLabel value="#{s.accountNo}" />
+                    </p:column>
+
+                    <p:column headerText="Employer contribution (Rs.)" styleClass="col-num">
+                        <p:outputLabel />
+                    </p:column>
+
+                    <p:column headerText="Member contribution (Rs.)" styleClass="col-num">
+                        <p:outputLabel />
+                    </p:column>
+
+                    <p:column headerText="Total contribution (Rs.)" styleClass="col-num">
+                        <p:outputLabel />
+                    </p:column>
+
+                    <p:column headerText="Total earnings (Rs.)" styleClass="col-num">
+                        <p:outputLabel />
+                    </p:column>
+
+                    <p:column headerText="Member status" styleClass="col-text">
+                        <p:outputLabel value="#{s.employeeStatus.label}" />
+                    </p:column>
+
+                    <p:column headerText="Zone code" styleClass="col-text">
+                        <p:outputLabel />
+                    </p:column>
+
+                    <p:column headerText="Employer no" styleClass="col-text">
+                        <p:outputLabel value="#{s.codeInterger}" />
+                    </p:column>
+
+                    <p:column headerText="Contribution year/month" styleClass="col-text">
+                        <p:outputLabel value="#{s.dateJoined}">
+                            <f:convertDateTime pattern="yyyy/MM" />
+                        </p:outputLabel>
+                    </p:column>
+
+                    <p:column headerText="Submission no" styleClass="col-text">
+                        <p:outputLabel />
+                    </p:column>
+
+                    <p:column headerText="Days worked" styleClass="col-num">
+                        <p:outputLabel />
+                    </p:column>
+
+                    <p:column headerText="Occupation grade" styleClass="col-text">
+                        <p:outputLabel />
+                    </p:column>
+
+                    <f:facet name="footer">
+                        <div class="report-table-footer">
+                            <p:outputLabel value="Print by: #{sessionController.loggedUser.webUserPerson.name}" />
+                            <span>·</span>
+                            <p:outputLabel value="#{commonFunctionsProxy.currentDateTime}">
+                                <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a" />
+                            </p:outputLabel>
+                        </div>
+                    </f:facet>
+
+                </p:dataTable>
+
+            </p:panel>
+
+        </h:form>
+    </ui:define>
+
+</ui:composition>

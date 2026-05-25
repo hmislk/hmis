@@ -12,6 +12,7 @@ import com.divudi.core.facade.ScheduledProcessConfigurationFacade;
 import com.divudi.service.HistoricalRecordService;
 import com.divudi.service.StockService;
 import com.divudi.service.archival.StockHistoryArchivalService;
+import com.divudi.service.archival.ItemBatchArchivalService;
 import com.divudi.core.data.StockValueRow;
 import java.util.Calendar;
 import java.util.Date;
@@ -38,6 +39,9 @@ public class ScheduledProcessService {
 
     @EJB
     private StockHistoryArchivalService stockHistoryArchivalService;
+
+    @EJB
+    private ItemBatchArchivalService itemBatchArchivalService;
 
     @Inject
     private ConfigOptionApplicationController configOptionController;
@@ -149,6 +153,9 @@ public class ScheduledProcessService {
             case Archive_Old_StockHistory_Records:
                 archiveOldStockHistoryRecords();
                 break;
+            case Archive_Old_ItemBatch_Records:
+                archiveOldItemBatchRecords();
+                break;
             default:
         }
     }
@@ -186,6 +193,30 @@ public class ScheduledProcessService {
             // Rethrow so executeScheduledProcess() does not mark
             // lastProcessCompleted=true when the archive actually failed.
             throw new RuntimeException("StockHistory archive run failed", ex);
+        }
+    }
+
+    private void archiveOldItemBatchRecords() {
+        int retentionDays = sanitisePositive(configOptionController.getIntegerValueByKey(
+                "ItemBatch Archive - Retention Days", 365), 365);
+        int batchSize = sanitisePositive(configOptionController.getIntegerValueByKey(
+                "ItemBatch Archive - Batch Size", 1000), 1000);
+        int maxBatches = sanitisePositive(configOptionController.getIntegerValueByKey(
+                "ItemBatch Archive - Max Batches Per Run", 20), 20);
+
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.DATE, -retentionDays);
+        Date cutoff = cal.getTime();
+
+        try {
+            ArchiveResult result = itemBatchArchivalService.archive(cutoff, batchSize, maxBatches, false);
+            LOGGER.log(Level.INFO,
+                    "ItemBatch archive run: cutoff={0}, archived={1}, batches={2}, durationMs={3}, message={4}",
+                    new Object[]{cutoff, result.getArchivedCount(), result.getBatchesRun(),
+                            result.getDurationMillis(), result.getMessage()});
+        } catch (Exception ex) {
+            LOGGER.log(Level.SEVERE, "ItemBatch archive run failed", ex);
+            throw new RuntimeException("ItemBatch archive run failed", ex);
         }
     }
 
