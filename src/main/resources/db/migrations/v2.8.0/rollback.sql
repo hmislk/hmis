@@ -4,7 +4,7 @@
 -- UNIVERSAL: detects actual table-name case via INFORMATION_SCHEMA so this works on both
 -- case-sensitive (Linux, lower_case_table_names=0) and case-insensitive (Windows/Azure) MySQL.
 
-SELECT 'Rollback v2.7.0 - Reverting BILLTYPEATOMIC for pharmacy disposal issue bills' AS status;
+SELECT 'Rollback v2.8.0 - Reverting BILLTYPEATOMIC for pharmacy disposal issue bills' AS status;
 
 -- ── STEP 0: DETECT ACTUAL TABLE NAME CASE ────────────────────────────────────
 
