@@ -1153,6 +1153,7 @@ public class SessionController implements Serializable, HttpSessionListener {
             String hashed = getSecurityController().hashAndCheck(password);
             user.setWebUserPassword(hashed);
             user.setNeedToResetPassword(false);
+            user.setLastPasswordResetAt(new Date());
             uFacade.editAndCommit(user);
             recordPasswordHistory(user, hashed);
 
@@ -1188,9 +1189,11 @@ public class SessionController implements Serializable, HttpSessionListener {
 
         String hashed = getSecurityController().hashAndCheck(newPassword);
         user.setWebUserPassword(hashed);
+        user.setNeedToResetPassword(false);
+        user.setLastPasswordResetAt(new Date());
         uFacade.editAndCommit(user);
         recordPasswordHistory(user, hashed);
-        
+
         // Purge old password history entries beyond the configured limit
         purgeOldPasswordHistory(user);
         JsfUtil.addSuccessMessage("Password changed");
