@@ -2721,16 +2721,12 @@ public class InwardReportController implements Serializable {
                 fromDate, toDate,
                 sessionController.getApplicationPreference().getLongDateFormat());
 
-        response.setContentType("application/pdf");
-        response.setHeader("Content-Disposition",
-                "attachment; filename=Admission_Category_Wise_Admission_" + dates + ".pdf");
-
         SimpleDateFormat sdf = new SimpleDateFormat("dd MMMM yyyy");
         SimpleDateFormat sdt = new SimpleDateFormat("dd MMM yyyy HH:mm");
 
-        try (OutputStream out = response.getOutputStream()) {
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
             Document document = new Document(com.lowagie.text.PageSize.A4.rotate());
-            com.lowagie.text.pdf.PdfWriter.getInstance(document, out);
+            com.lowagie.text.pdf.PdfWriter.getInstance(document, baos);
             document.open();
 
             String institutionName = sessionController.getInstitution() != null
@@ -2771,6 +2767,19 @@ public class InwardReportController implements Serializable {
 
             document.add(table);
             document.close();
+
+            byte[] bytes = baos.toByteArray();
+            response.reset();
+            response.setContentType("application/pdf");
+            response.setHeader("Content-Disposition",
+                    "attachment; filename=Admission_Category_Wise_Admission_" + dates + ".pdf");
+            response.setContentLength(bytes.length);
+
+            try (OutputStream out = response.getOutputStream()) {
+                out.write(bytes);
+                out.flush();
+            }
+
             context.responseComplete();
 
         } catch (Exception e) {
