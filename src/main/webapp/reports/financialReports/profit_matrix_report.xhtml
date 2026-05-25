@@ -180,13 +180,11 @@
                                 action="#{reportController.createProfitMatrixReport}"/>
 
                             <p:commandButton 
-                                class="ui-button-secondary mx-1"
-                                icon="fas fa-print"
+                                class="mx-2 ui-button-info m-1"
+                                icon="fa-solid fa-print"
                                 ajax="false"
-                                value="Print All" 
-                                onclick="hidePaginatorBeforePrint()">
-                                <p:printer target="printPanel" oncomplete="restorePaginatorAfterPrint()"/>
-                            </p:commandButton>
+                                action="profit_matrix_report_print?faces-redirect=true"
+                                value="To Print" />
 
                             <p:commandButton 
                                 class="ui-button-success mx-1"
@@ -212,17 +210,6 @@
                                     fileName="profit_matrix_detail" />
                             </p:commandButton>
 
-                            <p:commandButton 
-                                class="ui-button-danger mx-1"
-                                icon="fas fa-file-pdf"
-                                ajax="false"
-                                value="PDF"
-                                rendered="#{empty reportController.reportType or reportController.reportType eq 'summery'}">
-                                <p:dataExporter
-                                    type="pdf"
-                                    target="summeryWise"
-                                    fileName="profit_matrix_summary" />
-                            </p:commandButton>
 
                             <p:commandButton 
                                 class="ui-button-danger mx-1"
@@ -473,21 +460,7 @@
 
 
                     </p:panel>
-                    <h:outputScript>
-                        function hidePaginatorBeforePrint() {
-                        let paginators = document.querySelectorAll('.ui-paginator');
-                        paginators.forEach(el => el.style.display = 'none');
-                        }
-
-                        function restorePaginatorAfterPrint() {
-                        let paginators = document.querySelectorAll('.ui-paginator');
-                        paginators.forEach(el => el.style.display = '');
-                        }
-
-                        window.onafterprint = function () {
-                        restorePaginatorAfterPrint();
-                        };
-                    </h:outputScript>
+                    
                 </h:form>
             </ui:define>
         </ui:composition>

@@ -9,10 +9,14 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.ejb.Asynchronous;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
+import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
@@ -46,11 +50,16 @@ public class ItemBatchArchivalService extends ArchivalServiceBase {
     @PersistenceContext(unitName = "hmisPU")
     private EntityManager em;
 
+    private static final Logger LOGGER = Logger.getLogger(ItemBatchArchivalService.class.getName());
+
     @EJB
     private ArchivalBatchTx batchTx;
 
     @EJB
     private ItemBatchArchivalBatchTx itemBatchBatchTx;
+
+    @Inject
+    private ItemBatchArchivalTracker tracker;
 
     @Override
     protected EntityManager em() {
@@ -149,15 +158,19 @@ public class ItemBatchArchivalService extends ArchivalServiceBase {
         return result.isEmpty() ? upperName : result.get(0).toString();
     }
 
-    /**
-     * Run an archival pass using the 6-step ItemBatch-specific batch executor.
-     *
-     * Overrides the base {@link ArchivalServiceBase#archive} to use
-     * {@link ItemBatchArchivalBatchTx} which handles both ItemBatch and Stock
-     * tables atomically per batch.
-     */
     @Override
     public ArchiveResult archive(Date cutoff, int batchSize, int maxBatches, boolean dryRun) {
+        return archive(cutoff, batchSize, maxBatches, dryRun, null);
+    }
+
+    /**
+     * ItemBatch-specific archival loop that uses {@link ItemBatchArchivalBatchTx}
+     * (handles ItemBatch + Stock tables atomically per batch).
+     * Invokes {@code onBatchMoved} after each committed batch for progress tracking.
+     */
+    @Override
+    public ArchiveResult archive(Date cutoff, int batchSize, int maxBatches, boolean dryRun,
+                                  java.util.function.IntConsumer onBatchMoved) {
         Date startedAt = new Date();
         long candidates = countOlderThan(cutoff);
 
@@ -203,6 +216,9 @@ public class ItemBatchArchivalService extends ArchivalServiceBase {
                     ibCols, stCols, ids);
             totalArchived += moved;
             batchesRun++;
+            if (onBatchMoved != null) {
+                onBatchMoved.accept(moved);
+            }
             if (ids.size() < batchSize) {
                 break;
             }
@@ -215,5 +231,25 @@ public class ItemBatchArchivalService extends ArchivalServiceBase {
                 + (reachedLimit ? " (batch limit reached; more rows remain)" : "");
         return new ArchiveResult(false, candidates, totalArchived, batchesRun,
                 reachedLimit, startedAt, new Date(), msg);
+    }
+
+    /**
+     * Fire-and-forget async wrapper for live archive runs.
+     */
+    @Asynchronous
+    public void archiveAsync(Date cutoff, int batchSize, int maxBatches) {
+        long candidates = countOlderThan(cutoff);
+        tracker.start(candidates, maxBatches);
+        try {
+            ArchiveResult result = archive(cutoff, batchSize, maxBatches, false,
+                    moved -> tracker.recordBatch(moved));
+            tracker.finish(result);
+        } catch (Exception ex) {
+            LOGGER.log(Level.SEVERE, "Async ItemBatch archival failed", ex);
+            ArchiveResult err = new ArchiveResult(false, tracker.getCandidates(),
+                    tracker.getArchivedSoFar(), tracker.getBatchesDone(), false,
+                    tracker.getStartedAt(), new Date(), "Error: " + ex.getMessage());
+            tracker.finish(err);
+        }
     }
 }

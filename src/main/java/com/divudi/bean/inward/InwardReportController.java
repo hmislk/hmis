@@ -1857,11 +1857,13 @@ public class InwardReportController implements Serializable {
 
             jpql.append(" Select new com.divudi.core.data.dto.MonthServiceCountDTO(")
                     .append(" FUNCTION('MONTH', a.dateOfDischarge), ")
-                    .append(" s.item.category.name, ")
+                    .append(" COALESCE(c.name, 'Uncategorized'), ")
                     .append(" count(s) ")
                     .append(") ")
                     .append(" from PatientEncounter s ")
                     .append(" join s.parentEncounter a ")
+                    .append(" left join s.item i ")
+                    .append(" left join i.category c ")
                     .append(" Where s.retired = false ")
                     .append(" and a.discharged = true ")
                     .append(" and a.dateOfDischarge is not null ")
@@ -1904,7 +1906,7 @@ public class InwardReportController implements Serializable {
                 params.put("site", site);
             }
 
-            jpql.append(" Group By FUNCTION('MONTH', a.dateOfDischarge), s.item.category.name ");
+            jpql.append(" Group By FUNCTION('MONTH', a.dateOfDischarge), COALESCE(c.name, 'Uncategorized') ");
 
         } else if (reportType.equals("DETAIL")) {
 

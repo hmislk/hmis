@@ -8,6 +8,7 @@ import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.core.data.dto.ArchiveResult;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.service.archival.StockHistoryArchivalService;
+import com.divudi.service.archival.StockHistoryArchivalTracker;
 import java.io.Serializable;
 import java.util.Calendar;
 import java.util.Date;
@@ -40,32 +41,38 @@ public class StockHistoryArchivalController implements Serializable {
     @Inject
     private ConfigOptionApplicationController configOptionController;
 
+    @Inject
+    private StockHistoryArchivalTracker tracker;
+
     private Date cutoffDate;
+    private int retentionDays;
     private int batchSize;
     private int maxBatches;
     private boolean dryRun;
-    private ArchiveResult lastResult;
     private Long candidateCount;
 
     public String navigateToArchiveStockHistory() {
         resetDefaults();
-        lastResult = null;
         candidateCount = null;
         return "/dataAdmin/archive_stock_history?faces-redirect=true";
     }
 
     private void resetDefaults() {
-        int retentionDays = sanitisePositive(configOptionController.getIntegerValueByKey(
+        retentionDays = sanitisePositive(configOptionController.getIntegerValueByKey(
                 "StockHistory Archive - Retention Days", 730), 730);
-        Calendar cal = Calendar.getInstance();
-        cal.add(Calendar.DATE, -retentionDays);
-        cutoffDate = cal.getTime();
+        recalculateCutoff();
 
         batchSize = sanitisePositive(configOptionController.getIntegerValueByKey(
                 "StockHistory Archive - Batch Size", 2000), 2000);
         maxBatches = sanitisePositive(configOptionController.getIntegerValueByKey(
                 "StockHistory Archive - Max Batches Per Run", 50), 50);
         dryRun = true;
+    }
+
+    public void recalculateCutoff() {
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.DATE, -retentionDays);
+        cutoffDate = cal.getTime();
     }
 
     private static int sanitisePositive(Integer raw, int fallback) {
@@ -90,13 +97,19 @@ public class StockHistoryArchivalController implements Serializable {
         if (!validateInputs()) {
             return;
         }
+        if (tracker.isRunning()) {
+            JsfUtil.addErrorMessage("Archival is already in progress.");
+            return;
+        }
         try {
-            lastResult = archivalService.archive(cutoffDate, batchSize, maxBatches, dryRun);
             if (dryRun) {
-                JsfUtil.addSuccessMessage("Dry run: " + lastResult.getCandidateCount()
+                ArchiveResult result = archivalService.archive(cutoffDate, batchSize, maxBatches, true);
+                tracker.start(result.getCandidateCount(), 0);
+                tracker.finish(result);
+                JsfUtil.addSuccessMessage("Dry run: " + result.getCandidateCount()
                         + " row(s) would be archived");
             } else {
-                JsfUtil.addSuccessMessage(lastResult.getMessage());
+                archivalService.archiveAsync(cutoffDate, batchSize, maxBatches);
             }
         } catch (Exception ex) {
             LOGGER.log(Level.SEVERE, "StockHistory archive run failed", ex);
@@ -127,6 +140,9 @@ public class StockHistoryArchivalController implements Serializable {
     public Date getCutoffDate() { return cutoffDate; }
     public void setCutoffDate(Date cutoffDate) { this.cutoffDate = cutoffDate; }
 
+    public int getRetentionDays() { return retentionDays; }
+    public void setRetentionDays(int retentionDays) { this.retentionDays = retentionDays; }
+
     public int getBatchSize() { return batchSize; }
     public void setBatchSize(int batchSize) { this.batchSize = batchSize; }
 
@@ -136,6 +152,7 @@ public class StockHistoryArchivalController implements Serializable {
     public boolean isDryRun() { return dryRun; }
     public void setDryRun(boolean dryRun) { this.dryRun = dryRun; }
 
-    public ArchiveResult getLastResult() { return lastResult; }
+    public ArchiveResult getLastResult() { return tracker.getLastResult(); }
+    public StockHistoryArchivalTracker getTracker() { return tracker; }
     public Long getCandidateCount() { return candidateCount; }
 }
