@@ -138,6 +138,20 @@
                                     <p:tab title="Data" disabled="false">
                                         <div class="d-grid gap-2">
                                             <p:commandButton
+                                                value="Archive StockHistory"
+                                                action="#{stockHistoryArchivalController.navigateToArchiveStockHistory()}"
+                                                ajax="false"
+                                                styleClass="w-100 ui-button-warning"
+                                                icon="fa fa-archive"
+                                                rendered="#{webUserController.hasPrivilege('ArchiveOldStockHistory')}" />
+                                            <p:commandButton
+                                                value="Archive ItemBatch"
+                                                action="#{itemBatchArchivalController.navigateToArchiveItemBatch()}"
+                                                ajax="false"
+                                                styleClass="w-100 ui-button-warning"
+                                                icon="fa fa-archive"
+                                                rendered="#{webUserController.hasPrivilege('ArchiveOldItemBatch')}" />
+                                            <p:commandButton
                                                 value="Generate Historical Record"
                                                 action="#{historicalRecordController.navigateToHistoricalRecordGenerate()}"
                                                 ajax="false"
@@ -149,13 +163,6 @@
                                                 ajax="false"
                                                 styleClass="w-100 ui-button-success"
                                                 icon="fa fa-database" />
-                                            <p:commandButton
-                                                value="Archival"
-                                                action="admin_functions?faces-redirect=true"
-                                                ajax="false"
-                                                styleClass="w-100 ui-button-secondary"
-                                                icon="fa fa-archive"
-                                                rendered="#{webUserController.hasPrivilege('ArchiveOldStockHistory') or webUserController.hasPrivilege('ArchiveOldItemBatch')}" />
                                         </div>
                                     </p:tab>
 
