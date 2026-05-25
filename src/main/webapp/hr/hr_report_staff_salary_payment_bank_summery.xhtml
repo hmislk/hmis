@@ -1,157 +1,389 @@
 <?xml version='1.0' encoding='UTF-8' ?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
-      xmlns:h="http://xmlns.jcp.org/jsf/html"
-      xmlns:p="http://primefaces.org/ui"
-      xmlns:f="http://xmlns.jcp.org/jsf/core"
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:hr="http://xmlns.jcp.org/jsf/composite/autocomplete">
 
-      xmlns:hr="http://xmlns.jcp.org/jsf/composite/autocomplete">
+    <ui:define name="content">
 
-    <h:body>
+        <h:form styleClass="bank-wise-form">
 
-        <ui:composition template="/resources/template/template.xhtml">
+            <h:outputStylesheet>
+                .bank-wise-form {
+                    padding: 2rem 1.75rem;
+                }
 
-            <ui:define name="content">
-                <h:form >
-                    <p:panel >
-                        <f:facet name="header" >
-                            <h:outputLabel value="Employee Salary Bank Vise" />
-                        </f:facet>
-                        <h:panelGrid columns="2" >
-                            <h:outputLabel value="Salary Cycle"/>
-                            <p:selectOneMenu value="#{hrReportController.reportKeyWord.salaryCycle}"
-                                             var="t">
+                .page-header {
+                    margin-bottom: 1.75rem;
+                }
+
+                .page-title {
+                    font-size: 18px;
+                    font-weight: 600;
+                    margin: 0 0 4px 0;
+                }
+
+                .page-subtitle {
+                    font-size: 13px;
+                    color: #888;
+                    margin: 0;
+                }
+
+                .controls-panel .ui-panel-content {
+                    padding: 1.5rem 1.75rem !important;
+                }
+
+                .controls-grid {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 1.25rem;
+                }
+
+                .fields-grid {
+                    display: grid;
+                    grid-template-columns: repeat(2, 1fr);
+                    gap: 1rem 1.5rem;
+                }
+
+                .field-group {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 6px;
+                }
+
+                .field-label {
+                    font-size: 11.5px !important;
+                    font-weight: 600 !important;
+                    text-transform: uppercase;
+                    letter-spacing: 0.05em;
+                    color: #888 !important;
+                }
+
+                .checkbox-row {
+                    display: flex;
+                    gap: 2rem;
+                    align-items: center;
+                }
+
+                .checkbox-group {
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                }
+
+                .controls-actions {
+                    display: flex;
+                    gap: 10px;
+                    align-items: center;
+                    flex-wrap: wrap;
+                }
+
+                .controls-actions-secondary {
+                    display: flex;
+                    gap: 10px;
+                    align-items: center;
+                    flex-wrap: wrap;
+                    padding-top: 0.75rem;
+                    border-top: 1px solid #e8e8e8;
+                }
+
+                .btn-action {
+                    height: 36px !important;
+                    padding: 0 18px !important;
+                    font-size: 13px !important;
+                }
+
+                .report-panel {
+                    margin-top: 1.5rem;
+                }
+
+                .report-panel .ui-panel-content {
+                    padding: 0 !important;
+                }
+
+                .report-header-wrap {
+                    text-align: center;
+                    padding: 1.5rem 1.5rem 1rem;
+                    border-bottom: 1px solid #e8e8e8;
+                }
+
+                .report-title-label {
+                    font-size: 13px;
+                    color: #666;
+                    display: block;
+                    margin-bottom: 2px;
+                }
+
+                .report-cycle-label {
+                    font-size: 13px;
+                    font-weight: 500;
+                    display: block;
+                }
+
+                .report-meta {
+                    font-size: 13px;
+                    color: #555;
+                    margin-top: 4px;
+                }
+
+                .bank-wise-table .ui-datatable-tablewrapper {
+                    overflow-x: auto !important;
+                    width: 100% !important;
+                }
+
+                .bank-wise-table table {
+                    width: auto !important;
+                    table-layout: auto !important;
+                }
+
+                .bank-wise-table .ui-datatable-data td,
+                .bank-wise-table .ui-datatable-thead th {
+                    padding: 10px 14px !important;
+                    white-space: nowrap;
+                    font-size: 13px !important;
+                    width: auto !important;
+                }
+
+                .bank-wise-table .ui-datatable-thead th {
+                    font-size: 12px !important;
+                    font-weight: 600 !important;
+                    text-transform: uppercase;
+                    letter-spacing: 0.03em;
+                    color: #888 !important;
+                    background: #f9f9f9 !important;
+                    border-bottom: 1px solid #e8e8e8 !important;
+                }
+
+                .bank-wise-table .ui-datatable-data tr:hover td {
+                    background: #f5f7ff !important;
+                }
+
+                .bank-wise-table .col-num {
+                    text-align: right !important;
+                }
+
+                .bank-wise-table .col-num .ui-outputlabel {
+                    display: block;
+                    text-align: right;
+                }
+
+                .bank-wise-table .col-text {
+                    text-align: left !important;
+                }
+
+                .bank-wise-table tfoot td {
+                    background: #f9f9f9 !important;
+                    font-weight: 600 !important;
+                    font-size: 13px !important;
+                    border-top: 2px solid #e0e0e0 !important;
+                    padding: 10px 14px !important;
+                }
+
+                .report-table-footer {
+                    display: flex;
+                    justify-content: flex-end;
+                    align-items: center;
+                    gap: 6px;
+                    padding: 0.85rem 1.5rem;
+                    border-top: 1px solid #e8e8e8;
+                    font-size: 12px;
+                    color: #999;
+                }
+            </h:outputStylesheet>
+
+            <div class="page-header">
+                <p class="page-title"><h:outputText value="Employee Salary Bank-Wise" /></p>
+                <p class="page-subtitle"><h:outputText value="Filter by cycle, department or roster and process to generate a bank-wise salary summary" /></p>
+            </div>
+
+            <p:panel styleClass="controls-panel">
+                <div class="controls-grid">
+
+                    <div class="fields-grid">
+                        <div class="field-group">
+                            <p:outputLabel for="salaryCycle" value="Salary cycle" styleClass="field-label" />
+                            <p:selectOneMenu id="salaryCycle"
+                                             value="#{hrReportController.reportKeyWord.salaryCycle}"
+                                             var="t"
+                                             appendTo="@body"
+                                             autoWidth="false"
+                                             style="width: 100%;">
                                 <f:selectItems value="#{salaryCycleController.salaryCycles}"
                                                var="theme"
                                                itemLabel="#{theme.name}"
-                                               itemValue="#{theme}" ></f:selectItems>
-
-                                <p:column style="width:10%" headerText="Name">
+                                               itemValue="#{theme}" />
+                                <p:column style="width:10%">
                                     <h:outputText value="#{t.name}" />
                                 </p:column>
-
-                                <p:column headerText="Year">
+                                <p:column>
                                     <h:outputText value="#{t.salaryYear}" />
                                 </p:column>
-                                <p:column headerText="Month">
+                                <p:column>
                                     <h:outputText value="#{t.salaryMonth}" />
                                 </p:column>
                             </p:selectOneMenu>
-                            <h:outputLabel value="Institution : "/>
-                            <hr:institution value="#{hrReportController.reportKeyWord.institution}"/>
-                            <h:outputLabel value="Department : "/>
-                            <hr:department value="#{hrReportController.reportKeyWord.department}"/>
-                            <h:outputLabel value="Staff Roster : "/>
-                            <hr:completeRoster value="#{hrReportController.reportKeyWord.roster}"/>
-                            <h:outputLabel value="Show Blocked"/>
-                            <p:selectBooleanCheckbox value="#{hrReportController.blocked}"/>
-                            <h:outputLabel value="Show Hold"/>
-                            <p:selectBooleanCheckbox value="#{hrReportController.hold}"/>
-                        </h:panelGrid>
+                        </div>
 
-                        <p:commandButton ajax="false" value="Process Net Salary" action="#{hrReportController.createStaffSalaryNetSalarySummeryByBank()}"/>
-                        <p:commandButton ajax="false" value="Process OT Payment" action="#{hrReportController.createStaffSalaryOtPaymentSummeryByBank()}"/>
-                        <p:commandButton ajax="false" value="Process Net And OT Payment" action="#{hrReportController.createStaffSalaryNetAndOtPaymentSummeryByBank()}"/>
+                        <div class="field-group">
+                            <p:outputLabel value="Institution" styleClass="field-label" />
+                            <hr:institution value="#{hrReportController.reportKeyWord.institution}" />
+                        </div>
 
-                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton"  >
-                            <p:dataExporter type="xlsx" target="tb1" fileName="hr_report_staff_salary_payment_bank_summery"  />
+                        <div class="field-group">
+                            <p:outputLabel value="Department" styleClass="field-label" />
+                            <hr:department value="#{hrReportController.reportKeyWord.department}" />
+                        </div>
+
+                        <div class="field-group">
+                            <p:outputLabel value="Staff roster" styleClass="field-label" />
+                            <hr:completeRoster value="#{hrReportController.reportKeyWord.roster}" />
+                        </div>
+
+                        <div class="field-group">
+                            <p:outputLabel value="Options" styleClass="field-label" />
+                            <div class="checkbox-row">
+                                <div class="checkbox-group">
+                                    <p:selectBooleanCheckbox id="blocked" value="#{hrReportController.blocked}" />
+                                    <h:outputLabel for="blocked" styleClass="field-label" value="Show blocked" />
+                                </div>
+                                <div class="checkbox-group">
+                                    <p:selectBooleanCheckbox id="hold" value="#{hrReportController.hold}" />
+                                    <h:outputLabel for="hold" styleClass="field-label" value="Show hold" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="controls-actions">
+                        <p:commandButton value="Process net salary"
+                                         ajax="false"
+                                         action="#{hrReportController.createStaffSalaryNetSalarySummeryByBank()}"
+                                         icon="pi pi-sync"
+                                         styleClass="btn-action" />
+                        <p:commandButton value="Process OT payment"
+                                         ajax="false"
+                                         action="#{hrReportController.createStaffSalaryOtPaymentSummeryByBank()}"
+                                         icon="pi pi-sync"
+                                         styleClass="btn-action" />
+                        <p:commandButton value="Process net and OT payment"
+                                         ajax="false"
+                                         action="#{hrReportController.createStaffSalaryNetAndOtPaymentSummeryByBank()}"
+                                         icon="pi pi-sync"
+                                         styleClass="btn-action" />
+                    </div>
+
+                    <div class="controls-actions-secondary">
+                        <p:commandButton value="Print"
+                                        type="button"
+                                        icon="pi pi-print"
+                                        styleClass="btn-action noPrintButton">
+                            <p:printer target="gpBillPreview" />
                         </p:commandButton>
-                        <p:commandButton value="Print" ajax="false" action="#" >
-                            <p:printer target="gpBillPreview" ></p:printer>
+                        <p:commandButton value="Export Excel"
+                                         ajax="false"
+                                         icon="pi pi-file-excel"
+                                         styleClass="btn-action noPrintButton">
+                            <p:dataExporter type="xlsx" target="tb1" fileName="hr_report_staff_salary_payment_bank_summery" />
                         </p:commandButton>
-                        <p:panel id="gpBillPreview" styleClass="noBorder summeryBorder" >
-                            <p:dataTable id="tb1" value="#{hrReportController.bankViseSalaryAndOts}" var="ss"  editable="true" rowIndexVar="i">
-                                <f:facet name="header" >
+                    </div>
 
-                                    <h:outputLabel value="Employee Salary Bank Vise" />
-                                    <br/>
-                                    <h:panelGroup rendered="#{hrReportController.reportKeyWord.institution ne null}" >
-                                        <h:outputLabel value="#{hrReportController.reportKeyWord.institution.name}" />
-                                        <br/>
-                                    </h:panelGroup>
-                                    <h:panelGroup rendered="#{hrReportController.reportKeyWord.department ne null}" >
-                                        <h:outputLabel value="Department : #{hrReportController.reportKeyWord.department.name}"/>
-                                        <br/>
-                                    </h:panelGroup>
-                                    <h:panelGroup rendered="#{hrReportController.reportKeyWord.roster ne null}" >
-                                        <h:outputLabel value="Roster : #{hrReportController.reportKeyWord.roster.name}"/>
-                                        <br/>
-                                    </h:panelGroup>
-                                    <h:outputLabel value="#{hrReportController.reportKeyWord.salaryCycle.name}"/>
-                                </f:facet>
-                                <p:column>
-                                    <f:facet name="header">
-                                        <h:outputLabel value="No"/>
-                                    </f:facet>
+                </div>
+            </p:panel>
 
-                                    <p:outputLabel value="#{i+1}" >
-                                    </p:outputLabel>
-                                </p:column>
+            <p:panel id="gpBillPreview" styleClass="report-panel noBorder summeryBorder">
 
-                                <p:column>
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Bank Name"/>
-                                    </f:facet>
-                                    <p:outputLabel value="#{ss.stringBank}">
-                                    </p:outputLabel>
-                                </p:column>
-                                <p:column rendered="#{hrReportController.netSalary}" style="text-align: right;">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Net Salary"/>
-                                    </f:facet>
-                                    <p:outputLabel value="#{ss.netSalary}"  >
-                                        <f:convertNumber pattern="#,##0.00"/>
-                                    </p:outputLabel>
-                                    <f:facet name="footer">
-                                        <h:outputLabel value="#{hrReportController.totalTransNetSalary}" style="text-align: right;">
-                                            <f:convertNumber pattern="#,##0.00"/>
-                                        </h:outputLabel>                                    </f:facet>
-                                </p:column>
+                <f:facet name="header">
+                    <div class="report-header-wrap">
+                        <span class="report-title-label">Employee Salary Bank-Wise</span>
+                        <span class="report-cycle-label">
+                            <h:outputText value="#{empty hrReportController.reportKeyWord.salaryCycle ? '' : hrReportController.reportKeyWord.salaryCycle.name}" />
+                        </span>
+                        <h:panelGroup rendered="#{hrReportController.reportKeyWord.institution ne null}">
+                            <p class="report-meta">
+                                <h:outputText value="#{hrReportController.reportKeyWord.institution.name}" />
+                            </p>
+                        </h:panelGroup>
+                        <h:panelGroup rendered="#{hrReportController.reportKeyWord.department ne null}">
+                            <p class="report-meta">
+                                Department: <h:outputText value="#{hrReportController.reportKeyWord.department.name}" />
+                            </p>
+                        </h:panelGroup>
+                        <h:panelGroup rendered="#{hrReportController.reportKeyWord.roster ne null}">
+                            <p class="report-meta">
+                                Roster: <h:outputText value="#{hrReportController.reportKeyWord.roster.name}" />
+                            </p>
+                        </h:panelGroup>
+                    </div>
+                </f:facet>
 
-                                <p:column rendered="#{hrReportController.otPayment}" style="text-align: right;">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Over Time"/>
-                                    </f:facet>
-                                    <p:outputLabel value="#{ss.netOt}"  >
-                                        <f:convertNumber pattern="#,##0.00"/>
-                                    </p:outputLabel>
-                                    <f:facet name="footer">
-                                        <h:outputLabel value="#{hrReportController.totalOverTime}" style="text-align: right;">
-                                            <f:convertNumber pattern="#,##0.00"/>
-                                        </h:outputLabel>
-                                    </f:facet>
-                                </p:column>
-                                <p:column style="text-align: right;">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Total"/>
-                                    </f:facet>
-                                    <p:outputLabel value="#{ss.netOt+ss.netSalary}"  >
-                                        <f:convertNumber pattern="#,##0.00"/>
-                                    </p:outputLabel>
-                                    <f:facet name="footer">
-                                        <h:outputLabel value="#{hrReportController.totalOverTime+hrReportController.totalTransNetSalary}" style="text-align: right;">
-                                            <f:convertNumber pattern="#,##0.00"/>
-                                        </h:outputLabel>
-                                    </f:facet>
-                                </p:column>
-                                <f:facet name="footer">
-                                    <p:outputLabel value="Print By : #{sessionController.loggedUser.webUserPerson.name} - " />
-                                    <p:outputLabel value="Print At : " />
-                                    <p:outputLabel value="#{commonFunctionsProxy.currentDateTime}" >
-                                        <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a " />
-                                    </p:outputLabel>
-                                </f:facet>
-                            </p:dataTable>
-                        </p:panel>
+                <p:dataTable id="tb1"
+                             value="#{hrReportController.bankViseSalaryAndOts}"
+                             var="ss"
+                             editable="true"
+                             rowIndexVar="i"
+                             styleClass="bank-wise-table">
 
+                    <p:column headerText="No" styleClass="col-text">
+                        <p:outputLabel value="#{i + 1}" />
+                    </p:column>
 
-                    </p:panel>
+                    <p:column headerText="Bank name" styleClass="col-text">
+                        <p:outputLabel value="#{ss.stringBank}" />
+                    </p:column>
 
-                </h:form>
-            </ui:define>
+                    <p:column headerText="Net salary" styleClass="col-num"
+                              rendered="#{hrReportController.netSalary}">
+                        <p:outputLabel value="#{ss.netSalary}">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </p:outputLabel>
+                        <f:facet name="footer">
+                            <h:outputLabel value="#{hrReportController.totalTransNetSalary}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                        </f:facet>
+                    </p:column>
 
-        </ui:composition>
+                    <p:column headerText="Over time" styleClass="col-num"
+                              rendered="#{hrReportController.otPayment}">
+                        <p:outputLabel value="#{ss.netOt}">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </p:outputLabel>
+                        <f:facet name="footer">
+                            <h:outputLabel value="#{hrReportController.totalOverTime}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                        </f:facet>
+                    </p:column>
 
-    </h:body>
-</html>
+                    <p:column headerText="Total" styleClass="col-num">
+                        <p:outputLabel value="#{ss.netOt + ss.netSalary}">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </p:outputLabel>
+                        <f:facet name="footer">
+                            <h:outputLabel value="#{hrReportController.totalOverTime + hrReportController.totalTransNetSalary}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                        </f:facet>
+                    </p:column>
+
+                    <f:facet name="footer">
+                        <div class="report-table-footer">
+                            <p:outputLabel value="Print by: #{sessionController.loggedUser.webUserPerson.name}" />
+                            <span>·</span>
+                            <p:outputLabel value="#{commonFunctionsProxy.currentDateTime}">
+                                <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a" />
+                            </p:outputLabel>
+                        </div>
+                    </f:facet>
+
+                </p:dataTable>
+
+            </p:panel>
+
+        </h:form>
+    </ui:define>
+
+</ui:composition>

@@ -48,6 +48,46 @@ public class StockHistoryFacade extends AbstractFacade<StockHistory> {
      * @param departmentId The department ID for which to calculate stock value (can be null for all departments)
      * @return The total stock value at retail rate, or 0.0 if calculation fails
      */
+    private String shUnionSrc(String columns) {
+        return "(SELECT " + columns + " FROM STOCKHISTORY UNION ALL SELECT " + columns + " FROM STOCKHISTORYARCHIVE)";
+    }
+
+    public double calculateStockValueAtRetailRateOptimized(Date date, Long departmentId, boolean includeArchived) {
+        if (!includeArchived) {
+            return calculateStockValueAtRetailRateOptimized(date, departmentId);
+        }
+        try {
+            String src     = shUnionSrc("ID, DEPARTMENT_ID, ITEMBATCH_ID, STOCKQTY, RETIRED") + " sh";
+            String srcSmall = shUnionSrc("ID, DEPARTMENT_ID, ITEMBATCH_ID, RETIRED, CREATEDAT") + " combined";
+            String sql =
+                "SELECT COALESCE(SUM(latest_stock.STOCKQTY * latest_stock.retail_rate), 0.0) AS total_value " +
+                "FROM ( " +
+                "    SELECT sh.STOCKQTY, COALESCE(ib.RETAILSALERATE, 0.0) AS retail_rate " +
+                "    FROM " + src + " " +
+                "    INNER JOIN ( " +
+                "        SELECT DEPARTMENT_ID, ITEMBATCH_ID, MAX(ID) AS max_id " +
+                "        FROM " + srcSmall + " " +
+                "        WHERE RETIRED = 0 " +
+                "        AND CREATEDAT < ? " +
+                (departmentId != null ? "        AND DEPARTMENT_ID = ? " : "") +
+                "        GROUP BY DEPARTMENT_ID, ITEMBATCH_ID " +
+                "    ) AS latest ON sh.ID = latest.max_id " +
+                "    INNER JOIN ITEMBATCH ib ON sh.ITEMBATCH_ID = ib.ID " +
+                "    WHERE sh.RETIRED = 0 AND sh.STOCKQTY > 0 " +
+                ") AS latest_stock";
+            javax.persistence.Query query = getEntityManager().createNativeQuery(sql);
+            query.setParameter(1, date, TemporalType.TIMESTAMP);
+            if (departmentId != null) {
+                query.setParameter(2, departmentId);
+            }
+            Object result = query.getSingleResult();
+            return (result instanceof Number) ? ((Number) result).doubleValue() : 0.0;
+        } catch (Exception e) {
+            System.err.println("Error calculating retail rate (with archive) for date: " + date + " - " + e.getMessage());
+            return 0.0;
+        }
+    }
+
     public double calculateStockValueAtRetailRateOptimized(Date date, Long departmentId) {
         System.out.println("=== calculateStockValueAtRetailRateOptimized START ===");
         System.out.println("Input Date: " + date);
@@ -190,6 +230,44 @@ public class StockHistoryFacade extends AbstractFacade<StockHistory> {
      * @param departmentId The department ID for which to calculate stock value (can be null for all departments)
      * @return The total stock value at cost rate, or 0.0 if calculation fails
      */
+    public double calculateStockValueAtCostRateOptimized(Date date, Long departmentId, boolean includeArchived) {
+        if (!includeArchived) {
+            return calculateStockValueAtCostRateOptimized(date, departmentId);
+        }
+        try {
+            String src      = shUnionSrc("ID, DEPARTMENT_ID, ITEMBATCH_ID, STOCKQTY, RETIRED") + " sh";
+            String srcSmall = shUnionSrc("ID, DEPARTMENT_ID, ITEMBATCH_ID, RETIRED, CREATEDAT") + " combined";
+            String sql =
+                "SELECT COALESCE(SUM(latest_stock.STOCKQTY * latest_stock.cost_rate), 0.0) AS total_value " +
+                "FROM ( " +
+                "    SELECT sh.STOCKQTY, " +
+                "        CASE WHEN ib.COSTRATE IS NOT NULL AND ib.COSTRATE != 0 THEN ib.COSTRATE " +
+                "             WHEN ib.PURCAHSERATE IS NOT NULL AND ib.PURCAHSERATE != 0 THEN ib.PURCAHSERATE " +
+                "             ELSE 0.0 END AS cost_rate " +
+                "    FROM " + src + " " +
+                "    INNER JOIN ( " +
+                "        SELECT DEPARTMENT_ID, ITEMBATCH_ID, MAX(ID) AS max_id " +
+                "        FROM " + srcSmall + " " +
+                "        WHERE RETIRED = 0 AND CREATEDAT < ? " +
+                (departmentId != null ? "        AND DEPARTMENT_ID = ? " : "") +
+                "        GROUP BY DEPARTMENT_ID, ITEMBATCH_ID " +
+                "    ) AS latest ON sh.ID = latest.max_id " +
+                "    INNER JOIN ITEMBATCH ib ON sh.ITEMBATCH_ID = ib.ID " +
+                "    WHERE sh.RETIRED = 0 AND sh.STOCKQTY > 0 " +
+                ") AS latest_stock";
+            javax.persistence.Query query = getEntityManager().createNativeQuery(sql);
+            query.setParameter(1, date, TemporalType.TIMESTAMP);
+            if (departmentId != null) {
+                query.setParameter(2, departmentId);
+            }
+            Object result = query.getSingleResult();
+            return (result instanceof Number) ? ((Number) result).doubleValue() : 0.0;
+        } catch (Exception e) {
+            System.err.println("Error calculating cost rate (with archive) for date: " + date + " - " + e.getMessage());
+            return 0.0;
+        }
+    }
+
     public double calculateStockValueAtCostRateOptimized(Date date, Long departmentId) {
         System.out.println("=== calculateStockValueAtCostRateOptimized START ===");
         System.out.println("Input Date: " + date);
@@ -272,6 +350,41 @@ public class StockHistoryFacade extends AbstractFacade<StockHistory> {
      * @param departmentId The department ID (can be null for all departments)
      * @return The total stock value at purchase rate, or 0.0 if calculation fails
      */
+    public double calculateStockValueAtPurchaseRateOptimized(Date date, Long departmentId, boolean includeArchived) {
+        if (!includeArchived) {
+            return calculateStockValueAtPurchaseRateOptimized(date, departmentId);
+        }
+        try {
+            String src      = shUnionSrc("ID, DEPARTMENT_ID, ITEMBATCH_ID, STOCKQTY, RETIRED, PURCHASERATE") + " sh";
+            String srcSmall = shUnionSrc("ID, DEPARTMENT_ID, ITEMBATCH_ID, RETIRED, CREATEDAT") + " combined";
+            String sql =
+                "SELECT COALESCE(SUM(latest_stock.STOCKQTY * latest_stock.purchase_rate), 0.0) AS total_value " +
+                "FROM ( " +
+                "    SELECT sh.STOCKQTY, COALESCE(NULLIF(sh.PURCHASERATE, 0), ib.PURCAHSERATE, 0.0) AS purchase_rate " +
+                "    FROM " + src + " " +
+                "    INNER JOIN ( " +
+                "        SELECT DEPARTMENT_ID, ITEMBATCH_ID, MAX(ID) AS max_id " +
+                "        FROM " + srcSmall + " " +
+                "        WHERE RETIRED = 0 AND CREATEDAT < ? " +
+                (departmentId != null ? "        AND DEPARTMENT_ID = ? " : "") +
+                "        GROUP BY DEPARTMENT_ID, ITEMBATCH_ID " +
+                "    ) AS latest ON sh.ID = latest.max_id " +
+                "    INNER JOIN ITEMBATCH ib ON sh.ITEMBATCH_ID = ib.ID " +
+                "    WHERE sh.RETIRED = 0 AND sh.STOCKQTY > 0 " +
+                ") AS latest_stock";
+            javax.persistence.Query query = getEntityManager().createNativeQuery(sql);
+            query.setParameter(1, date, TemporalType.TIMESTAMP);
+            if (departmentId != null) {
+                query.setParameter(2, departmentId);
+            }
+            Object result = query.getSingleResult();
+            return (result instanceof Number) ? ((Number) result).doubleValue() : 0.0;
+        } catch (Exception e) {
+            System.err.println("Error calculating purchase rate (with archive) for date: " + date + " - " + e.getMessage());
+            return 0.0;
+        }
+    }
+
     public double calculateStockValueAtPurchaseRateOptimized(Date date, Long departmentId) {
         try {
             String sql =

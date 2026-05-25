@@ -140,6 +140,13 @@ public class Payment implements Serializable, RetirableEntity {
     private boolean handingOverStarted;
     private boolean handingOverCompleted;
 
+    // Non-Cash Settlement (Phase 4, issue #17964)
+    // Set when a non-cash payment (Card/Cheque/Slip/eWallet/Online) has been
+    // settled with the bank or processor. Always false for cash.
+    private boolean paymentSettled;
+    @ManyToOne
+    private Bill paymentSettlementBill;
+
     //Payment Record Creation
     @ManyToOne
     private Bill paymentRecordCreateBill;
@@ -210,6 +217,7 @@ public class Payment implements Serializable, RetirableEntity {
         paymentRecordCompleted = false;
         chequeRealized = false;
         chequePaid = false;
+        paymentSettled = false;
         paymentDate = new Date();
     }
 
@@ -978,6 +986,22 @@ public class Payment implements Serializable, RetirableEntity {
     @Transient
     public Double getAbsolutePaidValueTransient() {
         return Math.abs(this.paidValue);
+    }
+
+    public boolean isPaymentSettled() {
+        return paymentSettled;
+    }
+
+    public void setPaymentSettled(boolean paymentSettled) {
+        this.paymentSettled = paymentSettled;
+    }
+
+    public Bill getPaymentSettlementBill() {
+        return paymentSettlementBill;
+    }
+
+    public void setPaymentSettlementBill(Bill paymentSettlementBill) {
+        this.paymentSettlementBill = paymentSettlementBill;
     }
 
 }
