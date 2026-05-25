@@ -80,7 +80,7 @@
                                                     class="w-100"
                                                     forceSelection="true"
                                                     value="#{pharmacyWholeSaleController2.stock}"
-                                                    completeMethod="#{stockController.completeAvailableStocks}"
+                                                    delay="300" completeMethod="#{stockController.completeAvailableStocks}"
                                                     var="i"
                                                     itemLabel="#{i.itemBatch.item.name}"
                                                     itemValue="#{i}">

@@ -37,7 +37,7 @@
                     <h:outputLabel value="Item"/>
                     <p:autoComplete value="#{pharmacySaleReportController.item}" 
                                     forceSelection="true"
-                                    completeMethod="#{ampController.completeAmpByName}" 
+                                    minQueryLength="3" delay="300" completeMethod="#{ampController.completeAmpByName}" 
                                     var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" >
                         <p:column headerText="Item">
                             <h:outputLabel value="#{myItem.name}"></h:outputLabel>

@@ -37,7 +37,7 @@
                         </p:autoComplete>
                         <h:outputLabel value="Item"/>
                         <p:autoComplete id="itm" value="#{pharmacyErrorChecking.item}"  placeholder="Item"
-                                        completeMethod="#{itemController.completeAmpItemAll}"
+                                        minQueryLength="3" delay="300" completeMethod="#{itemController.completeAmpItemAll}"
                                         var="item" itemValue="#{item}" itemLabel="#{item.name}"
                                         forceSelection="true"  >
                             <p:column headerText="Item">

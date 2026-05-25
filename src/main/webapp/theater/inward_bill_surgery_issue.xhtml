@@ -225,7 +225,7 @@
                                                             forceSelection="true"
                                                             id="acStock"
                                                             value="#{pharmacySaleBhtController.selectedStockDto}"
-                                                            completeMethod="#{pharmacySaleBhtController.completeAvailableStockOptimizedDto}"
+                                                            delay="300" completeMethod="#{pharmacySaleBhtController.completeAvailableStockOptimizedDto}"
                                                             converter="#{pharmacySaleBhtController.stockDtoConverter}"
                                                             var="i"
                                                             itemLabel="#{i.itemName}"

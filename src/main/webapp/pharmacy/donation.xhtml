@@ -54,7 +54,7 @@
                                                     id="acItem"
                                                     value="#{pharmacyDonationController.currentBillItem.item}"
                                                     forceSelection="true"
-                                                    completeMethod="#{itemController.completeAmpAndAmppItemForLoggedDepartment}"
+                                                    minQueryLength="3" delay="300" completeMethod="#{itemController.completeAmpAndAmppItemForLoggedDepartment}"
                                                     var="it" maxResults="20"
                                                     itemLabel="#{it.name}" itemValue="#{it}">
                                         <p:column headerText="Item" style="padding:6px">

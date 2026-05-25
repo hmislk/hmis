@@ -59,7 +59,7 @@
                                     inputStyleClass="w-100"
                                     class="w-100 m-1"
                                     required="true"
-                                    completeMethod="#{itemController.completeAmpItemAll}"
+                                    minQueryLength="3" delay="300" completeMethod="#{itemController.completeAmpItemAll}"
                                     var="item" itemValue="#{item}" itemLabel="#{item.name}"
                                     forceSelection="true">
                         <p:column headerText="Item">

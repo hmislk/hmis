@@ -38,7 +38,7 @@
                         <p:autoComplete id="acExpense"   value="#{commonReport.referenceItem}" 
                                         forceSelection="true"
                                         class="w-100 mx-4" inputStyleClass="w-100"
-                                        completeMethod="#{itemController.completeExpenseItem}" 
+                                        minQueryLength="3" delay="300" completeMethod="#{itemController.completeExpenseItem}" 
                                         var="ex" itemLabel="#{ex.name}" itemValue="#{ex}" >
                         </p:autoComplete>
                         <p:defaultCommand target="btnRefresh"/>

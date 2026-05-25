@@ -274,7 +274,7 @@
                                                 class="w-100"
                                                 forceSelection="true"
                                                 value="#{pharmacySaleBhtController.selectedStockDto}"
-                                                completeMethod="#{pharmacySaleBhtController.completeAvailableStockOptimizedDto}"
+                                                delay="300" completeMethod="#{pharmacySaleBhtController.completeAvailableStockOptimizedDto}"
                                                 converter="#{pharmacySaleBhtController.stockDtoConverter}"
                                                 var="i"
                                                 itemLabel="#{i.itemName}"

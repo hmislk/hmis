@@ -36,7 +36,7 @@
                     <p:autoComplete value="#{pharmacyErrorChecking.item}"
 
                                     style="text-align: left; margin: 5px; padding: 5px; max-width: 300px!important;"
-                                    completeMethod="#{itemController.completeAmpItemAll}"
+                                    minQueryLength="3" delay="300" completeMethod="#{itemController.completeAmpItemAll}"
                                     var="item" itemValue="#{item}" itemLabel="#{item.name}"
                                     forceSelection="true"  >
                         <p:column headerText="Item">

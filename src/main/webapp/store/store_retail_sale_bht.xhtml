@@ -152,7 +152,7 @@
                                                             forceSelection="true"  
                                                             id="acStock" 
                                                             value="#{storeSaleBhtController.stock}" 
-                                                            completeMethod="#{storeSaleBhtController.completeAvailableStocksStore}" 
+                                                            minQueryLength="3" delay="300" completeMethod="#{storeSaleBhtController.completeAvailableStocksStore}" 
                                                             var="i" 
                                                             style="width: 400px;"
                                                             inputStyleClass="form-control"

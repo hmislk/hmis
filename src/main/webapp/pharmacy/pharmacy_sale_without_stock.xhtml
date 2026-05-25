@@ -39,7 +39,7 @@
                                                 accesskey="i"
                                                 id="acStock"
                                                 value="#{pharmacySaleWithoutStockController.stock}"
-                                                completeMethod="#{pharmacySaleWithoutStockController.completeAvailableStocksFromNameOrGeneric}"
+                                                delay="300" completeMethod="#{pharmacySaleWithoutStockController.completeAvailableStocksFromNameOrGeneric}"
                                                 var="i"
                                                 itemLabel="#{i.itemBatch.item.name}"
                                                 class="w-100"

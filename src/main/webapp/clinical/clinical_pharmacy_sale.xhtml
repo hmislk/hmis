@@ -98,7 +98,7 @@
                                                         class="w-100"
                                                         forceSelection="true"
                                                         value="#{pharmacySaleController.stock}"
-                                                        completeMethod="#{pharmacySaleController.completeAvailableStocksFromNameOrGeneric}"
+                                                        delay="300" completeMethod="#{pharmacySaleController.completeAvailableStocksFromNameOrGeneric}"
                                                         var="i"
                                                         itemLabel="#{i.itemBatch.item.name}"
                                                         itemValue="#{i}">
@@ -145,7 +145,7 @@
                                                         class="w-100"
                                                         forceSelection="true"
                                                         value="#{pharmacySaleController.stock}"
-                                                        completeMethod="#{stockController.completeAvailableStocksWithItemStock}"
+                                                        delay="300" completeMethod="#{stockController.completeAvailableStocksWithItemStock}"
                                                         scrollHeight="400"
                                                         var="i"
                                                         itemLabel="#{i.itemBatch.item.name}"

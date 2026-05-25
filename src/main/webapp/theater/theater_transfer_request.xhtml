@@ -33,7 +33,7 @@
                     <p:panel header="Add Item ">
                         <p:autoComplete  value="#{transferRequestController.currentBillItem.item}"
                                          forceSelection="true"
-                                         completeMethod="#{itemController.completeAmpItem}"
+                                         minQueryLength="3" delay="300" completeMethod="#{itemController.completeAmpItem}"
                                          var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
                             <p:column headerText="Item" >
                                 <h:outputLabel value="#{vt.name}"></h:outputLabel>

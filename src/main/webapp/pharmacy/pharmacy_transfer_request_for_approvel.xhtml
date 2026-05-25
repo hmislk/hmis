@@ -99,7 +99,7 @@
                                     <div class="col-7">
                                         <p:autoComplete  id="items" value="#{transferRequestController.currentBillItem.item}"
                                                          forceSelection="true"  class="w-100" inputStyleClass="w-100"
-                                                         completeMethod="#{itemController.completeAmpItem}"
+                                                         minQueryLength="3" delay="300" completeMethod="#{itemController.completeAmpItem}"
                                                          var="vt" itemLabel="#{vt.name}" itemValue="#{vt}"
                                                          >
                                             <p:column headerText="Item" >

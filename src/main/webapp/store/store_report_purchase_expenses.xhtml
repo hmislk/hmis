@@ -23,7 +23,7 @@
                             <h:outputLabel value="Expenses" ></h:outputLabel>
                             <p:autoComplete id="acExpense"   value="#{storePurchaseController.currentExpense.item}" 
                                             forceSelection="true"
-                                            completeMethod="#{itemController.completeExpenseItem}" 
+                                            minQueryLength="3" delay="300" completeMethod="#{itemController.completeExpenseItem}" 
                                             var="ex" itemLabel="#{ex.name}" itemValue="#{ex}"
                                             class="w-100 mx-4" inputStyleClass="w-100" >
                             </p:autoComplete>

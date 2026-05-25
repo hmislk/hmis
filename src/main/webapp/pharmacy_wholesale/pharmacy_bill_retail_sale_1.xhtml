@@ -63,7 +63,7 @@
 
                                                                     <p:autoComplete accesskey="i"    id="acStock"
                                                                                     value="#{pharmacyWholeSaleController1.stock}"
-                                                                                    completeMethod="#{pharmacyWholeSaleController1.completeAvailableStocksFromNameOrGeneric}"
+                                                                                    delay="300" completeMethod="#{pharmacyWholeSaleController1.completeAvailableStocksFromNameOrGeneric}"
                                                                                     var="i" itemLabel="#{i.itemBatch.item.name}" itemValue="#{i}"
                                                                                     >
                                                                         <p:column headerText="Id">
@@ -574,7 +574,7 @@
                                                     class="w-100"
                                                     forceSelection="true"
                                                     value="#{pharmacyWholeSaleController1.stock}"
-                                                    completeMethod="#{stockController.completeAvailableStocks}"
+                                                    delay="300" completeMethod="#{stockController.completeAvailableStocks}"
                                                     var="i"
                                                     itemLabel="#{i.itemBatch.item.name}"
                                                     itemValue="#{i}">

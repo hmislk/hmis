@@ -63,7 +63,7 @@
                                             <style>.ui-autocomplete-input {width:300px!important;}</style>
                                             <p:autoComplete accesskey="i"   forceSelection="true"  id="acStock" 
                                                             value="#{storeIssueController.stock}" 
-                                                            completeMethod="#{storeIssueController.completeAvailableStocks}" 
+                                                            minQueryLength="3" delay="300" completeMethod="#{storeIssueController.completeAvailableStocks}" 
                                                             var="i" itemLabel="#{i.itemBatch.item.name}" itemValue="#{i}" 
                                                             style="width: 50px!important;">
                                                 <p:column headerText="Item">

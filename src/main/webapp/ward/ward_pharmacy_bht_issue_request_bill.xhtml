@@ -473,7 +473,7 @@
                                                     forceSelection="true"
                                                     id="acItem"
                                                     value="#{pharmacyRequestForBhtController.billItem.item}"
-                                                    completeMethod="#{itemController.completeAmpAndVmpItem}"
+                                                    minQueryLength="3" delay="300" completeMethod="#{itemController.completeAmpAndVmpItem}"
                                                     var="i"
                                                     inputStyleClass="form-control"
                                                     itemLabel="#{i.name}"

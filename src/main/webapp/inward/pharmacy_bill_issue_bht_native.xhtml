@@ -219,7 +219,7 @@
                                                 class="w-100"
                                                 forceSelection="true"
                                                 value="#{inpatientDirectIssueNativeSqlController.selectedStockDto}"
-                                                completeMethod="#{inpatientDirectIssueNativeSqlController.completeAvailableStockOptimizedDto}"
+                                                delay="300" completeMethod="#{inpatientDirectIssueNativeSqlController.completeAvailableStockOptimizedDto}"
                                                 converter="#{inpatientDirectIssueNativeSqlController.stockDtoConverter}"
                                                 var="i"
                                                 itemLabel="#{i.itemName}"

@@ -196,7 +196,7 @@
                             <p:autoComplete
                                 id="phmItem"
                                 value="#{pharmacyReportController.selectedAmpDto}"
-                                completeMethod="#{itemController.completeAmpItemDto}"
+                                delay="300" completeMethod="#{itemController.completeAmpItemDto}"
                                 converter="ampDtoConverter"
                                 var="item"
                                 class="w-100"

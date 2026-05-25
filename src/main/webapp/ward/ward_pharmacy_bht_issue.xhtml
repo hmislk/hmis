@@ -54,7 +54,7 @@
                                             <p:outputLabel value="Medicines/Devices" ></p:outputLabel>
                                             <p:autoComplete accesskey="i" id="acStock"
                                                             value="#{pharmacySaleBhtController.tmpStock}"
-                                                            completeMethod="#{stockController.completeAvailableStocks}"
+                                                            minQueryLength="3" delay="300" completeMethod="#{stockController.completeAvailableStocks}"
                                                             var="i" itemLabel="#{i.itemBatch.item.name}" itemValue="#{i}" maxResults="10" size="100"
                                                             styleClass="w-100"
                                                             inputStyleClass="w-100 form-control">
