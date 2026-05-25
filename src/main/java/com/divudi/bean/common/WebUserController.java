@@ -1340,6 +1340,8 @@ public class WebUserController implements Serializable {
         String hashedPassword;
         hashedPassword = getSecurityController().hashAndCheck(newPassword);
         current.setWebUserPassword(hashedPassword);
+        current.setNeedToResetPassword(false);
+        current.setLastPasswordResetAt(new Date());
         getFacade().editAndCommit(current);
         WebUserPasswordHistory wh = new WebUserPasswordHistory();
         wh.setWebUser(current);
