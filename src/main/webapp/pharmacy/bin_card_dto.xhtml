@@ -74,9 +74,13 @@
                         </p:column>
                     </p:autoComplete>
                     <p:spacer width="10" ></p:spacer>
-                    <p:commandButton 
-                        class="m-1 ui-button-warning" 
-                        ajax="false" 
+                    <p:selectBooleanCheckbox id="includeArchived"
+                                             value="#{pharmacyErrorChecking.includeArchived}"/>
+                    <p:outputLabel for="includeArchived" value="Include Archived" class="m-1"/>
+                    <p:spacer width="10" ></p:spacer>
+                    <p:commandButton
+                        class="m-1 ui-button-warning"
+                        ajax="false"
                         icon="fas fa-arrows-rotate"
                         value="Generate Report"
                         action="#{pharmacyErrorChecking.processBinCardWithDTO()}" >

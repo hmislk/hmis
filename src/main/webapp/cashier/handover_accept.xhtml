@@ -88,6 +88,14 @@
                                             <f:convertNumber pattern="#,##0.00" />
                                         </p:outputLabel>
 
+                                        <h:panelGroup rendered="#{financialTransactionController.bundle.cashFloatInTotal gt 0}">
+                                            <i class="pi pi-arrow-down" style="margin-right:5px; color: #28a745;"></i>
+                                            <p:outputLabel value="Float Received (Cash)" />
+                                        </h:panelGroup>
+                                        <p:outputLabel rendered="#{financialTransactionController.bundle.cashFloatInTotal gt 0}" value="#{financialTransactionController.bundle.cashFloatInTotal}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </p:outputLabel>
+
                                         <h:panelGroup rendered="#{financialTransactionController.bundle.cashFloatOutTotal gt 0}">
                                             <i class="pi pi-arrow-up" style="margin-right:5px; color: #dc3545;"></i>
                                             <p:outputLabel value="Float Sent (Cash)" />
@@ -136,23 +144,42 @@
                                             </thead>
                                             <!-- Table Body -->
                                             <tbody>
-                                                <!-- Cash Row (merged with Net Float when float is present) -->
-                                                <ui:fragment rendered="#{financialTransactionController.bundle.hasCashTransaction or financialTransactionController.bundle.cashFloatNetTotal != 0}">
+                                                <!-- Cash Row -->
+                                                <h:panelGroup rendered="#{financialTransactionController.bundle.hasCashTransaction}">
                                                     <tr>
-                                                        <td>
-                                                            <h:outputText value="Cash including Float" rendered="#{financialTransactionController.bundle.cashFloatNetTotal != 0}" />
-                                                            <h:outputText value="Cash" rendered="#{financialTransactionController.bundle.cashFloatNetTotal == 0}" />
-                                                        </td>
+                                                        <td>Cash</td>
                                                         <td class="text-end">
-                                                            <h:outputText value="#{financialTransactionController.bundle.cashValue + financialTransactionController.bundle.cashFloatNetTotal}">
+                                                            <h:outputText value="#{financialTransactionController.bundle.cashValue}">
                                                                 <f:convertNumber pattern="#,##0.00" />
                                                             </h:outputText>
                                                         </td>
                                                     </tr>
-                                                </ui:fragment>
+                                                </h:panelGroup>
+                                                <!-- Float Received Row -->
+                                                <h:panelGroup rendered="#{financialTransactionController.bundle.cashFloatInTotal gt 0}">
+                                                    <tr>
+                                                        <td>Float Received (Cash)</td>
+                                                        <td class="text-end" style="color: #28a745;">
+                                                            <h:outputText value="#{financialTransactionController.bundle.cashFloatInTotal}">
+                                                                <f:convertNumber pattern="#,##0.00" />
+                                                            </h:outputText>
+                                                        </td>
+                                                    </tr>
+                                                </h:panelGroup>
+                                                <!-- Float Sent Row -->
+                                                <h:panelGroup rendered="#{financialTransactionController.bundle.cashFloatOutTotal gt 0}">
+                                                    <tr>
+                                                        <td>Float Sent (Cash)</td>
+                                                        <td class="text-end" style="color: #dc3545;">
+                                                            <h:outputText value="#{-financialTransactionController.bundle.cashFloatOutTotal}">
+                                                                <f:convertNumber pattern="#,##0.00" />
+                                                            </h:outputText>
+                                                        </td>
+                                                    </tr>
+                                                </h:panelGroup>
 
                                                 <!-- Card Row -->
-                                                <ui:fragment rendered="#{financialTransactionController.bundle.hasCardTransaction}">
+                                                <h:panelGroup rendered="#{financialTransactionController.bundle.hasCardTransaction}">
                                                     <tr>
                                                         <td>Card</td>
                                                         <td class="text-end">
@@ -161,9 +188,9 @@
                                                             </h:outputText>
                                                         </td>
                                                     </tr>
-                                                </ui:fragment>
+                                                </h:panelGroup>
                                                 <!-- Cheque Row -->
-                                                <ui:fragment rendered="#{financialTransactionController.bundle.hasChequeTransaction}">
+                                                <h:panelGroup rendered="#{financialTransactionController.bundle.hasChequeTransaction}">
                                                     <tr>
                                                         <td>Cheque</td>
                                                         <td class="text-end">
@@ -172,10 +199,10 @@
                                                             </h:outputText>
                                                         </td>
                                                     </tr>
-                                                </ui:fragment>
+                                                </h:panelGroup>
 
                                                 <!-- Slip Payment Row -->
-                                                <ui:fragment rendered="#{financialTransactionController.bundle.hasSlipTransaction}">
+                                                <h:panelGroup rendered="#{financialTransactionController.bundle.hasSlipTransaction}">
                                                     <tr>
                                                         <td>Slip Payment</td>
                                                         <td class="text-end">
@@ -184,10 +211,10 @@
                                                             </h:outputText>
                                                         </td>
                                                     </tr>
-                                                </ui:fragment>
+                                                </h:panelGroup>
 
                                                 <!-- e-Wallet Payment Row -->
-                                                <ui:fragment rendered="#{financialTransactionController.bundle.hasEWalletTransaction}">
+                                                <h:panelGroup rendered="#{financialTransactionController.bundle.hasEWalletTransaction}">
                                                     <tr>
                                                         <td>e-Wallet Payment</td>
                                                         <td class="text-end">
@@ -196,10 +223,10 @@
                                                             </h:outputText>
                                                         </td>
                                                     </tr>
-                                                </ui:fragment>
+                                                </h:panelGroup>
 
                                                 <!-- Patient Deposit Row -->
-                                                <ui:fragment rendered="#{financialTransactionController.bundle.hasPatientDepositTransaction}">
+                                                <h:panelGroup rendered="#{financialTransactionController.bundle.hasPatientDepositTransaction}">
                                                     <tr>
                                                         <td>Patient Deposit</td>
                                                         <td class="text-end">
@@ -208,10 +235,10 @@
                                                             </h:outputText>
                                                         </td>
                                                     </tr>
-                                                </ui:fragment>
+                                                </h:panelGroup>
 
                                                 <!-- On Call Row -->
-                                                <ui:fragment rendered="#{financialTransactionController.bundle.hasOnCallTransaction}">
+                                                <h:panelGroup rendered="#{financialTransactionController.bundle.hasOnCallTransaction}">
                                                     <tr>
                                                         <td>On Call</td>
                                                         <td class="text-end">
@@ -220,10 +247,10 @@
                                                             </h:outputText>
                                                         </td>
                                                     </tr>
-                                                </ui:fragment>
+                                                </h:panelGroup>
 
                                                 <!-- Multiple Payment Methods Row -->
-                                                <ui:fragment rendered="#{financialTransactionController.bundle.hasMultiplePaymentMethodsTransaction}">
+                                                <h:panelGroup rendered="#{financialTransactionController.bundle.hasMultiplePaymentMethodsTransaction}">
                                                     <tr>
                                                         <td>Multiple Payment Methods</td>
                                                         <td class="text-end">
@@ -232,10 +259,10 @@
                                                             </h:outputText>
                                                         </td>
                                                     </tr>
-                                                </ui:fragment>
+                                                </h:panelGroup>
 
                                                 <!-- Staff Credit Row -->
-                                                <ui:fragment rendered="#{financialTransactionController.bundle.hasStaffTransaction}">
+                                                <h:panelGroup rendered="#{financialTransactionController.bundle.hasStaffTransaction}">
                                                     <tr>
                                                         <td>Staff Credit</td>
                                                         <td class="text-end">
@@ -244,10 +271,10 @@
                                                             </h:outputText>
                                                         </td>
                                                     </tr>
-                                                </ui:fragment>
+                                                </h:panelGroup>
 
                                                 <!-- Credit Row -->
-                                                <ui:fragment rendered="#{financialTransactionController.bundle.hasCreditTransaction}">
+                                                <h:panelGroup rendered="#{financialTransactionController.bundle.hasCreditTransaction}">
                                                     <tr>
                                                         <td>Credit</td>
                                                         <td class="text-end">
@@ -256,10 +283,10 @@
                                                             </h:outputText>
                                                         </td>
                                                     </tr>
-                                                </ui:fragment>
+                                                </h:panelGroup>
 
                                                 <!-- Staff Welfare Row -->
-                                                <ui:fragment rendered="#{financialTransactionController.bundle.hasStaffWelfareTransaction}">
+                                                <h:panelGroup rendered="#{financialTransactionController.bundle.hasStaffWelfareTransaction}">
                                                     <tr>
                                                         <td>Staff Welfare</td>
                                                         <td class="text-end">
@@ -268,10 +295,10 @@
                                                             </h:outputText>
                                                         </td>
                                                     </tr>
-                                                </ui:fragment>
+                                                </h:panelGroup>
 
                                                 <!-- Voucher Row -->
-                                                <ui:fragment rendered="#{financialTransactionController.bundle.hasVoucherTransaction}">
+                                                <h:panelGroup rendered="#{financialTransactionController.bundle.hasVoucherTransaction}">
                                                     <tr>
                                                         <td>Voucher</td>
                                                         <td class="text-end">
@@ -280,10 +307,10 @@
                                                             </h:outputText>
                                                         </td>
                                                     </tr>
-                                                </ui:fragment>
+                                                </h:panelGroup>
 
                                                 <!-- IOU Row -->
-                                                <ui:fragment rendered="#{financialTransactionController.bundle.hasIouTransaction}">
+                                                <h:panelGroup rendered="#{financialTransactionController.bundle.hasIouTransaction}">
                                                     <tr>
                                                         <td>IOU</td>
                                                         <td class="text-end">
@@ -292,10 +319,10 @@
                                                             </h:outputText>
                                                         </td>
                                                     </tr>
-                                                </ui:fragment>
+                                                </h:panelGroup>
 
                                                 <!-- Agent Payment Row -->
-                                                <ui:fragment rendered="#{financialTransactionController.bundle.hasAgentTransaction}">
+                                                <h:panelGroup rendered="#{financialTransactionController.bundle.hasAgentTransaction}">
                                                     <tr>
                                                         <td>Agent Payment</td>
                                                         <td class="text-end">
@@ -304,10 +331,10 @@
                                                             </h:outputText>
                                                         </td>
                                                     </tr>
-                                                </ui:fragment>
+                                                </h:panelGroup>
 
                                                 <!-- Patient Points Row -->
-                                                <ui:fragment rendered="#{financialTransactionController.bundle.hasPatientPointsTransaction}">
+                                                <h:panelGroup rendered="#{financialTransactionController.bundle.hasPatientPointsTransaction}">
                                                     <tr>
                                                         <td>Patient Points</td>
                                                         <td class="text-end">
@@ -316,10 +343,10 @@
                                                             </h:outputText>
                                                         </td>
                                                     </tr>
-                                                </ui:fragment>
+                                                </h:panelGroup>
 
                                                 <!-- Online Settlement Row -->
-                                                <ui:fragment rendered="#{financialTransactionController.bundle.hasOnlineSettlementTransaction}">
+                                                <h:panelGroup rendered="#{financialTransactionController.bundle.hasOnlineSettlementTransaction}">
                                                     <tr>
                                                         <td>Online Settlement</td>
                                                         <td class="text-end">
@@ -328,7 +355,7 @@
                                                             </h:outputText>
                                                         </td>
                                                     </tr>
-                                                </ui:fragment>
+                                                </h:panelGroup>
 
                                             </tbody>
                                             <tfoot>
