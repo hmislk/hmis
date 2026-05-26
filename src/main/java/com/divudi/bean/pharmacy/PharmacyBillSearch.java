@@ -4602,9 +4602,15 @@ public class PharmacyBillSearch implements Serializable {
 
     /**
      * Fetches PHARMACY_RETAIL_SALE and PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER bills as DTOs.
+     * <p>
+     * Uses COALESCE on every nullable LEFT JOIN string field so that bills whose
+     * creator, patient, referredBy or paymentScheme is null are still included in
+     * the result set instead of being silently dropped by JPQL.
+     *
+     * @param maxResult the maximum number of rows to return; 0 or negative means unlimited
      */
     @SuppressWarnings("unchecked")
-    public void fetchSaleSearchDtosFromNativeBills(boolean maxNum) {
+    public void fetchSaleSearchDtosFromNativeBills(int maxResult) {
         List<com.divudi.core.data.BillTypeAtomic> btas = new ArrayList<>();
         btas.add(com.divudi.core.data.BillTypeAtomic.PHARMACY_RETAIL_SALE);
         btas.add(com.divudi.core.data.BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER);
@@ -4615,13 +4621,15 @@ public class PharmacyBillSearch implements Serializable {
         m.put("ins", sessionController.getInstitution());
         m.put("ldep", sessionController.getLoggedUser().getDepartment());
 
+        // COALESCE on every nullable LEFT JOIN string prevents rows from being
+        // silently dropped when any joined relationship is null (JPQL behaviour).
         String sql = "SELECT new com.divudi.core.data.dto.PharmacySaleSearchDTO("
                 + "b.id, b.deptId, b.department.name, b.createdAt, "
-                + "creatorPerson.name, "
-                + "patientPerson.name, "
-                + "refDoctorPerson.name, "
+                + "COALESCE(creatorPerson.name, ''), "
+                + "COALESCE(patientPerson.name, ''), "
+                + "COALESCE(refDoctorPerson.name, ''), "
                 + "b.paymentMethod, "
-                + "ps.name, "
+                + "COALESCE(ps.name, ''), "
                 + "b.total, b.discount, b.netTotal, "
                 + "b.refunded, b.cancelled) "
                 + "FROM Bill b "
@@ -4676,14 +4684,26 @@ public class PharmacyBillSearch implements Serializable {
 
         sql += " ORDER BY b.createdAt DESC";
 
-        if (maxNum) {
-            saleBillDtos = (List<PharmacySaleSearchDTO>) billFacade.findLightsByJpql(sql, m, TemporalType.TIMESTAMP, 25);
+        if (maxResult > 0) {
+            saleBillDtos = (List<PharmacySaleSearchDTO>) billFacade.findLightsByJpql(sql, m, TemporalType.TIMESTAMP, maxResult);
         } else {
             saleBillDtos = (List<PharmacySaleSearchDTO>) billFacade.findLightsByJpql(sql, m, TemporalType.TIMESTAMP);
         }
         if (saleBillDtos == null) {
             saleBillDtos = new ArrayList<>();
         }
+    }
+
+    /**
+     * @deprecated Use {@link #fetchSaleSearchDtosFromNativeBills(int)} which
+     * accepts an explicit row limit from {@code searchController.getMaxResult()}.
+     * Kept for backward compatibility with existing callers
+     * ({@code SearchController.createPharmacyRetailBills()} and
+     * {@code createPharmacyRetailAllBills()}).
+     */
+    @Deprecated
+    public void fetchSaleSearchDtosFromNativeBills(boolean maxNum) {
+        fetchSaleSearchDtosFromNativeBills(maxNum ? 25 : 0);
     }
 
 }

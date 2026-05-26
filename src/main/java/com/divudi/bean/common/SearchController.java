@@ -4665,13 +4665,21 @@ public class SearchController implements Serializable {
             JsfUtil.addErrorMessage("Please Select Bill Type");
             return;
         }
-        String jpql;
-        Map params = new HashMap();
 
         System.out.println("DEBUG: Selected billType = " + billType);
         System.out.println("DEBUG: FromDate = " + getFromDate());
         System.out.println("DEBUG: ToDate = " + getToDate());
         System.out.println("DEBUG: Current Department = " + (getSessionController().getDepartment() != null ? getSessionController().getDepartment().getId() + " - " + getSessionController().getDepartment().getName() : "NULL"));
+
+        // PharmacySale: use lightweight DTO query via PharmacyBillSearch to avoid
+        // loading full entity graphs across wide date ranges (issue #21005 / #20299).
+        if (billType == BillType.PharmacySale) {
+            pharmacyBillSearch.fetchSaleSearchDtosFromNativeBills(maxResult);
+            return;
+        }
+
+        String jpql;
+        Map params = new HashMap();
 
         // Special handling for PharmacyAdjustment - use bill type atomics instead
         if (billType == BillType.PharmacyAdjustment) {
