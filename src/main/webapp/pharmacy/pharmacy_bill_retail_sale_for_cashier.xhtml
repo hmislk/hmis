@@ -146,6 +146,7 @@
                                                             accesskey="i"
                                                             id="acStock"
                                                             value="#{pharmacySaleForCashierController.stockDto}"
+                                                            minQueryLength="3"
                                                             queryDelay="300" completeMethod="#{pharmacySaleForCashierController.completeAvailableStockOptimizedDtoFilteredByDepartmentType}"
                                                             converter="#{pharmacySaleForCashierController.stockDtoConverter}"
                                                             var="i"
