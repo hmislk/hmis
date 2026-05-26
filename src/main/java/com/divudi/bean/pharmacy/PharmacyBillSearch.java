@@ -4836,13 +4836,16 @@ public class PharmacyBillSearch implements Serializable {
         m.put("td", searchController.getToDate());
         m.put("dep", sessionController.getLoggedUser().getDepartment());
 
+        // Use BilledBill (not Bill) to exclude CancelledBill subtype rows that
+        // share the same BillType. The original fetchPharmacyBillsNew also
+        // queried FROM BilledBill and filtered b.cancelled=false.
         String sql = "SELECT new com.divudi.core.data.dto.PharmacyTransferIssueSearchDTO("
                 + "b.id, b.deptId, b.createdAt, "
                 + "COALESCE(b.toDepartment.name, ''), "
                 + "COALESCE(creatorPerson.name, ''), "
                 + "COALESCE(staffPerson.name, ''), "
                 + "b.cancelled, b.netTotal, COALESCE(b.comments, '')) "
-                + "FROM Bill b "
+                + "FROM BilledBill b "
                 + "LEFT JOIN b.creater creater "
                 + "LEFT JOIN creater.webUserPerson creatorPerson "
                 + "LEFT JOIN b.toStaff toStaff "
