@@ -5,10 +5,12 @@
 package com.divudi.service.archival;
 
 import com.divudi.core.data.dto.ArchiveResult;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import javax.persistence.EntityManager;
+import javax.persistence.PersistenceException;
 import javax.persistence.Query;
 
 /**
@@ -33,6 +35,21 @@ import javax.persistence.Query;
  * Issue #20726.
  */
 public abstract class ArchivalServiceBase {
+
+    /**
+     * Returns true when {@code ex} (or any cause in its chain) is a MySQL
+     * lock wait timeout (error 1205). Used by subclass retry logic.
+     */
+    protected static boolean isLockTimeout(PersistenceException ex) {
+        Throwable cause = ex;
+        while (cause != null) {
+            if (cause instanceof SQLException && ((SQLException) cause).getErrorCode() == 1205) {
+                return true;
+            }
+            cause = cause.getCause();
+        }
+        return false;
+    }
 
     protected abstract EntityManager em();
 
@@ -118,16 +135,20 @@ public abstract class ArchivalServiceBase {
 
     /**
      * Run an archival pass.
-     *
-     * @param cutoff           rows with createdAt strictly before this are eligible
-     * @param batchSize        rows per transactional batch (recommended: 1000-5000)
-     * @param maxBatches       upper bound on batches in this invocation; protects
-     *                         the system from one runaway run that holds resources
-     *                         for too long. Use a sensible cap (e.g. 50 = 100k rows
-     *                         at batch size 2000) for scheduled invocations.
-     * @param dryRun           if true, only count candidates; do not move any rows
      */
     public ArchiveResult archive(Date cutoff, int batchSize, int maxBatches, boolean dryRun) {
+        return archive(cutoff, batchSize, maxBatches, dryRun, null);
+    }
+
+    /**
+     * Run an archival pass, invoking {@code onBatchMoved} with the row count
+     * after each committed batch so callers can track progress.
+     *
+     * @param onBatchMoved called with the number of rows moved after each batch;
+     *                     may be null if progress tracking is not needed
+     */
+    public ArchiveResult archive(Date cutoff, int batchSize, int maxBatches, boolean dryRun,
+                                  java.util.function.IntConsumer onBatchMoved) {
         Date startedAt = new Date();
         long candidates = countOlderThan(cutoff);
 
@@ -158,6 +179,9 @@ public abstract class ArchivalServiceBase {
             int moved = batchTx().copyAndDelete(archiveTable(), sourceTable(), columnList, ids);
             totalArchived += moved;
             batchesRun++;
+            if (onBatchMoved != null) {
+                onBatchMoved.accept(moved);
+            }
             if (ids.size() < batchSize) {
                 break;
             }

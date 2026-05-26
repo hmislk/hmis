@@ -264,6 +264,14 @@
                             <p:selectBooleanCheckbox id="consignmentItem"
                                                      value="#{pharmacyReportController.consignmentItem}"
                                                      itemLabel="Yes"/>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-archive mr-2"/>
+                                <p:outputLabel value="Include Archived" for="includeArchived" class="m-3"/>
+                            </h:panelGroup>
+                            <p:selectBooleanCheckbox id="includeArchived"
+                                                     value="#{pharmacyReportController.includeArchived}"
+                                                     itemLabel="Yes"/>
                         </h:panelGrid>
 
                         <div class="d-flex align-items-center">

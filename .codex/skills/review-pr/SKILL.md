@@ -40,6 +40,7 @@ Use this skill when working a PR review loop on HMIS: collect review comments, v
 2. **Reply only after fixing** (or explicitly dismissing). Bots cannot fix anything — describe action taken, not requested.
    - Valid + fixed → "Fixed in `<commit-sha>`: `<what was changed>`"
    - Dismissed → "Dismissed because: `<specific reasoning>`"
+   - **⚠️ "Please resolve" wording on a CodeRabbit thread triggers CodeRabbit Chat**, which opens a NEW PR attempting the fix against a stale snapshot. These auto-PRs have shipped unsafe diffs in the past (PR #20979). If accidentally triggered: close the PR, delete the `coderabbitai/chat/<sha>` branch.
 3. **Replies go UNDER existing reviewer threads only** — use `POST /pulls/{pr}/comments/{id}/replies`. Never as new top-level comments.
 4. **Self-review items go in the commit message** (or PR description if deferred). Never as new inline comments. Reference file:line in the commit message so reviewers can find the change in the diff.
 5. **ONE re-review request at the end** — click "Re-request review" once after all fixes are pushed and all existing threads have replies. Not per item.
