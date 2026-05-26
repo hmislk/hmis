@@ -60,7 +60,8 @@
                             id="acItem"
                             style="width: 40em;"
                             maxResults="15"
-                            queryDelay="300" completeMethod="#{itemController.completeAmpItem}" 
+                            minQueryLength="3"
+                            queryDelay="300" completeMethod="#{itemController.completeAmpItem}"
                             var="vt" 
                             itemLabel="#{vt.name}" 
                             itemValue="#{vt}" >
