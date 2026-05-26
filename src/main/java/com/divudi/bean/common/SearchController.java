@@ -4562,6 +4562,14 @@ public class SearchController implements Serializable {
             JsfUtil.addErrorMessage("Please Select Bill Type");
             return;
         }
+
+        // PharmacyPre atomics: redirect to DTO fetch so the pre_bill.xhtml composite
+        // (which binds to preBillSearchDtos) shows results from the atomic search path.
+        if (billTypeAtomic.getBillType() == BillType.PharmacyPre) {
+            pharmacyBillSearch.fetchPreBillSearchDtos(maxResult);
+            return;
+        }
+
         String jpql;
         Map params = new HashMap();
 

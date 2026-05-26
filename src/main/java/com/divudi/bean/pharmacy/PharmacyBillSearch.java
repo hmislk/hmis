@@ -4976,27 +4976,27 @@ public class PharmacyBillSearch implements Serializable {
     @SuppressWarnings("unchecked")
     public void fetchPreBillSearchDtos(int maxResult) {
         Map<String, Object> m = new HashMap<>();
-        m.put("bt", com.divudi.core.data.BillType.PharmacyPre);
         m.put("fd", searchController.getFromDate());
         m.put("td", searchController.getToDate());
         m.put("dep", sessionController.getLoggedUser().getDepartment());
 
-        // LEFT JOIN referenceBill to avoid implicit INNER JOIN that would drop
-        // unsettled pre-bills (referenceBill is nullable on PharmacyPre bills).
+        // Use PreBill (the actual JPA subtype for pharmacy pre-bills) rather than
+        // BilledBill; BilledBill has a different discriminator and returns zero rows
+        // for pre-bills. LEFT JOIN referenceBill to avoid an implicit INNER JOIN that
+        // would drop unsettled pre-bills (referenceBill is nullable).
         String sql = "SELECT new com.divudi.core.data.dto.PharmacyPreBillSearchDTO("
                 + "b.id, refBill.id, b.deptId, b.createdAt, "
                 + "b.cancelled, cb.createdAt, "
                 + "COALESCE(creatorPerson.name, ''), COALESCE(cancellerPerson.name, ''), '', "
                 + "b.billTypeAtomic, b.paymentMethod, b.netTotal) "
-                + "FROM BilledBill b "
+                + "FROM PreBill b "
                 + "LEFT JOIN b.referenceBill refBill "
                 + "LEFT JOIN b.creater creater "
                 + "LEFT JOIN creater.webUserPerson creatorPerson "
                 + "LEFT JOIN b.cancelledBill cb "
                 + "LEFT JOIN cb.creater canceller "
                 + "LEFT JOIN canceller.webUserPerson cancellerPerson "
-                + "WHERE b.billType = :bt "
-                + "AND b.createdAt BETWEEN :fd AND :td "
+                + "WHERE b.createdAt BETWEEN :fd AND :td "
                 + "AND b.department = :dep "
                 + "AND b.retired = false";
 
