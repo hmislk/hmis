@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8' ?>
+﻿<?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 template="/pharmacy/returns_and_cancellations_index.xhtml"
@@ -61,7 +61,7 @@
                                             class="w-100"
                                             forceSelection="true"
                                             value="#{pharmacyReturnwithouttresing.stock}"
-                                            delay="300" completeMethod="#{stockController.completeAvailableStocks}"
+                                            queryDelay="300" completeMethod="#{stockController.completeAvailableStocks}"
                                             var="i"
                                             itemLabel="#{i.itemBatch.item.name}"
                                             itemValue="#{i}">

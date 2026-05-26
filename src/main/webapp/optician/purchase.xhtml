@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8' ?>
+﻿<?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 template="/optician/stock_management.xhtml"
@@ -93,7 +93,7 @@
                                         id="acItem"
                                         value="#{opticianPurchaseController.currentBillItem.item}"
                                         forceSelection="true"
-                                        minQueryLength="3" delay="300" completeMethod="#{itemController.completeAmpItem}"
+                                        minQueryLength="3" queryDelay="300" completeMethod="#{itemController.completeAmpItem}"
                                         var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
                                         <p:column headerText="Item">
                                             <h:outputLabel value="#{vt.name}"></h:outputLabel>
@@ -183,7 +183,7 @@
                             <h:panelGrid columns="2" style="width: 100%">
                                 <p:autoComplete class="w-100" inputStyleClass="w-100" id="exItem" value="#{opticianPurchaseController.currentBillItem.item}"
                                                 forceSelection="true"
-                                                minQueryLength="3" delay="300" completeMethod="#{itemController.completeAmpItem}" var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
+                                                minQueryLength="3" queryDelay="300" completeMethod="#{itemController.completeAmpItem}" var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
                                     <p:column headerText="Item" >
                                         <h:outputLabel value="#{vt.name}"></h:outputLabel>
                                     </p:column>

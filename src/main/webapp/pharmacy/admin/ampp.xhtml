@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8' ?>
+﻿<?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 template="/pharmacy/admin/index.xhtml"
@@ -70,7 +70,7 @@
                                     class="w-100 ampp-autocomplete"
                                     inputStyleClass="w-100"
                                     value="#{amppController.selectedAmppDto}"
-                                    delay="300" completeMethod="#{amppController.completeAmppDto}"
+                                    queryDelay="300" completeMethod="#{amppController.completeAmppDto}"
                                     var="dto"
                                     itemLabel="#{dto.name}"
                                     itemValue="#{dto}"
@@ -225,7 +225,7 @@
                                 <p:outputLabel for="acAmp" value="Select AMP" styleClass="fw-bold"/>
                                 <p:autoComplete
                                     id="acAmp"
-                                    delay="300" completeMethod="#{ampController.completeAmp}"
+                                    queryDelay="300" completeMethod="#{ampController.completeAmp}"
                                     var="pta"
                                     styleClass="w-100"
                                     inputStyleClass="w-100"

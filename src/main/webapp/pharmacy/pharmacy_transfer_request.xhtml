@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8' ?>
+﻿<?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 template="/pharmacy/disbursement_index.xhtml"
@@ -152,7 +152,7 @@
                                             forceSelection="true"
                                             class="w-100"
                                             inputStyleClass="w-100"
-                                            minQueryLength="3" delay="300" completeMethod="#{transferRequestController.completeAmpAmppVmpVmppItemsForRequestingDepartment}"
+                                            minQueryLength="3" queryDelay="300" completeMethod="#{transferRequestController.completeAmpAmppVmpVmppItemsForRequestingDepartment}"
                                             var="vt"
                                             itemLabel="#{vt.name}"
                                             itemValue="#{vt}"

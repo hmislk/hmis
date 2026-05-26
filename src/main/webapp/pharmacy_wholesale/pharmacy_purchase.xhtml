@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8' ?>
+﻿<?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 template="/resources/template/template.xhtml"
@@ -123,7 +123,7 @@
                 <p:panel id="PnlAdd" rendered="#{sessionController.loggedPreference.pharmayPurchaseWithLastRate eq true}">
                     <p:autoComplete id="exItem" value="#{pharmacyPurchaseController.currentBillItem.item}"
                                     forceSelection="true"
-                                    minQueryLength="3" delay="300" completeMethod="#{itemController.completeAmpItem}" var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
+                                    minQueryLength="3" queryDelay="300" completeMethod="#{itemController.completeAmpItem}" var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
                         <p:column headerText="Item" >
                             <h:outputLabel value="#{vt.name}"></h:outputLabel>
                         </p:column>
@@ -174,7 +174,7 @@
                                                     inputStyleClass="w-100"
                                                     value="#{pharmacyPurchaseController.currentBillItem.item}"
                                                     forceSelection="true"
-                                                    minQueryLength="3" delay="300" completeMethod="#{itemController.completeAmpItem}"
+                                                    minQueryLength="3" queryDelay="300" completeMethod="#{itemController.completeAmpItem}"
                                                     var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
 
                                         <p:column headerText="Item" >
