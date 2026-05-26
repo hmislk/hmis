@@ -4577,6 +4577,20 @@ public class SearchController implements Serializable {
             return;
         }
 
+        // PHARMACY_ORDER atomic: redirect to DTO fetch so po_request.xhtml composite
+        // (which binds to poRequestSearchDtos) shows results from the atomic search path.
+        if (billTypeAtomic == BillTypeAtomic.PHARMACY_ORDER) {
+            pharmacyBillSearch.fetchPoRequestSearchDtos(maxResult);
+            return;
+        }
+
+        // PHARMACY_ORDER_APPROVAL atomic: redirect to DTO fetch so po_approve.xhtml composite
+        // (which binds to poApproveSearchDtos) shows results from the atomic search path.
+        if (billTypeAtomic == BillTypeAtomic.PHARMACY_ORDER_APPROVAL) {
+            pharmacyBillSearch.fetchPoApproveSearchDtos(maxResult);
+            return;
+        }
+
         String jpql;
         Map params = new HashMap();
 
@@ -4720,6 +4734,18 @@ public class SearchController implements Serializable {
         // PharmacyWholeSale: use lightweight DTO query (issue #21010 / #20299).
         if (billType == BillType.PharmacyWholeSale) {
             pharmacyBillSearch.fetchWholeSaleSearchDtos(maxResult);
+            return;
+        }
+
+        // PharmacyOrder (PO request): use lightweight DTO query (issue #21011 / #20299).
+        if (billType == BillType.PharmacyOrder) {
+            pharmacyBillSearch.fetchPoRequestSearchDtos(maxResult);
+            return;
+        }
+
+        // PharmacyOrderApprove (PO approval): use lightweight DTO query (issue #21011 / #20299).
+        if (billType == BillType.PharmacyOrderApprove) {
+            pharmacyBillSearch.fetchPoApproveSearchDtos(maxResult);
             return;
         }
 
