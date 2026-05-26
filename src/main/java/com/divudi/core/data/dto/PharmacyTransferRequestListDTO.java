@@ -123,7 +123,7 @@ public class PharmacyTransferRequestListDTO implements Serializable {
     // Basic constructor without cancellation details
     public PharmacyTransferRequestListDTO(Long billId, Object deptId, Date createdAt,
             Object fromDepartmentName, Object creatorName) {
-        
+
         this.billId = billId;
         this.deptId = deptId != null ? deptId.toString() : "";
         this.createdAt = createdAt;
@@ -132,6 +132,34 @@ public class PharmacyTransferRequestListDTO implements Serializable {
         this.cancelled = false;  // Default to not cancelled
         this.cancelledAt = null;
         this.cancellerName = "";
+    }
+
+    /**
+     * Constructor for the pharmacy_search.xhtml transfer-request composite
+     * (issue #21006 / #20299). Includes the {@code cancelled} boolean flag so
+     * cancelled bills appear in the list with a badge, while avoiding nullable
+     * multi-hop LEFT JOINs through {@code cancelledBill.creater.webUserPerson}
+     * which would silently drop non-cancelled rows per JPQL behaviour.
+     *
+     * @param billId          bill primary key — used for navigation (ID-only pattern)
+     * @param deptId          department-scoped bill number
+     * @param createdAt       bill creation timestamp
+     * @param toDepartmentName name of the department the stock is requested for
+     * @param creatorName     name of the user who raised the request
+     * @param cancelled       whether the bill has been cancelled
+     */
+    public PharmacyTransferRequestListDTO(Long billId, String deptId, Date createdAt,
+            String toDepartmentName, String creatorName, Boolean cancelled) {
+        this.billId = billId;
+        this.deptId = deptId;
+        this.createdAt = createdAt;
+        this.fromDepartmentName = toDepartmentName; // stored in fromDepartmentName field
+        this.creatorName = creatorName != null ? creatorName : "";
+        this.cancelled = cancelled != null ? cancelled : false;
+        this.cancelledAt = null;
+        this.cancellerName = null;
+        this.completed = false;
+        this.fullyIssued = false;
     }
 
     // ------------------------------------------------------------------

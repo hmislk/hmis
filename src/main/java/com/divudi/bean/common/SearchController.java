@@ -4678,6 +4678,12 @@ public class SearchController implements Serializable {
             return;
         }
 
+        // PharmacyTransferRequest: use lightweight DTO query (issue #21006 / #20299).
+        if (billType == BillType.PharmacyTransferRequest) {
+            pharmacyBillSearch.fetchTransferRequestSearchDtos(maxResult);
+            return;
+        }
+
         String jpql;
         Map params = new HashMap();
 
