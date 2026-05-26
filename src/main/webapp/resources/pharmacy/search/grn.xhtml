@@ -121,7 +121,8 @@
                 </h:outputLabel>
             </p:column>
 
-            <p:column headerText="Status" exportable="false">
+            <p:column headerText="Status">
+                <h:outputText value="Cancelled" rendered="#{dto.cancelled}" style="display:none;"/>
                 <p:badge value="Cancelled" severity="danger" rendered="#{dto.cancelled}"/>
             </p:column>
 
