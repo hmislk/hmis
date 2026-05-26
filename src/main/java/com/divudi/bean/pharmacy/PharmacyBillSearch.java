@@ -58,6 +58,7 @@ import com.divudi.core.entity.PreBill;
 import com.divudi.core.entity.StockBill;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.data.dto.PharmacySaleSearchDTO;
+import com.divudi.core.data.dto.PharmacyTransferIssueSearchDTO;
 import com.divudi.service.BillService;
 import com.divudi.service.pharmacy.TransferIssueNativeSqlService;
 import java.io.BufferedReader;
@@ -183,6 +184,7 @@ public class PharmacyBillSearch implements Serializable {
     private Long billId;
     private List<PharmacySaleSearchDTO> saleBillDtos;
     private List<com.divudi.core.data.dto.PharmacyTransferRequestListDTO> transferRequestSearchDtos;
+    private List<PharmacyTransferIssueSearchDTO> transferIssueSearchDtos;
 
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Constructors">
@@ -4578,6 +4580,28 @@ public class PharmacyBillSearch implements Serializable {
     }
 
     /**
+     * Navigation helper for DTO-based transfer issue tables; loads the full
+     * Bill from the id set via {@link #setBillId(Long)}.
+     */
+    public String navigateToViewPharmacyTransferIssueById() {
+        if (billId == null) {
+            JsfUtil.addErrorMessage("No Bill Selected");
+            return null;
+        }
+        Bill selectedBill = billService.reloadBill(billId);
+        if (selectedBill == null) {
+            JsfUtil.addErrorMessage("Bill not found");
+            return null;
+        }
+        if (selectedBill.getBillType() != BillType.PharmacyTransferIssue) {
+            JsfUtil.addErrorMessage("Invalid Bill Type");
+            return null;
+        }
+        bill = selectedBill;
+        return "/pharmacy/pharmacy_reprint_transfer_isssue?faces-redirect=true";
+    }
+
+    /**
      * Bill id used by DTO report tables to fetch a bill directly.
      */
     public Long getBillId() {
@@ -4786,6 +4810,88 @@ public class PharmacyBillSearch implements Serializable {
         }
         if (transferRequestSearchDtos == null) {
             transferRequestSearchDtos = new ArrayList<>();
+        }
+    }
+
+    // -----------------------------------------------------------------------
+    // Transfer Issue search DTO (issue #21007 / #20299)
+    // -----------------------------------------------------------------------
+
+    public List<PharmacyTransferIssueSearchDTO> getTransferIssueSearchDtos() {
+        return transferIssueSearchDtos;
+    }
+
+    public void setTransferIssueSearchDtos(List<PharmacyTransferIssueSearchDTO> transferIssueSearchDtos) {
+        this.transferIssueSearchDtos = transferIssueSearchDtos;
+    }
+
+    /**
+     * Fetches PharmacyTransferIssue bills as lightweight DTOs.
+     * <p>
+     * COALESCE is applied to every nullable LEFT JOIN string field so that
+     * bills whose creator or staff record is null are still included rather
+     * than being silently dropped by JPQL.
+     *
+     * @param maxResult maximum rows to return; 0 or negative means unlimited
+     */
+    @SuppressWarnings("unchecked")
+    public void fetchTransferIssueSearchDtos(int maxResult) {
+        Map<String, Object> m = new HashMap<>();
+        m.put("bt", com.divudi.core.data.BillType.PharmacyTransferIssue);
+        m.put("fd", searchController.getFromDate());
+        m.put("td", searchController.getToDate());
+        m.put("dep", sessionController.getLoggedUser().getDepartment());
+
+        // Use BilledBill (not Bill) to exclude CancelledBill subtype rows that
+        // share the same BillType. The original fetchPharmacyBillsNew also
+        // queried FROM BilledBill and filtered b.cancelled=false.
+        String sql = "SELECT new com.divudi.core.data.dto.PharmacyTransferIssueSearchDTO("
+                + "b.id, b.deptId, b.createdAt, "
+                + "COALESCE(b.toDepartment.name, ''), "
+                + "COALESCE(creatorPerson.name, ''), "
+                + "COALESCE(staffPerson.name, ''), "
+                + "b.cancelled, b.netTotal, COALESCE(b.comments, '')) "
+                + "FROM BilledBill b "
+                + "LEFT JOIN b.creater creater "
+                + "LEFT JOIN creater.webUserPerson creatorPerson "
+                + "LEFT JOIN b.toStaff toStaff "
+                + "LEFT JOIN toStaff.person staffPerson "
+                + "WHERE b.billType = :bt "
+                + "AND b.createdAt BETWEEN :fd AND :td "
+                + "AND b.department = :dep "
+                + "AND b.retired = false";
+
+        if (searchController.getSearchKeyword().getBillNo() != null
+                && !searchController.getSearchKeyword().getBillNo().trim().isEmpty()) {
+            sql += " AND b.deptId LIKE :billNo";
+            m.put("billNo", "%" + searchController.getSearchKeyword().getBillNo().trim() + "%");
+        }
+        if (searchController.getSearchKeyword().getDepartment() != null
+                && !searchController.getSearchKeyword().getDepartment().trim().isEmpty()) {
+            sql += " AND b.toDepartment.name LIKE :toDep";
+            m.put("toDep", "%" + searchController.getSearchKeyword().getDepartment().trim() + "%");
+        }
+        if (searchController.getSearchKeyword().getNetTotal() != null
+                && !searchController.getSearchKeyword().getNetTotal().trim().isEmpty()) {
+            try {
+                sql += " AND b.netTotal = :netTotal";
+                m.put("netTotal", Double.parseDouble(searchController.getSearchKeyword().getNetTotal().trim()));
+            } catch (NumberFormatException e) {
+                // skip invalid input
+            }
+        }
+
+        sql += " ORDER BY b.createdAt DESC";
+
+        if (maxResult > 0) {
+            transferIssueSearchDtos = (List<PharmacyTransferIssueSearchDTO>)
+                    billFacade.findLightsByJpql(sql, m, TemporalType.TIMESTAMP, maxResult);
+        } else {
+            transferIssueSearchDtos = (List<PharmacyTransferIssueSearchDTO>)
+                    billFacade.findLightsByJpql(sql, m, TemporalType.TIMESTAMP);
+        }
+        if (transferIssueSearchDtos == null) {
+            transferIssueSearchDtos = new ArrayList<>();
         }
     }
 
