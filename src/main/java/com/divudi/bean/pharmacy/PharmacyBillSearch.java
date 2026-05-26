@@ -4588,10 +4588,16 @@ public class PharmacyBillSearch implements Serializable {
             JsfUtil.addErrorMessage("No Bill Selected");
             return null;
         }
-        if (bill == null) {
+        Bill selectedBill = billService.reloadBill(billId);
+        if (selectedBill == null) {
             JsfUtil.addErrorMessage("Bill not found");
             return null;
         }
+        if (selectedBill.getBillType() != BillType.PharmacyTransferIssue) {
+            JsfUtil.addErrorMessage("Invalid Bill Type");
+            return null;
+        }
+        bill = selectedBill;
         return "/pharmacy/pharmacy_reprint_transfer_isssue?faces-redirect=true";
     }
 
