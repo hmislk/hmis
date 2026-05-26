@@ -7,7 +7,6 @@ package com.divudi.service.archival;
 import com.divudi.core.data.dto.ArchiveResult;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -19,6 +18,7 @@ import javax.ejb.TransactionAttributeType;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.PersistenceException;
 import javax.persistence.Query;
 
 /**
@@ -46,6 +46,9 @@ import javax.persistence.Query;
 @Stateless
 @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
 public class ItemBatchArchivalService extends ArchivalServiceBase {
+
+    private static final int MAX_RETRIES = 3;
+    private static final long RETRY_SLEEP_MS = 2000;
 
     @PersistenceContext(unitName = "hmisPU")
     private EntityManager em;
@@ -211,7 +214,7 @@ public class ItemBatchArchivalService extends ArchivalServiceBase {
             if (ids.isEmpty()) {
                 break;
             }
-            int moved = itemBatchBatchTx.archiveBatch(
+            int moved = archiveBatchWithRetry(
                     ibTable, ibArchive, stTable, stArchive, pbiTable,
                     ibCols, stCols, ids);
             totalArchived += moved;
@@ -231,6 +234,42 @@ public class ItemBatchArchivalService extends ArchivalServiceBase {
                 + (reachedLimit ? " (batch limit reached; more rows remain)" : "");
         return new ArchiveResult(false, candidates, totalArchived, batchesRun,
                 reachedLimit, startedAt, new Date(), msg);
+    }
+
+    /**
+     * Calls {@link ItemBatchArchivalBatchTx#archiveBatch} and retries up to
+     * {@value #MAX_RETRIES} times on MySQL lock wait timeout (error 1205).
+     * Since {@code ItemBatchArchivalService} runs NOT_SUPPORTED, each retry
+     * goes through the EJB proxy so {@code REQUIRES_NEW} is honoured afresh.
+     */
+    private int archiveBatchWithRetry(String ibTable, String ibArchive,
+            String stTable, String stArchive, String pbiTable,
+            String ibCols, String stCols, List<Long> ids) {
+        PersistenceException lastEx = null;
+        for (int attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+            try {
+                return itemBatchBatchTx.archiveBatch(
+                        ibTable, ibArchive, stTable, stArchive, pbiTable,
+                        ibCols, stCols, ids);
+            } catch (PersistenceException ex) {
+                if (!isLockTimeout(ex)) {
+                    throw ex;
+                }
+                lastEx = ex;
+                if (attempt < MAX_RETRIES) {
+                    LOGGER.log(Level.WARNING,
+                            "ItemBatch archival batch lock timeout (attempt {0}/{1}), retrying in {2}ms",
+                            new Object[]{attempt, MAX_RETRIES, RETRY_SLEEP_MS});
+                    try {
+                        Thread.sleep(RETRY_SLEEP_MS);
+                    } catch (InterruptedException ie) {
+                        Thread.currentThread().interrupt();
+                        throw ex;
+                    }
+                }
+            }
+        }
+        throw lastEx;
     }
 
     /**

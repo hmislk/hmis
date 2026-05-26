@@ -4562,6 +4562,35 @@ public class SearchController implements Serializable {
             JsfUtil.addErrorMessage("Please Select Bill Type");
             return;
         }
+
+        // PharmacyPre atomics: redirect to DTO fetch so the pre_bill.xhtml composite
+        // (which binds to preBillSearchDtos) shows results from the atomic search path.
+        if (billTypeAtomic.getBillType() == BillType.PharmacyPre) {
+            pharmacyBillSearch.fetchPreBillSearchDtos(maxResult);
+            return;
+        }
+
+        // PharmacyWholeSale atomics: redirect to DTO fetch so the pharmacy_whole_sale.xhtml
+        // composite (which binds to wholeSaleSearchDtos) shows results from the atomic search path.
+        if (billTypeAtomic.getBillType() == BillType.PharmacyWholeSale) {
+            pharmacyBillSearch.fetchWholeSaleSearchDtos(maxResult);
+            return;
+        }
+
+        // PHARMACY_ORDER atomic: redirect to DTO fetch so po_request.xhtml composite
+        // (which binds to poRequestSearchDtos) shows results from the atomic search path.
+        if (billTypeAtomic == BillTypeAtomic.PHARMACY_ORDER) {
+            pharmacyBillSearch.fetchPoRequestSearchDtos(maxResult);
+            return;
+        }
+
+        // PHARMACY_ORDER_APPROVAL atomic: redirect to DTO fetch so po_approve.xhtml composite
+        // (which binds to poApproveSearchDtos) shows results from the atomic search path.
+        if (billTypeAtomic == BillTypeAtomic.PHARMACY_ORDER_APPROVAL) {
+            pharmacyBillSearch.fetchPoApproveSearchDtos(maxResult);
+            return;
+        }
+
         String jpql;
         Map params = new HashMap();
 
@@ -4665,13 +4694,63 @@ public class SearchController implements Serializable {
             JsfUtil.addErrorMessage("Please Select Bill Type");
             return;
         }
-        String jpql;
-        Map params = new HashMap();
 
         System.out.println("DEBUG: Selected billType = " + billType);
         System.out.println("DEBUG: FromDate = " + getFromDate());
         System.out.println("DEBUG: ToDate = " + getToDate());
         System.out.println("DEBUG: Current Department = " + (getSessionController().getDepartment() != null ? getSessionController().getDepartment().getId() + " - " + getSessionController().getDepartment().getName() : "NULL"));
+
+        // PharmacySale: use lightweight DTO query via PharmacyBillSearch to avoid
+        // loading full entity graphs across wide date ranges (issue #21005 / #20299).
+        if (billType == BillType.PharmacySale) {
+            pharmacyBillSearch.fetchSaleSearchDtosFromNativeBills(maxResult);
+            return;
+        }
+
+        // PharmacyTransferRequest: use lightweight DTO query (issue #21006 / #20299).
+        if (billType == BillType.PharmacyTransferRequest) {
+            pharmacyBillSearch.fetchTransferRequestSearchDtos(maxResult);
+            return;
+        }
+
+        // PharmacyTransferIssue: use lightweight DTO query (issue #21007 / #20299).
+        if (billType == BillType.PharmacyTransferIssue) {
+            pharmacyBillSearch.fetchTransferIssueSearchDtos(maxResult);
+            return;
+        }
+
+        // PharmacyTransferReceive: use lightweight DTO query (issue #21008 / #20299).
+        if (billType == BillType.PharmacyTransferReceive) {
+            pharmacyBillSearch.fetchTransferReceiveSearchDtos(maxResult);
+            return;
+        }
+
+        // PharmacyPre: use lightweight DTO query (issue #21009 / #20299).
+        if (billType == BillType.PharmacyPre) {
+            pharmacyBillSearch.fetchPreBillSearchDtos(maxResult);
+            return;
+        }
+
+        // PharmacyWholeSale: use lightweight DTO query (issue #21010 / #20299).
+        if (billType == BillType.PharmacyWholeSale) {
+            pharmacyBillSearch.fetchWholeSaleSearchDtos(maxResult);
+            return;
+        }
+
+        // PharmacyOrder (PO request): use lightweight DTO query (issue #21011 / #20299).
+        if (billType == BillType.PharmacyOrder) {
+            pharmacyBillSearch.fetchPoRequestSearchDtos(maxResult);
+            return;
+        }
+
+        // PharmacyOrderApprove (PO approval): use lightweight DTO query (issue #21011 / #20299).
+        if (billType == BillType.PharmacyOrderApprove) {
+            pharmacyBillSearch.fetchPoApproveSearchDtos(maxResult);
+            return;
+        }
+
+        String jpql;
+        Map params = new HashMap();
 
         // Special handling for PharmacyAdjustment - use bill type atomics instead
         if (billType == BillType.PharmacyAdjustment) {
