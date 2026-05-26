@@ -5131,7 +5131,8 @@ public class PharmacyBillSearch implements Serializable {
                 + "WHERE b.billType = :bt "
                 + "AND b.createdAt BETWEEN :fd AND :td "
                 + "AND b.department = :dep "
-                + "AND b.retired = false";
+                + "AND b.retired = false "
+                + "ORDER BY b.createdAt DESC";
         if (maxResult > 0) {
             poRequestSearchDtos =
                     (List<com.divudi.core.data.dto.PharmacyPurchaseOrderDTO>)
@@ -5179,7 +5180,8 @@ public class PharmacyBillSearch implements Serializable {
                 + "WHERE b.billType = :bt "
                 + "AND b.createdAt BETWEEN :fd AND :td "
                 + "AND b.department = :dep "
-                + "AND b.retired = false";
+                + "AND b.retired = false "
+                + "ORDER BY b.createdAt DESC";
         if (maxResult > 0) {
             poApproveSearchDtos =
                     (List<com.divudi.core.data.dto.PharmacyPurchaseOrderDTO>)
