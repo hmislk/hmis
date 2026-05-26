@@ -4738,11 +4738,15 @@ public class PharmacyBillSearch implements Serializable {
         m.put("td", searchController.getToDate());
         m.put("dep", sessionController.getLoggedUser().getDepartment());
 
+        // 8-param constructor: (billId, deptId, createdAt, fromDepartmentName,
+        // creatorName, cancelled, cancelledAt, cancellerName).
+        // NULL literal for cancelledAt; '' for cancellerName — list view shows
+        // only the cancelled badge; full details available via View action.
         String sql = "SELECT new com.divudi.core.data.dto.PharmacyTransferRequestListDTO("
                 + "b.id, b.deptId, b.createdAt, "
                 + "COALESCE(b.toDepartment.name, ''), "
                 + "COALESCE(creatorPerson.name, ''), "
-                + "b.cancelled) "
+                + "b.cancelled, NULL, '') "
                 + "FROM Bill b "
                 + "LEFT JOIN b.creater creater "
                 + "LEFT JOIN creater.webUserPerson creatorPerson "
