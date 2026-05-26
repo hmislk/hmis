@@ -4570,6 +4570,13 @@ public class SearchController implements Serializable {
             return;
         }
 
+        // PharmacyWholeSale atomics: redirect to DTO fetch so the pharmacy_whole_sale.xhtml
+        // composite (which binds to wholeSaleSearchDtos) shows results from the atomic search path.
+        if (billTypeAtomic.getBillType() == BillType.PharmacyWholeSale) {
+            pharmacyBillSearch.fetchWholeSaleSearchDtos(maxResult);
+            return;
+        }
+
         String jpql;
         Map params = new HashMap();
 
@@ -4707,6 +4714,12 @@ public class SearchController implements Serializable {
         // PharmacyPre: use lightweight DTO query (issue #21009 / #20299).
         if (billType == BillType.PharmacyPre) {
             pharmacyBillSearch.fetchPreBillSearchDtos(maxResult);
+            return;
+        }
+
+        // PharmacyWholeSale: use lightweight DTO query (issue #21010 / #20299).
+        if (billType == BillType.PharmacyWholeSale) {
+            pharmacyBillSearch.fetchWholeSaleSearchDtos(maxResult);
             return;
         }
 
