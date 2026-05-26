@@ -58,6 +58,7 @@ import com.divudi.core.entity.PreBill;
 import com.divudi.core.entity.StockBill;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.data.dto.PharmacySaleSearchDTO;
+import com.divudi.core.data.dto.PharmacyTransferIssueSearchDTO;
 import com.divudi.service.BillService;
 import com.divudi.service.pharmacy.TransferIssueNativeSqlService;
 import java.io.BufferedReader;
@@ -182,6 +183,11 @@ public class PharmacyBillSearch implements Serializable {
     // Bill id used when navigating directly from DTO tables
     private Long billId;
     private List<PharmacySaleSearchDTO> saleBillDtos;
+    private List<com.divudi.core.data.dto.PharmacyTransferRequestListDTO> transferRequestSearchDtos;
+    private List<PharmacyTransferIssueSearchDTO> transferIssueSearchDtos;
+    private List<com.divudi.core.data.dto.PharmacyTransferReceivedListDTO> transferReceiveSearchDtos;
+    private List<com.divudi.core.data.dto.PharmacyPreBillSearchDTO> preBillSearchDtos;
+    private List<com.divudi.core.data.dto.PharmacyWholeSaleSearchDTO> wholeSaleSearchDtos;
 
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Constructors">
@@ -425,6 +431,20 @@ public class PharmacyBillSearch implements Serializable {
         }
         bill = tb;
         return "/pharmacy/pharmacy_reprint_transfer_receive?faces-redirect=true";
+    }
+
+    public String navigateToReprintPharmacyWholeSaleById() {
+        if (billId == null) {
+            JsfUtil.addErrorMessage("No Bill Selected");
+            return null;
+        }
+        Bill tb = billBean.fetchBillWithItemsAndFees(billId);
+        if (tb == null) {
+            JsfUtil.addErrorMessage("Bill not found");
+            return null;
+        }
+        bill = tb;
+        return "/pharmacy/pharmacy_reprint_bill?faces-redirect=true";
     }
 
     /**
@@ -4577,6 +4597,28 @@ public class PharmacyBillSearch implements Serializable {
     }
 
     /**
+     * Navigation helper for DTO-based transfer issue tables; loads the full
+     * Bill from the id set via {@link #setBillId(Long)}.
+     */
+    public String navigateToViewPharmacyTransferIssueById() {
+        if (billId == null) {
+            JsfUtil.addErrorMessage("No Bill Selected");
+            return null;
+        }
+        Bill selectedBill = billService.reloadBill(billId);
+        if (selectedBill == null) {
+            JsfUtil.addErrorMessage("Bill not found");
+            return null;
+        }
+        if (selectedBill.getBillType() != BillType.PharmacyTransferIssue) {
+            JsfUtil.addErrorMessage("Invalid Bill Type");
+            return null;
+        }
+        bill = selectedBill;
+        return "/pharmacy/pharmacy_reprint_transfer_isssue?faces-redirect=true";
+    }
+
+    /**
      * Bill id used by DTO report tables to fetch a bill directly.
      */
     public Long getBillId() {
@@ -4602,9 +4644,15 @@ public class PharmacyBillSearch implements Serializable {
 
     /**
      * Fetches PHARMACY_RETAIL_SALE and PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER bills as DTOs.
+     * <p>
+     * Uses COALESCE on every nullable LEFT JOIN string field so that bills whose
+     * creator, patient, referredBy or paymentScheme is null are still included in
+     * the result set instead of being silently dropped by JPQL.
+     *
+     * @param maxResult the maximum number of rows to return; 0 or negative means unlimited
      */
     @SuppressWarnings("unchecked")
-    public void fetchSaleSearchDtosFromNativeBills(boolean maxNum) {
+    public void fetchSaleSearchDtosFromNativeBills(int maxResult) {
         List<com.divudi.core.data.BillTypeAtomic> btas = new ArrayList<>();
         btas.add(com.divudi.core.data.BillTypeAtomic.PHARMACY_RETAIL_SALE);
         btas.add(com.divudi.core.data.BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER);
@@ -4615,13 +4663,15 @@ public class PharmacyBillSearch implements Serializable {
         m.put("ins", sessionController.getInstitution());
         m.put("ldep", sessionController.getLoggedUser().getDepartment());
 
+        // COALESCE on every nullable LEFT JOIN string prevents rows from being
+        // silently dropped when any joined relationship is null (JPQL behaviour).
         String sql = "SELECT new com.divudi.core.data.dto.PharmacySaleSearchDTO("
                 + "b.id, b.deptId, b.department.name, b.createdAt, "
-                + "creatorPerson.name, "
-                + "patientPerson.name, "
-                + "refDoctorPerson.name, "
+                + "COALESCE(creatorPerson.name, ''), "
+                + "COALESCE(patientPerson.name, ''), "
+                + "COALESCE(refDoctorPerson.name, ''), "
                 + "b.paymentMethod, "
-                + "ps.name, "
+                + "COALESCE(ps.name, ''), "
                 + "b.total, b.discount, b.netTotal, "
                 + "b.refunded, b.cancelled) "
                 + "FROM Bill b "
@@ -4676,13 +4726,361 @@ public class PharmacyBillSearch implements Serializable {
 
         sql += " ORDER BY b.createdAt DESC";
 
-        if (maxNum) {
-            saleBillDtos = (List<PharmacySaleSearchDTO>) billFacade.findLightsByJpql(sql, m, TemporalType.TIMESTAMP, 25);
+        if (maxResult > 0) {
+            saleBillDtos = (List<PharmacySaleSearchDTO>) billFacade.findLightsByJpql(sql, m, TemporalType.TIMESTAMP, maxResult);
         } else {
             saleBillDtos = (List<PharmacySaleSearchDTO>) billFacade.findLightsByJpql(sql, m, TemporalType.TIMESTAMP);
         }
         if (saleBillDtos == null) {
             saleBillDtos = new ArrayList<>();
+        }
+    }
+
+    /**
+     * @deprecated Use {@link #fetchSaleSearchDtosFromNativeBills(int)} which
+     * accepts an explicit row limit from {@code searchController.getMaxResult()}.
+     * Kept for backward compatibility with existing callers
+     * ({@code SearchController.createPharmacyRetailBills()} and
+     * {@code createPharmacyRetailAllBills()}).
+     */
+    @Deprecated
+    public void fetchSaleSearchDtosFromNativeBills(boolean maxNum) {
+        fetchSaleSearchDtosFromNativeBills(maxNum ? 25 : 0);
+    }
+
+    // -----------------------------------------------------------------------
+    // Transfer Request search DTO (issue #21006 / #20299)
+    // -----------------------------------------------------------------------
+
+    public List<com.divudi.core.data.dto.PharmacyTransferRequestListDTO> getTransferRequestSearchDtos() {
+        return transferRequestSearchDtos;
+    }
+
+    public void setTransferRequestSearchDtos(List<com.divudi.core.data.dto.PharmacyTransferRequestListDTO> transferRequestSearchDtos) {
+        this.transferRequestSearchDtos = transferRequestSearchDtos;
+    }
+
+    /**
+     * Fetches PharmacyTransferRequest bills as lightweight DTOs.
+     * <p>
+     * Uses COALESCE on the creator name (nullable LEFT JOIN) so that bills
+     * whose creator has no linked Person record are still included.
+     * Cancellation date and canceller details are intentionally omitted from
+     * the list view to avoid multi-hop nullable LEFT JOINs; users can open the
+     * bill via the View action to see full cancellation information.
+     *
+     * @param maxResult maximum rows to return; 0 or negative means unlimited
+     */
+    @SuppressWarnings("unchecked")
+    public void fetchTransferRequestSearchDtos(int maxResult) {
+        Map<String, Object> m = new HashMap<>();
+        m.put("bt", com.divudi.core.data.BillType.PharmacyTransferRequest);
+        m.put("fd", searchController.getFromDate());
+        m.put("td", searchController.getToDate());
+        m.put("dep", sessionController.getLoggedUser().getDepartment());
+
+        // 8-param constructor: (billId, deptId, createdAt, fromDepartmentName,
+        // creatorName, cancelled, cancelledAt, cancellerName).
+        // NULL literal for cancelledAt; '' for cancellerName — list view shows
+        // only the cancelled badge; full details available via View action.
+        String sql = "SELECT new com.divudi.core.data.dto.PharmacyTransferRequestListDTO("
+                + "b.id, b.deptId, b.createdAt, "
+                + "COALESCE(b.toDepartment.name, ''), "
+                + "COALESCE(creatorPerson.name, ''), "
+                + "b.cancelled, NULL, '') "
+                + "FROM Bill b "
+                + "LEFT JOIN b.creater creater "
+                + "LEFT JOIN creater.webUserPerson creatorPerson "
+                + "WHERE b.billType = :bt "
+                + "AND b.createdAt BETWEEN :fd AND :td "
+                + "AND b.department = :dep "
+                + "AND b.retired = false";
+
+        if (searchController.getSearchKeyword().getBillNo() != null
+                && !searchController.getSearchKeyword().getBillNo().trim().isEmpty()) {
+            sql += " AND b.deptId LIKE :billNo";
+            m.put("billNo", "%" + searchController.getSearchKeyword().getBillNo().trim() + "%");
+        }
+        if (searchController.getSearchKeyword().getDepartment() != null
+                && !searchController.getSearchKeyword().getDepartment().trim().isEmpty()) {
+            sql += " AND b.toDepartment.name LIKE :toDep";
+            m.put("toDep", "%" + searchController.getSearchKeyword().getDepartment().trim() + "%");
+        }
+        if (searchController.getSearchKeyword().getNetTotal() != null
+                && !searchController.getSearchKeyword().getNetTotal().trim().isEmpty()) {
+            try {
+                sql += " AND b.netTotal = :netTotal";
+                m.put("netTotal", Double.parseDouble(searchController.getSearchKeyword().getNetTotal().trim()));
+            } catch (NumberFormatException e) {
+                // skip invalid input
+            }
+        }
+
+        sql += " ORDER BY b.createdAt DESC";
+
+        if (maxResult > 0) {
+            transferRequestSearchDtos = (List<com.divudi.core.data.dto.PharmacyTransferRequestListDTO>)
+                    billFacade.findLightsByJpql(sql, m, TemporalType.TIMESTAMP, maxResult);
+        } else {
+            transferRequestSearchDtos = (List<com.divudi.core.data.dto.PharmacyTransferRequestListDTO>)
+                    billFacade.findLightsByJpql(sql, m, TemporalType.TIMESTAMP);
+        }
+        if (transferRequestSearchDtos == null) {
+            transferRequestSearchDtos = new ArrayList<>();
+        }
+    }
+
+    // -----------------------------------------------------------------------
+    // Transfer Issue search DTO (issue #21007 / #20299)
+    // -----------------------------------------------------------------------
+
+    public List<PharmacyTransferIssueSearchDTO> getTransferIssueSearchDtos() {
+        return transferIssueSearchDtos;
+    }
+
+    public void setTransferIssueSearchDtos(List<PharmacyTransferIssueSearchDTO> transferIssueSearchDtos) {
+        this.transferIssueSearchDtos = transferIssueSearchDtos;
+    }
+
+    /**
+     * Fetches PharmacyTransferIssue bills as lightweight DTOs.
+     * <p>
+     * COALESCE is applied to every nullable LEFT JOIN string field so that
+     * bills whose creator or staff record is null are still included rather
+     * than being silently dropped by JPQL.
+     *
+     * @param maxResult maximum rows to return; 0 or negative means unlimited
+     */
+    @SuppressWarnings("unchecked")
+    public void fetchTransferIssueSearchDtos(int maxResult) {
+        Map<String, Object> m = new HashMap<>();
+        m.put("bt", com.divudi.core.data.BillType.PharmacyTransferIssue);
+        m.put("fd", searchController.getFromDate());
+        m.put("td", searchController.getToDate());
+        m.put("dep", sessionController.getLoggedUser().getDepartment());
+
+        // Use BilledBill (not Bill) to exclude CancelledBill subtype rows that
+        // share the same BillType. The original fetchPharmacyBillsNew also
+        // queried FROM BilledBill and filtered b.cancelled=false.
+        String sql = "SELECT new com.divudi.core.data.dto.PharmacyTransferIssueSearchDTO("
+                + "b.id, b.deptId, b.createdAt, "
+                + "COALESCE(b.toDepartment.name, ''), "
+                + "COALESCE(creatorPerson.name, ''), "
+                + "COALESCE(staffPerson.name, ''), "
+                + "b.cancelled, b.netTotal, COALESCE(b.comments, '')) "
+                + "FROM BilledBill b "
+                + "LEFT JOIN b.creater creater "
+                + "LEFT JOIN creater.webUserPerson creatorPerson "
+                + "LEFT JOIN b.toStaff toStaff "
+                + "LEFT JOIN toStaff.person staffPerson "
+                + "WHERE b.billType = :bt "
+                + "AND b.createdAt BETWEEN :fd AND :td "
+                + "AND b.department = :dep "
+                + "AND b.retired = false";
+
+        if (searchController.getSearchKeyword().getBillNo() != null
+                && !searchController.getSearchKeyword().getBillNo().trim().isEmpty()) {
+            sql += " AND b.deptId LIKE :billNo";
+            m.put("billNo", "%" + searchController.getSearchKeyword().getBillNo().trim() + "%");
+        }
+        if (searchController.getSearchKeyword().getDepartment() != null
+                && !searchController.getSearchKeyword().getDepartment().trim().isEmpty()) {
+            sql += " AND b.toDepartment.name LIKE :toDep";
+            m.put("toDep", "%" + searchController.getSearchKeyword().getDepartment().trim() + "%");
+        }
+        if (searchController.getSearchKeyword().getNetTotal() != null
+                && !searchController.getSearchKeyword().getNetTotal().trim().isEmpty()) {
+            try {
+                sql += " AND b.netTotal = :netTotal";
+                m.put("netTotal", Double.parseDouble(searchController.getSearchKeyword().getNetTotal().trim()));
+            } catch (NumberFormatException e) {
+                // skip invalid input
+            }
+        }
+
+        sql += " ORDER BY b.createdAt DESC";
+
+        if (maxResult > 0) {
+            transferIssueSearchDtos = (List<PharmacyTransferIssueSearchDTO>)
+                    billFacade.findLightsByJpql(sql, m, TemporalType.TIMESTAMP, maxResult);
+        } else {
+            transferIssueSearchDtos = (List<PharmacyTransferIssueSearchDTO>)
+                    billFacade.findLightsByJpql(sql, m, TemporalType.TIMESTAMP);
+        }
+        if (transferIssueSearchDtos == null) {
+            transferIssueSearchDtos = new ArrayList<>();
+        }
+    }
+
+    public List<com.divudi.core.data.dto.PharmacyTransferReceivedListDTO> getTransferReceiveSearchDtos() {
+        return transferReceiveSearchDtos;
+    }
+
+    public void setTransferReceiveSearchDtos(List<com.divudi.core.data.dto.PharmacyTransferReceivedListDTO> transferReceiveSearchDtos) {
+        this.transferReceiveSearchDtos = transferReceiveSearchDtos;
+    }
+
+    @SuppressWarnings("unchecked")
+    public void fetchTransferReceiveSearchDtos(int maxResult) {
+        Map<String, Object> m = new HashMap<>();
+        m.put("bt", com.divudi.core.data.BillType.PharmacyTransferReceive);
+        m.put("fd", searchController.getFromDate());
+        m.put("td", searchController.getToDate());
+        m.put("dep", sessionController.getLoggedUser().getDepartment());
+
+        String sql = "SELECT new com.divudi.core.data.dto.PharmacyTransferReceivedListDTO("
+                + "b.id, b.deptId, b.createdAt, "
+                + "b.cancelled, "
+                + "COALESCE(creatorPerson.name, ''), "
+                + "b.netTotal, "
+                + "COALESCE(b.fromDepartment.name, ''), "
+                + "COALESCE(staffPerson.name, ''), "
+                + "COALESCE(b.comments, '')) "
+                + "FROM BilledBill b "
+                + "LEFT JOIN b.creater creater "
+                + "LEFT JOIN creater.webUserPerson creatorPerson "
+                + "LEFT JOIN b.toStaff toStaff "
+                + "LEFT JOIN toStaff.person staffPerson "
+                + "WHERE b.billType = :bt "
+                + "AND b.createdAt BETWEEN :fd AND :td "
+                + "AND b.department = :dep "
+                + "AND b.retired = false";
+
+        if (searchController.getSearchKeyword().getBillNo() != null
+                && !searchController.getSearchKeyword().getBillNo().trim().isEmpty()) {
+            sql += " AND b.deptId LIKE :billNo";
+            m.put("billNo", "%" + searchController.getSearchKeyword().getBillNo().trim() + "%");
+        }
+        if (searchController.getSearchKeyword().getDepartment() != null
+                && !searchController.getSearchKeyword().getDepartment().trim().isEmpty()) {
+            sql += " AND b.fromDepartment.name LIKE :fromDep";
+            m.put("fromDep", "%" + searchController.getSearchKeyword().getDepartment().trim() + "%");
+        }
+        if (searchController.getSearchKeyword().getNetTotal() != null
+                && !searchController.getSearchKeyword().getNetTotal().trim().isEmpty()) {
+            try {
+                sql += " AND b.netTotal = :netTotal";
+                m.put("netTotal", Double.parseDouble(searchController.getSearchKeyword().getNetTotal().trim()));
+            } catch (NumberFormatException e) {
+                // skip invalid input
+            }
+        }
+
+        sql += " ORDER BY b.createdAt DESC";
+
+        if (maxResult > 0) {
+            transferReceiveSearchDtos = (List<com.divudi.core.data.dto.PharmacyTransferReceivedListDTO>)
+                    billFacade.findLightsByJpql(sql, m, TemporalType.TIMESTAMP, maxResult);
+        } else {
+            transferReceiveSearchDtos = (List<com.divudi.core.data.dto.PharmacyTransferReceivedListDTO>)
+                    billFacade.findLightsByJpql(sql, m, TemporalType.TIMESTAMP);
+        }
+        if (transferReceiveSearchDtos == null) {
+            transferReceiveSearchDtos = new ArrayList<>();
+        }
+    }
+
+    public List<com.divudi.core.data.dto.PharmacyPreBillSearchDTO> getPreBillSearchDtos() {
+        return preBillSearchDtos;
+    }
+
+    public void setPreBillSearchDtos(List<com.divudi.core.data.dto.PharmacyPreBillSearchDTO> preBillSearchDtos) {
+        this.preBillSearchDtos = preBillSearchDtos;
+    }
+
+    @SuppressWarnings("unchecked")
+    public void fetchPreBillSearchDtos(int maxResult) {
+        Map<String, Object> m = new HashMap<>();
+        m.put("fd", searchController.getFromDate());
+        m.put("td", searchController.getToDate());
+        m.put("dep", sessionController.getLoggedUser().getDepartment());
+
+        // Use PreBill (the actual JPA subtype for pharmacy pre-bills) rather than
+        // BilledBill; BilledBill has a different discriminator and returns zero rows
+        // for pre-bills. LEFT JOIN referenceBill to avoid an implicit INNER JOIN that
+        // would drop unsettled pre-bills (referenceBill is nullable).
+        String sql = "SELECT new com.divudi.core.data.dto.PharmacyPreBillSearchDTO("
+                + "b.id, refBill.id, b.deptId, b.createdAt, "
+                + "b.cancelled, cb.createdAt, "
+                + "COALESCE(creatorPerson.name, ''), COALESCE(cancellerPerson.name, ''), '', "
+                + "b.billTypeAtomic, b.paymentMethod, b.netTotal) "
+                + "FROM PreBill b "
+                + "LEFT JOIN b.referenceBill refBill "
+                + "LEFT JOIN b.creater creater "
+                + "LEFT JOIN creater.webUserPerson creatorPerson "
+                + "LEFT JOIN b.cancelledBill cb "
+                + "LEFT JOIN cb.creater canceller "
+                + "LEFT JOIN canceller.webUserPerson cancellerPerson "
+                + "WHERE b.createdAt BETWEEN :fd AND :td "
+                + "AND b.department = :dep "
+                + "AND b.retired = false";
+
+        if (searchController.getSearchKeyword().getBillNo() != null
+                && !searchController.getSearchKeyword().getBillNo().trim().isEmpty()) {
+            sql += " AND b.deptId LIKE :billNo";
+            m.put("billNo", "%" + searchController.getSearchKeyword().getBillNo().trim() + "%");
+        }
+        if (searchController.getSearchKeyword().getNetTotal() != null
+                && !searchController.getSearchKeyword().getNetTotal().trim().isEmpty()) {
+            try {
+                sql += " AND b.netTotal = :netTotal";
+                m.put("netTotal", Double.parseDouble(searchController.getSearchKeyword().getNetTotal().trim()));
+            } catch (NumberFormatException e) {
+                // skip invalid input
+            }
+        }
+
+        sql += " ORDER BY b.createdAt DESC";
+
+        if (maxResult > 0) {
+            preBillSearchDtos = (List<com.divudi.core.data.dto.PharmacyPreBillSearchDTO>)
+                    billFacade.findLightsByJpql(sql, m, TemporalType.TIMESTAMP, maxResult);
+        } else {
+            preBillSearchDtos = (List<com.divudi.core.data.dto.PharmacyPreBillSearchDTO>)
+                    billFacade.findLightsByJpql(sql, m, TemporalType.TIMESTAMP);
+        }
+        if (preBillSearchDtos == null) {
+            preBillSearchDtos = new ArrayList<>();
+        }
+    }
+
+    public List<com.divudi.core.data.dto.PharmacyWholeSaleSearchDTO> getWholeSaleSearchDtos() {
+        return wholeSaleSearchDtos;
+    }
+
+    public void setWholeSaleSearchDtos(List<com.divudi.core.data.dto.PharmacyWholeSaleSearchDTO> wholeSaleSearchDtos) {
+        this.wholeSaleSearchDtos = wholeSaleSearchDtos;
+    }
+
+    public void fetchWholeSaleSearchDtos(int maxResult) {
+        Map<String, Object> m = new HashMap<>();
+        m.put("bt", com.divudi.core.data.BillType.PharmacyWholeSale);
+        m.put("dep", sessionController.getDepartment());
+        m.put("fd", searchController.getFromDate());
+        m.put("td", searchController.getToDate());
+        String sql = "SELECT new com.divudi.core.data.dto.PharmacyWholeSaleSearchDTO("
+                + "b.id, b.deptId, b.createdAt, "
+                + "COALESCE(creatorPerson.name, ''), "
+                + "COALESCE(b.comments, ''), "
+                + "b.cancelled) "
+                + "FROM BilledBill b "
+                + "LEFT JOIN b.creater creater "
+                + "LEFT JOIN creater.webUserPerson creatorPerson "
+                + "WHERE b.billType = :bt "
+                + "AND b.createdAt BETWEEN :fd AND :td "
+                + "AND b.department = :dep "
+                + "AND b.retired = false";
+        if (maxResult > 0) {
+            wholeSaleSearchDtos =
+                    (List<com.divudi.core.data.dto.PharmacyWholeSaleSearchDTO>)
+                    billFacade.findLightsByJpql(sql, m, TemporalType.TIMESTAMP, maxResult);
+        } else {
+            wholeSaleSearchDtos =
+                    (List<com.divudi.core.data.dto.PharmacyWholeSaleSearchDTO>)
+                    billFacade.findLightsByJpql(sql, m, TemporalType.TIMESTAMP);
+        }
+        if (wholeSaleSearchDtos == null) {
+            wholeSaleSearchDtos = new ArrayList<>();
         }
     }
 
