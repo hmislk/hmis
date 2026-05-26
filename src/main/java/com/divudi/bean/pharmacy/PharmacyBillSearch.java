@@ -4981,12 +4981,15 @@ public class PharmacyBillSearch implements Serializable {
         m.put("td", searchController.getToDate());
         m.put("dep", sessionController.getLoggedUser().getDepartment());
 
+        // LEFT JOIN referenceBill to avoid implicit INNER JOIN that would drop
+        // unsettled pre-bills (referenceBill is nullable on PharmacyPre bills).
         String sql = "SELECT new com.divudi.core.data.dto.PharmacyPreBillSearchDTO("
-                + "b.id, b.referenceBill.id, b.deptId, b.createdAt, "
+                + "b.id, refBill.id, b.deptId, b.createdAt, "
                 + "b.cancelled, cb.createdAt, "
                 + "COALESCE(creatorPerson.name, ''), COALESCE(cancellerPerson.name, ''), '', "
                 + "b.billTypeAtomic, b.paymentMethod, b.netTotal) "
                 + "FROM BilledBill b "
+                + "LEFT JOIN b.referenceBill refBill "
                 + "LEFT JOIN b.creater creater "
                 + "LEFT JOIN creater.webUserPerson creatorPerson "
                 + "LEFT JOIN b.cancelledBill cb "
