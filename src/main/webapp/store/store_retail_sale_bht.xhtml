@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8' ?>
+﻿<?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
@@ -152,7 +152,7 @@
                                                             forceSelection="true"  
                                                             id="acStock" 
                                                             value="#{storeSaleBhtController.stock}" 
-                                                            completeMethod="#{storeSaleBhtController.completeAvailableStocksStore}" 
+                                                            minQueryLength="3" queryDelay="300" completeMethod="#{storeSaleBhtController.completeAvailableStocksStore}" 
                                                             var="i" 
                                                             style="width: 400px;"
                                                             inputStyleClass="form-control"
