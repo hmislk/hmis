@@ -1986,7 +1986,10 @@ public class PharmacySaleController1 implements Serializable, ControllerWithPati
                 getBillItemFacade().create(newBil);
             }
 
-            if (tbi.getPrescription() != null) {
+            // Use hasPrescription() to avoid auto-creating a blank Prescription via the
+            // getter, which would cause an unpersisted Patient to be attached and abort
+            // the JTA transaction when no patient details were entered (issue #20504).
+            if (tbi.hasPrescription()) {
                 if (tbi.getPrescription().getId() == null) {
                     prescriptionFacade.create(tbi.getPrescription());
                 } else {
@@ -1994,7 +1997,9 @@ public class PharmacySaleController1 implements Serializable, ControllerWithPati
                 }
 
                 newBil.setPrescription(tbi.getPrescription());
-                tbi.getPrescription().setPatient(patient);
+                if (patient != null && patient.getId() != null) {
+                    tbi.getPrescription().setPatient(patient);
+                }
                 tbi.getPrescription().setCreatedAt(new Date());
                 tbi.getPrescription().setCreater(sessionController.getWebUser());
                 tbi.getPrescription().setInstitution(sessionController.getInstitution());

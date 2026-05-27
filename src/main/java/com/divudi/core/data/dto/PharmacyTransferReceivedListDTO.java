@@ -14,6 +14,9 @@ public class PharmacyTransferReceivedListDTO implements Serializable {
     private Double netTotal;
     private String cancelledByName;
     private Date cancelledAt;
+    private String fromDepartmentName;
+    private String staffName;
+    private String comments;
 
     public PharmacyTransferReceivedListDTO() {
     }
@@ -34,6 +37,20 @@ public class PharmacyTransferReceivedListDTO implements Serializable {
         this.netTotal = netTotal != null ? netTotal : 0.0;
         this.cancelledByName = cancelledByName;
         this.cancelledAt = cancelledAt;
+    }
+
+    public PharmacyTransferReceivedListDTO(Long billId, String deptId,
+            Date createdAt, Boolean cancelled, String createrName, Double netTotal,
+            String fromDepartmentName, String staffName, String comments) {
+        this.billId = billId;
+        this.deptId = deptId;
+        this.createdAt = createdAt;
+        this.cancelled = cancelled != null ? cancelled : false;
+        this.createrName = createrName;
+        this.netTotal = netTotal != null ? netTotal : 0.0;
+        this.fromDepartmentName = fromDepartmentName;
+        this.staffName = staffName;
+        this.comments = comments;
     }
 
     public Long getBillId() {
@@ -106,5 +123,29 @@ public class PharmacyTransferReceivedListDTO implements Serializable {
 
     public void setCancelledAt(Date cancelledAt) {
         this.cancelledAt = cancelledAt;
+    }
+
+    public String getFromDepartmentName() {
+        return fromDepartmentName;
+    }
+
+    public void setFromDepartmentName(String fromDepartmentName) {
+        this.fromDepartmentName = fromDepartmentName;
+    }
+
+    public String getStaffName() {
+        return staffName;
+    }
+
+    public void setStaffName(String staffName) {
+        this.staffName = staffName;
+    }
+
+    public String getComments() {
+        return comments;
+    }
+
+    public void setComments(String comments) {
+        this.comments = comments;
     }
 }
