@@ -641,8 +641,12 @@ public class GrnReturnWithCostingController implements Serializable {
         // getReturnBill().setReferenceBill(getBill());
         getReturnBill().setCreater(getSessionController().getLoggedUser());
         getReturnBill().setCreatedAt(Calendar.getInstance().getTime());
-        
+
         getReturnBill().setCompleted(true);
+        getReturnBill().setCompletedBy(getSessionController().getLoggedUser());
+        getReturnBill().setCompletedAt(Calendar.getInstance().getTime());
+        getReturnBill().setApproveAt(Calendar.getInstance().getTime());
+        getReturnBill().setApproveUser(getSessionController().getLoggedUser());
 
         if (getReturnBill().getId() == null) {
             getBillFacade().create(getReturnBill());

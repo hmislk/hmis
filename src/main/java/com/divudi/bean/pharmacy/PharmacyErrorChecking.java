@@ -68,6 +68,9 @@ public class PharmacyErrorChecking implements Serializable {
     double currentStock;
     double currentSaleValue;
     double currentPurchaseValue;
+    private double binCardTotalIn;
+    private double binCardTotalOut;
+    private boolean includeArchived = false;
     @Named
     @Inject
     private SessionController sessionController;
@@ -132,7 +135,7 @@ public class PharmacyErrorChecking implements Serializable {
      */
     public void processBinCardWithDTO() {
         reportTimerController.trackReportExecution(() -> {
-            binCardEntries = stockHistoryController.findBinCardDTOs(fromDate, toDate, null, department, item);
+            binCardEntries = stockHistoryController.findBinCardDTOs(fromDate, toDate, null, department, item, includeArchived);
 
             if (configOptionApplicationController.getBooleanValueByKey("Pharmacy Bin Card - Hide Adjustment Bills in Bin Card", true)) {
                 List<BillType> bts = new ArrayList<>();
@@ -147,7 +150,29 @@ public class PharmacyErrorChecking implements Serializable {
                 }
             }
 
+            calculateBinCardTotals();
+
         }, PharmacyReports.PHARMACY_BIN_CARD, sessionController.getLoggedUser());
+    }
+
+    private void calculateBinCardTotals() {
+        binCardTotalIn = 0;
+        binCardTotalOut = 0;
+        if (binCardEntries != null) {
+            for (PharmacyBinCardDTO dto : binCardEntries) {
+                if(List.of(BillTypeAtomic.PHARMACY_PURCHASE_RATE_ADJUSTMENT, 
+                        BillTypeAtomic.PHARMACY_COST_RATE_ADJUSTMENT,
+                        BillTypeAtomic.PHARMACY_RETAIL_RATE_ADJUSTMENT).contains(dto.getBillTypeAtomic())){
+                    continue;
+                }
+                double qtyPlusFree = dto.getTransQtyPlusFreeQty();
+                if (qtyPlusFree > 0) {
+                    binCardTotalIn += qtyPlusFree;
+                } else if (qtyPlusFree < 0) {
+                    binCardTotalOut += Math.abs(qtyPlusFree);
+                }
+            }
+        }
     }
 
     /**
@@ -604,5 +629,20 @@ public class PharmacyErrorChecking implements Serializable {
         
         return "batch-color-" + colorIndex;
     }
+
+    public double getBinCardTotalIn() {
+        return binCardTotalIn;
+    }
+
+    public double getBinCardTotalOut() {
+        return binCardTotalOut;
+    }
+
+    public double getBinCardNetTotal() {
+        return binCardTotalIn - binCardTotalOut;
+    }
+
+    public boolean isIncludeArchived() { return includeArchived; }
+    public void setIncludeArchived(boolean includeArchived) { this.includeArchived = includeArchived; }
 
 }

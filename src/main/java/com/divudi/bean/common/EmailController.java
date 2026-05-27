@@ -5,8 +5,11 @@
  */
 package com.divudi.bean.common;
 
+import com.divudi.bean.lab.LabTestHistoryController;
 import com.divudi.core.entity.AppEmail;
+import com.divudi.core.entity.lab.PatientReport;
 import com.divudi.core.facade.EmailFacade;
+import com.divudi.core.facade.PatientReportFacade;
 import com.divudi.ejb.EmailManagerEjb;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.util.CommonFunctions;
@@ -62,43 +65,51 @@ public class EmailController implements Serializable {
         failedEmails = emailFacade.findByJpql(j, m, TemporalType.TIMESTAMP);
     }
 
-public void sendManualEmail() {
-    if (recipient == null || recipient.trim().isEmpty()) {
-        JsfUtil.addErrorMessage("Recipient email is required.");
-        return;
+    public void sendManualEmail() {
+        if (recipient == null || recipient.trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Recipient email is required.");
+            return;
+        }
+
+        List<String> recipients = new ArrayList<>();
+        recipients.add(recipient.trim());
+
+        boolean success = false;
+        try {
+            success = emailManager.sendEmail(recipients, body, subject, true);
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("An error occurred while sending the email: " + e.getMessage());
+            return;
+        }
+
+        if (success) {
+            JsfUtil.addSuccessMessage("Email sent successfully");
+
+            AppEmail e = new AppEmail();
+            e.setReceipientEmail(recipient.trim());
+            e.setMessageSubject(subject);
+            e.setMessageBody(body);
+            e.setSentSuccessfully(true);
+            e.setCreatedAt(new Date());
+            e.setCreater(sessionController.getLoggedUser());
+            emailFacade.create(e);
+
+            // Clear form
+            recipient = null;
+            subject = null;
+            body = null;
+        } else {
+            JsfUtil.addErrorMessage("Failed to send email");
+        }
     }
 
-    List<String> recipients = new ArrayList<>();
-    recipients.add(recipient.trim());
+    @EJB
+    PatientReportFacade patientReportFacade;
 
-    boolean success = false;
-    try {
-        success = emailManager.sendEmail(recipients, body, subject, true);
-    } catch (Exception e) {
-        JsfUtil.addErrorMessage("An error occurred while sending the email: " + e.getMessage());
-        return;
-    }
-
-    if (success) {
-        JsfUtil.addSuccessMessage("Email sent successfully");
-
-        AppEmail e = new AppEmail();
-        e.setReceipientEmail(recipient.trim());
-        e.setMessageSubject(subject);
-        e.setMessageBody(body);
-        e.setSentSuccessfully(true);
-        e.setCreatedAt(new Date());
-        e.setCreater(sessionController.getLoggedUser());
-        emailFacade.create(e);
-
-        // Clear form
-        recipient = null;
-        subject = null;
-        body = null;
-    } else {
-        JsfUtil.addErrorMessage("Failed to send email");
-    }
-}
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    LabTestHistoryController labTestHistoryController;
 
     public void resendSelectedEmail() {
         if (selectedEmail == null) {
@@ -111,13 +122,24 @@ public void sendManualEmail() {
 
         boolean success = emailManager.sendEmail(recipients, selectedEmail.getMessageBody(), selectedEmail.getMessageSubject(), true);
 
-        selectedEmail.setSentSuccessfully(success);
-        selectedEmail.setSentAt(new Date());
-        emailFacade.edit(selectedEmail);
-
         if (success) {
+            selectedEmail.setSentSuccessfully(success);
+            selectedEmail.setSentAt(new Date());
+            emailFacade.edit(selectedEmail);
+
+            PatientReport courrentPr = selectedEmail.getPatientReport();
+            courrentPr.setSendEmailComplete(true);
+            patientReportFacade.edit(courrentPr);
+
+            if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
+                labTestHistoryController.addReportSentEmailHistory(selectedEmail.getPatientInvestigation(), selectedEmail.getPatientReport(), selectedEmail);
+            }
+
             JsfUtil.addSuccessMessage("Email resent successfully");
         } else {
+            if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
+                labTestHistoryController.addResentFailureEmailHistory(selectedEmail.getPatientInvestigation(), selectedEmail.getPatientReport(), selectedEmail);
+            }
             JsfUtil.addErrorMessage("Failed to resend email");
         }
     }

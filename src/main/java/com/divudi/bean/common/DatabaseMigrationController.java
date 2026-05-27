@@ -49,6 +49,9 @@ public class DatabaseMigrationController implements Serializable {
     @Inject
     private SessionController sessionController;
 
+    @Inject
+    private WebUserController webUserController;
+
 
     // UI properties
     private List<MigrationInfo> availableMigrations;
@@ -73,10 +76,31 @@ public class DatabaseMigrationController implements Serializable {
         refreshMigrationLists();
     }
 
-    public String navigateToDatabaseMigration(){
+    /**
+     * Navigate to the database migration page.
+     * Authorization is enforced here (the correct place for {@code @SessionScoped}
+     * beans — see developer_docs/jsf/navigation-patterns.md).
+     * Unauthenticated users or users without the SuperAdmin privilege are
+     * redirected to the login page instead.
+     */
+    public String navigateToDatabaseMigration() {
+        if (!isAuthorized()) {
+            return "/index1?faces-redirect=true";
+        }
         return "/admin/database_migration?faces-redirect=true";
     }
-    
+
+    /**
+     * Returns true only when the current user is authenticated and holds the
+     * SuperAdmin privilege.  Used as a rendered guard on the migration form so
+     * that page content is never delivered to unauthorised sessions even when
+     * the page is reached by a direct URL rather than the navigation method.
+     */
+    public boolean isAuthorized() {
+        return sessionController.getLoggedUser() != null
+                && webUserController.hasPrivilege("SuperAdmin");
+    }
+
     /**
      * Refresh migration lists from database and filesystem
      */
@@ -95,18 +119,310 @@ public class DatabaseMigrationController implements Serializable {
      */
     public List<MigrationInfo> getPendingMigrations() {
         List<MigrationInfo> pending = new ArrayList<>();
-        String lastExecutedVersion = getLastExecutedVersion();
 
         for (MigrationInfo info : availableMigrations) {
             if (!isMigrationExecuted(info.getVersion())) {
-                // Also check if this version is newer than last executed
-                if (lastExecutedVersion == null || compareVersions(info.getVersion(), lastExecutedVersion) > 0) {
-                    pending.add(info);
-                }
+                pending.add(info);
             }
         }
 
         return pending;
+    }
+
+    /**
+     * Re-execute a migration regardless of current status
+     */
+    public void reExecuteMigration(String version) {
+        if (!migrationLock.compareAndSet(false, true)) {
+            JsfUtil.addErrorMessage("Migration is already in progress");
+            return;
+        }
+
+        try {
+            // Find the migration info
+            MigrationInfo migrationInfo = null;
+            for (MigrationInfo info : availableMigrations) {
+                if (info.getVersion().equals(version)) {
+                    migrationInfo = info;
+                    break;
+                }
+            }
+
+            if (migrationInfo == null) {
+                JsfUtil.addErrorMessage("Migration version not found: " + version);
+                return;
+            }
+
+            migrationInProgress = true;
+            totalSteps = 1;
+            completedSteps = 0;
+            migrationStartTime = System.currentTimeMillis();
+            migrationLog = "";
+
+            StringBuilder logBuilder = new StringBuilder();
+            logBuilder.append("Starting migration re-execution at ").append(new Date()).append("\\n");
+            logBuilder.append("Migration: ").append(version).append(" - ").append(migrationInfo.getDescription()).append("\\n");
+            logBuilder.append("Note: Re-executing migration regardless of previous status\\n\\n");
+
+            currentMigrationVersion = version;
+            currentStep = "Re-executing migration " + version;
+
+            boolean success = executeSingleMigration(migrationInfo, logBuilder);
+            completedSteps = 1;
+
+            migrationLog = logBuilder.toString();
+            migrationInProgress = false;
+            currentMigrationVersion = null;
+            currentStep = null;
+
+            if (success) {
+                updateLastMigrationVersion();
+                JsfUtil.addSuccessMessage("Migration " + version + " re-executed successfully");
+            } else {
+                JsfUtil.addErrorMessage("Migration " + version + " re-execution failed. Check logs for details.");
+            }
+
+            refreshMigrationLists();
+
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error re-executing migration " + version, e);
+            migrationInProgress = false;
+            JsfUtil.addErrorMessage("Migration re-execution error: " + e.getMessage());
+        } finally {
+            migrationLock.set(false);
+        }
+    }
+
+    /**
+     * Execute a single migration by version
+     */
+    public void executeSingleMigration(String version) {
+        if (!migrationLock.compareAndSet(false, true)) {
+            JsfUtil.addErrorMessage("Migration is already in progress");
+            return;
+        }
+
+        try {
+            // Find the migration info
+            MigrationInfo migrationInfo = null;
+            for (MigrationInfo info : availableMigrations) {
+                if (info.getVersion().equals(version)) {
+                    migrationInfo = info;
+                    break;
+                }
+            }
+
+            if (migrationInfo == null) {
+                JsfUtil.addErrorMessage("Migration version not found: " + version);
+                return;
+            }
+
+            migrationInProgress = true;
+            totalSteps = 1;
+            completedSteps = 0;
+            migrationStartTime = System.currentTimeMillis();
+            migrationLog = "";
+
+            StringBuilder logBuilder = new StringBuilder();
+            logBuilder.append("Starting single migration execution at ").append(new Date()).append("\\n");
+            logBuilder.append("Migration: ").append(version).append(" - ").append(migrationInfo.getDescription()).append("\\n\\n");
+
+            currentMigrationVersion = version;
+            currentStep = "Executing migration " + version;
+
+            boolean success = executeSingleMigration(migrationInfo, logBuilder);
+            completedSteps = 1;
+
+            migrationLog = logBuilder.toString();
+            migrationInProgress = false;
+            currentMigrationVersion = null;
+            currentStep = null;
+
+            if (success) {
+                updateLastMigrationVersion();
+                JsfUtil.addSuccessMessage("Migration " + version + " executed successfully");
+            } else {
+                JsfUtil.addErrorMessage("Migration " + version + " execution failed. Check logs for details.");
+            }
+
+            refreshMigrationLists();
+
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error executing single migration " + version, e);
+            migrationInProgress = false;
+            JsfUtil.addErrorMessage("Migration execution error: " + e.getMessage());
+        } finally {
+            migrationLock.set(false);
+        }
+    }
+
+    /**
+     * Get failed migrations
+     */
+    public List<DatabaseMigration> getFailedMigrations() {
+        if (executedMigrations == null) {
+            return new ArrayList<>();
+        }
+
+        List<DatabaseMigration> failed = new ArrayList<>();
+        for (DatabaseMigration migration : executedMigrations) {
+            if (migration.getStatus() == MigrationStatus.FAILED) {
+                failed.add(migration);
+            }
+        }
+        return failed;
+    }
+
+    /**
+     * Execute all failed migrations
+     */
+    public void executeAllFailedMigrations() {
+        if (!migrationLock.compareAndSet(false, true)) {
+            JsfUtil.addErrorMessage("Migration is already in progress");
+            return;
+        }
+
+        try {
+            List<DatabaseMigration> failedMigrations = getFailedMigrations();
+            if (failedMigrations.isEmpty()) {
+                JsfUtil.addSuccessMessage("No failed migrations to execute");
+                return;
+            }
+
+            migrationInProgress = true;
+            totalSteps = failedMigrations.size();
+            completedSteps = 0;
+            migrationStartTime = System.currentTimeMillis();
+            migrationLog = "";
+
+            StringBuilder logBuilder = new StringBuilder();
+            logBuilder.append("Starting failed migration re-execution at ").append(new Date()).append("\\n");
+            logBuilder.append("Total failed migrations to re-execute: ").append(failedMigrations.size()).append("\\n\\n");
+
+            boolean allSuccessful = true;
+
+            for (DatabaseMigration failedMigration : failedMigrations) {
+                // Find corresponding migration info
+                MigrationInfo migrationInfo = null;
+                for (MigrationInfo info : availableMigrations) {
+                    if (info.getVersion().equals(failedMigration.getVersion())) {
+                        migrationInfo = info;
+                        break;
+                    }
+                }
+
+                if (migrationInfo == null) {
+                    logBuilder.append("Migration info not found for version: ").append(failedMigration.getVersion()).append("\\n");
+                    continue;
+                }
+
+                currentMigrationVersion = failedMigration.getVersion();
+                currentStep = "Re-executing migration " + failedMigration.getVersion();
+
+                logBuilder.append("=== Re-executing Migration ").append(failedMigration.getVersion()).append(" ===\\n");
+                logBuilder.append("Description: ").append(migrationInfo.getDescription()).append("\\n");
+
+                boolean success = executeSingleMigration(migrationInfo, logBuilder);
+                completedSteps++;
+
+                if (!success) {
+                    allSuccessful = false;
+                    logBuilder.append("MIGRATION RE-EXECUTION FAILED - Continuing with next migration\\n");
+                } else {
+                    logBuilder.append("Migration ").append(failedMigration.getVersion()).append(" re-executed successfully\\n\\n");
+                }
+            }
+
+            migrationLog = logBuilder.toString();
+            migrationInProgress = false;
+            currentMigrationVersion = null;
+            currentStep = null;
+
+            if (allSuccessful) {
+                updateLastMigrationVersion();
+                JsfUtil.addSuccessMessage("All failed migrations re-executed successfully");
+            } else {
+                JsfUtil.addWarningMessage("Some migrations failed during re-execution. Check logs for details.");
+            }
+
+            refreshMigrationLists();
+
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error during failed migration re-execution", e);
+            migrationInProgress = false;
+            JsfUtil.addErrorMessage("Failed migration re-execution error: " + e.getMessage());
+        } finally {
+            migrationLock.set(false);
+        }
+    }
+
+    /**
+     * Re-execute all available migrations regardless of status
+     */
+    public void reExecuteAllMigrations() {
+        if (!migrationLock.compareAndSet(false, true)) {
+            JsfUtil.addErrorMessage("Migration is already in progress");
+            return;
+        }
+
+        try {
+            if (availableMigrations == null || availableMigrations.isEmpty()) {
+                JsfUtil.addSuccessMessage("No migrations available to re-execute");
+                return;
+            }
+
+            migrationInProgress = true;
+            totalSteps = availableMigrations.size();
+            completedSteps = 0;
+            migrationStartTime = System.currentTimeMillis();
+            migrationLog = "";
+
+            StringBuilder logBuilder = new StringBuilder();
+            logBuilder.append("Starting re-execution of ALL migrations at ").append(new Date()).append("\\n");
+            logBuilder.append("Total migrations to re-execute: ").append(availableMigrations.size()).append("\\n");
+            logBuilder.append("WARNING: This will re-execute ALL migrations regardless of current status\\n\\n");
+
+            boolean allSuccessful = true;
+
+            for (MigrationInfo migrationInfo : availableMigrations) {
+                currentMigrationVersion = migrationInfo.getVersion();
+                currentStep = "Re-executing migration " + migrationInfo.getVersion();
+
+                logBuilder.append("=== Re-executing Migration ").append(migrationInfo.getVersion()).append(" ===\\n");
+                logBuilder.append("Description: ").append(migrationInfo.getDescription()).append("\\n");
+
+                boolean success = executeSingleMigration(migrationInfo, logBuilder);
+                completedSteps++;
+
+                if (!success) {
+                    allSuccessful = false;
+                    logBuilder.append("MIGRATION RE-EXECUTION FAILED - Continuing with next migration\\n");
+                } else {
+                    logBuilder.append("Migration ").append(migrationInfo.getVersion()).append(" re-executed successfully\\n\\n");
+                }
+            }
+
+            migrationLog = logBuilder.toString();
+            migrationInProgress = false;
+            currentMigrationVersion = null;
+            currentStep = null;
+
+            if (allSuccessful) {
+                updateLastMigrationVersion();
+                JsfUtil.addSuccessMessage("All migrations re-executed successfully");
+            } else {
+                JsfUtil.addWarningMessage("Some migrations failed during re-execution. Check logs for details.");
+            }
+
+            refreshMigrationLists();
+
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error during all migrations re-execution", e);
+            migrationInProgress = false;
+            JsfUtil.addErrorMessage("All migrations re-execution error: " + e.getMessage());
+        } finally {
+            migrationLock.set(false);
+        }
     }
 
     /**
@@ -195,7 +511,9 @@ public class DatabaseMigrationController implements Serializable {
             );
 
             migration.setStatus(MigrationStatus.EXECUTING);
+            migration.setExecutedAt(new Date());
             migration.setExecutedBy(sessionController.getLoggedUser());
+            migration.setErrorMessage(null);
             migration.setRequiresDowntime(migrationInfo.isRequiresDowntime());
             migration.setEstimatedDurationMs(migrationInfo.getEstimatedDurationMs());
             migration.setMigrationMetadata(serializeMigrationInfo(migrationInfo));
@@ -214,6 +532,7 @@ public class DatabaseMigrationController implements Serializable {
             long executionTime = System.currentTimeMillis() - startTime;
             migration.setStatus(MigrationStatus.SUCCESS);
             migration.setExecutionTimeMs(executionTime);
+            migration.setErrorMessage(null);
             migration.setExecutionLog(logBuilder.toString());
             migrationFacade.edit(migration);
 
@@ -243,29 +562,214 @@ public class DatabaseMigrationController implements Serializable {
     }
 
     /**
-     * Execute SQL script using EntityManager through facade
+     * Execute SQL script, routing each statement to the correct executor.
+     *
+     * DDL statements (CREATE, ALTER, DROP, CALL, DELIMITER blocks) are
+     * executed via executeDdlNative() which uses a raw JDBC connection
+     * outside JTA — necessary because MySQL auto-commits DDL implicitly,
+     * which would otherwise abort the JTA transaction.
+     *
+     * DML/query statements (SELECT, INSERT, UPDATE, DELETE) continue to
+     * use executeNativeSql() through the EntityManager.
      */
     private void executeSqlScript(String sql, StringBuilder logBuilder) throws Exception {
         try {
-            // Split SQL into individual statements (simple approach)
-            String[] statements = sql.split(";");
+            List<String> statements = splitSqlStatements(sql);
+            List<String> executableStatements = getExecutableSqlStatements(statements);
 
-            for (String stmt : statements) {
-                String trimmedStmt = stmt.trim();
-                if (!trimmedStmt.isEmpty() && !trimmedStmt.startsWith("--")) {
-                    logBuilder.append("Executing: ").append(trimmedStmt.substring(0, Math.min(100, trimmedStmt.length()))).append("...\\n");
+            if (usesMysqlConnectionScopedState(executableStatements)) {
+                logBuilder.append("Executing stateful MySQL script on a single JDBC connection\n");
+                List<String> skipMessages = migrationFacade.executeNativeSqlStatements(executableStatements);
+                for (String skipMessage : skipMessages) {
+                    logBuilder.append(skipMessage).append("\n");
+                }
+                logBuilder.append("Stateful script executed successfully\n");
+                return;
+            }
 
-                    // Use facade to execute native SQL
-                    migrationFacade.executeNativeSql(trimmedStmt);
+            for (String executableStmt : executableStatements) {
+                logBuilder.append("Executing: ").append(executableStmt.substring(0, Math.min(100, executableStmt.length()))).append("...\n");
+                try {
+                    if (isDdlStatement(executableStmt)) {
+                        migrationFacade.executeDdlNative(executableStmt);
+                    } else {
+                        migrationFacade.executeNativeSql(executableStmt);
+                    }
+                } catch (Exception e) {
+                    String skipReason = getIdempotentSkipReason(executableStmt, e);
+                    if (skipReason != null) {
+                        logBuilder.append(skipReason).append("\n");
+                    } else {
+                        throw e;
+                    }
                 }
             }
 
-            logBuilder.append("All statements executed successfully\\n");
+            logBuilder.append("All statements executed successfully\n");
 
         } catch (Exception e) {
-            logBuilder.append("Error executing SQL: ").append(e.getMessage()).append("\\n");
+            logBuilder.append("Error executing SQL: ").append(e.getMessage()).append("\n");
             throw e;
         }
+    }
+
+    private List<String> getExecutableSqlStatements(List<String> statements) {
+        List<String> executableStatements = new ArrayList<>();
+        for (String stmt : statements) {
+            String executableStmt = stripLeadingComments(stmt);
+            if (!executableStmt.isEmpty()) {
+                executableStatements.add(executableStmt);
+            }
+        }
+        return executableStatements;
+    }
+
+    /**
+     * Strips leading comment lines (--) and blank lines from a SQL statement block,
+     * returning only the executable portion. This handles the common pattern of
+     * comment blocks accumulated with the following SQL statement by splitSqlStatements.
+     */
+    private String stripLeadingComments(String sql) {
+        if (sql == null) {
+            return "";
+        }
+        StringBuilder result = new StringBuilder();
+        boolean foundExecutable = false;
+        for (String line : sql.split("\n")) {
+            String trimmed = line.trim();
+            if (!foundExecutable) {
+                if (trimmed.isEmpty() || trimmed.startsWith("--")) {
+                    continue;
+                }
+                foundExecutable = true;
+            }
+            result.append(line).append("\n");
+        }
+        return result.toString().trim();
+    }
+
+    /**
+     * Splits a SQL script into individual executable statements.
+     * Handles DELIMITER directives used in stored procedure definitions.
+     * DELIMITER is a MySQL client convention — the directive itself is
+     * stripped; the procedure body is submitted as a single JDBC call.
+     */
+    private List<String> splitSqlStatements(String sql) {
+        List<String> statements = new ArrayList<>();
+        String currentDelimiter = ";";
+        StringBuilder current = new StringBuilder();
+
+        for (String line : sql.split("\n")) {
+            String trimmed = line.trim();
+
+            if (trimmed.toUpperCase().startsWith("DELIMITER")) {
+                String buffered = current.toString().trim();
+                if (!buffered.isEmpty()) {
+                    statements.add(buffered);
+                    current = new StringBuilder();
+                }
+                String[] parts = trimmed.split("\\s+", 2);
+                currentDelimiter = parts.length > 1 ? parts[1].trim() : ";";
+                continue;
+            }
+
+            if (!currentDelimiter.equals(";") && trimmed.endsWith(currentDelimiter)) {
+                // End of a procedure block — strip the custom delimiter and flush
+                int delimIdx = line.lastIndexOf(currentDelimiter);
+                current.append(line, 0, delimIdx).append("\n");
+                statements.add(current.toString().trim());
+                current = new StringBuilder();
+                currentDelimiter = ";";
+            } else if (currentDelimiter.equals(";") && trimmed.endsWith(";")) {
+                // Normal semicolon-terminated statement
+                int semiIdx = line.lastIndexOf(";");
+                current.append(line, 0, semiIdx).append("\n");
+                String stmt = current.toString().trim();
+                if (!stmt.isEmpty()) {
+                    statements.add(stmt);
+                }
+                current = new StringBuilder();
+            } else {
+                current.append(line).append("\n");
+            }
+        }
+
+        String remaining = current.toString().trim();
+        if (!remaining.isEmpty()) {
+            statements.add(remaining);
+        }
+        return statements;
+    }
+
+    private boolean isDdlStatement(String sql) {
+        String upper = sql.toUpperCase().trim();
+        return upper.startsWith("CREATE") || upper.startsWith("ALTER")
+                || upper.startsWith("DROP") || upper.startsWith("CALL")
+                || upper.startsWith("RENAME") || upper.startsWith("TRUNCATE");
+    }
+
+    private boolean usesMysqlConnectionScopedState(List<String> statements) {
+        for (String statement : statements) {
+            String upper = statement.toUpperCase().trim();
+            if (upper.contains("@") || upper.startsWith("PREPARE ")
+                    || upper.startsWith("EXECUTE ") || upper.startsWith("DEALLOCATE PREPARE")) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Returns a non-null skip message if the failure is a benign idempotency
+     * error for the given DDL statement (e.g. CREATE INDEX on an existing
+     * index, ADD COLUMN for an existing column, DROP FOREIGN KEY on a
+     * non-existent key). Returns null when the error should propagate.
+     *
+     * This lets migrations be safely re-run against databases in mixed states
+     * — an earlier partial run, a JPA-generated schema, or a different
+     * vendor-style FK naming — without rewriting every script to guard each
+     * statement individually.
+     */
+    private String getIdempotentSkipReason(String sql, Exception e) {
+        String upper = sql.toUpperCase().trim();
+        String msg = collectCauseMessages(e);
+        if (msg == null) {
+            return null;
+        }
+        // CREATE INDEX on an index that already exists, or on a table whose
+        // casing doesn't match (e.g. userstock vs USER_STOCK).
+        if ((upper.startsWith("CREATE INDEX") || upper.startsWith("CREATE UNIQUE INDEX"))
+                && (msg.contains("1061") || msg.contains("Duplicate key name")
+                    || msg.contains("1146") || msg.contains("doesn't exist"))) {
+            return "Index already exists or target table missing, skipping...";
+        }
+        // ALTER TABLE ... ADD COLUMN that already exists (MySQL 1060).
+        if (upper.startsWith("ALTER TABLE") && upper.contains("ADD COLUMN")
+                && (msg.contains("1060") || msg.contains("Duplicate column name"))) {
+            return "Column already exists, skipping...";
+        }
+        // ALTER TABLE ... DROP FOREIGN KEY / DROP INDEX where the key doesn't exist (MySQL 1091).
+        // Only 1091 is safe to skip — it means "already absent". Errors like 1025 / 1553
+        // ("needed in a foreign key constraint") mean the index is still required and must
+        // surface so the operator can drop the owning FK first.
+        if (upper.startsWith("ALTER TABLE")
+                && (upper.contains("DROP FOREIGN KEY") || upper.contains("DROP INDEX") || upper.contains("DROP KEY"))
+                && (msg.contains("1091") || msg.contains("check that column/key exists"))) {
+            return "Foreign key or index already absent, skipping...";
+        }
+        return null;
+    }
+
+    private String collectCauseMessages(Throwable e) {
+        StringBuilder sb = new StringBuilder();
+        Throwable cause = e;
+        while (cause != null) {
+            if (cause.getMessage() != null) {
+                sb.append(cause.getMessage()).append('\n');
+            }
+            cause = cause.getCause();
+        }
+        return sb.length() == 0 ? null : sb.toString();
     }
 
     /**

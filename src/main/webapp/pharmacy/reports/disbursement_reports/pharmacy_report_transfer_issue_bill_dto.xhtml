@@ -15,8 +15,19 @@
 
                 <h:form>
 
-                    <p:panel header="Pharmacy Transfer Issue Bills"
-                             styleClass="card shadow-sm" >
+                    <p:panel styleClass="card shadow-sm">
+                        <f:facet name="header">
+                            <h:outputLabel value="Pharmacy Transfer Issue Bills" class="mx-1" />
+                            <p:commandButton
+                                rendered="#{webUserController.hasPrivilege('Admin')}"
+                                value="Config"
+                                icon="fa fa-cog"
+                                title="Page Configuration Management"
+                                action="#{pageAdminController.navigateToPageAdmin('pharmacy/reports/disbursement_reports/pharmacy_report_transfer_issue_bill_dto')}"
+                                ajax="false"
+                                styleClass="ui-button-secondary ms-5">
+                            </p:commandButton>
+                        </f:facet>
 
                         <div id="filters" class="row g-2">
                             <div class="col-2">
@@ -200,26 +211,28 @@
                                     </h:panelGroup>
                                 </p:column>
 
-                                <p:column headerText="Purchase Value" styleClass="text-end" footerText="#{empty reportsTransfer.purchaseValue ? null : commonFunctionsProxy.abs(reportsTransfer.purchaseValue)}" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disbursement Reports - Display Purchase', true)}">
+                                <p:column headerText="Purchase Value" styleClass="text-end" footerText="#{empty reportsTransfer.purchaseValue ? null : commonFunctionsProxy.abs(reportsTransfer.purchaseValue)}"
+                                          rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disbursement Reports - Display Purchase', true) and userSettingsController.pharmacyReportTransferIssueBillDtoPurchaseValueVisible}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Purchase Value" styleClass="text-end" />
                                     </f:facet>
                                     <h:outputLabel value="#{empty i.purchaseValue ? null : commonFunctionsProxy.abs(i.purchaseValue)}" styleClass="text-end">
                                         <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>   
+                                    </h:outputLabel>
                                     <f:facet name="footer">
                                         <h:outputLabel value="#{empty reportsTransfer.purchaseValue ? null : commonFunctionsProxy.abs(reportsTransfer.purchaseValue)}" styleClass="text-end fw-bold">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
-                                <p:column headerText="Sale Value" styleClass="text-end" footerText="#{empty reportsTransfer.totalsValue ? null : commonFunctionsProxy.abs(reportsTransfer.totalsValue)}" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disbursement Reports - Display Retail Sale', true)}">
+                                <p:column headerText="Sale Value" styleClass="text-end" footerText="#{empty reportsTransfer.totalsValue ? null : commonFunctionsProxy.abs(reportsTransfer.totalsValue)}"
+                                          rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disbursement Reports - Display Retail Sale', true) and userSettingsController.pharmacyReportTransferIssueBillDtoSaleValueVisible}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Sale Value" styleClass="text-end" />
                                     </f:facet>
                                     <h:outputLabel value="#{empty i.saleValue ? null : commonFunctionsProxy.abs(i.saleValue)}" styleClass="text-end">
                                         <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>   
+                                    </h:outputLabel>
                                     <f:facet name="footer">
                                         <h:outputLabel value="#{empty reportsTransfer.totalsValue ? null : commonFunctionsProxy.abs(reportsTransfer.totalsValue)}" styleClass="text-end fw-bold">
                                             <f:convertNumber pattern="#,##0.00" />
@@ -227,13 +240,14 @@
                                     </f:facet>
                                 </p:column>
 
-                                <p:column headerText="Cost Value" styleClass="text-end" footerText="#{empty reportsTransfer.costValue ? null : commonFunctionsProxy.abs(reportsTransfer.costValue)}" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disbursement Reports - Display Cost', true)}">
+                                <p:column headerText="Cost Value" styleClass="text-end" footerText="#{empty reportsTransfer.costValue ? null : commonFunctionsProxy.abs(reportsTransfer.costValue)}"
+                                          rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disbursement Reports - Display Cost', true) and userSettingsController.pharmacyReportTransferIssueBillDtoCostValueVisible}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Cost Value" styleClass="text-end" />
                                     </f:facet>
                                     <h:outputLabel value="#{empty i.costValueDouble ? null : commonFunctionsProxy.abs(i.costValueDouble)}" styleClass="text-end">
                                         <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>   
+                                    </h:outputLabel>
                                     <f:facet name="footer">
                                         <h:outputLabel value="#{empty reportsTransfer.costValue ? null : commonFunctionsProxy.abs(reportsTransfer.costValue)}" styleClass="text-end fw-bold">
                                             <f:convertNumber pattern="#,##0.00" />
@@ -241,13 +255,14 @@
                                     </f:facet>
                                 </p:column>
 
-                                <p:column headerText="Transfer Value" styleClass="text-end" footerText="#{empty reportsTransfer.transferValue ? null : commonFunctionsProxy.abs(reportsTransfer.transferValue)}" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disbursement Reports - Display Transfer', true)}">
+                                <p:column headerText="Transfer Value" styleClass="text-end" footerText="#{empty reportsTransfer.transferValue ? null : commonFunctionsProxy.abs(reportsTransfer.transferValue)}"
+                                          rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disbursement Reports - Display Transfer', true) and userSettingsController.pharmacyReportTransferIssueBillDtoTransferValueVisible}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Transfer Value" styleClass="text-end" />
                                     </f:facet>
                                     <h:outputLabel value="#{-i.transferValueDouble}" styleClass="text-end">
                                         <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>   
+                                    </h:outputLabel>
                                     <f:facet name="footer">
                                         <h:outputLabel value="#{-reportsTransfer.transferValue}" styleClass="text-end fw-bold">
                                             <f:convertNumber pattern="#,##0.00" />
@@ -277,6 +292,44 @@
                                 </p:column>
 
                             </p:dataTable>
+
+                            <!-- Subtle Column Visibility Controls -->
+                            <div class="mt-3 pt-2" style="border-top: 1px solid #e9ecef;">
+                                <p:panel toggleable="true" collapsed="true" styleClass="ui-panel-sm">
+                                    <f:facet name="header">
+                                        <span style="font-size: 0.85rem; color: #6c757d;">
+                                            <i class="fas fa-eye me-1" style="font-size: 0.75rem;"></i>
+                                            Customize Columns
+                                        </span>
+                                    </f:facet>
+                                    <div class="d-flex flex-wrap gap-2" style="font-size: 0.8rem;">
+                                        <div class="d-flex align-items-center me-3 mb-2">
+                                            <h:selectBooleanCheckbox id="chkPurchaseValue" value="#{userSettingsController.pharmacyReportTransferIssueBillDtoPurchaseValueVisible}">
+                                                <f:ajax render="tblScreen" />
+                                            </h:selectBooleanCheckbox>
+                                            <h:outputLabel for="chkPurchaseValue" value="Purchase Value" styleClass="ms-1" />
+                                        </div>
+                                        <div class="d-flex align-items-center me-3 mb-2">
+                                            <h:selectBooleanCheckbox id="chkSaleValue" value="#{userSettingsController.pharmacyReportTransferIssueBillDtoSaleValueVisible}">
+                                                <f:ajax render="tblScreen" />
+                                            </h:selectBooleanCheckbox>
+                                            <h:outputLabel for="chkSaleValue" value="Sale Value" styleClass="ms-1" />
+                                        </div>
+                                        <div class="d-flex align-items-center me-3 mb-2">
+                                            <h:selectBooleanCheckbox id="chkCostValue" value="#{userSettingsController.pharmacyReportTransferIssueBillDtoCostValueVisible}">
+                                                <f:ajax render="tblScreen" />
+                                            </h:selectBooleanCheckbox>
+                                            <h:outputLabel for="chkCostValue" value="Cost Value" styleClass="ms-1" />
+                                        </div>
+                                        <div class="d-flex align-items-center me-3 mb-2">
+                                            <h:selectBooleanCheckbox id="chkTransferValue" value="#{userSettingsController.pharmacyReportTransferIssueBillDtoTransferValueVisible}">
+                                                <f:ajax render="tblScreen" />
+                                            </h:selectBooleanCheckbox>
+                                            <h:outputLabel for="chkTransferValue" value="Transfer Value" styleClass="ms-1" />
+                                        </div>
+                                    </div>
+                                </p:panel>
+                            </div>
                         </h:panelGroup>
 
 

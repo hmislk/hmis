@@ -32,3 +32,15 @@ This document lists the configuration options used in the application and their 
 | `Pharmacy Transfer Issue Bill Footer CSS`                        | String    | `''`    | CSS for the footer of the transfer issue bill.                                                            |
 | `Pharmacy Transfer Issue Bill Footer Text`                       | String    | `''`    | Text for the footer of the transfer issue bill.                                                             |
 
+## OPD Billing
+
+| Key                                                              | Type      | Default | Description                                                                                             |
+| ---------------------------------------------------------------- | --------- | ------- | ------------------------------------------------------------------------------------------------------- |
+| `OPD Billing - Clear Referring Doctor on New Bill`              | Boolean   | `true`  | When true, clears the referring doctor and referring institution when starting a new OPD bill. When false, the values are preserved across consecutive bills. |
+
+## Inventory Reports
+
+| Key                                                              | Type      | Default | Description                                                                                             |
+| ---------------------------------------------------------------- | --------- | ------- | ------------------------------------------------------------------------------------------------------- |
+| `Cost of Goods Sold Report - Display Stock Correction Section`  | Boolean   | `true`  | Controls whether the Stock Correction section is displayed and calculated in the Cost of Goods Sold report. |
+

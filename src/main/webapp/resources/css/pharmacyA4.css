@@ -123,6 +123,22 @@ root {
 
     }
 
+    .grn-table {
+        width: 100%;
+        border-collapse: collapse;
+        border: none !important;
+    }
+
+    .grn-table tr,
+    .grn-table td,
+    .grn-table th {
+        border: none !important;
+    }
+
+    .grn-table td {
+        padding: 2px 6px;
+        vertical-align: top;
+    }
 
 }
 
@@ -160,7 +176,22 @@ root {
         line-height: 2!important;
     }
 
+    .grn-table {
+        width: 100%;
+        border-collapse: collapse;
+        border: none !important;
+    }
 
+    .grn-table tr,
+    .grn-table td,
+    .grn-table th {
+        border: none !important;
+    }
+
+    .grn-table td {
+        padding: 2px 6px;
+        vertical-align: top;
+    }
 
 }
 

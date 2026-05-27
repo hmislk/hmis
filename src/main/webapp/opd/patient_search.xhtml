@@ -137,7 +137,7 @@
 
                                 </div>
 
-                                <div class="mb-3" style="display: #{configOptionApplicationController.getBooleanValueByKey('Enable patient specific status management in the system') ? 'block' : 'none'}">
+                                <div class="mb-3">
                                     <h:outputLabel class="form form-label" value="Patient Specific Status" ></h:outputLabel>
                                     <p:selectOneMenu class="w-100" id="specificStatus" value="#{patientController.specificPatientStatus}">
                                         <f:selectItem itemLabel="Select a status" itemValue="#{null}"/>
@@ -146,7 +146,7 @@
 
                                 </div>
                                 
-                                <div class="mb-3" style="display: #{configOptionApplicationController.getBooleanValueByKey('Enable blacklist patient management in the system') ? 'block' : 'none'}">
+                                <div class="mb-3">
                                     <h:outputLabel class="form form-label" value="Patient Active Status" ></h:outputLabel><br></br>
                                     <p:selectBooleanButton class="w-100" value="#{patientController.blackListStatus}" onLabel="Blacklist" onIcon="pi pi-times" offLabel="Active" offIcon="pi pi-check"/>
 
@@ -187,11 +187,11 @@
                                         </p:outputLabel>
                                         <p:outputLabel rendered="#{not empty p.person.phone and p.person.phone ne ''}" value=",&nbsp; "></p:outputLabel>
                                         <br/>
-                                        <p:outputLabel value="#{p.phn}"></p:outputLabel>
+                                        <p:outputLabel value="#{p.phn}"></p:outputLabel><br/>
                                         <p:outputLabel value="#{p.person.address}"></p:outputLabel>
                                     </p:column>
 
-                                    <p:column style="text-align: center" headerText="Patient Status" width="10%" rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable patient specific status management in the system')}">
+                                    <p:column style="text-align: center" headerText="Patient Status" width="10%">
                                         <p:outputLabel value="X Blacklisted" class="px-3" rendered="#{p.blacklisted}" style="color: #FF401F; font-weight: bold; padding: 5px; border-radius: 15px;"></p:outputLabel>
                                         <p:outputLabel value="Active" class="px-3" rendered="#{!p.blacklisted}" style="color: green; font-weight: bold; padding: 5px; border-radius: 15px;"></p:outputLabel>
                                         <p:outputLabel value="#{p.specificStatus}" class="px-3" rendered="#{not empty p.specificStatus}" style="color: EB7633; font-weight: bold; padding: 5px; border-radius: 15px;"></p:outputLabel>
@@ -282,6 +282,13 @@
                                                     <f:setPropertyActionListener value="#{p}" target="#{searchController.patient}" ></f:setPropertyActionListener>
                                                 </p:commandButton>
                                                 <p:commandButton 
+                                                    value="Lab Result Summary"
+                                                    action="#{laboratoryChartViewController.navigateToProcessInvestigations(p)}"
+                                                    ajax="false"
+                                                    icon="pi pi-chart-line"
+                                                    class="mx-1 mb-2">
+                                                </p:commandButton>
+                                                <p:commandButton 
                                                     value="Receive Deposits"
                                                     action="#{patientDepositController.navigateToReciveDepositWithPatient(p)}"
                                                     ajax="false"
@@ -303,7 +310,7 @@
                                                     styleClass="mx-1 mb-2">
                                                     <f:setPropertyActionListener value="#{p}" target="#{patientController.current}" />
                                                 </p:commandButton>
-
+                                                
                                             </div>
                                         </div>
                                     </p:column>

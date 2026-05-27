@@ -9,7 +9,19 @@
         <ui:composition template="/reports/index.xhtml">
             <ui:define name="subcontent">
                 <h:form >
-                    <p:panel header="Add to Stock Bills" >
+                    <p:panel >
+                        <f:facet name="header">
+                            <h:outputLabel value="Add to Stock Bills" class="mx-1" />
+                            <p:commandButton
+                                rendered="#{webUserController.hasPrivilege('Admin')}"
+                                value="Config"
+                                icon="fa fa-cog"
+                                title="Page Configuration Management"
+                                action="#{pageAdminController.navigateToPageAdmin('reports/inventoryReports/add_to_stock_bills')}"
+                                ajax="false"
+                                styleClass="ui-button-secondary ms-5">
+                            </p:commandButton>
+                        </f:facet>
 
                         <h:panelGrid columns="8" class="w-100">
 
@@ -148,7 +160,31 @@
                                 </p:selectOneMenu>
                             </h:panelGroup>
 
+                            <p:spacer width="20"/>
 
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-building mr-2"/>
+                                <p:outputLabel value="Department Type" for="departmentTypeFilter" class="m-3"/>
+                            </h:panelGroup>
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <p:selectCheckboxMenu
+                                    id="departmentTypeFilter"
+                                    value="#{pharmacyReportController.selectedDepartmentTypes}"
+                                    label="Select Department Types"
+                                    class="w-100"
+                                    filter="true"
+                                    filterMatchMode="contains"
+                                    showHeader="true"
+                                    scrollHeight="200"
+                                    title="Select one or more department types to filter results. Leave empty to include all departments.">
+                                    <f:selectItems
+                                        value="#{pharmacyReportController.availableDepartmentTypes}"
+                                        var="depType"
+                                        itemLabel="#{depType.label}"
+                                        itemValue="#{depType}"/>
+                                </p:selectCheckboxMenu>
+                                <p:tooltip for="departmentTypeFilter" value="Select one or more department types to filter results. Leave empty to include all departments." position="top"/>
+                            </h:panelGroup>
 
                         </h:panelGrid>
 

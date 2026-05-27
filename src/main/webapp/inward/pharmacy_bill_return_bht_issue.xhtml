@@ -100,9 +100,9 @@
                                 <h:outputText value=" #{ph.item.name}"  />                     
                             </p:column>  
 
-                            <p:column headerText="Balance Qty in Unit" style="padding: 9px; width: 12em;"> 
-                                <h:outputText value="#{ph.pharmaceuticalBillItem.qty}" >  
-                                    <f:convertNumber pattern="#0" />
+                            <p:column headerText="Balance Qty in Unit" style="padding: 9px; width: 12em;">
+                                <h:outputText value="#{ph.pharmaceuticalBillItem.qty}" >
+                                    <f:convertNumber pattern="#0.####" />
                                 </h:outputText>
                             </p:column>  
 
@@ -146,7 +146,7 @@
                                         execute="@this" 
                                         listener="#{bhtIssueReturnController.onEdit(ph)}" >
                                     </f:ajax>                               
-                                    <f:convertNumber pattern="#,##" />
+                                    <f:convertNumber pattern="#,##0.####" />
                                 </p:inputText>
                             </p:column>  
 

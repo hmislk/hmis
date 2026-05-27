@@ -17,6 +17,9 @@ public class OpdSaleSummaryDTO implements Serializable {
     private Long categoryId;
     private Long itemId;
 
+    // Doctor/staff assigned to this item
+    private String staffName;
+
     public OpdSaleSummaryDTO() {
     }
 
@@ -52,6 +55,19 @@ public class OpdSaleSummaryDTO implements Serializable {
         this.grossAmount = grossAmount;
         this.discountAmount = discountAmount;
         this.netTotal = netTotal;
+    }
+
+    // NEW: Constructor with staff name for doctor display in reports
+    public OpdSaleSummaryDTO(Long categoryId, String categoryName,
+                              Long itemId, String itemName,
+                              Long itemCount,
+                              Double hospitalFee, Double professionalFee,
+                              Double grossAmount, Double discountAmount,
+                              Double netTotal,
+                              String staffName) {
+        this(categoryId, categoryName, itemId, itemName, itemCount,
+             hospitalFee, professionalFee, grossAmount, discountAmount, netTotal);
+        this.staffName = staffName;
     }
 
     public String getCategoryName() {
@@ -132,5 +148,13 @@ public class OpdSaleSummaryDTO implements Serializable {
 
     public void setItemId(Long itemId) {
         this.itemId = itemId;
+    }
+
+    public String getStaffName() {
+        return staffName;
+    }
+
+    public void setStaffName(String staffName) {
+        this.staffName = staffName;
     }
 }

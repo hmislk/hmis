@@ -16,6 +16,7 @@ import com.divudi.core.data.AppointmentType;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.PaymentMethod;
+import static com.divudi.core.data.PaymentMethod.Slip;
 import com.divudi.core.data.Sex;
 import com.divudi.core.data.Title;
 import com.divudi.core.data.dataStructure.ComponentDetail;
@@ -27,11 +28,20 @@ import com.divudi.core.entity.Appointment;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BilledBill;
 import com.divudi.core.entity.Patient;
+import com.divudi.core.entity.PatientDeposit;
 import com.divudi.core.entity.Payment;
 import com.divudi.core.entity.Person;
 import com.divudi.core.entity.inward.Admission;
 import com.divudi.core.entity.inward.PatientRoom;
+import com.divudi.core.entity.AppointmentScheduleInstance;
+import com.divudi.core.entity.AppointmentScheduleTemplate;
+import com.divudi.core.data.AppointmentScheduleType;
+import com.divudi.core.data.InwardAppointmentCategory;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.Staff;
 import com.divudi.core.facade.AppointmentFacade;
+import com.divudi.core.facade.AppointmentScheduleInstanceFacade;
 import com.divudi.core.facade.BillComponentFacade;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillFeeFacade;
@@ -45,14 +55,18 @@ import com.divudi.core.entity.inward.RoomFacilityCharge;
 import com.divudi.core.facade.PaymentFacade;
 import com.divudi.core.facade.ReservationFacade;
 import com.divudi.core.util.CommonFunctions;
+import com.divudi.core.util.CommonFunctionsProxy;
 import com.divudi.ejb.NumberGenerator;
+import com.divudi.service.PatientDepositService;
 import com.divudi.service.StaffService;
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -71,7 +85,7 @@ import org.primefaces.event.TabChangeEvent;
  */
 @Named
 @SessionScoped
-public class AppointmentController implements Serializable, ControllerWithPatient {
+public class AppointmentController implements Serializable, ControllerWithPatient, ControllerWithMultiplePayments {
 
     private static final long serialVersionUID = 1L;
 
@@ -95,6 +109,8 @@ public class AppointmentController implements Serializable, ControllerWithPatien
     @EJB
     private AppointmentFacade appointmentFacade;
     @EJB
+    private AppointmentScheduleInstanceFacade appointmentScheduleInstanceFacade;
+    @EJB
     private PatientInvestigationFacade patientInvestigationFacade;
     @EJB
     NumberGenerator numberGenerator;
@@ -117,6 +133,8 @@ public class AppointmentController implements Serializable, ControllerWithPatien
     private PaymentSchemeController paymentSchemeController;
     @Inject
     AdmissionController admissionController;
+    @Inject
+    AppointmentScheduleTemplateController appointmentScheduleTemplateController;
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Vaiables">
@@ -144,8 +162,15 @@ public class AppointmentController implements Serializable, ControllerWithPatien
 
     private Date reservedFromDate;
     private Date reservedToDate;
-    private RoomFacilityCharge reservedroom;
+    private RoomFacilityCharge reservedRoom;
     private String comment;
+
+    private InwardAppointmentCategory appointmentCategory = InwardAppointmentCategory.ROOM_ADMISSION;
+    private Item selectedProcedure;
+    private Staff selectedConsultant;
+    private Department selectedDepartment;
+    private AppointmentScheduleInstance selectedScheduleInstance;
+    private List<AppointmentScheduleInstance> availableInstances;
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Navigations">
@@ -165,6 +190,32 @@ public class AppointmentController implements Serializable, ControllerWithPatien
         return "/inward/view_appointment?faces-redirect=true";
     }
 
+    public boolean isReservationWithinToday(Date resFrom, Date resTo, Date currentStartDate, Date currentEndDate) {
+        if (resFrom == null || resTo == null || currentStartDate == null || currentEndDate == null) {
+            return false;
+        }
+
+        // Check if the entire reservation interval is within today
+        return (resFrom.compareTo(currentStartDate) >= 0 && resTo.compareTo(currentEndDate) <= 0);
+    }
+
+    public boolean doesReservationOverlapWithToday(Date resFrom, Date resTo, Date currentStartDate, Date currentEndDate) {
+        if (resFrom == null || resTo == null || currentStartDate == null || currentEndDate == null) {
+            return false;
+        }
+
+        int fromDateComparison  = resFrom.compareTo(currentEndDate);
+        int toDateComparison  = resTo.compareTo(currentStartDate);
+        
+        if(fromDateComparison <= 0 && toDateComparison  <= 0){
+            return false;
+        }else if(fromDateComparison <= 0 && toDateComparison  >= 0){
+            return true;
+        }else{
+            return true;
+        }
+    }
+
     public String navigatePatientAdmit() {
         if (reservation == null) {
             JsfUtil.addErrorMessage("No Reservation Found");
@@ -173,6 +224,17 @@ public class AppointmentController implements Serializable, ControllerWithPatien
 
         if (reservation == null || reservation.getAppointment() == null || reservation.getAppointment().getBill() == null) {
             JsfUtil.addErrorMessage("No Reservation Found");
+            return "";
+        }
+
+        Date resFrom = reservation.getReservedFrom();
+        Date resTo = reservation.getReservedTo();
+
+        Date currentStartDate = CommonFunctions.getStartOfDay();
+        Date currentEndDate = CommonFunctions.getEndOfDay();
+
+        if (!doesReservationOverlapWithToday(resFrom, resTo, currentStartDate, currentEndDate)) {
+            JsfUtil.addErrorMessage("Reservation Expired");
             return "";
         }
 
@@ -207,6 +269,7 @@ public class AppointmentController implements Serializable, ControllerWithPatien
     }
 
     // </editor-fold>
+    
     // <editor-fold defaultstate="collapsed" desc="Functions">
     public AppointmentController() {
     }
@@ -233,7 +296,7 @@ public class AppointmentController implements Serializable, ControllerWithPatien
             return;
         }
 
-        if (reservedroom == null) {
+        if (reservedRoom == null) {
             JsfUtil.addErrorMessage("No Reserved Room Found");
             return;
         }
@@ -245,6 +308,26 @@ public class AppointmentController implements Serializable, ControllerWithPatien
 
         if (reservedToDate.before(reservedFromDate)) {
             JsfUtil.addErrorMessage("Reserved To Date not Valid");
+            return;
+        }
+
+        if (currentAppointment.getAppointmentDate() == null) {
+            JsfUtil.addErrorMessage("Appointment Date is Missing.");
+            return;
+        }
+
+        if (currentBill.getReferredBy() == null) {
+            JsfUtil.addErrorMessage("Referring Doctor is Missing.");
+            return;
+        }
+
+        Reservation res = checkRoomAvailability();
+
+        if (res != null) {
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy.MM.dd hh:mm a");
+            String fDate = sdf.format(res.getReservedFrom());
+            String tDate = sdf.format(res.getReservedTo());
+            JsfUtil.addErrorMessage("This room is already booked from " + fDate + " to " + tDate + ".");
             return;
         }
 
@@ -274,7 +357,7 @@ public class AppointmentController implements Serializable, ControllerWithPatien
     private void updateReservation() {
         reservation.setReservedFrom(reservedFromDate);
         reservation.setReservedTo(reservedToDate);
-        reservation.setRoom(reservedroom);
+        reservation.setRoom(reservedRoom);
 
         if (reservation.getId() == null) {
             reservationFacade.create(reservation);
@@ -296,7 +379,7 @@ public class AppointmentController implements Serializable, ControllerWithPatien
             return "";
         }
 
-        reservedroom = reservation.getRoom();
+        reservedRoom = reservation.getRoom();
         reservedFromDate = reservation.getReservedFrom();
         reservedToDate = reservation.getReservedTo();
 
@@ -331,6 +414,8 @@ public class AppointmentController implements Serializable, ControllerWithPatien
                 + " res.patient.person.dob, "
                 + " COALESCE(res.patient.person.sex, ''), "
                 + " COALESCE(res.patient.person.mobile, ''), "
+                + " res.appointment.bill.referredBy.person.title, "
+                + " COALESCE(res.appointment.bill.referredBy.person.name, ''), "
                 + " res.appointment.status "
                 + " ) "
                 + " FROM Reservation res "
@@ -424,36 +509,33 @@ public class AppointmentController implements Serializable, ControllerWithPatien
         String appointmentNo = numberGenerator.inwardAppointmentNumberGeneratorYearly(sessionController.getInstitution(), AppointmentType.IP_APPOINTMENT);
         getCurrentAppointment().setAppointmentNumber(appointmentNo);
 
+        if (selectedProcedure != null) {
+            getCurrentAppointment().setItem(selectedProcedure);
+        }
+        if (selectedConsultant != null) {
+            getCurrentAppointment().setOpdDoctor(selectedConsultant);
+        }
+        if (selectedDepartment != null) {
+            getCurrentAppointment().setDepartment(selectedDepartment);
+        }
+        if (selectedScheduleInstance != null) {
+            getCurrentAppointment().setScheduleInstance(selectedScheduleInstance);
+        }
+
         getAppointmentFacade().create(getCurrentAppointment());
+
+        getCurrentBill().setDeptId(appointmentNo);
+        billFacade.edit(currentBill);
     }
 
     private void saveReservation(Patient p, Appointment a) {
-//        if (p == null) {
-//            JsfUtil.addErrorMessage("No patient Selected");
-//            return;
-//        }
-//        if (a == null) {
-//            JsfUtil.addErrorMessage("No Appointment Selected");
-//            return;
-//        }
-//        if (reservation.getRoom() == null) {
-//            JsfUtil.addErrorMessage("No Room Selected");
-//            return;
-//        }
-//        if (reservation.getReservedFrom() == null) {
-//            JsfUtil.addErrorMessage("No Reserved From Date Selected");
-//            return;
-//        }
-//
-//        if (reservation.getReservedTo() == null) {
-//            JsfUtil.addErrorMessage("No Reserved To Date Selected");
-//            return;
-//        }
-
         reservation.setAppointment(a);
         reservation.setPatient(p);
         reservation.setCreatedAt(new Date());
         reservation.setCreater(sessionController.getLoggedUser());
+        reservation.setRoom(reservedRoom);
+        reservation.setReservedFrom(reservedFromDate);
+        reservation.setReservedTo(reservedToDate);
 
         if (reservation.getId() == null) {
             getReservationFacade().create(reservation);
@@ -465,47 +547,114 @@ public class AppointmentController implements Serializable, ControllerWithPatien
 
     public void settleBill() {
 
-        if (errorCheck()) {
-            return;
-        }
-
-        if (getPatient() != null && getPatient().getId() != null && getPatient().isBlacklisted() && configOptionApplicationController.getBooleanValueByKey("Enable blacklist patient management for inward from the system", false)) {
+        if (getPatient().getId() != null && getPatient().isBlacklisted()) {
             JsfUtil.addErrorMessage("This patient is blacklisted from the system.");
             return;
         }
 
-        if (reservation == null || reservation.getRoom() == null) {
-            JsfUtil.addErrorMessage("Please select a patient room for the appoiment.");
+        if (appointmentCategory == null) {
+            JsfUtil.addErrorMessage("Please select an appointment category.");
             return;
         }
 
-        if (reservation.getReservedFrom() == null) {
-            JsfUtil.addErrorMessage("Please select a Reservation date for the appoiment.");
+        if (appointmentCategory.needsRoom()) {
+            if (reservation == null) {
+                JsfUtil.addErrorMessage("Please select a patient room for the appointment.");
+                return;
+            }
+            if (getReservedRoom() == null) {
+                JsfUtil.addErrorMessage("Please select a patient room for the appointment.");
+                return;
+            }
+            if (getReservedFromDate() == null) {
+                JsfUtil.addErrorMessage("Please select a Reservation date for the appointment.");
+                return;
+            }
+            if (!getReservedFromDate().after(new Date())) {
+                JsfUtil.addErrorMessage("Please select a valid Reservation from date and time without now.");
+                return;
+            }
+            if (getReservedToDate() != null && (!getReservedToDate().after(new Date()) || !getReservedToDate().after(getReservedFromDate()))) {
+                JsfUtil.addErrorMessage("Please select a valid Reservation to date.");
+                return;
+            }
+        }
+
+        if (appointmentCategory.needsConsultant() && selectedConsultant == null) {
+            JsfUtil.addErrorMessage("Please select a consultant.");
             return;
         }
 
-        if (!reservation.getReservedFrom().after(new Date())) {
-            JsfUtil.addErrorMessage("Please select a valid Reservation from date and time without now.");
+        if (appointmentCategory.needsProcedure() && selectedProcedure == null) {
+            JsfUtil.addErrorMessage("Please select a procedure.");
             return;
         }
 
-        if (reservation.getReservedTo() != null && (!reservation.getReservedTo().after(new Date()) || !reservation.getReservedTo().after(reservation.getReservedFrom()))) {
-            JsfUtil.addErrorMessage("Please select a valid Reservation todate.");
+        if (appointmentCategory.needsDepartment() && selectedDepartment == null) {
+            JsfUtil.addErrorMessage("Please select a department.");
             return;
+        }
+
+        if (currentAppointment.getAppointmentDate() == null) {
+            JsfUtil.addErrorMessage("Appointment Date is Missing.");
+            return;
+        }
+
+        if (currentBill.getReferredBy() == null) {
+            JsfUtil.addErrorMessage("Referring Doctor is Missing.");
+            return;
+        }
+
+        if (errorCheck()) {
+            return;
+        }
+
+        if (!validateScheduleCapacity()) {
+            return;
+        }
+
+        if (!validateTimeOverlap()) {
+            return;
+        }
+
+        if (appointmentCategory.needsRoom()) {
+            Reservation res = checkRoomAvailability();
+            if (res != null) {
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy.MM.dd hh:mm a");
+                String fDate = sdf.format(res.getReservedFrom());
+                String tDate = sdf.format(res.getReservedTo());
+                JsfUtil.addErrorMessage("This room is already booked from " + fDate + " to " + tDate + ".");
+                return;
+            }
+        }
+
+        // For room admission, auto-populate appointment times from reservation
+        if (appointmentCategory.needsRoom()) {
+            getCurrentAppointment().setAppointmentTimeFrom(reservedFromDate);
+            getCurrentAppointment().setAppointmentTimeTo(reservedToDate);
         }
 
         Patient p = savePatient(getPatient());
 
         saveBill(p);
         saveAppointment(p);
-        saveReservation(p, currentAppointment);
+        if (appointmentCategory.needsRoom()) {
+            saveReservation(p, currentAppointment);
+        }
         createPayment(getCurrentBill(), getCurrentBill().getPaymentMethod());
+
+        // Increment booked count on schedule instance
+        if (selectedScheduleInstance != null) {
+            selectedScheduleInstance.setBookedCount(selectedScheduleInstance.getBookedCount() + 1);
+            appointmentScheduleInstanceFacade.edit(selectedScheduleInstance);
+        }
 
         JsfUtil.addSuccessMessage("Bill Saved");
         printPreview = true;
 
     }
 
+//  Same Method in PaymentService { createPayment(Bill bill, PaymentMethod pm, PaymentMethodData paymentMethodData, Institution institution, Department department, WebUser webUser) }
     private List<Payment> createPayment(Bill bill, PaymentMethod pm) {
         List<Payment> ps = new ArrayList<>();
         if (pm == PaymentMethod.MultiplePaymentMethods) {
@@ -519,6 +668,10 @@ public class AppointmentController implements Serializable, ControllerWithPatien
                 p.setPaymentMethod(cd.getPaymentMethod());
 
                 switch (cd.getPaymentMethod()) {
+                    case Cash:
+                        p.setPaidValue(cd.getPaymentMethodData().getCash().getTotalValue());
+                        p.setComments(cd.getPaymentMethodData().getCash().getComment());
+                        break;
                     case Card:
                         p.setBank(cd.getPaymentMethodData().getCreditCard().getInstitution());
                         p.setCreditCardRefNo(cd.getPaymentMethodData().getCreditCard().getNo());
@@ -532,36 +685,6 @@ public class AppointmentController implements Serializable, ControllerWithPatien
                         p.setPaidValue(cd.getPaymentMethodData().getCheque().getTotalValue());
                         p.setComments(cd.getPaymentMethodData().getCheque().getComment());
                         break;
-                    case Cash:
-                        p.setPaidValue(cd.getPaymentMethodData().getCash().getTotalValue());
-                        p.setComments(cd.getPaymentMethodData().getCash().getComment());
-                        break;
-                    case ewallet:
-                        p.setPolicyNo(cd.getPaymentMethodData().getEwallet().getReferralNo());
-                        p.setReferenceNo(cd.getPaymentMethodData().getEwallet().getReferenceNo());
-                        p.setCreditCompany(cd.getPaymentMethodData().getEwallet().getInstitution());
-                        p.setPaidValue(cd.getPaymentMethodData().getEwallet().getTotalValue());
-                        p.setComments(cd.getPaymentMethodData().getEwallet().getComment());
-                        break;
-                    case Agent:
-//                        TODO:Add Details
-                        break;
-                    case Credit:
-                        p.setPolicyNo(cd.getPaymentMethodData().getCredit().getReferralNo());
-                        p.setReferenceNo(cd.getPaymentMethodData().getCredit().getReferenceNo());
-                        p.setCreditCompany(cd.getPaymentMethodData().getCredit().getInstitution());
-                        p.setPaidValue(cd.getPaymentMethodData().getCredit().getTotalValue());
-                        p.setComments(cd.getPaymentMethodData().getCredit().getComment());
-                        break;
-                    case PatientDeposit:
-                        if (getPatient().getRunningBalance() != null) {
-                            getPatient().setRunningBalance(getPatient().getRunningBalance() - cd.getPaymentMethodData().getPatient_deposit().getTotalValue());
-                        } else {
-                            getPatient().setRunningBalance(0.0 - cd.getPaymentMethodData().getPatient_deposit().getTotalValue());
-                        }
-                        getPatientFacade().edit(getPatient());
-                        p.setPaidValue(cd.getPaymentMethodData().getPatient_deposit().getTotalValue());
-                        break;
                     case Slip:
                         p.setPaidValue(cd.getPaymentMethodData().getSlip().getTotalValue());
                         p.setBank(cd.getPaymentMethodData().getSlip().getInstitution());
@@ -570,25 +693,36 @@ public class AppointmentController implements Serializable, ControllerWithPatien
                         p.setReferenceNo(cd.getPaymentMethodData().getSlip().getReferenceNo());
                         p.setPaymentDate(cd.getPaymentMethodData().getSlip().getDate());
                         p.setChequeDate(cd.getPaymentMethodData().getSlip().getDate());
-
                         break;
-                    case OnCall:
                     case OnlineSettlement:
-                    case Staff:
-                        p.setPaidValue(cd.getPaymentMethodData().getStaffCredit().getTotalValue());
-                        if (cd.getPaymentMethodData().getStaffCredit().getToStaff() != null) {
-                            staffBean.updateStaffCredit(cd.getPaymentMethodData().getStaffCredit().getToStaff(), cd.getPaymentMethodData().getStaffCredit().getTotalValue());
-                            JsfUtil.addSuccessMessage("Staff Credit Updated");
-                        }
+                        p.setBank(cd.getPaymentMethodData().getOnlineSettlement().getInstitution());
+                        p.setPaidValue(cd.getPaymentMethodData().getOnlineSettlement().getTotalValue());
+                        p.setPaymentDate(cd.getPaymentMethodData().getOnlineSettlement().getDate());
+                        p.setReferenceNo(cd.getPaymentMethodData().getOnlineSettlement().getReferenceNo());
+                        p.setComments(cd.getPaymentMethodData().getOnlineSettlement().getComment());
                         break;
                     case Staff_Welfare:
                         p.setPaidValue(cd.getPaymentMethodData().getStaffWelfare().getTotalValue());
                         if (cd.getPaymentMethodData().getStaffWelfare().getToStaff() != null) {
+                            p.setToStaff(cd.getPaymentMethodData().getStaffWelfare().getToStaff());
                             staffBean.updateStaffWelfare(cd.getPaymentMethodData().getStaffWelfare().getToStaff(), cd.getPaymentMethodData().getStaffWelfare().getTotalValue());
                             JsfUtil.addSuccessMessage("Staff Welfare Balance Updated");
                         }
                         break;
-                    case MultiplePaymentMethods:
+                    case ewallet:
+                        p.setPolicyNo(cd.getPaymentMethodData().getEwallet().getReferralNo());
+                        p.setReferenceNo(cd.getPaymentMethodData().getEwallet().getReferenceNo());
+                        p.setCreditCompany(cd.getPaymentMethodData().getEwallet().getInstitution());
+                        p.setPaidValue(cd.getPaymentMethodData().getEwallet().getTotalValue());
+                        p.setComments(cd.getPaymentMethodData().getEwallet().getComment());
+                        break;
+                    case PatientDeposit:
+                        double paidValue = cd.getPaymentMethodData().getPatient_deposit().getTotalValue();
+                        PatientDeposit currentDeposit = cd.getPaymentMethodData().getPatient_deposit().getPatientDepost();
+                        p.setPaidValue(paidValue);
+                        patientDepositService.updateBalance(p, currentDeposit);
+                        JsfUtil.addSuccessMessage("Patient Deposit Balance Updated");
+                        break;
                 }
 
                 paymentFacade.create(p);
@@ -605,6 +739,10 @@ public class AppointmentController implements Serializable, ControllerWithPatien
             p.setPaymentMethod(pm);
 
             switch (pm) {
+                case Cash:
+                    p.setPaidValue(bill.getTotal());
+                    p.setComments("");
+                    break;
                 case Card:
                     p.setBank(paymentMethodData.getCreditCard().getInstitution());
                     p.setCreditCardRefNo(paymentMethodData.getCreditCard().getNo());
@@ -618,29 +756,6 @@ public class AppointmentController implements Serializable, ControllerWithPatien
                     p.setPaidValue(paymentMethodData.getCheque().getTotalValue());
                     p.setComments(paymentMethodData.getCheque().getComment());
                     break;
-                case Cash:
-                    p.setPaidValue(bill.getTotal());
-                    p.setComments("");
-                    break;
-                case ewallet:
-                    p.setBank(paymentMethodData.getEwallet().getInstitution());
-                    p.setPolicyNo(paymentMethodData.getEwallet().getReferralNo());
-                    p.setReferenceNo(paymentMethodData.getEwallet().getReferenceNo());
-                    p.setCreditCompany(paymentMethodData.getEwallet().getInstitution());
-                    p.setPaidValue(paymentMethodData.getEwallet().getTotalValue());
-                    p.setComments(paymentMethodData.getEwallet().getComment());
-                    break;
-
-                case Agent:
-                    break;
-                case Credit:
-                    p.setPolicyNo(paymentMethodData.getCredit().getReferralNo());
-                    p.setComments(paymentMethodData.getCredit().getComment());
-                    p.setReferenceNo(paymentMethodData.getCredit().getReferenceNo());
-                    p.setCreditCompany(paymentMethodData.getCredit().getInstitution());
-                    break;
-                case PatientDeposit:
-                    break;
                 case Slip:
                     p.setBank(paymentMethodData.getSlip().getInstitution());
                     p.setPaidValue(paymentMethodData.getSlip().getTotalValue());
@@ -651,14 +766,29 @@ public class AppointmentController implements Serializable, ControllerWithPatien
                     p.setReferenceNo(paymentMethodData.getSlip().getReferenceNo());
                     p.setRealizedAt(paymentMethodData.getSlip().getDate());
                     break;
-                case OnCall:
+                case ewallet:
+                    p.setBank(paymentMethodData.getEwallet().getInstitution());
+                    p.setPolicyNo(paymentMethodData.getEwallet().getReferralNo());
+                    p.setReferenceNo(paymentMethodData.getEwallet().getReferenceNo());
+                    p.setCreditCompany(paymentMethodData.getEwallet().getInstitution());
+                    p.setPaidValue(paymentMethodData.getEwallet().getTotalValue());
+                    p.setComments(paymentMethodData.getEwallet().getComment());
+                    break;
+                case PatientDeposit:
+                    double paidValue = paymentMethodData.getPatient_deposit().getTotalValue();
+                    PatientDeposit currentDeposit = paymentMethodData.getPatient_deposit().getPatientDepost();
+                    p.setPaidValue(paidValue);
+                    patientDepositService.updateBalance(p, currentDeposit);
+                    break;
                 case OnlineSettlement:
-                case Staff:
-                case YouOweMe:
-                case MultiplePaymentMethods:
+                    p.setBank(paymentMethodData.getOnlineSettlement().getInstitution());
+                    p.setPaidValue(paymentMethodData.getOnlineSettlement().getTotalValue());
+                    p.setPaymentDate(paymentMethodData.getOnlineSettlement().getDate());
+                    p.setReferenceNo(paymentMethodData.getOnlineSettlement().getReferenceNo());
+                    p.setComments(paymentMethodData.getOnlineSettlement().getComment());
+                    break;
             }
 
-            p.setPaidValue(p.getBill().getNetTotal());
             paymentFacade.create(p);
             cashBookEntryController.writeCashBookEntryAtPaymentCreation(p);
             ps.add(p);
@@ -668,11 +798,9 @@ public class AppointmentController implements Serializable, ControllerWithPatien
 
     public void dateChangeListen() {
         getNewPatient().getPerson().setDob(CommonFunctions.guessDob(yearMonthDay));
-
     }
 
     private void saveBill(Patient p) {
-
         getCurrentBill().setDepartment(getSessionController().getLoggedUser().getDepartment());
         getCurrentBill().setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
         getCurrentBill().setBillTypeAtomic(BillTypeAtomic.INWARD_APPOINTMENT_BILL);
@@ -700,6 +828,8 @@ public class AppointmentController implements Serializable, ControllerWithPatien
         newCancelBill.setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
         newCancelBill.setBillTypeAtomic(BillTypeAtomic.INWARD_APPOINTMENT_CANCEL_BILL);
         newCancelBill.setBillType(BillType.InwardAppointmentBill);
+        String cancelNo = numberGenerator.inwardAppointmentNumberGeneratorYearly(sessionController.getInstitution(), AppointmentType.IP_APPOINTMENT_CANCELATION);
+        newCancelBill.setDeptId(cancelNo);
         newCancelBill.setReferenceBill(originalBill);
         newCancelBill.setBillDate(new Date());
         newCancelBill.setBillTime(new Date());
@@ -724,8 +854,6 @@ public class AppointmentController implements Serializable, ControllerWithPatien
             getFacade().edit(originalBill);
         }
 
-        createPayment(newCancelBill, newCancelBill.getPaymentMethod());
-
         return newCancelBill;
     }
 
@@ -748,6 +876,7 @@ public class AppointmentController implements Serializable, ControllerWithPatien
         Bill cancelBill = saveCacelBill(currentBill);
 
         cancelAppointment(cancelBill, currentAppointment, comment);
+        createCancelPayments(currentBill, cancelBill);
 
         JsfUtil.addSuccessMessage("Appointment Canceled");
     }
@@ -763,6 +892,38 @@ public class AppointmentController implements Serializable, ControllerWithPatien
             appointmentFacade.create(apt);
         } else {
             appointmentFacade.edit(apt);
+        }
+    }
+
+    @Inject
+    BillSearch billSearch;
+
+    private void createCancelPayments(Bill originalBill, Bill cancelBill) {
+
+        List<Payment> originalPayments = billSearch.fetchBillPayments(originalBill);
+
+        for (Payment p : originalPayments) {
+            Payment newlyCancelPayment = p.clonePaymentForNewBill();
+
+            newlyCancelPayment.invertValues();
+            newlyCancelPayment.setReferancePayment(p);
+            newlyCancelPayment.setBill(cancelBill);
+            newlyCancelPayment.setInstitution(getSessionController().getInstitution());
+            newlyCancelPayment.setDepartment(getSessionController().getDepartment());
+            newlyCancelPayment.setCreatedAt(new Date());
+            newlyCancelPayment.setCreater(getSessionController().getLoggedUser());
+            paymentFacade.create(newlyCancelPayment);
+
+            if (newlyCancelPayment.getPaymentMethod() == PaymentMethod.PatientDeposit) {
+                PatientDeposit pd = patientDepositService.getDepositOfThePatient(originalBill.getPatient(), originalBill.getDepartment());
+                patientDepositService.updateBalance(newlyCancelPayment, pd);
+            }
+            if (newlyCancelPayment.getPaymentMethod() == PaymentMethod.Staff_Welfare) {
+                if (p.getToStaff() != null) {
+                    staffBean.updateStaffWelfare(newlyCancelPayment.getToStaff(), newlyCancelPayment.getPaidValue());
+                    JsfUtil.addSuccessMessage("Staff Welfare Balance Updated");
+                }
+            }
         }
     }
 
@@ -791,16 +952,6 @@ public class AppointmentController implements Serializable, ControllerWithPatien
 
     private boolean errorCheck() {
 
-//        if (checkPatientAgeSex()) {
-//            return true;
-//        }
-//
-//        if (getPatientTabId().toString().equals("tabSearchPt")) {
-//            if (getSearchedPatient() == null) {
-//                JsfUtil.addErrorMessage("Plese Select Patient");
-//            }
-//        }
-        //if (getPatientTabId().toString().equals("tabNewPt")) {
         if (getPatient() == null) {
             JsfUtil.addErrorMessage("No patient Selected");
             return true;
@@ -827,10 +978,388 @@ public class AppointmentController implements Serializable, ControllerWithPatien
             return true;
         }
 
-        if (getPaymentSchemeController().checkPaymentMethodError(getCurrentBill().getPaymentMethod(), paymentMethodData)) {
+        if (checkErrorsInPaymentMethod(getCurrentBill().getPaymentMethod(), paymentMethodData)) {
             return true;
         }
-//
+
+        return false;
+    }
+
+    @EJB
+    PatientDepositService patientDepositService;
+
+    public void updatePaymentData() {
+        if (currentBill == null) {
+            JsfUtil.addErrorMessage("No current bill available");
+            return;
+        }
+
+        PaymentMethod pm = currentBill.getPaymentMethod();
+
+        if (pm != null) {
+            if (pm == PaymentMethod.PatientDeposit) {
+
+                if (patient == null) {
+                    JsfUtil.addErrorMessage("No Patient is selected. Can't proceed with Patient Deposits");
+                    return;
+                }
+                if (patient.getId() == null) {
+                    JsfUtil.addErrorMessage("No Patient is selected. Can't proceed with Patient Deposits");
+                    return;
+                } else {
+                    patient = patientFacade.find(patient.getId());
+
+                    if (patient == null) {
+                        JsfUtil.addErrorMessage("Patient not found in system");
+                        return;
+                    }
+
+                    if (paymentMethodData == null) {
+                        paymentMethodData = new PaymentMethodData();
+                    }
+
+                    paymentMethodData.getPatient_deposit().setPatient(patient);
+                    if (!patient.getHasAnAccount()) {
+                        JsfUtil.addErrorMessage("Patient has not account. Can't proceed with Patient Deposits");
+                        return;
+                    }
+                    PatientDeposit pd = patientDepositService.getDepositOfThePatient(patient, sessionController.getDepartment());
+                    paymentMethodData.getPatient_deposit().setPatientDepost(pd);
+                }
+            }
+        }
+    }
+
+    private boolean checkErrorsInPaymentMethod(PaymentMethod method, PaymentMethodData methodData) {
+        if (method == null) {
+            JsfUtil.addErrorMessage("Please Select a Payment Method");
+            return true;
+        }
+        double amountToCheck = 0.0;
+
+        if (method == PaymentMethod.Cash) {
+            amountToCheck = getCurrentBill().getTotal();
+            if (amountToCheck <= 0.0) {
+                JsfUtil.addErrorMessage("Please enter a payment amount");
+                return true;
+            }
+        } else {
+            if (methodData == null) {
+                JsfUtil.addErrorMessage("Error in Payment Data.");
+                return true;
+            }
+
+            switch (method) {
+                case Card:
+                    if (methodData.getCreditCard() == null) {
+                        JsfUtil.addErrorMessage("Error in card payment Details");
+                        return true;
+                    } else {
+                        if (methodData.getCreditCard().getTotalValue() <= 0.0) {
+                            JsfUtil.addErrorMessage("Please enter the card payment amount");
+                            return true;
+                        }
+                        if (methodData.getCreditCard().getInstitution() == null || methodData.getCreditCard().getNo() == null) {
+                            JsfUtil.addErrorMessage("Please Fill Credit Card Number and Bank.");
+                            return true;
+                        }
+                        amountToCheck = methodData.getCreditCard().getTotalValue();
+                    }
+                    break;
+
+                case Cheque:
+                    if (methodData.getCheque() == null) {
+                        JsfUtil.addErrorMessage("Error in Cheque payment Details");
+                        return true;
+                    } else {
+                        if (methodData.getCheque().getTotalValue() <= 0.0) {
+                            JsfUtil.addErrorMessage("Please enter the cheque payment amount");
+                            return true;
+                        }
+                        if (methodData.getCheque().getInstitution() == null || methodData.getCheque().getNo() == null || methodData.getCheque().getDate() == null) {
+                            JsfUtil.addErrorMessage("Please select Cheque Number, Bank and Cheque Date.");
+                            return true;
+                        }
+                        amountToCheck = methodData.getCheque().getTotalValue();
+                    }
+                    break;
+
+                case Slip:
+                    if (methodData.getSlip() == null) {
+                        JsfUtil.addErrorMessage("Error in Slip payment Details");
+                        return true;
+                    } else {
+                        if (methodData.getSlip().getTotalValue() <= 0.0) {
+                            JsfUtil.addErrorMessage("Please enter the slip payment details");
+                            return true;
+                        }
+                        if (methodData.getSlip().getInstitution() == null || methodData.getSlip().getDate() == null) {
+                            JsfUtil.addErrorMessage("Please Fill Bank and Slip Date.");
+                            return true;
+                        }
+                        amountToCheck = methodData.getSlip().getTotalValue();
+                    }
+                    break;
+
+                case ewallet:
+                    if (methodData.getEwallet() == null) {
+                        JsfUtil.addErrorMessage("Error in eWallet payment Details");
+                        return true;
+                    } else {
+                        if (methodData.getEwallet().getTotalValue() <= 0.0) {
+                            JsfUtil.addErrorMessage("Please enter the eWallet payment Amount");
+                            return true;
+                        }
+                        if (methodData.getEwallet().getInstitution() == null || ((methodData.getEwallet().getReferenceNo() == null || methodData.getEwallet().getReferenceNo().trim().isEmpty()) && (methodData.getEwallet().getNo() == null || methodData.getEwallet().getNo().trim().isEmpty()))) {
+                            JsfUtil.addErrorMessage("Please Fill eWallet Reference Number and Bank.");
+                            return true;
+                        }
+                        amountToCheck = methodData.getEwallet().getTotalValue();
+                    }
+                    break;
+
+                case PatientDeposit:
+                    if (methodData.getPatient_deposit() == null) {
+                        JsfUtil.addErrorMessage("Error in Patient Deposit Details");
+                        return true;
+                    } else {
+                        double creditLimitAbsolute = Math.abs(patient.getCreditLimit());
+                        PatientDeposit pd = methodData.getPatient_deposit().getPatientDepost();
+
+                        double availableForPurchase = pd.getBalance() + creditLimitAbsolute;
+                        double payhingThisTimeValue;
+
+                        if (methodData.getPatient_deposit().getTotalValue() <= 0.0) {
+                            JsfUtil.addErrorMessage("Please enter the Patient Deposit payment Amount");
+                            return true;
+                        } else {
+                            payhingThisTimeValue = methodData.getPatient_deposit().getTotalValue();
+                            if (payhingThisTimeValue > availableForPurchase) {
+                                JsfUtil.addErrorMessage("No Sufficient Patient Deposit");
+                                return true;
+                            }
+                            amountToCheck = methodData.getPatient_deposit().getTotalValue();
+                        }
+                    }
+                    break;
+
+                case OnlineSettlement:
+                    if (methodData.getOnlineSettlement() == null) {
+                        JsfUtil.addErrorMessage("Error in Online Settlement Details");
+                        return true;
+                    } else {
+                        if (methodData.getOnlineSettlement().getTotalValue() <= 0.0) {
+                            JsfUtil.addErrorMessage("Please enter the Online Settlement payment Amount");
+                            return true;
+                        }
+                        if (methodData.getOnlineSettlement().getInstitution() == null || (methodData.getOnlineSettlement().getReferenceNo() == null || methodData.getOnlineSettlement().getReferenceNo().trim().isEmpty()) && methodData.getOnlineSettlement().getDate() == null) {
+                            JsfUtil.addErrorMessage("Please Fill Online Settlement Reference Number, Date and Bank.");
+                            return true;
+                        }
+                        amountToCheck = methodData.getOnlineSettlement().getTotalValue();
+                    }
+                    break;
+
+                case MultiplePaymentMethods:
+                    if (methodData.getPaymentMethodMultiple() == null || methodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails() == null || methodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().isEmpty()) {
+                        JsfUtil.addErrorMessage("Please configure payment amounts");
+                        return true;
+                    }
+
+                    List<ComponentDetail> paymentDetailsList = methodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails();
+
+                    if (paymentDetailsList.isEmpty()) {
+                        JsfUtil.addErrorMessage("Please select the first payment method.");
+                        return true;
+                    }
+
+                    if (paymentDetailsList.size() == 1) {
+                        JsfUtil.addErrorMessage("You can't use only one payment method.");
+                        return true;
+                    }
+
+                    // Calculate total from all components
+                    double multipleTotal = 0.0;
+                    int componentCount = 0;
+                    for (ComponentDetail cd : paymentDetailsList) {
+                        componentCount++;
+                        if (cd != null && cd.getPaymentMethodData() != null) {
+                            // Check based on payment method type in the component
+                            Double checkAmount = 0.0;
+                            switch (cd.getPaymentMethod()) {
+                                case Cash:
+                                    if (cd.getPaymentMethodData().getCash() == null) {
+                                        JsfUtil.addErrorMessage("Please enter the amount to be paid from Cash.");
+                                        return true;
+                                    } else {
+                                        checkAmount = cd.getPaymentMethodData().getCash().getTotalValue();
+
+                                        if (checkAmount <= 0.0) {
+                                            JsfUtil.addErrorMessage("Please enter a cash amount");
+                                            return true;
+                                        }
+                                        multipleTotal += checkAmount;
+                                    }
+                                    break;
+
+                                case Card:
+                                    if (cd.getPaymentMethodData().getCreditCard() == null) {
+                                        JsfUtil.addErrorMessage("Error in card payment Details");
+                                        return true;
+                                    } else {
+                                        checkAmount = cd.getPaymentMethodData().getCreditCard().getTotalValue();
+
+                                        if (checkAmount <= 0.0) {
+                                            JsfUtil.addErrorMessage("Please enter the amount to be paid from Card.");
+                                            return true;
+                                        }
+                                        if (cd.getPaymentMethodData().getCreditCard().getTotalValue() <= 0.0) {
+                                            JsfUtil.addErrorMessage("Please enter card payment amount");
+                                            return true;
+                                        }
+                                        if (cd.getPaymentMethodData().getCreditCard().getInstitution() == null || cd.getPaymentMethodData().getCreditCard().getNo() == null) {
+                                            JsfUtil.addErrorMessage("Please Fill Credit Card Number and Bank.");
+                                            return true;
+                                        }
+                                        multipleTotal += checkAmount;
+                                    }
+                                    break;
+
+                                case Cheque:
+                                    if (cd.getPaymentMethodData().getCheque() == null) {
+                                        JsfUtil.addErrorMessage("Error in Cheque payment Details");
+                                        return true;
+                                    } else {
+                                        checkAmount = cd.getPaymentMethodData().getCheque().getTotalValue();
+
+                                        if (checkAmount <= 0.0) {
+                                            JsfUtil.addErrorMessage("Please enter the amount to be paid from Cheque.");
+                                            return true;
+                                        }
+                                        if (cd.getPaymentMethodData().getCheque().getInstitution() == null || cd.getPaymentMethodData().getCheque().getNo() == null || cd.getPaymentMethodData().getCheque().getDate() == null) {
+                                            JsfUtil.addErrorMessage("Please select Cheque Number, Bank and Cheque Date.");
+                                            return true;
+                                        }
+
+                                        multipleTotal += checkAmount;
+                                    }
+                                    break;
+
+                                case Slip:
+                                    if (cd.getPaymentMethodData().getSlip() == null) {
+                                        JsfUtil.addErrorMessage("Error in Slip payment Details");
+                                        return true;
+                                    } else {
+                                        checkAmount = cd.getPaymentMethodData().getSlip().getTotalValue();
+
+                                        if (checkAmount <= 0.0) {
+                                            JsfUtil.addErrorMessage("Please enter the amount to be paid from Back Slip.");
+                                            return true;
+                                        }
+                                        if (cd.getPaymentMethodData().getSlip().getInstitution() == null || cd.getPaymentMethodData().getSlip().getDate() == null) {
+                                            JsfUtil.addErrorMessage("Please Fill Bank and Slip Date.");
+                                            return true;
+                                        }
+                                        multipleTotal += checkAmount;
+                                    }
+                                    break;
+                                case OnlineSettlement:
+                                    if (cd.getPaymentMethodData().getOnlineSettlement() == null) {
+                                        JsfUtil.addErrorMessage("Error in Online Settlement Details");
+                                        return true;
+                                    } else {
+                                        checkAmount = cd.getPaymentMethodData().getOnlineSettlement().getTotalValue();
+
+                                        if (checkAmount <= 0.0) {
+                                            JsfUtil.addErrorMessage("Please enter the amount to be paid from Online Settlement.");
+                                            return true;
+                                        }
+                                        if (cd.getPaymentMethodData().getOnlineSettlement().getInstitution() == null || (cd.getPaymentMethodData().getOnlineSettlement().getReferenceNo() == null || cd.getPaymentMethodData().getOnlineSettlement().getReferenceNo().trim().isEmpty()) && cd.getPaymentMethodData().getOnlineSettlement().getDate() == null) {
+                                            JsfUtil.addErrorMessage("Please Fill Online Settlement Reference Number, Date and Bank.");
+                                            return true;
+                                        }
+                                        multipleTotal += checkAmount;
+                                    }
+                                    break;
+                                case Staff_Welfare:
+                                    if (cd.getPaymentMethodData().getStaffWelfare() == null) {
+                                        JsfUtil.addErrorMessage("Error in Staff Welfare Details");
+                                        return true;
+                                    } else {
+                                        checkAmount = cd.getPaymentMethodData().getStaffWelfare().getTotalValue();
+
+                                        if (checkAmount <= 0.0) {
+                                            JsfUtil.addErrorMessage("Please enter the amount to be paid from Staff Welfare.");
+                                            return true;
+                                        }
+                                        if (cd.getPaymentMethodData().getStaffWelfare().getToStaff() == null) {
+                                            JsfUtil.addErrorMessage("Please Fill Welfare Staff Name");
+                                            return true;
+                                        }
+                                        multipleTotal += checkAmount;
+                                    }
+                                    break;
+
+                                case ewallet:
+                                    if (cd.getPaymentMethodData().getEwallet() == null) {
+                                        JsfUtil.addErrorMessage("Error in eWallet payment Details");
+                                        return true;
+                                    } else {
+                                        checkAmount = cd.getPaymentMethodData().getEwallet().getTotalValue();
+
+                                        if (checkAmount <= 0.0) {
+                                            JsfUtil.addErrorMessage("Please enter the amount to be paid from eWallet.");
+                                            return true;
+                                        }
+                                        if (cd.getPaymentMethodData().getEwallet().getInstitution() == null || ((cd.getPaymentMethodData().getEwallet().getReferenceNo() == null || cd.getPaymentMethodData().getEwallet().getReferenceNo().trim().isEmpty()) && (cd.getPaymentMethodData().getEwallet().getNo() == null || cd.getPaymentMethodData().getEwallet().getNo().trim().isEmpty()))) {
+                                            JsfUtil.addErrorMessage("Please Fill eWallet Reference Number and Bank.");
+                                            return true;
+                                        }
+                                        multipleTotal += checkAmount;
+                                    }
+                                    break;
+                                case PatientDeposit:
+                                    if (cd.getPaymentMethodData().getPatient_deposit() == null) {
+                                        JsfUtil.addErrorMessage("Error in Patient Deposit Details");
+                                        return true;
+                                    } else {
+                                        double currentPatientCreditLimitAbsolute = Math.abs(patient.getCreditLimit());
+                                        PatientDeposit currentPatientDeposit = cd.getPaymentMethodData().getPatient_deposit().getPatientDepost();
+
+                                        double maximumAmount = currentPatientDeposit.getBalance() + currentPatientCreditLimitAbsolute;
+                                        double payhingThisTimeAmount = cd.getPaymentMethodData().getPatient_deposit().getTotalValue();
+
+                                        if (payhingThisTimeAmount <= 0.0) {
+                                            JsfUtil.addErrorMessage("Please enter the amount to be paid from Patient Deposit.");
+                                            return true;
+                                        }
+                                        if (payhingThisTimeAmount > maximumAmount) {
+                                            JsfUtil.addErrorMessage("No Sufficient Patient Deposit");
+                                            return true;
+                                        }
+                                        multipleTotal += payhingThisTimeAmount;
+                                    }
+                                    break;
+                                default:
+                                    System.out.println("[DEBUG] Processing default/unknown payment method: " + method);
+                            }
+                        }
+                    }
+
+                    if (multipleTotal <= 0.0) {
+                        JsfUtil.addErrorMessage("Please enter valid payment amounts");
+                        return true;
+                    }
+                    amountToCheck = multipleTotal;
+                    break;
+                default:
+                    System.out.println("[DEBUG] Processing default/unknown payment method: " + method);
+            }
+        }
+
+        getCurrentBill().setTotal(amountToCheck);
+        getCurrentBill().setNetTotal(amountToCheck);
+
         return false;
     }
 
@@ -858,6 +1387,39 @@ public class AppointmentController implements Serializable, ControllerWithPatien
         return reservations;
     }
 
+    public Reservation checkRoomAvailability() {
+        if (reservedRoom == null || reservedFromDate == null || reservedToDate == null) {
+            JsfUtil.addErrorMessage("Reservation, room, and dates must not be null");
+        }
+
+        Map<String, Object> parameters = new HashMap<>();
+
+        String jpql = "SELECT r FROM Reservation r "
+                + "WHERE r.room = :room "
+                + "AND r.appointment.status =:status "; // Optional: exclude cancelled reservations
+
+        if (reservation.getId() != null) {
+            jpql += " AND r.id !=:id ";
+            parameters.put("id", reservation.getId());
+        }
+
+        jpql += " AND ( "
+                + "   (r.reservedFrom < :reservedTo AND r.reservedTo > :reservedFrom) "
+                + "   OR r.reservedFrom BETWEEN :reservedFrom AND :reservedTo "
+                + "   OR r.reservedTo BETWEEN :reservedFrom AND :reservedTo "
+                + ") "
+                + "ORDER BY r.reservedFrom";
+
+        parameters.put("room", reservedRoom);
+        parameters.put("status", AppointmentStatus.PENDING);
+        parameters.put("reservedFrom", reservedFromDate);
+        parameters.put("reservedTo", reservedToDate);
+
+        Reservation r = reservationFacade.findFirstByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+
+        return r;
+    }
+
     public String prepareNewBill() {
 
         currentBill = null;
@@ -879,6 +1441,16 @@ public class AppointmentController implements Serializable, ControllerWithPatien
         currentBill = null;
         currentAppointment = null;
         reservation = null;
+        reservedFromDate = null;
+        reservedToDate = null;
+        reservedRoom = null;
+        paymentMethodData = null;
+        appointmentCategory = InwardAppointmentCategory.ROOM_ADMISSION;
+        selectedProcedure = null;
+        selectedConsultant = null;
+        selectedDepartment = null;
+        selectedScheduleInstance = null;
+        availableInstances = null;
         getCurrentBill();
         getCurrentAppointment();
         getReservation();
@@ -893,7 +1465,102 @@ public class AppointmentController implements Serializable, ControllerWithPatien
         return "/inward/inward_appointment?faces-redirect=true";
     }
 
+    // Category & schedule methods
+    public void onAppointmentCategoryChanged() {
+        selectedProcedure = null;
+        selectedConsultant = null;
+        selectedDepartment = null;
+        selectedScheduleInstance = null;
+        availableInstances = null;
+        if (appointmentCategory != null && appointmentCategory.needsRoom()) {
+            if (reservation == null) {
+                getReservation();
+            }
+        }
+    }
+
+    public InwardAppointmentCategory[] getAppointmentCategories() {
+        return InwardAppointmentCategory.values();
+    }
+
+    public void onScheduleFilterChanged() {
+        if (currentAppointment == null || currentAppointment.getAppointmentDate() == null) {
+            availableInstances = null;
+            selectedScheduleInstance = null;
+            return;
+        }
+        RoomFacilityCharge roomForFilter = (appointmentCategory != null && appointmentCategory.needsRoom())
+                ? reservedRoom : null;
+        availableInstances = appointmentScheduleTemplateController.findAvailableInstances(
+                currentAppointment.getAppointmentDate(),
+                selectedProcedure,
+                selectedConsultant,
+                selectedDepartment,
+                roomForFilter);
+        selectedScheduleInstance = null;
+    }
+
+    public void onAppointmentTimeFromChanged() {
+        if (currentAppointment == null || currentAppointment.getAppointmentTimeFrom() == null) {
+            return;
+        }
+        if (selectedScheduleInstance != null
+                && selectedScheduleInstance.getTemplate() != null
+                && selectedScheduleInstance.getTemplate().getDefaultDurationMinutes() != null
+                && selectedScheduleInstance.getTemplate().getScheduleType() == AppointmentScheduleType.TIME_BASED) {
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(currentAppointment.getAppointmentTimeFrom());
+            cal.add(Calendar.MINUTE, selectedScheduleInstance.getTemplate().getDefaultDurationMinutes().intValue());
+            currentAppointment.setAppointmentTimeTo(cal.getTime());
+        }
+    }
+
+    private boolean validateScheduleCapacity() {
+        if (selectedScheduleInstance == null) {
+            return true; // No schedule constraint
+        }
+        int activeCount = appointmentScheduleTemplateController.countActiveAppointments(selectedScheduleInstance);
+        if (activeCount >= selectedScheduleInstance.getMaxCount()) {
+            JsfUtil.addErrorMessage("Schedule capacity reached. Max: " + selectedScheduleInstance.getMaxCount()
+                    + ", Currently booked: " + activeCount);
+            return false;
+        }
+        return true;
+    }
+
+    private boolean validateTimeOverlap() {
+        if (selectedScheduleInstance == null) {
+            return true;
+        }
+        if (selectedScheduleInstance.getTemplate() == null) {
+            return true;
+        }
+        if (selectedScheduleInstance.getTemplate().getScheduleType() != AppointmentScheduleType.TIME_BASED) {
+            return true;
+        }
+        if (selectedScheduleInstance.getTemplate().isAllowOverlap()) {
+            return true;
+        }
+        if (currentAppointment.getAppointmentTimeFrom() == null || currentAppointment.getAppointmentTimeTo() == null) {
+            JsfUtil.addErrorMessage("Appointment from-time and to-time are required for time-based schedules.");
+            return false;
+        }
+        Long excludeId = (currentAppointment != null && currentAppointment.getId() != null)
+                ? currentAppointment.getId() : null;
+        boolean overlap = appointmentScheduleTemplateController.hasTimeOverlap(
+                selectedScheduleInstance,
+                currentAppointment.getAppointmentTimeFrom(),
+                currentAppointment.getAppointmentTimeTo(),
+                excludeId);
+        if (overlap) {
+            JsfUtil.addErrorMessage("Time slot overlaps with an existing appointment in this schedule.");
+            return false;
+        }
+        return true;
+    }
+
     // </editor-fold>
+
     // <editor-fold defaultstate="collapsed" desc="Getter & Setters">
     public Title[] getTitle() {
         return Title.values();
@@ -1191,6 +1858,9 @@ public class AppointmentController implements Serializable, ControllerWithPatien
     }
 
     public Date getReservedFromDate() {
+        if(reservedFromDate == null){
+            reservedFromDate = CommonFunctionsProxy.getRoundedHourAfter60Minutes();
+        }
         return reservedFromDate;
     }
 
@@ -1206,12 +1876,12 @@ public class AppointmentController implements Serializable, ControllerWithPatien
         this.reservedToDate = reservedToDate;
     }
 
-    public RoomFacilityCharge getReservedroom() {
-        return reservedroom;
+    public RoomFacilityCharge getReservedRoom() {
+        return reservedRoom;
     }
 
-    public void setReservedroom(RoomFacilityCharge reservedroom) {
-        this.reservedroom = reservedroom;
+    public void setReservedRoom(RoomFacilityCharge reservedRoom) {
+        this.reservedRoom = reservedRoom;
     }
 
     public String getComment() {
@@ -1220,6 +1890,55 @@ public class AppointmentController implements Serializable, ControllerWithPatien
 
     public void setComment(String comment) {
         this.comment = comment;
+    }
+
+    public InwardAppointmentCategory getAppointmentCategory() {
+        return appointmentCategory;
+    }
+
+    public void setAppointmentCategory(InwardAppointmentCategory appointmentCategory) {
+        this.appointmentCategory = appointmentCategory;
+    }
+
+    public Item getSelectedProcedure() {
+        return selectedProcedure;
+    }
+
+    public void setSelectedProcedure(Item selectedProcedure) {
+        this.selectedProcedure = selectedProcedure;
+    }
+
+    public Staff getSelectedConsultant() {
+        return selectedConsultant;
+    }
+
+    public void setSelectedConsultant(Staff selectedConsultant) {
+        this.selectedConsultant = selectedConsultant;
+    }
+
+    public Department getSelectedDepartment() {
+        return selectedDepartment;
+    }
+
+    public void setSelectedDepartment(Department selectedDepartment) {
+        this.selectedDepartment = selectedDepartment;
+    }
+
+    public AppointmentScheduleInstance getSelectedScheduleInstance() {
+        return selectedScheduleInstance;
+    }
+
+    public void setSelectedScheduleInstance(AppointmentScheduleInstance selectedScheduleInstance) {
+        this.selectedScheduleInstance = selectedScheduleInstance;
+        onAppointmentTimeFromChanged();
+    }
+
+    public List<AppointmentScheduleInstance> getAvailableInstances() {
+        return availableInstances;
+    }
+
+    public void setAvailableInstances(List<AppointmentScheduleInstance> availableInstances) {
+        this.availableInstances = availableInstances;
     }
     // </editor-fold>
 
@@ -1266,7 +1985,127 @@ public class AppointmentController implements Serializable, ControllerWithPatien
 
     @Override
     public void listnerForPaymentMethodChange() {
-        // ToDo: Add Logic
+    }
+
+    @Override
+    public double calculatRemainForMultiplePaymentTotal() {
+        double multiplePaymentMethodTotalValue = 0.0;
+        if (currentBill.getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
+
+            if (paymentMethodData != null && paymentMethodData.getPaymentMethodMultiple() != null && paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails() != null) {
+                for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
+                    if (cd == null || cd.getPaymentMethodData() == null) {
+                        continue;
+                    }
+                    multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCash().getTotalValue();
+                    multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCreditCard().getTotalValue();
+                    multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCheque().getTotalValue();
+                    multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getEwallet().getTotalValue();
+                    multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getPatient_deposit().getTotalValue();
+                    multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getSlip().getTotalValue();
+                    multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getStaffCredit().getTotalValue();
+                    multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getStaffWelfare().getTotalValue();
+                    multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getOnlineSettlement().getTotalValue();
+                }
+            }
+            getCurrentBill().setTotal(multiplePaymentMethodTotalValue);
+            getCurrentBill().setNetTotal(multiplePaymentMethodTotalValue);
+
+        }
+        return multiplePaymentMethodTotalValue;
+    }
+
+    @Override
+    public void recieveRemainAmountAutomatically() {
+
+        calculatRemainForMultiplePaymentTotal();
+        if (getCurrentBill().getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
+
+            if (paymentMethodData == null
+                    || paymentMethodData.getPaymentMethodMultiple() == null
+                    || paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails() == null
+                    || paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().isEmpty()) {
+                return;
+            }
+
+            int arrSize = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().size();
+            ComponentDetail pm = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().get(arrSize - 1);
+
+            switch (pm.getPaymentMethod()) {
+                case Cash:
+                    // Only set if user hasn't already entered a value
+                    if (pm.getPaymentMethodData().getCash().getTotalValue() == 0.0) {
+                        pm.getPaymentMethodData().getCash().setTotalValue(0.0);
+                    }
+                    break;
+                case Card:
+                    // Only set if user hasn't already entered a value
+                    if (pm.getPaymentMethodData().getCreditCard().getTotalValue() == 0.0) {
+                        pm.getPaymentMethodData().getCreditCard().setTotalValue(0.0);
+                    }
+                    break;
+                case Cheque:
+                    // Only set if user hasn't already entered a value
+                    if (pm.getPaymentMethodData().getCheque().getTotalValue() == 0.0) {
+                        pm.getPaymentMethodData().getCheque().setTotalValue(0.0);
+                    }
+                    break;
+                case Slip:
+                    // Only set if user hasn't already entered a value
+                    if (pm.getPaymentMethodData().getSlip().getTotalValue() == 0.0) {
+                        pm.getPaymentMethodData().getSlip().setTotalValue(0.0);
+                    }
+                    break;
+                case ewallet:
+                    // Only set if user hasn't already entered a value
+                    if (pm.getPaymentMethodData().getEwallet().getTotalValue() == 0.0) {
+                        pm.getPaymentMethodData().getEwallet().setTotalValue(0.0);
+                    }
+                    break;
+                case PatientDeposit:
+                    Patient p = patientFacade.find(patient.getId());
+
+                    if (p == null) {
+                        break;
+                    } else {
+                        pm.getPaymentMethodData().getPatient_deposit().setPatient(p);
+                        PatientDeposit pd = patientDepositService.getDepositOfThePatient(p, sessionController.getDepartment());
+
+                        if (pd != null) {
+                            pm.getPaymentMethodData().getPatient_deposit().setPatientDepost(pd);
+                            pm.getPaymentMethodData().getPatient_deposit().setTotalValue(0.0);
+                        }
+                    }
+                    break;
+                case Credit:
+                    // Only set if user hasn't already entered a value
+                    if (pm.getPaymentMethodData().getCredit().getTotalValue() == 0.0) {
+                        pm.getPaymentMethodData().getCredit().setTotalValue(0.0);
+                    }
+                    break;
+                case Staff:
+                    // Only set if user hasn't already entered a value
+                    if (pm.getPaymentMethodData().getStaffCredit().getTotalValue() == 0.0) {
+                        pm.getPaymentMethodData().getStaffCredit().setTotalValue(0.0);
+                    }
+                    break;
+                case Staff_Welfare:
+                    // Only set if user hasn't already entered a value
+                    if (pm.getPaymentMethodData().getStaffWelfare().getTotalValue() == 0.0) {
+                        pm.getPaymentMethodData().getStaffWelfare().setTotalValue(0.0);
+                    }
+                    break;
+                case OnlineSettlement:
+                    // Only set if user hasn't already entered a value
+                    if (pm.getPaymentMethodData().getOnlineSettlement().getTotalValue() == 0.0) {
+                        pm.getPaymentMethodData().getOnlineSettlement().setTotalValue(0.0);
+                    }
+                    break;
+                default:
+                    throw new IllegalArgumentException("Unexpected value: " + pm.getPaymentMethod());
+            }
+        }
+        listnerForPaymentMethodChange();
     }
 
     /**
@@ -1358,5 +2197,4 @@ public class AppointmentController implements Serializable, ControllerWithPatien
             }
         }
     }
-
 }

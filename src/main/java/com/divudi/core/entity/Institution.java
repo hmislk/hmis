@@ -37,7 +37,7 @@ public class Institution implements Serializable, IdentifiableWithNameOrCode {
 
     static final long serialVersionUID = 1L;
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
     // NOTE: No UNIQUE constraint on institutionCode - different institution types
     // (suppliers, labs, hospitals) can legitimately have the same codes (e.g., RH2003)

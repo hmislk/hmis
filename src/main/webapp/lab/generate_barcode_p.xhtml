@@ -112,7 +112,7 @@
                                             filterMatchMode="contains"
                                             value="#{patientInvestigationController.priority}">
                                             <f:selectItem itemLabel="Any" />
-                                            <f:selectItems value="#{enumController.priorities}" var="p" itemLabel="#{p.label}" itemValue="#{p}"/>
+                                            <f:selectItems value="#{enumController.priorities}" var="p" itemLabel="#{p.displayName}" itemValue="#{p}"/>
                                         </p:selectOneMenu>
                                     </h:panelGrid>
                                     <h:panelGrid columns="1" class="w-100">
@@ -386,7 +386,7 @@
                                         id="btnSendToLab"
                                         value="Send to Lab"
                                         ajax="false"
-                                        action="#{patientInvestigationController.sendSamplesToLab()}"
+                                        action="#{patientInvestigationController.sendSamplesToLab(true)}"
                                         title="Send to Lab"
                                         icon="pi pi-external-link"
                                         styleClass="w-100 ui-button-warning" >

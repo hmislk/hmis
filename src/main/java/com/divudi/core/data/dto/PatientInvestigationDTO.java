@@ -4,6 +4,7 @@ import com.divudi.bean.lab.LaboratoryCommonController;
 import com.divudi.core.data.Sex;
 import com.divudi.core.data.Title;
 import com.divudi.core.data.lab.PatientInvestigationStatus;
+import com.divudi.core.data.lab.Priority;
 import java.io.Serializable;
 import java.util.Date;
 
@@ -32,6 +33,7 @@ public class PatientInvestigationDTO implements Serializable {
     private String patientNameWithTitle;
     private Boolean itemRefunded;
     private Boolean sampleAccepted;
+    private Priority priority;
 
     public PatientInvestigationDTO() {
     }
@@ -52,6 +54,7 @@ public class PatientInvestigationDTO implements Serializable {
     public PatientInvestigationDTO(
             Long investigationId,
             String itemName,
+            Priority priority,
             String billNumber,
             Date billDate,
             Long patientId,
@@ -71,6 +74,7 @@ public class PatientInvestigationDTO implements Serializable {
     ) {
         this.investigationId = investigationId;
         this.itemName = itemName;
+        this.priority = priority;
         this.billNumber = billNumber;
         this.billDate = billDate;
         this.patientTitle = patientTitle;
@@ -280,6 +284,14 @@ public class PatientInvestigationDTO implements Serializable {
 
     public void setSampleAccepted(Boolean sampleAccepted) {
         this.sampleAccepted = sampleAccepted;
+    }
+
+    public Priority getPriority() {
+        return priority;
+    }
+
+    public void setPriority(Priority priority) {
+        this.priority = priority;
     }
 
 }

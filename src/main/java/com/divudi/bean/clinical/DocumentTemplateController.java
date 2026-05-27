@@ -1,6 +1,7 @@
 package com.divudi.bean.clinical;
 
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.inward.InpatientClinicalDataController;
 
 import com.divudi.core.data.clinical.DocumentTemplateType;
 import com.divudi.core.entity.WebUser;
@@ -36,6 +37,9 @@ public class DocumentTemplateController implements Serializable {
 
     @Inject
     SessionController sessionController;
+
+    @Inject
+    InpatientClinicalDataController inpatientClinicalDataController;
 
     @EJB
     private DocumentTemplateFacade ejbFacade;
@@ -85,11 +89,22 @@ public class DocumentTemplateController implements Serializable {
         return getFacade().findByJpql(j, m);
     }
 
+    public List<DocumentTemplate> fillByType(DocumentTemplateType type) {
+        Map m = new HashMap();
+        m.put("ret", false);
+        m.put("type", type);
+        String j = "select c from DocumentTemplate c "
+                + "where c.retired=:ret "
+                + "and c.type=:type "
+                + "order by c.name";
+        return getFacade().findByJpql(j, m);
+    }
+
     public String navigateToAddNewUserDocumentTemplate() {
         current = new DocumentTemplate();
         current.setWebUser(sessionController.getLoggedUser());
         current.setContents(generateDefaultTemplateContents());
-        return "/emr/settings/document_template";
+        return "/emr/settings/document_template?faces-redirect=true";
     }
 
     public String generateDefaultTemplateContents() {
@@ -136,12 +151,12 @@ public class DocumentTemplateController implements Serializable {
             JsfUtil.addErrorMessage("Nothing Selected");
             return "";
         }
-        return "/emr/settings/document_template";
+        return "/emr/settings/document_template?faces-redirect=true";
     }
 
     public String navigateToListUserDocumentTemplate() {
         items = fillAllItems(null);
-        return "/emr/settings/document_templates";
+        return "/emr/settings/document_templates?faces-redirect=true";
     }
 
     public void saveUserDocumentTemplate() {
@@ -149,12 +164,24 @@ public class DocumentTemplateController implements Serializable {
             JsfUtil.addErrorMessage("Nothing Selected");
             return;
         }
+         
+        if (current.getName() == null || current.getName().trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Template name is required");
+            return;
+        }
+
+        if (current.getType() == null) {
+            JsfUtil.addErrorMessage("Template type is required");
+            return;
+        }
+        
         if (current.getWebUser() == null) {
             current.setWebUser(sessionController.getLoggedUser());
         }
         saveSelected();
         fillAllItems(null);
-        JsfUtil.addSuccessMessage("Saved");
+        inpatientClinicalDataController.refreshDiagnosisCardTemplates();
+
     }
 
     public void removeUserDocumentTemplate() {
@@ -165,18 +192,19 @@ public class DocumentTemplateController implements Serializable {
         current.setWebUser(sessionController.getLoggedUser());
         delete();
         fillAllItems(sessionController.getLoggedUser());
+        inpatientClinicalDataController.refreshDiagnosisCardTemplates();
         JsfUtil.addSuccessMessage("Saved");
     }
 
     private void saveSelected() {
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
-            JsfUtil.addSuccessMessage("Saved");
+            JsfUtil.addSuccessMessage("Updated");
         } else {
             current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
-            JsfUtil.addSuccessMessage("Updated");
+            JsfUtil.addSuccessMessage("Saved");
         }
         items = null;
     }
@@ -209,7 +237,7 @@ public class DocumentTemplateController implements Serializable {
             getFacade().edit(current);
             JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            JsfUtil.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addErrorMessage("Nothing to Delete");
         }
         items = null;
         current = null;

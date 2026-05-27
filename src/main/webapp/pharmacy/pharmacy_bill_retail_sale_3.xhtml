@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8' ?>
+﻿<?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
@@ -19,12 +19,6 @@
                     <p:growl id="panelError" />
                     <p:defaultCommand  target="btnAdd" />
                     <p:panel rendered="#{!pharmacySaleController3.billPreview}">
-                        <i
-                            type="button"
-                            class="fas fa-shopping-cart rounded-circle shadow-lg"
-                            onclick="PF('findAMP').show()"
-                            style="font-size: 60px; right:5%; color: purple; padding: 20px; background-color: #A9CCE3; position: absolute;">
-                        </i>
 
                         <p:dialog
                             rendered="#{configOptionApplicationController.getBooleanValueByKey('Find Last Sale Rate of Medicines in Retail Sale',false)}"
@@ -44,7 +38,7 @@
                                 maxResults="20"
                                 minQueryLength="3"
                                 inputStyleClass="w-100"
-                                completeMethod="#{itemController.completeAmpItem}"
+                                queryDelay="300" completeMethod="#{itemController.completeAmpItem}"
                                 var="vt"
                                 onfocus="this.select()"
                                 itemLabel="#{vt.name}"
@@ -87,6 +81,17 @@
                                 <p:commandButton class="m-1"  icon="fas fa-file-invoice" value="Sale 2" action="pharmacy_bill_retail_sale_1?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController1.pharmacyRetailSale()}" />
                                 <p:commandButton class="m-1"  icon="fas fa-file-invoice" value="Sale 3" action="pharmacy_bill_retail_sale_2?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController2.pharmacyRetailSale()}" />
                                 <p:commandButton class="m-1"  icon="fas fa-file-invoice" disabled="true" value="Sale 4" action="pharmacy_bill_retail_sale_3?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController3.pharmacyRetailSale()}" />
+                                <ui:fragment rendered="#{configOptionApplicationController.getBooleanValueByKey('Find Last Sale Rate of Medicines in Retail Sale',false)}">
+                                    <p:commandButton
+                                        id="findAmpCartBtn"
+                                        type="button"
+                                        icon="fas fa-shopping-cart"
+                                        aria-label="Open cart"
+                                        onclick="PF('findAMP').show()"
+                                        styleClass="m-1"
+                                        style="font-size: 20px; color: purple; background-color: #A9CCE3; border-color: #A9CCE3; float: right; vertical-align: middle;"/>
+                                    <p:tooltip for="findAmpCartBtn" value="Open cart / Find AMP"/>
+                                </ui:fragment>
                                 <p:commandButton
                                     accesskey="n"
                                     icon="fa fa-plus"
@@ -149,7 +154,7 @@
                                                         styleClass="w-100"
                                                         forceSelection="true"
                                                         value="#{pharmacySaleController3.stockDto}"
-                                                        completeMethod="#{pharmacySaleController3.completeAvailableStockOptimizedDto}"
+                                                        queryDelay="300" completeMethod="#{pharmacySaleController3.completeAvailableStockOptimizedDto}"
                                                         converter="#{pharmacySaleController3.stockDtoConverter}"
                                                         var="i"
                                                         itemLabel="#{i.itemName}"
@@ -869,13 +874,12 @@
 
                                                             <h:panelGroup class="d-flex">
 
-                                                                <p:outputLabel class="ml-4" value="#{pharmacySaleController3.patient.person.nameWithTitle}" rendered="#{not empty pharmacySaleController3.patient.person.nameWithTitle and !configOptionApplicationController.getBooleanValueByKey('Enable patient specific status management in the system')}" />
-
-                                                                <p:badge rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable patient specific status management in the system')}" style="transform: translate(110%, -40%);background-color: #{empty pharmacySaleController3.patient.specificStatus ? 'white' : '#FF401F'} ; font-style: italic;" value="#{pharmacySaleController3.patient.specificStatus}" severity="danger">
+                                                                
+                                                                <p:badge style="transform: translate(110%, -40%);background-color: #{pharmacySaleController3.patient.specificStatus != null and pharmacySaleController3.patient.specificStatus.name() != 'NORMAL' ? '#FF401F' : 'white'} ; font-style: italic;" value="#{pharmacySaleController3.patient.specificStatus}" severity="danger">
                                                                     <p:outputLabel value="#{pharmacySaleController3.patient.person.nameWithTitle}" rendered="#{not empty pharmacySaleController3.patient.person.nameWithTitle}" />
                                                                 </p:badge> 
 
-                                                                <p:badge rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable blacklist patient management in the system') and configOptionApplicationController.getBooleanValueByKey('Enable blacklist patient management for Pharmacy from the system', false)}" style="transform: translate(110%, -40%);background-color: #{pharmacySaleController3.patient.blacklisted ? 'black' : 'white'} ; font-style: italic; font-size: 15px" value="X #{pharmacySaleController3.patient.blacklisted ? 'Blacklisted' : 'Active'}" severity="danger">
+                                                                <p:badge style="transform: translate(110%, -40%);background-color: #{pharmacySaleController3.patient.blacklisted ? 'black' : 'white'} ; font-style: italic; font-size: 15px" value="X #{pharmacySaleController3.patient.blacklisted ? 'Blacklisted' : 'Active'}" severity="danger">
 
                                                                 </p:badge>
 

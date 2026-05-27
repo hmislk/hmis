@@ -42,14 +42,14 @@
                                 class="mx-2"
                                 ></h:outputText>
                             <h:panelGroup rendered="#{cc.attrs.editable}" id="edit" >
-                                <p:selectBooleanButton 
-                                    value="#{cc.attrs.controller.patientDetailsEditable}" 
-                                    offIcon="pi pi-pencil" 
-                                    onIcon="pi pi-eye"                                 
+                                <p:selectBooleanButton
+                                    value="#{cc.attrs.controller.patientDetailsEditable}"
+                                    offIcon="pi pi-pencil"
+                                    onIcon="pi pi-eye"
                                     class="mx-2"
                                     >
-                                    <p:ajax 
-                                        process="@this" 
+                                    <p:ajax
+                                        process="@this"
                                         update="viewPatient editPatient btnDone edit" />
                                 </p:selectBooleanButton>
                                 <p:commandButton id="btnDone" alt="Save Patient Details" class="ui-button-success" icon="fas fa-check" action="#{patientController.saveSelected(cc.attrs.controller.patient)}" rendered="#{cc.attrs.controller.patientDetailsEditable}" update=":#{p:resolveFirstComponentWithId('ptImp',view).clientId} " />
@@ -365,13 +365,12 @@
 
                             <h:panelGroup class="d-flex">
 
-                                <p:outputLabel class="ml-4" value="#{cc.attrs.controller.patient.person.nameWithTitle}" rendered="#{not empty cc.attrs.controller.patient.person.nameWithTitle and !configOptionApplicationController.getBooleanValueByKey('Enable patient specific status management in the system')}" />
-
-                                <p:badge rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable patient specific status management in the system')}" style="transform: translate(110%, -40%);background-color: #{empty cc.attrs.controller.patient.specificStatus ? 'white' : '#FF401F'} ; font-style: italic;" value="#{cc.attrs.controller.patient.specificStatus}" severity="danger">
+                                
+                                <p:badge style="transform: translate(110%, -40%);background-color: #{cc.attrs.controller.patient.specificStatus != null and cc.attrs.controller.patient.specificStatus.name() != 'NORMAL' ? '#FF401F' : 'white'} ; font-style: italic;" value="#{cc.attrs.controller.patient.specificStatus}" severity="danger">
                                     <p:outputLabel value="#{cc.attrs.controller.patient.person.nameWithTitle}" rendered="#{not empty cc.attrs.controller.patient.person.nameWithTitle}" />
                                 </p:badge> 
 
-                                <p:badge rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable blacklist patient management in the system')}" style="transform: translate(110%, -40%);background-color: #{cc.attrs.controller.patient.blacklisted ? 'black' : 'white'} ; font-style: italic; font-size: 15px" value="X #{cc.attrs.controller.patient.blacklisted ? 'Blacklisted' : 'Active'}" severity="danger">
+                                <p:badge style="transform: translate(110%, -40%);background-color: #{cc.attrs.controller.patient.blacklisted ? 'black' : 'white'} ; font-style: italic; font-size: 15px" value="X #{cc.attrs.controller.patient.blacklisted ? 'Blacklisted' : 'Active'}" severity="danger">
 
                                 </p:badge>
 

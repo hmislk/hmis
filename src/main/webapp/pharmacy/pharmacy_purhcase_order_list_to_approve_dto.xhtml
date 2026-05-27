@@ -174,7 +174,7 @@
                                 <p:column headerText="Request Details">
                                     <div class="d-flex flex-column gap-1">
                                         <div>
-                                            <h:outputText value="#{dto.creatorName}" class="fw-bold"/>
+                                            <h:outputText value="#{dto.checkedByName}" class="fw-bold"/>
                                         </div>
                                         <div>
                                             <small class="text-muted">
@@ -267,7 +267,7 @@
                                     styleClass="text-center" 
                                     exportable="false"
                                     width="8em">
-                                    <div class="d-flex justify-content-center align-items-center gap-1">
+                                    <div class="d-flex justify-content-center align-items-center gap-2">
                                         <p:commandButton
                                             id="btnApprove"
                                             ajax="false"
@@ -278,21 +278,20 @@
                                             disabled="#{dto.checkedById eq null or dto.approved or dto.cancelled eq true or !webUserController.hasPrivilege('PurchaseOrdersApprovel')}">
                                             <f:setPropertyActionListener target="#{purchaseOrderController.requestedBillId}" value="#{dto.billId}"/>
                                         </p:commandButton>
-                                        <p:commandButton 
+                                        <p:commandButton
                                             id="btnViewApproved"
                                             ajax="false"
                                             icon="pi pi-eye"
                                             class="ui-button-info ui-button-sm"
                                             title="View Approved Purchase Order"
-                                            action="#{pharmacyBillSearch.navigateToReprintPharmacyPurchaseOrderFromDto}" 
+                                            action="#{billSearch.navigateToViewBillByAtomicBillTypeByBillId(dto.referenceBillId)}"
                                             disabled="#{not dto.approved}">
-                                            <f:setPropertyActionListener target="#{pharmacyBillSearch.billId}" value="#{dto.referenceBillId}"/>
                                         </p:commandButton>
                                         <p:commandButton 
                                             id="btnViewRequest"
                                             ajax="false"
                                             icon="pi pi-file"
-                                            class="ui-button-secondary ui-button-sm"
+                                            class="ui-button-help ui-button-sm"
                                             title="View Purchase Request"
                                             action="pharmacy_reprint_order_request?faces-redirect=true">
                                             <f:setPropertyActionListener target="#{pharmacyBillSearch.billId}" value="#{dto.billId}"/>

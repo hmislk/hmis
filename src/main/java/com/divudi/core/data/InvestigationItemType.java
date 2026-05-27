@@ -23,6 +23,7 @@ public enum InvestigationItemType {
     Html,
     MeasurementUnit,
     ReportImage,
+    WarningFlag,
     @Deprecated
     List,
     @Deprecated

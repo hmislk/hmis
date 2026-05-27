@@ -45,11 +45,31 @@
                                 />
 
 
-                            <p:spacer width="20"></p:spacer>  
-                            <p:spacer width="20"></p:spacer>
-                            <p:spacer width="20"></p:spacer>
+                            <p:spacer width="20"/>
 
-
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-building mr-2"/>
+                                <p:outputLabel value="Department Type" for="departmentTypeFilter" class="m-3"/>
+                            </h:panelGroup>
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <p:selectCheckboxMenu
+                                    id="departmentTypeFilter"
+                                    value="#{pharmacyReportController.selectedDepartmentTypes}"
+                                    label="Select Department Types"
+                                    class="w-100"
+                                    filter="true"
+                                    filterMatchMode="contains"
+                                    showHeader="true"
+                                    scrollHeight="200"
+                                    title="Select one or more department types to filter results. Leave empty to include all departments.">
+                                    <f:selectItems
+                                        value="#{pharmacyReportController.availableDepartmentTypes}"
+                                        var="depType"
+                                        itemLabel="#{depType.label}"
+                                        itemValue="#{depType}"/>
+                                </p:selectCheckboxMenu>
+                                <p:tooltip for="departmentTypeFilter" value="Select one or more department types to filter results. Leave empty to include all departments." position="top"/>
+                            </h:panelGroup>
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-university mr-2" />
@@ -160,7 +180,7 @@
 
                         </h:panelGrid>
 
-                        <div class="d-flex align-items-center mt-5">
+                        <div class="d-flex align-items-center m-4">
                             <p:commandButton 
                                 class="ui-button-secondary mx-1" 
                                 icon="fas fa-arrow-left" 
@@ -180,32 +200,25 @@
                                 class="ui-button- mx-1" 
                                 icon="fas fa-print" 
                                 ajax="false" 
-                                value="Print All">
-                                <p:printer target="tbl" />
-                            </p:commandButton>
-
+                                value="To Print"
+                                action="stock_adjustment_receive_print?faces-redirect=true"
+                                />
+                             
                             <p:commandButton 
                                 class="ui-button-success mx-1" 
                                 icon="fas fa-file-excel" 
                                 ajax="false" 
-                                value="Download">
-                                <p:dataExporter 
-                                    type="xlsx" 
-                                    fileName="Stock Adjustment Receive Report" 
-                                    target="tbl"  />
-                            </p:commandButton>
-
+                                value="Download"
+                                action="#{pharmacyReportController.exportStockAdjustmentReceiveToExcel()}"/>
+                            
                             <p:commandButton 
                                 class="ui-button-danger mx-1" 
                                 icon= "fas fa-file-pdf" 
                                 ajax="false" 
-                                value="PDF">
-                                <p:dataExporter 
-                                    type="pdf" 
-                                    target="tbl" 
-                                    fileName="Stock Adjustment Receive Report" />
-                            </p:commandButton>
-
+                                value="PDF"
+                                action="#{pharmacyReportController.exportStockAdjustmentReceiveToPDF()}"
+                                />
+ 
                         </div>
 
 
@@ -266,7 +279,9 @@
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                                 <f:facet name="footer">
-                                    <h:outputText value="#{pharmacyReportController.netTotal}" />
+                                    <h:outputText value="#{pharmacyReportController.netTotal}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
                                 </f:facet>
                             </p:column>
 

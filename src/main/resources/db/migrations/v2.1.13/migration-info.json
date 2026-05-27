@@ -1,0 +1,71 @@
+{
+    "version": "v2.1.13",
+    "description": "Fix TOTALCOSTVALUE decimal precision with proper validation and diagnostics",
+    "author": "Dr M H B Ariyaratne",
+    "estimatedDurationMinutes": 3,
+    "requiresDowntime": false,
+    "affectedTables": ["BILLFINANCEDETAILS"],
+    "affectedModules": ["Pharmacy", "Finance", "Reports", "Stock Transfer Reports", "Inventory"],
+    "preRequisites": [
+        "Database backup completed",
+        "Ensure no heavy transactions on BILLFINANCEDETAILS table during migration",
+        "Verify MySQL has sufficient disk space for column modifications",
+        "Note: This migration includes comprehensive validation to ensure changes actually take effect"
+    ],
+    "migrationSteps": [
+        {
+            "description": "Diagnostic - Check current column definitions and sample data to understand existing state"
+        },
+        {
+            "description": "Data validation - Analyze current cost values to identify any conversion issues"
+        },
+        {
+            "description": "Fix TOTALCOSTVALUE column from decimal(38,0) to decimal(18,4) with immediate validation"
+        },
+        {
+            "description": "Fix BILLDISCOUNT column from decimal(38,0) to decimal(18,4) with immediate validation"
+        },
+        {
+            "description": "Fix TOTALEXPENSE column from decimal(38,0) to decimal(18,4) with immediate validation"
+        },
+        {
+            "description": "Fix TOTALQUANTITY column from decimal(38,0) to decimal(18,4) with immediate validation"
+        },
+        {
+            "description": "Comprehensive validation - Verify all critical financial columns are correctly updated"
+        },
+        {
+            "description": "Data integrity check - Ensure existing data is preserved after schema changes"
+        },
+        {
+            "description": "Display MySQL warnings to diagnose why previous migrations may have failed silently"
+        }
+    ],
+    "expectedOutcome": {
+        "primaryFix": "TOTALCOSTVALUE column changed to decimal(18,4) to display proper decimal places in stock transfer reports",
+        "secondaryFixes": "BILLDISCOUNT, TOTALEXPENSE, TOTALQUANTITY also fixed for consistency",
+        "validation": "Each column change is immediately validated to ensure schema actually changes",
+        "diagnostics": "Comprehensive logging helps identify why previous migrations failed"
+    },
+    "rollbackNotes": [
+        "This migration has no automatic rollback script",
+        "Rolling back would truncate decimal precision and cause data loss",
+        "If rollback is absolutely necessary, restore from database backup taken before migration",
+        "Consider the impact on reports that depend on decimal precision"
+    ],
+    "troubleshooting": {
+        "if_migration_reports_success_but_columns_unchanged": [
+            "Check MySQL error log for warnings during ALTER TABLE operations",
+            "Verify table isn't locked by long-running transactions",
+            "Check storage engine compatibility (InnoDB vs MyISAM)",
+            "Verify MySQL user has ALTER privileges on the table",
+            "Consider running migration during maintenance window with exclusive access"
+        ],
+        "if_stock_transfer_report_still_shows_no_decimals": [
+            "Verify TOTALCOSTVALUE column is actually decimal(18,4) after migration",
+            "Check if application cache needs to be cleared",
+            "Verify application is using the correct database schema",
+            "Check if reports are using cached data that needs refresh"
+        ]
+    }
+}

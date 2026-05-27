@@ -45,18 +45,38 @@
                                 />
 
 
-                            <p:spacer width="20"></p:spacer>  
-                            <p:spacer width="20"></p:spacer>
-                            <p:spacer width="20"></p:spacer>
+                            <p:spacer width="20"/>
 
-
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-building mr-2"/>
+                                <p:outputLabel value="Department Type" for="departmentTypeFilter" class="m-3"/>
+                            </h:panelGroup>
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <p:selectCheckboxMenu
+                                    id="departmentTypeFilter"
+                                    value="#{pharmacyReportController.selectedDepartmentTypes}"
+                                    label="Select Department Types"
+                                    class="w-100"
+                                    filter="true"
+                                    filterMatchMode="contains"
+                                    showHeader="true"
+                                    scrollHeight="200"
+                                    title="Select one or more department types to filter results. Leave empty to include all departments.">
+                                    <f:selectItems
+                                        value="#{pharmacyReportController.availableDepartmentTypes}"
+                                        var="depType"
+                                        itemLabel="#{depType.label}"
+                                        itemValue="#{depType}"/>
+                                </p:selectCheckboxMenu>
+                                <p:tooltip for="departmentTypeFilter" value="Select one or more department types to filter results. Leave empty to include all departments." position="top"/>
+                            </h:panelGroup>
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-university mr-2" />
                                 <p:outputLabel value="Institution" for="phmIns" class="m-3" >
                                 </p:outputLabel>
                             </h:panelGroup>
-                            <p:selectOneMenu 
+                            <p:selectOneMenu
                                 id="phmIns"
                                 class="w-100"
                                 value="#{pharmacyReportController.institution}"
@@ -64,7 +84,7 @@
                                 <f:selectItem itemLabel="All Institutions" />
                                 <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
                                 <p:ajax process="phmIns" update="phmDept" />
-                            </p:selectOneMenu>        
+                            </p:selectOneMenu>
 
 
                             <p:spacer width="20"></p:spacer>
@@ -199,31 +219,26 @@
                                 class="ui-button- mx-1" 
                                 icon="fas fa-print" 
                                 ajax="false" 
-                                value="Print All">
-                                <p:printer target="tbl" />
+                                value="To Print" 
+                                action="grn_cash_print?faces-redirect=true">
                             </p:commandButton>
 
                             <p:commandButton 
                                 class="ui-button-success mx-1" 
                                 icon="fas fa-file-excel" 
                                 ajax="false" 
-                                value="Download">
-                                <p:dataExporter 
-                                    type="xlsx" 
-                                    fileName="GRN Cash Report" 
-                                    target="tbl"  />
+                                value="Download"
+                                action="#{pharmacyReportController.exportGrnCashToExcel()}">
                             </p:commandButton>
 
                             <p:commandButton 
                                 class="ui-button-danger mx-1" 
                                 icon= "fas fa-file-pdf" 
                                 ajax="false" 
-                                value="PDF">
-                                <p:dataExporter 
-                                    type="pdf" 
-                                    target="tbl" 
-                                    fileName="GRN Cash Report" />
+                                value="PDF" 
+                                action="#{pharmacyReportController.exportGrnCashToPDF()}">
                             </p:commandButton>
+
 
                         </div>
 
@@ -243,7 +258,7 @@
                             paginatorAlwaysVisible="false">
                             <p:column headerText="Date" sortBy="#{bi.bill.createdAt}" width="9em">
                                 <h:outputText value="#{bi.bill.createdAt}">
-                                    <f:convertDateTime pattern="dd/MM/yyyy"/>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                                 </h:outputText>
                                 <f:facet name="footer">
                                     <h:outputText value="Net Amount" styleClass="fw-bold" />
@@ -255,7 +270,7 @@
                             <p:column headerText="Code" width="8em">
                                 <h:outputText value="#{bi.item.code}" />
                             </p:column>
-                            <p:column headerText="GRN Number" styleClass="text-center" headerStyleClass="text-center" width="10em">
+                            <p:column headerText="GRN Number" styleClass="text-center"  width="10em">
                                 <p:commandLink 
                                     value="#{bi.bill.deptId}" 
                                     styleClass="ui-button-info ui-button-outlined w-100"
@@ -269,22 +284,22 @@
                             <p:column headerText="Batch Code" width="10em">
                                 <h:outputText value="#{bi.pharmaceuticalBillItem.itemBatch.batchNo}" />
                             </p:column>
-                            <p:column headerText="Quantity" styleClass="text-end" headerStyleClass="text-end" width="7em">
+                            <p:column headerText="Quantity" styleClass="text-end"  width="7em">
                                 <h:outputText value="#{bi.billItemFinanceDetails.quantity}">
                                     <f:convertNumber pattern="#,##0" />
                                 </h:outputText>
                             </p:column>
-                            <p:column headerText="Free Quantity" styleClass="text-end" headerStyleClass="text-end" width="7em">
+                            <p:column headerText="Free Quantity" styleClass="text-end"  width="7em">
                                 <h:outputText value="#{bi.billItemFinanceDetails.freeQuantity}">
                                     <f:convertNumber pattern="#,##0" />
                                 </h:outputText>
                             </p:column>
-                            <p:column headerText="Cost Rate" styleClass="text-end" headerStyleClass="text-end" width="9em">
+                            <p:column headerText="Cost Rate" styleClass="text-end"  width="9em">
                                 <h:outputText value="#{bi.billItemFinanceDetails.costRate}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </p:column>
-                            <p:column headerText="Cost Value" styleClass="text-end" headerStyleClass="text-end" width="10em">
+                            <p:column headerText="Cost Value" styleClass="text-end"  width="10em">
                                 <h:outputText value="#{bi.billItemFinanceDetails.totalCost}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
@@ -294,12 +309,12 @@
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
-                            <p:column headerText="Purchase Rate" styleClass="text-end" headerStyleClass="text-end" width="10em">
+                            <p:column headerText="Purchase Rate" styleClass="text-end"  width="10em">
                                 <h:outputText value="#{bi.billItemFinanceDetails.purchaseRate}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                             </p:column>
-                            <p:column headerText="Purchase Value" styleClass="text-end" headerStyleClass="text-end" width="11em">
+                            <p:column headerText="Purchase Value" styleClass="text-end" width="11em">
                                 <h:outputText value="#{bi.billItemFinanceDetails.purchaseRate * bi.billItemFinanceDetails.quantity}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
@@ -309,12 +324,12 @@
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
-                            <p:column headerText="Retail Rate" styleClass="text-end" headerStyleClass="text-end" width="9em">
+                            <p:column headerText="Retail Rate" styleClass="text-end"  width="9em">
                                 <h:outputText value="#{bi.billItemFinanceDetails.retailSaleRate}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                             </p:column>
-                            <p:column headerText="Retail Value" styleClass="text-end" headerStyleClass="text-end" width="11em">
+                            <p:column headerText="Retail Value" styleClass="text-end"  width="11em">
                                 <h:outputText value="#{bi.billItemFinanceDetails.valueAtRetailRate}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
@@ -324,7 +339,7 @@
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
-                            <p:column headerText="Net Total" styleClass="text-end" headerStyleClass="text-end" width="11em">
+                            <p:column headerText="Net Total" styleClass="text-end"  width="11em">
                                 <h:outputText value="#{bi.bill.netTotal}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>

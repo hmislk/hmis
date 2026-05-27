@@ -34,7 +34,7 @@
                             <h:outputText value="#{cc.attrs.bundle.name}" />
                         </th>
                         <th class="text-end text-light bg-success">
-                            <h:outputText value="#{cc.attrs.bundle.cashierCollectionTotal}">
+                            <h:outputText value="#{cc.attrs.bundle.cashierGrandTotal}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputText>
                         </th>
@@ -225,6 +225,7 @@
                     </f:facet>
                 </p:column>
 
+                <!--
                 <p:column headerText="Collection Total" styleClass="text-end">
                     <h:outputText id="lblPharmacyCollectionCollectionTotal" value="#{row.cashierCollectionTotal}">
                         <f:convertNumber pattern="#,##0.00" />
@@ -235,7 +236,9 @@
                         </h:outputText>
                     </f:facet>
                 </p:column>
+                -->
 
+                <!--
                 <p:column headerText="Total NOT included in Collection Total" styleClass="text-end">
                     <h:outputText value="#{row.cashierExcludedTotal}">
                         <f:convertNumber pattern="#,##0.00" />
@@ -246,12 +249,15 @@
                         </h:outputText>
                     </f:facet>
                 </p:column>
+                -->
             </p:dataTable>
 
             <h:panelGrid columns="1" styleClass="mt-2 w-100">
                 <h:outputText value="Note: Credit bills are NOT listed in this section. See 'Pharmacy Collection Bills - Credit' section below for credit transactions." styleClass="text-info font-weight-bold" />
+                <!--
                 <h:outputText value="Collection Total includes: #{searchController.formatPaymentMethodLabels(cc.attrs.bundle.cashierCollectionPaymentMethods)}" />
                 <h:outputText value="Total NOT included in Collection Total: #{searchController.formatPaymentMethodLabels(cc.attrs.bundle.cashierExcludedPaymentMethods)}" />
+                -->
             </h:panelGrid>
 
 

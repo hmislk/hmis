@@ -8,280 +8,394 @@
                 xmlns:hr="http://xmlns.jcp.org/jsf/composite/autocomplete">
 
     <ui:define name="content">
-        <h:form id="form">
-            <h:panelGroup id="panelError" 
-                          rendered="#{shiftFingerPrintAnalysisController.errorMessage ne null and shiftFingerPrintAnalysisController.errorMessage.size()!=0}"
-                          style="background-color: yellow; color: red; display: block; margin: 2px; border: 1px solid red; padding: 3px; width: 95%;" >
-                <ui:repeat var="mes"
-                           value="#{shiftFingerPrintAnalysisController.errorMessage}" >
-                    <p:outputLabel value="#{mes}" /><br/>
-                </ui:repeat>               
-            </h:panelGroup>
 
-            <h:panelGrid columns="2" styleClass="alignTop" style="width: 100%;" >
+        <style>
+            .sfa-wrapper { padding: 8px 4px 24px 4px; }
 
-                <h:panelGroup >
+            .sfa-alert {
+                background: #fff4f4;
+                color: #a30000;
+                border: 1px solid #e0a5a5;
+                border-left: 4px solid #c0392b;
+                padding: 10px 14px;
+                border-radius: 4px;
+                margin-bottom: 16px;
+                font-size: 13px;
+            }
+            .sfa-alert .ui-outputlabel { color: #a30000; }
 
-                    <h:panelGrid columns="2">
-                        <h:outputLabel value="From"/>
-                        <p:calendar id="frmDate" 
-                                    value="#{shiftFingerPrintAnalysisController.fromDate}"
-                                    pattern="#{sessionController.applicationPreference.longDateFormat}" />
-                        <h:outputLabel value="To"/>
-                        <p:calendar id="toDate" 
-                                    value="#{shiftFingerPrintAnalysisController.toDate}" 
-                                    pattern="#{sessionController.applicationPreference.longDateFormat}" />
+            .sfa-toolbar {
+                display: flex;
+                gap: 16px;
+                align-items: stretch;
+                flex-wrap: wrap;
+                margin-bottom: 20px;
+            }
+            .sfa-toolbar > .ui-panel { flex: 1 1 420px; min-width: 360px; }
 
-                        <h:outputLabel value="Staff "/>
-                        <hr:completeStaff id="roster" value="#{shiftFingerPrintAnalysisController.staff}"/>
-                        <h:panelGroup>
+            .sfa-filters-grid { width: 100%; }
+            .sfa-filters-grid td { padding: 6px 8px !important; vertical-align: middle; }
+            .sfa-filters-grid .ui-outputlabel { font-weight: 600; color: #333; }
+            .sfa-filters-grid .ui-inputfield,
+            .sfa-filters-grid .ui-selectonemenu { min-width: 220px; }
+
+            .sfa-actions {
+                display: flex;
+                gap: 8px;
+                flex-wrap: wrap;
+                margin-top: 12px;
+                padding-top: 12px;
+                border-top: 1px solid #eee;
+                align-items: center;
+            }
+            .sfa-actions .sfa-spacer { flex: 1 1 auto; }
+            .sfa-actions .ui-button { margin: 0; }
+
+            .sfa-links-grid td { padding: 6px 10px !important; }
+
+            #form .ui-datagrid-content { background: transparent; }
+            #form .ui-datagrid .ui-panel { margin-bottom: 14px; border-radius: 6px; overflow: hidden; }
+
+            #form .ui-datatable {
+                overflow-x: auto;
+                overflow-y: visible;
+                -webkit-overflow-scrolling: touch;
+            }
+            #form .ui-datatable > .ui-datatable-tablewrapper {
+                overflow-x: auto;
+            }
+            #form .ui-datatable table {
+                min-width: 1400px;
+                table-layout: auto;
+                border-collapse: collapse;
+            }
+
+            #form .ui-datatable thead th {
+                background: #f4f6f9 !important;
+                color: #2a3548 !important;
+                font-weight: 600;
+                font-size: 12px;
+                text-transform: uppercase;
+                letter-spacing: 0.3px;
+                white-space: nowrap;
+                padding: 10px 8px;
+            }
+            #form .ui-datatable tbody td {
+                padding: 8px;
+                vertical-align: middle;
+            }
+            #form .ui-datatable tbody tr:nth-child(even) { background: #fafbfc; }
+            #form .ui-datatable tbody tr:hover { background: #f0f6ff; }
+            #form .ui-datatable .singleLine { white-space: nowrap; }
+
+            #form .ui-datatable .ui-selectonemenu { min-width: 180px; max-width: 220px; }
+            #form .ui-datatable .ui-calendar input { width: 170px; }
+
+            #form .ui-datatable tr.highLight2 > td { background: #fff7e0 !important; }
+            #form .ui-datatable tr.highLight2:hover > td { background: #fff0c4 !important; }
+
+            .sfa-day-header {
+                font-size: 14px;
+                font-weight: 600;
+                color: #2a3548;
+                padding: 4px 0;
+            }
+
+            .sfa-chip {
+                display: inline-block;
+                padding: 2px 8px;
+                font-size: 11px;
+                background: #eaf4ff;
+                color: #2c7be5;
+                border-radius: 10px;
+                margin-left: 6px;
+                white-space: nowrap;
+            }
+            .sfa-muted { color: #888; font-style: italic; font-size: 12px; }
+
+            #form .ui-datatable::-webkit-scrollbar { height: 10px; }
+            #form .ui-datatable::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 5px; }
+            #form .ui-datatable::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 5px; }
+            #form .ui-datatable::-webkit-scrollbar-thumb:hover { background: #a1a1a1; }
+        </style>
+
+        <div class="sfa-wrapper">
+            <h:form id="form">
+
+                <h:panelGroup id="panelError"
+                              layout="block"
+                              styleClass="sfa-alert"
+                              rendered="#{shiftFingerPrintAnalysisController.errorMessage ne null and shiftFingerPrintAnalysisController.errorMessage.size()!=0}">
+                    <ui:repeat var="mes"
+                               value="#{shiftFingerPrintAnalysisController.errorMessage}">
+                        <p:outputLabel value="#{mes}" /><br/>
+                    </ui:repeat>
+                </h:panelGroup>
+
+                <div class="sfa-toolbar">
+
+                    <p:panel header="Filters">
+                        <h:panelGrid columns="2" styleClass="sfa-filters-grid">
+
+                            <h:outputLabel for="frmDate" value="From Date"/>
+                            <p:calendar id="frmDate"
+                                        value="#{shiftFingerPrintAnalysisController.fromDate}"
+                                        pattern="#{sessionController.applicationPreference.longDateFormat}"
+                                        showOn="button"/>
+
+                            <h:outputLabel for="toDate" value="To Date"/>
+                            <p:calendar id="toDate"
+                                        value="#{shiftFingerPrintAnalysisController.toDate}"
+                                        pattern="#{sessionController.applicationPreference.longDateFormat}"
+                                        showOn="button"/>
+
+                            <h:outputLabel for="roster" value="Staff"/>
+                            <hr:completeStaff id="roster" value="#{shiftFingerPrintAnalysisController.staff}"/>
+
+                        </h:panelGrid>
+
+                        <div class="sfa-actions">
                             <p:commandButton value="Fill"
+                                             icon="ui-icon-check"
+                                             styleClass="ui-button-info"
                                              process="@this frmDate toDate roster"
                                              update="lst"
                                              actionListener="#{shiftFingerPrintAnalysisController.makeTableNull()}"
-                                             action="#{shiftFingerPrintAnalysisController.createShiftTableByStaff()}" 
-                                              /> 
+                                             action="#{shiftFingerPrintAnalysisController.createShiftTableByStaff()}"/>
 
                             <p:commandButton value="Fill Additional Only"
+                                             icon="ui-icon-plusthick"
+                                             styleClass="ui-button-info"
                                              process="@this frmDate toDate roster"
                                              update="lst"
                                              actionListener="#{shiftFingerPrintAnalysisController.makeTableNull()}"
-                                             action="#{shiftFingerPrintAnalysisController.createShiftTableAdditional()}" 
-                                              /> 
+                                             action="#{shiftFingerPrintAnalysisController.createShiftTableAdditional()}"/>
 
-                        </h:panelGroup>
-
-                        <h:panelGroup >
-                            <p:commandButton value="SAVE"
+                            <p:commandButton value="Save"
+                                             icon="ui-icon-disk"
+                                             styleClass="ui-button-success"
                                              process="lst"
                                              update="lst"
                                              ajax="false"
-                                             action="#{shiftFingerPrintAnalysisController.save()}" 
-                                             />
+                                             action="#{shiftFingerPrintAnalysisController.save()}"/>
 
-                            <p:commandButton value="Back" ajax="false" 
-                                             action="#{shiftFingerPrintAnalysisController.back()}" 
-                                             rendered="#{shiftFingerPrintAnalysisController.backButtonIsActive}"
-                                             style="float: right;"></p:commandButton>
-                        </h:panelGroup>
-                    </h:panelGrid>
+                            <p:commandButton value="Back"
+                                             icon="ui-icon-arrowreturnthick-1-w"
+                                             ajax="false"
+                                             action="#{shiftFingerPrintAnalysisController.back()}"
+                                             rendered="#{shiftFingerPrintAnalysisController.backButtonIsActive}"/>
 
-                    <p:commandButton value="Reset and Fill"
-                                     process="@this frmDate toDate roster"
-                                     update="lst"
-                                     actionListener="#{shiftFingerPrintAnalysisController.makeTableNull()}"
-                                     action="#{shiftFingerPrintAnalysisController.createShiftTableResetByStaff()}" 
-                                      
-                                     style="float: right;" ajax="false"/> 
+                            <p:commandButton value="Back"
+                                             icon="ui-icon-arrowreturnthick-1-w"
+                                             rendered="#{hrReportController.backButtonPage ne null}"
+                                             action="#{hrReportController.back()}"/>
 
-                    <p:commandButton value="Back" rendered="#{hrReportController.backButtonPage ne null}" 
-                                     action="#{hrReportController.back()}" ></p:commandButton>
+                            <span class="sfa-spacer"></span>
 
-                </h:panelGroup>
-                <p:panel header="Links" style="float: right;" >
-                    <p:panelGrid columns="2" styleClass="alignTop" >
-                        <p:commandLink ajax="false" value="Leave Forms" action="/hr/hr_form_staff_leave" 
-                                       actionListener="#{shiftFingerPrintAnalysisController.toStaffLeaveApplicationFormController}"></p:commandLink>
-                        <p:commandLink ajax="false" value="Extra Time Forms" action="/hr/hr_form_staff_additional_extra" 
-                                       actionListener="#{shiftFingerPrintAnalysisController.toStaffAdditionalFormController}"></p:commandLink>
+                            <p:commandButton value="Reset &amp; Fill"
+                                             icon="ui-icon-refresh"
+                                             styleClass="ui-button-danger"
+                                             process="@this frmDate toDate roster"
+                                             update="lst"
+                                             ajax="false"
+                                             actionListener="#{shiftFingerPrintAnalysisController.makeTableNull()}"
+                                             action="#{shiftFingerPrintAnalysisController.createShiftTableResetByStaff()}"/>
+                        </div>
+                    </p:panel>
 
-                        <p:commandLink ajax="false" value="Extra Shift Forms" action="/hr/hr_form_staff_additional_shift" 
-                                       actionListener="#{shiftFingerPrintAnalysisController.toStaffAdditionalFormController}"></p:commandLink>
+                    <p:panel header="Links">
+                        <h:panelGrid columns="1" styleClass="sfa-links-grid">
+                            <p:commandLink ajax="false" value="Leave Forms"
+                                           action="/hr/hr_form_staff_leave"
+                                           actionListener="#{shiftFingerPrintAnalysisController.toStaffLeaveApplicationFormController}"/>
+                            <p:commandLink ajax="false" value="Extra Time Forms"
+                                           action="/hr/hr_form_staff_additional_extra"
+                                           actionListener="#{shiftFingerPrintAnalysisController.toStaffAdditionalFormController}"/>
+                            <p:commandLink ajax="false" value="Extra Shift Forms"
+                                           action="/hr/hr_form_staff_additional_shift"
+                                           actionListener="#{shiftFingerPrintAnalysisController.toStaffAdditionalFormController}"/>
+                            <p:commandLink ajax="false" value="Holiday Forms"
+                                           action="/hr/hr_form_staff_additional_shift_day_off"
+                                           actionListener="#{shiftFingerPrintAnalysisController.toStaffAdditionalFormController}"/>
+                            <p:commandLink ajax="false" value="Roster"
+                                           action="/hr/hr_shift_table_by_staff"
+                                           actionListener="#{shiftFingerPrintAnalysisController.toShiftTableController}"/>
+                        </h:panelGrid>
+                    </p:panel>
 
-                        <p:commandLink ajax="false" value="Holiday Forms" action="/hr/hr_form_staff_additional_shift_day_off" 
-                                       actionListener="#{shiftFingerPrintAnalysisController.toStaffAdditionalFormController}"></p:commandLink>
+                </div>
 
+                <p:dataGrid id="lst" columns="1" var="data"
+                            value="#{shiftFingerPrintAnalysisController.shiftTables}">
 
-                        <p:commandLink ajax="false" value="Roster" 
-                                       action="/hr/hr_shift_table_by_staff" 
-                                       actionListener="#{shiftFingerPrintAnalysisController.toShiftTableController}"></p:commandLink>
+                    <p:dataTable value="#{data.staffShift}" var="sts" rowIndexVar="i"
+                                 rowStyleClass="#{sts.shift.dayType eq 'DayOff'
+                                                  or sts.shift.dayType eq 'SleepingDay' ? 'highLight2':null}">
 
-                        
+                        <f:facet name="header">
+                            <span class="sfa-day-header">
+                                <h:outputLabel value="#{data.date}">
+                                    <f:convertDateTime timeZone="Asia/Colombo"
+                                                       pattern="dd MM yyyy - (EEEE)"/>
+                                </h:outputLabel>
+                            </span>
+                        </f:facet>
 
-                    </p:panelGrid>
-                </p:panel>
-            </h:panelGrid>
+                        <p:column headerText="No" styleClass="singleLine" style="width:50px;text-align:center;">
+                            <h:outputLabel value="#{i+1}"/>
+                        </p:column>
 
-            <p:dataGrid  id="lst" columns="1" var="data"
-                         value="#{shiftFingerPrintAnalysisController.shiftTables}" >
-                <p:dataTable value="#{data.staffShift}" var="sts"
-                             rowStyleClass="#{sts.shift.dayType eq 'DayOff'
-                                              or sts.shift.dayType eq 'SleepingDay' ? 'highLight2':null}">
-                    <f:facet name="header">
-                        <h:outputLabel value="#{data.date}" >
-                            <f:convertDateTime pattern="dd MM yyyy - (EEEE)"/>
-                        </h:outputLabel>
-                    </f:facet>
-                    <p:column >
-                        <p:outputLabel value="#{sts.id}" ></p:outputLabel>
-                    </p:column>
-                    <p:column >
-                       <p:outputLabel value="#{sts.multiplyingFactorSalary}"/>
-                    </p:column>
-                    <p:column >
-                       <p:outputLabel value="#{sts.shift.dayType}"/>
-                    </p:column>
-                    <p:column >
-                       <p:outputLabel value="#{sts.dayType}"/>
-                    </p:column>
-                    <p:column headerText="Shift" styleClass="fixedColumn75" >
-                        <h:outputLabel id="lblShiftName" value="#{sts.shift.name}" />
-                        <p:tooltip for="lblShiftName" >
-                            <p:outputLabel value="#{sts.id}" ></p:outputLabel>
-                            <br/>
-                            <p:outputLabel value="#{sts.shift.durationMin}"/>
-                            <br/>
+                        <p:column headerText="Shift" styleClass="singleLine" style="width:140px;">
+                            <h:outputLabel id="lblShiftName" value="#{sts.shift.name}"/>
+                            <p:tooltip for="lblShiftName">
+                                <p:outputLabel value="#{sts.id}"/><br/>
+                                <p:outputLabel value="#{sts.shift.durationMin}"/><br/>
+                                <p:outputLabel value="#{sts.shift.dayType}"/><br/>
+                                <p:outputLabel value="#{sts.dayType}"/>
+                            </p:tooltip>
+                        </p:column>
+
+                        <p:column headerText="Roster" styleClass="singleLine" style="width:120px;">
+                            <p:outputLabel value="#{sts.roster.name}"/>
+                        </p:column>
+
+                        <p:column headerText="Shift Time" styleClass="singleLine" style="width:160px;">
+                            <h:panelGroup id="lblShiftDate">
+                                <h:outputLabel value="#{sts.shiftStartTime}">
+                                    <f:convertDateTime pattern="h:mm:ss a"/>
+                                </h:outputLabel>
+                                <h:outputLabel value=" - "/>
+                                <h:outputLabel value="#{sts.shiftEndTime}">
+                                    <f:convertDateTime pattern="h:mm:ss a"/>
+                                </h:outputLabel>
+                            </h:panelGroup>
+                            <p:tooltip for="lblShiftDate">
+                                <h:outputLabel value="From: "/>
+                                <h:outputLabel value="#{sts.shiftStartTime}">
+                                    <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>
+                                </h:outputLabel><br/>
+                                <h:outputLabel value="To: "/>
+                                <h:outputLabel value="#{sts.shiftEndTime}">
+                                    <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>
+                                </h:outputLabel><br/>
+                                <h:outputLabel value="Date: "/>
+                                <h:outputLabel value="#{sts.shiftDate}">
+                                    <f:convertDateTime pattern="dd MM yy"/>
+                                </h:outputLabel><br/>
+                                <h:outputLabel value="Worked Time: "/>
+                                <h:outputLabel value="#{sts.workedWithinTimeFrameVarified div (60*60)}"/><br/>
+                                <h:outputLabel value="Half Shift: "/>
+                                <h:outputLabel value="#{sts.shift.halfShift}"/><br/>
+                                <h:outputLabel value="Leave Type: "/>
+                                <h:outputLabel value=" #{sts.leaveType} "/><br/>
+                                <h:outputLabel value="Full Day Leave: "/>
+                                <h:outputLabel value=" #{sts.leaveType.fullDayLeave} "/>
+                            </p:tooltip>
+                        </p:column>
+
+                        <p:column headerText="ID" styleClass="singleLine" style="width:70px;">
+                            <h:outputLabel value="#{sts.id}"/>
+                        </p:column>
+
+                        <p:column headerText="Day Type" styleClass="singleLine" style="width:100px;">
                             <p:outputLabel value="#{sts.shift.dayType}"/>
-                            <br/>
+                        </p:column>
+
+                        <p:column headerText="Override Day Type" styleClass="singleLine" style="width:120px;">
                             <p:outputLabel value="#{sts.dayType}"/>
-                        </p:tooltip>
-                    </p:column>
-                    <p:column headerText="Roster" styleClass="fixedColumn100">
-                        <p:outputLabel value="#{sts.roster.name}" ></p:outputLabel>
-                    </p:column>
+                        </p:column>
 
-                    <p:column headerText="Time" styleClass="fixedColumn100">
-                        <h:panelGroup id="lblShiftDate" >
-                            <h:outputLabel value="#{sts.shiftStartTime}" >
-                                <f:convertDateTime pattern="h:mm:ss a" ></f:convertDateTime>
-                            </h:outputLabel>
-                            <h:outputLabel value=" - " ></h:outputLabel>
-                            <h:outputLabel value="#{sts.shiftEndTime}" >
-                                <f:convertDateTime pattern="h:mm:ss a" ></f:convertDateTime>
-                            </h:outputLabel>
-                        </h:panelGroup>
-                        <p:tooltip for="lblShiftDate" >
-                            <h:outputLabel value="From : " ></h:outputLabel>
-                            <h:outputLabel value="#{sts.shiftStartTime}" >
-                                <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a" ></f:convertDateTime>
-                            </h:outputLabel>
-                            <br/>
-                            <h:outputLabel value="To : " ></h:outputLabel>
-                            <h:outputLabel value="#{sts.shiftEndTime}" >
-                                <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a" ></f:convertDateTime>
-                            </h:outputLabel>
-                            <br/>
-                            <h:outputLabel value="Date : " ></h:outputLabel>
-                            <h:outputLabel value="#{sts.shiftDate}" >
-                                <f:convertDateTime pattern="dd MM yy" ></f:convertDateTime>
-                            </h:outputLabel> 
-                            <br/>
-                            <h:outputLabel value="Worked Time : " ></h:outputLabel>
-                            <h:outputLabel value="#{sts.workedWithinTimeFrameVarified div (60*60)}" ></h:outputLabel>
-                            <br/>
-                            <h:outputLabel value="Half Shift : " ></h:outputLabel>
-                            <h:outputLabel value="#{sts.shift.halfShift}" ></h:outputLabel>
-                            <br/>
-                            <h:outputLabel value="Leave Type : " ></h:outputLabel>
-                            <h:outputLabel value=" #{sts.leaveType} " ></h:outputLabel>
-                            <br/>
-                            <h:outputLabel value="Full Day Leave : " ></h:outputLabel>
-                            <h:outputLabel value=" #{sts.leaveType.fullDayLeave} " ></h:outputLabel>
+                        <p:column headerText="Multiplier" styleClass="singleLine" style="width:80px;text-align:right;">
+                            <p:outputLabel value="#{sts.multiplyingFactorSalary}"/>
+                        </p:column>
 
-                        </p:tooltip>
+                        <p:column headerText="Comments" style="width:180px;">
+                            <p:commandLink value="#{sts.leaveType}"
+                                           action="#{hrReportController.fromStaffFingerprintAnalysisToStaffLeave(sts.shiftDate, sts.staff)}"/>
+                            <h:outputLabel value=" Half Shift" rendered="#{sts.shift.halfShift}"/>
+                        </p:column>
 
-                    </p:column>
-
-
-
-
-                    <p:column headerText="Comments" >        
-                        <p:commandLink value="#{sts.leaveType}" action="#{hrReportController.fromStaffFingerprintAnalysisToStaffLeave(sts.shiftDate, sts.staff)}" ></p:commandLink>
-                        <h:outputLabel value="Half Shift " rendered="#{sts.shift.halfShift}"  />
-                    </p:column>
-
-
-                    <!--                    <p:column>
-                                            <f:facet name="header">
-                                                <h:outputLabel value="Name"/>
-                                            </f:facet>
-                                            <h:outputLabel value="#{sts.staff.person.name}"/>
-                                            <h:outputLabel value=" (#{sts.staff.code})"/>
-                                        </p:column>-->     
-
-                    <p:column headerText="Attendence Start" styleClass="fixedColumn200"> 
-
-                        <h:panelGroup rendered="#{sts.previousStaffShift eq null}" >        
-                            <h:panelGroup  >
-                                <p:selectOneMenu  value="#{sts.startRecord}"  > 
+                        <p:column headerText="Start (from attendance)" style="width:220px;">
+                            <h:panelGroup rendered="#{sts.previousStaffShift eq null}">
+                                <p:selectOneMenu value="#{sts.startRecord}">
                                     <f:selectItem itemLabel="Select"/>
-                                    <f:selectItems value="#{sts.fingerPrintRecordList}" var="i"
-                                                   itemLabel="#{i.timeLabel}" itemValue="#{i}" />
+                                    <f:selectItems value="#{sts.fingerPrintRecordList}" var="rec"
+                                                   itemLabel="#{rec.timeLabel}" itemValue="#{rec}"/>
                                     <f:ajax event="change" execute="@this" render="strRc"
                                             listener="#{shiftFingerPrintAnalysisController.fingerPrintSelectListenerStartRecord(sts)}"/>
                                 </p:selectOneMenu>
                             </h:panelGroup>
+                            <h:outputLabel styleClass="sfa-muted" value="Previous shift"
+                                           rendered="#{sts.previousStaffShift ne null}"/>
+                        </p:column>
 
-                        </h:panelGroup>
-                        <h:outputLabel value="Previous" rendered="#{sts.previousStaffShift ne null}"/>
-                    </p:column>
-
-                    <p:column headerText="Attendence End" styleClass="fixedColumn200">
-                        <h:panelGroup rendered="#{sts.nextStaffShift eq null}">
-                            <h:panelGroup >                           
-                                <p:selectOneMenu  value="#{sts.endRecord}">  
+                        <p:column headerText="End (from attendance)" style="width:220px;">
+                            <h:panelGroup rendered="#{sts.nextStaffShift eq null}">
+                                <p:selectOneMenu value="#{sts.endRecord}">
                                     <f:selectItem itemLabel="Select"/>
-                                    <f:selectItems value="#{sts.fingerPrintRecordList}" var="i" itemLabel="#{i.timeLabel}"  itemValue="#{i}" />
-                                    <f:ajax event="change" execute="@this" render="endRc "
+                                    <f:selectItems value="#{sts.fingerPrintRecordList}" var="rec"
+                                                   itemLabel="#{rec.timeLabel}" itemValue="#{rec}"/>
+                                    <f:ajax event="change" execute="@this" render="endRc"
                                             listener="#{shiftFingerPrintAnalysisController.fingerPrintSelectListenerEndRecord(sts)}"/>
-                                </p:selectOneMenu>   
+                                </p:selectOneMenu>
                             </h:panelGroup>
+                            <h:outputLabel styleClass="sfa-muted" value="Next shift"
+                                           rendered="#{sts.nextStaffShift ne null}"/>
+                        </p:column>
 
-                        </h:panelGroup>
-                        <h:outputLabel value="Next" rendered="#{sts.nextStaffShift ne null}"/>
-                    </p:column>
-
-                    <p:column headerText="Varified Start"  styleClass="fixedColumn200">
-
-                        <h:panelGroup id="strRc"   >
-                            <h:panelGroup rendered="#{sts.startRecord ne null}" >
-                                <p:calendar                                   
-                                    value="#{sts.startRecord.recordTimeStamp}" 
-                                    pattern="dd/MM/yy hh:mm:ss a"  >                           
-                                    <p:ajax event="click" process="@this" update="@this"
-                                            listener="#{shiftFingerPrintAnalysisController.listenStart(sts)}"/>
-                                </p:calendar>
-                                <h:panelGroup rendered="#{sts.startRecord.allowedExtraDuty}">
-                                    <h:outputLabel value="Extra"/>
+                        <p:column headerText="Start Verified" style="width:230px;">
+                            <h:panelGroup id="strRc">
+                                <h:panelGroup rendered="#{sts.startRecord ne null}">
+                                    <p:calendar value="#{sts.startRecord.recordTimeStamp}"
+                                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}">
+                                        <p:ajax event="dateSelect" process="@this" update="@this"
+                                                listener="#{shiftFingerPrintAnalysisController.listenStart(sts)}"/>
+                                        <p:ajax event="change" process="@this" update="@this"
+                                                listener="#{shiftFingerPrintAnalysisController.listenStart(sts)}"/>
+                                    </p:calendar>
+                                    <h:panelGroup rendered="#{sts.startRecord.allowedExtraDuty}">
+                                        <span class="sfa-chip">Extra</span>
+                                    </h:panelGroup>
                                 </h:panelGroup>
+                                <h:outputLabel styleClass="sfa-muted" value="No records"
+                                               rendered="#{sts.startRecord eq null}"/>
                             </h:panelGroup>
-                            <h:outputLabel value="No Records" rendered="#{sts.startRecord eq null}"/>
-                        </h:panelGroup>
+                        </p:column>
 
-                    </p:column>
-
-                    <p:column headerText="Verified End"  styleClass="fixedColumn200">
-
-                        <h:panelGroup id="endRc">
-
-                            <h:panelGroup rendered="#{sts.endRecord ne null}">
-                                <p:calendar                                    
-                                    value="#{sts.endRecord.recordTimeStamp}" 
-                                    pattern="dd/MM/yy hh:mm:ss a" >          
-                                    <p:ajax event="click" process="@this" update="@this"
-                                            listener="#{shiftFingerPrintAnalysisController.listenEnd(sts)}"/>
-                                </p:calendar>                             
-                                <h:panelGroup rendered="#{sts.endRecord.allowedExtraDuty}">
-                                    <h:outputLabel value="Extra"/>
+                        <p:column headerText="End Verified" style="width:230px;">
+                            <h:panelGroup id="endRc">
+                                <h:panelGroup rendered="#{sts.endRecord ne null}">
+                                    <p:calendar value="#{sts.endRecord.recordTimeStamp}"
+                                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}">
+                                        <p:ajax event="dateSelect" process="@this" update="@this"
+                                                listener="#{shiftFingerPrintAnalysisController.listenEnd(sts)}"/>
+                                        <p:ajax event="change" process="@this" update="@this"
+                                                listener="#{shiftFingerPrintAnalysisController.listenEnd(sts)}"/>
+                                    </p:calendar>
+                                    <h:panelGroup rendered="#{sts.endRecord.allowedExtraDuty}">
+                                        <span class="sfa-chip">Extra</span>
+                                    </h:panelGroup>
                                 </h:panelGroup>
-                            </h:panelGroup> 
-                            <h:outputLabel value="No Records" rendered="#{sts.endRecord eq null}"/>
-                        </h:panelGroup>
-                    </p:column>
-                    <p:column headerText="Clear dates"  styleClass="fixedColumn200">
-                        <p:commandButton value="Clear" action="#{shiftFingerPrintAnalysisController.listenClear(sts)}" ajax="false" rendered="#{webUserController.hasPrivilege('Developers')}" />
-                    </p:column>
+                                <h:outputLabel styleClass="sfa-muted" value="No records"
+                                               rendered="#{sts.endRecord eq null}"/>
+                            </h:panelGroup>
+                        </p:column>
 
-                </p:dataTable>  
-            </p:dataGrid>
+                        <p:column headerText="Clear" styleClass="singleLine" style="width:80px;">
+                            <p:commandButton value="Clear"
+                                             icon="ui-icon-trash"
+                                             styleClass="ui-button-danger"
+                                             action="#{shiftFingerPrintAnalysisController.listenClear(sts)}"
+                                             ajax="false"
+                                             rendered="#{webUserController.hasPrivilege('Developers')}"/>
+                        </p:column>
 
+                    </p:dataTable>
+                </p:dataGrid>
 
-        </h:form>  
-
-
+            </h:form>
+        </div>
 
     </ui:define>
-
-
 
 </ui:composition>

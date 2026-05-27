@@ -24,6 +24,7 @@ import com.divudi.core.entity.Person;
 import com.divudi.core.entity.Speciality;
 import com.divudi.core.entity.Staff;
 import com.divudi.core.entity.hr.Roster;
+import com.divudi.core.entity.hr.SalaryCycle;
 import com.divudi.core.entity.hr.StaffDesignation;
 import com.divudi.core.entity.hr.StaffEmployeeStatus;
 import com.divudi.core.entity.hr.StaffEmployment;
@@ -175,7 +176,7 @@ public class StaffController implements Serializable {
         if (current.getId() == null || current.getId() == 0) {
             JsfUtil.addErrorMessage("Please Select Staff Member");
         }
-        if (getSignatureUrl() == null || getSignatureUrl().trim() == "") {
+        if (getSignatureUrl() == null || getSignatureUrl().trim().isEmpty()) {
             JsfUtil.addErrorMessage("Add Signature Url");
         }
         System.out.println("getStaffController().getCurrent = " + getCurrent());
@@ -198,6 +199,7 @@ public class StaffController implements Serializable {
     }
 
     public String navigateToListStaff() {
+        staff = null;
         fillItems();
         return "/admin/staff/staff_list?faces-redirect=true";
     }
@@ -499,7 +501,7 @@ public class StaffController implements Serializable {
                 + " and type(ss)!=:class "
                 + " and LENGTH(ss.code) > 0 "
                 + " and LENGTH(ss.person.name) > 0 "
-                + " and ss.employeeStatus!=:sts";
+                + " and (ss.employeeStatus!=:sts or ss.employeeStatus is null)";
 
         sql += " and (ss.dateLeft is null or ss.dateLeft > :to ) ";
         hm.put("to", ssDate);
@@ -551,7 +553,7 @@ public class StaffController implements Serializable {
                 + " and type(ss)!=:class "
                 + " and LENGTH(ss.code) > 0 "
                 + " and LENGTH(ss.person.name) > 0 "
-                + " and ss.employeeStatus!=:sts"
+                + " and (ss.employeeStatus!=:sts or ss.employeeStatus is null)"
                 + " and ss.dateLeft >:fd "
                 + " and ss.dateLeft < :to ";
         hm.put("to", staffSalaryController.getSalaryCycle().getSalaryToDate());
@@ -620,7 +622,7 @@ public class StaffController implements Serializable {
                 + " and type(ss)!=:class "
                 + " and LENGTH(ss.code) > 0 "
                 + " and LENGTH(ss.person.name) > 0 "
-                + " and ss.employeeStatus!=:sts";
+                + " and (ss.employeeStatus!=:sts or ss.employeeStatus is null)";
 
 //        sql += " and (ss.dateLeft is null or ss.dateLeft > :to ) ";
 //        hm.put("to", ssDate );
@@ -664,12 +666,31 @@ public class StaffController implements Serializable {
     }
 
     public void fetchWorkDays(List<Staff> staffs) {
+        if (staffs == null || staffs.isEmpty()) {
+            return;
+        }
+        SalaryCycle cycle = staffSalaryController.getSalaryCycle();
+        if (cycle == null) {
+            JsfUtil.addErrorMessage("Please select a Salary Cycle before filling staff.");
+            return;
+        }
+        if (cycle.getDayOffPhFromDate() == null || cycle.getDayOffPhToDate() == null) {
+            JsfUtil.addErrorMessage("Salary Cycle dates are incomplete.");
+            return;
+        }
+        if (cycle.getSalaryFromDate() == null || cycle.getSalaryToDate() == null) {
+            JsfUtil.addErrorMessage("Salary From/To dates are incomplete.");
+            return;
+        }
         for (Staff s : staffs) {
-            if (staffSalaryController.getSalaryCycle() != null) {
-                s.setTransWorkedDays(hrReportController.fetchWorkedDays(s, staffSalaryController.getSalaryCycle().getDayOffPhFromDate(), staffSalaryController.getSalaryCycle().getDayOffPhToDate()));
-                s.setTransWorkedDaysSalaryFromToDate(hrReportController.fetchWorkedDays(s, staffSalaryController.getSalaryCycle().getSalaryFromDate(), staffSalaryController.getSalaryCycle().getSalaryToDate()));
-
-            }
+            s.setTransWorkedDays(
+                hrReportController.fetchWorkedDays(s,
+                    cycle.getDayOffPhFromDate(),
+                    cycle.getDayOffPhToDate()));
+            s.setTransWorkedDaysSalaryFromToDate(
+                hrReportController.fetchWorkedDays(s,
+                    cycle.getSalaryFromDate(),
+                    cycle.getSalaryToDate()));
         }
     }
 
@@ -912,6 +933,24 @@ public class StaffController implements Serializable {
         return ss;
     }
 
+    // Staff with speciality optional
+    public List<Staff> getSpecialityStaffOptional(Speciality speciality) {
+        List<Staff> ss;
+        String sql;
+        HashMap hm = new HashMap();
+        sql = "select p from Staff p where  "
+                + " p.retired=false ";
+        
+        if (speciality != null) {
+            sql += " and p.speciality=:sp ";
+            hm.put("sp", speciality);
+        } 
+        sql += " order by p.person.name";
+
+        ss = getFacade().findByJpql(sql, hm);
+        return ss;
+    }
+
     public List<Staff> completeStaffWithoutDoctors(String query) {
         List<Staff> suggestions;
         String sql;
@@ -1044,7 +1083,7 @@ public class StaffController implements Serializable {
 
     public List<Staff> getSelectedItems() {
         if (selectedItems == null) {
-            selectedItems = new ArrayList<>();
+            fillSelectedItemsWithAllStaff();
         }
         return selectedItems;
     }
@@ -1163,6 +1202,7 @@ public class StaffController implements Serializable {
 
     public void prepareAdd() {
         current = new Staff();
+        current.setPerson(new Person());
         tempRetireDate = null;
         removeResign = false;
     }
@@ -1170,7 +1210,7 @@ public class StaffController implements Serializable {
     public void delete() {
         if (current != null) {
             if (current.getId() == null) {
-                JsfUtil.addSuccessMessage("Nothing To Delete");
+                JsfUtil.addErrorMessage("Nothing To Delete");
             } else {
 
                 current.setRetired(true);
@@ -1180,7 +1220,7 @@ public class StaffController implements Serializable {
                 JsfUtil.addSuccessMessage("Deleted Successfully");
             }
         } else {
-            JsfUtil.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addErrorMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();

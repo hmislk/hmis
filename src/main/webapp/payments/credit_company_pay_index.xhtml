@@ -95,10 +95,29 @@
 
                                         <p:tab title="Inpatient Credit Management">
                                             <div class="d-grid gap-2">
-                                                <p:commandButton styleClass="w-100 ui-button-info ui-button-outlined" ajax="false" icon="pi pi-list" value="Inward Due Search" title="List outstanding inward dues for credit companies" action="/credit/inward_due_search_credit_company?faces-redirect=true"/>
-                                                <p:commandButton styleClass="w-100 ui-button-info ui-button-outlined" ajax="false" icon="pi pi-calendar-times" value="Inward Due Age" title="View aged inward dues" action="/credit/inward_due_age_credit_company?faces-redirect=true"/>
-                                                <p:commandButton styleClass="w-100 ui-button-success" ajax="false" icon="pi pi-id-card" value="Inward Payment by BHT" title="Process inward payments by BHT" action="/credit/credit_compnay_bill_inward?faces-redirect=true"/>
-                                                <p:commandButton styleClass="w-100 ui-button-success" ajax="false" icon="pi pi-building" value="Inward Payment by Company" title="Process inward payments by company" action="/credit/credit_compnay_bill_payment_inward?faces-redirect=true"/>
+                                                <h:outputLabel value="— CC Reports —" styleClass="text-muted small text-center mt-1"/>
+                                                <p:commandButton styleClass="w-100 ui-button-info ui-button-outlined" ajax="false" icon="pi pi-list" value="Inward CC Due Search" title="List outstanding inward dues owed by credit companies" action="/credit/inward_due_search_credit_company?faces-redirect=true"/>
+                                                <p:commandButton styleClass="w-100 ui-button-info ui-button-outlined" ajax="false" icon="pi pi-calendar-times" value="Inward CC Due Age" title="View aged inward dues owed by credit companies" action="/credit/inward_due_age_credit_company?faces-redirect=true"/>
+                                                <p:commandButton styleClass="w-100 ui-button-success" ajax="false" icon="pi pi-id-card" value="Inward Payment by BHT" title="Process inward CC payments by BHT" action="/credit/credit_compnay_bill_inward?faces-redirect=true"/>
+                                                <p:commandButton styleClass="w-100 ui-button-success" ajax="false" icon="pi pi-building" value="Inward Payment by Company" title="Process inward CC payments by company" action="/credit/credit_compnay_bill_payment_inward?faces-redirect=true"/>
+                                                <h:outputLabel value="— Patient Reports —" styleClass="text-muted small text-center mt-2"/>
+                                                <p:commandButton styleClass="w-100 ui-button-info ui-button-outlined" ajax="false" icon="pi pi-search" value="Inward Patient Due Search" title="List all inward admissions with outstanding patient co-payment balances"
+                                                                 actionListener="#{creditCompanyDueController.makeNull()}"
+                                                                 action="/credit/inward_patient_copay_due_search?faces-redirect=true"/>
+                                                <p:commandButton styleClass="w-100 ui-button-info ui-button-outlined" ajax="false" icon="pi pi-calendar-times" value="Inward Patient Due Age" title="View aged patient co-payment balances (one row per patient)"
+                                                                 actionListener="#{creditCompanyDueController.makeNull()}"
+                                                                 action="/credit/inward_patient_copay_due_age?faces-redirect=true"/>
+                                                <p:commandButton
+                                                    styleClass="w-100 ui-button-warning"
+                                                    ajax="false"
+                                                    icon="pi pi-user"
+                                                    value="Inward Patient Co-payment"
+                                                    title="Collect patient co-payment balance after credit company settlement"
+                                                    action="#{inwardPaymentController.navigateToInwardPatientCopayment()}"/>
+                                                <h:outputLabel value="— Management —" styleClass="text-muted small text-center mt-2"/>
+                                                <p:commandButton styleClass="w-100 ui-button-help ui-button-outlined" ajax="false" icon="pi pi-chart-bar" value="Inward Outstanding Summary" title="Management view: CC receivables vs patient co-payment receivables by age bucket"
+                                                                 actionListener="#{creditCompanyDueController.makeNull()}"
+                                                                 action="/credit/inward_outstanding_summary?faces-redirect=true"/>
                                             </div>
                                         </p:tab>
 

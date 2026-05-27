@@ -64,6 +64,24 @@ public class RequestService {
         return req;
     }
 
+    public boolean hasPendingDrawerAdjustmentRequest(WebUser requester) {
+        if (requester == null) {
+            return false;
+        }
+        String jpql = "Select count(q) from Request q "
+                + " where q.retired = :ret "
+                + " and q.requester = :requester "
+                + " and q.requestType = :type "
+                + " and q.status = :status ";
+        HashMap params = new HashMap();
+        params.put("ret", false);
+        params.put("requester", requester);
+        params.put("type", RequestType.DRAWER_ADJUSTMENT);
+        params.put("status", RequestStatus.PENDING);
+        Long count = requestFacade.countByJpql(jpql, params);
+        return count != null && count > 0;
+    }
+
     public List<Request> fillAllRequest(
             Date fromDate,
             Date toDate,
@@ -78,8 +96,8 @@ public class RequestService {
 
         String jpql = "Select q from Request q "
                 + " where q.retired =:ret "
-                + " and q.createdAt between :frm and :to"
-                + " and q.department.departmentType =:deptType";
+                + " and q.id is not null "
+                + " and q.createdAt between :frm and :to";
 
         if (requestNo != null && !requestNo.trim().equals("")) {
             jpql += " and q.requestNo like :reqNo ";
@@ -108,13 +126,70 @@ public class RequestService {
 
         jpql += " order by q.id desc ";
 
-        params.put("deptType", departmentType);
         params.put("ret", false);
         params.put("frm", fromDate);
         params.put("to", toDate);
 
         List<Request> req = requestFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
 
+
+        return req;
+    }
+    
+    public List<Request> fillAllRequest(
+            Date fromDate,
+            Date toDate,
+            String billNo,
+            String bhtNo,
+            String requestNo,
+            List<RequestType> requestTypes,
+            List<RequestStatus> status,
+            DepartmentType departmentType) {
+        
+        HashMap params = new HashMap();
+
+        String jpql = "Select q from Request q "
+                + " where q.retired =:ret "
+                + " and q.id is not null ";
+                
+
+        if (fromDate != null && toDate != null) {
+            jpql += " and q.createdAt between :frm and :to";
+            params.put("frm", fromDate);
+            params.put("to", toDate);
+        }
+        
+        if (requestNo != null && !requestNo.trim().equals("")) {
+            jpql += " and q.requestNo like :reqNo ";
+            params.put("reqNo", "%" + requestNo.trim() + "%");
+        }
+
+        if (billNo != null && !billNo.trim().equals("")) {
+            jpql += " and  q.bill.deptId like :billNo ";
+            params.put("billNo", "%" + billNo.trim() + "%");
+        }
+
+        if (bhtNo != null && !bhtNo.trim().equals("")) {
+            jpql += " and  q.bill.patientEncounter.bhtNo like :bht ";
+            params.put("bht", "%" + bhtNo.trim() + "%");
+        }
+
+        if (status != null) {
+            jpql += " and q.status in :status ";
+            params.put("status", status);
+        }
+
+        if (requestTypes != null) {
+            jpql += " and q.requestType in :type ";
+            params.put("type", requestTypes);
+        }
+
+        jpql += " order by q.id desc ";
+
+        params.put("ret", false);
+        
+
+        List<Request> req = requestFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
 
         return req;
     }

@@ -8,34 +8,40 @@ package com.divudi.core.data;
  * Author: Buddhika
  */
 public enum DepartmentType {
-    Clinical("Clinical"),
-    NonClinical("Non-Clinical"),
-    Pharmacy("Pharmacy"),
-    Lab("Hospital Lab"),
-    External_Lab("Outsource Lab"),
-    Channelling("Channelling"),
-    Opd("Out Patient Department (OPD)"),
-    Inward("Inward"),
-    Theatre("Theatre"),
-    Etu("Emergency Treatment Unit (ETU)"),
-    CollectingCentre("Collecting Centre"),
-    Store("Store"),
-    Inventry("Inventory"),
-    Kitchen("Kitchen"),
-    Optician("Optician"),
-    Counter("Counter"),
-    Cashier("Cashier"),
-    Office("Office"),
-    Ict("Information and Communication Technology (ICT)"),
-    Other("Other");
+    Clinical("Clinical", "Clinical"),
+    NonClinical("Non-Clinical", "Non-Clinical"),
+    Pharmacy("Pharmacy", "Pharmacy"),
+    Lab("Hospital Lab", "Lab"),
+    External_Lab("Outsource Lab", "Outsource Lab"),
+    Channelling("Channelling", "Channelling"),
+    Opd("Out Patient Department (OPD)", "OPD"),
+    Inward("Inward", "Inward"),
+    Theatre("Theatre", "Theatre"),
+    Etu("Emergency Treatment Unit (ETU)", "ETU"),
+    CollectingCentre("Collecting Centre", "Collecting Centre"),
+    Store("Store", "Store"),
+    Inventry("Inventory", "Inventory"),
+    Kitchen("Kitchen", "Kitchen"),
+    Optician("Optician", "Optician"),
+    Counter("Counter", "Counter"),
+    Cashier("Cashier", "Cashier"),
+    Office("Office", "Office"),
+    Ict("Information and Communication Technology (ICT)", "ICT"),
+    Other("Other", "Other");
 
     private final String label;
+    private final String shortLabel;
 
-    DepartmentType(String label) {
+    DepartmentType(String label, String shortLabel) {
         this.label = label;
+        this.shortLabel = shortLabel;
     }
 
     public String getLabel() {
         return label;
+    }
+
+    public String getShortLabel() {
+        return shortLabel;
     }
 }

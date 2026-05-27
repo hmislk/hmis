@@ -121,7 +121,7 @@
                                 id="tbl"
                                 value="#{disposalReturnWorkflowController.disposalReturnsToFinalize}"
                                 var="b"
-                                rows="15"
+                                rows="#{userSettingsController.pharmacyDisposalReturnFinalizePageSize}"
                                 paginator="true"
                                 paginatorPosition="bottom"
                                 paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
@@ -133,7 +133,7 @@
                                 resizableColumns="true"
                                 reflow="true">
 
-                            <p:column headerText="Created At" sortBy="#{b.createdAt}" styleClass="text-nowrap">
+                            <p:column headerText="Created At" sortBy="#{b.createdAt}" styleClass="text-nowrap" rendered="#{userSettingsController.pharmacyDisposalReturnFinalizeCreatedAtVisible}">
                                 <div class="d-flex flex-column">
                                     <div class="d-flex align-items-center mb-1">
                                         <i class="fas fa-clock text-info me-2"></i>
@@ -155,7 +155,7 @@
                                 </div>
                             </p:column>
 
-                            <p:column headerText="Created By" sortBy="#{b.creater.webUserPerson.name}">
+                            <p:column headerText="Created By" sortBy="#{b.creater.webUserPerson.name}" rendered="#{userSettingsController.pharmacyDisposalReturnFinalizeCreatedByVisible}">
                                 <div class="d-flex flex-column">
                                     <div class="d-flex align-items-center mb-1">
                                         <i class="fas fa-user text-primary me-2"></i>
@@ -170,35 +170,35 @@
                                 </div>
                             </p:column>
 
-                            <p:column headerText="Patient" sortBy="#{b.patient.person.nameWithTitle}">
+                            <p:column headerText="Patient" sortBy="#{b.patient.person.nameWithTitle}" rendered="#{userSettingsController.pharmacyDisposalReturnFinalizePatientVisible}">
                                 <div class="d-flex align-items-center">
                                     <i class="fas fa-user-injured text-success me-2"></i>
                                     <span class="fw-medium">#{b.patient.person.nameWithTitle}</span>
                                 </div>
                             </p:column>
 
-                            <p:column headerText="Return No" sortBy="#{b.deptId}">
+                                <p:column headerText="Return No" sortBy="#{b.deptId}" rendered="#{userSettingsController.pharmacyDisposalReturnFinalizeReturnNoVisible}">
                                 <div class="d-flex align-items-center">
                                     <i class="fas fa-hashtag text-info me-2"></i>
                                     <span class="fw-medium">#{b.deptId}</span>
                                 </div>
                             </p:column>
 
-                            <p:column headerText="Original Issue Bill" sortBy="#{b.referenceBill.deptId}">
+                                <p:column headerText="Original Issue Bill" sortBy="#{b.referenceBill.deptId}" rendered="#{userSettingsController.pharmacyDisposalReturnFinalizeOriginalIssueBillVisible}">
                                 <div class="d-flex align-items-center">
                                     <i class="fas fa-link text-secondary me-2"></i>
                                     <span class="fw-medium">#{b.referenceBill.deptId}</span>
                                 </div>
                             </p:column>
 
-                            <p:column headerText="Department" sortBy="#{b.department.name}">
+                                <p:column headerText="Department" sortBy="#{b.department.name}" rendered="#{userSettingsController.pharmacyDisposalReturnFinalizeDepartmentVisible}">
                                 <div class="d-flex align-items-center">
                                     <i class="fas fa-hospital text-info me-2"></i>
                                     <span class="fw-medium">#{b.department.name}</span>
                                 </div>
                             </p:column>
 
-                            <p:column headerText="Return Value" sortBy="#{b.netTotal}" styleClass="text-end">
+                                <p:column headerText="Return Value" sortBy="#{b.netTotal}" styleClass="text-end" rendered="#{userSettingsController.pharmacyDisposalReturnFinalizeReturnValueVisible}">
                                 <div class="d-flex align-items-center justify-content-end">
                                     <i class="fas fa-coins text-success me-2"></i>
                                     <span class="fw-bold text-success fs-6">
@@ -250,6 +250,49 @@
                                 </h:panelGroup>
                             </p:column>
                         </p:dataTable>
+                            
+                            <!-- Column Visibility Settings -->
+                            <div class="mt-3 pt-2" style="border-top: 1px solid #e9ecef;">
+                                <p:panel id="panelColumnToggler" toggleable="true" collapsed="true" styleClass="ui-panel-sm">
+                                    <f:facet name="header">
+                                        <span style="font-size: 0.85rem; color: #6c757d;">
+                                            <i class="fas fa-eye me-1" style="font-size: 0.75rem;"></i>
+                                            Customize Columns
+                                        </span>
+                                    </f:facet>
+
+                                    <div class="d-flex flex-wrap gap-2 gap-2xl-0 justify-content-between align-items-center" style="font-size: 0.8rem">
+                                        <div class="d-flex flex-wrap gap-2">
+                                            <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyDisposalReturnFinalizeCreatedAtVisible}"
+                                                                         itemLabel="Created At">
+                                            </p:selectBooleanCheckbox>
+                                            <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyDisposalReturnFinalizeCreatedByVisible}"
+                                                                         itemLabel="Created by">
+                                            </p:selectBooleanCheckbox>
+                                            <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyDisposalReturnFinalizePatientVisible}"
+                                                                           itemLabel="Patient">
+                                            </p:selectBooleanCheckbox>
+                                            <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyDisposalReturnFinalizeReturnNoVisible}"
+                                                                           itemLabel="Return No">
+                                            </p:selectBooleanCheckbox>
+                                            <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyDisposalReturnFinalizeOriginalIssueBillVisible}"
+                                                                           itemLabel="Original Issue Bill">
+                                            </p:selectBooleanCheckbox>
+                                            <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyDisposalReturnFinalizeDepartmentVisible}"
+                                                                           itemLabel="Department">
+                                            </p:selectBooleanCheckbox>
+                                            <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyDisposalReturnFinalizeReturnValueVisible}"
+                                                                           itemLabel="Return Value">
+                                            </p:selectBooleanCheckbox>
+                                        </div>
+                                        <div class="flex">
+                                            <p:commandButton
+                                                value="Apply"
+                                                ajax="false" />
+                                        </div>
+                                    </div>
+                                </p:panel>
+                             </div>
                         </p:panel>
                     </div>
                 </div>

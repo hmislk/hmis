@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8' ?>
+﻿<?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
@@ -93,7 +93,7 @@
                                             id="acAmp"
                                             class="w-100"
                                             inputStyleClass="w-100"
-                                            completeMethod="#{ampController.completeAmp}"
+                                            queryDelay="300" completeMethod="#{ampController.completeAmpAny}"
                                             var="amp"
                                             itemLabel="#{amp.name}"
                                             itemValue="#{amp}"
@@ -309,6 +309,7 @@
                                     <p:inputTextarea value="#{pharmacyAdjustmentController.comment}"  class="w-100"/>
 
                                     <p:commandButton id="btnAdjust" value="Make Adjustment" ajax="false"  class="mt-2 ui-button-warning" icon="fa-solid fa-sliders"
+                                                     onclick="return confirm('Are you sure you want to make this adjustment?');"
                                                      action="#{pharmacyAdjustmentController.adjustExDate()}" />
                                     <p:defaultCommand target="btnAdjust"/>
                                 </p:panel>

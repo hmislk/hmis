@@ -9,42 +9,52 @@
     <!-- INTERFACE -->
     <cc:interface>
         <cc:attribute name="paymentMethodData" type="com.divudi.core.data.dataStructure.PaymentMethodData" />
-        <cc:attribute name="valueRequired" type="boolean" />
+        <cc:attribute name="valueRequired" type="boolean" default="true"/>
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <h:panelGroup rendered="#{cc.attrs.valueRequired}" class="col" layout="block">
-        </h:panelGroup>
-        <p:inputText autocomplete="off"   value="#{cc.attrs.paymentMethodData.ewallet.totalValue}"  id="txtVal" class="w-25 mb-1" style="margin-left: 12px;"
-                     required="true"
-                     requiredMessage="Value is required">
-            <p:ajax process="@this" ></p:ajax>
-            <f:convertNumber pattern="#,##0.00" />
-        </p:inputText>
-        <div class="d-flex gap-2">
+        <div class="d-flex flex-wrap align-items-center gap-2 mt-2 ui-fluid">
+            <div class="col-auto">
+                <h:panelGroup rendered="#{cc.attrs.valueRequired}" layout="block">
+                    <p:inputText autocomplete="off"   value="#{cc.attrs.paymentMethodData.ewallet.totalValue}"  id="txtVal" class="form-control" style="width: auto; max-width: 200px"
+                                required="true"
+                                requiredMessage="Value is required">
+                       <p:ajax process="@this" ></p:ajax>
+                       <f:convertNumber pattern="#,##0.00" />
+                   </p:inputText>
+                </h:panelGroup>
+            </div>
 
-            <p:inputText autocomplete="off"   value="#{cc.attrs.paymentMethodData.ewallet.no}" id="refno" class="" placeholder="e-wallet No"
-                         required="true"
-                         requiredMessage="E-wallet No is required">
-                <p:ajax process="@this" ></p:ajax>
-            </p:inputText>
-
-
-            <p:selectOneMenu value="#{cc.attrs.paymentMethodData.ewallet.institution}"
+            <div class="col-auto">
+                <p:inputText autocomplete="off"   value="#{cc.attrs.paymentMethodData.ewallet.no}" id="refno" class="form-control" placeholder="e-wallet No"
                              required="true"
-                             requiredMessage="Bank is required" >
-                <f:selectItem itemLabel="Select Bank"/>
-                <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
-                <p:ajax process="@this" ></p:ajax>
-            </p:selectOneMenu>
+                             requiredMessage="E-wallet No is required"
+                             style="width: auto; max-width: 200px">
+                    <p:ajax process="@this" ></p:ajax>
+                </p:inputText>
+            </div>
 
-            <p:inputText autocomplete="off"   value="#{cc.attrs.paymentMethodData.ewallet.comment}" id="memo" class="" placeholder="Enter e-wallet Comment"
-                         required="true"
-                         requiredMessage="Comments are required">
-                <p:ajax process="@this" ></p:ajax>
-            </p:inputText>
-
+            <div class="col-auto">
+                <p:selectOneMenu value="#{cc.attrs.paymentMethodData.ewallet.institution}"
+                                 required="true"
+                                 requiredMessage="Bank is required"
+                                 class="form-control"
+                                 style="width: 200px">
+                    <f:selectItem itemLabel="Select Bank"/>
+                    <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
+                    <p:ajax process="@this" ></p:ajax>
+                </p:selectOneMenu>
+            </div>
+                
+            <div class="col-auto">
+                <p:inputText autocomplete="off"   value="#{cc.attrs.paymentMethodData.ewallet.comment}" id="memo" class="form-control" placeholder="Enter e-wallet Comment"
+                             required="true"
+                             requiredMessage="Comments are required"
+                             style="width: auto; max-width: 200px">
+                    <p:ajax process="@this" ></p:ajax>
+                </p:inputText>
+            </div>
         </div>
 
     </cc:implementation>

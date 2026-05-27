@@ -19,10 +19,16 @@
                                 <p:outputLabel value="From Date" for="fromDate" class="m-3"/>
                             </h:panelGroup>
                             
-                             <p:datePicker inputStyleClass="w-100" id="fromDate" 
-                                           showTime="true" 
-                                           value="#{patientInvestigationController.fromDate}" 
-                                           class="w-100" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                             <p:datePicker 
+                                 styleClass="w-100"
+                                 inputStyleClass="w-100 form-control" 
+                                 id="fromDate" 
+                                 showTime="true" 
+                                 yearNavigator="true"
+                                 monthNavigator="true"
+                                 timeInput="true"
+                                 value="#{patientInvestigationController.fromDate}" 
+                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                             <p:spacer width="20"/>
                             
                             <h:panelGroup layout="block" styleClass="form-group">
@@ -30,10 +36,16 @@
                                 <p:outputLabel value="To Date" for="toDate" class="m-3"/>
                             </h:panelGroup>
                             
-                             <p:datePicker inputStyleClass="w-100" id="toDate" 
-                                           showTime="true" 
-                                           value="#{patientInvestigationController.fromDate}" 
-                                           class="w-100" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                             <p:datePicker 
+                                 styleClass="w-100"
+                                 inputStyleClass="w-100 form-control" 
+                                 id="toDate" 
+                                 showTime="true" 
+                                 yearNavigator="true"
+                                 monthNavigator="true"
+                                 timeInput="true"
+                                 value="#{patientInvestigationController.toDate}" 
+                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                             <p:spacer width="20"/>
 
                             <h:panelGroup layout="block" styleClass="form-group">

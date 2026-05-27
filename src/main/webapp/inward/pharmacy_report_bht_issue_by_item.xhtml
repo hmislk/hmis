@@ -24,6 +24,35 @@
                         <p:calendar value="#{reportsTransfer.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
                         <h:outputLabel value="To" ></h:outputLabel>
                         <p:calendar value="#{reportsTransfer.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
+                        <h:outputLabel value="Date Basis" />
+                        <p:selectOneMenu styleClass="w-100" value="#{reportsTransfer.dateBasis}">
+                            <f:selectItem itemValue="createdAt" itemLabel="Created Date (default)" />
+                            <f:selectItem itemValue="admissionDate" itemLabel="Admission Date" />
+                        </p:selectOneMenu>
+                        <h:outputLabel value="Admission Type" />
+                        <p:selectOneMenu styleClass="w-100" value="#{reportsTransfer.admissionType}">
+                            <f:selectItem itemLabel="All" itemValue="#{null}" />
+                            <f:selectItems value="#{admissionTypeController.items}" var="at" itemValue="#{at}" itemLabel="#{at.name}" />
+                        </p:selectOneMenu>
+                        <h:outputLabel value="Payment Method" />
+                        <p:selectOneMenu styleClass="w-100" value="#{reportsTransfer.paymentMethod}">
+                            <f:selectItem itemLabel="All" itemValue="#{null}" />
+                            <f:selectItems value="#{enumController.paymentMethodForAdmission}" />
+                        </p:selectOneMenu>
+                        <h:outputLabel value="Institution" />
+                        <p:selectOneMenu styleClass="w-100" value="#{reportsTransfer.institution}" filter="true">
+                            <f:selectItem itemLabel="All Institutions" itemValue="#{null}" />
+                            <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
+                        </p:selectOneMenu>
+                        <h:outputLabel value="Site" />
+                        <p:selectOneMenu styleClass="w-100" value="#{reportsTransfer.site}" filter="true">
+                            <f:selectItem itemLabel="All Sites" itemValue="#{null}" />
+                            <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
+                        </p:selectOneMenu>
+                        <h:outputLabel value="Department" />
+                        <p:autoComplete styleClass="w-100" completeMethod="#{departmentController.completeDept}"
+                                        var="dept" itemLabel="#{dept.name}" itemValue="#{dept}"
+                                        forceSelection="true" value="#{reportsTransfer.department}" />
                     </h:panelGrid>
 
                     <p:panelGrid columns="3">

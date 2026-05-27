@@ -45,9 +45,31 @@
                                 />
 
 
-                            <p:spacer width="20"></p:spacer>  
-                            <p:spacer width="20"></p:spacer>
-                            <p:spacer width="20"></p:spacer>
+                            <p:spacer width="20"/>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-building mr-2"/>
+                                <p:outputLabel value="Department Type" for="departmentTypeFilter" class="m-3"/>
+                            </h:panelGroup>
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <p:selectCheckboxMenu
+                                    id="departmentTypeFilter"
+                                    value="#{pharmacyReportController.selectedDepartmentTypes}"
+                                    label="Select Department Types"
+                                    class="w-100"
+                                    filter="true"
+                                    filterMatchMode="contains"
+                                    showHeader="true"
+                                    scrollHeight="200"
+                                    title="Select one or more department types to filter results. Leave empty to include all departments.">
+                                    <f:selectItems
+                                        value="#{pharmacyReportController.availableDepartmentTypes}"
+                                        var="depType"
+                                        itemLabel="#{depType.label}"
+                                        itemValue="#{depType}"/>
+                                </p:selectCheckboxMenu>
+                                <p:tooltip for="departmentTypeFilter" value="Select one or more department types to filter results. Leave empty to include all departments." position="top"/>
+                            </h:panelGroup>
 
 
 
@@ -199,30 +221,24 @@
                                 class="ui-button- mx-1" 
                                 icon="fas fa-print" 
                                 ajax="false" 
-                                value="Print All">
-                                <p:printer target="tbl" />
+                                value="To Print"
+                                action="purchase_return_print?faces-redirect=true">
                             </p:commandButton>
 
                             <p:commandButton 
                                 class="ui-button-success mx-1" 
                                 icon="fas fa-file-excel" 
                                 ajax="false" 
-                                value="Download">
-                                <p:dataExporter 
-                                    type="xlsx" 
-                                    fileName="Purchase Return Report" 
-                                    target="tbl"  />
+                                value="Download"
+                                action="#{pharmacyReportController.exportPurchaseReturnToExcel()}">
                             </p:commandButton>
 
                             <p:commandButton 
                                 class="ui-button-danger mx-1" 
                                 icon= "fas fa-file-pdf" 
                                 ajax="false" 
-                                value="PDF">
-                                <p:dataExporter 
-                                    type="pdf" 
-                                    target="tbl" 
-                                    fileName="Purchase Return Report" />
+                                value="PDF"
+                                action="#{pharmacyReportController.exportPurchaseReturnToPDF()}">
                             </p:commandButton>
 
                         </div>
@@ -315,8 +331,8 @@
                                 <h:outputText value="#{f.billItemFinanceDetails.valueAtPurchaseRate}" styleClass="text-end">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
-                                 <f:facet name="footer">
-                                     <h:outputText value="#{pharmacyReportController.totalPurchaseValue}" styleClass="fw-semibold">
+                                <f:facet name="footer">
+                                    <h:outputText value="#{pharmacyReportController.totalPurchaseValue}" styleClass="fw-semibold">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                 </f:facet>

@@ -57,6 +57,7 @@ public enum Privileges {
     OpdAddNewCollectingCentre("OPD Add New Collecting Centre"),
     ChangeProfessionalFee("Change Professional Fee"),
     OpdPackageBillCancel("OPD Package Bill Cancel"),
+    OpdEditPatientDetails("OPD Edit Patient Details"),
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Inpatient">
@@ -79,6 +80,8 @@ public enum Privileges {
     WatingRoomAdmitPatient("Wating Room Admit Patient"),
     InwardRoomGurdianRoomChange("Inward Guardian Room Change"),
     InwardRoomDischarge("Inward Room Discharge"),
+    InwardRoomTransferInitiate("Inward Room Transfer Initiate"),
+    InwardRoomPatientAccept("Inward Room Patient Accept"),
     InwardServicesAndItems("Inward Services and Items"),
     InwardServicesAndItemsAddServices("Inward Add Services"),
     InwardServicesAndItemsAddOutSideCharges("Inward Add Outside Charges"),
@@ -115,6 +118,8 @@ public enum Privileges {
     InwardPharmacyIssueRequestSearch("Inward Pharmacy Issue Request Search"),
     InwardBillSettleWithoutCheck("Inward Bill Settle Without Check"),
     TheaterIssueBHT("Theater Issue BHT"),
+    InpatientClinicalAssessment("Inpatient Clinical Assessment"),
+    InpatientClinicalDischarge("Inpatient Clinical Discharge"),
     //</editor-fold>
     
     //<editor-fold defaultstate="collapsed" desc="Nurse">
@@ -125,12 +130,16 @@ public enum Privileges {
     //<editor-fold defaultstate="collapsed" desc="Finance">
     PettyCashBillCancellationApprove("Petty Cash Bill Cancellation Approval"),
     PettyCashBillApprove("Petty Cash Bill Approval"),
+    PettyCashEditFinancialYear("Petty Cash Edit Financial Year"),
     AllCashierSummery("All Cashier Summary"),
     CashTransactionCashIn("Cash Transaction Cash In"),
     CashTransactionCashOut("Cash Transaction Cash Out"),
     CashTransactionListToCashRecieve("Cash Transaction List to Cash Receive"),
     ShiftHandoverAcceptAsCashier("Shift Handover Accept As Cashier"),
     ShiftHandoverAcceptAsMainCashier("Shift Handover Accept As Main Cashier"),
+    CashierHandoverStatusReport("Cashier Handover Status Report"),
+    SettleHandoverProofMissing("Settle Handover Proof Missing"),
+    SettleNonCashPayments("Settle Non-Cash Payments"),
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Lab">
@@ -477,6 +486,8 @@ public enum Privileges {
     ClinicalMembershipAdd("Clinical Membership Add"),
     ClinicalMembershipEdit("Clinical Membership Edit"),
     ClinicalPatientPhoneNumberEdit("Clinical Patient Phone Number Edit"),
+    ClinicalPatientBlacklist("Clinical Patient Blacklist"),
+    ClinicalPatientPseudonymise("Clinical Patient Pseudonymise"),
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Pharmacy">
@@ -544,8 +555,11 @@ public enum Privileges {
     PharmacyAdjustmentExpiryDate("Pharmacy Adjustment Expiry Date"),
     PharmacyAdjustmentSearchAdjustmentBills("Pharmacy Adjustment Search Adjustment Bills"),
     PharmacyAdjustmentTransferAllStock("Pharmacy Adjustment Transfer All Stock"),
+    PharmacyAdjustmentCreateBatch("Pharmacy Adjustment Create Batch"),
     PharmacyPhysicalCountApprove("Pharmacy Physical Count Approve"),
     PharmacyStockTakeApprove("Pharmacy Stock Take Approve"),
+    ArchiveOldStockHistory("Archive Old StockHistory Records"),
+    ArchiveOldItemBatch("Archive Old ItemBatch Records"),
     // Pharmacy Dealer Payments
     PharmacyDealerPaymentMenue("Pharmacy Dealer Payment Menu"),
     PharmacyDealerDueSearch("Pharmacy Dealer Due Search"),
@@ -607,6 +621,8 @@ public enum Privileges {
     PharmacyItemSearch("Pharmacy Item Search"),
     PharmacyGenarateReports("Pharmacy Generate Reports"),
     PharmacySummaryViews("Pharmacy Summary Views"),
+    PrintOriginalPoBillFromReprint("Print Original PO Bill From Reprint"),
+    PrintOriginalGrnBillFromReprint("Print Original GRN Bill From Reprint"),
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Optician">
@@ -678,6 +694,8 @@ public enum Privileges {
     AdminStaff("Admin Staff"),
     AdminItems("Admin Items"),
     AdminPrices("Admin Prices"),
+    AdminPatientRelationships("Manage Patient Relationships"),
+    AdminInactivePatients("Manage Inactive Patients"),
     ManageCreditCompany("Manage Credit Company"),
     AdminFilterWithoutDepartment("Admin Filter Without Department"),
     //</editor-fold>
@@ -685,6 +703,21 @@ public enum Privileges {
     //<editor-fold defaultstate="collapsed" desc="Approval">
     BillCancelRequestApproval("Bill Cancel Request Approval"),
     ItemRefundRequestApproval("Item Refund Request Approval"),
+    DrawerAdjustmentRequestApproval("Drawer Adjustment Request Approval"),
+    DrawerAdjustmentDirect("Drawer Adjustment Direct (No Approval)"),
+    PettyCashCancellationApproval("Petty-Cash Cancellation Approval"),
+    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="Float Transfer">
+    IssueFundTransfer("Issue Float Transfer"),
+    ReceiveFundTransfer("Receive Float Transfer"),
+    DeclineFundTransfer("Decline Float Transfer"),
+    RequestFundTransfer("Request Float Transfer"),
+    ProcessFundTransferRequest("Process Float Transfer Request"),
+    CancelOwnFundTransfer("Cancel Own Float Transfer"),
+    CancelOthersFundTransfer("Cancel Others Float Transfer"),
+    ViewFundTransferReports("View Float Transfer Reports"),
+    ViewAllShiftShortageBills("View All Shift Shortage Bills"),
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Developers">
@@ -698,6 +731,7 @@ public enum Privileges {
     DeleteData("Delete Data"),
     BillCancel("Bill Cancel"),
     BillRefund("Bill Refund"), //</editor-fold>
+    AiChat("AI Chat")
     ;
 
     private final String label;
@@ -747,6 +781,7 @@ public enum Privileges {
             case OpdReactivate:
             case OpdBillItemSearch:
             case OpdBillSearchEdit:
+            case OpdEditPatientDetails:
             case OpdCollectingCentreBilling:
             case OpdCollectingCentreBillSearch:
             case OpdCollectingCentreBillingMenu:
@@ -936,8 +971,11 @@ public enum Privileges {
             case PharmacyAdjustmentExpiryDate:
             case PharmacyAdjustmentSearchAdjustmentBills:
             case PharmacyAdjustmentTransferAllStock:
+            case PharmacyAdjustmentCreateBatch:
             case PharmacyPhysicalCountApprove:
             case PharmacyStockTakeApprove:
+            case ArchiveOldStockHistory:
+            case ArchiveOldItemBatch:
 
             // Pharmacy Dealer Payments
             case PharmacyDealerDueSearch:
@@ -953,6 +991,8 @@ public enum Privileges {
             case PharmacyGrnSave:
             case PharmacyGrnFinalize:
             case PharmacyGrnApprove:
+            case PrintOriginalPoBillFromReprint:
+            case PrintOriginalGrnBillFromReprint:    
 
                 return "Pharmacy";
 
@@ -984,8 +1024,27 @@ public enum Privileges {
             // Approval Privileges
             case BillCancelRequestApproval:
             case ItemRefundRequestApproval:
+            case DrawerAdjustmentRequestApproval:
+            case DrawerAdjustmentDirect:
+            case PettyCashCancellationApproval:
                 return "Approval";
-            
+
+            case CashierHandoverStatusReport:
+            case SettleHandoverProofMissing:
+            case SettleNonCashPayments:
+                return "Finance";
+
+            case IssueFundTransfer:
+            case ReceiveFundTransfer:
+            case DeclineFundTransfer:
+            case RequestFundTransfer:
+            case ProcessFundTransferRequest:
+            case CancelOwnFundTransfer:
+            case CancelOthersFundTransfer:
+            case ViewFundTransferReports:
+            case ViewAllShiftShortageBills:
+                return "Float Transfer";
+
             case NursingWorkBench:
             case ShowDrugCharges:
                 return "Nursing Work Bench";
@@ -996,8 +1055,13 @@ public enum Privileges {
             case InwardAppointmentAdmission:
             case InwardAppointmentUpdate:
             case InwardAppointmentCancel:
+            case InpatientClinicalAssessment:
+            case InpatientClinicalDischarge:
                 return "Inward";
-                
+
+            case AdminInactivePatients:
+                return "Admin";
+
             default:
                 return this.toString();
         }

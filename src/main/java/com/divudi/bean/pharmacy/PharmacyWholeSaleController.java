@@ -766,6 +766,13 @@ public class PharmacyWholeSaleController implements Serializable, ControllerWith
             JsfUtil.addErrorMessage("Item?");
             return;
         }
+        Stock loadedStock = stockFacade.findWithItemBatch(stock.getId());
+        if (loadedStock == null) {
+            errorMessage = "Selected stock is no longer available.";
+            JsfUtil.addErrorMessage("Selected stock is no longer available.");
+            return;
+        }
+        stock = loadedStock;
         if (getQty() == null) {
             errorMessage = "Quentity?";
             JsfUtil.addErrorMessage("Quentity?");
@@ -1199,6 +1206,8 @@ public class PharmacyWholeSaleController implements Serializable, ControllerWith
                 tbi.setTmpQty(0);
                 getPharmaceuticalBillItemFacade().edit(tbi.getPharmaceuticalBillItem());
                 getBillItemFacade().edit(tbi);
+                JsfUtil.addErrorMessage(tbi.getItem().getName()
+                        + " - Could not deduct stock. Quantity set to zero. Another user may have already consumed this stock.");
             }
 
             getPreBill().getBillItems().add(tbi);
@@ -1276,6 +1285,29 @@ public class PharmacyWholeSaleController implements Serializable, ControllerWith
 
     }
 
+    private boolean checkAllBillItemStockAvailability() {
+        boolean hasIssue = false;
+        for (BillItem b : getPreBill().getBillItems()) {
+            if (b.getPharmaceuticalBillItem() == null || b.getPharmaceuticalBillItem().getStock() == null) {
+                continue;
+            }
+            Stock freshStock = getStockFacade().findWithoutCache(b.getPharmaceuticalBillItem().getStock().getId());
+            if (freshStock == null) {
+                JsfUtil.addErrorMessage(b.getItem().getName() + " - Stock record not found.");
+                hasIssue = true;
+                continue;
+            }
+            double requiredQty = Math.abs(b.getPharmaceuticalBillItem().getQtyInUnit()) + b.getPharmaceuticalBillItem().getFreeQtyInUnit();
+            if (freshStock.getStock() < requiredQty) {
+                JsfUtil.addErrorMessage(b.getItem().getName() + " - Insufficient stock. Available: "
+                        + freshStock.getStock().intValue() + ", Required: " + (int) requiredQty
+                        + ". Another user may have already sold this stock.");
+                hasIssue = true;
+            }
+        }
+        return hasIssue;
+    }
+
     public void settlePreBill() {
         editingQty = null;
 
@@ -1283,10 +1315,9 @@ public class PharmacyWholeSaleController implements Serializable, ControllerWith
             return;
         }
 
-//        if (checkAllBillItem()) {
-//            //   Before Settle Bill Current Bills Item Check Agian There is any otheruser change his qty
-//            return;
-//        }
+        if (checkAllBillItemStockAvailability()) {
+            return;
+        }
         if (errorCheckForPreBill()) {
             return;
         }
@@ -1296,12 +1327,9 @@ public class PharmacyWholeSaleController implements Serializable, ControllerWith
         Patient pt = savePatient();
 
         if (pt != null) {
-            if (configOptionApplicationController.getBooleanValueByKey("Enable blacklist patient management in the system", false)
-                    && configOptionApplicationController.getBooleanValueByKey("Enable blacklist patient management for Pharmacy from the system", false)) {
-                if (pt.isBlacklisted()) {
-                    JsfUtil.addErrorMessage("This patient is blacklisted from the system. Can't Bill.");
-                    return;
-                }
+            if (pt.isBlacklisted()) {
+                JsfUtil.addErrorMessage("This patient is blacklisted from the system. Can't Bill.");
+                return;
             }
         }
 
@@ -1423,12 +1451,9 @@ public class PharmacyWholeSaleController implements Serializable, ControllerWith
             }
         }
 
-        if (configOptionApplicationController.getBooleanValueByKey("Enable blacklist patient management in the system", false)
-                && configOptionApplicationController.getBooleanValueByKey("Enable blacklist patient management for Pharmacy from the system", false)) {
-            if (getPatient() != null && getPatient().isBlacklisted()) {
-                JsfUtil.addErrorMessage("This patient is blacklisted from the system. Can't Bill.");
-                return;
-            }
+        if (getPatient() != null && getPatient().isBlacklisted()) {
+            JsfUtil.addErrorMessage("This patient is blacklisted from the system. Can't Bill.");
+            return;
         }
 
         if (configOptionApplicationController.getBooleanValueByKey("Referring Doctor is required in Pharmacy Retail Sale", false)) {
@@ -1438,9 +1463,9 @@ public class PharmacyWholeSaleController implements Serializable, ControllerWith
             }
         }
 
-//        if (checkAllBillItem()) {
-//            return;
-//        }
+        if (checkAllBillItemStockAvailability()) {
+            return;
+        }
         if (errorCheckForSaleBill()) {
             return;
         }
@@ -1521,8 +1546,17 @@ public class PharmacyWholeSaleController implements Serializable, ControllerWith
             JsfUtil.addErrorMessage("Please Select Stock");
             return;
         }
+        Stock loadedStockForBill = stockFacade.findWithItemBatch(stock.getId());
+        if (loadedStockForBill == null) {
+            errorMessage = "Selected stock is no longer available.";
+            JsfUtil.addErrorMessage("Selected stock is no longer available.");
+            return;
+        }
+        stock = loadedStockForBill;
 
-        if (getStock().getItemBatch().getDateOfExpire().before(CommonFunctions.getCurrentDateTime())) {
+        if (stock.getItemBatch() != null
+                && stock.getItemBatch().getDateOfExpire() != null
+                && stock.getItemBatch().getDateOfExpire().before(CommonFunctions.getCurrentDateTime())) {
             JsfUtil.addErrorMessage("Please not select Expired Items");
             return;
         }

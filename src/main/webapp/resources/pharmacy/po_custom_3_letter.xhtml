@@ -114,14 +114,14 @@
             <!--            <p:spacer height="10"/>-->
 
             <div >
-                <table class="w-100 table table-borderless" style="border-collapse: collapse; border: 1px solid black;">
+                <table class="w-100" style="border-collapse: collapse; border: 1px solid black;">
                     <thead>
                         <tr>
                             <th style="width: 30px; text-align: right; padding-right: 5px; border: 1px solid black;">No</th>
                             <th style="text-align: left; min-width: 400px; border: 1px solid black;">Item Name</th>
                             <th style="width: 100px; text-align: right; padding-right: 5px; border: 1px solid black;">P. Rate</th>
                             <th style="width: 100px; text-align: right; padding-right: 5px; border: 1px solid black;">QTY</th>
-                            <th style="width: 100px; text-align: right; padding-right: 5px; border: 1px solid black;">Free QTY</th>
+<!--                            <th style="width: 100px; text-align: right; padding-right: 5px; border: 1px solid black;">Free QTY</th>-->
                             <th style="width: 100px; text-align: right; padding-right: 5px; border: 1px solid black;">Total</th>
                         </tr>
                     </thead>
@@ -148,11 +148,11 @@
                                             <f:convertNumber />
                                         </h:outputText>
                                     </td>
-                                    <td style="width: 100px; text-align: right; padding-right: 9px; border: 1px solid black;">
+<!--                                    <td style="width: 100px; text-align: right; padding-right: 9px; border: 1px solid black;">
                                         <h:outputText value="#{bip.billItemFinanceDetails.freeQuantity}">
                                             <f:convertNumber />
                                         </h:outputText>
-                                    </td>
+                                    </td>-->
 
                                     <td style="width: 100px; text-align: right; padding-right: 5px; border: 1px solid black; font-weight: bold;">
                                         <h:outputText value="#{bip.billItemFinanceDetails.lineGrossTotal}">
@@ -166,7 +166,7 @@
                     <tfoot>
                         <tr >
                             <th></th>
-                            <th colspan="4" >Total</th>
+                            <th colspan="3" >Total</th>
                             <th style="width: 100px; text-align: right; padding-right: 5px; border: 1px solid black; font-weight: bold;">
 
                                 <h:outputText value="#{cc.attrs.bill.netTotal}">
@@ -220,11 +220,12 @@
             <div>
                 <div>
                     <h:outputText value="Important Note :" style="display:block;color:#000;font-weight:600;font-size:1.25rem;"/>
-                    <ol type="1">
+                    <h:outputText value="Purchase order number must appear on all documents pertaining to this purchase." />
+<!--                    <ol type="1">
                         <li>Purchase order number must appear on all documents pertaining to this purchase.</li>
                         <li>If unable to supply above goods within above period, 10% penalty will be claimed on the invoice value.</li>
-                    </ol>
-                    <h:outputText value="Goods receiving time - Monday to Friday 9.00 A.M. to 3.30 P.M." style="display:block;color:#000;font-size: 20px; font-weight: 500;"/>
+                    </ol>-->
+                    <h:outputText value="Goods receiving time - Monday to Friday 9.00 A.M. to 3.30 P.M." style="display:block;color:#000;font-size: 18px; font-weight: 500;"/>
                 </div>
             </div>
 

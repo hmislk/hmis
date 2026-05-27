@@ -12,6 +12,7 @@ import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillNumberSuffix;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.dto.StockDTO;
 import com.divudi.ejb.BillNumberGenerator;
 
@@ -557,7 +558,11 @@ public class TransferIssueController implements Serializable {
 
     }
 
-    public void settleDirectIssue() {
+    public synchronized void settleDirectIssue() {
+        if (getIssuedBill() != null && getIssuedBill().getId() != null) {
+            JsfUtil.addErrorMessage("This bill has already been saved.");
+            return;
+        }
         if (getIssuedBill().getToDepartment() == null) {
             JsfUtil.addErrorMessage("Please Select Department to Issue");
             return;
@@ -726,7 +731,11 @@ public class TransferIssueController implements Serializable {
         getBillFacade().edit(bill);
     }
 
-    public void settle() {
+    public synchronized void settle() {
+        if (getIssuedBill() != null && getIssuedBill().getId() != null) {
+            JsfUtil.addErrorMessage("This bill has already been saved.");
+            return;
+        }
         if (getIssuedBill().getToDepartment() == null) {
             JsfUtil.addErrorMessage("Please Select Department to Issue");
             return;
@@ -1518,6 +1527,19 @@ public class TransferIssueController implements Serializable {
         billItem.getBillItemFinanceDetails().setValueAtPurchaseRate(purchaseRate.multiply(billItem.getBillItemFinanceDetails().getQuantity()));
 
         billItem.setSearialNo(getBillItems().size() + 1);
+
+        if (billItem.getItem() != null) {
+            DepartmentType itemDeptType = billItem.getItem().getDepartmentType();
+            if (getIssuedBill().getDepartmentType() == null) {
+                getIssuedBill().setDepartmentType(itemDeptType);
+            } else if (itemDeptType != null && !itemDeptType.equals(getIssuedBill().getDepartmentType())) {
+                JsfUtil.addErrorMessage("Cannot add items from different department types. "
+                        + "Bill is set for " + getIssuedBill().getDepartmentType().getLabel()
+                        + " items, but you are trying to add a " + itemDeptType.getLabel() + " item.");
+                return;
+            }
+        }
+
         getBillItems().add(billItem);
 
         qty = null;

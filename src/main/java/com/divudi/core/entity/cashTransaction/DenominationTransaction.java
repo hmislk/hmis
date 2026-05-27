@@ -25,7 +25,7 @@ public class DenominationTransaction implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @ManyToOne
     private Denomination denomination;
@@ -53,6 +53,9 @@ public class DenominationTransaction implements Serializable {
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date retiredAt;
     private String retireComments;
+
+    @javax.persistence.Transient
+    private boolean selected;
 
     private boolean cancelled;
     @ManyToOne
@@ -213,6 +216,14 @@ public class DenominationTransaction implements Serializable {
 
     public void setCancelledAt(Date cancelledAt) {
         this.cancelledAt = cancelledAt;
+    }
+
+    public boolean isSelected() {
+        return selected;
+    }
+
+    public void setSelected(boolean selected) {
+        this.selected = selected;
     }
 
     public boolean isCancelled() {

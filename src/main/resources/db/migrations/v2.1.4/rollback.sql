@@ -63,8 +63,22 @@ SELECT
          ELSE 'USER_STOCK table not found (uppercase)'
     END AS uppercase_drop_status;
 
--- Drop index if it exists (MySQL 5.7+ syntax)
-DROP INDEX IF EXISTS idx_user_stock_fast_lookup ON USER_STOCK;
+-- Check if index exists on uppercase table specifically
+SET @index_exists_upper = (
+    SELECT COUNT(*)
+    FROM INFORMATION_SCHEMA.STATISTICS
+    WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = 'USER_STOCK'
+      AND INDEX_NAME = 'idx_user_stock_fast_lookup'
+);
+
+-- Conditionally drop index using prepared statement (compatible with MySQL 5.x+)
+SET @sql = IF(@index_exists_upper > 0,
+              'ALTER TABLE USER_STOCK DROP INDEX idx_user_stock_fast_lookup',
+              'SELECT ''Index idx_user_stock_fast_lookup does not exist on USER_STOCK - skipping'' AS skip_message');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
 
 SELECT 'Index dropped from USER_STOCK (if existed)' AS uppercase_result;
 
@@ -84,8 +98,22 @@ SELECT
          ELSE 'userstock table not found (lowercase)'
     END AS lowercase_drop_status;
 
--- Drop index if it exists
-DROP INDEX IF EXISTS idx_user_stock_fast_lookup ON userstock;
+-- Check if index exists on lowercase table specifically
+SET @index_exists_lower = (
+    SELECT COUNT(*)
+    FROM INFORMATION_SCHEMA.STATISTICS
+    WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = 'userstock'
+      AND INDEX_NAME = 'idx_user_stock_fast_lookup'
+);
+
+-- Conditionally drop index using prepared statement (compatible with MySQL 5.x+)
+SET @sql = IF(@index_exists_lower > 0,
+              'ALTER TABLE userstock DROP INDEX idx_user_stock_fast_lookup',
+              'SELECT ''Index idx_user_stock_fast_lookup does not exist on userstock - skipping'' AS skip_message');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
 
 SELECT 'Index dropped from userstock (if existed)' AS lowercase_result;
 
@@ -124,31 +152,112 @@ ORDER BY INDEX_NAME;
 
 SELECT 'Step 2: Dropping USERSTOCKCONTAINER indexes...' AS progress;
 
--- Drop composite index from uppercase table
+-- Drop composite index idx_userstockcontainer_retired_created from uppercase table
 SELECT 'Dropping idx_userstockcontainer_retired_created from USERSTOCKCONTAINER...' AS status;
-DROP INDEX IF EXISTS idx_userstockcontainer_retired_created ON USERSTOCKCONTAINER;
+
+SET @idx_usc_rc_upper = (
+    SELECT COUNT(*) FROM INFORMATION_SCHEMA.STATISTICS
+    WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = 'USERSTOCKCONTAINER'
+      AND INDEX_NAME = 'idx_userstockcontainer_retired_created'
+);
+
+SET @sql = IF(@idx_usc_rc_upper > 0,
+              'ALTER TABLE USERSTOCKCONTAINER DROP INDEX idx_userstockcontainer_retired_created',
+              'SELECT ''Index idx_userstockcontainer_retired_created does not exist on USERSTOCKCONTAINER'' AS skip_message');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
 SELECT 'Composite index dropped from USERSTOCKCONTAINER (if existed)' AS uppercase_usc_composite_result;
 
--- Drop composite index from lowercase table
-DROP INDEX IF EXISTS idx_userstockcontainer_retired_created ON userstockcontainer;
+-- Drop composite index idx_userstockcontainer_retired_created from lowercase table
+SET @idx_usc_rc_lower = (
+    SELECT COUNT(*) FROM INFORMATION_SCHEMA.STATISTICS
+    WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = 'userstockcontainer'
+      AND INDEX_NAME = 'idx_userstockcontainer_retired_created'
+);
+
+SET @sql = IF(@idx_usc_rc_lower > 0,
+              'ALTER TABLE userstockcontainer DROP INDEX idx_userstockcontainer_retired_created',
+              'SELECT ''Index idx_userstockcontainer_retired_created does not exist on userstockcontainer'' AS skip_message');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
 SELECT 'Composite index dropped from userstockcontainer (if existed)' AS lowercase_usc_composite_result;
 
--- Drop single column index from uppercase table
+-- Drop single column index idx_userstockcontainer_retired from uppercase table
 SELECT 'Dropping idx_userstockcontainer_retired from USERSTOCKCONTAINER...' AS status;
-DROP INDEX IF EXISTS idx_userstockcontainer_retired ON USERSTOCKCONTAINER;
+
+SET @idx_usc_r_upper = (
+    SELECT COUNT(*) FROM INFORMATION_SCHEMA.STATISTICS
+    WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = 'USERSTOCKCONTAINER'
+      AND INDEX_NAME = 'idx_userstockcontainer_retired'
+);
+
+SET @sql = IF(@idx_usc_r_upper > 0,
+              'ALTER TABLE USERSTOCKCONTAINER DROP INDEX idx_userstockcontainer_retired',
+              'SELECT ''Index idx_userstockcontainer_retired does not exist on USERSTOCKCONTAINER'' AS skip_message');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
 SELECT 'RETIRED index dropped from USERSTOCKCONTAINER (if existed)' AS uppercase_usc_result;
 
--- Drop single column index from lowercase table
-DROP INDEX IF EXISTS idx_userstockcontainer_retired ON userstockcontainer;
+-- Drop single column index idx_userstockcontainer_retired from lowercase table
+SET @idx_usc_r_lower = (
+    SELECT COUNT(*) FROM INFORMATION_SCHEMA.STATISTICS
+    WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = 'userstockcontainer'
+      AND INDEX_NAME = 'idx_userstockcontainer_retired'
+);
+
+SET @sql = IF(@idx_usc_r_lower > 0,
+              'ALTER TABLE userstockcontainer DROP INDEX idx_userstockcontainer_retired',
+              'SELECT ''Index idx_userstockcontainer_retired does not exist on userstockcontainer'' AS skip_message');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
 SELECT 'RETIRED index dropped from userstockcontainer (if existed)' AS lowercase_usc_result;
 
--- Drop creater-retired composite index from uppercase table
+-- Drop creater-retired composite index idx_userstockcontainer_creater_retired from uppercase table
 SELECT 'Dropping idx_userstockcontainer_creater_retired from USERSTOCKCONTAINER...' AS status;
-DROP INDEX IF EXISTS idx_userstockcontainer_creater_retired ON USERSTOCKCONTAINER;
+
+SET @idx_usc_cr_upper = (
+    SELECT COUNT(*) FROM INFORMATION_SCHEMA.STATISTICS
+    WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = 'USERSTOCKCONTAINER'
+      AND INDEX_NAME = 'idx_userstockcontainer_creater_retired'
+);
+
+SET @sql = IF(@idx_usc_cr_upper > 0,
+              'ALTER TABLE USERSTOCKCONTAINER DROP INDEX idx_userstockcontainer_creater_retired',
+              'SELECT ''Index idx_userstockcontainer_creater_retired does not exist on USERSTOCKCONTAINER'' AS skip_message');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
 SELECT 'CREATER_RETIRED index dropped from USERSTOCKCONTAINER (if existed)' AS uppercase_usc_creater_retired_result;
 
--- Drop creater-retired composite index from lowercase table
-DROP INDEX IF EXISTS idx_userstockcontainer_creater_retired ON userstockcontainer;
+-- Drop creater-retired composite index idx_userstockcontainer_creater_retired from lowercase table
+SET @idx_usc_cr_lower = (
+    SELECT COUNT(*) FROM INFORMATION_SCHEMA.STATISTICS
+    WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = 'userstockcontainer'
+      AND INDEX_NAME = 'idx_userstockcontainer_creater_retired'
+);
+
+SET @sql = IF(@idx_usc_cr_lower > 0,
+              'ALTER TABLE userstockcontainer DROP INDEX idx_userstockcontainer_creater_retired',
+              'SELECT ''Index idx_userstockcontainer_creater_retired does not exist on userstockcontainer'' AS skip_message');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
 SELECT 'CREATER_RETIRED index dropped from userstockcontainer (if existed)' AS lowercase_usc_creater_retired_result;
 
 -- ==========================================
@@ -157,22 +266,76 @@ SELECT 'CREATER_RETIRED index dropped from userstockcontainer (if existed)' AS l
 
 SELECT 'Step 3: Dropping PRICEMATRIX indexes...' AS progress;
 
--- Drop payment+department+category composite index from uppercase table
+-- Drop payment+department+category composite index idx_pricematrix_payment_dept_category from uppercase table
 SELECT 'Dropping idx_pricematrix_payment_dept_category from PRICEMATRIX...' AS status;
-DROP INDEX IF EXISTS idx_pricematrix_payment_dept_category ON PRICEMATRIX;
+
+SET @idx_pm_pdc_upper = (
+    SELECT COUNT(*) FROM INFORMATION_SCHEMA.STATISTICS
+    WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = 'PRICEMATRIX'
+      AND INDEX_NAME = 'idx_pricematrix_payment_dept_category'
+);
+
+SET @sql = IF(@idx_pm_pdc_upper > 0,
+              'ALTER TABLE PRICEMATRIX DROP INDEX idx_pricematrix_payment_dept_category',
+              'SELECT ''Index idx_pricematrix_payment_dept_category does not exist on PRICEMATRIX'' AS skip_message');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
 SELECT 'Payment+Dept+Category index dropped from PRICEMATRIX (if existed)' AS uppercase_pm_pdc_result;
 
--- Drop payment+department+category composite index from lowercase table
-DROP INDEX IF EXISTS idx_pricematrix_payment_dept_category ON pricematrix;
+-- Drop payment+department+category composite index idx_pricematrix_payment_dept_category from lowercase table
+SET @idx_pm_pdc_lower = (
+    SELECT COUNT(*) FROM INFORMATION_SCHEMA.STATISTICS
+    WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = 'pricematrix'
+      AND INDEX_NAME = 'idx_pricematrix_payment_dept_category'
+);
+
+SET @sql = IF(@idx_pm_pdc_lower > 0,
+              'ALTER TABLE pricematrix DROP INDEX idx_pricematrix_payment_dept_category',
+              'SELECT ''Index idx_pricematrix_payment_dept_category does not exist on pricematrix'' AS skip_message');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
 SELECT 'Payment+Dept+Category index dropped from pricematrix (if existed)' AS lowercase_pm_pdc_result;
 
--- Drop payment+category composite index from uppercase table
+-- Drop payment+category composite index idx_pricematrix_payment_category from uppercase table
 SELECT 'Dropping idx_pricematrix_payment_category from PRICEMATRIX...' AS status;
-DROP INDEX IF EXISTS idx_pricematrix_payment_category ON PRICEMATRIX;
+
+SET @idx_pm_pc_upper = (
+    SELECT COUNT(*) FROM INFORMATION_SCHEMA.STATISTICS
+    WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = 'PRICEMATRIX'
+      AND INDEX_NAME = 'idx_pricematrix_payment_category'
+);
+
+SET @sql = IF(@idx_pm_pc_upper > 0,
+              'ALTER TABLE PRICEMATRIX DROP INDEX idx_pricematrix_payment_category',
+              'SELECT ''Index idx_pricematrix_payment_category does not exist on PRICEMATRIX'' AS skip_message');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
 SELECT 'Payment+Category index dropped from PRICEMATRIX (if existed)' AS uppercase_pm_pc_result;
 
--- Drop payment+category composite index from lowercase table
-DROP INDEX IF EXISTS idx_pricematrix_payment_category ON pricematrix;
+-- Drop payment+category composite index idx_pricematrix_payment_category from lowercase table
+SET @idx_pm_pc_lower = (
+    SELECT COUNT(*) FROM INFORMATION_SCHEMA.STATISTICS
+    WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = 'pricematrix'
+      AND INDEX_NAME = 'idx_pricematrix_payment_category'
+);
+
+SET @sql = IF(@idx_pm_pc_lower > 0,
+              'ALTER TABLE pricematrix DROP INDEX idx_pricematrix_payment_category',
+              'SELECT ''Index idx_pricematrix_payment_category does not exist on pricematrix'' AS skip_message');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
 SELECT 'Payment+Category index dropped from pricematrix (if existed)' AS lowercase_pm_pc_result;
 
 -- ==========================================

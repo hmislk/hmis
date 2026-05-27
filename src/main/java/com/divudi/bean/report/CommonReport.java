@@ -294,6 +294,18 @@ public class CommonReport implements Serializable {
         return "/pharmacy/pharmacy_reprint_grn_return_bill?faces-redirect=true";
     }
 
+    public String navigateToViewGrnBillFromGRNBillItemReport(Long billId) {
+        previewBill = null;
+        previewBill = billFacade.find(billId);
+        return "/pharmacy/pharmacy_grn_bill?faces-redirect=true";
+    }
+
+    public String navigateToViewPOBillFromGRNBillItemReport(Long billId) {
+        previewBill = null;
+        previewBill = billFacade.find(billId);
+        return "/pharmacy/pharmacy_reprint_po_bill?faces-redirect=true";
+    }
+
     public String navigateBackToGRNSummary() {
 
         return "/pharmacy/pharmacy_report_grn_detail.xhtml?faces-redirect=true";
@@ -5047,7 +5059,7 @@ public class CommonReport implements Serializable {
             getGrnCancelled().setSaleCredit(calValueSaleValue(getGrnCancelled().getBills(), PaymentMethod.Credit));
 
 // GRN Refunded Bills
-            getGrnReturn().setBills(getBills(new BilledBill(), BillType.PharmacyGrnReturn, getDepartment()));
+            getGrnReturn().setBills(getBills(new RefundBill(), BillType.PharmacyGrnReturn, getDepartment()));
             getGrnReturn().setCash(calValueNetTotal(getGrnReturn().getBills(), PaymentMethod.Cash));
             getGrnReturn().setCredit(calValueNetTotal(getGrnReturn().getBills(), PaymentMethod.Credit));
             getGrnReturn().setSaleCash(calValueSaleValue(getGrnReturn().getBills(), PaymentMethod.Cash));
@@ -5069,6 +5081,40 @@ public class CommonReport implements Serializable {
             auditEvent.setEventStatus("Completed");
             auditEventApplicationController.logAuditEvent(auditEvent);
         }, PharmacyReports.GRN_SUMMARY, sessionController.getLoggedUser());
+    }
+
+    public void createGrnDetailTablewithouttresing() {
+        recreteModal();
+
+        grnBilled = new BillsTotals();
+        grnCancelled = new BillsTotals();
+        grnReturn = new BillsTotals();
+        grnReturnCancel = new BillsTotals();
+
+        if (getDepartment() == null) {
+            return;
+        }
+
+        //GRN Billed Bills
+        getGrnBilled().setBills(getBills(new BilledBill(), BillType.PharmacyReturnWithoutTraising, getDepartment()));
+        getGrnBilled().setCash(calValueNetTotal(new BilledBill(), BillType.PharmacyReturnWithoutTraising, PaymentMethod.Cash, getDepartment()));
+        getGrnBilled().setCredit(calValueNetTotal(new BilledBill(), BillType.PharmacyReturnWithoutTraising, PaymentMethod.Credit, getDepartment()));
+
+//        //GRN Cancelled Bill
+//        getGrnCancelled().setBills(getBills(new CancelledBill(), BillType.PharmacyReturnWithoutTraising, getDepartment()));
+//        getGrnCancelled().setCash(calValueNetTotal(new CancelledBill(), BillType.PharmacyReturnWithoutTraising, PaymentMethod.Cash, getDepartment()));
+//        getGrnCancelled().setCredit(calValueNetTotal(new CancelledBill(), BillType.PharmacyReturnWithoutTraising, PaymentMethod.Credit, getDepartment()));
+//
+//        //GRN Refunded Bill
+//        getGrnReturn().setBills(getBills(new BilledBill(), BillType.PharmacyGrnReturn, getDepartment()));
+//        getGrnReturn().setCash(calValueNetTotal(new BilledBill(), BillType.PharmacyGrnReturn, PaymentMethod.Cash, getDepartment()));
+//        getGrnReturn().setCredit(calValueNetTotal(new BilledBill(), BillType.PharmacyGrnReturn, PaymentMethod.Credit, getDepartment()));
+//
+//        //GRN Refunded Bill Cancel
+//        getGrnReturnCancel().setBills(getBills(new CancelledBill(), BillType.PharmacyGrnReturn, getDepartment()));
+//        getGrnReturnCancel().setCash(calValueNetTotal(new CancelledBill(), BillType.PharmacyGrnReturn, PaymentMethod.Cash, getDepartment()));
+//        getGrnReturnCancel().setCredit(calValueNetTotal(new CancelledBill(), BillType.PharmacyGrnReturn, PaymentMethod.Credit, getDepartment()));
+
     }
 
     public void createGrnReturnDetailTable() {

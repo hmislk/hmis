@@ -175,7 +175,7 @@
                                         </p:column>
 
                                         <p:column headerText="Patient" style="padding:8px;">                                  
-                                            <h:outputLabel value="#{b.patientName}"/>                                    
+                                            <h:outputLabel value="#{b.patientNameWithTitle}"/>                                    
                                         </p:column>
 
                                         <p:column headerText="Hos. Fee" width="12em;" class="text-end" style="padding:8px;">
@@ -210,7 +210,7 @@
                                                 ajax="false"
                                                 value="Settle Payment" 
                                                 style="float: right;"
-                                                icon="fas fa-plus"
+                                                icon="fas fa-check"
                                                 action="#{collectingCentrePaymentController.settlePaymentBill()}"
                                                 class="ui-button-success" >
                                             </p:commandButton>
@@ -223,6 +223,10 @@
 
                                                     <h:outputLabel value="Before Transaction Balance in Collcting Centre" ></h:outputLabel>
                                                     <h:outputLabel value="#{collectingCentrePaymentController.startingBalanseInCC}" >
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputLabel>
+                                                    <h:outputLabel value="Amount paid to the Collection Centre during this period." ></h:outputLabel>
+                                                    <h:outputLabel value="#{collectingCentrePaymentController.periodPaidAmount}" >
                                                         <f:convertNumber pattern="#,##0.00" />
                                                     </h:outputLabel>
                                                     <h:outputLabel value="After Transaction Balance in Collcting Centre" ></h:outputLabel>

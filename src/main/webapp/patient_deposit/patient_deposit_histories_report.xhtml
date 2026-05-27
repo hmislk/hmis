@@ -1,0 +1,289 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/patient_deposit/index.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common">
+
+    <ui:define name="subcontent">
+        <h:form id="frmReport">
+            <p:panel header="Patient Deposit Histories Report" styleClass="w-100">
+
+                <!-- Filter Section -->
+                <h:panelGroup layout="block" styleClass="container-fluid mb-3">
+                    <h:panelGroup layout="block" styleClass="row">
+                        <!-- Date Filters -->
+                        <h:panelGroup layout="block" styleClass="col-lg-3 col-md-6 col-sm-12 mb-2">
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputLabel value="From Date" styleClass="mb-1 d-block"/>
+                                <p:datePicker id="fromDate"
+                                              value="#{patientDepositHistoryReportController.fromDate}"
+                                              showTime="true"
+                                              pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                              styleClass="w-100"/>
+                            </h:panelGroup>
+                        </h:panelGroup>
+
+                        <h:panelGroup layout="block" styleClass="col-lg-3 col-md-6 col-sm-12 mb-2">
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputLabel value="To Date" styleClass="mb-1 d-block"/>
+                                <p:datePicker id="toDate"
+                                              value="#{patientDepositHistoryReportController.toDate}"
+                                              showTime="true"
+                                              pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                              styleClass="w-100"/>
+                            </h:panelGroup>
+                        </h:panelGroup>
+                    </h:panelGroup>
+
+                    <h:panelGroup layout="block" styleClass="row">
+                        <!-- Institution Filter -->
+                        <h:panelGroup layout="block" styleClass="col-lg-4 col-md-6 col-sm-12 mb-2">
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputLabel value="Institution" styleClass="mb-1 d-block"/>
+                                <p:selectOneMenu id="cmbIns"
+                                                 value="#{patientDepositHistoryReportController.institution}"
+                                                 filter="true"
+                                                 filterMatchMode="contains"
+                                                 styleClass="w-100">
+                                    <f:selectItem itemLabel="All Institutions" itemValue="#{null}"/>
+                                    <f:selectItems value="#{institutionController.companies}"
+                                                   var="ins"
+                                                   itemLabel="#{ins.name}"
+                                                   itemValue="#{ins}"/>
+                                    <p:ajax process="cmbIns" update="cmbDept"/>
+                                </p:selectOneMenu>
+                            </h:panelGroup>
+                        </h:panelGroup>
+
+                        <!-- Site Filter -->
+                        <h:panelGroup layout="block" styleClass="col-lg-4 col-md-6 col-sm-12 mb-2">
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputLabel value="Site" styleClass="mb-1 d-block"/>
+                                <p:selectOneMenu id="siteMenu"
+                                                 value="#{patientDepositHistoryReportController.site}"
+                                                 filter="true"
+                                                 filterMatchMode="contains"
+                                                 styleClass="w-100">
+                                    <f:selectItem itemLabel="All Sites" itemValue="#{null}"/>
+                                    <f:selectItems value="#{institutionController.sites}"
+                                                   var="s"
+                                                   itemLabel="#{s.name}"
+                                                   itemValue="#{s}"/>
+                                    <p:ajax process="siteMenu" update="cmbDept"/>
+                                </p:selectOneMenu>
+                            </h:panelGroup>
+                        </h:panelGroup>
+
+                        <!-- Department Filter -->
+                        <h:panelGroup layout="block" styleClass="col-lg-4 col-md-6 col-sm-12 mb-2">
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputLabel value="Department" styleClass="mb-1 d-block"/>
+                                <h:panelGroup id="cmbDept">
+                                    <p:selectOneMenu rendered="#{patientDepositHistoryReportController.institution eq null and patientDepositHistoryReportController.site eq null}"
+                                                     styleClass="w-100"
+                                                     value="#{patientDepositHistoryReportController.department}"
+                                                     filter="true"
+                                                     filterMatchMode="contains">
+                                        <f:selectItem itemLabel="All Departments" itemValue="#{null}"/>
+                                        <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite()}"
+                                                       var="d"
+                                                       itemLabel="#{d.name}"
+                                                       itemValue="#{d}"/>
+                                    </p:selectOneMenu>
+                                    <p:selectOneMenu rendered="#{patientDepositHistoryReportController.institution eq null and patientDepositHistoryReportController.site ne null}"
+                                                     styleClass="w-100"
+                                                     value="#{patientDepositHistoryReportController.department}"
+                                                     filter="true"
+                                                     filterMatchMode="contains">
+                                        <f:selectItem itemLabel="All Departments" itemValue="#{null}"/>
+                                        <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite(patientDepositHistoryReportController.site)}"
+                                                       var="d"
+                                                       itemLabel="#{d.name}"
+                                                       itemValue="#{d}"/>
+                                    </p:selectOneMenu>
+                                    <p:selectOneMenu rendered="#{patientDepositHistoryReportController.institution ne null and patientDepositHistoryReportController.site eq null}"
+                                                     styleClass="w-100"
+                                                     value="#{patientDepositHistoryReportController.department}"
+                                                     filter="true"
+                                                     filterMatchMode="contains">
+                                        <f:selectItem itemLabel="All Departments" itemValue="#{null}"/>
+                                        <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(patientDepositHistoryReportController.institution)}"
+                                                       var="d"
+                                                       itemLabel="#{d.name}"
+                                                       itemValue="#{d}"/>
+                                    </p:selectOneMenu>
+                                    <p:selectOneMenu rendered="#{patientDepositHistoryReportController.institution ne null and patientDepositHistoryReportController.site ne null}"
+                                                     styleClass="w-100"
+                                                     value="#{patientDepositHistoryReportController.department}"
+                                                     filter="true"
+                                                     filterMatchMode="contains">
+                                        <f:selectItem itemLabel="All Departments" itemValue="#{null}"/>
+                                        <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite(patientDepositHistoryReportController.institution, patientDepositHistoryReportController.site)}"
+                                                       var="d"
+                                                       itemLabel="#{d.name}"
+                                                       itemValue="#{d}"/>
+                                    </p:selectOneMenu>
+                                </h:panelGroup>
+                            </h:panelGroup>
+                        </h:panelGroup>
+                    </h:panelGroup>
+
+                    <!-- Action Buttons -->
+                    <h:panelGroup layout="block" styleClass="row mt-3">
+                        <h:panelGroup layout="block" styleClass="col-12">
+                            <p:commandButton value="Process"
+                                             icon="fas fa-cogs"
+                                             action="#{patientDepositHistoryReportController.generateReport()}"
+                                             update="tblResults"
+                                             styleClass="ui-button-warning mx-1"/>
+                            <p:commandButton value="Clear"
+                                             icon="fas fa-eraser"
+                                             action="#{patientDepositHistoryReportController.clearReport()}"
+                                             update="@form"
+                                             styleClass="ui-button-secondary mx-1"/>
+                            <p:commandButton value="Print"
+                                             icon="fas fa-print"
+                                             styleClass="ui-button-info mx-1">
+                                <p:printer target="tblResults"/>
+                            </p:commandButton>
+                            <p:commandButton value="Excel"
+                                             icon="fas fa-file-excel"
+                                             ajax="false"
+                                             styleClass="ui-button-success">
+                                <p:dataExporter type="xlsx"
+                                                target="tblResults"
+                                                fileName="Patient_Deposit_Histories_#{sessionController.institution.name}"/>
+                            </p:commandButton>
+                        </h:panelGroup>
+                    </h:panelGroup>
+                </h:panelGroup>
+            </p:panel>
+
+            <!-- Results DataTable -->
+            <p:dataTable id="tblResults"
+                         value="#{patientDepositHistoryReportController.patientDepositHistoryDtos}"
+                         var="dto"
+                         paginator="true"
+                         rows="20"
+                         paginatorPosition="bottom"
+                         paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                         rowsPerPageTemplate="10,20,50,100"
+                         currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords} entries"
+                         sortMode="multiple"
+                         reflow="true"
+                         emptyMessage="No records found. Please adjust filters and click Process."
+                         styleClass="mt-3">
+
+                <f:facet name="header">
+                    <h:panelGroup layout="block">
+                        <h:outputText value="Patient Deposit Histories Report"/>
+                        <br/>
+                        <h:outputText value="From: "/>
+                        <h:outputText value="#{patientDepositHistoryReportController.fromDate}">
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                        </h:outputText>
+                        <h:outputText value=" To: "/>
+                        <h:outputText value="#{patientDepositHistoryReportController.toDate}">
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                        </h:outputText>
+                    </h:panelGroup>
+                </f:facet>
+
+                <p:column headerText="Date/Time" sortBy="#{dto.createdAt}">
+                    <h:outputText value="#{dto.createdAt}">
+                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                    </h:outputText>
+                </p:column>
+
+                <p:column headerText="MRN" sortBy="#{dto.patientPhn}" filterBy="#{dto.patientPhn}" filterMatchMode="contains">
+                    <h:outputText value="#{dto.patientPhn}"/>
+                </p:column>
+
+                <p:column headerText="Patient Name" sortBy="#{dto.patientName}" filterBy="#{dto.patientName}" filterMatchMode="contains">
+                    <h:outputText value="#{dto.patientName}"/>
+                </p:column>
+
+                <p:column headerText="Bill No" sortBy="#{dto.billNumber}" filterBy="#{dto.billNumber}" filterMatchMode="contains">
+                    <h:outputText value="#{dto.billNumber}"/>
+                </p:column>
+
+                <p:column headerText="Institution" sortBy="#{dto.institutionName}" filterBy="#{dto.institutionName}" filterMatchMode="contains">
+                    <h:outputText value="#{dto.institutionName}"/>
+                </p:column>
+
+                <p:column headerText="Site" sortBy="#{dto.siteName}" filterBy="#{dto.siteName}" filterMatchMode="contains">
+                    <h:outputText value="#{dto.siteName}"/>
+                </p:column>
+
+                <p:column headerText="Department" sortBy="#{dto.departmentName}" filterBy="#{dto.departmentName}" filterMatchMode="contains">
+                    <h:outputText value="#{dto.departmentName}"/>
+                </p:column>
+
+                <p:column headerText="Status">
+                    <p:badge value="Cancelled" severity="danger" rendered="#{dto.cancelled}"/>
+                    <p:badge value="Refunded" severity="warning" rendered="#{dto.refunded and not dto.cancelled}"/>
+                </p:column>
+
+                <p:column headerText="Description">
+                    <h:outputText value="#{dto.billTypeAtomic.label}"/>
+                </p:column>
+
+                <p:column headerText="Before Balance" sortBy="#{dto.balanceBeforeTransaction}">
+                    <h:outputText value="#{dto.balanceBeforeTransaction}">
+                        <f:convertNumber pattern="#,##0.00"/>
+                    </h:outputText>
+                </p:column>
+
+                <p:column headerText="Credit" sortBy="#{dto.transactionValue}">
+                    <h:outputText value="#{dto.transactionValue}" rendered="#{dto.transactionValue gt 0}" style="color: green;">
+                        <f:convertNumber pattern="#,##0.00"/>
+                    </h:outputText>
+                    <f:facet name="footer">
+                        <h:outputText value="#{patientDepositHistoryReportController.totalCredit}" style="color: green; font-weight: bold;">
+                            <f:convertNumber pattern="#,##0.00"/>
+                        </h:outputText>
+                    </f:facet>
+                </p:column>
+
+                <p:column headerText="Debit" sortBy="#{dto.transactionValue}">
+                    <h:outputText value="#{dto.transactionValue}" rendered="#{dto.transactionValue lt 0}" style="color: red;">
+                        <f:convertNumber pattern="#,##0.00"/>
+                    </h:outputText>
+                    <f:facet name="footer">
+                        <h:outputText value="#{patientDepositHistoryReportController.totalDebit}" style="color: red; font-weight: bold;">
+                            <f:convertNumber pattern="#,##0.00"/>
+                        </h:outputText>
+                    </f:facet>
+                </p:column>
+
+                <p:column headerText="After Balance" sortBy="#{dto.balanceAfterTransaction}">
+                    <h:outputText value="#{dto.balanceAfterTransaction}">
+                        <f:convertNumber pattern="#,##0.00"/>
+                    </h:outputText>
+                </p:column>
+
+                <p:column headerText="#{patientDepositHistoryReportController.contextualBalanceLabel} (Patient)">
+                    <h:outputText value="#{patientDepositHistoryReportController.getContextualPatientBalance(dto)}">
+                        <f:convertNumber pattern="#,##0.00"/>
+                    </h:outputText>
+                </p:column>
+
+                <p:column headerText="#{patientDepositHistoryReportController.contextualBalanceLabel} (All)">
+                    <h:outputText value="#{patientDepositHistoryReportController.getContextualAllPatientsBalance(dto)}">
+                        <f:convertNumber pattern="#,##0.00"/>
+                    </h:outputText>
+                </p:column>
+
+                <p:column headerText="User" sortBy="#{dto.createrName}" filterBy="#{dto.createrName}" filterMatchMode="contains">
+                    <h:outputText value="#{dto.createrName}"/>
+                </p:column>
+
+            </p:dataTable>
+        </h:form>
+    </ui:define>
+
+</ui:composition>

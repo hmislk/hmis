@@ -14,6 +14,7 @@ import com.divudi.core.data.reports.PharmacyReports;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.dto.PharmacyItemPurchaseDTO;
 import com.divudi.core.data.dataStructure.StockReportRecord;
 import com.divudi.core.data.inward.SurgeryBillType;
@@ -57,6 +58,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
+import javax.annotation.PostConstruct;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.context.FacesContext;
 import javax.inject.Inject;
@@ -64,6 +66,12 @@ import javax.inject.Named;
 import javax.persistence.TemporalType;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
+
+import com.divudi.bean.common.PageMetadataRegistry;
+import com.divudi.core.data.OptionScope;
+import com.divudi.core.data.admin.ConfigOptionInfo;
+import com.divudi.core.data.admin.PageMetadata;
+import com.divudi.core.data.admin.PrivilegeInfo;
 
 import org.joda.time.Days;
 import org.joda.time.LocalDate;
@@ -101,6 +109,8 @@ public class ReportsTransfer implements Serializable {
     private AuditEventApplicationController auditEventApplicationController;
     @Inject
     private SessionController sessionController;
+    @Inject
+    private PageMetadataRegistry pageMetadataRegistry;
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
     private Department fromDepartment;
@@ -111,6 +121,9 @@ public class ReportsTransfer implements Serializable {
     private BillType[] billTypes;
 
     private Institution institution;
+    private Institution site;
+    private String dateBasis = "createdAt";
+    private PaymentMethod paymentMethod;
     private List<Stock> stocks;
     private List<ItemCount> itemCounts;
     private List<ItemCountWithOutMargin> itemCountWithOutMargins;
@@ -164,12 +177,316 @@ public class ReportsTransfer implements Serializable {
     private double totalBHTIssueQty;
     private double totalIssueValue;
     private double totalBHTIssueValue;
-    private int pharmacyDisbursementReportIndex = 9;
+    private int pharmacyDisbursementReportIndex = 8;
     private AdmissionType admissionType;
     private Bill previewBill;
 
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Constructions">
+
+    @PostConstruct
+    public void init() {
+        registerPageMetadata();
+    }
+
+    /**
+     * Register page metadata for all pharmacy transfer report pages
+     */
+    private void registerPageMetadata() {
+        if (pageMetadataRegistry == null) {
+            return;
+        }
+
+        // Page 1: Transfer Issue Bill Item (Detailed)
+        registerTransferIssueBillItemPage();
+
+        // Page 2: Transfer Issue Bill DTO
+        registerTransferIssueBillDtoPage();
+
+        // Page 3: Transfer Issue Bill Summary
+        registerTransferIssueBillSummeryPage();
+
+        // Page 4: Transfer Receive Bill Item (Detailed)
+        registerTransferReceiveBillItemPage();
+
+        // Page 5: Transfer Receive Bill
+        registerTransferReceiveBillPage();
+
+        // Page 6: Transfer Receive Bill Summary
+        registerTransferReceiveBillSummeryPage();
+    }
+
+    private void registerTransferIssueBillItemPage() {
+        PageMetadata metadata = new PageMetadata();
+        metadata.setPagePath("pharmacy/reports/disbursement_reports/pharmacy_report_transfer_issue_bill_item");
+        metadata.setPageName("Transfer Issue Bill Items Report");
+        metadata.setDescription("Detailed transfer issue listing with item-level breakdown (does not consider received status)");
+        metadata.setControllerClass("ReportsTransfer");
+
+        // Configuration Options - Column Display
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Disbursement Reports - Display Cost Rate",
+            "Controls visibility of Cost Rate column in transfer reports",
+            "pharmacy/reports/disbursement_reports/pharmacy_report_transfer_issue_bill_item",
+            OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Disbursement Reports - Display Cost Value",
+            "Controls visibility of Cost Value column in transfer reports",
+            "pharmacy/reports/disbursement_reports/pharmacy_report_transfer_issue_bill_item",
+            OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Disbursement Reports - Display Retail Sale Rate",
+            "Controls visibility of Retail Sale Rate column in transfer reports",
+            "pharmacy/reports/disbursement_reports/pharmacy_report_transfer_issue_bill_item",
+            OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Disbursement Reports - Display Retail Sale Value",
+            "Controls visibility of Retail Sale Value column in transfer reports",
+            "pharmacy/reports/disbursement_reports/pharmacy_report_transfer_issue_bill_item",
+            OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Disbursement Reports - Display Purchase Rate",
+            "Controls visibility of Purchase Rate column in transfer reports",
+            "pharmacy/reports/disbursement_reports/pharmacy_report_transfer_issue_bill_item",
+            OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Disbursement Reports - Display Purchase Value",
+            "Controls visibility of Purchase Value column in transfer reports",
+            "pharmacy/reports/disbursement_reports/pharmacy_report_transfer_issue_bill_item",
+            OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Disbursement Reports - Display Transfer Rate",
+            "Controls visibility of Transfer Rate column in transfer reports",
+            "pharmacy/reports/disbursement_reports/pharmacy_report_transfer_issue_bill_item",
+            OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Disbursement Reports - Display Transfer Value",
+            "Controls visibility of Transfer Value column in transfer reports",
+            "pharmacy/reports/disbursement_reports/pharmacy_report_transfer_issue_bill_item",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addPrivilege(new PrivilegeInfo(
+            "Admin",
+            "Administrative access to page configuration and settings"
+        ));
+
+        pageMetadataRegistry.registerPage(metadata);
+    }
+
+    private void registerTransferIssueBillDtoPage() {
+        PageMetadata metadata = new PageMetadata();
+        metadata.setPagePath("pharmacy/reports/disbursement_reports/pharmacy_report_transfer_issue_bill_dto");
+        metadata.setPageName("Transfer Issue Bills Report");
+        metadata.setDescription("Transfer issue bills listing using optimized DTO approach");
+        metadata.setControllerClass("ReportsTransfer");
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Disbursement Reports - Display Purchase",
+            "Controls visibility of Purchase Value column in transfer reports",
+            "pharmacy/reports/disbursement_reports/pharmacy_report_transfer_issue_bill_dto",
+            OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Disbursement Reports - Display Retail Sale",
+            "Controls visibility of Sale Value column in transfer reports",
+            "pharmacy/reports/disbursement_reports/pharmacy_report_transfer_issue_bill_dto",
+            OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Disbursement Reports - Display Cost",
+            "Controls visibility of Cost Value column in transfer reports",
+            "pharmacy/reports/disbursement_reports/pharmacy_report_transfer_issue_bill_dto",
+            OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Disbursement Reports - Display Transfer",
+            "Controls visibility of Transfer Value column in transfer reports",
+            "pharmacy/reports/disbursement_reports/pharmacy_report_transfer_issue_bill_dto",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addPrivilege(new PrivilegeInfo(
+            "Admin",
+            "Administrative access to page configuration and settings"
+        ));
+
+        pageMetadataRegistry.registerPage(metadata);
+    }
+
+    private void registerTransferIssueBillSummeryPage() {
+        PageMetadata metadata = new PageMetadata();
+        metadata.setPagePath("pharmacy/reports/disbursement_reports/pharmacy_report_transfer_issue_bill_summery");
+        metadata.setPageName("Transfer Issue Summary Report");
+        metadata.setDescription("Summary of transfer issues grouped by department (does not consider received status)");
+        metadata.setControllerClass("ReportsTransfer");
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Disbursement Reports - Display Purchase Value",
+            "Controls visibility of Purchase Value column in summary reports",
+            "pharmacy/reports/disbursement_reports/pharmacy_report_transfer_issue_bill_summery",
+            OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Disbursement Reports - Display Cost Value",
+            "Controls visibility of Cost Value column in summary reports",
+            "pharmacy/reports/disbursement_reports/pharmacy_report_transfer_issue_bill_summery",
+            OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Disbursement Reports - Display Retail Sale Value",
+            "Controls visibility of Retail Value column in summary reports",
+            "pharmacy/reports/disbursement_reports/pharmacy_report_transfer_issue_bill_summery",
+            OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Disbursement Reports - Display Transfer Value",
+            "Controls visibility of Transfer Value column in summary reports",
+            "pharmacy/reports/disbursement_reports/pharmacy_report_transfer_issue_bill_summery",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addPrivilege(new PrivilegeInfo(
+            "Admin",
+            "Administrative access to page configuration and settings"
+        ));
+
+        pageMetadataRegistry.registerPage(metadata);
+    }
+
+    private void registerTransferReceiveBillItemPage() {
+        PageMetadata metadata = new PageMetadata();
+        metadata.setPagePath("pharmacy/reports/disbursement_reports/pharmacy_report_transfer_receive_bill_item");
+        metadata.setPageName("Transfer Receive Bill Items Report");
+        metadata.setDescription("Detailed transfer receive listing with item-level breakdown (considers after receiving)");
+        metadata.setControllerClass("ReportsTransfer");
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Disbursement Reports - Display Cost",
+            "Controls visibility of Cost Rate and Cost Value columns in receive reports",
+            "pharmacy/reports/disbursement_reports/pharmacy_report_transfer_receive_bill_item",
+            OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Disbursement Reports - Display Retail Sale",
+            "Controls visibility of Retail Rate and Retail Value columns in receive reports",
+            "pharmacy/reports/disbursement_reports/pharmacy_report_transfer_receive_bill_item",
+            OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Disbursement Reports - Display Purchase",
+            "Controls visibility of Purchase Rate and Purchase Value columns in receive reports",
+            "pharmacy/reports/disbursement_reports/pharmacy_report_transfer_receive_bill_item",
+            OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Disbursement Reports - Display Transfer Rate",
+            "Controls visibility of Transfer Rate column in receive reports",
+            "pharmacy/reports/disbursement_reports/pharmacy_report_transfer_receive_bill_item",
+            OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Disbursement Reports - Display Transfer Value",
+            "Controls visibility of Transfer Value column in receive reports",
+            "pharmacy/reports/disbursement_reports/pharmacy_report_transfer_receive_bill_item",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addPrivilege(new PrivilegeInfo(
+            "Admin",
+            "Administrative access to page configuration and settings"
+        ));
+
+        pageMetadataRegistry.registerPage(metadata);
+    }
+
+    private void registerTransferReceiveBillPage() {
+        PageMetadata metadata = new PageMetadata();
+        metadata.setPagePath("pharmacy/reports/disbursement_reports/pharmacy_report_transfer_receive_bill");
+        metadata.setPageName("Transfer Receive Bills Report");
+        metadata.setDescription("Transfer receive bills listing using optimized DTO approach");
+        metadata.setControllerClass("ReportsTransfer");
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Disbursement Reports - Display Purchase",
+            "Controls visibility of Purchase Value column in receive reports",
+            "pharmacy/reports/disbursement_reports/pharmacy_report_transfer_receive_bill",
+            OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Disbursement Reports - Display Retail Sale",
+            "Controls visibility of Sale Value column in receive reports",
+            "pharmacy/reports/disbursement_reports/pharmacy_report_transfer_receive_bill",
+            OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Disbursement Reports - Display Cost",
+            "Controls visibility of Cost Value column in receive reports",
+            "pharmacy/reports/disbursement_reports/pharmacy_report_transfer_receive_bill",
+            OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Disbursement Reports - Display Transfer",
+            "Controls visibility of Transfer Value column in receive reports",
+            "pharmacy/reports/disbursement_reports/pharmacy_report_transfer_receive_bill",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addPrivilege(new PrivilegeInfo(
+            "Admin",
+            "Administrative access to page configuration and settings"
+        ));
+
+        pageMetadataRegistry.registerPage(metadata);
+    }
+
+    private void registerTransferReceiveBillSummeryPage() {
+        PageMetadata metadata = new PageMetadata();
+        metadata.setPagePath("pharmacy/reports/disbursement_reports/pharmacy_report_transfer_receive_bill_summery");
+        metadata.setPageName("Transfer Receive Summary Report");
+        metadata.setDescription("Summary of transfer receives grouped by department");
+        metadata.setControllerClass("ReportsTransfer");
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Disbursement Reports - Display Purchase",
+            "Controls visibility of Purchase Value column in receive summary",
+            "pharmacy/reports/disbursement_reports/pharmacy_report_transfer_receive_bill_summery",
+            OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Disbursement Reports - Display Cost",
+            "Controls visibility of Cost Value column in receive summary",
+            "pharmacy/reports/disbursement_reports/pharmacy_report_transfer_receive_bill_summery",
+            OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Disbursement Reports - Display Retail Sale",
+            "Controls visibility of Sale Value column in receive summary",
+            "pharmacy/reports/disbursement_reports/pharmacy_report_transfer_receive_bill_summery",
+            OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Disbursement Reports - Display Transfer Rate",
+            "Controls visibility of Transfer Value column in receive summary",
+            "pharmacy/reports/disbursement_reports/pharmacy_report_transfer_receive_bill_summery",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addPrivilege(new PrivilegeInfo(
+            "Admin",
+            "Administrative access to page configuration and settings"
+        ));
+
+        pageMetadataRegistry.registerPage(metadata);
+    }
+
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Navigation Methods">
     // </editor-fold>
@@ -978,7 +1295,7 @@ public class ReportsTransfer implements Serializable {
                     .append("b.createdAt, ")
                     .append("CASE WHEN b.patientEncounter IS NOT NULL THEN COALESCE(b.patientEncounter.bhtNo, '') ELSE '' END, ")
                     .append("COALESCE(cb.deptId, ''), ")
-                    .append("CASE WHEN b.billFinanceDetails IS NOT NULL THEN COALESCE(b.billFinanceDetails.totalPurchaseValue, 0.0) ELSE 0.0 END, ")
+                    .append("COALESCE(bfd.totalPurchaseValue, 0.0), ")
                     .append("COALESCE(b.total, 0.0), ")
                     .append("COALESCE(b.margin, 0.0), ")
                     .append("COALESCE(b.discount, 0.0), ")
@@ -986,6 +1303,7 @@ public class ReportsTransfer implements Serializable {
                     .append(") ")
                     .append("FROM Bill b ")
                     .append("LEFT JOIN b.cancelledBill cb ")
+                    .append("LEFT JOIN b.billFinanceDetails bfd ")
                     .append("WHERE b.createdAt BETWEEN :fd AND :td ")
                     .append("AND b.department=:fdept ");
 
@@ -3017,6 +3335,30 @@ public class ReportsTransfer implements Serializable {
 
     public void setInstitution(Institution institution) {
         this.institution = institution;
+    }
+
+    public Institution getSite() {
+        return site;
+    }
+
+    public void setSite(Institution site) {
+        this.site = site;
+    }
+
+    public String getDateBasis() {
+        return dateBasis;
+    }
+
+    public void setDateBasis(String dateBasis) {
+        this.dateBasis = dateBasis;
+    }
+
+    public PaymentMethod getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(PaymentMethod paymentMethod) {
+        this.paymentMethod = paymentMethod;
     }
 
     public List<Stock> getStocks() {

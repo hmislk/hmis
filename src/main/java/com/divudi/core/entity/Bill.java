@@ -7,11 +7,13 @@ package com.divudi.core.entity;
 import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.DepartmentType;
 import static com.divudi.core.data.BillTypeAtomic.PHARMACY_GRN_RETURN;
 import com.divudi.core.data.IdentifiableWithNameOrCode;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.inward.SurgeryBillType;
 import com.divudi.core.data.lab.PatientInvestigationStatus;
+import com.divudi.core.data.lab.Priority;
 import com.divudi.core.entity.cashTransaction.CashTransaction;
 import com.divudi.core.entity.hr.BankAccount;
 import com.divudi.core.entity.membership.MembershipScheme;
@@ -51,7 +53,7 @@ import javax.persistence.JoinColumn;
 public class Bill implements Serializable, RetirableEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
 
     static final long serialVersionUID = 1L;
@@ -146,6 +148,8 @@ public class Bill implements Serializable, RetirableEntity {
     private BillTypeAtomic billTypeAtomic;
     @Enumerated(EnumType.STRING)
     private PaymentMethod paymentMethod;
+    @Enumerated(EnumType.STRING)
+    private DepartmentType departmentType;
     @ManyToOne(fetch = FetchType.LAZY)
     private BillItem singleBillItem;
     @ManyToOne(fetch = FetchType.LAZY)
@@ -157,6 +161,23 @@ public class Bill implements Serializable, RetirableEntity {
     private String referenceNumber; //referenceNumber
 
     //Values
+    /**
+     * IMPORTANT: Despite the name, this field stores the SERVICE CHARGE value
+     * for pharmacy bills. This is the PRIMARY field used for service charges.
+     *
+     * Data analysis (Dec 2024) shows:
+     * - 23,065 bills have margin != 0 with serviceCharge = 0
+     * - 7,476 bills have both fields with equal values
+     * - 0 bills have serviceCharge used independently
+     *
+     * Current usage:
+     * - Pharmacy reports use this field to display "Service Charge" column
+     * - PharmacyBundle.populateRowFromBill() maps this to serviceCharge in PharmacyRow
+     * - actualTotal is calculated as: total - margin
+     *
+     * @see #serviceCharge
+     * @see com.divudi.core.data.PharmacyBundle#populateRowFromBill
+     */
     private double margin;
 
     private double total;
@@ -176,6 +197,20 @@ public class Bill implements Serializable, RetirableEntity {
     private double settledAmountBySponsor;
     private double refundAmount;
     private double balance;
+    /**
+     * WARNING: This field is DEPRECATED for pharmacy billing - use 'margin' instead.
+     *
+     * Data analysis (Dec 2024) confirms:
+     * - This field is NEVER used independently (always 0 or equals margin)
+     * - When populated, it mirrors the 'margin' field value exactly
+     * - All pharmacy reports should use 'margin' for service charge values
+     *
+     * This naming confusion caused a bug in PharmacyBundle where actualTotal
+     * was incorrectly calculated using this field instead of margin.
+     *
+     * @see #margin
+     * @deprecated Use {@link #margin} for service charge values
+     */
     private double serviceCharge;
     private Double tax = 0.0;
     private Double cashPaid = 0.0;
@@ -476,6 +511,13 @@ public class Bill implements Serializable, RetirableEntity {
     
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private Request currentRequest;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Patient chiefHouseHolder;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Family memberFamily;
+    @Enumerated(EnumType.STRING)
+    private Priority priority;
 
     public Bill() {
         if (status == null) {
@@ -490,6 +532,7 @@ public class Bill implements Serializable, RetirableEntity {
         billDate = new Date();
         billTime = new Date();
         createdAt = new Date();
+        priority = Priority.NORMAL;
     }
 
     public OnlineBooking getOnlineBooking() {
@@ -1290,6 +1333,14 @@ public class Bill implements Serializable, RetirableEntity {
         this.paymentMethod = paymentMethod;
     }
 
+    public DepartmentType getDepartmentType() {
+        return departmentType;
+    }
+
+    public void setDepartmentType(DepartmentType departmentType) {
+        this.departmentType = departmentType;
+    }
+
     public Item getBillPackege() {
         return billPackege;
     }
@@ -1589,9 +1640,6 @@ public class Bill implements Serializable, RetirableEntity {
     }
 
     public Patient getPatient() {
-        if (patientEncounter != null) {
-            patient = patientEncounter.getPatient();
-        }
         return patient;
     }
 
@@ -3069,7 +3117,29 @@ public class Bill implements Serializable, RetirableEntity {
     public void setCurrentRequest(Request currentRequest) {
         this.currentRequest = currentRequest;
     }
-    
-    
-    
+
+    public Patient getChiefHouseHolder() {
+        return chiefHouseHolder;
+    }
+
+    public void setChiefHouseHolder(Patient chiefHouseHolder) {
+        this.chiefHouseHolder = chiefHouseHolder;
+    }
+
+    public Family getMemberFamily() {
+        return memberFamily;
+    }
+
+    public void setMemberFamily(Family memberFamily) {
+        this.memberFamily = memberFamily;
+    }
+
+    public Priority getPriority() {
+        return priority;
+    }
+
+    public void setPriority(Priority priority) {
+        this.priority = priority;
+    }
+
 }

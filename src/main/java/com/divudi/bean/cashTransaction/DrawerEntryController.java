@@ -2,6 +2,7 @@ package com.divudi.bean.cashTransaction;
 
 import com.divudi.bean.common.SessionController;
 import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.entity.WebUser;
 import com.divudi.core.entity.cashTransaction.DrawerEntry;
@@ -11,6 +12,7 @@ import com.divudi.service.DrawerService;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -147,6 +149,34 @@ public class DrawerEntryController implements Serializable {
         userDrawerEntry = result;
     }
 
+    public void findAllUsersDrawerAdjustments() {
+        userDrawerEntry = new ArrayList();
+        String jpql = "select de"
+                + " from DrawerEntry de"
+                + " where de.retired=:ret"
+                + " and de.bill.billTypeAtomic=:bta";
+
+        Map m = new HashMap();
+        m.put("ret", false);
+        m.put("bta", BillTypeAtomic.DRAWER_ADJUSTMENT);
+
+        if (fromDate != null && toDate != null) {
+            jpql += " and de.createdAt between :fd and :td";
+            m.put("fd", fromDate);
+            m.put("td", toDate);
+        }
+        if (webUser != null) {
+            jpql += " and de.webUser=:wu ";
+            m.put("wu", webUser);
+        }
+
+        jpql += " order by de.id desc";
+
+        List<DrawerEntry> result = ejbFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
+        Collections.reverse(result);
+        userDrawerEntry = result;
+    }
+
     public String navigateToMyDrawerEntry() {
         return "/cashier/my_drawer_entry_history?faces-redirect=true";
     }
@@ -228,6 +258,15 @@ public class DrawerEntryController implements Serializable {
 
     public void setToDate(Date toDate) {
         this.toDate = toDate;
+    }
+
+    public String getExportFileName() {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        String from = fromDate != null ? sdf.format(fromDate) : "unknown";
+        String to = toDate != null ? sdf.format(toDate) : "unknown";
+        String user = (webUser != null && webUser.getWebUserPerson() != null)
+                ? webUser.getWebUserPerson().getName() : "All";
+        return "Drawer History - " + user + " - " + from + " to " + to;
     }
 
     public WebUser getWebUser() {

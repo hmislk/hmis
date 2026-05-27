@@ -360,7 +360,14 @@ public class BhtIssueReturnController implements Serializable {
 //                System.out.println("bi.getPharmaceuticalBillItem().getQtyInUnit() = " + bi.getPharmaceuticalBillItem().getQtyInUnit());
 //                System.out.println("bi.getQty() = " + bi.getQty());
 //                System.out.println("bi.getPharmaceuticalBillItem().getQty() = " + bi.getPharmaceuticalBillItem().getQty());
-                if (bi.getPharmaceuticalBillItem().getQtyInUnit() < bi.getQty()) {
+                double returnedQty = getPharmacyRecieveBean().getTotalQty(
+                        bi.getReferanceBillItem(),
+                        getBill().getBillType()
+                );
+                double liveAvailableQty = Math.abs(
+                        bi.getReferanceBillItem().getPharmaceuticalBillItem().getQtyInUnit()
+                ) - Math.abs(returnedQty);
+                if (bi.getQty() > liveAvailableQty) {
 //                    System.out.println("bi.getQty = " + bi.getQty());
                     JsfUtil.addErrorMessage("You cant return over than ballanced Qty ");
                     return;
@@ -391,7 +398,7 @@ public class BhtIssueReturnController implements Serializable {
             saveReturnBill();
         }
         saveComponent();
-        billService.createBillFinancialDetailsForPharmacyBill(getReturnBill());
+        billService.createBillFinancialDetailsForInpatientDirectIssueReturnBill(getReturnBill());
 
         getReturnBill().setReferenceBill(getBill());
 //        updateMargin(getReturnBill().getBillItems(), getReturnBill(), getReturnBill().getFromDepartment(), getBill().getPatientEncounter().getPaymentMethod());
@@ -470,12 +477,13 @@ public class BhtIssueReturnController implements Serializable {
             }
 
             tmp.setQtyInUnit(tmpQty);
+            bi.setQty(tmpQty);
 
             bi.setPharmaceuticalBillItem(tmp);
 
             getBillItems().add(bi);
         }
-
+        calTotal();
     }
 
 //    private double calRemainingQty(PharmaceuticalBillItem i) {

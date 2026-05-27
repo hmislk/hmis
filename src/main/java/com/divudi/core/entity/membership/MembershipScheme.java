@@ -16,4 +16,8 @@ import javax.persistence.Entity;
 @Entity
 public class MembershipScheme extends Category {
 
+    public boolean isCorporate() {
+        return getInstitution() != null;
+    }
+
 }

@@ -163,11 +163,11 @@
 
                         <h:column >
                             <f:facet name="header" >
-                                <h:outputLabel value="Value"></h:outputLabel>
+                                <h:outputLabel value="Value" class="d-flex justify-content-end mx-2"></h:outputLabel>
                             </f:facet>
                             <h:outputLabel 
                                 value="#{bip.netValue}" 
-                                class="d-flex"
+                                class="d-flex justify-content-end mx-2"
                                 style="font-size: 10pt!important; text-align: right!important;" >
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
@@ -186,7 +186,7 @@
                                 &nbsp;&nbsp;
                                 <h:outputLabel value="Total Payment" />
                             </td>
-                            <td  style="text-align: right!important; width: 40%; padding-right: 32px; font-size: 20px!important;
+                            <td  style="text-align: right!important; width: 40%; padding-right: 15px; font-size: 20px!important;
                                  font-family:Verdana, Helvetica, sans-serif!important;
                                  font-weight: bold;">
                                 <h:outputLabel value="#{cc.attrs.bill.netTotal}" >
@@ -202,12 +202,12 @@
                     <hr/>
                 </div>
 
-                <div class="footer" >
+                <div class="footer mt-3" >
                     <div class="row" >
-                        <div class="col-8" >
+                        <div class="col-7" >
 
                         </div>
-                        <div class="col-4" >
+                        <div class="col-5" style="font-size: 16px;">
                             <h:outputLabel value="--------------------------"/>
                             <h:outputLabel value="Cashier :  #{cc.attrs.bill.creater.webUserPerson.name}"/>
                         </div>

@@ -24,7 +24,7 @@
                                     <div>
                                         <h:panelGroup rendered="#{webUserController.hasPrivilege('NursingWorkBench')}">
                                             <p:commandButton 
-                                                value="Back to WorkBench" 
+                                                value="Nursing WorkBench" 
                                                 action="#{nursingWorkBenchController.navigateToBackNursingWorkBench()}" 
                                                 ajax="false"
                                                 class="ui-button-operating-theatre"
@@ -112,15 +112,26 @@
                         </div>
                         <div class="d-flex gap-2">
 
-                            <p:commandButton 
+                            <p:commandButton
+                                value="Inpatient Dashboard"
+                                ajax="false"
+                                icon="fa fa-id-card"
+                                class="ui-button-secondary"
+                                action="#{admissionController.navigateToAdmissionProfilePage}">
+                                <f:setPropertyActionListener
+                                    value="#{inwardTimedItemController.current.patientEncounter}"
+                                    target="#{admissionController.current}" />
+                            </p:commandButton>
+
+                            <p:commandButton
                                 class="ui-button-success "
                                 icon="fa fa-plus"
-                                ajax="false" 
+                                ajax="false"
                                 value="New Bill"
                                 actionListener="#{inwardTimedItemController.makeNull()}" >
                             </p:commandButton>
 
-                            <h:panelGroup rendered="#{not webUserController.hasPrivilege('NursingWorkBench')}">
+                            <h:panelGroup rendered="#{webUserController.hasPrivilege('InwardSearch')}">
                                 <div class="d-flex gap-2">
 
                                     <p:commandButton 
@@ -154,7 +165,7 @@
 
                             <h:panelGroup rendered="#{webUserController.hasPrivilege('NursingWorkBench')}">
                                 <p:commandButton 
-                                    value="Back to WorkBench" 
+                                    value="Nursing WorkBench" 
                                     action="#{nursingWorkBenchController.navigateToBackNursingWorkBench()}" 
                                     ajax="false"
                                     class="ui-button-operating-theatre"

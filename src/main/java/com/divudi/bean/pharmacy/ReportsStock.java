@@ -11,6 +11,7 @@ import com.divudi.bean.common.ReportTimerController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.report.CommonReport;
 import com.divudi.core.data.dto.StockReportByItemDTO;
+import com.divudi.core.data.dto.DepartmentViceStockDTO;
 import com.divudi.core.data.reports.PharmacyReports;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillType;
@@ -26,6 +27,7 @@ import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.BilledBill;
 import com.divudi.core.entity.CancelledBill;
 import com.divudi.core.entity.Category;
+import com.divudi.core.entity.DosageForm;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Item;
@@ -47,7 +49,9 @@ import com.divudi.core.facade.PharmaceuticalBillItemFacade;
 import com.divudi.core.facade.StockFacade;
 import com.divudi.core.facade.StockHistoryFacade;
 import com.divudi.core.util.CommonFunctions;
+import java.io.OutputStream;
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -59,11 +63,27 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
+import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
+import com.itextpdf.text.*;
+import com.itextpdf.text.pdf.PdfPCell;
+import com.itextpdf.text.pdf.PdfPTable;
+import com.itextpdf.text.pdf.PdfWriter;
+import java.util.Objects;
+import javax.faces.context.ExternalContext;
 import javax.persistence.TemporalType;
+import javax.servlet.http.HttpServletResponse;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.usermodel.Font;
+import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 /**
  *
@@ -85,7 +105,9 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
     private ReportViewType reportViewType;
     private List<ReportViewType> reportViewTypes;
     private Category category;
+    private DosageForm dosageForm;
     private DepartmentType departmentType;
+    private List<DepartmentType> selectedDepartmentTypes;
     List<Stock> stocks;
     List<StockDTO> stockDtos;
     double stockSaleValue;
@@ -203,6 +225,11 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
         return "/pharmacy/pharmacy_report_department_stock_overview?faces-redirect=true";
     }
 
+    public String navigateToDepartmentViceStockReport() {
+        departmentViceStockDtos = new ArrayList<>();
+        return "/pharmacy/pharmacy_report_department_vice_stock?faces-redirect=true";
+    }
+
     /**
      * Methods
      */
@@ -215,10 +242,12 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
             if (department != null) {
                 sql.append(" and s.department=:d");
                 m.put("d", department);
-            } else if (site != null) {
+            }
+            if (site != null) {
                 sql.append(" and s.department.site=:site");
                 m.put("site", site);
-            } else if (institution != null) {
+            }
+            if (institution != null) {
                 sql.append(" and s.department.institution=:ins");
                 m.put("ins", institution);
             }
@@ -253,33 +282,51 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
             Map<String, Object> m = new HashMap<>();
             StringBuilder jpql = new StringBuilder("select new com.divudi.core.data.dto.StockDTO(");
             jpql.append("s.id, ");
-            jpql.append("COALESCE(s.itemBatch.item.category.name, ''), ");
-            jpql.append("COALESCE(s.itemBatch.item.name, ''), ");
+            jpql.append("cat.name, ");
+            jpql.append("s.itemBatch.item.name, ");
             jpql.append("s.itemBatch.item.departmentType, ");
-            jpql.append("COALESCE(s.itemBatch.item.code, ''), ");
-            jpql.append("COALESCE(amp.vmp.name, ''), ");
+            jpql.append("s.itemBatch.item.code, ");
             jpql.append("s.itemBatch.dateOfExpire, ");
-            jpql.append("COALESCE(s.itemBatch.batchNo, ''), ");
-            jpql.append("COALESCE(s.stock, 0.0), ");
-            jpql.append("COALESCE(s.itemBatch.purcahseRate, 0.0), ");
-            jpql.append("COALESCE(s.itemBatch.costRate, 0.0), ");
-            jpql.append("COALESCE(s.itemBatch.retailsaleRate, 0.0)) ");
-            jpql.append("from Stock s join TREAT(s.itemBatch.item as Amp) amp where s.stock > 0");
+            jpql.append("s.itemBatch.batchNo, ");
+            jpql.append("s.stock, ");
+            jpql.append("s.itemBatch.purcahseRate, ");
+            jpql.append("s.itemBatch.costRate, ");
+            jpql.append("s.itemBatch.retailsaleRate, ");
+            jpql.append("df.name) ");
+            jpql.append("from Stock s ");
+            jpql.append("left join s.itemBatch.item.category cat ");
+            jpql.append("left join s.itemBatch.item.dosageForm df ");
+            jpql.append("where 1=1");
+            if (!includeZeroStock) {
+                jpql.append(" and s.stock > 0");
+            }
 
             if (department != null) {
                 jpql.append(" and s.department=:d");
                 m.put("d", department);
-            } else if (site != null) {
+            }
+            if (site != null) {
                 jpql.append(" and s.department.site=:site");
                 m.put("site", site);
-            } else if (institution != null) {
+            }
+            if (institution != null) {
                 jpql.append(" and s.department.institution=:ins");
                 m.put("ins", institution);
             }
 
-            if (departmentType != null) {
-                jpql.append(" and s.itemBatch.item.departmentType=:dt");
-                m.put("dt", departmentType);
+            if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
+                jpql.append(" and s.itemBatch.item.departmentType IN :departmentTypes");
+                m.put("departmentTypes", selectedDepartmentTypes);
+            }
+
+            if (category != null) {
+                jpql.append(" and s.itemBatch.item.category=:cat");
+                m.put("cat", category);
+            }
+
+            if (dosageForm != null) {
+                jpql.append(" and s.itemBatch.item.dosageForm=:df");
+                m.put("df", dosageForm);
             }
 
             stockDtos = (List<StockDTO>) stockFacade.findLightsByJpql(jpql.toString(), m);
@@ -311,6 +358,365 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
         }, PharmacyReports.STOCK_REPORT_BY_BATCH, sessionController.getLoggedUser());
     }
 
+    public void exportCurrentStockByBatchToExcel() {
+
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletResponse response
+                = (HttpServletResponse) context.getExternalContext().getResponse();
+
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.setHeader("Content-Disposition",
+                "attachment; filename=Current_Stock_By_Batch.xlsx");
+
+        try (XSSFWorkbook workbook = new XSSFWorkbook(); OutputStream out = response.getOutputStream()) {
+
+            XSSFSheet sheet = workbook.createSheet("Current Stock By Batch");
+
+            int rowIndex = 0;
+            int totalColumns = 14;
+
+            Font boldFont = workbook.createFont();
+            boldFont.setBold(true);
+
+            // Title Style (Big + Bold + Center)
+            Font titleFont = workbook.createFont();
+            titleFont.setBold(true);
+            titleFont.setFontHeightInPoints((short) 16);
+
+            CellStyle titleStyle = workbook.createCellStyle();
+            titleStyle.setFont(titleFont);
+            titleStyle.setAlignment(HorizontalAlignment.CENTER);
+
+            //filter Style
+            CellStyle filterStyle = workbook.createCellStyle();
+            filterStyle.setAlignment(HorizontalAlignment.CENTER);
+
+            // Header Style
+            CellStyle headerStyle = workbook.createCellStyle();
+            headerStyle.setFont(boldFont);
+            headerStyle.setAlignment(HorizontalAlignment.CENTER);
+            headerStyle.setBorderBottom(BorderStyle.THIN);
+            headerStyle.setBorderTop(BorderStyle.THIN);
+            headerStyle.setBorderLeft(BorderStyle.THIN);
+            headerStyle.setBorderRight(BorderStyle.THIN);
+
+            // Data Style
+            CellStyle dataStyle = workbook.createCellStyle();
+            dataStyle.setBorderBottom(BorderStyle.THIN);
+            dataStyle.setBorderTop(BorderStyle.THIN);
+            dataStyle.setBorderLeft(BorderStyle.THIN);
+            dataStyle.setBorderRight(BorderStyle.THIN);
+
+            DataFormat dataFormat = workbook.createDataFormat();
+
+            CellStyle formatStyle = workbook.createCellStyle();
+            formatStyle.cloneStyleFrom(dataStyle);
+            formatStyle.setDataFormat(dataFormat.getFormat("#,##0.00"));
+
+            // =========================
+            // HEADER
+            // =========================
+            Row instRow = sheet.createRow(rowIndex++);
+            Cell instCell = instRow.createCell(0);
+            instCell.setCellValue(institution != null ? institution.getName() : "All Institutions");
+            instCell.setCellStyle(titleStyle);
+            sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, totalColumns - 1));
+
+            Row siteRow = sheet.createRow(rowIndex++);
+            Cell siteCell = siteRow.createCell(0);
+            siteCell.setCellValue(site != null ? site.getName() : "All Sites");
+            siteCell.setCellStyle(titleStyle);
+            sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, totalColumns - 1));
+
+            Row deptRow = sheet.createRow(rowIndex++);
+            Cell deptCell = deptRow.createCell(0);
+            deptCell.setCellValue(department != null ? department.getName() : "All Departments");
+            deptCell.setCellStyle(titleStyle);
+            sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, totalColumns - 1));
+
+            rowIndex++;
+
+            // Filters row
+            Row filterRow = sheet.createRow(rowIndex++);
+            Cell filterCell = filterRow.createCell(0);
+            filterCell.setCellValue(
+                    "Category: " + (category != null ? category.getName() : "All")
+                    + " | Dosage Form: " + (dosageForm != null ? dosageForm.getName() : "All")
+                    + " | Department Type: " + getSelectedDepartmentTypesPrintDisplay()
+            );
+            filterCell.setCellStyle(filterStyle);
+            sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, totalColumns - 1));
+
+            rowIndex++;
+
+            // Report Title
+            Row titleRow = sheet.createRow(rowIndex++);
+            Cell titleCell = titleRow.createCell(0);
+            titleCell.setCellValue("Current Stock By Batch Report");
+            titleCell.setCellStyle(titleStyle);
+            sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, totalColumns - 1));
+
+            rowIndex++;
+
+            // =========================
+            // header
+            // =========================
+            Row headerRow = sheet.createRow(rowIndex++);
+            String[] headers = {
+                "Category", "Dosage Form", "Item", "Type", "Code",
+                "Expiry", "Batch No", "Stock",
+                "Purchase Rate", "Purchase Value",
+                "Cost Rate", "Cost Value",
+                "Retail Rate", "Retail Value"
+            };
+
+            for (int i = 0; i < headers.length; i++) {
+                Cell cell = headerRow.createCell(i);
+                cell.setCellValue(headers[i]);
+                cell.setCellStyle(headerStyle);
+            }
+
+            // =========================
+            // data row
+            // =========================
+            for (StockDTO row : stockDtos) {
+
+                Row dataRow = sheet.createRow(rowIndex++);
+                int col = 0;
+
+                dataRow.createCell(col++).setCellValue(row.getCategoryName());
+                dataRow.createCell(col++).setCellValue(row.getDosageFormName());
+                dataRow.createCell(col++).setCellValue(row.getItemName());
+                dataRow.createCell(col++).setCellValue(row.getDepartmentType().name());
+                dataRow.createCell(col++).setCellValue(row.getCode());
+
+                dataRow.createCell(col++).setCellValue(
+                        row.getDateOfExpire() != null
+                        ? new SimpleDateFormat("dd/MM/yyyy")
+                                .format(row.getDateOfExpire()) : "-"
+                );
+
+                dataRow.createCell(col++).setCellValue(row.getBatchNo());
+                dataRow.createCell(col++).setCellValue(row.getStockQty());
+
+                double purchaseRate = row.getPurchaseRate() != null ? row.getPurchaseRate() : 0.0;
+                double costRate = row.getCostRate() != null ? row.getCostRate() : 0.0;
+                double retailRate = row.getRetailRate() != null ? row.getRetailRate() : 0.0;
+
+                dataRow.createCell(col++).setCellValue(purchaseRate);
+                dataRow.createCell(col++).setCellValue(purchaseRate * row.getStockQty());
+                dataRow.createCell(col++).setCellValue(costRate);
+                dataRow.createCell(col++).setCellValue(costRate * row.getStockQty());
+                dataRow.createCell(col++).setCellValue(retailRate);
+                dataRow.createCell(col++).setCellValue(retailRate * row.getStockQty());
+
+                for (int i = 0; i < totalColumns; i++) {
+                    dataRow.getCell(i).setCellStyle(dataStyle);
+                }
+            }
+
+            // =========================
+            // total
+            // =========================
+            Row footerRow = sheet.createRow(rowIndex++);
+            Cell totalLabel = footerRow.createCell(7);
+            totalLabel.setCellValue("Total");
+            totalLabel.setCellStyle(headerStyle);
+
+            Cell totalPurchase = footerRow.createCell(9);
+            totalPurchase.setCellValue(stockPurchaseValue);
+            totalPurchase.setCellStyle(formatStyle);
+
+            Cell totalCost = footerRow.createCell(11);
+            totalCost.setCellValue(stockCostValue);
+            totalCost.setCellStyle(formatStyle);
+
+            Cell totalSale = footerRow.createCell(13);
+            totalSale.setCellValue(stockSaleValue);
+            totalSale.setCellStyle(formatStyle);
+
+            // Auto size
+            for (int i = 0; i < totalColumns; i++) {
+                sheet.autoSizeColumn(i);
+            }
+
+            workbook.write(out);
+            context.responseComplete();
+
+        } catch (Exception e) {
+            Logger.getLogger(ReportsStock.class.getName()).log(Level.SEVERE, e.getMessage());
+        }
+    }
+
+    public void exportCurrentStockByBatchToPDF() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        ExternalContext externalContext = context.getExternalContext();
+        HttpServletResponse response = (HttpServletResponse) externalContext.getResponse();
+
+        response.setContentType("application/pdf");
+        response.setHeader("Content-Disposition", "attachment; filename=Current_Stock_By_Batch.pdf");
+
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+
+        try (OutputStream out = response.getOutputStream()) {
+            Document document = new Document(PageSize.A4.rotate());
+            PdfWriter.getInstance(document, out);
+            document.open();
+
+            // Fonts
+            com.itextpdf.text.Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16);
+            com.itextpdf.text.Font subTitleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12);
+            com.itextpdf.text.Font filterFont = FontFactory.getFont(FontFactory.HELVETICA, 10);
+            com.itextpdf.text.Font headerFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10);
+            com.itextpdf.text.Font dataFont = FontFactory.getFont(FontFactory.HELVETICA, 8);
+
+            // =========================
+            // HEADER (Institution, Site, Department)
+            // =========================
+            Paragraph instPara = new Paragraph(institution != null ? institution.getName() : "All Institutions", titleFont);
+            instPara.setAlignment(Element.ALIGN_CENTER);
+            document.add(instPara);
+
+            Paragraph sitePara = new Paragraph(site != null ? site.getName() : "All Sites", titleFont);
+            sitePara.setAlignment(Element.ALIGN_CENTER);
+            document.add(sitePara);
+
+            Paragraph deptPara = new Paragraph(department != null ? department.getName() : "All Departments", titleFont);
+            deptPara.setAlignment(Element.ALIGN_CENTER);
+            document.add(deptPara);
+
+            document.add(new Paragraph(" ")); // empty line
+
+            // Filters
+            Paragraph filterPara = new Paragraph(
+                    "Category: " + (category != null ? category.getName() : "All")
+                    + " | Dosage Form: " + (dosageForm != null ? dosageForm.getName() : "All")
+                    + " | Department Type: " + getSelectedDepartmentTypesPrintDisplay(),
+                    filterFont
+            );
+            filterPara.setAlignment(Element.ALIGN_CENTER);
+            document.add(filterPara);
+
+            // Report Title
+            Paragraph titlePara = new Paragraph("Current Stock By Batch Report", subTitleFont);
+            titlePara.setAlignment(Element.ALIGN_CENTER);
+            document.add(titlePara);
+
+            document.add(new Paragraph(" ")); // empty line
+
+            // =========================
+            // TABLE
+            // =========================
+            int columnCount = 14;
+            PdfPTable table = new PdfPTable(columnCount);
+            table.setWidthPercentage(100);
+            table.setSpacingBefore(10f);
+
+            String[] headers = {
+                "Category", "Dosage Form", "Item", "Type", "Code",
+                "Expiry", "Batch No", "Stock",
+                "Purchase Rate", "Purchase Value",
+                "Cost Rate", "Cost Value",
+                "Retail Rate", "Retail Value"
+            };
+
+            float[] widths = {3f, 3f, 4f, 3f, 3f, 3f, 3f, 2f, 3f, 3f, 3f, 3f, 3f, 3f};
+            table.setWidths(widths);
+
+            // Header row
+            for (String header : headers) {
+                PdfPCell cell = new PdfPCell(new Phrase(header, headerFont));
+                cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+                
+                table.addCell(cell);
+            }
+
+            // Data rows
+            for (StockDTO row : stockDtos) {
+                table.addCell(new PdfPCell(new Phrase(row.getCategoryName() != null ? row.getCategoryName() : "-", dataFont)));
+                table.addCell(new PdfPCell(new Phrase(row.getDosageFormName() != null ? row.getDosageFormName() : "-", dataFont)));
+                table.addCell(new PdfPCell(new Phrase(row.getItemName() != null ? row.getItemName() : "-", dataFont)));
+                table.addCell(new PdfPCell(new Phrase(row.getDepartmentType() != null ? row.getDepartmentType().name() : "-", dataFont)));
+                table.addCell(new PdfPCell(new Phrase(row.getCode() != null ? row.getCode() : "-", dataFont)));
+                table.addCell(new PdfPCell(new Phrase(row.getDateOfExpire() != null ? sdf.format(row.getDateOfExpire()) : "-", dataFont)));
+                table.addCell(new PdfPCell(new Phrase(row.getBatchNo() != null ? row.getBatchNo() : "-", dataFont)));
+
+                PdfPCell stockCell = new PdfPCell(new Phrase(String.valueOf(Objects.requireNonNullElse(row.getStockQty(), 0.0)), dataFont));
+                stockCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(stockCell);
+
+                // Numeric columns
+                double purchaseRate = Objects.requireNonNullElse(row.getPurchaseRate(), 0.0);
+                double costRate = Objects.requireNonNullElse(row.getCostRate(), 0.0);
+                double retailRate = Objects.requireNonNullElse(row.getRetailRate(), 0.0);
+                double purchaseValue = purchaseRate * Objects.requireNonNullElse(row.getStockQty(), 0.0);
+                double costValue = costRate * Objects.requireNonNullElse(row.getStockQty(), 0.0);
+                double retailValue = retailRate * Objects.requireNonNullElse(row.getStockQty(), 0.0);
+
+                PdfPCell prCell = new PdfPCell(new Phrase(String.format("%,.2f", purchaseRate), dataFont));
+                prCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(prCell);
+
+                PdfPCell pvCell = new PdfPCell(new Phrase(String.format("%,.2f", purchaseValue), dataFont));
+                pvCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(pvCell);
+
+                PdfPCell crCell = new PdfPCell(new Phrase(String.format("%,.2f", costRate), dataFont));
+                crCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(crCell);
+
+                PdfPCell cvCell = new PdfPCell(new Phrase(String.format("%,.2f", costValue), dataFont));
+                cvCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(cvCell);
+
+                PdfPCell rrCell = new PdfPCell(new Phrase(String.format("%,.2f", retailRate), dataFont));
+                rrCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(rrCell);
+
+                PdfPCell rvCell = new PdfPCell(new Phrase(String.format("%,.2f", retailValue), dataFont));
+                rvCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(rvCell);
+            }
+
+            // Totals row
+            PdfPCell totalLabel = new PdfPCell(new Phrase("Total", headerFont));
+            totalLabel.setColspan(8); // First 8 columns
+            totalLabel.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            table.addCell(totalLabel);
+
+            PdfPCell purchaseRateTotalCell = new PdfPCell(new Phrase("", headerFont));
+            purchaseRateTotalCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            table.addCell(purchaseRateTotalCell);
+
+            PdfPCell purchaseValueTotalCell = new PdfPCell(new Phrase(String.format("%,.2f", stockPurchaseValue), headerFont));
+            purchaseValueTotalCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            table.addCell(purchaseValueTotalCell);
+
+            PdfPCell costRateTotalCell = new PdfPCell(new Phrase("", headerFont));
+            costRateTotalCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            table.addCell(costRateTotalCell);
+
+            PdfPCell costValueTotalCell = new PdfPCell(new Phrase(String.format("%,.2f", stockCostValue), headerFont));
+            costValueTotalCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            table.addCell(costValueTotalCell);
+
+            PdfPCell retailRateTotalCell = new PdfPCell(new Phrase("", headerFont));
+            retailRateTotalCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            table.addCell(retailRateTotalCell);
+
+            PdfPCell retailValueTotalCell = new PdfPCell(new Phrase(String.format("%,.2f", stockSaleValue), headerFont));
+            retailValueTotalCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            table.addCell(retailValueTotalCell);
+
+            document.add(table);
+            document.close();
+            context.responseComplete();
+
+        } catch (Exception e) {
+            Logger.getLogger(ReportsStock.class.getName()).log(Level.SEVERE, "Error exporting Current Stock By Batch PDF", e);
+        }
+    }
+
     public void toggleIncludeZeroStock() {
         includeZeroStock = !includeZeroStock;
     }
@@ -329,10 +735,12 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
             if (department != null) {
                 jpql.append(" AND s.department = :dept");
                 parameters.put("dept", department);
-            } else if (site != null) {
+            }
+            if (site != null) {
                 jpql.append(" AND s.department.site = :site");
                 parameters.put("site", site);
-            } else if (institution != null) {
+            }
+            if (institution != null) {
                 jpql.append(" AND s.department.institution = :ins");
                 parameters.put("ins", institution);
             }
@@ -652,30 +1060,52 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
 
     public void fillDepartmentNonEmptyItemStocks() {
         reportTimerController.trackReportExecution(() -> {
-            if (department == null) {
-                JsfUtil.addErrorMessage("Please select a department");
-                return;
-            }
-            Map m = new HashMap();
-            String sql;
-            sql = "select new com.divudi.core.data.dto.StockReportByItemDTO"
-                    + "(s.itemBatch.item.code, "
+            Map<String, Object> m = new HashMap<>();
+            StringBuilder jpql = new StringBuilder(
+                    "select new com.divudi.core.data.dto.StockReportByItemDTO("
+                    + "s.itemBatch.item.code, "
                     + "s.itemBatch.item.name, "
                     + "sum(s.stock), "
                     + "sum(s.itemBatch.purcahseRate * s.stock), "
-                    + "sum(s.itemBatch.retailsaleRate * s.stock))  "
-                    + "from Stock s where s.stock>:z and s.department=:d "
-                    + "group by s.itemBatch.item.name, s.itemBatch.item.code "
-                    + "order by s.itemBatch.item.name";
-            m.put("d", department);
-            m.put("z", 0.0);
-            List<StockReportByItemDTO> lsts = (List) getStockFacade().findLightsByJpql(sql, m);
+                    + "sum(s.itemBatch.retailsaleRate * s.stock)) "
+                    + "from Stock s "
+                    + "left join s.itemBatch.item.category cat "
+                    + "left join s.itemBatch.item.dosageForm df "
+                    + "where 1=1");
+            if (!includeZeroStock) {
+                jpql.append(" and s.stock > 0");
+            }
+            if (department != null) {
+                jpql.append(" and s.department=:d");
+                m.put("d", department);
+            }
+            if (site != null) {
+                jpql.append(" and s.department.site=:site");
+                m.put("site", site);
+            }
+            if (institution != null) {
+                jpql.append(" and s.department.institution=:ins");
+                m.put("ins", institution);
+            }
+            if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
+                jpql.append(" and s.itemBatch.item.departmentType IN :departmentTypes");
+                m.put("departmentTypes", selectedDepartmentTypes);
+            }
+            if (category != null) {
+                jpql.append(" and s.itemBatch.item.category=:cat");
+                m.put("cat", category);
+            }
+            if (dosageForm != null) {
+                jpql.append(" and s.itemBatch.item.dosageForm=:df");
+                m.put("df", dosageForm);
+            }
+            jpql.append(" group by s.itemBatch.item.name, s.itemBatch.item.code order by s.itemBatch.item.name");
+            List<StockReportByItemDTO> lsts = (List) getStockFacade().findLightsByJpql(jpql.toString(), m);
             stockPurchaseValue = 0.0;
             stockSaleValue = 0.0;
             for (StockReportByItemDTO r : lsts) {
                 stockPurchaseValue += r.getPurchaseValue();
                 stockSaleValue += r.getSaleValue();
-
             }
             stockReportByItemDTOS = lsts;
         }, PharmacyReports.STOCK_REPORT_BY_ITEM, sessionController.getLoggedUser());
@@ -689,6 +1119,53 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
 
     public void setStockReportByItemDTOS(List<StockReportByItemDTO> stockReportByItemDTOS) {
         this.stockReportByItemDTOS = stockReportByItemDTOS;
+    }
+
+    // Department Vice Stock Report fields
+    private List<DepartmentViceStockDTO> departmentViceStockDtos;
+    private double totalDepartmentViceStockQuantity;
+    private double totalDepartmentViceStockPurchaseValue;
+    private double totalDepartmentViceStockRetailValue;
+    private double totalDepartmentViceStockCostValue;
+
+    public List<DepartmentViceStockDTO> getDepartmentViceStockDtos() {
+        return departmentViceStockDtos;
+    }
+
+    public void setDepartmentViceStockDtos(List<DepartmentViceStockDTO> departmentViceStockDtos) {
+        this.departmentViceStockDtos = departmentViceStockDtos;
+    }
+
+    public double getTotalDepartmentViceStockQuantity() {
+        return totalDepartmentViceStockQuantity;
+    }
+
+    public void setTotalDepartmentViceStockQuantity(double totalDepartmentViceStockQuantity) {
+        this.totalDepartmentViceStockQuantity = totalDepartmentViceStockQuantity;
+    }
+
+    public double getTotalDepartmentViceStockPurchaseValue() {
+        return totalDepartmentViceStockPurchaseValue;
+    }
+
+    public void setTotalDepartmentViceStockPurchaseValue(double totalDepartmentViceStockPurchaseValue) {
+        this.totalDepartmentViceStockPurchaseValue = totalDepartmentViceStockPurchaseValue;
+    }
+
+    public double getTotalDepartmentViceStockRetailValue() {
+        return totalDepartmentViceStockRetailValue;
+    }
+
+    public void setTotalDepartmentViceStockRetailValue(double totalDepartmentViceStockRetailValue) {
+        this.totalDepartmentViceStockRetailValue = totalDepartmentViceStockRetailValue;
+    }
+
+    public double getTotalDepartmentViceStockCostValue() {
+        return totalDepartmentViceStockCostValue;
+    }
+
+    public void setTotalDepartmentViceStockCostValue(double totalDepartmentViceStockCostValue) {
+        this.totalDepartmentViceStockCostValue = totalDepartmentViceStockCostValue;
     }
 
     public void fillDepartmentZeroItemStocks() {
@@ -708,10 +1185,12 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
             if (department != null) {
                 sql.append(" and s.department=:d");
                 m.put("d", department);
-            } else if (site != null) {
+            }
+            if (site != null) {
                 sql.append(" and s.department.site=:site");
                 m.put("site", site);
-            } else if (institution != null) {
+            }
+            if (institution != null) {
                 sql.append(" and s.department.institution=:ins");
                 m.put("ins", institution);
             }
@@ -756,6 +1235,52 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
         }
         pharmacyStockRows = lsts;
 
+    }
+
+    public void fillDepartmentViceStockDtos() {
+        reportTimerController.trackReportExecution(() -> {
+            Map<String, Object> m = new HashMap<>();
+            StringBuilder jpql = new StringBuilder("SELECT new com.divudi.core.data.dto.DepartmentViceStockDTO(");
+            jpql.append("d.institution.name, ");
+            jpql.append("d.site.name, ");
+            jpql.append("d.name, ");
+            jpql.append("s.itemBatch.item.departmentType, ");
+            jpql.append("SUM(s.stock), ");
+            jpql.append("SUM(s.stock * COALESCE(s.itemBatch.purcahseRate, 0.0)), ");
+            jpql.append("SUM(s.stock * COALESCE(s.itemBatch.retailsaleRate, 0.0)), ");
+            jpql.append("SUM(s.stock * COALESCE(s.itemBatch.costRate, 0.0))) ");
+            jpql.append("FROM Stock s JOIN s.department d ");
+            jpql.append("WHERE s.stock > 0 ");
+            jpql.append("GROUP BY d.institution.name, d.site.name, d.name, s.itemBatch.item.departmentType ");
+            jpql.append("ORDER BY d.institution.name, d.site.name, d.name, s.itemBatch.item.departmentType");
+
+            List<DepartmentViceStockDTO> dtos = (List<DepartmentViceStockDTO>) stockFacade.findLightsByJpql(jpql.toString(), m);
+
+            // Set serial numbers and calculate totals
+            int serialNo = 1;
+            totalDepartmentViceStockQuantity = 0.0;
+            totalDepartmentViceStockPurchaseValue = 0.0;
+            totalDepartmentViceStockRetailValue = 0.0;
+            totalDepartmentViceStockCostValue = 0.0;
+
+            for (DepartmentViceStockDTO dto : dtos) {
+                dto.setSerialNo(serialNo++);
+                if (dto.getQuantity() != null) {
+                    totalDepartmentViceStockQuantity += dto.getQuantity();
+                }
+                if (dto.getPurchaseValue() != null) {
+                    totalDepartmentViceStockPurchaseValue += dto.getPurchaseValue();
+                }
+                if (dto.getRetailValue() != null) {
+                    totalDepartmentViceStockRetailValue += dto.getRetailValue();
+                }
+                if (dto.getCostValue() != null) {
+                    totalDepartmentViceStockCostValue += dto.getCostValue();
+                }
+            }
+
+            departmentViceStockDtos = dtos;
+        }, PharmacyReports.DEPARTMENT_VICE_STOCK_REPORT, sessionController.getLoggedUser());
     }
 
     public void fillDepartmentInventryStocks() {
@@ -973,6 +1498,82 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
 
     private Date date;
 
+    public void fillDepartmentExpiaryStockDtos() {
+        reportTimerController.trackReportExecution(() -> {
+            Map<String, Object> m = new HashMap<>();
+            StringBuilder jpql = new StringBuilder("select new com.divudi.core.data.dto.StockDTO(");
+            jpql.append("s.id, ");
+            jpql.append("cat.name, ");
+            jpql.append("s.itemBatch.item.name, ");
+            jpql.append("s.itemBatch.item.departmentType, ");
+            jpql.append("s.itemBatch.item.code, ");
+            jpql.append("s.itemBatch.dateOfExpire, ");
+            jpql.append("s.itemBatch.batchNo, ");
+            jpql.append("s.stock, ");
+            jpql.append("s.itemBatch.purcahseRate, ");
+            jpql.append("s.itemBatch.costRate, ");
+            jpql.append("s.itemBatch.retailsaleRate, ");
+            jpql.append("df.name) ");
+            jpql.append("from Stock s ");
+            jpql.append("left join s.itemBatch.item.category cat ");
+            jpql.append("left join s.itemBatch.item.dosageForm df ");
+            jpql.append("where s.stock > 0");
+            jpql.append(" and s.itemBatch.dateOfExpire between :fd and :td");
+            m.put("fd", getFromDate());
+            m.put("td", getToDate());
+
+            if (department != null) {
+                jpql.append(" and s.department=:d");
+                m.put("d", department);
+            }
+            if (site != null) {
+                jpql.append(" and s.department.site=:site");
+                m.put("site", site);
+            }
+            if (institution != null) {
+                jpql.append(" and s.department.institution=:ins");
+                m.put("ins", institution);
+            }
+            if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
+                jpql.append(" and s.itemBatch.item.departmentType IN :departmentTypes");
+                m.put("departmentTypes", selectedDepartmentTypes);
+            }
+            if (category != null) {
+                jpql.append(" and s.itemBatch.item.category=:cat");
+                m.put("cat", category);
+            }
+            if (dosageForm != null) {
+                jpql.append(" and s.itemBatch.item.dosageForm=:df");
+                m.put("df", dosageForm);
+            }
+            jpql.append(" order by s.itemBatch.dateOfExpire");
+
+            stockDtos = (List<StockDTO>) stockFacade.findLightsByJpql(jpql.toString(), m);
+
+            stockPurchaseValue = stockDtos.stream()
+                    .mapToDouble(s -> {
+                        Double pr = s.getPurchaseRate();
+                        Double qty = s.getStockQty();
+                        return (pr == null ? 0.0 : pr) * (qty == null ? 0.0 : qty);
+                    })
+                    .sum();
+            stockSaleValue = stockDtos.stream()
+                    .mapToDouble(s -> {
+                        Double rr = s.getRetailRate();
+                        Double qty = s.getStockQty();
+                        return (rr == null ? 0.0 : rr) * (qty == null ? 0.0 : qty);
+                    })
+                    .sum();
+            stockCostValue = stockDtos.stream()
+                    .mapToDouble(s -> {
+                        Double cr = s.getCostRate();
+                        Double qty = s.getStockQty();
+                        return (cr == null ? 0.0 : cr) * (qty == null ? 0.0 : qty);
+                    })
+                    .sum();
+        }, PharmacyReports.STOCK_REPORT_BY_EXPIRY, sessionController.getLoggedUser());
+    }
+
     public void fillDepartmentExpiaryStocks() {
         reportTimerController.trackReportExecution(() -> {
             if (department == null) {
@@ -1016,8 +1617,6 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
 
     List<Item> items;
     private Item item;
-    
-    
 
     public List<Item> getItems() {
         return items;
@@ -1541,9 +2140,6 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
      */
     @Override
     public Department getDepartment() {
-        if (department == null) {
-            department = sessionController.getDepartment();
-        }
         return department;
     }
 
@@ -1558,6 +2154,37 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
 
     public void setDepartmentType(DepartmentType departmentType) {
         this.departmentType = departmentType;
+    }
+
+    public List<DepartmentType> getSelectedDepartmentTypes() {
+        if (selectedDepartmentTypes == null) {
+            selectedDepartmentTypes = new ArrayList<>();
+        }
+        return selectedDepartmentTypes;
+    }
+
+    public void setSelectedDepartmentTypes(List<DepartmentType> selectedDepartmentTypes) {
+        this.selectedDepartmentTypes = selectedDepartmentTypes;
+    }
+
+    public String getSelectedDepartmentTypesPrintDisplay() {
+        List<DepartmentType> list = getSelectedDepartmentTypes();
+        if (list.isEmpty()) {
+            return "All";
+        }
+
+        return list.stream()
+                .map(DepartmentType::getLabel)
+                .collect(Collectors.joining(", "));
+    }
+
+    public List<DepartmentType> getAvailableDepartmentTypes() {
+        return Arrays.asList(
+                DepartmentType.Pharmacy,
+                DepartmentType.Store,
+                DepartmentType.Lab,
+                DepartmentType.Kitchen
+        );
     }
 
     @Override
@@ -1656,6 +2283,14 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
         this.category = category;
     }
 
+    public DosageForm getDosageForm() {
+        return dosageForm;
+    }
+
+    public void setDosageForm(DosageForm dosageForm) {
+        this.dosageForm = dosageForm;
+    }
+
     @Override
     public Date getFromDate() {
         if (fromDate == null) {
@@ -1684,7 +2319,7 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
         Calendar c = Calendar.getInstance();
         c.set(Calendar.MONTH, c.get(Calendar.MONTH) + 3);
         toDate = c.getTime();
-        fillDepartmentExpiaryStocks();;
+        fillDepartmentExpiaryStockDtos();
     }
 
     public void fillSixMonthsExpiary() {
@@ -1692,7 +2327,7 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
         Calendar c = Calendar.getInstance();
         c.set(Calendar.MONTH, c.get(Calendar.MONTH) + 6);
         toDate = c.getTime();
-        fillDepartmentExpiaryStocks();;
+        fillDepartmentExpiaryStockDtos();
     }
 
     public void fillOneYearExpiary() {
@@ -1700,7 +2335,7 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
         Calendar c = Calendar.getInstance();
         c.set(Calendar.YEAR, c.get(Calendar.YEAR) + 1);
         toDate = c.getTime();
-        fillDepartmentExpiaryStocks();;
+        fillDepartmentExpiaryStockDtos();
     }
 
     public void fillThreeMonthsExpiaryOfSupplier() {
@@ -1918,6 +2553,8 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
             rows = stocks.size();
         } else if (stockDtos != null && !stockDtos.isEmpty()) {
             rows = stockDtos.size();
+        } else if (departmentViceStockDtos != null && !departmentViceStockDtos.isEmpty()) {
+            rows = departmentViceStockDtos.size();
         } else {
             rows = 0;
         }

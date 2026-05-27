@@ -7,67 +7,72 @@
     "branch": "16990-speed-up-the-pharmacy-retail-sale",
     "estimatedDurationMinutes": 3,
     "requiresDowntime": false,
-    "affectedTables": ["PRICEMATRIX", "pricematrix"],
+    "affectedTables": ["PRICEMATRIX"],
     "affectedModules": ["Pharmacy", "Retail Sale", "Cashier Sale", "Discount Management", "Billing"],
     "dependencies": [],
     "preRequisites": [
         "Database backup completed and verified",
-        "Ensure PRICEMATRIX or pricematrix table exists",
+        "Ensure PRICEMATRIX table exists (uppercase - Production/Ubuntu/Linux)",
         "No active long-running queries on PRICEMATRIX table recommended",
-        "Check current index count (SHOW INDEX FROM pricematrix)"
+        "Check current index count (SHOW INDEX FROM PRICEMATRIX)",
+        "NOTE: For Development/Windows (lowercase pricematrix), use migration-dev.sql instead"
     ],
     "migrationSteps": [
         {
             "step": 1,
             "description": "Pre-migration verification - check table existence and current indexes",
-            "sql": "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME IN ('PRICEMATRIX', 'pricematrix')"
+            "sql": "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'PRICEMATRIX'"
         },
         {
             "step": 2,
             "description": "Check current PRICEMATRIX indexes",
-            "sql": "SELECT INDEX_NAME, COLUMN_NAME FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_NAME IN ('PRICEMATRIX', 'pricematrix')"
+            "sql": "SELECT INDEX_NAME, COLUMN_NAME FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_NAME = 'PRICEMATRIX'"
         },
         {
             "step": 3,
-            "description": "Create composite index for Item-level discount queries (PRICEMATRIX - uppercase for Production/Ubuntu)",
-            "sql": "CREATE INDEX idx_psd_item ON PRICEMATRIX(RETIRED, PAYMENTMETHOD, ITEM_ID, PAYMENTSCHEME_ID, MEMBERSHIPSCHEME_ID)"
+            "description": "Create composite index for Item-level discount queries on PRICEMATRIX (Production/Ubuntu - uppercase)",
+            "sql": "CREATE INDEX IF NOT EXISTS idx_psd_item ON PRICEMATRIX(RETIRED, PAYMENTMETHOD, ITEM_ID, PAYMENTSCHEME_ID, MEMBERSHIPSCHEME_ID)"
         },
         {
             "step": 4,
-            "description": "Create composite index for Item-level discount queries (pricematrix - lowercase for Development/Windows)",
-            "sql": "CREATE INDEX idx_psd_item ON pricematrix(RETIRED, PAYMENTMETHOD, ITEM_ID, PAYMENTSCHEME_ID, MEMBERSHIPSCHEME_ID)"
+            "description": "Create composite index for Category-level discount queries on PRICEMATRIX (Production/Ubuntu - uppercase)",
+            "sql": "CREATE INDEX IF NOT EXISTS idx_psd_category ON PRICEMATRIX(RETIRED, PAYMENTMETHOD, CATEGORY_ID, PAYMENTSCHEME_ID, MEMBERSHIPSCHEME_ID)"
         },
         {
             "step": 5,
-            "description": "Create composite index for Category-level discount queries (PRICEMATRIX - uppercase for Production/Ubuntu)",
-            "sql": "CREATE INDEX idx_psd_category ON PRICEMATRIX(RETIRED, PAYMENTMETHOD, CATEGORY_ID, PAYMENTSCHEME_ID, MEMBERSHIPSCHEME_ID)"
+            "description": "Create composite index for Department-level discount queries on PRICEMATRIX (Production/Ubuntu - uppercase)",
+            "sql": "CREATE INDEX IF NOT EXISTS idx_psd_department ON PRICEMATRIX(RETIRED, PAYMENTMETHOD, DEPARTMENT_ID, PAYMENTSCHEME_ID, MEMBERSHIPSCHEME_ID)"
         },
         {
             "step": 6,
-            "description": "Create composite index for Category-level discount queries (pricematrix - lowercase for Development/Windows)",
-            "sql": "CREATE INDEX idx_psd_category ON pricematrix(RETIRED, PAYMENTMETHOD, CATEGORY_ID, PAYMENTSCHEME_ID, MEMBERSHIPSCHEME_ID)"
-        },
-        {
-            "step": 7,
-            "description": "Create composite index for Department-level discount queries (PRICEMATRIX - uppercase for Production/Ubuntu)",
-            "sql": "CREATE INDEX idx_psd_department ON PRICEMATRIX(RETIRED, PAYMENTMETHOD, DEPARTMENT_ID, PAYMENTSCHEME_ID, MEMBERSHIPSCHEME_ID)"
-        },
-        {
-            "step": 8,
-            "description": "Create composite index for Department-level discount queries (pricematrix - lowercase for Development/Windows)",
-            "sql": "CREATE INDEX idx_psd_department ON pricematrix(RETIRED, PAYMENTMETHOD, DEPARTMENT_ID, PAYMENTSCHEME_ID, MEMBERSHIPSCHEME_ID)"
-        },
-        {
-            "step": 9,
-            "description": "Verify index creation on all table name variations",
+            "description": "Verify index creation",
             "sql": "SELECT TABLE_NAME, INDEX_NAME, COLUMN_NAME, SEQ_IN_INDEX FROM INFORMATION_SCHEMA.STATISTICS WHERE INDEX_NAME LIKE 'idx_psd_%' ORDER BY TABLE_NAME, INDEX_NAME, SEQ_IN_INDEX"
         }
     ],
-    "verificationQueries": [
-        "SELECT COUNT(*) FROM INFORMATION_SCHEMA.STATISTICS WHERE INDEX_NAME LIKE 'idx_psd_%'",
-        "SELECT TABLE_NAME, INDEX_NAME, COLUMN_NAME, SEQ_IN_INDEX, CARDINALITY FROM INFORMATION_SCHEMA.STATISTICS WHERE INDEX_NAME LIKE 'idx_psd_%' ORDER BY TABLE_NAME, INDEX_NAME, SEQ_IN_INDEX",
-        "EXPLAIN SELECT DISCOUNTPERCENT FROM pricematrix WHERE RETIRED=0 AND PAYMENTMETHOD='Cash' AND PAYMENTSCHEME_ID IS NULL AND MEMBERSHIPSCHEME_ID IS NULL AND ITEM_ID=1",
-        "EXPLAIN SELECT DISCOUNTPERCENT FROM pricematrix WHERE RETIRED=0 AND PAYMENTMETHOD='Cash' AND PAYMENTSCHEME_ID IS NULL AND MEMBERSHIPSCHEME_ID IS NULL AND CATEGORY_ID=1"
+    "verificationQueries": {
+        "common": [
+            "SELECT COUNT(*) FROM INFORMATION_SCHEMA.STATISTICS WHERE INDEX_NAME LIKE 'idx_psd_%'",
+            "SELECT TABLE_NAME, INDEX_NAME, COLUMN_NAME, SEQ_IN_INDEX, CARDINALITY FROM INFORMATION_SCHEMA.STATISTICS WHERE INDEX_NAME LIKE 'idx_psd_%' ORDER BY TABLE_NAME, INDEX_NAME, SEQ_IN_INDEX"
+        ],
+        "production": [
+            "EXPLAIN SELECT DISCOUNTPERCENT FROM PRICEMATRIX WHERE RETIRED=0 AND PAYMENTMETHOD='Cash' AND PAYMENTSCHEME_ID IS NULL AND MEMBERSHIPSCHEME_ID IS NULL AND ITEM_ID=1",
+            "EXPLAIN SELECT DISCOUNTPERCENT FROM PRICEMATRIX WHERE RETIRED=0 AND PAYMENTMETHOD='Cash' AND PAYMENTSCHEME_ID IS NULL AND MEMBERSHIPSCHEME_ID IS NULL AND CATEGORY_ID=1",
+            "EXPLAIN SELECT DISCOUNTPERCENT FROM PRICEMATRIX WHERE RETIRED=0 AND PAYMENTMETHOD='Cash' AND PAYMENTSCHEME_ID IS NULL AND MEMBERSHIPSCHEME_ID IS NULL AND DEPARTMENT_ID=1"
+        ],
+        "development": [
+            "EXPLAIN SELECT DISCOUNTPERCENT FROM pricematrix WHERE RETIRED=0 AND PAYMENTMETHOD='Cash' AND PAYMENTSCHEME_ID IS NULL AND MEMBERSHIPSCHEME_ID IS NULL AND ITEM_ID=1",
+            "EXPLAIN SELECT DISCOUNTPERCENT FROM pricematrix WHERE RETIRED=0 AND PAYMENTMETHOD='Cash' AND PAYMENTSCHEME_ID IS NULL AND MEMBERSHIPSCHEME_ID IS NULL AND CATEGORY_ID=1",
+            "EXPLAIN SELECT DISCOUNTPERCENT FROM pricematrix WHERE RETIRED=0 AND PAYMENTMETHOD='Cash' AND PAYMENTSCHEME_ID IS NULL AND MEMBERSHIPSCHEME_ID IS NULL AND DEPARTMENT_ID=1"
+        ]
+    },
+    "verificationNotes": [
+        "⚠️ TABLE NAME CASE SENSITIVITY - Environment-specific verification:",
+        "Production/Ubuntu/Linux: Use PRICEMATRIX (uppercase) - run 'production' queries",
+        "Development/Windows: Use pricematrix (lowercase) - run 'development' queries",
+        "Common queries work on all environments (use INFORMATION_SCHEMA)",
+        "EXPLAIN queries verify that idx_psd_* indexes are being used (key column should show index name)",
+        "Expected EXPLAIN output: type=ref, possible_keys should include idx_psd_item/category/department",
+        "If type=ALL appears, index is not being used - check table name case matches your environment"
     ],
     "rollbackNotes": [
         "This migration only adds indexes - safe to rollback",
@@ -99,7 +104,10 @@
         "Avoids loading 12 @ManyToOne relationships in PriceMatrix entity",
         "Compatible with new getPaymentSchemeDiscountPercent() DTO methods",
         "Three indexes cover all discount lookup patterns in the hierarchy",
-        "Covers both PRICEMATRIX (Ubuntu/Production) and pricematrix (Windows/Development) table name variations",
+        "Migration simplified for JPA/JDBC compatibility - no stored procedures or DELIMITER commands",
+        "Uses IF NOT EXISTS for idempotency (can be re-run safely)",
+        "Targets PRICEMATRIX (uppercase) for Production/Ubuntu/Linux environments",
+        "For Development/Windows (lowercase pricematrix), use migration-dev.sql instead",
         "Expected cardinality improvement for discount lookups",
         "Compatible with MySQL InnoDB and MyISAM engines"
     ],

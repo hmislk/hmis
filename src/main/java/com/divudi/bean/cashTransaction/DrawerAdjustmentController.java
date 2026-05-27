@@ -6,18 +6,24 @@
 package com.divudi.bean.cashTransaction;
 
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.WebUserController;
 import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillNumberSuffix;
 import com.divudi.core.data.BillType;
+import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.PaymentMethod;
-import com.divudi.ejb.BillNumberGenerator;
-import com.divudi.ejb.CashTransactionBean;
+import com.divudi.core.data.RequestStatus;
+import com.divudi.core.data.RequestType;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.Request;
 import com.divudi.core.entity.WebUser;
-import com.divudi.core.entity.cashTransaction.CashTransaction;
+import com.divudi.core.entity.cashTransaction.Drawer;
 import com.divudi.core.facade.BillFacade;
-import com.divudi.core.facade.WebUserFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.ejb.BillNumberGenerator;
+import com.divudi.service.DrawerService;
+import com.divudi.service.RequestService;
 import java.io.Serializable;
 import java.util.Calendar;
 import java.util.Date;
@@ -27,6 +33,9 @@ import javax.inject.Inject;
 import javax.inject.Named;
 
 /**
+ * Controller for drawer balance adjustment workflow.
+ * Supports cashier self-request (creates a Request for supervisor approval)
+ * and admin direct adjustment (bypasses approval, applies immediately).
  *
  * @author Buddhika
  */
@@ -36,193 +45,234 @@ public class DrawerAdjustmentController implements Serializable {
 
     @Inject
     SessionController sessionController;
-////////////////////////
+    @Inject
+    WebUserController webUserController;
+    @Inject
+    RequestService requestService;
+
     @EJB
     private BillFacade billFacade;
     @EJB
     BillNumberGenerator billNumberBean;
     @EJB
-    CashTransactionBean cashTransactionBean;
-    /////////////////////////
-    private Bill adjustmentBill;
-    Double value;
-    String comment;
-    private boolean printPreview;
+    DrawerService drawerService;
 
-    /**
-     * Creates a new instance of PharmacySaleController
-     */
+    private WebUser targetDrawerUser;
+    private PaymentMethod paymentMethod;
+    private Double adjustmentDelta;
+    private String reason;
+
     public DrawerAdjustmentController() {
     }
 
-    public Bill getAdjustmentBill() {
-        if (adjustmentBill == null) {
-            adjustmentBill = new BilledBill();
-            adjustmentBill.setBillType(BillType.DrawerAdjustment);
+    // <editor-fold defaultstate="collapsed" desc="Navigation">
+    public String navigateToRequestAdjustment() {
+        WebUser loggedUser = sessionController.getLoggedUser();
+        if (requestService.hasPendingDrawerAdjustmentRequest(loggedUser)) {
+            JsfUtil.addErrorMessage("You already have a pending drawer adjustment request. Please wait for it to be approved or rejected before submitting a new one.");
+            return "";
         }
-        return adjustmentBill;
+        makeNull();
+        targetDrawerUser = loggedUser;
+        return "/cashier/drawer_adjustment_request?faces-redirect=true";
     }
 
-    public void setAdjustmentPreBill(Bill adjustmentPreBill) {
-        this.adjustmentBill = adjustmentPreBill;
+    public String navigateToAdminAdjustment() {
+        if (!webUserController.hasPrivilege("DrawerAdjustmentDirect")) {
+            JsfUtil.addErrorMessage("You are not authorized to perform direct drawer adjustments.");
+            return "";
+        }
+        makeNull();
+        return "/cashier/drawer_adjustment_admin?faces-redirect=true";
+    }
+    // </editor-fold>
+
+    // <editor-fold defaultstate="collapsed" desc="Cashier Self-Request">
+    public String submitAdjustmentRequest() {
+        if (requestService.hasPendingDrawerAdjustmentRequest(sessionController.getLoggedUser())) {
+            JsfUtil.addErrorMessage("You already have a pending drawer adjustment request. Please wait for it to be approved or rejected before submitting a new one.");
+            return "";
+        }
+        if (!validateInput(true)) {
+            return "";
+        }
+
+        Bill bill = createAndPersistAdjustmentBill(sessionController.getLoggedUser());
+
+        Request request = new Request();
+        request.setRequestType(RequestType.DRAWER_ADJUSTMENT);
+        request.setStatus(RequestStatus.PENDING);
+        request.setBill(bill);
+        request.setRequester(sessionController.getLoggedUser());
+        request.setRequestAt(new Date());
+        request.setRequestReason(reason);
+        request.setTargetWebUser(targetDrawerUser);
+        request.setPaymentMethod(paymentMethod);
+        request.setInstitution(sessionController.getInstitution());
+        request.setDepartment(sessionController.getDepartment());
+
+        requestService.save(request, sessionController.getLoggedUser());
+        request.setRequestNo("DRADJ-" + request.getId());
+        requestService.save(request, sessionController.getLoggedUser());
+
+        JsfUtil.addSuccessMessage("Drawer adjustment request submitted successfully. Request No: " + request.getRequestNo());
+        makeNull();
+        return "/cashier/index?faces-redirect=true";
+    }
+    // </editor-fold>
+
+    // <editor-fold defaultstate="collapsed" desc="Admin Direct Adjustment">
+    public String applyDirectAdjustment() {
+        if (!webUserController.hasPrivilege("DrawerAdjustmentDirect")) {
+            JsfUtil.addErrorMessage("You are not authorized to perform direct drawer adjustments.");
+            return "";
+        }
+
+        if (targetDrawerUser == null) {
+            JsfUtil.addErrorMessage("Please select a user.");
+            return "";
+        }
+
+        if (!validateInput(false)) {
+            return "";
+        }
+
+        Drawer drawer = drawerService.getUsersDrawer(targetDrawerUser);
+        if (drawer == null) {
+            JsfUtil.addErrorMessage("Drawer not found for the selected user.");
+            return "";
+        }
+
+        Bill bill = createAndPersistAdjustmentBill(sessionController.getLoggedUser());
+        drawerService.applyDrawerAdjustment(drawer, paymentMethod, adjustmentDelta, bill, sessionController.getLoggedUser());
+
+        JsfUtil.addSuccessMessage("Drawer adjusted successfully. Bill No: " + bill.getDeptId());
+        makeNull();
+        return "/cashier/index?faces-redirect=true";
+    }
+    // </editor-fold>
+
+    // <editor-fold defaultstate="collapsed" desc="Private Helpers">
+    private boolean validateInput(boolean requireTargetUser) {
+        if (requireTargetUser && targetDrawerUser == null) {
+            JsfUtil.addErrorMessage("Target user is not set.");
+            return false;
+        }
+        if (paymentMethod == null) {
+            JsfUtil.addErrorMessage("Please select a payment method.");
+            return false;
+        }
+        if (adjustmentDelta == null) {
+            JsfUtil.addErrorMessage("Please enter an adjustment amount.");
+            return false;
+        }
+        if (reason == null || reason.trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Please provide a reason for the adjustment.");
+            return false;
+        }
+        return true;
     }
 
-    public Double getValue() {
-        return value;
+    private Bill createAndPersistAdjustmentBill(WebUser creator) {
+        BilledBill bill = new BilledBill();
+        bill.setBillType(BillType.DrawerAdjustment);
+        bill.setBillTypeAtomic(BillTypeAtomic.DRAWER_ADJUSTMENT);
+        bill.setCreatedAt(Calendar.getInstance().getTime());
+        bill.setCreater(creator);
+        bill.setDeptId(billNumberBean.institutionBillNumberGenerator(
+                sessionController.getDepartment(), BillType.DrawerAdjustment, BillClassType.BilledBill, BillNumberSuffix.DRADJ));
+        bill.setInsId(billNumberBean.institutionBillNumberGenerator(
+                sessionController.getInstitution(), BillType.DrawerAdjustment, BillClassType.BilledBill, BillNumberSuffix.DRADJ));
+        bill.setDepartment(sessionController.getDepartment());
+        bill.setInstitution(sessionController.getInstitution());
+        bill.setFromDepartment(sessionController.getDepartment());
+        bill.setFromInstitution(sessionController.getInstitution());
+        bill.setNetTotal(adjustmentDelta);
+        bill.setComments(reason);
+        billFacade.create(bill);
+        return bill;
     }
-
-    public void setValue(Double value) {
-        this.value = value;
-    }
+    // </editor-fold>
 
     public void makeNull() {
-        printPreview = false;
-        comment = null;
-        value = null;
-        adjustmentBill = null;
+        targetDrawerUser = null;
+        paymentMethod = null;
+        adjustmentDelta = null;
+        reason = null;
     }
 
-    private void saveAdjustmentBill() {
-        getAdjustmentBill().setCreatedAt(Calendar.getInstance().getTime());
-        getAdjustmentBill().setCreater(getSessionController().getLoggedUser());
-        getAdjustmentBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), getAdjustmentBill().getBillType(), BillClassType.BilledBill, BillNumberSuffix.DRADJ));
-        getAdjustmentBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), getAdjustmentBill().getBillType(), BillClassType.BilledBill, BillNumberSuffix.DRADJ));
-        getAdjustmentBill().setDepartment(getSessionController().getLoggedUser().getDepartment());
-        getAdjustmentBill().setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
-        getAdjustmentBill().setToDepartment(null);
-        getAdjustmentBill().setToInstitution(null);
-        getAdjustmentBill().setFromDepartment(getSessionController().getLoggedUser().getDepartment());
-        getAdjustmentBill().setFromInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
-        getAdjustmentBill().setComments(comment);
-        if (getAdjustmentBill().getId() == null) {
-            getBillFacade().create(getAdjustmentBill());
-        } else {
-            getBillFacade().edit(getAdjustmentBill());
+    public boolean isHasPendingRequest() {
+        return requestService.hasPendingDrawerAdjustmentRequest(sessionController.getLoggedUser());
+    }
+
+    public Double getCurrentBalance() {
+        WebUser user = targetDrawerUser != null ? targetDrawerUser : sessionController.getLoggedUser();
+        if (user == null || paymentMethod == null) {
+            return null;
+        }
+        Drawer drawer = drawerService.findUsersDrawerWithoutCreate(user);
+        if (drawer == null) {
+            return null;
+        }
+        switch (paymentMethod) {
+            case Cash: return drawer.getCashInHandValue();
+            case Card: return drawer.getCardInHandValue();
+            case Cheque: return drawer.getChequeInHandValue();
+            case Slip: return drawer.getSlipInHandValue();
+            case ewallet: return drawer.getEwalletInHandValue();
+            case Credit: return drawer.getCreditInHandValue();
+            case Staff: return drawer.getStaffInHandValue();
+            case Staff_Welfare: return drawer.getStaffWelfareInHandValue();
+            case Voucher: return drawer.getVoucherInHandValue();
+            case IOU: return drawer.getIouInHandValue();
+            case Agent: return drawer.getAgentInHandValue();
+            case PatientDeposit: return drawer.getPatientDepositInHandValue();
+            case PatientPoints: return drawer.getPatientPointsInHandValue();
+            case OnlineSettlement: return drawer.getOnlineSettlementInHandValue();
+            case None: return drawer.getNoneInHandValue();
+            default: return null;
         }
     }
 
-    private boolean errorCheck() {
-//        if (getSessionController().getLoggedUser().getDrawer() == null) {
-//            return true;
-//        }
-
-        if (getValue() == null) {
-            return true;
+    public Double getBalanceAfterAdjustment() {
+        Double current = getCurrentBalance();
+        if (current == null || adjustmentDelta == null) {
+            return null;
         }
-
-        return false;
+        return current + adjustmentDelta;
     }
 
-    public CashTransactionBean getCashTransactionBean() {
-        return cashTransactionBean;
+    // <editor-fold defaultstate="collapsed" desc="Getters & Setters">
+    public WebUser getTargetDrawerUser() {
+        return targetDrawerUser;
     }
 
-    public void setCashTransactionBean(CashTransactionBean cashTransactionBean) {
-        this.cashTransactionBean = cashTransactionBean;
+    public void setTargetDrawerUser(WebUser targetDrawerUser) {
+        this.targetDrawerUser = targetDrawerUser;
     }
 
-    @EJB
-    WebUserFacade webUserFacade;
-
-    public WebUserFacade getWebUserFacade() {
-        return webUserFacade;
+    public PaymentMethod getPaymentMethod() {
+        return paymentMethod;
     }
 
-    public void setWebUserFacade(WebUserFacade webUserFacade) {
-        this.webUserFacade = webUserFacade;
+    public void setPaymentMethod(PaymentMethod paymentMethod) {
+        this.paymentMethod = paymentMethod;
     }
 
-    private void save(double ballance, PaymentMethod paymentMethod) {
-
-        saveAdjustmentBill();
-
-        double difference = ballance - getValue();
-
-//        System.err.println("Cash Balance " + cashBallance);
-//        System.err.println("Difference  " + difference);
-        CashTransaction cashTransaction = new CashTransaction();
-        cashTransaction.setCreatedAt(new Date());
-        cashTransaction.setCreater(getSessionController().getLoggedUser());
-
-        if (difference < 0) {
-            //  System.err.println("Adding");
-            switch (paymentMethod) {
-                case Cash:
-                    cashTransaction.setCashValue(0 - difference);
-                    break;
-                case Card:
-                    cashTransaction.setCreditCardValue(0 - difference);
-                    break;
-                case Cheque:
-                    cashTransaction.setChequeValue(0 - difference);
-                    break;
-                case Slip:
-                    cashTransaction.setSlipValue(0 - difference);
-                    break;
-            }
-
-//            getCashTransactionBean().saveCashAdjustmentTransactionIn(cashTransaction, adjustmentBill, getSessionController().getLoggedUser().getDrawer(), getSessionController().getLoggedUser());
-            getAdjustmentBill().setCashTransaction(cashTransaction);
-            getAdjustmentBill().setNetTotal(0 - difference);
-            getBillFacade().edit(getAdjustmentBill());
-//            getCashTransactionBean().addToBallance(getSessionController().getLoggedUser().getDrawer(), cashTransaction);
-
-        } else {
-            //System.err.println("Diduct");
-            switch (paymentMethod) {
-                case Cash:
-                    cashTransaction.setCashValue(0 - difference);
-                    break;
-                case Card:
-                    cashTransaction.setCreditCardValue(0 - difference);
-                    break;
-                case Cheque:
-                    cashTransaction.setChequeValue(0 - difference);
-                    break;
-                case Slip:
-                    cashTransaction.setSlipValue(0 - difference);
-                    break;
-            }
-
-//            getCashTransactionBean().saveCashAdjustmentTransactionOut(cashTransaction, adjustmentBill, getSessionController().getLoggedUser().getDrawer(), getSessionController().getLoggedUser());
-            getAdjustmentBill().setCashTransaction(cashTransaction);
-            getAdjustmentBill().setNetTotal(0 - difference);
-            getBillFacade().edit(getAdjustmentBill());
-//            getCashTransactionBean().deductFromBallance(getSessionController().getLoggedUser().getDrawer(), cashTransaction);
-        }
-
-        WebUser wb = getWebUserFacade().find(getSessionController().getLoggedUser().getId());
-        getSessionController().setLoggedUser(wb);
-
-        printPreview = true;
+    public Double getAdjustmentDelta() {
+        return adjustmentDelta;
     }
 
-    public void saveAdjustBillCash() {
-        if (errorCheck()) {
-            return;
-        }
-//        save(getSessionController().getLoggedUser().getDrawer().getRunningBallance(), PaymentMethod.Cash);
+    public void setAdjustmentDelta(Double adjustmentDelta) {
+        this.adjustmentDelta = adjustmentDelta;
     }
 
-    public void saveAdjustBillCheque() {
-        if (errorCheck()) {
-            return;
-        }
-//        save(getSessionController().getLoggedUser().getDrawer().getChequeBallance(), PaymentMethod.Cheque);
+    public String getReason() {
+        return reason;
     }
 
-    public void saveAdjustBillSlip() {
-        if (errorCheck()) {
-            return;
-        }
-//        save(getSessionController().getLoggedUser().getDrawer().getSlipBallance(), PaymentMethod.Slip);
-    }
-
-    public void saveAdjustBillCreditCard() {
-        if (errorCheck()) {
-            return;
-        }
-//        save(getSessionController().getLoggedUser().getDrawer().getCreditCardBallance(), PaymentMethod.Card);
+    public void setReason(String reason) {
+        this.reason = reason;
     }
 
     public SessionController getSessionController() {
@@ -241,14 +291,6 @@ public class DrawerAdjustmentController implements Serializable {
         this.billFacade = billFacade;
     }
 
-    public String getComment() {
-        return comment;
-    }
-
-    public void setComment(String comment) {
-        this.comment = comment;
-    }
-
     public BillNumberGenerator getBillNumberBean() {
         return billNumberBean;
     }
@@ -257,12 +299,6 @@ public class DrawerAdjustmentController implements Serializable {
         this.billNumberBean = billNumberBean;
     }
 
-    public boolean isPrintPreview() {
-        return printPreview;
-    }
-
-    public void setPrintPreview(boolean printPreview) {
-        this.printPreview = printPreview;
-    }
+    // </editor-fold>
 
 }

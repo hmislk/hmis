@@ -3,6 +3,7 @@ package com.divudi.bean.common;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.OptionScope;
 import com.divudi.core.data.OptionValueType;
+import com.divudi.core.data.inward.InwardChargeType;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
@@ -22,6 +23,7 @@ import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 import org.jsoup.Jsoup;
 import org.jsoup.safety.Safelist;
 
@@ -35,6 +37,9 @@ public class ConfigOptionApplicationController implements Serializable {
 
     @EJB
     private ConfigOptionFacade optionFacade;
+
+    @Inject
+    private EnumController enumController;
 
     private List<ConfigOption> options;
 //    private List<Denomination> denominations;
@@ -110,7 +115,11 @@ public class ConfigOptionApplicationController implements Serializable {
             loadReportMethodConfigurationDefaults();
             loadAllCashierSummaryConfigurationDefaults();
             loadOpdBillingConfigurationDefaults();
+            loadPettyCashBillingConfigurationDefaults();
             loadDatabaseVersionConfigurationDefaults();
+            loadAiChatConfigurationDefaults();
+            loadStockHistoryArchiveConfigurationDefaults();
+            enumController.resetPaymentMethods();
         } finally {
             isLoadingApplicationOptions = false;
         }
@@ -119,6 +128,15 @@ public class ConfigOptionApplicationController implements Serializable {
     private void loadOpdBillingConfigurationDefaults() {
         // Feature toggle: whether all departments share the same OPD payment methods
         getBooleanValueByKey("All Departments Use Same Payment Methods for OPD Billing", true);
+    }
+
+    private void loadPettyCashBillingConfigurationDefaults() {
+        // Cash enabled by default, all others disabled
+        for (PaymentMethod pm : PaymentMethod.values()) {
+            String key = pm.getLabel() + " is available for Petty Cash Billing";
+            boolean defaultValue = (pm == PaymentMethod.Cash); // Only Cash = true
+            getBooleanValueByKey(key, defaultValue);
+        }
     }
 
     private void loadDatabaseVersionConfigurationDefaults() {
@@ -130,6 +148,8 @@ public class ConfigOptionApplicationController implements Serializable {
         getBooleanValueByKey("Require Migration Confirmation", true);
         getBooleanValueByKey("Enable Migration Progress Tracking", true);
         getBooleanValueByKey("Log Migration Execution Details", true);
+        // Wiki DDL version tracking — UNCHECKED means not yet verified against wiki
+        getShortTextValueByKey("DATABASE_DDL_VERSION", "UNCHECKED");
     }
 
     private void loadEmailGatewayConfigurationDefaults() {
@@ -176,6 +196,9 @@ public class ConfigOptionApplicationController implements Serializable {
         getBooleanValueByKey("GRN Returns is only after Approval", true);
         getBooleanValueByKey("GRN Return can be done without Approval", true);
 
+        // Stock Upload Configuration
+        getBooleanValueByKey("Allow Expired Items in Direct Purchase Stock Upload", false);
+
         // Payment Generation Configuration
         getBooleanValueByKey("Generate Payments for GRN, GRN Returns, Direct Purchase, and Direct Purchase Returns", false);
 
@@ -194,6 +217,7 @@ public class ConfigOptionApplicationController implements Serializable {
         // Future development: Apply these patterns to additional bill types as needed
 
         getShortTextValueByKey("Bill Number Delimiter", "/");
+        getIntegerValueByKey("Bill Number Serial Digit Count", 6);
 
         // Generic bill numbering strategies (for backward compatibility)
         getBooleanValueByKey("Bill Number Generation Strategy for Department ID is Prefix Dept Ins Year Count", false);
@@ -357,6 +381,10 @@ public class ConfigOptionApplicationController implements Serializable {
         getBooleanValueByKey("Patient Address is required in Pharmacy Retail Sale", false);
         getBooleanValueByKey("Patient Area is required in Pharmacy Retail Sale", false);
         getBooleanValueByKey("Referring Doctor is required in Pharmacy Retail Sale", false);
+
+        // Pharmacy Sale UI Configuration Options
+        // These options control UI behavior in pharmacy retail sales
+        getBooleanValueByKey("Allow Editing Quantity of Added Items in Pharmacy Retail Sale for Cashier", false);
     }
 
     private void loadPharmacyIssueReceiptConfigurationDefaults() {
@@ -1092,6 +1120,9 @@ public class ConfigOptionApplicationController implements Serializable {
         getBooleanValueByKey("Pharmacy Search Sale Bill - Legacy Method", true);
         getBooleanValueByKey("Pharmacy Search Sale Bill - Optimized Method", false);
 
+        // Inventory Reports
+        getBooleanValueByKey("Cost of Goods Sold Report - Display Stock Correction Section", true);
+
         // Analytics Reports
         getBooleanValueByKey("All Bill List Report - Legacy Method", true);
         getBooleanValueByKey("All Bill List Report - Optimized Method", false);
@@ -1132,6 +1163,12 @@ public class ConfigOptionApplicationController implements Serializable {
         return "Include " + label + " in Collection Total";
     }
 
+    private void loadStockHistoryArchiveConfigurationDefaults() {
+        getIntegerValueByKey("StockHistory Archive - Retention Days", 730);
+        getIntegerValueByKey("StockHistory Archive - Batch Size", 2000);
+        getIntegerValueByKey("StockHistory Archive - Max Batches Per Run", 50);
+    }
+
     public ConfigOption getApplicationOption(String key) {
         if (applicationOptions == null) {
             loadApplicationOptions();
@@ -1156,7 +1193,11 @@ public class ConfigOptionApplicationController implements Serializable {
     public void saveShortTextOption(String key, String value) {
         ConfigOption option = getApplicationOption(key);
         if (option == null) {
-            option = createApplicationOptionIfAbsent(key, OptionValueType.SHORT_TEXT, value);
+            createApplicationOptionIfAbsent(key, OptionValueType.SHORT_TEXT, value);
+        } else {
+            option.setOptionValue(value);
+            optionFacade.edit(option);
+            loadApplicationOptions();
         }
     }
 
@@ -1304,6 +1345,20 @@ public class ConfigOptionApplicationController implements Serializable {
             option = createApplicationOptionIfAbsent(key, OptionValueType.SHORT_TEXT, defaultValue);
         }
         return option.getOptionValue();
+    }
+
+    public String getInwardChargeTypeLabel(InwardChargeType type) {
+        String key = "Inward Charge Type Label - " + type.name();
+        String custom = getShortTextValueByKey(key, "");
+        if (custom == null || custom.trim().isEmpty()) {
+            return type.getLabel();
+        }
+        return custom;
+    }
+
+    public void saveInwardChargeTypeLabel(InwardChargeType type, String customLabel) {
+        String key = "Inward Charge Type Label - " + type.name();
+        saveShortTextOption(key, customLabel == null ? "" : customLabel.trim());
     }
 
     public String getColorValueByKey(String key) {
@@ -1495,6 +1550,15 @@ public class ConfigOptionApplicationController implements Serializable {
         }
 
         throw new IllegalArgumentException("Unsupported type conversion requested: " + type.getSimpleName() + " for value type " + valueType);
+    }
+
+    private void loadAiChatConfigurationDefaults() {
+        getBooleanValueByKey("AI Chat - Enabled", true);
+        getShortTextValueByKey("AI Chat - Claude API Key", "");
+        getShortTextValueByKey("AI Chat - Claude Model", "claude-opus-4-6");
+        getShortTextValueByKey("AI Chat - GitHub Branch", "development");
+        getShortTextValueByKey("AI Chat - GitHub Token", "");
+        getIntegerValueByKey("AI Chat - Max Tokens", 4096);
     }
 
     public List<ConfigOption> getOptions() {

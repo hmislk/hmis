@@ -181,7 +181,7 @@ body {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
-    font-size: 0.875rem;
+    font-size: 1.0rem;
 }
 
 .sample-row {

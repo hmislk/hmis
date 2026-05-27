@@ -106,13 +106,14 @@ public class PettyCashBillSearch implements Serializable {
     WebUser user;
     private SearchKeyword searchKeyword;
 
-
     public String navigateToPettyCashCancel() {
-        return "petty_cash_bill_cancel";
-
+        if (bill == null) {
+            JsfUtil.addErrorMessage("No bill selected.");
+            return "";
+        }
+        pettyCashBillController.setCurrent(bill);
+        return pettyCashBillController.navigateToPettyCashCancel();
     }
-
-
 
     public void sendToApprovePettyCashBillCancellation() {
         Bill b = new Bill();

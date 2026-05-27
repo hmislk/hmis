@@ -84,7 +84,7 @@ public class DischargeController implements Serializable {
             getFacade().edit(getCurrent());
             JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            JsfUtil.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addErrorMessage("Nothing to Delete");
         }
         makeNull();
         getItems();

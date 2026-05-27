@@ -12,6 +12,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.Temporal;
+import javax.persistence.Transient;
 
 /**
  *
@@ -22,7 +23,7 @@ public class WebUserRoleUser implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne
@@ -43,15 +44,8 @@ public class WebUserRoleUser implements Serializable {
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date retiredAt;
     private String retireComments;
-    //Editer Properties
-    @ManyToOne
-
-    private WebUser editer;
-
-    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
-    private Date editedAt;
-
-
+    @Transient
+    private Boolean needUpdateUserRole;
 
 
     public Long getId() {
@@ -143,22 +137,6 @@ public class WebUserRoleUser implements Serializable {
         this.retireComments = retireComments;
     }
 
-    public WebUser getEditer() {
-        return editer;
-    }
-
-    public void setEditer(WebUser editer) {
-        this.editer = editer;
-    }
-
-    public Date getEditedAt() {
-        return editedAt;
-    }
-
-    public void setEditedAt(Date editedAt) {
-        this.editedAt = editedAt;
-    }
-
     public WebUserRole getWebUserRole() {
         return webUserRole;
     }
@@ -173,5 +151,13 @@ public class WebUserRoleUser implements Serializable {
 
     public void setDepartment(Department department) {
         this.department = department;
+    }
+
+    public Boolean getNeedUpdateUserRole() {
+        return webUserRole != null;
+    }
+
+    public void setNeedUpdateUserRole(Boolean needUpdateUserRole) {
+        this.needUpdateUserRole = needUpdateUserRole;
     }
 }

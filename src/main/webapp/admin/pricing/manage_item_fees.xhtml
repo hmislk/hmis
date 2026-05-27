@@ -35,6 +35,9 @@
                                             maxResults="10"
                                             inputStyleClass="w-100">
                                 <p:ajax event="itemSelect" process="@this" update="gpFees lblTotal lblCode" listener="#{itemFeeManager.fillFees()}"></p:ajax>
+                                <p:column headerText="Code" style="padding: 6px;" >
+                                    <p:outputLabel value="#{ix.code}" ></p:outputLabel>
+                                </p:column>
                                 <p:column headerText="Type" style="padding: 6px;" >
                                     <p:outputLabel value="#{ix.class.simpleName}" ></p:outputLabel>
                                 </p:column>
@@ -118,9 +121,15 @@
                                 </p:selectOneMenu>
 
                                 <p:outputLabel value="Discounts Allowed" ></p:outputLabel>
-                                <p:selectBooleanButton 
+                                <p:selectBooleanButton
                                     class="w-100"
                                     value="#{itemFeeManager.itemFee.discountAllowed}" offLabel="Discounts NOT Allowed" onLabel="Discounts Allowed" >
+                                </p:selectBooleanButton>
+
+                                <p:outputLabel value="Service Charge Allowed" ></p:outputLabel>
+                                <p:selectBooleanButton
+                                    class="w-100"
+                                    value="#{itemFeeManager.itemFee.marginAllowed}" offLabel="Service Charge NOT Allowed" onLabel="Service Charge Allowed" >
                                 </p:selectBooleanButton>
 
                                 <h:panelGroup id="gpLblIns" rendered="#{itemFeeManager.itemFee.feeType eq 'OtherInstitution' or itemFeeManager.itemFee.feeType eq 'OwnInstitution'  or itemFeeManager.itemFee.feeType eq 'Referral' }" >
@@ -219,7 +228,11 @@
                                     </p:selectBooleanButton>
                                 </p:column>
 
-
+                                <p:column headerText="Service Charge Allowed" >
+                                    <p:selectBooleanButton value="#{f.marginAllowed}" offLabel="Service Charge NOT Allowed" onLabel="Service Charge Allowed" >
+                                        <p:ajax process="@this" listener="#{itemFeeManager.updateFee(f)}" ></p:ajax>
+                                    </p:selectBooleanButton>
+                                </p:column>
 
                                 <p:column headerText="For" >
 

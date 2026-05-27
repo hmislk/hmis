@@ -81,7 +81,9 @@
 
                         <div class="my-4" style="font-weight: bold;text-align: center;">
                             <h1><h:outputLabel value="#{cc.attrs.admission.admissionType.name}" /></h1>
-
+                            <h:panelGroup rendered="#{cc.attrs.admission.parentEncounter != null}">
+                                <h2 style="color: #c0392b;">BABY ADMISSION</h2>
+                            </h:panelGroup>
                         </div>
 
                         <div class="row d-flex justify-content-center ">
@@ -341,6 +343,40 @@
                                 </div>
                             </div>
                         </div>
+
+                        <h:panelGroup rendered="#{cc.attrs.admission.parentEncounter != null}">
+                            <div class="my-4" style="font-weight: bold;margin-left: 10%;">
+                                <p:outputLabel value="MOTHER'S ADMISSION DETAILS" />
+                            </div>
+                            <div class="row">
+                                <div class="col-6">
+                                    <div>
+                                        <h:outputLabel value="Mother's Name : " />
+                                        <h:outputLabel value="#{cc.attrs.admission.parentEncounter.patient.person.nameWithTitle}" />
+                                    </div>
+                                    <div>
+                                        <h:outputLabel value="Mother's BHT No : " />
+                                        <h:outputLabel value="#{cc.attrs.admission.parentEncounter.bhtNo}" />
+                                    </div>
+                                    <div>
+                                        <h:outputLabel value="Mother's Room : " />
+                                        <h:outputLabel value="#{cc.attrs.admission.parentEncounter.currentPatientRoom.roomFacilityCharge.name}" />
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div>
+                                        <h:outputLabel value="Mother's Mobile : " />
+                                        <h:outputLabel value="#{cc.attrs.admission.parentEncounter.patient.person.mobile}" />
+                                    </div>
+                                    <div>
+                                        <h:outputLabel value="Date of Admission : " />
+                                        <h:outputLabel value="#{cc.attrs.admission.parentEncounter.dateOfAdmission}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
+                                        </h:outputLabel>
+                                    </div>
+                                </div>
+                            </div>
+                        </h:panelGroup>
 
                         <div class="my-5" style="font-weight: bold">
                             <p>

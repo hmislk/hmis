@@ -50,7 +50,7 @@ public class PatientReport implements Serializable, RetirableEntity {
 
     private static final long serialVersionUID = 1L;
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @ManyToOne
     private Item item;
@@ -175,7 +175,15 @@ public class PatientReport implements Serializable, RetirableEntity {
     private String patientName;
     private String patientAge;
     private String patientGender;
+    
+    private Boolean requiresImmediateDoctorReview;
+    
+    private Boolean handoverComplete = false;
+    private Boolean printComplete = false;
+    private Boolean sendSMSComplete = false;
+    private Boolean sendEmailComplete = false;
 
+    
     public PatientReport() {
         if (status == null) {
             status = PatientInvestigationStatus.ORDERED;
@@ -864,6 +872,46 @@ public class PatientReport implements Serializable, RetirableEntity {
 
     public void setPatientGender(String patientGender) {
         this.patientGender = patientGender;
+    }
+
+    public Boolean getRequiresImmediateDoctorReview() {
+        return requiresImmediateDoctorReview;
+    }
+
+    public void setRequiresImmediateDoctorReview(Boolean requiresImmediateDoctorReview) {
+        this.requiresImmediateDoctorReview = requiresImmediateDoctorReview;
+    }
+
+    public Boolean getHandoverComplete() {
+        return handoverComplete;
+    }
+
+    public void setHandoverComplete(Boolean handoverComplete) {
+        this.handoverComplete = handoverComplete;
+    }
+
+    public Boolean getPrintComplete() {
+        return printComplete;
+    }
+
+    public void setPrintComplete(Boolean printComplete) {
+        this.printComplete = printComplete;
+    }
+
+    public Boolean getSendSMSComplete() {
+        return sendSMSComplete;
+    }
+
+    public void setSendSMSComplete(Boolean sendSMSComplete) {
+        this.sendSMSComplete = sendSMSComplete;
+    }
+
+    public Boolean getSendEmailComplete() {
+        return sendEmailComplete;
+    }
+
+    public void setSendEmailComplete(Boolean sendEmailComplete) {
+        this.sendEmailComplete = sendEmailComplete;
     }
     
     

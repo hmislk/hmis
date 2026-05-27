@@ -161,6 +161,11 @@
                                     </h:outputText>
                                 </td>
                                 <td style="text-align: right;">
+                                    <h:outputText value="#{bip.pharmaceuticalBillItem.lastPurchaseRate}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </td>
+                                <td style="text-align: right;">
                                     <h:outputText value="#{bip.billItemFinanceDetails.lineGrossRate}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
@@ -268,6 +273,15 @@
                         <td colspan="9" style="text-align: left; font-weight: bold!important;">Net Total</td>
                         <td colspan="2" style="text-align: right; font-weight: bold!important;">
                             <h:outputText value="#{cc.attrs.bill.netTotal}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
+                        </td>
+                    </tr>
+
+                    <tr style="font-size: 15px">
+                        <td colspan="9" style="text-align: left; font-weight: bold!important;">Total Bill Value</td>
+                        <td colspan="2" style="text-align: right; font-weight: bold!important;">
+                            <h:outputText value="#{cc.attrs.bill.billFinanceDetails.totalBillValue}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputText>
                         </td>

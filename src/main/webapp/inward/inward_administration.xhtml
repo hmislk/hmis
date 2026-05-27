@@ -21,11 +21,27 @@
                                                              class="w-100" 
                                                              action="#{admissionTypeController.navigateToManageAdmissionTypes}"  >
                                             </p:commandButton>
-                                            <p:commandButton 
+                                            <p:commandButton
                                                 ajax="false"
-                                                value="Admission Items and Fees" 
+                                                value="Admission Items and Fees"
                                                 class="w-100"
                                                 action="#{admissionTypeController.navigateToManageAdmissionItemsAndFees()}"  ></p:commandButton>
+                                            <p:commandButton
+                                                ajax="false"
+                                                value="BHT Number Management"
+                                                class="w-100"
+                                                action="#{admissionNumberController.navigateToManageAdmissionNumbers()}" />
+                                        </div>
+                                    </p:tab>
+                                    
+                                    <p:tab title="Surgery Types">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton ajax="false" 
+                                                             value="Surgery Types" 
+                                                             class="w-100" 
+                                                             action="/inward/inward_surgery_type?faces-redirect=true"  >
+                                            </p:commandButton>
+                                           
                                         </div>
                                     </p:tab>
 
@@ -59,6 +75,14 @@
                                         </div>
                                     </p:tab>
 
+                                    <p:tab title="Discount Matrix">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton ajax="false" value="Inward Discount Matrix - Services and Investigations" class="w-100" action="#{inwardDiscountMatrixController.navigateToDiscountMatrixServiceInvestigation()}"></p:commandButton>
+                                            <p:commandButton ajax="false" value="Inward Discount Matrix - Pharmacy" class="w-100" action="#{inwardDiscountMatrixController.navigateToDiscountMatrixPharmacy()}"></p:commandButton>
+                                            <p:commandButton ajax="false" value="Inward Discount Matrix - Room Facility Charges" class="w-100" action="#{inwardDiscountMatrixController.navigateToDiscountMatrixRoomCharges()}"></p:commandButton>
+                                        </div>
+                                    </p:tab>
+
                                     <p:tab title="Analytics">
                                         <div class="d-grid gap-2">
                                             <p:commandButton ajax="false" value="Inward Prices" class="w-100" action="/inward/?faces-redirect=true" ></p:commandButton>
@@ -79,6 +103,31 @@
                                                 action="#{uploadController.toListDiagnosisCardUploads()}" >
                                             </p:commandButton>
 
+                                        </div>
+                                    </p:tab>
+
+                                    <p:tab title="Appointment Schedules">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton ajax="false"
+                                                             value="Appointment Schedule Templates"
+                                                             class="w-100"
+                                                             icon="fa fa-calendar"
+                                                             action="#{appointmentScheduleTemplateController.navigateToManageTemplates()}" />
+                                            <p:commandButton ajax="false"
+                                                             value="Appointment Date Overrides"
+                                                             class="w-100"
+                                                             icon="fa fa-calendar-times-o"
+                                                             action="#{appointmentScheduleTemplateController.navigateToManageDateOverrides()}" />
+                                        </div>
+                                    </p:tab>
+
+                                    <p:tab title="Charge Type Labels">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton
+                                                ajax="false"
+                                                value="Manage Charge Type Labels"
+                                                class="w-100"
+                                                action="inward_charge_type_labels?faces-redirect=true"/>
                                         </div>
                                     </p:tab>
 

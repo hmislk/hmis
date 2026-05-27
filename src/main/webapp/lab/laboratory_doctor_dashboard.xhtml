@@ -21,7 +21,7 @@
 
                 <h:form>
                     <div class="row m-2">
-                        <div class="col-md-10">
+                        <div class="col-md-12">
                             <h:panelGrid columns="6" class="w-100" style="font-weight: bolder">
 
                                 <h:panelGrid columns="1" class="w-100">
@@ -176,40 +176,24 @@
                                         </p:selectOneMenu>
                                     </h:panelGroup>
                                 </h:panelGrid>
+
                                 <h:panelGrid columns="1" class="w-100"/>
+
                                 <h:panelGrid columns="1" class="w-100">
-
+                                    <h:outputLabel class="w-100" value=""/>
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        action="#{laboratoryDoctorDashboardController.searchPatientReports()}"  
+                                        value="Search Report" 
+                                        icon="fas fa-file-invoice-dollar" 
+                                        styleClass="m-1 ui-button-info w-100">
+                                    </p:commandButton>
                                 </h:panelGrid>
-
                             </h:panelGrid>
-                        </div>
-
-                        <div class="col-md-2 ">
-                            <p:commandButton 
-                                ajax="false" 
-                                action="#{laboratoryDoctorDashboardController.searchPatientInvestigations()}"  
-                                value="Search Investigations" 
-                                icon="fas fa-file-invoice-dollar" 
-                                styleClass="m-1 ui-button-warning w-100">
-                            </p:commandButton>
-
-                            <p:commandButton 
-                                ajax="false" 
-                                action="#{laboratoryDoctorDashboardController.searchPatientReports()}"  
-                                value="Search Report" 
-                                icon="fas fa-file-invoice-dollar" 
-                                styleClass="m-1 ui-button-info w-100">
-                            </p:commandButton>
                         </div>
                     </div>
 
                     <div class="row m-2">
-
-                        <h:panelGroup rendered="#{laboratoryDoctorDashboardController.listingEntity eq 'PATIENT_INVESTIGATIONS'}">
-                            <doc:patient_investigations/>
-                        </h:panelGroup>
-
-
                         <h:panelGroup rendered="#{laboratoryDoctorDashboardController.listingEntity eq 'PATIENT_REPORTS'}">
                             <doc:reports/>
                         </h:panelGroup>
