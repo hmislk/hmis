@@ -10,6 +10,7 @@ import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Item;
 import com.divudi.core.entity.ItemFee;
 import com.divudi.core.entity.Staff;
+import com.divudi.core.entity.AuditEvent;
 import com.divudi.core.facade.DepartmentFacade;
 import com.divudi.core.facade.ItemFacade;
 import com.divudi.core.facade.ItemFeeFacade;
@@ -31,6 +32,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import com.google.gson.Gson;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.context.FacesContext;
@@ -87,6 +89,8 @@ public class ItemFeeManager implements Serializable {
     SessionController sessionController;
     @Inject
     ItemController itemController;
+    @Inject
+    AuditEventController auditEventController;
 
     List<Department> departments;
     List<Staff> staffs;
@@ -433,10 +437,12 @@ public class ItemFeeManager implements Serializable {
             JsfUtil.addErrorMessage("Select a fee");
             return;
         }
+        String beforeJson = toItemFeeAuditJson(removingFee);
         removingFee.setRetired(true);
         removingFee.setRetiredAt(new Date());
         removingFee.setRetirer(sessionController.getLoggedUser());
         itemFeeFacade.edit(removingFee);
+        completeItemFeeAuditEvent("Fee Retired", removingFee, beforeJson);
         itemFees = null;
         updateTotal();
         JsfUtil.addSuccessMessage("Removed. Reload Items");
@@ -447,10 +453,12 @@ public class ItemFeeManager implements Serializable {
             JsfUtil.addErrorMessage("Select a fee");
             return;
         }
+        String beforeJson = toItemFeeAuditJson(removingFee);
         removingFee.setRetired(true);
         removingFee.setRetiredAt(new Date());
         removingFee.setRetirer(sessionController.getLoggedUser());
         itemFeeFacade.edit(removingFee);
+        completeItemFeeAuditEvent("Site Fee Retired", removingFee, beforeJson);
         itemFees = null;
         updateTotal();
         feeValueController.updateFeeValue(item, forSite, totalItemFee, totalItemFeeForForeigners);
@@ -462,10 +470,12 @@ public class ItemFeeManager implements Serializable {
             JsfUtil.addErrorMessage("Select a fee");
             return;
         }
+        String beforeJson = toItemFeeAuditJson(removingFee);
         removingFee.setRetired(true);
         removingFee.setRetiredAt(new Date());
         removingFee.setRetirer(sessionController.getLoggedUser());
         itemFeeFacade.edit(removingFee);
+        completeItemFeeAuditEvent("Department Fee Retired", removingFee, beforeJson);
         itemFees = null;
         updateItemAndDepartmentFees();
         feeValueController.updateFeeValue(item, forDepartment, totalItemFee, totalItemFeeForForeigners);
@@ -1030,6 +1040,7 @@ public class ItemFeeManager implements Serializable {
 
         getItemFee().setItem(item);
         itemFeeFacade.edit(itemFee);
+        completeItemFeeAuditEvent("Fee Created", itemFee, null);
 
         itemFee = new ItemFee();
         itemFees = null;
@@ -1075,6 +1086,7 @@ public class ItemFeeManager implements Serializable {
         itemFeeFacade.create(itemFee);
         getItemFee().setItem(item);
         itemFeeFacade.edit(itemFee);
+        completeItemFeeAuditEvent("Collecting Centre Fee Created", itemFee, null);
         itemFee = new ItemFee();
         itemFees = null;
         updateItemAndCollectingCentreFees();;
@@ -1132,6 +1144,7 @@ public class ItemFeeManager implements Serializable {
         itemFeeFacade.create(itemFee);
         getItemFee().setItem(item);
         itemFeeFacade.edit(itemFee);
+        completeItemFeeAuditEvent("Site Fee Created", itemFee, null);
         itemFee = new ItemFee();
         itemFees = null;
 
@@ -1170,6 +1183,7 @@ public class ItemFeeManager implements Serializable {
         itemFeeFacade.create(itemFee);
         getItemFee().setItem(item);
         itemFeeFacade.edit(itemFee);
+        completeItemFeeAuditEvent("Department Fee Created", itemFee, null);
         itemFee = new ItemFee();
         itemFees = null;
 
@@ -1216,6 +1230,7 @@ public class ItemFeeManager implements Serializable {
 
         getItemFee().setItem(item);
         itemFeeFacade.edit(itemFee);
+        completeItemFeeAuditEvent("Fee List Fee Created", itemFee, null);
 
         itemFee = new ItemFee();
         itemFees = null;
@@ -1234,6 +1249,7 @@ public class ItemFeeManager implements Serializable {
 
         inputFee.setItem(inputItem);
         itemFeeFacade.edit(inputFee);
+        completeItemFeeAuditEvent("Fee Created", inputFee, null);
 
         List<ItemFee> inputFees = fillFees(inputItem);
         updateTotal(inputItem, inputFees);
@@ -1248,10 +1264,13 @@ public class ItemFeeManager implements Serializable {
             inputFee.setCreatedAt(new Date());
             inputFee.setCreater(sessionController.getLoggedUser());
             itemFeeFacade.create(inputFee);
+            completeItemFeeAuditEvent("Fee Created", inputFee, null);
         } else {
+            String beforeJson = toItemFeeAuditJson(inputFee);
             inputFee.setEditedAt(new Date());
             inputFee.setEditer(sessionController.getLoggedUser());
             itemFeeFacade.edit(inputFee);
+            completeItemFeeAuditEvent("Fee Updated", inputFee, beforeJson);
         }
 
         List<ItemFee> inputFees = fillFees(inputFee.getItem());
@@ -1260,6 +1279,7 @@ public class ItemFeeManager implements Serializable {
     }
 
     public void updateFee(ItemFee f) {
+        String beforeJson = toItemFeeAuditJson(f);
         if (f.isPrimaryFee()) {
             boolean hasOtherPrimaryFee = itemFees.stream()
                     .anyMatch(fee -> fee.isPrimaryFee() && fee.getId() != f.getId());
@@ -1271,18 +1291,23 @@ public class ItemFeeManager implements Serializable {
             }
         }
         itemFeeFacade.edit(f);
+        completeItemFeeAuditEvent("Fee Updated", f, beforeJson);
         updateTotal();
         JsfUtil.addSuccessMessage("Update Fee Successfully.");
     }
 
     public void updateFeeForSites(ItemFee f) {
+        String beforeJson = toItemFeeAuditJson(f);
         itemFeeFacade.edit(f);
+        completeItemFeeAuditEvent("Site Fee Updated", f, beforeJson);
         calculateFeesForSitesByProvidingFees();
         feeValueController.updateFeeValue(item, forSite, totalItemFee, totalItemFeeForForeigners);
     }
 
     public void updateFeeForDepartments(ItemFee f) {
+        String beforeJson = toItemFeeAuditJson(f);
         itemFeeFacade.edit(f);
+        completeItemFeeAuditEvent("Department Fee Updated", f, beforeJson);
         calculateFeesForDepartmentsByProvidingFees();
         feeValueController.updateFeeValue(item, forDepartment, totalItemFee, totalItemFeeForForeigners);
     }
@@ -1294,13 +1319,44 @@ public class ItemFeeManager implements Serializable {
         double t = 0.0;
         double tf = 0.0;
         for (ItemFee f : itemFees) {
+            String beforeJson = toItemFeeAuditJson(f);
             t += f.getFee();
             tf += f.getFfee();
             itemFeeFacade.edit(f);
+            completeItemFeeAuditEvent("Fee Updated", f, beforeJson);
         }
         getItem().setTotal(t);
         getItem().setTotalForForeigner(tf);
         itemFacade.edit(getItem());
+    }
+
+    private String toItemFeeAuditJson(ItemFee fee) {
+        if (fee == null) {
+            return "";
+        }
+        Map<String, Object> snapshot = new HashMap<>();
+        snapshot.put("id", fee.getId());
+        snapshot.put("name", fee.getName());
+        snapshot.put("feeType", fee.getFeeType() == null ? null : fee.getFeeType().name());
+        snapshot.put("fee", fee.getFee());
+        snapshot.put("ffee", fee.getFfee());
+        snapshot.put("retired", fee.isRetired());
+        snapshot.put("itemId", fee.getItem() == null ? null : fee.getItem().getId());
+        snapshot.put("itemName", fee.getItem() == null ? null : fee.getItem().getName());
+        snapshot.put("forInstitutionId", fee.getForInstitution() == null ? null : fee.getForInstitution().getId());
+        snapshot.put("forDepartmentId", fee.getForDepartment() == null ? null : fee.getForDepartment().getId());
+        snapshot.put("forCategoryId", fee.getForCategory() == null ? null : fee.getForCategory().getId());
+        return new Gson().toJson(snapshot);
+    }
+
+    private void completeItemFeeAuditEvent(String action, ItemFee fee, String beforeJson) {
+        if (fee == null) {
+            return;
+        }
+        String itemName = fee.getItem() != null ? fee.getItem().getName() : fee.getName();
+        String eventName = action + " - " + itemName;
+        AuditEvent ae = auditEventController.createNewAuditEvent(eventName, beforeJson == null ? "" : beforeJson, fee.getId(), "Fee");
+        auditEventController.completeAuditEvent(ae, toItemFeeAuditJson(fee));
     }
 
     public void updateTotal(Item inputItem, List<ItemFee> inputItemFees) {

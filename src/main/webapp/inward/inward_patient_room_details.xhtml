@@ -83,12 +83,26 @@
                                         id="roomTable"
                                         value="#{bhtSummeryController.patientRooms}"
                                         var="rm"
+                                        rowKey="#{rm.id}"
                                         styleClass="w-100"
                                         rowStyleClass="#{rm.discharged ? '' : 'font-weight-bold'}">
 
-                                        <p:column headerText="Room" style="min-width:140px;">
-                                            <div class="d-flex align-items-center gap-2">
-                                                <h:outputText value="#{rm.roomFacilityCharge.name}" styleClass="fw-semibold"/>
+                                        <!-- Expand toggle column -->
+                                        <p:column style="width:36px; text-align:center;">
+                                            <p:rowToggler/>
+                                        </p:column>
+
+                                        <p:column headerText="Room" style="min-width:220px;">
+                                            <div class="d-flex align-items-center gap-2 flex-wrap">
+                                                <p:autoComplete
+                                                    forceSelection="true"
+                                                    value="#{rm.roomFacilityCharge}"
+                                                    completeMethod="#{roomFacilityChargeController.completeRoomChargeAll}"
+                                                    var="rf"
+                                                    itemLabel="#{rf.name}"
+                                                    itemValue="#{rf}"
+                                                    style="width:160px;"
+                                                    minQueryLength="1"/>
                                                 <h:panelGroup rendered="#{rm.patientRoomClass eq 'class com.divudi.core.entity.inward.GuardianRoom'}">
                                                     <p:badge value="Guardian" severity="success"/>
                                                 </h:panelGroup>
@@ -156,8 +170,18 @@
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputText>
                                         </p:column>
+                                        <p:column headerText="Discount" style="width:80px; text-align:right; color:#c0392b;">
+                                            <h:outputText value="#{rm.discountRoomCharge + rm.discountMaintainCharge + rm.discountLinenCharge + rm.discountNursingCharge + rm.discountMoCharge + rm.discountAdministrationCharge + rm.discountMedicalCareCharge}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </p:column>
+                                        <p:column headerText="Net" style="width:90px; text-align:right; font-weight:bold;">
+                                            <h:outputText value="#{rm.adjustedRoomCharge + rm.adjustedMaintainCharge + rm.ajdustedLinenCharge + rm.ajdustedNursingCharge + rm.adjustedMoCharge + rm.ajdustedAdministrationCharge + rm.ajdustedMedicalCareCharge}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </p:column>
 
-                                        <p:column headerText="Actions" style="width:160px;">
+                                        <p:column headerText="Actions" style="width:220px;">
                                             <div class="d-flex gap-1 flex-wrap">
                                                 <p:commandButton
                                                     ajax="false"
@@ -165,6 +189,12 @@
                                                     title="Save Changes"
                                                     class="ui-button-info"
                                                     action="#{bhtSummeryController.updatePatientRoom(rm)}"/>
+                                                <p:commandButton
+                                                    ajax="false"
+                                                    icon="fa fa-calculator"
+                                                    title="Update Charges from Room Rates"
+                                                    class="ui-button-success"
+                                                    action="#{bhtSummeryController.updateChargesForRoom(rm)}"/>
                                                 <p:commandButton
                                                     ajax="false"
                                                     icon="fa fa-check-square"
@@ -179,6 +209,252 @@
                                                     action="#{roomChangeController.dischargeCancel(rm)}"/>
                                             </div>
                                         </p:column>
+
+                                        <!-- Expandable charge breakdown -->
+                                        <p:rowExpansion>
+                                            <div class="p-3 border rounded" style="background:#f8f9fa;">
+                                                <!-- Duration breakdown -->
+                                                <h:panelGroup layout="block" styleClass="mb-3">
+                                                    <!-- Dates row -->
+                                                    <div class="d-flex flex-wrap gap-2 align-items-center mb-2">
+                                                        <i class="fa-solid fa-clock text-muted"/>
+                                                        <span class="fw-semibold">
+                                                            <h:outputText value="#{rm.admittedAt}">
+                                                                <f:convertDateTime pattern="dd MMM yyyy HH:mm"/>
+                                                            </h:outputText>
+                                                        </span>
+                                                        <span class="text-muted">&#x2192;</span>
+                                                        <h:panelGroup rendered="#{rm.dischargedAt ne null}">
+                                                            <span class="fw-semibold">
+                                                                <h:outputText value="#{rm.dischargedAt}">
+                                                                    <f:convertDateTime pattern="dd MMM yyyy HH:mm"/>
+                                                                </h:outputText>
+                                                            </span>
+                                                        </h:panelGroup>
+                                                        <h:panelGroup rendered="#{rm.dischargedAt eq null}">
+                                                            <span class="text-success fw-semibold">Now (ongoing)</span>
+                                                        </h:panelGroup>
+                                                    </div>
+
+                                                    <!-- Slot calculation detail -->
+                                                    <h:panelGroup layout="block"
+                                                                  rendered="#{bhtSummeryController.getRoomDurationBreakdown(rm) ne null}">
+                                                        <table class="table table-sm table-bordered mb-2" style="font-size:0.82rem; max-width:680px;">
+                                                            <thead class="table-light">
+                                                                <tr>
+                                                                    <th>Total Stay</th>
+                                                                    <th>Slot Size</th>
+                                                                    <th>Complete Slots</th>
+                                                                    <th>Remainder</th>
+                                                                    <th>Overshoot Limit</th>
+                                                                    <th>Extra Slot?</th>
+                                                                    <th class="text-primary">Billed Slots</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                <tr>
+                                                                    <td>
+                                                                        <h:outputText value="#{bhtSummeryController.getRoomDurationBreakdown(rm).totalHours}"/> h
+                                                                        <h:outputText value="#{bhtSummeryController.getRoomDurationBreakdown(rm).totalRemainingMinutes}"/> min
+                                                                        <br/>
+                                                                        <small class="text-muted">(<h:outputText value="#{bhtSummeryController.getRoomDurationBreakdown(rm).totalMinutes}"/> min total)</small>
+                                                                    </td>
+                                                                    <td>
+                                                                        <h:outputText value="#{bhtSummeryController.getRoomDurationBreakdown(rm).slotHours}">
+                                                                            <f:convertNumber pattern="#,##0.##"/>
+                                                                        </h:outputText> hrs
+                                                                        <br/>
+                                                                        <small class="text-muted">(<h:outputText value="#{bhtSummeryController.getRoomDurationBreakdown(rm).slotMinutes}">
+                                                                            <f:convertNumber pattern="#,##0.##"/>
+                                                                        </h:outputText> min)</small>
+                                                                    </td>
+                                                                    <td class="fw-semibold">
+                                                                        <h:outputText value="#{bhtSummeryController.getRoomDurationBreakdown(rm).completeSlots}"/>
+                                                                    </td>
+                                                                    <td>
+                                                                        <h:outputText value="#{bhtSummeryController.getRoomDurationBreakdown(rm).remainderHours}"/> h
+                                                                        <h:outputText value="#{bhtSummeryController.getRoomDurationBreakdown(rm).remainderRemainingMinutes}"/> min
+                                                                        <br/>
+                                                                        <small class="text-muted">(<h:outputText value="#{bhtSummeryController.getRoomDurationBreakdown(rm).remainderMinutes}">
+                                                                            <f:convertNumber pattern="#,##0.##"/>
+                                                                        </h:outputText> min)</small>
+                                                                    </td>
+                                                                    <td>
+                                                                        <h:outputText value="#{bhtSummeryController.getRoomDurationBreakdown(rm).overshootHours}">
+                                                                            <f:convertNumber pattern="#,##0.##"/>
+                                                                        </h:outputText> hrs
+                                                                        <br/>
+                                                                        <small class="text-muted">(<h:outputText value="#{bhtSummeryController.getRoomDurationBreakdown(rm).overshootMinutes}">
+                                                                            <f:convertNumber pattern="#,##0.##"/>
+                                                                        </h:outputText> min)</small>
+                                                                    </td>
+                                                                    <td>
+                                                                        <h:panelGroup rendered="#{bhtSummeryController.getRoomDurationBreakdown(rm).extraSlotCharged}">
+                                                                            <span class="badge bg-warning text-dark">Yes — remainder &#x2265; overshoot</span>
+                                                                        </h:panelGroup>
+                                                                        <h:panelGroup rendered="#{not bhtSummeryController.getRoomDurationBreakdown(rm).extraSlotCharged}">
+                                                                            <span class="badge bg-success">No — within overshoot</span>
+                                                                        </h:panelGroup>
+                                                                    </td>
+                                                                    <td class="text-primary fw-bold" style="font-size:1.05rem;">
+                                                                        <h:outputText value="#{bhtSummeryController.getRoomDurationBreakdown(rm).billedSlots}"/>
+                                                                    </td>
+                                                                </tr>
+                                                            </tbody>
+                                                        </table>
+                                                        <small class="text-muted fst-italic">
+                                                            Billed slots = complete slots
+                                                            <h:panelGroup rendered="#{bhtSummeryController.getRoomDurationBreakdown(rm).extraSlotCharged}">
+                                                                + 1 (remainder exceeded overshoot)
+                                                            </h:panelGroup>
+                                                            <h:panelGroup rendered="#{not bhtSummeryController.getRoomDurationBreakdown(rm).extraSlotCharged}">
+                                                                (remainder is within the overshoot grace period)
+                                                            </h:panelGroup>
+                                                        </small>
+                                                    </h:panelGroup>
+                                                </h:panelGroup>
+
+                                                <!-- Per-charge breakdown table -->
+                                                <table class="table table-sm table-bordered mb-0" style="font-size:0.85rem;">
+                                                    <thead class="table-secondary">
+                                                        <tr>
+                                                            <th>Charge Type</th>
+                                                            <th class="text-end">Rate / Slot</th>
+                                                            <th class="text-end">Calculated</th>
+                                                            <th class="text-end" style="color:#c0392b;">Discount</th>
+                                                            <th class="text-end fw-bold">Net</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr>
+                                                            <td><i class="fa-solid fa-bed me-1 text-primary"/>Room</td>
+                                                            <td class="text-end">
+                                                                <h:outputText value="#{rm.currentRoomCharge}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                                            </td>
+                                                            <td class="text-end">
+                                                                <h:outputText value="#{rm.calculatedRoomCharge}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                                            </td>
+                                                            <td class="text-end" style="color:#c0392b;">
+                                                                <h:outputText value="#{rm.discountRoomCharge}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                                            </td>
+                                                            <td class="text-end fw-semibold">
+                                                                <h:outputText value="#{rm.adjustedRoomCharge}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><i class="fa-solid fa-wrench me-1 text-secondary"/>Maintenance</td>
+                                                            <td class="text-end">
+                                                                <h:outputText value="#{rm.currentMaintananceCharge}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                                            </td>
+                                                            <td class="text-end">
+                                                                <h:outputText value="#{rm.calculatedMaintainCharge}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                                            </td>
+                                                            <td class="text-end" style="color:#c0392b;">
+                                                                <h:outputText value="#{rm.discountMaintainCharge}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                                            </td>
+                                                            <td class="text-end fw-semibold">
+                                                                <h:outputText value="#{rm.adjustedMaintainCharge}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><i class="fa-solid fa-user-doctor me-1 text-info"/>Medical Officer</td>
+                                                            <td class="text-end">
+                                                                <h:outputText value="#{rm.currentMoCharge}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                                            </td>
+                                                            <td class="text-end">
+                                                                <h:outputText value="#{rm.calculatedMoCharge}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                                            </td>
+                                                            <td class="text-end" style="color:#c0392b;">
+                                                                <h:outputText value="#{rm.discountMoCharge}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                                            </td>
+                                                            <td class="text-end fw-semibold">
+                                                                <h:outputText value="#{rm.adjustedMoCharge}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><i class="fa-solid fa-user-nurse me-1 text-success"/>Nursing</td>
+                                                            <td class="text-end">
+                                                                <h:outputText value="#{rm.currentNursingCharge}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                                            </td>
+                                                            <td class="text-end">
+                                                                <h:outputText value="#{rm.calculatedNursingCharge}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                                            </td>
+                                                            <td class="text-end" style="color:#c0392b;">
+                                                                <h:outputText value="#{rm.discountNursingCharge}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                                            </td>
+                                                            <td class="text-end fw-semibold">
+                                                                <h:outputText value="#{rm.ajdustedNursingCharge}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><i class="fa-solid fa-sheet-plastic me-1 text-warning"/>Linen</td>
+                                                            <td class="text-end">
+                                                                <h:outputText value="#{rm.currentLinenCharge}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                                            </td>
+                                                            <td class="text-end">
+                                                                <h:outputText value="#{rm.calculatedLinenCharge}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                                            </td>
+                                                            <td class="text-end" style="color:#c0392b;">
+                                                                <h:outputText value="#{rm.discountLinenCharge}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                                            </td>
+                                                            <td class="text-end fw-semibold">
+                                                                <h:outputText value="#{rm.ajdustedLinenCharge}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><i class="fa-solid fa-building me-1 text-muted"/>Administration</td>
+                                                            <td class="text-end">
+                                                                <h:outputText value="#{rm.currentAdministrationCharge}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                                            </td>
+                                                            <td class="text-end">
+                                                                <h:outputText value="#{rm.calculatedAdministrationCharge}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                                            </td>
+                                                            <td class="text-end" style="color:#c0392b;">
+                                                                <h:outputText value="#{rm.discountAdministrationCharge}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                                            </td>
+                                                            <td class="text-end fw-semibold">
+                                                                <h:outputText value="#{rm.ajdustedAdministrationCharge}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><i class="fa-solid fa-heart-pulse me-1 text-danger"/>Medical Care / ICU</td>
+                                                            <td class="text-end">
+                                                                <h:outputText value="#{rm.currentMedicalCareCharge}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                                            </td>
+                                                            <td class="text-end">
+                                                                <h:outputText value="#{rm.calculatedMedicalCareCharge}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                                            </td>
+                                                            <td class="text-end" style="color:#c0392b;">
+                                                                <h:outputText value="#{rm.discountMedicalCareCharge}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                                            </td>
+                                                            <td class="text-end fw-semibold">
+                                                                <h:outputText value="#{rm.ajdustedMedicalCareCharge}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                                            </td>
+                                                        </tr>
+                                                        <!-- Totals row -->
+                                                        <tr class="table-secondary fw-bold">
+                                                            <td>Total</td>
+                                                            <td></td>
+                                                            <td class="text-end">
+                                                                <h:outputText value="#{rm.calculatedRoomCharge + rm.calculatedMaintainCharge + rm.calculatedMoCharge + rm.calculatedNursingCharge + rm.calculatedLinenCharge + rm.calculatedAdministrationCharge + rm.calculatedMedicalCareCharge}">
+                                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                                </h:outputText>
+                                                            </td>
+                                                            <td class="text-end" style="color:#c0392b;">
+                                                                <h:outputText value="#{rm.discountRoomCharge + rm.discountMaintainCharge + rm.discountLinenCharge + rm.discountNursingCharge + rm.discountMoCharge + rm.discountAdministrationCharge + rm.discountMedicalCareCharge}">
+                                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                                </h:outputText>
+                                                            </td>
+                                                            <td class="text-end">
+                                                                <h:outputText value="#{rm.adjustedRoomCharge + rm.adjustedMaintainCharge + rm.ajdustedLinenCharge + rm.ajdustedNursingCharge + rm.adjustedMoCharge + rm.ajdustedAdministrationCharge + rm.ajdustedMedicalCareCharge}">
+                                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                                </h:outputText>
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </p:rowExpansion>
 
                                     </p:dataTable>
                                 </h:panelGroup>

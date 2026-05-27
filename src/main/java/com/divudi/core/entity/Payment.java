@@ -133,11 +133,19 @@ public class Payment implements Serializable, RetirableEntity {
     private boolean paymentRecordCompleted;
 
     private boolean selectedForHandover;
+    private boolean handoverProofMissing;
     private boolean selectedForCashbookEntry;
     private boolean selectedForRecording;
     private boolean selectedForRecordingConfirmation;
     private boolean handingOverStarted;
     private boolean handingOverCompleted;
+
+    // Non-Cash Settlement (Phase 4, issue #17964)
+    // Set when a non-cash payment (Card/Cheque/Slip/eWallet/Online) has been
+    // settled with the bank or processor. Always false for cash.
+    private boolean paymentSettled;
+    @ManyToOne
+    private Bill paymentSettlementBill;
 
     //Payment Record Creation
     @ManyToOne
@@ -209,6 +217,7 @@ public class Payment implements Serializable, RetirableEntity {
         paymentRecordCompleted = false;
         chequeRealized = false;
         chequePaid = false;
+        paymentSettled = false;
         paymentDate = new Date();
     }
 
@@ -730,6 +739,14 @@ public class Payment implements Serializable, RetirableEntity {
         this.selectedForHandover = selectedForHandover;
     }
 
+    public boolean isHandoverProofMissing() {
+        return handoverProofMissing;
+    }
+
+    public void setHandoverProofMissing(boolean handoverProofMissing) {
+        this.handoverProofMissing = handoverProofMissing;
+    }
+
     public boolean isSelectedForRecording() {
         return selectedForRecording;
     }
@@ -969,6 +986,22 @@ public class Payment implements Serializable, RetirableEntity {
     @Transient
     public Double getAbsolutePaidValueTransient() {
         return Math.abs(this.paidValue);
+    }
+
+    public boolean isPaymentSettled() {
+        return paymentSettled;
+    }
+
+    public void setPaymentSettled(boolean paymentSettled) {
+        this.paymentSettled = paymentSettled;
+    }
+
+    public Bill getPaymentSettlementBill() {
+        return paymentSettlementBill;
+    }
+
+    public void setPaymentSettlementBill(Bill paymentSettlementBill) {
+        this.paymentSettlementBill = paymentSettlementBill;
     }
 
 }

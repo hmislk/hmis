@@ -99,7 +99,7 @@ public class SymptomController implements Serializable {
             int rowNum = 1;
             for (ClinicalEntity sym : items) {
                 Row row = sheet.createRow(rowNum++);
-                row.createCell(0).setCellValue(rowNum);
+                row.createCell(0).setCellValue(rowNum-1);
                 row.createCell(1).setCellValue(sym.getName());
             }
 

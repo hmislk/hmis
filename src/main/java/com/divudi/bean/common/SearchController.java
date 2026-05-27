@@ -1,3 +1,4 @@
+
 package com.divudi.bean.common;
 
 // <editor-fold defaultstate="collapsed" desc="Template">
@@ -6,6 +7,7 @@ package com.divudi.bean.common;
 import com.divudi.bean.cashTransaction.CashBookEntryController;
 import com.divudi.bean.cashTransaction.DrawerController;
 import com.divudi.bean.cashTransaction.DrawerEntryController;
+import com.divudi.bean.channel.ChannelReportController;
 import com.divudi.bean.channel.ChannelSearchController;
 import com.divudi.bean.channel.analytics.ReportTemplateController;
 import com.divudi.bean.hr.StaffController;
@@ -23,6 +25,10 @@ import com.divudi.core.data.hr.ReportKeyWord;
 import com.divudi.core.data.reports.FinancialReport;
 import com.divudi.core.data.reports.CashierReports;
 import com.divudi.core.data.reports.ProfessionalPaymentReport;
+import com.divudi.core.data.reports.Report.ChannelBillSearch;
+import com.divudi.core.data.reports.Report.ChannelIncomeReport;
+import com.divudi.core.data.reports.Report.OnlineBookingCountReport;
+import com.divudi.core.data.reports.Report.OpdBillSearch;
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.core.entity.AuditEvent;
 import com.divudi.core.entity.Bill;
@@ -83,7 +89,10 @@ import com.divudi.core.data.dto.PharmacyItemPurchaseDTO;
 import com.divudi.core.data.dto.PharmacyPreBillSearchDTO;
 import com.divudi.core.data.dto.PharmacyTransferRequestIssueDTO;
 import com.divudi.core.data.dto.PharmacyTransferRequestListDTO;
+import com.divudi.core.data.dto.channel.ChannelIncomeDTO;
 import com.divudi.core.data.dto.PharmacyPurchaseOrderDTO;
+import com.divudi.core.data.dto.PharmacyTransferIssuedListDTO;
+import com.divudi.core.data.dto.PharmacyTransferReceivedListDTO;
 import com.divudi.core.entity.AgentHistory;
 import com.divudi.core.entity.Category;
 import com.divudi.core.entity.Payment;
@@ -111,6 +120,8 @@ import java.io.InputStream;
 import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -122,6 +133,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.ejb.EJB;
+import java.util.Locale;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.context.FacesContext;
 import javax.faces.model.SelectItem;
@@ -304,6 +316,8 @@ public class SearchController implements Serializable {
     private Map<Long, List<PharmacyPreBillSearchDTO>> returnBillsByParentBillId;
     // DTO list for pharmacy transfer requests
     private List<PharmacyTransferRequestListDTO> transferRequestDtos;
+    // DTO list for pharmacy transfer issued list (pharmacy_transfer_issued_list.xhtml)
+    private List<PharmacyTransferIssuedListDTO> transferIssuedListDtos = new ArrayList<>();
     // DTO lists for disposal issue search results
     private List<PharmacyItemPurchaseDTO> disposalIssueBillDtos;
     private List<PharmacyItemPurchaseDTO> disposalIssueBillItemDtos;
@@ -332,6 +346,9 @@ public class SearchController implements Serializable {
     private Bill selectedRequest;
     String settledBillType;
     private int activeIndexForDisbursement;
+
+    private Date appointmentFromDate;
+    private Date appointmentToDate;
 
     public String getSettledBillType() {
         return settledBillType;
@@ -1454,6 +1471,8 @@ public class SearchController implements Serializable {
         searchKeyword = null;
         printPreview = false;
         showLoggedDepartmentOnly = true;
+        filterChannelBillsByAppointmentDate = false;
+        filterChannelBillsByBilledDate = true;
         settledBillType = null;
         total = 0.0;
     }
@@ -1468,6 +1487,13 @@ public class SearchController implements Serializable {
         patientInvestigations = null;
         searchKeyword = null;
         return "/opd/search_opd_billd_of_logged_department?faces-redirect=true";
+    }
+
+    public String navigateToChannelIncomeReport() {
+        filterChannelBillsByAppointmentDate = false;
+        filterChannelBillsByBilledDate = true;
+
+        return "/channel/channel_income?faces-redirect=true";
     }
 
     public void makeListNull2() {
@@ -2904,6 +2930,22 @@ public class SearchController implements Serializable {
         this.showLoggedDepartmentOnly = showLoggedDepartmentOnly;
     }
 
+    public boolean isFilterChannelBillsByAppointmentDate() {
+        return filterChannelBillsByAppointmentDate;
+    }
+
+    public void setFilterChannelBillsByAppointmentDate(boolean filterChannelBillsByAppointmentDate) {
+        this.filterChannelBillsByAppointmentDate = filterChannelBillsByAppointmentDate;
+    }
+
+    public boolean isFilterChannelBillsByBilledDate() {
+        return filterChannelBillsByBilledDate;
+    }
+
+    public void setFilterChannelBillsByBilledDate(boolean filterChannelBillsByBilledDate) {
+        this.filterChannelBillsByBilledDate = filterChannelBillsByBilledDate;
+    }
+
     public List<PharmaceuticalBillItem> getPharmaceuticalBillItems() {
         return pharmaceuticalBillItems;
     }
@@ -3288,14 +3330,7 @@ public class SearchController implements Serializable {
     }
 
     public void createPharmacyRetailBills() {
-        Date startTime = new Date();
-
-        List<BillType> billTypes = new ArrayList<>();
-        billTypes.add(BillType.PharmacyPre);
-        billTypes.add(BillType.PharmacySaleWithoutStock);
-
-        createPharmacyRetailBills(billTypes, true);
-
+        pharmacyBillSearch.fetchSaleSearchDtosFromNativeBills(true);
     }
 
     public void createPharmacyAddToStockBills() {
@@ -3417,14 +3452,7 @@ public class SearchController implements Serializable {
     }
 
     public void createPharmacyRetailAllBills() {
-        Date startTime = new Date();
-
-        List<BillType> billTypes = new ArrayList<>();
-        billTypes.add(BillType.PharmacyPre);
-        billTypes.add(BillType.PharmacySaleWithoutStock);
-
-        createPharmacyRetailBills(billTypes, false);
-
+        pharmacyBillSearch.fetchSaleSearchDtosFromNativeBills(false);
     }
 
     public void createPharmacyWholesaleAllBills() {
@@ -4142,42 +4170,100 @@ public class SearchController implements Serializable {
     }
 
     public void listTransferIssuesToReceiveForLoggedDepartment() {
-        String jpql;
+        fetchTransferIssuedListDtos(null);
+    }
+
+    public void listFullyReceivedTransferIssues() {
+        fetchTransferIssuedListDtos(Boolean.TRUE);
+    }
+
+    public void listYetToReceiveTransferIssues() {
+        fetchTransferIssuedListDtos(Boolean.FALSE);
+    }
+
+    private void fetchTransferIssuedListDtos(Boolean fullyIssuedFilter) {
         List<BillTypeAtomic> btas = new ArrayList<>();
         btas.add(BillTypeAtomic.PHARMACY_ISSUE);
         btas.add(BillTypeAtomic.PHARMACY_DIRECT_ISSUE);
-        HashMap params = new HashMap();
+        Map<String, Object> params = new HashMap<>();
         params.put("toDate", getToDate());
         params.put("fromDate", getFromDate());
-        params.put("dep", getSessionController().getDepartment());
+        params.put("toDep", getSessionController().getDepartment());
         params.put("bTp", btas);
 
-        jpql = "Select b "
-                + " From Bill b "
-                + " where b.retired=false "
-                + " and b.toDepartment=:dep "
-                + " and b.billTypeAtomic in :bTp "
-                + " and b.createdAt between :fromDate and :toDate ";
+        StringBuilder jpql = new StringBuilder();
+        jpql.append("SELECT NEW com.divudi.core.data.dto.PharmacyTransferIssuedListDTO(");
+        jpql.append("b.id, b.deptId, d.name, b.departmentType, wup.name, stfp.name, ");
+        jpql.append("b.createdAt, b.cancelled, b.fullyIssued, cbwup.name, cb.createdAt) ");
+        jpql.append("FROM Bill b ");
+        jpql.append("LEFT JOIN b.department d ");
+        jpql.append("LEFT JOIN b.creater wu ");
+        jpql.append("LEFT JOIN wu.webUserPerson wup ");
+        jpql.append("LEFT JOIN b.toStaff stf ");
+        jpql.append("LEFT JOIN stf.person stfp ");
+        jpql.append("LEFT JOIN b.cancelledBill cb ");
+        jpql.append("LEFT JOIN cb.creater cbwu ");
+        jpql.append("LEFT JOIN cbwu.webUserPerson cbwup ");
+        jpql.append("WHERE b.retired = false ");
+        jpql.append("AND b.toDepartment = :toDep ");
+        jpql.append("AND b.billTypeAtomic IN :bTp ");
+        jpql.append("AND b.createdAt BETWEEN :fromDate AND :toDate ");
 
-        if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
-            jpql += " and  ((b.deptId) like :billNo )";
+        if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().isEmpty()) {
+            jpql.append("AND UPPER(b.deptId) LIKE :billNo ");
             params.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
         }
-
-        if (getSearchKeyword().getStaffName() != null && !getSearchKeyword().getStaffName().trim().equals("")) {
-            jpql += " and  ((b.toStaff.person.name) like :stf )";
+        if (getSearchKeyword().getStaffName() != null && !getSearchKeyword().getStaffName().trim().isEmpty()) {
+            jpql.append("AND UPPER(stfp.name) LIKE :stf ");
             params.put("stf", "%" + getSearchKeyword().getStaffName().trim().toUpperCase() + "%");
         }
-
-        if (getSearchKeyword().getFromDepartment() != null && !getSearchKeyword().getFromDepartment().trim().equals("")) {
-            jpql += " and  (upper(b.fromDepartment.name) like :fDep )";
+        if (getSearchKeyword().getFromDepartment() != null && !getSearchKeyword().getFromDepartment().trim().isEmpty()) {
+            jpql.append("AND UPPER(d.name) LIKE :fDep ");
             params.put("fDep", "%" + getSearchKeyword().getFromDepartment().trim().toUpperCase() + "%");
         }
-        jpql += " order by b.createdAt desc  ";
-        bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP, 50);
-        for (Bill b : bills) {
-            b.setTmpRefBill(getPharmacyTransferReceivedBills(b));
+
+        if (fullyIssuedFilter != null) {
+            if (Boolean.TRUE.equals(fullyIssuedFilter)) {
+                jpql.append("AND b.fullyIssued = true ");
+            } else {
+                jpql.append("AND b.fullyIssued = false AND b.cancelled = false ");
+            }
         }
+
+        jpql.append("ORDER BY b.createdAt DESC ");
+
+        transferIssuedListDtos = (List<PharmacyTransferIssuedListDTO>) getBillFacade()
+                .findDTOsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+        if (transferIssuedListDtos == null) {
+            transferIssuedListDtos = new ArrayList<>();
+        }
+
+        if (!transferIssuedListDtos.isEmpty()) {
+            List<Long> issuedBillIds = transferIssuedListDtos.stream()
+                    .map(PharmacyTransferIssuedListDTO::getBillId)
+                    .collect(Collectors.toList());
+            List<PharmacyTransferReceivedListDTO> allReceived = fetchReceivedBillsForIssuedIds(issuedBillIds);
+            Map<Long, List<PharmacyTransferReceivedListDTO>> byIssued = allReceived.stream()
+                    .collect(Collectors.groupingBy(PharmacyTransferReceivedListDTO::getIssuedBillId));
+            for (PharmacyTransferIssuedListDTO dto : transferIssuedListDtos) {
+                dto.setReceivedBills(byIssued.getOrDefault(dto.getBillId(), new ArrayList<>()));
+            }
+        }
+    }
+
+    private List<PharmacyTransferReceivedListDTO> fetchReceivedBillsForIssuedIds(List<Long> issuedBillIds) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("btp", BillTypeAtomic.PHARMACY_RECEIVE);
+        params.put("issuedBillIds", issuedBillIds);
+        String jpql = "SELECT NEW com.divudi.core.data.dto.PharmacyTransferReceivedListDTO("
+                + "b.id, b.referenceBill.id, b.deptId, b.cancelled) "
+                + "FROM Bill b "
+                + "WHERE b.retired = false "
+                + "AND b.billTypeAtomic = :btp "
+                + "AND b.referenceBill.id IN :issuedBillIds";
+        List<PharmacyTransferReceivedListDTO> result = (List<PharmacyTransferReceivedListDTO>)
+                getBillFacade().findDTOsByJpql(jpql, params);
+        return result != null ? result : new ArrayList<>();
     }
 
     public void createIssueReport1() {
@@ -4476,6 +4562,42 @@ public class SearchController implements Serializable {
             JsfUtil.addErrorMessage("Please Select Bill Type");
             return;
         }
+
+        // PharmacyPre atomics: redirect to DTO fetch so the pre_bill.xhtml composite
+        // (which binds to preBillSearchDtos) shows results from the atomic search path.
+        if (billTypeAtomic.getBillType() == BillType.PharmacyPre) {
+            pharmacyBillSearch.fetchPreBillSearchDtos(maxResult);
+            return;
+        }
+
+        // PharmacyWholeSale atomics: redirect to DTO fetch so the pharmacy_whole_sale.xhtml
+        // composite (which binds to wholeSaleSearchDtos) shows results from the atomic search path.
+        if (billTypeAtomic.getBillType() == BillType.PharmacyWholeSale) {
+            pharmacyBillSearch.fetchWholeSaleSearchDtos(maxResult);
+            return;
+        }
+
+        // PHARMACY_ORDER atomic: redirect to DTO fetch so po_request.xhtml composite
+        // (which binds to poRequestSearchDtos) shows results from the atomic search path.
+        if (billTypeAtomic == BillTypeAtomic.PHARMACY_ORDER) {
+            pharmacyBillSearch.fetchPoRequestSearchDtos(maxResult);
+            return;
+        }
+
+        // PHARMACY_ORDER_APPROVAL atomic: redirect to DTO fetch so po_approve.xhtml composite
+        // (which binds to poApproveSearchDtos) shows results from the atomic search path.
+        if (billTypeAtomic == BillTypeAtomic.PHARMACY_ORDER_APPROVAL) {
+            pharmacyBillSearch.fetchPoApproveSearchDtos(maxResult);
+            return;
+        }
+
+        // PHARMACY_GRN atomic: redirect to DTO fetch so grn.xhtml composite
+        // (which binds to grnSearchDtos) shows results from the atomic search path.
+        if (billTypeAtomic.getBillType() == BillType.PharmacyGrnBill) {
+            pharmacyBillSearch.fetchGrnSearchDtos(maxResult);
+            return;
+        }
+
         String jpql;
         Map params = new HashMap();
 
@@ -4579,13 +4701,69 @@ public class SearchController implements Serializable {
             JsfUtil.addErrorMessage("Please Select Bill Type");
             return;
         }
-        String jpql;
-        Map params = new HashMap();
 
         System.out.println("DEBUG: Selected billType = " + billType);
         System.out.println("DEBUG: FromDate = " + getFromDate());
         System.out.println("DEBUG: ToDate = " + getToDate());
         System.out.println("DEBUG: Current Department = " + (getSessionController().getDepartment() != null ? getSessionController().getDepartment().getId() + " - " + getSessionController().getDepartment().getName() : "NULL"));
+
+        // PharmacySale: use lightweight DTO query via PharmacyBillSearch to avoid
+        // loading full entity graphs across wide date ranges (issue #21005 / #20299).
+        if (billType == BillType.PharmacySale) {
+            pharmacyBillSearch.fetchSaleSearchDtosFromNativeBills(maxResult);
+            return;
+        }
+
+        // PharmacyTransferRequest: use lightweight DTO query (issue #21006 / #20299).
+        if (billType == BillType.PharmacyTransferRequest) {
+            pharmacyBillSearch.fetchTransferRequestSearchDtos(maxResult);
+            return;
+        }
+
+        // PharmacyTransferIssue: use lightweight DTO query (issue #21007 / #20299).
+        if (billType == BillType.PharmacyTransferIssue) {
+            pharmacyBillSearch.fetchTransferIssueSearchDtos(maxResult);
+            return;
+        }
+
+        // PharmacyTransferReceive: use lightweight DTO query (issue #21008 / #20299).
+        if (billType == BillType.PharmacyTransferReceive) {
+            pharmacyBillSearch.fetchTransferReceiveSearchDtos(maxResult);
+            return;
+        }
+
+        // PharmacyPre: use lightweight DTO query (issue #21009 / #20299).
+        if (billType == BillType.PharmacyPre) {
+            pharmacyBillSearch.fetchPreBillSearchDtos(maxResult);
+            return;
+        }
+
+        // PharmacyWholeSale: use lightweight DTO query (issue #21010 / #20299).
+        if (billType == BillType.PharmacyWholeSale) {
+            pharmacyBillSearch.fetchWholeSaleSearchDtos(maxResult);
+            return;
+        }
+
+        // PharmacyOrder (PO request): use lightweight DTO query (issue #21011 / #20299).
+        if (billType == BillType.PharmacyOrder) {
+            pharmacyBillSearch.fetchPoRequestSearchDtos(maxResult);
+            return;
+        }
+
+        // PharmacyOrderApprove (PO approval): use lightweight DTO query (issue #21011 / #20299).
+        if (billType == BillType.PharmacyOrderApprove) {
+            pharmacyBillSearch.fetchPoApproveSearchDtos(maxResult);
+            return;
+        }
+
+        // PharmacyGrnBill: use lightweight DTO query (issue #21012 / #20299).
+        if (billType == BillType.PharmacyGrnBill) {
+            pharmacyBillSearch.fetchGrnSearchDtos(maxResult);
+            return;
+        }
+
+        String jpql;
+        Map params = new HashMap();
 
         // Special handling for PharmacyAdjustment - use bill type atomics instead
         if (billType == BillType.PharmacyAdjustment) {
@@ -4961,19 +5139,17 @@ public class SearchController implements Serializable {
      * @return list of issue DTOs
      */
     public List<PharmacyTransferRequestIssueDTO> fetchIssuedBillDtos(Long requestId) {
-        String jpql = "select new com.divudi.core.data.dto.PharmacyTransferRequestIssueDTO("
-                + " b.id, "
-                + " b.deptId, "
-                + " b.createdAt, "
-                + " b.creater.webUserPerson.name, "
-                + " ts.person.name, "
-                + " b.netTotal)"
-                + " from Bill b "
-                + " left join b.toStaff ts"
-                + " where b.retired=false "
-                + " and b.cancelled=false "
-                + " and b.billTypeAtomic=:bta"
-                + " and (b.referenceBill.id=:rid or b.backwardReferenceBill.id=:rid)";
+        // LEFT JOINs are required: implicit path navigation (b.referenceBill.id) generates
+        // an inner join that silently excludes bills where referenceBill_ID is NULL
+        // (e.g. bills created via native SQL that only set backwardReferenceBill).
+        String jpql = "select new com.divudi.core.data.dto.PharmacyTransferRequestIssueDTO(b.id, b.deptId)"
+                + " from Bill b"
+                + " left join b.referenceBill ref"
+                + " left join b.backwardReferenceBill bref"
+                + " where b.retired = false"
+                + " and b.cancelled = false"
+                + " and b.billTypeAtomic = :bta"
+                + " and (ref.id = :rid or bref.id = :rid)";
         HashMap<String, Object> params = new HashMap<>();
         params.put("bta", BillTypeAtomic.PHARMACY_ISSUE);
         params.put("rid", requestId);
@@ -5869,18 +6045,34 @@ public class SearchController implements Serializable {
                 + " b.createdAt between :fromDate and :toDate "
                 + " and b.retired=false "
                 + " and b.billTypeAtomic=:bTA "
+                + " and b.billType=:bT "
+                + " and b.creater=:user ";
+
+        m.put("fromDate", fromDate);
+        m.put("toDate", toDate);
+        m.put("bTA", BillTypeAtomic.FUND_SHIFT_SHORTAGE_BILL);
+        m.put("bT", BillType.ShiftShortage);
+        m.put("user", sessionController.getLoggedUser());
+        bills = getBillFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
+    }
+
+    public void createAllShiftShortageBillsTable() {
+        bills = null;
+        bills = new ArrayList<>();
+        String sql;
+        Map m = new HashMap();
+
+        sql = "Select b From Bill b where "
+                + " b.createdAt between :fromDate and :toDate "
+                + " and b.retired=false "
+                + " and b.billTypeAtomic=:bTA "
                 + " and b.billType=:bT ";
 
         m.put("fromDate", fromDate);
         m.put("toDate", toDate);
         m.put("bTA", BillTypeAtomic.FUND_SHIFT_SHORTAGE_BILL);
         m.put("bT", BillType.ShiftShortage);
-        bills = getBillFacade().findByJpql(sql, m);
-
-        if (bills == null || bills.isEmpty()) {
-        } else {
-        }
-
+        bills = getBillFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
     }
 
     public void createApprovedPharmacy() {
@@ -10554,12 +10746,15 @@ public class SearchController implements Serializable {
 
     }
 
+    private Map<String, Object> opdBillsSearchCriteria;
+
     public void searchOpdBills() {
         List<BillTypeAtomic> billTypesAtomics = new ArrayList<>();
         billTypesAtomics.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
         billTypesAtomics.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
         createTableByKeyword(billTypesAtomics, institution, department, fromInstitution, fromDepartment, toInstitution, toDepartment);
 
+        opdBillsSearchCriteria = getFiltersForOpdBillSearch();
     }
 
     public void searchOpdPackageBills() {
@@ -10601,6 +10796,9 @@ public class SearchController implements Serializable {
         payments = paymentFacade.findByJpql(jpql, params);
 
     }
+    private Map<String, Object> channelBillsSearchCriteria;
+    private boolean filterChannelBillsByAppointmentDate;
+    private boolean filterChannelBillsByBilledDate;
 
     public void searchChannelBills() {
         Date startTime = new Date();
@@ -10618,6 +10816,7 @@ public class SearchController implements Serializable {
         billTypesAtomics.add(BillTypeAtomic.CHANNEL_REFUND_WITH_PAYMENT);
         billTypesAtomics.add(BillTypeAtomic.CHANNEL_REFUND_WITH_PAYMENT_FOR_CREDIT_SETTLED_BOOKINGS);
         createTableByKeywordForChannelBills(billTypesAtomics, institution, department, fromInstitution, fromDepartment, toInstitution, toDepartment, staff, speciality);
+        channelBillsSearchCriteria = getFiltersForChannelBillSearch();
 
     }
 
@@ -11626,8 +11825,13 @@ public class SearchController implements Serializable {
         sql = "select b "
                 + " from Bill b "
                 + " where b.billTypeAtomic in :billTypesAtomics "
-                + " and b.createdAt between :fromDate and :toDate "
                 + " and b.retired=false ";
+
+        if (filterChannelBillsByAppointmentDate) {
+            sql += " and b.singleBillSession.sessionInstance.sessionDate between :fromDate and :toDate ";
+        } else {
+            sql += " and b.createdAt between :fromDate and :toDate ";
+        }
 
         if (ins != null) {
             sql += " and b.institution=:ins ";
@@ -16511,27 +16715,27 @@ public class SearchController implements Serializable {
 
     public String navigateToListSingleUserBills() {
         processAllFinancialTransactionalBillListBySingleUserByIds();
-        return "/cashier/shift_end_summary_bill_list";
+        return "/cashier/shift_end_summary_bill_list?faces-redirect=true";
     }
 
     public String navigateToListCashBookEntry() {
         cashBookEntries = new ArrayList<>();
-        return "/cashier/cash_book_entry";
+        return "/cashier/cash_book_entry?faces-redirect=true";
     }
 
     public String navigateToListCashBookEntrySiteSummary() {
         cashBookEntries = new ArrayList<>();
-        return "/cashier/cash_book_summery_site";
+        return "/cashier/cash_book_summery_site?faces-redirect=true";
     }
 
     public String navigateToListCashBookEntryDepartmentSummary() {
         cashBookEntries = new ArrayList<>();
-        return "/cashier/cash_book_summery_department";
+        return "/cashier/cash_book_summery_department?faces-redirect=true";
     }
 
     public String navigateToListCashBookEntryInstitutionSummary() {
         cashBookEntries = new ArrayList<>();
-        return "/cashier/cash_book_summery_institution";
+        return "/cashier/cash_book_summery_institution?faces-redirect=true";
     }
 
     public String navigateToPatientReportSearch() {
@@ -20806,6 +21010,103 @@ public class SearchController implements Serializable {
         bundle.calculateTotalsWithCredit();
     }
 
+    private List<ChannelIncomeDTO> agentBookings;
+
+    public void processAgentChannelBookings() {
+        agentBookings = new ArrayList<>();
+
+        String jpql = "Select new com.divudi.core.data.dto.channel.ChannelIncomeDTO( "
+                + " b.id, b.createdAt, b.deptId, b.billTypeAtomic, "
+                + " COALESCE(pa.person.name, ''), pa.person.title, "
+                + " COALESCE(b.creater.name, ''), "
+                + " b.cancelled, b.refunded, "
+                + " COALESCE(b.hospitalFee, 0.0), COALESCE(b.staffFee, 0.0), COALESCE(b.total, 0.0), COALESCE(b.netTotal, 0.0), COALESCE(b.discount, 0.0), "
+                + " b.agentRefNo, cc.name, "
+                + " b.institution.name, b.department.name, ti.name, td.name "
+                + " ) "
+                + " FROM Bill b "
+                + " LEFT JOIN b.patient pa "
+                + " LEFT JOIN b.creditCompany cc "
+                + " LEFT JOIN b.toInstitution ti "
+                + " LEFT JOIN b.toDepartment td "
+                + " WHERE b.retired = :ret "
+                + " AND b.billTypeAtomic IN :bts ";
+
+        Map<String, Object> m = new HashMap<>();
+        m.put("ret", false);
+
+        List<BillTypeAtomic> bts = new ArrayList<>();
+        bts.add(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
+//        bts.add(BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT);
+//        bts.add(BillTypeAtomic.CHANNEL_REFUND_WITH_PAYMENT);
+        m.put("bts", bts);
+
+        jpql += " AND b.paymentMethod = :pm ";
+        m.put("pm", PaymentMethod.Agent);
+
+        if (creditCompany != null) {
+            jpql += " AND cc = :creditcom ";
+            m.put("creditcom", creditCompany);
+        }
+
+        if (institution != null) {
+            jpql += " AND b.institution = :ins ";
+            m.put("ins", institution);
+        }
+
+        if (site != null) {
+            jpql += " AND b.department.site = :site ";
+            m.put("site", site);
+        }
+
+        if (department != null) {
+            jpql += " AND b.department = :dept ";
+            m.put("dept", department);
+        }
+
+        if (toInstitution != null) {
+            jpql += " AND ti = :tins ";
+            m.put("tins", toInstitution);
+        }
+
+        if (toSite != null) {
+            jpql += " AND td.site = :tsite ";
+            m.put("tsite", toSite);
+        }
+
+        if (toDepartment != null) {
+            jpql += " AND td = :tdept ";
+            m.put("tdept", toDepartment);
+        }
+
+        if (webUser != null) {
+            jpql += " AND b.creater = :wu ";
+            m.put("wu", webUser);
+        }
+
+        jpql += " AND b.createdAt BETWEEN :fromDate AND :toDate ";
+        m.put("fromDate", getFromDate());
+        m.put("toDate", getToDate());
+
+        agentBookings = (List<ChannelIncomeDTO>) billFacade.findLightsByJpql(jpql, m, TemporalType.TIMESTAMP);
+
+        hosTotal = 0.0;
+        staffTotal = 0.0;
+        grossTotal = 0.0;
+        discountTotal = 0.0;
+        amountTotal = 0.0;
+
+        for (ChannelIncomeDTO b : agentBookings) {
+            if (!b.isCancelled() && !b.isRefunded()) {
+                hosTotal += b.getHosFee();
+                staffTotal += b.getDoctorFee();
+                grossTotal += (b.getGrossTotal());
+                discountTotal += b.getDiscount();
+                amountTotal += b.getPaymentFee();
+            }
+        }
+    }
+
     public void listAgentChannelBookings() {
         String jpql = "SELECT b "
                 + " FROM Bill b "
@@ -20885,11 +21186,18 @@ public class SearchController implements Serializable {
                 amountTotal += b.getNetTotal();
             }
         }
+
     }
 
     private String bookingType;
+    private Map<String, Object> channelIncomeReportSC;
 
     public void generateChannelIncome() {
+        if (!filterChannelBillsByAppointmentDate && !filterChannelBillsByBilledDate) {
+            JsfUtil.addErrorMessage("Please select at least one date filter.");
+            return;
+        }
+
         Map<String, Object> parameters = new HashMap<>();
         String jpql = "SELECT new com.divudi.core.data.ReportTemplateRow("
                 + "bill, "
@@ -20975,10 +21283,17 @@ public class SearchController implements Serializable {
             parameters.put("pm", paymentMethod);
         }
 
-        jpql += "AND p.createdAt BETWEEN :fd AND :td ";
-        parameters.put("fd", fromDate);
-        parameters.put("td", toDate);
-
+        if (filterChannelBillsByBilledDate) {
+            jpql += "AND bill.createdAt BETWEEN :fd AND :td ";
+            parameters.put("fd", fromDate);
+            parameters.put("td", toDate);
+        }
+        if (filterChannelBillsByAppointmentDate) {
+            jpql += "AND bill.singleBillSession.sessionInstance.sessionDate BETWEEN :fdAppt AND :tdAppt ";
+            parameters.put("fdAppt", appointmentFromDate);
+            parameters.put("tdAppt", appointmentToDate);
+        }
+        
         // Ensure proper grouping
         jpql += "GROUP BY bill";
 
@@ -20988,6 +21303,8 @@ public class SearchController implements Serializable {
         bundle.setReportTemplateRows(rs);
         bundle.createRowValuesFromBillForChannelBills();
         bundle.calculateTotals();
+
+        channelIncomeReportSC = getFiltersForChannelIncomeReport();
 
     }
 
@@ -22522,6 +22839,28 @@ public class SearchController implements Serializable {
     public void setFromDate(Date fromDate) {
         this.fromDate = fromDate;
     }
+    
+    public Date getAppointmentToDate() {
+        if (appointmentToDate == null) {
+            appointmentToDate = CommonFunctions.getEndOfDay(new Date());
+        }
+        return appointmentToDate;
+    }
+
+    public void setAppointmentToDate(Date toDate) {
+        this.appointmentToDate = toDate;
+    }
+
+    public Date getAppointmentFromDate() {
+        if (appointmentFromDate == null) {
+            appointmentFromDate = CommonFunctions.getStartOfDay(new Date());
+        }
+        return appointmentFromDate;
+    }
+
+    public void setAppointmentFromDate(Date fromDate) {
+        this.appointmentFromDate = fromDate;
+    }
 
     public SearchKeyword getSearchKeyword() {
         if (searchKeyword == null) {
@@ -22591,6 +22930,14 @@ public class SearchController implements Serializable {
 
     public void setTransferRequestDtos(List<PharmacyTransferRequestListDTO> transferRequestDtos) {
         this.transferRequestDtos = transferRequestDtos;
+    }
+
+    public List<PharmacyTransferIssuedListDTO> getTransferIssuedListDtos() {
+        return transferIssuedListDtos;
+    }
+
+    public void setTransferIssuedListDtos(List<PharmacyTransferIssuedListDTO> transferIssuedListDtos) {
+        this.transferIssuedListDtos = transferIssuedListDtos;
     }
 
     public List<PharmacyItemPurchaseDTO> getDisposalIssueBillDtos() {
@@ -23310,33 +23657,6 @@ public class SearchController implements Serializable {
         return pdfSc;
     }
 
-    // PDF Export: Channel Income Report
-    public StreamedContent getChannelIncomeReportAsPdf() {
-        if (bundle == null || bundle.getReportTemplateRows() == null || bundle.getReportTemplateRows().isEmpty()) {
-            JsfUtil.addErrorMessage("Please generate the Channel Income report before exporting.");
-            return null;
-        }
-
-        StreamedContent pdfSc = null;
-        try {
-            String fileName = "Channel_Income_Report";
-            String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
-            if (dates != null && !dates.isEmpty()) {
-                fileName += "_" + dates;
-            }
-
-            // set bundleName and bundleType
-            bundle.setBundleType("channelIncome");
-            bundle.setName("Channel Income Report");
-            pdfSc = pdfController.createPdfForReportTemplateRows(bundle, PageSize.A4.rotate(), true, getFiltersForChannelIncomeReport(), fileName);
-        } catch (IOException e) {
-            logger.error("getChannelIncomeReportAsPdf: Error creating pdfSc via pdfController.createPdfForReportTemplateRows", e);
-            pdfSc = null;
-            JsfUtil.addErrorMessage("Failed to generate Channel Income PDF file. Please try again.");
-        }
-        return pdfSc;
-    }
-
     // Excel Export: wht Report
     public StreamedContent getWhtReportAsExcel() {
         if (bundle == null || bundle.getReportTemplateRows() == null || bundle.getReportTemplateRows().isEmpty()) {
@@ -23617,60 +23937,30 @@ public class SearchController implements Serializable {
         this.dateBasis = dateBasis;
     }
 
-    // PostProcessor for channel_income excel export
-    public void postProcessChannelIncomeReportExcel(Object document) {
-        if (document == null) {
-            logger.error("postProcessChannelIncomeReportExcel: Document is null in postProcessChannelIncomeReportExcel");
-            return;
-        }
-        if (!(document instanceof XSSFWorkbook)) {
-            logger.error("postProcessChannelIncomeReportExcel:Expected document to be an instance of XSSFWorkbook, but got: {}", document.getClass().getName());
-            return;
-        }
-        XSSFWorkbook workbook = (XSSFWorkbook) document;
-        XSSFSheet sheet = workbook.getSheetAt(0);
-        if (sheet == null) {
-            return;
-        }
-
-        workbook.setSheetName(0, "Channel Income Report");
-        sheet.shiftRows(0, sheet.getLastRowNum(), 6);
-
-        Map<String, Object> filters = getFiltersForChannelIncomeReport();
-
-        if (filters != null && !filters.isEmpty()) {
-            pharmacyController.addMetaDataToExcelSheet(workbook, sheet, 0, "Channel Income Report", filters);
-        }
-    }
 
     // Filters for Channel Income Report
     private Map<String, Object> getFiltersForChannelIncomeReport() {
         Map<String, Object> params = new LinkedHashMap<>();
-        String dateTimeFormat = sessionController.getApplicationPreference().getLongDateTimeFormat();
-        String formattedFromDate = fromDate != null ? new SimpleDateFormat(dateTimeFormat).format(fromDate) : "Not available";
-        String formattedToDate = toDate != null ? new SimpleDateFormat(dateTimeFormat).format(toDate) : "Not available";
+        SimpleDateFormat dateFormat = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
 
-        params.put("From Date", formattedFromDate);
-        params.put("To Date", formattedToDate);
+        if (filterChannelBillsByBilledDate) {
+            params.put("Billed From", fromDate);
+            params.put("Billed To", toDate);
+        }
+        if (filterChannelBillsByAppointmentDate) {
+            params.put("Appointment From", appointmentFromDate);
+            params.put("Appointment To", appointmentToDate);
+        }
+        
         params.put("Institution", institution != null ? institution.getName() : "All Institutions");
         params.put("Department", department != null ? department.getName() : "All Departments");
         params.put("Speciality", speciality != null ? speciality.getName() : "All");
         params.put("Doctor", staff != null && staff.getPerson() != null && staff.getPerson().getNameWithTitle() != null ? staff.getPerson().getNameWithTitle() : "All");
         params.put("User", webUser != null ? webUser.getName() : "All");
         params.put("Booking Type", getChannelIncomeBookingTypeAsString());
+        params.put("Payment Method", paymentMethod != null ? paymentMethod.getLabel() : "All");
 
         return params;
-    }
-
-    // Excel Export fileName : channel income
-    public String getChannelIncomeReportFileName() {
-        String fileName = "Channel_Income_Report";
-        String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
-        if (dates != null && !dates.isEmpty()) {
-            fileName += "_" + dates;
-        }
-        
-        return fileName;
     }
 
     // Channel_income: Booking Type
@@ -23698,6 +23988,235 @@ public class SearchController implements Serializable {
         }
 
         return bt;
+    }
+
+    // Filters for Channel Income Report
+    private Map<String, Object> getFiltersForChannelBillSearch() {
+        Map<String, Object> params = new LinkedHashMap<>();
+
+        if (filterChannelBillsByAppointmentDate) {
+            params.put("Filtered By", "Appointment Date");
+        } else {
+            params.put("Filtered By", "Bill Date");
+        }
+        params.put("From Date", fromDate);
+        params.put("To Date", toDate);
+        if (searchKeyword != null) {
+            params.put("Bill No", searchKeyword.getBillNo() != null && !searchKeyword.getBillNo().trim().isEmpty() ? searchKeyword.getBillNo() : "All");
+            params.put("Name", searchKeyword.getPatientName() != null && !searchKeyword.getPatientName().trim().isEmpty() ? searchKeyword.getPatientName() : "All");
+            params.put("Phone", searchKeyword.getPatientPhone() != null && !searchKeyword.getPatientPhone().trim().isEmpty() ? searchKeyword.getPatientPhone() : "All");
+            params.put("Total", searchKeyword.getTotal() != null? searchKeyword.getTotal() : "All");
+            params.put("Net Total", searchKeyword.getNetTotal() != null ? searchKeyword.getNetTotal() : "All");
+        }
+        params.put("Consultant", staff != null && staff.getPerson() != null && staff.getPerson().getNameWithTitle() != null ? staff.getPerson().getNameWithTitle() : "All");
+        params.put("Speciality", speciality != null ? speciality.getName() : "All");
+
+        return params;
+    }
+
+    // Filters for Opd Bills Report
+    private Map<String, Object> getFiltersForOpdBillSearch() {
+        Map<String, Object> params = new LinkedHashMap<>();
+
+        params.put("From Date", fromDate);
+        params.put("To Date", toDate);
+        params.put("Logged Department Only", showLoggedDepartmentOnly);
+        if (searchKeyword != null) {
+            params.put("Bill No", searchKeyword.getBillNo() != null && !searchKeyword.getBillNo().trim().isEmpty() ? searchKeyword.getBillNo() : "All");
+            params.put("MRN No", searchKeyword.getCode() != null && !searchKeyword.getCode().trim().isEmpty() ? searchKeyword.getCode() : "All");
+            params.put("Name", searchKeyword.getPatientName() != null && !searchKeyword.getPatientName().trim().isEmpty() ? searchKeyword.getPatientName() : "All");
+            params.put("Phone", searchKeyword.getPatientPhone() != null && !searchKeyword.getPatientPhone().trim().isEmpty() ? searchKeyword.getPatientPhone() : "All");
+            params.put("Total", searchKeyword.getTotal() != null? searchKeyword.getTotal() : "All");
+            params.put("Net Total", searchKeyword.getNetTotal() != null ? searchKeyword.getNetTotal() : "All");
+        }
+        params.put("From Institution", fromInstitution != null ? fromInstitution.getName() : "All Institutions");
+        params.put("From Department", fromDepartment != null ? fromDepartment.getName() : "All Departments");
+        params.put("To Institution", toInstitution != null ? toInstitution.getName() : "All Institutions");
+        params.put("To Department", toDepartment != null ? toDepartment.getName() : "All Departments");
+
+        return params;
+    }
+
+    public ChannelBillSearch getChannelBillSearchReport() {
+        String fileName = "Channel_Bills";
+        String dates;
+        if (channelBillsSearchCriteria != null && channelBillsSearchCriteria.get("From Date") instanceof Date && channelBillsSearchCriteria.get("To Date") instanceof Date) {
+            dates = CommonFunctions.dateRangeForFileName((Date) channelBillsSearchCriteria.get("From Date"), (Date) channelBillsSearchCriteria.get("To Date"), sessionController.getApplicationPreference().getLongDateFormat());
+        } else {
+            dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
+        }
+
+        if (dates != null && !dates.isEmpty()) {
+            fileName += "_" + dates;
+        }
+        String institutionName = "";
+        String userName = "";
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            if (sessionController.getLoggedUser().getInstitution() != null && sessionController.getLoggedUser().getInstitution().getName() != null) {
+                institutionName = sessionController.getLoggedUser().getInstitution().getName();
+            }
+            if (sessionController.getLoggedUser().getName() != null) {
+                userName = sessionController.getLoggedUser().getName();
+            }
+        }
+
+        ChannelBillSearch oBReport = new ChannelBillSearch(fileName, institutionName, channelBillsSearchCriteria != null ? channelBillsSearchCriteria : getFiltersForChannelBillSearch(), bills, userName);
+
+        return oBReport;
+    }
+
+    public StreamedContent getChannelBillsAsExcel() {
+        if (bills == null || bills.isEmpty()) {
+            JsfUtil.addErrorMessage("Please generate the Channel Bills before exporting.");
+            return null;
+        }
+
+        return getChannelBillSearchReport().createExcelAsStream();
+    }
+
+    public ChannelIncomeReport getChannelIncomeReport() {
+        String fileName = "Channel_Income_Report";
+        String dates = "";
+        if (filterChannelBillsByBilledDate) {
+            if (channelIncomeReportSC != null && channelIncomeReportSC.get("Billed From") instanceof Date && channelIncomeReportSC.get("Billed To") instanceof Date) {
+                dates = CommonFunctions.dateRangeForFileName((Date) channelIncomeReportSC.get("Billed From"), (Date) channelIncomeReportSC.get("Billed To"), sessionController.getApplicationPreference().getLongDateFormat());
+            } else {
+                dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
+            }
+        } else if (filterChannelBillsByAppointmentDate) {
+            if (channelIncomeReportSC != null && channelIncomeReportSC.get("Appointment From") instanceof Date && channelIncomeReportSC.get("Appointment To") instanceof Date) {
+                dates = CommonFunctions.dateRangeForFileName((Date) channelIncomeReportSC.get("Appointment From"), (Date) channelIncomeReportSC.get("Appointment To"), sessionController.getApplicationPreference().getLongDateFormat()) + "(Appt)";
+            }
+        }
+
+        if (dates != null && !dates.isEmpty()) {
+            fileName += "_" + dates;
+        }
+        String institutionName = "";
+        String userName = "";
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            if (sessionController.getLoggedUser().getInstitution() != null && sessionController.getLoggedUser().getInstitution().getName() != null) {
+                institutionName = sessionController.getLoggedUser().getInstitution().getName();
+            }
+            if (sessionController.getLoggedUser().getName() != null) {
+                userName = sessionController.getLoggedUser().getName();
+            }
+        }
+
+        // PaymentsMethod Column boolean values
+        ChannelReportController.PaymentMethodFlags pmFlags = new ChannelReportController.PaymentMethodFlags();
+        pmFlags.setFlagsReportTemplateRowBundle(bundle);
+
+        ChannelIncomeReport incomeReport = new ChannelIncomeReport(fileName, institutionName, channelIncomeReportSC != null ? channelIncomeReportSC : getFiltersForChannelIncomeReport(), bundle.getReportTemplateRows(), configOptionApplicationController.getBooleanValueByKey("Add discount column to the channel income report", false), pmFlags, userName);
+        incomeReport.setColumnFooter(bundle.getHospitalTotal() != null ?  bundle.getHospitalTotal().doubleValue() : 0.0, "Hospital Fee");
+        incomeReport.setColumnFooter(bundle.getStaffTotal() != null ?  bundle.getStaffTotal().doubleValue() : 0.0, "Staff Fee");
+        incomeReport.setColumnFooter(bundle.getGrossTotal() != null ?  bundle.getGrossTotal().doubleValue() : 0.0, "Gross Total");
+
+        if (configOptionApplicationController.getBooleanValueByKey("Add discount column to the channel income report", false)) {
+            incomeReport.setColumnFooter(bundle.getDiscount() != null ?  bundle.getDiscount().doubleValue() : 0.0, "Discount");
+            incomeReport.setColumnFooter(bundle.getTotal() != null ?  bundle.getTotal().doubleValue() : 0.0, "Net Total");
+        }
+
+        if (pmFlags.hasCash) {incomeReport.setColumnFooter(bundle.getCashValue(), "Cash");}
+        if (pmFlags.hasCard) {incomeReport.setColumnFooter(bundle.getCardValue(), "Card");}
+        if (pmFlags.hasCredit) {incomeReport.setColumnFooter(bundle.getCreditValue(), "Credit");}
+        if (pmFlags.hasStaffWelfare) {incomeReport.setColumnFooter(bundle.getStaffWelfareValue(), "Staff Welfare");}
+        if (pmFlags.hasVoucher) {incomeReport.setColumnFooter(bundle.getVoucherValue(), "Voucher");}
+        if (pmFlags.hasIou) {incomeReport.setColumnFooter(bundle.getIouValue(), "IOU");}
+        if (pmFlags.hasAgent) {incomeReport.setColumnFooter(bundle.getAgentValue(), "Agent");}
+        if (pmFlags.hasCheque) {incomeReport.setColumnFooter(bundle.getChequeValue(), "Cheque");}
+        if (pmFlags.hasSlip) {incomeReport.setColumnFooter(bundle.getSlipValue(), "Slip");}
+        if (pmFlags.hasEWallet) {incomeReport.setColumnFooter(bundle.getEWalletValue(), "eWallet");}
+        if (pmFlags.hasPatientDeposit) {incomeReport.setColumnFooter(bundle.getPatientDepositValue(), "Patient Deposit");}
+        if (pmFlags.hasPatientPoints) {incomeReport.setColumnFooter(bundle.getPatientPointsValue(), "Patient Points");}
+        if (pmFlags.hasOnlineSettlement) {incomeReport.setColumnFooter(bundle.getOnlineSettlementValue(), "Online Settlement");}
+
+        return incomeReport;
+    }
+
+    public StreamedContent getChannelIncomeReportAsPdf() {
+        if (bundle == null || bundle.getReportTemplateRows() == null || bundle.getReportTemplateRows().isEmpty()) {
+            JsfUtil.addErrorMessage("Please generate the Channel Income report before exporting.");
+            return null;
+        }
+        return getChannelIncomeReport().createPdfAsStream();
+    }
+
+    public StreamedContent getChannelIncomeReportAsExcel() {
+        if (bundle == null || bundle.getReportTemplateRows() == null || bundle.getReportTemplateRows().isEmpty()) {
+            JsfUtil.addErrorMessage("Please generate the Channel Income report before exporting.");
+            return null;
+        }
+
+        return getChannelIncomeReport().createExcelAsStream();
+    }
+
+    public OpdBillSearch getOpdBillSearchReport() {
+        String fileName = "OPD_Bills";
+        String dates;
+        if (opdBillsSearchCriteria != null && opdBillsSearchCriteria.get("From Date") instanceof Date && opdBillsSearchCriteria.get("To Date") instanceof Date) {
+            dates = CommonFunctions.dateRangeForFileName((Date) opdBillsSearchCriteria.get("From Date"), (Date) opdBillsSearchCriteria.get("To Date"), sessionController.getApplicationPreference().getLongDateFormat());
+        } else {
+            dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
+        }
+        if (dates != null && !dates.isEmpty()) {
+            fileName += "_" + dates;
+        }
+        String institutionName = "";
+        String userName = "";
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            if (sessionController.getLoggedUser().getInstitution() != null && sessionController.getLoggedUser().getInstitution().getName() != null) {
+                institutionName = sessionController.getLoggedUser().getInstitution().getName();
+            }
+            if (sessionController.getLoggedUser().getName() != null) {
+                userName = sessionController.getLoggedUser().getName();
+            }
+        }
+
+        OpdBillSearch oBReport = new OpdBillSearch(fileName, institutionName, opdBillsSearchCriteria != null ? opdBillsSearchCriteria : getFiltersForOpdBillSearch(), bills, userName);
+
+        return oBReport;
+    }
+
+    public StreamedContent getOpdBillsAsExcel() {
+        if (bills == null || bills.isEmpty()) {
+            JsfUtil.addErrorMessage("Please generate the OPD Bills before exporting.");
+            return null;
+        }
+
+        return getOpdBillSearchReport().createExcelAsStream();
+    }
+
+    public List<ChannelIncomeDTO> getAgentBookings() {
+        return this.agentBookings;
+    }
+
+    public void setAgentBookings(List<ChannelIncomeDTO> agentBookings) {
+        this.agentBookings = agentBookings;
+    }
+
+    public boolean filterBySingleDate(Object value, Object filter, Locale locale) {
+        if (filter == null) return true;
+        if (value == null) return false;
+
+        if (!(value instanceof Date)) return false;
+
+        java.time.LocalDate filterDate;
+        if (filter instanceof java.time.LocalDate) {
+            filterDate = (java.time.LocalDate) filter;
+        } else if (filter instanceof Date) {
+            filterDate = ((Date) filter).toInstant()
+                .atZone(ZoneId.systemDefault())
+                .toLocalDate();
+        } else {
+            return false;
+        }
+
+        java.time.LocalDate rowDate = ((Date) value).toInstant()
+            .atZone(ZoneId.systemDefault())
+            .toLocalDate();
+
+        return rowDate.equals(filterDate);
     }
 
 }

@@ -232,10 +232,15 @@ public class PharmacyStockTakeController implements Serializable {
             return null;
         }
 
+        if (selectedDepartmentType == null) {
+            JsfUtil.addErrorMessage("Please select a department type");
+            return null;
+        }
+
         Department dept = department;
 
         // Fetch stocks using DTO projection for performance (avoids N+1 queries)
-        String jpql = "select new com.divudi.core.data.dto.StockDTO("
+        String jpqlBase = "select new com.divudi.core.data.dto.StockDTO("
                 + "s.id, ib.id, i.id, "
                 + "c.name, i.name, ib.batchNo, "
                 + "ib.dateOfExpire, s.stock, ib.costRate, "
@@ -245,12 +250,21 @@ public class PharmacyStockTakeController implements Serializable {
                 + "join ib.item i "
                 + "left join i.category c "
                 + "left join i.dosageForm df "
-                + "where s.department=:d and s.stock>0 "
-                + "order by coalesce(c.name, '') asc, "
-                + "coalesce(i.name, '') asc, "
-                + "coalesce(ib.dateOfExpire, current_date) asc";
+                + "where s.department=:d and s.stock>0";
         HashMap<String, Object> params = new HashMap<>();
         params.put("d", dept);
+        if (selectedDepartmentType != null) {
+            if (selectedDepartmentType == com.divudi.core.data.DepartmentType.Pharmacy) {
+                jpqlBase += " and (i.departmentType = :dt or i.departmentType is null)";
+            } else {
+                jpqlBase += " and i.departmentType = :dt";
+            }
+            params.put("dt", selectedDepartmentType);
+        }
+        String jpql = jpqlBase
+                + " order by coalesce(c.name, '') asc, "
+                + "coalesce(i.name, '') asc, "
+                + "coalesce(ib.dateOfExpire, current_date) asc";
         @SuppressWarnings("unchecked")
         List<StockDTO> stockDTOs = (List<StockDTO>) (List<?>) stockFacade.findByJpql(jpql, params);
 
@@ -265,6 +279,7 @@ public class PharmacyStockTakeController implements Serializable {
         snapshotBill.setBillType(BillType.PharmacySnapshotBill);
         snapshotBill.setBillClassType(BillClassType.BilledBill);
         snapshotBill.setDepartment(dept);
+        snapshotBill.setDepartmentType(selectedDepartmentType);
 
         // Null check for institution
         if (dept.getInstitution() != null) {
@@ -327,7 +342,7 @@ public class PharmacyStockTakeController implements Serializable {
         // Handle zero-stock batches if configured
         if (includeZeroStockBatches && zeroStockBatchLimit > 0) {
             // Fetch zero-stock batches using DTO projection, ordered by expiry date descending
-            String zeroStockJpql = "select new com.divudi.core.data.dto.StockDTO("
+            String zeroStockJpqlBase = "select new com.divudi.core.data.dto.StockDTO("
                     + "s.id, ib.id, i.id, "
                     + "c.name, i.name, ib.batchNo, "
                     + "ib.dateOfExpire, s.stock, ib.costRate, "
@@ -337,8 +352,16 @@ public class PharmacyStockTakeController implements Serializable {
                     + "join ib.item i "
                     + "left join i.category c "
                     + "left join i.dosageForm df "
-                    + "where s.department=:d and (s.stock is null or s.stock = 0) "
-                    + "order by coalesce(c.name, '') asc, "
+                    + "where s.department=:d and (s.stock is null or s.stock = 0)";
+            if (selectedDepartmentType != null) {
+                if (selectedDepartmentType == com.divudi.core.data.DepartmentType.Pharmacy) {
+                    zeroStockJpqlBase += " and (i.departmentType = :dt or i.departmentType is null)";
+                } else {
+                    zeroStockJpqlBase += " and i.departmentType = :dt";
+                }
+            }
+            String zeroStockJpql = zeroStockJpqlBase
+                    + " order by coalesce(c.name, '') asc, "
                     + "coalesce(i.name, '') asc, "
                     + "coalesce(ib.dateOfExpire, current_date) desc";
             @SuppressWarnings("unchecked")
@@ -2388,7 +2411,7 @@ public class PharmacyStockTakeController implements Serializable {
 
         String jpql = "select new com.divudi.core.light.common.PharmacySnapshotBillLight("
                 + "b.id, b.deptId, b.createdAt, ins.name, dept.name, "
-                + "(select count(bi) from BillItem bi where bi.bill = b), b.netTotal, b.completed) "
+                + "(select count(bi) from BillItem bi where bi.bill = b), b.netTotal, b.completed, b.departmentType) "
                 + "from Bill b "
                 + "left join b.institution ins "
                 + "left join b.department dept "
@@ -2403,6 +2426,7 @@ public class PharmacyStockTakeController implements Serializable {
 
         if (results != null && !results.isEmpty()) {
             snapshotBillDisplay = results.get(0);
+            selectedDepartmentType = snapshotBillDisplay.getDepartmentType();
             System.out.println("[ViewSnapshot] Done. Navigating to print page. ms=" + (System.currentTimeMillis() - t0));
             return "/pharmacy/pharmacy_stock_take_print?faces-redirect=true&billId=" + billId;
         } else {
@@ -2427,7 +2451,7 @@ public class PharmacyStockTakeController implements Serializable {
         snapshotItems = null;
         String jpql = "select new com.divudi.core.light.common.PharmacySnapshotBillLight("
                 + "b.id, b.deptId, b.createdAt, ins.name, dept.name, "
-                + "(select count(bi) from BillItem bi where bi.bill = b), b.netTotal, b.completed) "
+                + "(select count(bi) from BillItem bi where bi.bill = b), b.netTotal, b.completed, b.departmentType) "
                 + "from Bill b "
                 + "left join b.institution ins "
                 + "left join b.department dept "
@@ -2438,6 +2462,7 @@ public class PharmacyStockTakeController implements Serializable {
             (List<PharmacySnapshotBillLight>) billFacade.findLightsByJpql(jpql, params);
         if (results != null && !results.isEmpty()) {
             snapshotBillDisplay = results.get(0);
+            selectedDepartmentType = snapshotBillDisplay.getDepartmentType();
         }
     }
 

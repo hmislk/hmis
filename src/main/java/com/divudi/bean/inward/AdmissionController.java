@@ -14,6 +14,7 @@ import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.ConfigOptionController;
 import com.divudi.bean.common.ControllerWithPatient;
 import com.divudi.bean.common.PageMetadataRegistry;
+import com.divudi.bean.common.PatientInsuranceController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.core.data.OptionScope;
 import com.divudi.core.data.admin.ConfigOptionInfo;
@@ -39,8 +40,10 @@ import com.divudi.core.entity.inward.PatientRoom;
 import com.divudi.core.facade.AdmissionFacade;
 import com.divudi.core.facade.AppointmentFacade;
 import com.divudi.core.facade.BillFacade;
+import com.divudi.core.entity.PatientInsurance;
 import com.divudi.core.facade.EncounterCreditCompanyFacade;
 import com.divudi.core.facade.PatientEncounterFacade;
+import com.divudi.core.facade.PatientInsuranceFacade;
 import com.divudi.core.facade.PatientFacade;
 import com.divudi.core.facade.PatientRoomFacade;
 import com.divudi.core.facade.PatientTransferRequestFacade;
@@ -131,6 +134,8 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     @EJB
     private EncounterCreditCompanyFacade encounterCreditCompanyFacade;
     @EJB
+    private PatientInsuranceFacade patientInsuranceFacade;
+    @EJB
     ClinicalFindingValueFacade clinicalFindingValueFacade;
     @EJB
     ReservationFacade reservationFacade;
@@ -147,6 +152,8 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     AppointmentController appointmentController;
     @Inject
     private ConfigOptionController configOptionController;
+    @Inject
+    private PatientInsuranceController patientInsuranceController;
 
     ////////////////////////////
     ///////////////////////
@@ -287,12 +294,6 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
                 OptionScope.APPLICATION
         ));
 
-        metadata.addConfigOption(new ConfigOptionInfo(
-                "Enable blacklist patient management for inward from the system",
-                "Prevent blacklisted patients from being admitted (default false)",
-                "inward/inward_admission",
-                OptionScope.APPLICATION
-        ));
 
         pageMetadataRegistry.registerPage(metadata);
     }
@@ -343,8 +344,9 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         }
         patientAllergies = new ArrayList<>();
         Map params = new HashMap<>();
-        String s = "SELECT c FROM ClinicalFindingValue c WHERE c.retired = false AND c.patient = :pt";
+        String s = "SELECT c FROM ClinicalFindingValue c WHERE c.retired = false AND c.patient = :pt AND c.clinicalFindingValueType = :type";
         params.put("pt", pt);
+        params.put("type", ClinicalFindingValueType.PatientAllergy);
         patientAllergies = clinicalFindingValueFacade.findByJpql(s, params);
     }
 
@@ -505,6 +507,29 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         if (configOptionApplicationController.getBooleanValueByKey("Inward Admission - Auto Mark Claimable for Credit Admissions", false)) {
             if (current.getPaymentMethod() == PaymentMethod.Credit) {
                 current.setClaimable(true);
+            }
+        }
+        if (current.getPaymentMethod() == PaymentMethod.Credit && current.getPatient() != null) {
+            // Prefer PatientInsurance profiles over last-admission lookup
+            List<PatientInsurance> profiles = patientInsuranceController.findActiveProfiles(current.getPatient());
+            if (!profiles.isEmpty()) {
+                encounterCreditCompanies = new ArrayList<>();
+                for (PatientInsurance pi : profiles) {
+                    EncounterCreditCompany ecc = new EncounterCreditCompany();
+                    ecc.setPatientEncounter(current);
+                    ecc.setInstitution(pi.getCreditCompany());
+                    ecc.setCreditLimit(pi.getCreditLimit());
+                    ecc.setPolicyNo(pi.getPolicyNo());
+                    ecc.setReferanceNo(pi.getReferenceNo());
+                    ecc.setDescreption(pi.getDescription());
+                    current.setCreditLimit(current.getCreditLimit() + ecc.getCreditLimit());
+                    encounterCreditCompanies.add(ecc);
+                    if (pi.isExpired() && configOptionApplicationController.getBooleanValueByKey("Patient Insurance - Show Expiry Alert on Admission", false)) {
+                        JsfUtil.addWarningMessage("Insurance policy for " + pi.getCreditCompany().getName() + " expired on " + pi.getValidTo());
+                    }
+                }
+                encounterCreditCompany = new EncounterCreditCompany();
+                return;
             }
         }
         if (configOptionApplicationController.getBooleanValueByKey("Inward Admission - Find And Fill Last Used Credit Companies of a Patient", false)) {
@@ -912,28 +937,34 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         m.put("fd", fromDate);
         m.put("td", toDate);
 
-        if (patientNameForSearch != null && !patientNameForSearch.trim().equals("")) {
+        String patientNameFilter = normalizeSearchFilter(patientNameForSearch);
+        String bhtNumberFilter = normalizeSearchFilter(bhtNumberForSearch);
+        String patientNumberFilter = normalizeSearchFilter(patientNumberForSearch);
+        String patientPhoneNumberFilter = normalizeSearchFilter(patientPhoneNumberForSearch);
+        String patientIdentityNumberFilter = normalizeSearchFilter(patientIdentityNumberForSearch);
+
+        if (patientNameFilter != null) {
             j += " and c.patient.person.name like :name ";
-            m.put("name", "%" + patientNameForSearch + "%");
+            m.put("name", "%" + patientNameFilter + "%");
         }
-        if (bhtNumberForSearch != null && !bhtNumberForSearch.trim().equals("")) {
+        if (bhtNumberFilter != null) {
             j += "  and c.bhtNo like :bht ";
-            m.put("bht", "%" + bhtNumberForSearch + "%");
+            m.put("bht", "%" + bhtNumberFilter + "%");
         }
 
-        if (patientNumberForSearch != null && !patientNumberForSearch.trim().equals("")) {
+        if (patientNumberFilter != null) {
             j += " and (c.patient.code =:phn or c.patient.phn =:phn)";
-            m.put("phn", patientNumberForSearch);
+            m.put("phn", patientNumberFilter);
         }
 
-        if (patientPhoneNumberForSearch != null && !patientPhoneNumberForSearch.trim().equals("")) {
+        if (patientPhoneNumberFilter != null) {
             j += " and (c.patient.person.phone =:phone or c.patient.person.mobile =:phone)";
-            m.put("phone", patientPhoneNumberForSearch);
+            m.put("phone", patientPhoneNumberFilter);
         }
 
-        if (patientIdentityNumberForSearch != null && !patientIdentityNumberForSearch.trim().equals("")) {
+        if (patientIdentityNumberFilter != null) {
             j += " and c.patient.person.nic =:nic";
-            m.put("nic", patientIdentityNumberForSearch);
+            m.put("nic", patientIdentityNumberFilter);
         }
 
         if (admissionStatusForSearch != null) {
@@ -999,28 +1030,34 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         m.put("fd", fromDate);
         m.put("td", toDate);
 
-        if (patientNameForSearch != null && !patientNameForSearch.trim().equals("")) {
+        String patientNameFilter = normalizeSearchFilter(patientNameForSearch);
+        String bhtNumberFilter = normalizeSearchFilter(bhtNumberForSearch);
+        String patientNumberFilter = normalizeSearchFilter(patientNumberForSearch);
+        String patientPhoneNumberFilter = normalizeSearchFilter(patientPhoneNumberForSearch);
+        String patientIdentityNumberFilter = normalizeSearchFilter(patientIdentityNumberForSearch);
+
+        if (patientNameFilter != null) {
             j += " and c.patient.person.name like :name ";
-            m.put("name", "%" + patientNameForSearch + "%");
+            m.put("name", "%" + patientNameFilter + "%");
         }
-        if (bhtNumberForSearch != null && !bhtNumberForSearch.trim().equals("")) {
+        if (bhtNumberFilter != null) {
             j += "  and c.bhtNo like :bht ";
-            m.put("bht", "%" + bhtNumberForSearch + "%");
+            m.put("bht", "%" + bhtNumberFilter + "%");
         }
 
-        if (patientNumberForSearch != null && !patientNumberForSearch.trim().equals("")) {
+        if (patientNumberFilter != null) {
             j += " and (c.patient.code =:phn or c.patient.phn =:phn)";
-            m.put("phn", patientNumberForSearch);
+            m.put("phn", patientNumberFilter);
         }
 
-        if (patientPhoneNumberForSearch != null && !patientPhoneNumberForSearch.trim().equals("")) {
+        if (patientPhoneNumberFilter != null) {
             j += " and (c.patient.person.phone =:phone or c.patient.person.mobile =:phone)";
-            m.put("phone", patientPhoneNumberForSearch);
+            m.put("phone", patientPhoneNumberFilter);
         }
 
-        if (patientIdentityNumberForSearch != null && !patientIdentityNumberForSearch.trim().equals("")) {
+        if (patientIdentityNumberFilter != null) {
             j += " and c.patient.person.nic =:nic";
-            m.put("nic", patientIdentityNumberForSearch);
+            m.put("nic", patientIdentityNumberFilter);
         }
 
         if (admissionStatusForSearch != null) {
@@ -1063,6 +1100,14 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         }
 
         items = getFacade().findByJpql(j, m, TemporalType.TIMESTAMP);
+    }
+
+    private String normalizeSearchFilter(String value) {
+        if (value == null) {
+            return null;
+        }
+        String trimmed = value.trim();
+        return trimmed.isEmpty() ? null : trimmed;
     }
 
     public String navigateToAdmissionProfilePage() {
@@ -1976,7 +2021,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             return;
         }
 
-        if (getPatient() != null && getPatient().getId() != null && getPatient().isBlacklisted() && configOptionApplicationController.getBooleanValueByKey("Enable blacklist patient management for inward from the system", false)) {
+        if (getPatient() != null && getPatient().getId() != null && getPatient().isBlacklisted()) {
             JsfUtil.addErrorMessage("This patient is blacklisted from the system.");
             return;
         }
@@ -2212,6 +2257,13 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
                 ecc.setCreater(sessionController.getLoggedUser());
                 if (ecc.getInstitution() != null) {
                     getEncounterCreditCompanyFacade().create(ecc);
+                    // Upsert back to patient-level insurance profile
+                    patientInsuranceController.upsertFromEncounter(
+                            current.getPatient(),
+                            ecc.getInstitution(),
+                            ecc.getPolicyNo(),
+                            ecc.getReferanceNo(),
+                            ecc.getCreditLimit());
                 } else {
                     getEncounterCreditCompanyFacade().edit(ecc);
                 }
@@ -2547,7 +2599,9 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = CommonFunctions.getStartOfMonth();
+            Calendar cal = Calendar.getInstance();
+            cal.add(Calendar.DAY_OF_MONTH, -6);
+            fromDate = CommonFunctions.getStartOfDay(cal.getTime());
         }
         return fromDate;
     }

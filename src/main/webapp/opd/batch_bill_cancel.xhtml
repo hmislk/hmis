@@ -25,7 +25,7 @@
                                             id="commentsMenu"
                                             value="#{opdBatchBillCancellationController.comment}"
                                             editable="true"
-                                            disabled="#{configOptionApplicationController.getBooleanValueByKey('Mandatory permission to cancel bills.', false)}"
+                                            disabled="#{opdBatchBillCancellationController.batchBill.currentRequest ne null}"
                                             filter="true"
                                             placeholder="Select or enter a comment"
                                             filterMatchMode="contains"
@@ -256,10 +256,10 @@
                                                                                     <label class="form-label">Reference:</label>
                                                                                     <p class="form-control-plaintext">#{originalPm.referenceNo}</p>
                                                                                 </div>
-                                                                                <div class="col-md-12" rendered="#{originalPm.comment != null and originalPm.comment != ''}">
-                                                                                    <label class="form-label">Comment:</label>
-                                                                                    <p class="form-control-plaintext">#{originalPm.comment}</p>
-                                                                                </div>
+                                                                                <h:panelGroup layout="block" styleClass="col-md-12" rendered="#{not empty originalPm.comment}">
+                                                                                        <label class="form-label">Comment:</label>
+                                                                                        <p class="form-control-plaintext">#{originalPm.comment}</p>
+                                                                                    </h:panelGroup>
                                                                             </div>
                                                                         </div>
                                                                     </ui:repeat>
@@ -326,10 +326,10 @@
                                                                                     <label class="form-label">Reference:</label>
                                                                                     <p class="form-control-plaintext">#{originalPm.referenceNo}</p>
                                                                                 </div>
-                                                                                <div class="col-md-12" rendered="#{originalPm.comment != null and originalPm.comment != ''}">
-                                                                                    <label class="form-label">Comment:</label>
-                                                                                    <p class="form-control-plaintext">#{originalPm.comment}</p>
-                                                                                </div>
+                                                                                <h:panelGroup layout="block" styleClass="col-md-12" rendered="#{not empty originalPm.comment}">
+                                                                                        <label class="form-label">Comment:</label>
+                                                                                        <p class="form-control-plaintext">#{originalPm.comment}</p>
+                                                                                    </h:panelGroup>
                                                                             </div>
                                                                         </div>
                                                                     </ui:repeat>
@@ -398,10 +398,10 @@
                                                                                         </h:outputText>
                                                                                     </p>
                                                                                 </div>
-                                                                                <div class="col-md-12" rendered="#{originalPm.comment != null and originalPm.comment != ''}">
-                                                                                    <label class="form-label">Comment:</label>
-                                                                                    <p class="form-control-plaintext">#{originalPm.comment}</p>
-                                                                                </div>
+                                                                                <h:panelGroup layout="block" styleClass="col-md-12" rendered="#{not empty originalPm.comment}">
+                                                                                        <label class="form-label">Comment:</label>
+                                                                                        <p class="form-control-plaintext">#{originalPm.comment}</p>
+                                                                                    </h:panelGroup>
                                                                             </div>
                                                                         </div>
                                                                     </ui:repeat>
@@ -470,10 +470,10 @@
                                                                                         </h:outputText>
                                                                                     </p>
                                                                                 </div>
-                                                                                <div class="col-md-12" rendered="#{originalPm.comment != null and originalPm.comment != ''}">
-                                                                                    <label class="form-label">Comment:</label>
-                                                                                    <p class="form-control-plaintext">#{originalPm.comment}</p>
-                                                                                </div>
+                                                                                <h:panelGroup layout="block" styleClass="col-md-12" rendered="#{not empty originalPm.comment}">
+                                                                                        <label class="form-label">Comment:</label>
+                                                                                        <p class="form-control-plaintext">#{originalPm.comment}</p>
+                                                                                    </h:panelGroup>
                                                                             </div>
                                                                         </div>
                                                                     </ui:repeat>

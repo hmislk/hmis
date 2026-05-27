@@ -1,5 +1,6 @@
 package com.divudi.bean.common;
 
+import com.divudi.bean.membership.OpdMemberShipDiscountController;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
@@ -20,12 +21,31 @@ public class NavigationController implements Serializable {
 
     @Inject
     InstitutionController institutionController;
+    
+    @Inject
+    OpdMemberShipDiscountController OpdMemberShipDiscountController;
 
     public NavigationController() {
     }
 
     public String navigateToInstitutionBranch() {
         return "/admin/institutions/institution_branch?faces-redirect=true";
+    }
+
+    public String navigateToManageBanks() {
+        return "/admin/institutions/manage_banks?faces-redirect=true";
+    }
+
+    public String navigateToBankingBranch() {
+        return "/admin/institutions/banking_branch?faces-redirect=true";
+    }
+
+    public String navigateToListBanks() {
+        return "/admin/institutions/list_banks?faces-redirect=true";
+    }
+
+    public String navigateToListBankAccounts() {
+        return "/admin/institutions/list_bank_accounts?faces-redirect=true";
     }
 
     public String navigateToManageDepartment() {
@@ -156,6 +176,24 @@ public class NavigationController implements Serializable {
     
     public String navigateToPaymentSchemeDiscountOpdBySite() {
         return "/admin/pricing/payment_scheme_discount_opd_by_site?faces-redirect=true";
+    }
+    
+    public String navigateToPaymentSchemeDiscountforCreditCompany() {
+        OpdMemberShipDiscountController.setItems(null);
+        OpdMemberShipDiscountController.setPaymentScheme(null);
+        OpdMemberShipDiscountController.clearCreditCompanyDiscountData();
+        OpdMemberShipDiscountController.setCreditCompanyForSearch(null);
+        OpdMemberShipDiscountController.setPaymentSchemeForSearch(null);
+        return "/admin/pricing/payment_scheme_discount_credit_company?faces-redirect=true";
+    }
+    
+    public String navigateToPaymentSchemeDiscountforCreditCompanyItems() {
+        OpdMemberShipDiscountController.setItems(null);
+        OpdMemberShipDiscountController.setPaymentScheme(null);
+        OpdMemberShipDiscountController.clearCreditCompanyDiscountData();
+        OpdMemberShipDiscountController.setCreditCompanyForSearch(null);
+        OpdMemberShipDiscountController.setPaymentSchemeForSearch(null);
+        return "/admin/pricing/payment_scheme_discount_credit_company_items?faces-redirect=true";
     }
 
     public String navigateToPaymentSchemeDiscountOpdByItem() {

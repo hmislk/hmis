@@ -9,14 +9,21 @@ import com.divudi.bean.common.SessionController;
 
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.EncounterType;
 import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.PaymentType;
 import com.divudi.core.data.Sex;
+import com.divudi.core.data.ReportTemplateRow;
+import com.divudi.core.data.ReportTemplateRowBundle;
+import com.divudi.core.data.ServiceType;
 import com.divudi.core.data.dto.InwardAdmissionDTO;
 import com.divudi.core.data.dto.InwardAdmissionDemographicDataDTO;
 import com.divudi.core.data.dto.InwardIncomeDoctorSpecialtyDTO;
+import com.divudi.core.data.dto.IpIncomeCategoryWiseRowDTO;
 import com.divudi.core.data.dto.MonthServiceCountDTO;
 import com.divudi.core.data.dto.MonthlySurgeryCountDTO;
+import com.divudi.core.data.dto.AdmissionCategoryWiseAdmissionDTO;
 import com.divudi.core.data.dto.IpUnsettledInvoiceDTO;
 import com.divudi.core.data.dto.PaymentTypeAdmissionDTO;
 import com.divudi.core.data.dto.SurgeryCountDoctorWiseDTO;
@@ -56,6 +63,7 @@ import com.divudi.core.facade.PatientEncounterFacade;
 import com.divudi.core.facade.PatientInvestigationFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.util.JsfUtil;
+import com.divudi.bean.common.EnumController;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -68,6 +76,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
@@ -124,6 +133,20 @@ import javax.faces.context.FacesContext;
 import javax.persistence.TemporalType;
 import javax.servlet.http.HttpServletResponse;
 
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.plot.CategoryPlot;
+import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.renderer.category.BarRenderer;
+import org.jfree.chart.renderer.category.LineAndShapeRenderer;
+import org.jfree.data.category.DefaultCategoryDataset;
+
+import com.lowagie.text.Image;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
+import javax.imageio.ImageIO;
+
 /**
  *
  * @author pdhs
@@ -159,6 +182,8 @@ public class InwardReportController implements Serializable {
     BhtSummeryController bhtSummeryController;
     @Inject
     InwardBeanController inwardBeanController;
+    @Inject
+    EnumController enumController;
 
     PaymentMethod paymentMethod;
     AdmissionType admissionType;
@@ -220,6 +245,14 @@ public class InwardReportController implements Serializable {
 
     // Surgery Survey Report
     private String reportType;
+    private String visitType;
+    private String paymentType;
+    private Category category;
+    private List<RoomCategory> roomCategories;
+    private boolean withProfessionalFee;
+    private double ipIncomeTotalSponsorPay;
+    private double ipIncomeTotalPatientPay;
+    private ReportTemplateRowBundle bundle;
     private SurgeryType surgeryType;
     private List<MonthlySurgeryCountDTO> monthlySurgeryCountList;
     private List<String> surgeryHeaders;
@@ -236,6 +269,7 @@ public class InwardReportController implements Serializable {
     private RoomCategory roomCategory;
     private Staff consultant;
     private List<IpUnsettledInvoiceDTO> unsettledInvoicesList;
+    private List<AdmissionCategoryWiseAdmissionDTO> admissionCategoryWiseAdmissionList;
     private Item surgeryItem;
 
     // for specialty/doctor wise income
@@ -261,6 +295,11 @@ public class InwardReportController implements Serializable {
 
     private Date admissionReportProcessedAt;
     private String admissionReportProcessedBy;
+    private double ipIncomeCashTotal;
+    private double ipIncomeCreditTotal;
+
+    private List<Map<String, Object>> ipIncomeBillDiscounts;
+    private double ipIncomeTotalBillDiscount;
 
     public List<PatientEncounter> getPatientEncounters() {
         return patientEncounters;
@@ -332,6 +371,456 @@ public class InwardReportController implements Serializable {
     }
 
     private List<SurgeryCountDoctorWiseDTO> billList;
+
+    public void createIpIncomeCategoryWiseReport() {
+        if (reportType == null || reportType.trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Please select a report type");
+            return;
+        }
+        bundle = generateIpIncomeCategoryWiseReport();
+    }
+
+    public ReportTemplateRowBundle generateIpIncomeCategoryWiseReport() {
+        ReportTemplateRowBundle rtrb = new ReportTemplateRowBundle();
+
+        if (visitType == null || visitType.trim().isEmpty()) {
+            visitType = "Any";
+        }
+        if (paymentType == null || paymentType.trim().isEmpty()) {
+            paymentType = "Any";
+        }
+
+        List<BillTypeAtomic> btasOP = new ArrayList<>();
+        List<BillTypeAtomic> btasIP = new ArrayList<>();
+
+        if ("IP".equals(visitType)) {
+            btasIP.addAll(BillTypeAtomic.findByServiceType(ServiceType.INWARD_SERVICE));
+        }
+        if ("OP".equals(visitType)) {
+            btasOP.addAll(BillTypeAtomic.findByServiceType(ServiceType.OPD));
+        }
+        if ("Any".equals(visitType)) {
+            btasIP.addAll(BillTypeAtomic.findByServiceType(ServiceType.INWARD_SERVICE));
+            btasOP.addAll(BillTypeAtomic.findByServiceType(ServiceType.OPD));
+
+        }
+
+        if (withProfessionalFee) {
+            if ("IP".equals(visitType)) {
+                List<BillTypeAtomic> profBillTypes = Arrays.asList(
+                        BillTypeAtomic.INWARD_PROFESSIONAL_FEE_BILL,
+                        BillTypeAtomic.INWARD_PROFESSIONAL_FEE_BILL_CANCELLATION,
+                        BillTypeAtomic.INWARD_THEATRE_PROFESSIONAL_FEE_BILL,
+                        BillTypeAtomic.INWARD_THEATRE_PROFESSIONAL_FEE_BILL_CANCELLATION
+                );
+                btasIP.addAll(profBillTypes);
+            }
+            if ("OP".equals(visitType)) {
+                List<BillTypeAtomic> profBillTypes = Arrays.asList(
+                        BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES,
+                        BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES_RETURN);
+                btasOP.addAll(profBillTypes);
+            }
+            if ("Any".equals(visitType)) {
+                List<BillTypeAtomic> opProfBillTypes = Arrays.asList(
+                        BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES,
+                        BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES_RETURN
+                );
+                List<BillTypeAtomic> ipProfBillTypes = Arrays.asList(
+                        BillTypeAtomic.INWARD_PROFESSIONAL_FEE_BILL,
+                        BillTypeAtomic.INWARD_PROFESSIONAL_FEE_BILL_CANCELLATION,
+                        BillTypeAtomic.INWARD_THEATRE_PROFESSIONAL_FEE_BILL,
+                        BillTypeAtomic.INWARD_THEATRE_PROFESSIONAL_FEE_BILL_CANCELLATION
+                );
+                btasIP.addAll(ipProfBillTypes);
+                btasOP.addAll(opProfBillTypes);
+            }
+        }
+
+        List<IpIncomeCategoryWiseRowDTO> rows = findIpIncomeCategoryWiseRowsSingleQuery(btasOP, btasIP);
+
+        // ── Summarise ────────────────────────────────────────────────────────────
+        boolean includeItems = "detail".equalsIgnoreCase(reportType);
+        summarizeIpIncomeCategoryWiseRows(rtrb, rows, includeItems);
+
+        populateIpIncomeProfitMatrixAndBillDiscounts(rows);
+
+        rtrb.setName(includeItems
+                ? "IP Income Category Wise Report - Detail"
+                : "IP Income Category Wise Report - Summary");
+        rtrb.setBundleType(includeItems
+                ? "ip_income_category_wise_detail"
+                : "ip_income_category_wise_summary");
+
+        rtrb.getReportTemplateRows().forEach(rtr -> {
+            rtr.setInstitution(institution);
+            rtr.setDepartment(department);
+            rtr.setSite(site);
+            rtr.setFromDate(fromDate);
+            rtr.setToDate(toDate);
+        });
+
+        return rtrb;
+    }
+
+    private List<IpIncomeCategoryWiseRowDTO> findIpIncomeCategoryWiseRowsSingleQuery(List<BillTypeAtomic> btasOP, List<BillTypeAtomic> btasIP) {
+
+        List<PaymentMethod> creditPaymentMethods = enumController.getPaymentTypeOfPaymentMethods(PaymentType.CREDIT);
+        List<PaymentMethod> nonCreditPaymentMethods = enumController.getPaymentTypeOfPaymentMethods(PaymentType.NON_CREDIT);
+
+        StringBuilder jpql = new StringBuilder();
+        jpql.append("select new com.divudi.core.data.dto.IpIncomeCategoryWiseRowDTO("
+                + " b.id, b.billClassType, b.billType, b.discount, b.deptId,"
+                + " bi.grossValue, bi.hospitalFee, bi.discount, bi.staffFee, bi.netValue,"
+                + " i.id, i.name, c.id, c.name,"
+                + " pe.paymentMethod, b.paymentMethod"
+                + ")"
+                + " from BillItem bi"
+                + " join bi.bill b"
+                + " left join bi.item i"
+                + " left join i.category c"
+                + " left join b.patientEncounter pe"
+                + " where b.retired = :br"
+                + " and b.createdAt between :fd and :td ");
+
+        Map<String, Object> m = new HashMap<>();
+        m.put("br", false);
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+
+        switch (visitType) {
+            case "IP":
+                jpql.append(" and bi.bill.billTypeAtomic in :btas ");
+                m.put("btas", btasIP);
+
+                if (roomCategories != null && !roomCategories.isEmpty()) {
+                    jpql.append(" AND bi.bill.patientEncounter.currentPatientRoom.roomFacilityCharge.roomCategory IN :cat ");
+                    m.put("cat", roomCategories);
+                }
+                if (admissionTypes != null && !admissionTypes.isEmpty()) {
+                    jpql.append(" AND bi.bill.patientEncounter.admissionType IN :admTypes ");
+                    m.put("admTypes", admissionTypes);
+                }
+                if (paymentType != null && !paymentType.isEmpty() && !"Any".equalsIgnoreCase(paymentType)) {
+                    jpql.append(" and bi.bill.patientEncounter.paymentMethod in :pmIp ");
+                    m.put("pmIp", "Credit".equals(paymentType) ? creditPaymentMethods : nonCreditPaymentMethods);
+                }
+                break;
+            case "OP":
+                jpql.append(" and bi.bill.billTypeAtomic in :btas ");
+                m.put("btas", btasOP);
+
+                if (paymentType != null && !paymentType.isEmpty() && !"Any".equalsIgnoreCase(paymentType)) {
+                    jpql.append(" and bi.bill.paymentMethod in :pmOp ");
+                    m.put("pmOp", "Credit".equals(paymentType)
+                            ? creditPaymentMethods
+                            : nonCreditPaymentMethods);
+                }
+                break;
+            case "Any":
+                jpql.append(" and bi.bill.billTypeAtomic in :btas ");
+                List<BillTypeAtomic> all = new ArrayList<>();
+                all.addAll(btasIP);
+                all.addAll(btasOP);
+                m.put("btas", all);
+
+                if (roomCategories != null && !roomCategories.isEmpty()) {
+                    jpql.append(" AND bi.bill.patientEncounter.currentPatientRoom.roomFacilityCharge.roomCategory IN :cat ");
+                    m.put("cat", roomCategories);
+                }
+                if (admissionTypes != null && !admissionTypes.isEmpty()) {
+                    jpql.append(" AND bi.bill.patientEncounter.admissionType IN :admTypes ");
+                    m.put("admTypes", admissionTypes);
+                }
+                if (paymentType != null && !paymentType.isEmpty() && !"Any".equalsIgnoreCase(paymentType)) {
+                    jpql.append(" and bi.bill.patientEncounter.paymentMethod in :pmIp ");
+                    m.put("pmIp", "Credit".equals(paymentType) ? creditPaymentMethods : nonCreditPaymentMethods);
+                }
+                break;
+
+            default:
+                break;
+        }
+
+        if (department != null) {
+            jpql.append(" and bi.bill.department = :dep ");
+            m.put("dep", department);
+        }
+        if (institution != null) {
+            jpql.append(" and bi.bill.department.institution = :ins ");
+            m.put("ins", institution);
+        }
+        if (site != null) {
+            jpql.append(" and bi.bill.department.site = :site ");
+            m.put("site", site);
+        }
+        if (category != null) {
+            jpql.append(" and bi.item.category = :cat ");
+            m.put("cat", category);
+        }
+
+        return (List<IpIncomeCategoryWiseRowDTO>) billItemFacade.findLightsByJpql(jpql.toString(), m, TemporalType.TIMESTAMP);
+    }
+
+    private void summarizeIpIncomeCategoryWiseRows(ReportTemplateRowBundle reportBundle,
+            List<IpIncomeCategoryWiseRowDTO> rows, boolean includeItems) {
+        Map<String, ReportTemplateRow> categoryMap = new TreeMap<>();
+        Map<String, ReportTemplateRow> itemMap = new TreeMap<>();
+        Map<String, String> itemKeyToCategoryName = new HashMap<>();
+        List<ReportTemplateRow> rowsToAdd = new ArrayList<>();
+        double totalNetIncome = 0.0;
+        double totalIncome = 0.0;
+        double totalDiscount = 0.0;
+        double totalHospitalFees = 0.0;
+        double totalStaffFees = 0.0;
+        double totalSponsorPay = 0.0;
+        double totalPatientPay = 0.0;
+        long totalCount = 0L;
+
+        for (IpIncomeCategoryWiseRowDTO rowDto : rows) {
+            if (rowDto.getBillId() == null) {
+                continue;
+            }
+
+            PaymentMethod paymentMethodForBillItem = null;
+            paymentMethodForBillItem = rowDto.getEncounterPaymentMethod() != null
+                    ? rowDto.getEncounterPaymentMethod()
+                    : rowDto.getBillPaymentMethod();
+
+            if (paymentMethodForBillItem == null || paymentMethodForBillItem.getPaymentType() == PaymentType.NONE) {
+                continue;
+            }
+
+            String categoryName = rowDto.getCategoryName() != null
+                    ? rowDto.getCategoryName()
+                    : "No Category";
+            String itemName = rowDto.getItemName() != null
+                    ? rowDto.getItemName()
+                    : "No Item";
+            String itemKey = categoryName + "->" + itemName;
+
+            categoryMap.putIfAbsent(categoryName, new ReportTemplateRow());
+
+            ReportTemplateRow categoryRow = categoryMap.get(categoryName);
+            if (rowDto.getCategoryId() != null) {
+                Category categoryRef = new Category();
+                categoryRef.setId(rowDto.getCategoryId());
+                categoryRef.setName(rowDto.getCategoryName());
+                categoryRow.setCategory(categoryRef);
+            }
+
+            ReportTemplateRow itemRow = null;
+            if (includeItems) {
+                itemRow = itemMap.get(itemKey);
+                if (itemRow == null) {
+                    itemRow = new ReportTemplateRow();
+                    if (rowDto.getItemId() != null) {
+                        Item itemRef = new Item();
+                        itemRef.setId(rowDto.getItemId());
+                        itemRef.setName(rowDto.getItemName());
+                        if (rowDto.getCategoryId() != null) {
+                            Category categoryRef = new Category();
+                            categoryRef.setId(rowDto.getCategoryId());
+                            categoryRef.setName(rowDto.getCategoryName());
+                            itemRef.setCategory(categoryRef);
+                        }
+                        itemRow.setItem(itemRef);
+                    }
+                    itemMap.put(itemKey, itemRow);
+                    itemKeyToCategoryName.put(itemKey, categoryName);
+                }
+            }
+
+            long countModifier = (rowDto.getBillClassType() == BillClassType.CancelledBill
+                    || rowDto.getBillClassType() == BillClassType.RefundBill) ? -1 : 1;
+
+            double grossValue = countModifier * Math.abs(nullSafeDouble(rowDto.getGrossValue()));
+            double hospitalFee = countModifier * Math.abs(nullSafeDouble(rowDto.getHospitalFee()));
+            double iteratingDiscount = countModifier * Math.abs(nullSafeDouble(rowDto.getDiscount()));
+            double staffFee = countModifier * Math.abs(nullSafeDouble(rowDto.getStaffFee()));
+            boolean professionalPaymentBill = rowDto.getBillType() == BillType.PaymentBill;
+            double netValue;
+            if (professionalPaymentBill) {
+                netValue = countModifier * Math.abs(nullSafeDouble(rowDto.getNetValue()));
+            } else if (withProfessionalFee) {
+                netValue = countModifier * Math.abs(nullSafeDouble(rowDto.getNetValue()));
+            } else {
+                netValue = countModifier * Math.abs(nullSafeDouble(rowDto.getNetValue()) - nullSafeDouble(rowDto.getStaffFee()));
+            }
+
+            double sponsorDiscount = 0.0;
+            double sponsorPay = 0.0;
+            double patientPay = 0.0;
+            if (paymentMethodForBillItem.getPaymentType() == PaymentType.CREDIT) {
+                sponsorPay = netValue;
+            } else if (paymentMethodForBillItem.getPaymentType() == PaymentType.NON_CREDIT) {
+                patientPay = netValue;
+            }
+
+            totalIncome += grossValue;
+            totalNetIncome += netValue;
+            totalHospitalFees += hospitalFee;
+            totalDiscount += iteratingDiscount;
+            totalStaffFees += staffFee;
+            totalSponsorPay += sponsorPay;
+            totalPatientPay += patientPay;
+            totalCount += countModifier;
+
+            updateIpIncomeCategoryRow(categoryRow, countModifier, grossValue, hospitalFee, iteratingDiscount,
+                    sponsorDiscount, staffFee, netValue, sponsorPay, patientPay);
+
+            if (includeItems && itemRow != null) {
+                updateIpIncomeCategoryRow(itemRow, countModifier, grossValue, hospitalFee, iteratingDiscount,
+                        sponsorDiscount, staffFee, netValue, sponsorPay, patientPay);
+            }
+        }
+
+        Map<String, List<ReportTemplateRow>> itemRowsByCategory = new HashMap<>();
+        if (includeItems) {
+            for (Map.Entry<String, ReportTemplateRow> entry : itemMap.entrySet()) {
+                String categoryName = itemKeyToCategoryName.get(entry.getKey());
+                itemRowsByCategory
+                        .computeIfAbsent(categoryName, k -> new ArrayList<>())
+                        .add(entry.getValue());
+            }
+        }
+
+        categoryMap.forEach((categoryName, catRow) -> {
+            rowsToAdd.add(catRow);
+            if (includeItems) {
+                List<ReportTemplateRow> itemRows = itemRowsByCategory.get(categoryName);
+                if (itemRows != null) {
+                    rowsToAdd.addAll(itemRows);
+                }
+            }
+        });
+
+        reportBundle.getReportTemplateRows().addAll(rowsToAdd);
+
+        reportBundle.setTotal(totalNetIncome);
+        reportBundle.setDiscount(totalDiscount);
+        reportBundle.setGrossTotal(totalIncome);
+        reportBundle.setHospitalTotal(totalHospitalFees);
+        reportBundle.setStaffTotal(totalStaffFees);
+        reportBundle.setCount(totalCount);
+
+        ipIncomeTotalSponsorPay = totalSponsorPay;
+        ipIncomeTotalPatientPay = totalPatientPay;
+    }
+
+    private void updateIpIncomeCategoryRow(ReportTemplateRow row, long countModifier, double grossValue, double hospitalFee,
+            double discount, double sponsorDiscount, double professionalFee, double netValue, double sponsorPay, double patientPay) {
+
+        if (row.getItemCount() == null) {
+            row.setItemCount(0L);
+        }
+        if (row.getItemTotal() == null) {
+            row.setItemTotal(0.0);
+        }
+        if (row.getItemHospitalFee() == null) {
+            row.setItemHospitalFee(0.0);
+        }
+        if (row.getItemDiscountAmount() == null) {
+            row.setItemDiscountAmount(0.0);
+        }
+        if (row.getItemDiscount() == null) {
+            row.setItemDiscount(0.0);
+        }
+        if (row.getItemProfessionalFee() == null) {
+            row.setItemProfessionalFee(0.0);
+        }
+        if (row.getItemNetTotal() == null) {
+            row.setItemNetTotal(0.0);
+        }
+        if (row.getRowValueIn() == null) {
+            row.setRowValueIn(0.0);
+        }
+        if (row.getRowValueOut() == null) {
+            row.setRowValueOut(0.0);
+        }
+
+        row.setItemCount(row.getItemCount() + countModifier);
+        row.setItemTotal(row.getItemTotal() + grossValue);
+        row.setItemHospitalFee(row.getItemHospitalFee() + hospitalFee);
+        row.setItemDiscountAmount(row.getItemDiscountAmount() + discount);
+        row.setItemDiscount(row.getItemDiscount() + sponsorDiscount);
+        row.setItemProfessionalFee(row.getItemProfessionalFee() + professionalFee);
+        row.setItemNetTotal(row.getItemNetTotal() + netValue);
+        row.setRowValueIn(row.getRowValueIn() + sponsorPay);
+        row.setRowValueOut(row.getRowValueOut() + patientPay);
+    }
+
+    private void populateIpIncomeProfitMatrixAndBillDiscounts(List<IpIncomeCategoryWiseRowDTO> rows) {
+        ipIncomeCashTotal = 0.0;
+        ipIncomeCreditTotal = 0.0;
+        ipIncomeTotalBillDiscount = 0.0;
+        ipIncomeBillDiscounts = new ArrayList<>();
+
+        // Collect per-bill bill-level discounts (one entry per bill, avoid duplicates)
+        // Key: bill.id  →  { invoiceNo, billDiscount }
+        Map<Long, Map<String, Object>> billDiscountMap = new LinkedHashMap<>();
+
+        for (IpIncomeCategoryWiseRowDTO rowDto : rows) {
+            if (rowDto.getBillId() == null) {
+                continue;
+            }
+
+            // ── Resolve payment method ──────────────────────────────────────────
+            PaymentMethod pm = null;
+            pm = rowDto.getEncounterPaymentMethod() != null
+                    ? rowDto.getEncounterPaymentMethod()
+                    : rowDto.getBillPaymentMethod();
+            if (pm == null || pm.getPaymentType() == PaymentType.NONE) {
+                continue;
+            }
+
+            // ── Count modifier (cancellations/refunds subtract) ─────────────────
+            long countModifier = (rowDto.getBillClassType() == BillClassType.CancelledBill
+                    || rowDto.getBillClassType() == BillClassType.RefundBill) ? -1 : 1;
+
+            // ── Net value (same logic as summarizeBillItemsToIpIncomeCategoryWise) ──
+            boolean isProfPayment = rowDto.getBillType() == BillType.PaymentBill;
+            double netValue;
+            if (isProfPayment || withProfessionalFee) {
+                netValue = countModifier * Math.abs(nullSafeDouble(rowDto.getNetValue()));
+            } else {
+                netValue = countModifier * Math.abs(nullSafeDouble(rowDto.getNetValue()) - nullSafeDouble(rowDto.getStaffFee()));
+            }
+
+            // ── Profit Matrix: Cash vs Credit ───────────────────────────────────
+            if (pm.getPaymentType() == PaymentType.NON_CREDIT) {
+                ipIncomeCashTotal += netValue;
+            } else if (pm.getPaymentType() == PaymentType.CREDIT) {
+                ipIncomeCreditTotal += netValue;
+            }
+
+            // ── Bill Discount: aggregate per bill ───────────────────────────────
+            Double billDiscount = rowDto.getBillDiscount();
+            if (billDiscount != null && billDiscount != 0.0) {
+                Long billId = rowDto.getBillId();
+                if (!billDiscountMap.containsKey(billId)) {
+                    Map<String, Object> entry = new LinkedHashMap<>();
+                    entry.put("invoiceNo", rowDto.getBillDeptId() != null
+                            ? rowDto.getBillDeptId() : String.valueOf(billId));
+                    entry.put("discount", countModifier * Math.abs(billDiscount));
+                    billDiscountMap.put(billId, entry);
+                } else {
+                    Map<String, Object> entry = billDiscountMap.get(billId);
+                    double existing = (Double) entry.get("discount");
+                    entry.put("discount", existing + countModifier * Math.abs(billDiscount));
+                }
+            }
+        }
+
+        ipIncomeBillDiscounts = new ArrayList<>(billDiscountMap.values());
+        ipIncomeTotalBillDiscount = ipIncomeBillDiscounts.stream()
+                .mapToDouble(e -> (Double) e.get("discount"))
+                .sum();
+    }
+
+    private double nullSafeDouble(Double value) {
+        return value == null ? 0.0 : value;
+    }
 
     public void processSurgeryCountDoctorWiseReport() {
         billList = new ArrayList<>();
@@ -425,7 +914,7 @@ public class InwardReportController implements Serializable {
         createChartModels();
     }
 
-    public void downloadSurgeryCountDoctorWisePdf() {
+    public void downloadSurgeryCountDoctorWisePdf() throws Exception {
         if (billList == null || billList.isEmpty()) {
             JsfUtil.addErrorMessage("No data to export. Please process the report first.");
             return;
@@ -612,6 +1101,13 @@ public class InwardReportController implements Serializable {
             }
 
             document.add(table);
+            // ── Doctor-wise charts ─────────────────────────────────────────────────
+            document.add(buildDoctorLineChart(reportYear));
+            document.add(buildDoctorBarChart(reportYear));
+
+            // ── Specialty-wise charts ──────────────────────────────────────────────
+            document.add(buildSpecialtyLineChart(reportYear));
+            document.add(buildSpecialtyBarChart(reportYear));
 
             // ── Footer ─────────────────────────────────────────────────────────────
             Paragraph footer = new Paragraph(
@@ -649,6 +1145,188 @@ public class InwardReportController implements Serializable {
             cell.setBorderWidthTop(2f);
         }
         table.addCell(cell);
+    }
+
+    private Image buildChartImage(JFreeChart chart, int width, int height)
+            throws Exception {
+        BufferedImage bi = chart.createBufferedImage(width, height);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ImageIO.write(bi, "png", baos);
+        Image img = Image.getInstance(baos.toByteArray());
+        img.setWidthPercentage(100);
+        return img;
+    }
+    private static final String[] MONTH_LABELS
+            = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
+
+    private static final java.awt.Color[] DOCTOR_COLORS = {
+        new java.awt.Color(75, 192, 192), new java.awt.Color(255, 99, 132),
+        new java.awt.Color(54, 162, 235), new java.awt.Color(255, 206, 86),
+        new java.awt.Color(153, 102, 255), new java.awt.Color(255, 159, 64),
+        new java.awt.Color(199, 199, 199), new java.awt.Color(83, 102, 255),
+        new java.awt.Color(255, 99, 255), new java.awt.Color(99, 255, 132)
+    };
+
+    private static final java.awt.Color[] SPECIALTY_COLORS = {
+        new java.awt.Color(220, 20, 60), new java.awt.Color(65, 105, 225),
+        new java.awt.Color(255, 140, 0), new java.awt.Color(34, 139, 34),
+        new java.awt.Color(138, 43, 226), new java.awt.Color(255, 215, 0)
+    };
+
+    /**
+     * Fills a DefaultCategoryDataset from billList for doctor rows
+     * (non-subtotal, non-grand).
+     */
+    private DefaultCategoryDataset buildDoctorDataset() {
+        DefaultCategoryDataset ds = new DefaultCategoryDataset();
+        for (SurgeryCountDoctorWiseDTO dto : billList) {
+            if (dto.isSubtotal() || dto.isGrandTotal()) {
+                continue;
+            }
+            int[] vals = {dto.getJanuary(), dto.getFebruary(), dto.getMarch(),
+                dto.getApril(), dto.getMay(), dto.getJune(),
+                dto.getJuly(), dto.getAugust(), dto.getSeptember(),
+                dto.getOctober(), dto.getNovember(), dto.getDecember()};
+            for (int i = 0; i < 12; i++) {
+                ds.addValue(vals[i], dto.getDoctorName(), MONTH_LABELS[i]);
+            }
+        }
+        return ds;
+    }
+
+    /**
+     * Fills a DefaultCategoryDataset from billList for specialty subtotal rows.
+     */
+    private DefaultCategoryDataset buildSpecialtyDataset() {
+        DefaultCategoryDataset ds = new DefaultCategoryDataset();
+        for (SurgeryCountDoctorWiseDTO dto : billList) {
+            if (!dto.isSubtotal()) {
+                continue;
+            }
+            int[] vals = {dto.getJanuary(), dto.getFebruary(), dto.getMarch(),
+                dto.getApril(), dto.getMay(), dto.getJune(),
+                dto.getJuly(), dto.getAugust(), dto.getSeptember(),
+                dto.getOctober(), dto.getNovember(), dto.getDecember()};
+            for (int i = 0; i < 12; i++) {
+                ds.addValue(vals[i], dto.getSpecialityName(), MONTH_LABELS[i]);
+            }
+        }
+        return ds;
+    }
+
+    /**
+     * Applies a color array to every series in a CategoryPlot renderer.
+     */
+    private void applyColors(CategoryPlot plot, java.awt.Color[] palette) {
+        for (int i = 0; i < plot.getDataset().getRowCount(); i++) {
+            plot.getRenderer().setSeriesPaint(i, palette[i % palette.length]);
+        }
+    }
+
+// ── Doctor line chart ──────────────────────────────────────────────────────
+    private Image buildDoctorLineChart(int year) throws Exception {
+        DefaultCategoryDataset ds = buildDoctorDataset();
+        JFreeChart chart = ChartFactory.createLineChart(
+                "Doctor Wise Surgery Count – Year " + year,
+                "Month", "Surgery Count",
+                ds, PlotOrientation.VERTICAL, true, false, false);
+
+        CategoryPlot plot = chart.getCategoryPlot();
+        ((NumberAxis) plot.getRangeAxis()).setStandardTickUnits(
+                NumberAxis.createIntegerTickUnits());
+        plot.getRangeAxis().setLowerBound(0);
+
+        LineAndShapeRenderer renderer = new LineAndShapeRenderer(true, true);
+        renderer.setDefaultStroke(new java.awt.BasicStroke(2f));
+        plot.setRenderer(renderer);
+        applyColors(plot, DOCTOR_COLORS);
+
+        chart.getLegend().setPosition(
+                org.jfree.chart.ui.RectangleEdge.RIGHT);
+
+        Image img = buildChartImage(chart, 1100, 400);
+        img.setSpacingBefore(20);
+        img.setSpacingAfter(10);
+        return img;
+    }
+
+// ── Doctor bar chart ───────────────────────────────────────────────────────
+    private Image buildDoctorBarChart(int year) throws Exception {
+        DefaultCategoryDataset ds = buildDoctorDataset();
+        JFreeChart chart = ChartFactory.createBarChart(
+                "Doctor Wise Surgery Count – Year " + year,
+                "Month", "Surgery Count",
+                ds, PlotOrientation.VERTICAL, true, false, false);
+
+        CategoryPlot plot = chart.getCategoryPlot();
+        ((NumberAxis) plot.getRangeAxis()).setStandardTickUnits(
+                NumberAxis.createIntegerTickUnits());
+        plot.getRangeAxis().setLowerBound(0);
+
+        BarRenderer renderer = (BarRenderer) plot.getRenderer();
+        renderer.setDrawBarOutline(true);
+        applyColors(plot, DOCTOR_COLORS);
+
+        chart.getLegend().setPosition(
+                org.jfree.chart.ui.RectangleEdge.TOP);
+
+        Image img = buildChartImage(chart, 1100, 400);
+        img.setSpacingBefore(10);
+        img.setSpacingAfter(20);
+        return img;
+    }
+
+// ── Specialty line chart ───────────────────────────────────────────────────
+    private Image buildSpecialtyLineChart(int year) throws Exception {
+        DefaultCategoryDataset ds = buildSpecialtyDataset();
+        JFreeChart chart = ChartFactory.createLineChart(
+                "Specialty Wise Surgery Count – Year " + year,
+                "Month", "Surgery Count",
+                ds, PlotOrientation.VERTICAL, true, false, false);
+
+        CategoryPlot plot = chart.getCategoryPlot();
+        ((NumberAxis) plot.getRangeAxis()).setStandardTickUnits(
+                NumberAxis.createIntegerTickUnits());
+        plot.getRangeAxis().setLowerBound(0);
+
+        LineAndShapeRenderer renderer = new LineAndShapeRenderer(true, true);
+        renderer.setDefaultStroke(new java.awt.BasicStroke(3f));
+        plot.setRenderer(renderer);
+        applyColors(plot, SPECIALTY_COLORS);
+
+        chart.getLegend().setPosition(
+                org.jfree.chart.ui.RectangleEdge.RIGHT);
+
+        Image img = buildChartImage(chart, 1100, 400);
+        img.setSpacingBefore(20);
+        img.setSpacingAfter(10);
+        return img;
+    }
+
+// ── Specialty bar chart ────────────────────────────────────────────────────
+    private Image buildSpecialtyBarChart(int year) throws Exception {
+        DefaultCategoryDataset ds = buildSpecialtyDataset();
+        JFreeChart chart = ChartFactory.createBarChart(
+                "Specialty Wise Surgery Count – Year " + year,
+                "Month", "Surgery Count",
+                ds, PlotOrientation.VERTICAL, true, false, false);
+
+        CategoryPlot plot = chart.getCategoryPlot();
+        ((NumberAxis) plot.getRangeAxis()).setStandardTickUnits(
+                NumberAxis.createIntegerTickUnits());
+        plot.getRangeAxis().setLowerBound(0);
+
+        BarRenderer renderer = (BarRenderer) plot.getRenderer();
+        renderer.setDrawBarOutline(true);
+        applyColors(plot, SPECIALTY_COLORS);
+
+        chart.getLegend().setPosition(
+                org.jfree.chart.ui.RectangleEdge.TOP);
+
+        Image img = buildChartImage(chart, 1100, 400);
+        img.setSpacingBefore(10);
+        img.setSpacingAfter(20);
+        return img;
     }
 
     public void downloadSurgeryCountDoctorWiseExcel() {
@@ -1179,11 +1857,13 @@ public class InwardReportController implements Serializable {
 
             jpql.append(" Select new com.divudi.core.data.dto.MonthServiceCountDTO(")
                     .append(" FUNCTION('MONTH', a.dateOfDischarge), ")
-                    .append(" s.item.category.name, ")
+                    .append(" COALESCE(c.name, 'Uncategorized'), ")
                     .append(" count(s) ")
                     .append(") ")
                     .append(" from PatientEncounter s ")
                     .append(" join s.parentEncounter a ")
+                    .append(" left join s.item i ")
+                    .append(" left join i.category c ")
                     .append(" Where s.retired = false ")
                     .append(" and a.discharged = true ")
                     .append(" and a.dateOfDischarge is not null ")
@@ -1226,7 +1906,7 @@ public class InwardReportController implements Serializable {
                 params.put("site", site);
             }
 
-            jpql.append(" Group By FUNCTION('MONTH', a.dateOfDischarge), s.item.category.name ");
+            jpql.append(" Group By FUNCTION('MONTH', a.dateOfDischarge), COALESCE(c.name, 'Uncategorized') ");
 
         } else if (reportType.equals("DETAIL")) {
 
@@ -1645,6 +2325,518 @@ public class InwardReportController implements Serializable {
             }
         }
         return result;
+    }
+
+    public void processAdmissionCategoryWiseAdmissionReport() {
+        if (fromDate == null || toDate == null) {
+            JsfUtil.addErrorMessage("Admission From Date and Admission To Date are required.");
+            admissionCategoryWiseAdmissionList = new ArrayList<>();
+            return;
+        }
+
+        Map<String, Object> params = new HashMap<>();
+        StringBuilder jpql = new StringBuilder();
+
+        jpql.append("SELECT new com.divudi.core.data.dto.AdmissionCategoryWiseAdmissionDTO(")
+                .append("ad.id, ")
+                .append("ad.bhtNo, ")
+                .append("ad.patient.person.name, ")
+                .append("ad.patient.person.title, ")
+                .append("ad.admissionType, ")
+                .append("ad.paymentMethod, ")
+                .append("ad.paymentFinalized")
+                .append(") FROM Admission ad ");
+
+        if (roomCategory != null) {
+            jpql.append("LEFT JOIN ad.currentPatientRoom room ")
+                    .append("LEFT JOIN room.roomFacilityCharge rfc ");
+        }
+
+        jpql.append("WHERE ad.retired = :ret ")
+                .append("AND ad.dateOfAdmission BETWEEN :fd AND :td ");
+
+        params.put("ret", false);
+        params.put("fd", fromDate);
+        params.put("td", toDate);
+
+        if (dischargeFromDate != null && dischargeToDate != null) {
+            jpql.append("AND ad.dateOfDischarge BETWEEN :dfd AND :dtd ");
+            params.put("dfd", dischargeFromDate);
+            params.put("dtd", dischargeToDate);
+        }
+
+        if (invoiceApprovedFromDate != null && invoiceApprovedToDate != null) {
+            jpql.append("AND ad.finalBill IS NOT NULL ")
+                    .append("AND ad.finalBill.createdAt BETWEEN :iafd AND :iatd ");
+            params.put("iafd", invoiceApprovedFromDate);
+            params.put("iatd", invoiceApprovedToDate);
+        }
+
+        if (institution != null) {
+            jpql.append("AND ad.institution = :inst ");
+            params.put("inst", institution);
+        }
+        if (site != null) {
+            jpql.append("AND ad.department.site = :site ");
+            params.put("site", site);
+        }
+        if (department != null) {
+            jpql.append("AND ad.department = :dept ");
+            params.put("dept", department);
+        }
+        if (consultant != null) {
+            jpql.append("AND ad.referringConsultant = :cons ");
+            params.put("cons", consultant);
+        }
+        if (serviceCenter != null) {
+            jpql.append("AND ad.department = :sc ");
+            params.put("sc", serviceCenter);
+        }
+        if (sponsor != null) {
+            jpql.append("AND ad.creditCompany = :sponsor ");
+            params.put("sponsor", sponsor);
+        }
+        if (admissionType != null) {
+            jpql.append("AND ad.admissionType = :at ");
+            params.put("at", admissionType);
+        }
+        if (paymentMethod != null) {
+            jpql.append("AND ad.paymentMethod = :pm ");
+            params.put("pm", paymentMethod);
+        }
+        if (roomCategory != null) {
+            jpql.append("AND rfc.roomCategory = :rc ");
+            params.put("rc", roomCategory);
+        }
+        if (admissionStatus != null && admissionStatus != ANY_STATUS) {
+            switch (admissionStatus) {
+                case ADMITTED_BUT_NOT_DISCHARGED:
+                    jpql.append("AND ad.discharged = :dis AND ad.paymentFinalized = FALSE ");
+                    params.put("dis", false);
+                    break;
+                case DISCHARGED_BUT_FINAL_BILL_NOT_COMPLETED:
+                    jpql.append("AND ad.discharged = :dis AND ad.paymentFinalized = FALSE ");
+                    params.put("dis", true);
+                    break;
+                case DISCHARGED_AND_FINAL_BILL_COMPLETED:
+                    jpql.append("AND ad.discharged = :dis AND ad.paymentFinalized = TRUE ");
+                    params.put("dis", true);
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        jpql.append("ORDER BY ad.admissionType.name, ad.bhtNo ");
+
+        try {
+            admissionCategoryWiseAdmissionList = (List<AdmissionCategoryWiseAdmissionDTO>) peFacade.findLightsByJpql(
+                    jpql.toString(), params, TemporalType.TIMESTAMP);
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error loading admission category wise report: " + e.getMessage());
+            admissionCategoryWiseAdmissionList = new ArrayList<>();
+            return;
+        }
+
+        if (admissionCategoryWiseAdmissionList == null || admissionCategoryWiseAdmissionList.isEmpty()) {
+            admissionCategoryWiseAdmissionList = new ArrayList<>();
+            return;
+        }
+
+        enrichAdmissionCategoryWiseFinancials(admissionCategoryWiseAdmissionList);
+    }
+
+    private void enrichAdmissionCategoryWiseFinancials(List<AdmissionCategoryWiseAdmissionDTO> rows) {
+        List<Long> encounterIds = rows.stream()
+                .filter(dto -> dto != null && dto.getAdmissionId() != null)
+                .map(AdmissionCategoryWiseAdmissionDTO::getAdmissionId)
+                .collect(Collectors.toList());
+
+        if (encounterIds.isEmpty()) {
+            return;
+        }
+
+        List<PatientEncounter> encounters = peFacade.findByJpql(
+                "SELECT pe FROM PatientEncounter pe WHERE pe.id IN :ids",
+                Collections.singletonMap("ids", encounterIds));
+
+        Map<Long, PatientEncounter> encounterById = (encounters == null)
+                ? Collections.emptyMap()
+                : encounters.stream().collect(Collectors.toMap(PatientEncounter::getId, pe -> pe));
+
+        List<PatientEncounter> allChildren = peFacade.findByJpql(
+                "SELECT pe FROM PatientEncounter pe WHERE pe.parentEncounter.id IN :ids AND pe.retired = false",
+                Collections.singletonMap("ids", encounterIds));
+        Map<Long, List<PatientEncounter>> childrenByParentId = (allChildren == null)
+                ? Collections.emptyMap()
+                : allChildren.stream()
+                        .filter(pe -> pe.getParentEncounter() != null)
+                        .collect(Collectors.groupingBy(pe -> pe.getParentEncounter().getId()));
+
+        Map<Long, Bill> finalBillByEncounterId = batchFetchFinalBillsByEncounterIds(encounterIds);
+        Map<Long, Double> depositByEncounterId = batchFetchDepositTotalsByEncounterIds(encounterIds);
+        Map<Long, Double> paidByCompanyByEncounterId = batchFetchPaidByCompanyByEncounterIds(encounterIds);
+        Map<Long, Double> paidByPatientByEncounterId = batchFetchPaidByPatientByEncounterIds(encounterIds);
+
+        for (AdmissionCategoryWiseAdmissionDTO dto : rows) {
+            if (dto == null || dto.getAdmissionId() == null) {
+                continue;
+            }
+
+            Long id = dto.getAdmissionId();
+            PatientEncounter pe = encounterById.get(id);
+            Bill finalBill = finalBillByEncounterId.get(id);
+            List<PatientEncounter> children = childrenByParentId.getOrDefault(id, Collections.emptyList());
+
+            double invoiceAmount;
+            double professionalFees = 0.0;
+            double hospitalAmount = 0.0;
+            double discount = 0.0;
+            double sponsorAmount = 0.0;
+            double patientAmount = 0.0;
+
+            if (finalBill != null) {
+                invoiceAmount = finalBill.getNetTotal();
+                professionalFees = finalBill.getProfessionalFee();
+                hospitalAmount = finalBill.getHospitalFee();
+                discount = finalBill.getDiscount();
+                sponsorAmount = finalBill.getSettledAmountBySponsor();
+                patientAmount = finalBill.getSettledAmountByPatient();
+            } else if (pe != null) {
+                invoiceAmount = inwardBeanController.calculateInwardTotal(pe, children);
+                discount = pe.getDiscount();
+            } else {
+                invoiceAmount = 0.0;
+            }
+
+            if (sponsorAmount == 0.0 && patientAmount == 0.0 && invoiceAmount > 0.0) {
+                if (dto.getPaymentMethod() == PaymentMethod.Credit) {
+                    sponsorAmount = invoiceAmount;
+                } else {
+                    patientAmount = invoiceAmount;
+                }
+            }
+
+            double advance = depositByEncounterId.getOrDefault(id, 0.0);
+            double paidByCompany = paidByCompanyByEncounterId.getOrDefault(id, 0.0);
+            double paidByPatient = paidByPatientByEncounterId.getOrDefault(id, 0.0);
+            double totalCollected = advance + paidByCompany;
+
+            dto.setAdvance(advance);
+            dto.setProfessionalFees(professionalFees);
+            dto.setHospitalAmount(hospitalAmount);
+            dto.setSponsorAmount(sponsorAmount);
+            dto.setPatientAmount(patientAmount);
+            dto.setDiscount(discount);
+            dto.setInvoiceAmount(invoiceAmount);
+            dto.setBillBalance(Math.max(0.0, invoiceAmount - totalCollected));
+            dto.setPatientBalance(Math.max(0.0, patientAmount - paidByPatient));
+        }
+    }
+
+    private Map<Long, Bill> batchFetchFinalBillsByEncounterIds(List<Long> encounterIds) {
+        if (encounterIds == null || encounterIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        String jpql = "SELECT b FROM BilledBill b "
+                + "WHERE b.retired = false "
+                + "AND b.cancelled = false "
+                + "AND b.billType = :bt "
+                + "AND b.patientEncounter.id IN :ids "
+                + "ORDER BY b.patientEncounter.id, b.id DESC";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("bt", BillType.InwardFinalBill);
+        params.put("ids", encounterIds);
+
+        List<Bill> bills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+        Map<Long, Bill> result = new HashMap<>();
+        if (bills != null) {
+            for (Bill bill : bills) {
+                if (bill.getPatientEncounter() != null && bill.getPatientEncounter().getId() != null) {
+                    result.putIfAbsent(bill.getPatientEncounter().getId(), bill);
+                }
+            }
+        }
+        return result;
+    }
+
+    private Map<Long, Double> batchFetchDepositTotalsByEncounterIds(List<Long> encounterIds) {
+        if (encounterIds == null || encounterIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        String jpql = "SELECT b.patientEncounter.id, SUM(ABS(p.paidValue)) "
+                + "FROM Payment p "
+                + "JOIN p.bill b "
+                + "WHERE p.retired = false "
+                + "AND b.retired = false "
+                + "AND b.cancelled = false "
+                + "AND b.billTypeAtomic = :bta "
+                + "AND b.patientEncounter.id IN :ids "
+                + "GROUP BY b.patientEncounter.id";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("bta", BillTypeAtomic.INWARD_DEPOSIT);
+        params.put("ids", encounterIds);
+
+        return mapEncounterDoubleAggregate(billFacade.findObjectsArrayByJpql(jpql, params, TemporalType.TIMESTAMP));
+    }
+
+    private Map<Long, Double> batchFetchPaidByCompanyByEncounterIds(List<Long> encounterIds) {
+        if (encounterIds == null || encounterIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        String jpql = "SELECT b.patientEncounter.id, SUM(b.netTotal) "
+                + "FROM Bill b "
+                + "WHERE b.retired = false "
+                + "AND b.cancelled = false "
+                + "AND b.billTypeAtomic IN :bts "
+                + "AND b.patientEncounter.id IN :ids "
+                + "GROUP BY b.patientEncounter.id";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("bts", Arrays.asList(
+                BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED,
+                BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_CANCELLATION));
+        params.put("ids", encounterIds);
+
+        return mapEncounterDoubleAggregate(billFacade.findObjectsArrayByJpql(jpql, params, TemporalType.TIMESTAMP));
+    }
+
+    private Map<Long, Double> batchFetchPaidByPatientByEncounterIds(List<Long> encounterIds) {
+        if (encounterIds == null || encounterIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        String jpql = "SELECT b.patientEncounter.id, SUM(b.netTotal) "
+                + "FROM Bill b "
+                + "WHERE b.retired = false "
+                + "AND b.cancelled = false "
+                + "AND b.billType = :btp "
+                + "AND b.paymentMethod <> :pm "
+                + "AND b.patientEncounter.id IN :ids "
+                + "GROUP BY b.patientEncounter.id";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("btp", BillType.InwardPaymentBill);
+        params.put("pm", PaymentMethod.Credit);
+        params.put("ids", encounterIds);
+
+        return mapEncounterDoubleAggregate(billFacade.findObjectsArrayByJpql(jpql, params, TemporalType.TIMESTAMP));
+    }
+
+    private Map<Long, Double> mapEncounterDoubleAggregate(List<Object[]> rows) {
+        Map<Long, Double> result = new HashMap<>();
+        if (rows == null) {
+            return result;
+        }
+        for (Object[] row : rows) {
+            if (row == null || row.length < 2 || row[0] == null) {
+                continue;
+            }
+            Long id = ((Number) row[0]).longValue();
+            Double value = row[1] != null ? ((Number) row[1]).doubleValue() : 0.0;
+            result.put(id, Math.max(0.0, value));
+        }
+        return result;
+    }
+
+    public StreamedContent getAdmissionCategoryWiseAdmissionExcel() {
+        if (admissionCategoryWiseAdmissionList == null || admissionCategoryWiseAdmissionList.isEmpty()) {
+            JsfUtil.addErrorMessage("No data available to export.");
+            return null;
+        }
+
+        try (XSSFWorkbook wb = new XSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+            XSSFSheet sheet = wb.createSheet("Admission Category Wise");
+
+            String[] headers = {
+                "No", "BHT", "Patient Name", "Admission Category", "Advance",
+                "Professional Fees", "Hospital Amount", "Sponsor Amount", "Patient Amount",
+                "Discount", "Invoice Amount", "Bill Balance", "Patient Balance"
+            };
+
+            Row headerRow = sheet.createRow(0);
+            for (int i = 0; i < headers.length; i++) {
+                headerRow.createCell(i).setCellValue(headers[i]);
+            }
+
+            CreationHelper helper = wb.getCreationHelper();
+            CellStyle moneyStyle = wb.createCellStyle();
+            moneyStyle.setDataFormat(helper.createDataFormat().getFormat("#,##0.00"));
+
+            int rowNum = 1;
+            int idx = 1;
+            for (AdmissionCategoryWiseAdmissionDTO dto : admissionCategoryWiseAdmissionList) {
+                Row row = sheet.createRow(rowNum++);
+                row.createCell(0).setCellValue(idx++);
+                row.createCell(1).setCellValue(dto.getBhtNo() != null ? dto.getBhtNo() : "");
+                row.createCell(2).setCellValue(dto.getPatientName() != null ? dto.getPatientName() : "");
+                row.createCell(3).setCellValue(dto.getCategoryName() != null ? dto.getCategoryName() : "");
+
+                for (int col = 4; col <= 12; col++) {
+                    Cell moneyCell = row.createCell(col);
+                    moneyCell.setCellStyle(moneyStyle);
+                }
+                row.getCell(4).setCellValue(dto.getAdvance());
+                row.getCell(5).setCellValue(dto.getProfessionalFees());
+                row.getCell(6).setCellValue(dto.getHospitalAmount());
+                row.getCell(7).setCellValue(dto.getSponsorAmount());
+                row.getCell(8).setCellValue(dto.getPatientAmount());
+                row.getCell(9).setCellValue(dto.getDiscount());
+                row.getCell(10).setCellValue(dto.getInvoiceAmount());
+                row.getCell(11).setCellValue(dto.getBillBalance());
+                row.getCell(12).setCellValue(dto.getPatientBalance());
+            }
+
+            for (int i = 0; i < headers.length; i++) {
+                sheet.autoSizeColumn(i);
+            }
+
+            wb.write(out);
+            byte[] bytes = out.toByteArray();
+            return DefaultStreamedContent.builder()
+                    .name("Admission_Category_Wise_Admission.xlsx")
+                    .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                    .stream(() -> new ByteArrayInputStream(bytes))
+                    .build();
+
+        } catch (IOException e) {
+            java.util.logging.Logger.getLogger(InwardReportController.class.getName())
+                    .log(java.util.logging.Level.SEVERE, "Excel generation failed", e);
+            JsfUtil.addErrorMessage("Failed to generate Excel: " + e.getMessage());
+            return null;
+        }
+    }
+
+    public void downloadAdmissionCategoryWiseAdmissionPdf() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        ExternalContext externalContext = context.getExternalContext();
+        HttpServletResponse response = (HttpServletResponse) externalContext.getResponse();
+
+        String dates = CommonFunctions.dateRangeForFileName(
+                fromDate, toDate,
+                sessionController.getApplicationPreference().getLongDateFormat());
+
+        SimpleDateFormat sdf = new SimpleDateFormat("dd MMMM yyyy");
+        SimpleDateFormat sdt = new SimpleDateFormat("dd MMM yyyy HH:mm");
+
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+            Document document = new Document(com.lowagie.text.PageSize.A4.rotate());
+            com.lowagie.text.pdf.PdfWriter.getInstance(document, baos);
+            document.open();
+
+            String institutionName = sessionController.getInstitution() != null
+                    ? sessionController.getInstitution().getName()
+                    : "No Logged Institution";
+
+            document.add(new Paragraph(institutionName, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18)));
+            document.add(new Paragraph("Admission Category Wise Admission Report",
+                    FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18)));
+            document.add(new Paragraph("Date: " + sdf.format(new Date()), FontFactory.getFont(FontFactory.HELVETICA, 12)));
+            document.add(new Paragraph(" "));
+
+            if (admissionCategoryWiseAdmissionList == null || admissionCategoryWiseAdmissionList.isEmpty()) {
+                document.add(new Paragraph("No admissions for the selected criteria.",
+                        FontFactory.getFont(FontFactory.HELVETICA, 12)));
+                document.close();
+                context.responseComplete();
+                return;
+            }
+
+            PdfPTable infoTable = buildAdmissionCategoryWiseInfoTable(sdt);
+            if (infoTable != null) {
+                document.add(infoTable);
+            }
+
+            PdfPTable table = new PdfPTable(13);
+            table.setWidthPercentage(100);
+            table.setSpacingBefore(10);
+            float[] columnWidths = {0.8f, 1.5f, 2.5f, 1.8f, 1.2f, 1.4f, 1.4f, 1.3f, 1.3f, 1.1f, 1.3f, 1.3f, 1.3f};
+            table.setWidths(columnWidths);
+
+            addAdmissionCategoryWiseHeaderRow(table);
+
+            int idx = 1;
+            for (AdmissionCategoryWiseAdmissionDTO row : admissionCategoryWiseAdmissionList) {
+                addAdmissionCategoryWiseRow(table, row, idx++);
+            }
+
+            document.add(table);
+            document.close();
+
+            byte[] bytes = baos.toByteArray();
+            response.reset();
+            response.setContentType("application/pdf");
+            response.setHeader("Content-Disposition",
+                    "attachment; filename=Admission_Category_Wise_Admission_" + dates + ".pdf");
+            response.setContentLength(bytes.length);
+
+            try (OutputStream out = response.getOutputStream()) {
+                out.write(bytes);
+                out.flush();
+            }
+
+            context.responseComplete();
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error generating PDF: " + e.getMessage());
+        }
+    }
+
+    private PdfPTable buildAdmissionCategoryWiseInfoTable(SimpleDateFormat sdt) throws DocumentException {
+        PdfPTable info = new PdfPTable(2);
+        info.setWidthPercentage(60);
+        info.setSpacingBefore(5);
+        info.setWidths(new float[]{1f, 2f});
+
+        addInfoCell(info, "Institution:", institution != null ? institution.getName() : "All");
+        addInfoCell(info, "Site:", site != null ? site.getName() : "All");
+        addInfoCell(info, "Department:", department != null ? department.getName() : "All");
+        addInfoCell(info, "Admission Category:", admissionType != null ? admissionType.getName() : "All");
+        addInfoCell(info, "From Date:", fromDate != null ? sdt.format(fromDate) : "-");
+        addInfoCell(info, "To Date:", toDate != null ? sdt.format(toDate) : "-");
+        addInfoCell(info, "Generated:", sdt.format(new Date()));
+        return info;
+    }
+
+    private void addAdmissionCategoryWiseHeaderRow(PdfPTable table) {
+        java.awt.Color headerBg = new java.awt.Color(33, 37, 41);
+        com.lowagie.text.Font headerFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8, java.awt.Color.WHITE);
+
+        String[] headers = {
+            "#", "BHT", "Patient Name", "Category", "Advance", "Prof. Fees", "Hospital",
+            "Sponsor", "Patient", "Discount", "Invoice", "Bill Bal.", "Patient Bal."
+        };
+
+        for (String h : headers) {
+            PdfPCell cell = new PdfPCell(new Phrase(h, headerFont));
+            cell.setBackgroundColor(headerBg);
+            cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+            cell.setPadding(3);
+            table.addCell(cell);
+        }
+    }
+
+    private void addAdmissionCategoryWiseRow(PdfPTable table, AdmissionCategoryWiseAdmissionDTO row, int idx) {
+        com.lowagie.text.Font normal = FontFactory.getFont(FontFactory.HELVETICA, 7);
+
+        table.addCell(new Phrase(String.valueOf(idx), normal));
+        table.addCell(new Phrase(nullSafe(row.getBhtNo()), normal));
+        table.addCell(new Phrase(nullSafe(row.getPatientName()), normal));
+        table.addCell(new Phrase(nullSafe(row.getCategoryName()), normal));
+        table.addCell(new Phrase(formatAmount(row.getAdvance()), normal));
+        table.addCell(new Phrase(formatAmount(row.getProfessionalFees()), normal));
+        table.addCell(new Phrase(formatAmount(row.getHospitalAmount()), normal));
+        table.addCell(new Phrase(formatAmount(row.getSponsorAmount()), normal));
+        table.addCell(new Phrase(formatAmount(row.getPatientAmount()), normal));
+        table.addCell(new Phrase(formatAmount(row.getDiscount()), normal));
+        table.addCell(new Phrase(formatAmount(row.getInvoiceAmount()), normal));
+        table.addCell(new Phrase(formatAmount(row.getBillBalance()), normal));
+        table.addCell(new Phrase(formatAmount(row.getPatientBalance()), normal));
     }
 
     public void downloadIpUnsettledInvoicesPdf() {
@@ -4772,6 +5964,14 @@ public class InwardReportController implements Serializable {
 
     }
 
+    public List<AdmissionCategoryWiseAdmissionDTO> getAdmissionCategoryWiseAdmissionList() {
+        return admissionCategoryWiseAdmissionList;
+    }
+
+    public void setAdmissionCategoryWiseAdmissionList(List<AdmissionCategoryWiseAdmissionDTO> admissionCategoryWiseAdmissionList) {
+        this.admissionCategoryWiseAdmissionList = admissionCategoryWiseAdmissionList;
+    }
+
     public List<SurgeryCountSurgeryWiseDTO> getSurgeryCountSurgeryWiseList() {
         return surgeryCountSurgeryWiseList;
     }
@@ -4850,6 +6050,102 @@ public class InwardReportController implements Serializable {
 
     public void setAdmissionReportProcessedBy(String admissionReportProcessedBy) {
         this.admissionReportProcessedBy = admissionReportProcessedBy;
+    }
+
+    public String getVisitType() {
+        return visitType;
+    }
+
+    public void setVisitType(String visitType) {
+        this.visitType = visitType;
+    }
+
+    public String getPaymentType() {
+        return paymentType;
+    }
+
+    public void setPaymentType(String paymentType) {
+        this.paymentType = paymentType;
+    }
+
+    public Category getCategory() {
+        return category;
+    }
+
+    public void setCategory(Category category) {
+        this.category = category;
+    }
+
+    public boolean isWithProfessionalFee() {
+        return withProfessionalFee;
+    }
+
+    public void setWithProfessionalFee(boolean withProfessionalFee) {
+        this.withProfessionalFee = withProfessionalFee;
+    }
+
+    public double getIpIncomeTotalSponsorPay() {
+        return ipIncomeTotalSponsorPay;
+    }
+
+    public void setIpIncomeTotalSponsorPay(double ipIncomeTotalSponsorPay) {
+        this.ipIncomeTotalSponsorPay = ipIncomeTotalSponsorPay;
+    }
+
+    public double getIpIncomeTotalPatientPay() {
+        return ipIncomeTotalPatientPay;
+    }
+
+    public void setIpIncomeTotalPatientPay(double ipIncomeTotalPatientPay) {
+        this.ipIncomeTotalPatientPay = ipIncomeTotalPatientPay;
+    }
+
+    public ReportTemplateRowBundle getBundle() {
+        return bundle;
+    }
+
+    public void setBundle(ReportTemplateRowBundle bundle) {
+        this.bundle = bundle;
+    }
+
+    public List<RoomCategory> getRoomCategories() {
+        return roomCategories;
+    }
+
+    public void setRoomCategories(List<RoomCategory> roomCategories) {
+        this.roomCategories = roomCategories;
+    }
+
+    public double getIpIncomeCashTotal() {
+        return ipIncomeCashTotal;
+    }
+
+    public void setIpIncomeCashTotal(double ipIncomeCashTotal) {
+        this.ipIncomeCashTotal = ipIncomeCashTotal;
+    }
+
+    public double getIpIncomeCreditTotal() {
+        return ipIncomeCreditTotal;
+    }
+
+    public void setIpIncomeCreditTotal(double ipIncomeCreditTotal) {
+        this.ipIncomeCreditTotal = ipIncomeCreditTotal;
+    }
+
+    public List<Map<String, Object>> getIpIncomeBillDiscounts() {
+        return ipIncomeBillDiscounts;
+    }
+
+    public void setIpIncomeBillDiscounts(List<Map<String, Object>> ipIncomeBillDiscounts) {
+        this.ipIncomeBillDiscounts = ipIncomeBillDiscounts;
+    }
+
+    public double getIpIncomeTotalBillDiscount() {
+        return ipIncomeTotalBillDiscount;
+    }
+
+    public void setIpIncomeTotalBillDiscount(double ipIncomeTotalBillDiscount) {
+        this.ipIncomeTotalBillDiscount = ipIncomeTotalBillDiscount;
     }
 
     public class IncomeByCategoryRecord {

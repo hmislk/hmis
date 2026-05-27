@@ -27,6 +27,9 @@ public class BillItemData implements Serializable {
     private double grossValue;
     private double rate;
     private double netRate;
+    private double discountValue;
+    private double discountPercent;
+    private double marginValue;
     private String description;
     private Long catId;
     private Date createdAt;
@@ -115,6 +118,30 @@ public class BillItemData implements Serializable {
 
     public void setNetRate(double netRate) {
         this.netRate = netRate;
+    }
+
+    public double getDiscountValue() {
+        return discountValue;
+    }
+
+    public void setDiscountValue(double discountValue) {
+        this.discountValue = discountValue;
+    }
+
+    public double getDiscountPercent() {
+        return discountPercent;
+    }
+
+    public void setDiscountPercent(double discountPercent) {
+        this.discountPercent = discountPercent;
+    }
+
+    public double getMarginValue() {
+        return marginValue;
+    }
+
+    public void setMarginValue(double marginValue) {
+        this.marginValue = marginValue;
     }
 
     public String getDescription() {

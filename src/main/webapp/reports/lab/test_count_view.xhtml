@@ -158,6 +158,10 @@
                                             <h:outputText value="Institution" style="font-weight:600;"/>
                                             <h:outputText value="#{empty reportController.institution ? 'All institutions' : reportController.institution.name}"/>
                                         </div>
+                                         <div class="d-flex gap-2">
+                                            <h:outputText value="Site" style="font-weight:600;"/>
+                                            <h:outputText value="#{reportController.returnSiteIdsString()}"/>
+                                        </div>
                                         <div class="d-flex gap-2">
                                             <h:outputText value="Department" style="font-weight:600;"/>
                                             <h:outputText value="#{empty reportController.department ? 'All departments' : reportController.department.name}"/>

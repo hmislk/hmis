@@ -96,6 +96,8 @@
                                         <p:commandLink
                                             action="#{staffPaymentBillController.navigateToStaffPaymentFromDuePayment(bf.staff)}"
                                             value="#{bf.staff.person.name}">
+                                            <f:setPropertyActionListener value="#{searchController.fromDate}" target="#{staffPaymentBillController.fromDate}" ></f:setPropertyActionListener>
+                                            <f:setPropertyActionListener value="#{searchController.toDate}" target="#{staffPaymentBillController.toDate}" ></f:setPropertyActionListener>
                                         </p:commandLink>
                                     </p:column>
                                     

@@ -70,6 +70,7 @@ public class PharmacyErrorChecking implements Serializable {
     double currentPurchaseValue;
     private double binCardTotalIn;
     private double binCardTotalOut;
+    private boolean includeArchived = false;
     @Named
     @Inject
     private SessionController sessionController;
@@ -134,7 +135,7 @@ public class PharmacyErrorChecking implements Serializable {
      */
     public void processBinCardWithDTO() {
         reportTimerController.trackReportExecution(() -> {
-            binCardEntries = stockHistoryController.findBinCardDTOs(fromDate, toDate, null, department, item);
+            binCardEntries = stockHistoryController.findBinCardDTOs(fromDate, toDate, null, department, item, includeArchived);
 
             if (configOptionApplicationController.getBooleanValueByKey("Pharmacy Bin Card - Hide Adjustment Bills in Bin Card", true)) {
                 List<BillType> bts = new ArrayList<>();
@@ -640,5 +641,8 @@ public class PharmacyErrorChecking implements Serializable {
     public double getBinCardNetTotal() {
         return binCardTotalIn - binCardTotalOut;
     }
+
+    public boolean isIncludeArchived() { return includeArchived; }
+    public void setIncludeArchived(boolean includeArchived) { this.includeArchived = includeArchived; }
 
 }

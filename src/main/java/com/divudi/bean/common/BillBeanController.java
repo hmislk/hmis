@@ -2664,13 +2664,12 @@ public class BillBeanController implements Serializable {
         BillFee f;
         f = new BillFee();
         f.setFee(i);
-        if (patientEncounter.isForiegner()) {
-            f.setFeeValue(i.getFfee());
-            f.setFeeGrossValue(i.getFfee());
-        } else {
-            f.setFeeValue(i.getFee());
-            f.setFeeGrossValue(i.getFee());
-        }
+        double unitRate = patientEncounter.isForiegner() ? i.getFfee() : i.getFee();
+        double qty = (billItem.getQty() != null && billItem.getQty() > 0) ? billItem.getQty() : 1.0;
+        f.setFeeUnitGrossValue(unitRate);
+        f.setFeeUnitValue(unitRate);
+        f.setFeeGrossValue(unitRate * qty);
+        f.setFeeValue(unitRate * qty);
         f.setDepartment(billItem.getItem().getDepartment());
         f.setBillItem(billItem);
 

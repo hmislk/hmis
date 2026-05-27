@@ -57,11 +57,13 @@ public class CapabilityStatementResource {
                         "API Key",
                         "GET", "POST"))
                 .add(resource("Consultant", "/api/channel/consultant",
-                        "Create a new consultant via POST. Update an existing consultant by ID via PUT /api/channel/consultant/{id}. "
-                        + "Required field for POST: name. Optional: title, mobile, phone, fax, address, code, serialNo, "
+                        "List consultants via GET (supports query, page, size, specialityId). "
+                        + "Create a new consultant via POST with duplicate detection (returns already_exists/409 when matched by name+title). "
+                        + "Update an existing consultant by ID via PUT /api/channel/consultant/{id}. "
+                        + "Required field for POST: name. Optional: title, sex, mobile, phone, fax, address, code, serialNo, "
                         + "specialityId, institutionId, registration, qualification, description.",
                         "API Key (Token header)",
-                        "POST", "PUT"))
+                        "GET", "POST", "PUT"))
                 .add(resource("Doctor Speciality", "/api/channel/speciality",
                         "CRUD for DoctorSpeciality records. "
                         + "GET lists active specialities (supports ?query=&page=&size=). "
@@ -167,6 +169,33 @@ public class CapabilityStatementResource {
                         "LIMS middleware integration",
                         "API Key",
                         "GET", "POST"))
+                .add(resource("Machines (Analyzers)", "/api/machines",
+                        "CRUD for Machine (analyzer) entities. "
+                        + "GET lists active machines (supports ?query=&size=). "
+                        + "GET /{id} returns a single machine. "
+                        + "POST creates a machine (required: name; optional: code, description); returns 409 when duplicate name exists. "
+                        + "PUT /{id} updates name, code, or description. "
+                        + "DELETE /{id} soft-retires the machine.",
+                        "API Key",
+                        "GET", "POST", "PUT", "DELETE"))
+                .add(resource("Analyzer Tests", "/api/machines/{machineId}/tests",
+                        "CRUD for analyzer test Items (itemType=AnalyzerTest) linked to a Machine. "
+                        + "GET lists tests for the machine (supports ?query=&size=). "
+                        + "GET /{id} returns a single test. "
+                        + "POST creates a test (required: name, code); returns 409 when duplicate code exists for the machine. "
+                        + "PUT /{id} updates name or code. "
+                        + "DELETE /{id} soft-retires the test. "
+                        + "The code field matches analyzer output codes used by the LIMS middleware.",
+                        "API Key",
+                        "GET", "POST", "PUT", "DELETE"))
+                .add(resource("Patient Samples", "/api/patient-samples",
+                        "Search and retrieval of PatientSample records. "
+                        + "GET /search supports ?sampleId=&patientName=&fromDate=&toDate=&billNumber=&size= (dates: yyyy-MM-dd). "
+                        + "GET /{id} returns full sample detail including automation workflow fields "
+                        + "(sentToAnalyzer, receivedFromAnalyzer, sampleCollected, sampleReceivedAtLab, etc.) "
+                        + "and linked patientInvestigation, machine, test, and investigationComponent.",
+                        "API Key",
+                        "GET"))
                 .add(resource("Middleware", "/api/middleware",
                         "General middleware endpoints",
                         "API Key",
@@ -223,6 +252,17 @@ public class CapabilityStatementResource {
                         "GET"))
                 .add(resource("User Roles", "/api/user-roles",
                         "User role CRUD and role-level privilege assignment with optional department scope.",
+                        "API Key",
+                        "GET", "POST", "PUT", "DELETE"))
+                                .add(resource("Investigations", "/api/investigations",
+                        "Investigation master management including search, create, update, and activate/deactivate for item import workflows",
+                        "API Key",
+                        "GET", "POST", "PUT", "PATCH"))
+                .add(resource("Investigation Format", "/api/investigations/{investigationId}/format",
+                        "Manage investigation report format: items (Label, Value, Calculation, Flag, DynamicLabel types), "
+                        + "item values (dropdown options for List-type items), calculations (formulas referencing other items), "
+                        + "flags (reference range flags by age/sex), and dynamic labels (conditional labels by age/sex). "
+                        + "Sub-resources: /items, /items/{itemId}/values, /calculations, /flags, /dynamic-labels.",
                         "API Key",
                         "GET", "POST", "PUT", "DELETE"))
                 .add(resource("Services", "/api/services",

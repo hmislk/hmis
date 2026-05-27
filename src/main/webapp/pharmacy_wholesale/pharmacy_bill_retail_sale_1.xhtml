@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8' ?>
+﻿<?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
@@ -63,7 +63,7 @@
 
                                                                     <p:autoComplete accesskey="i"    id="acStock"
                                                                                     value="#{pharmacyWholeSaleController1.stock}"
-                                                                                    completeMethod="#{pharmacyWholeSaleController1.completeAvailableStocksFromNameOrGeneric}"
+                                                                                    queryDelay="300" completeMethod="#{pharmacyWholeSaleController1.completeAvailableStocksFromNameOrGeneric}"
                                                                                     var="i" itemLabel="#{i.itemBatch.item.name}" itemValue="#{i}"
                                                                                     >
                                                                         <p:column headerText="Id">
@@ -574,7 +574,7 @@
                                                     class="w-100"
                                                     forceSelection="true"
                                                     value="#{pharmacyWholeSaleController1.stock}"
-                                                    completeMethod="#{stockController.completeAvailableStocks}"
+                                                    queryDelay="300" completeMethod="#{stockController.completeAvailableStocks}"
                                                     var="i"
                                                     itemLabel="#{i.itemBatch.item.name}"
                                                     itemValue="#{i}">

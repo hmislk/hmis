@@ -4,6 +4,23 @@
 
 The HMIS Database Migration System provides a comprehensive framework for managing database schema changes across development, testing, and production environments. This guide covers the technical implementation details for developers working with the migration system.
 
+## Schema changes vs. data migrations
+
+**Schema changes** (adding new columns, tables, or indexes) are handled automatically — do NOT write a migration script for them:
+- EclipseLink's DDL auto-update adds missing columns on application startup in development.
+- On production, the admin runs **`/faces/dataAdmin/missing_database_fields.xhtml`** to detect and apply any missing columns before deploying new code.
+
+**Data migrations** (backfilling values in existing rows, transforming data, fixing historical records) require a migration script under `src/main/resources/db/migrations/`. The admin executes these via **`/faces/admin/database_migration.xhtml`**.
+
+> Rule of thumb: if your change is `ALTER TABLE … ADD COLUMN`, skip the migration script. If your change is `UPDATE … SET`, write one.
+
+## Admin UI pages
+
+| Page | Purpose |
+|------|---------|
+| `/faces/dataAdmin/missing_database_fields.xhtml` | Detects and adds schema columns that JPA entities declare but the database does not yet have. Run this **before** deploying code that adds new entity fields. |
+| `/faces/admin/database_migration.xhtml` | Lists, executes, and rolls back data migration scripts. Run this **after** schema is up to date. |
+
 ## Architecture Components
 
 ### Core Classes
@@ -144,9 +161,13 @@ git checkout -b feature/consumption-allowed
 
 ### 2. Version Determination
 
-- Check current latest version: Look in existing migration directories
-- Determine increment type based on change scope
-- Assign next sequential version number
+Find the current highest version:
+```bash
+ls src/main/resources/db/migrations/ | sort -V | tail -1
+```
+
+Determine increment type based on change scope, then assign the next sequential version.
+Coordinate with other open feature branches to avoid two PRs claiming the same version number.
 
 ### 3. Migration Creation
 
@@ -298,7 +319,7 @@ try {
 ### SQL Script Guidelines
 
 1. **Atomic Operations**: Each migration should be atomic
-2. **Idempotent Scripts**: Handle re-execution gracefully
+2. **Idempotent Scripts**: Handle re-execution gracefully — for `UPDATE` backfills use `WHERE <new_col> IS NULL` so re-runs are safe and fast
 3. **Data Preservation**: Avoid data loss operations
 4. **Performance Impact**: Consider query execution time
 5. **Index Management**: Add/drop indexes strategically

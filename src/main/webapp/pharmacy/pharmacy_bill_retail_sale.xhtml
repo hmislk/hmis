@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8' ?>
+﻿<?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
@@ -36,7 +36,7 @@
                                 maxResults="20"
                                 minQueryLength="3"
                                 inputStyleClass="w-100"
-                                completeMethod="#{itemController.completeAmpItem}"
+                                queryDelay="300" completeMethod="#{itemController.completeAmpItem}"
                                 var="vt"
                                 onfocus="this.select()"
                                 itemLabel="#{vt.name}"
@@ -79,6 +79,7 @@
                                 <p:commandButton class="m-1"  icon="fas fa-file-invoice" value="Sale 2" action="pharmacy_bill_retail_sale_1?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController1.pharmacyRetailSale()}" />
                                 <p:commandButton class="m-1"  icon="fas fa-file-invoice" value="Sale 3" action="pharmacy_bill_retail_sale_2?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController2.pharmacyRetailSale()}" />
                                 <p:commandButton class="m-1"  icon="fas fa-file-invoice" value="Sale 4" action="pharmacy_bill_retail_sale_3?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController3.pharmacyRetailSale()}" />
+                                <p:commandButton class="m-1 ui-button-warning" icon="fas fa-bolt" value="Fast Sale" action="pharmacy_bill_retail_sale_native?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{retailSaleNativeSqlController.resetAll()}" />
                                 <!-- Admin Configuration Button (only for administrators) -->
                                 <h:panelGroup rendered="#{webUserController.hasPrivilege('Admin')}">
                                     <p:commandButton
@@ -163,7 +164,7 @@
                                                         styleClass="w-100"
                                                         forceSelection="true"
                                                         value="#{pharmacySaleController.stockDto}"
-                                                        completeMethod="#{pharmacySaleController.completeAvailableStockOptimizedDto}"
+                                                        queryDelay="300" completeMethod="#{pharmacySaleController.completeAvailableStockOptimizedDto}"
                                                         converter="#{pharmacySaleController.stockDtoConverter}"
                                                         var="i"
                                                         itemLabel="#{i.itemName}"
@@ -875,13 +876,12 @@
 
                                                             <h:panelGroup class="d-flex">
 
-                                                                <p:outputLabel class="ml-4" value="#{pharmacySaleController.patient.person.nameWithTitle}" rendered="#{not empty pharmacySaleController.patient.person.nameWithTitle and !configOptionApplicationController.getBooleanValueByKey('Enable patient specific status management in the system', false)}" />
-
-                                                                <p:badge rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable patient specific status management in the system', false)}" style="transform: translate(110%, -40%);background-color: #{empty pharmacySaleController.patient.specificStatus ? 'white' : '#FF401F'} ; font-style: italic;" value="#{pharmacySaleController.patient.specificStatus}" severity="danger">
+                                                                
+                                                                <p:badge style="transform: translate(110%, -40%);background-color: #{pharmacySaleController.patient.specificStatus != null and pharmacySaleController.patient.specificStatus.name() != 'NORMAL' ? '#FF401F' : 'white'} ; font-style: italic;" value="#{pharmacySaleController.patient.specificStatus}" severity="danger">
                                                                     <p:outputLabel value="#{pharmacySaleController.patient.person.nameWithTitle}" rendered="#{not empty pharmacySaleController.patient.person.nameWithTitle}" />
                                                                 </p:badge> 
 
-                                                                <p:badge rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable blacklist patient management in the system', false) and configOptionApplicationController.getBooleanValueByKey('Enable blacklist patient management for Pharmacy from the system', false)}" style="transform: translate(110%, -40%);background-color: #{pharmacySaleController.patient.blacklisted ? 'black' : 'white'} ; font-style: italic; font-size: 15px" value="X #{pharmacySaleController.patient.blacklisted ? 'Blacklisted' : 'Active'}" severity="danger">
+                                                                <p:badge style="transform: translate(110%, -40%);background-color: #{pharmacySaleController.patient.blacklisted ? 'black' : 'white'} ; font-style: italic; font-size: 15px" value="X #{pharmacySaleController.patient.blacklisted ? 'Blacklisted' : 'Active'}" severity="danger">
 
                                                                 </p:badge>
 
@@ -1345,6 +1345,7 @@
                                     <p:commandButton class="m-1"  icon="fas fa-file-invoice" value="Sale 2" action="pharmacy_bill_retail_sale_1?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController1.pharmacyRetailSale()}" />
                                     <p:commandButton class="m-1"  icon="fas fa-file-invoice" value="Sale 3" action="pharmacy_bill_retail_sale_2?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController2.pharmacyRetailSale()}" />
                                     <p:commandButton class="m-1"  icon="fas fa-file-invoice" value="Sale 4" action="pharmacy_bill_retail_sale_3?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController3.pharmacyRetailSale()}" />
+                                    <p:commandButton class="m-1 ui-button-warning" icon="fas fa-bolt" value="Fast Sale" action="pharmacy_bill_retail_sale_native?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{retailSaleNativeSqlController.resetAll()}" />
                                 </div>
                             </div>
                             <div class="col-3">

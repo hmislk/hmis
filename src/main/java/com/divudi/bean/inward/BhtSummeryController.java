@@ -34,6 +34,7 @@ import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.BilledBill;
 import com.divudi.core.entity.Item;
 import com.divudi.core.entity.PatientEncounter;
+import com.divudi.core.entity.PaymentScheme;
 import com.divudi.core.entity.PatientItem;
 import com.divudi.core.entity.PreBill;
 import com.divudi.core.entity.PriceMatrix;
@@ -43,6 +44,7 @@ import com.divudi.core.entity.inward.Admission;
 import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.entity.inward.GuardianRoom;
 import com.divudi.core.entity.inward.PatientRoom;
+import com.divudi.core.entity.inward.RoomFacilityCharge;
 import com.divudi.core.entity.inward.TimedItem;
 import com.divudi.core.entity.inward.TimedItemFee;
 import com.divudi.core.entity.membership.InwardMemberShipDiscount;
@@ -1148,6 +1150,25 @@ public class BhtSummeryController implements Serializable {
         }
 
         // Refresh the tables or any other necessary actions after saving
+        createTables();
+    }
+
+    public void updateChargesForRoom(PatientRoom pr) {
+        if (pr == null || pr.getRoomFacilityCharge() == null) {
+            JsfUtil.addErrorMessage("Room facility charge not set");
+            return;
+        }
+        RoomFacilityCharge rfc = pr.getRoomFacilityCharge();
+        pr.setCurrentRoomCharge(rfc.getRoomCharge() != null ? rfc.getRoomCharge() : 0.0);
+        pr.setCurrentMaintananceCharge(rfc.getMaintananceCharge() != null ? rfc.getMaintananceCharge() : 0.0);
+        pr.setCurrentNursingCharge(rfc.getNursingCharge() != null ? rfc.getNursingCharge() : 0.0);
+        pr.setCurrentMoCharge(rfc.getMoCharge() != null ? rfc.getMoCharge() : 0.0);
+        pr.setCurrentMoChargeForAfterDuration(rfc.getMoChargeForAfterDuration() != null ? rfc.getMoChargeForAfterDuration() : 0.0);
+        pr.setCurrentLinenCharge(rfc.getLinenCharge() != null ? rfc.getLinenCharge() : 0.0);
+        pr.setCurrentAdministrationCharge(rfc.getAdminstrationCharge());
+        pr.setCurrentMedicalCareCharge(rfc.getMedicalCareCharge());
+        getPatientRoomFacade().edit(pr);
+        patientRooms = null;
         createTables();
     }
 
@@ -2291,17 +2312,21 @@ public class BhtSummeryController implements Serializable {
 
     }
 
-    public void createIntrimBillTable() {
+    public String createIntrimBillTable() {
+        if (patientEncounter == null) {
+            JsfUtil.addErrorMessage("No Admission Selected");
+            return "";
+        }
         if (configOptionApplicationController.getBooleanValueByKey("Restrict Access to Intrim Bill if Provisional Bill is Created")) {
-            if (patientEncounter != null
-                    && admissionController.isAddmissionHaveProvisionalBill((Admission) patientEncounter)) {
+            if (admissionController.isAddmissionHaveProvisionalBill((Admission) patientEncounter)) {
                 JsfUtil.addErrorMessage("There is a Provisional Bill For This Admission");
-                clear();            // resets patientEncounter and cached data safely
-                return;
+                clear();
+                return "";
             }
         }
         childPatientEncouters = null;
         createTables();
+        return "/inward/inward_bill_intrim?faces-redirect=true";
     }
 
     public void createTables() {
@@ -2545,6 +2570,16 @@ public class BhtSummeryController implements Serializable {
         return "/inward/inward_bill_intrim?faces-redirect=true";
     }
 
+    public String navigateToIntrimBillRefresh() {
+        if (inwardPaymentController.getCurrent() != null
+                && inwardPaymentController.getCurrent().getPatientEncounter() != null) {
+            this.patientEncounter = inwardPaymentController.getCurrent().getPatientEncounter();
+        }
+        childPatientEncouters = null;
+        createTables();
+        return "/inward/inward_bill_intrim?faces-redirect=true";
+    }
+
     public String toIntrimBillclear() {
         patientEncounter = null;
         makeNull();
@@ -2558,6 +2593,13 @@ public class BhtSummeryController implements Serializable {
 
     public PatientEncounter getPatientEncounter() {
         return patientEncounter;
+    }
+
+    public List<EncounterCreditCompany> getEncounterCreditCompanys() {
+        if (patientEncounter == null) {
+            return new ArrayList<>();
+        }
+        return fillCreditCompaniesByPatient(patientEncounter);
     }
 
     public void setPatientEncounter(PatientEncounter patientEncounter) {
@@ -2600,6 +2642,19 @@ public class BhtSummeryController implements Serializable {
     }
 
     private void setPatientRoomData() {
+        PaymentMethod pm = getPatientEncounter().getPaymentMethod();
+        PaymentScheme scheme = getPatientEncounter().getPaymentScheme();
+        AdmissionType admType = getPatientEncounter().getAdmissionType();
+
+        // Fetch all discount percentages once per recalculation (not per room)
+        double roomPct = getPriceMatrixController().getInwardDiscountPercentForChargeType(pm, scheme, admType, InwardChargeType.RoomCharges);
+        double maintainPct = getPriceMatrixController().getInwardDiscountPercentForChargeType(pm, scheme, admType, InwardChargeType.MaintainCharges);
+        double linenPct = getPriceMatrixController().getInwardDiscountPercentForChargeType(pm, scheme, admType, InwardChargeType.LinenCharges);
+        double nursingPct = getPriceMatrixController().getInwardDiscountPercentForChargeType(pm, scheme, admType, InwardChargeType.NursingCharges);
+        double moPct = getPriceMatrixController().getInwardDiscountPercentForChargeType(pm, scheme, admType, InwardChargeType.MOCharges);
+        double adminPct = getPriceMatrixController().getInwardDiscountPercentForChargeType(pm, scheme, admType, InwardChargeType.AdministrationCharge);
+        double medicalCarePct = getPriceMatrixController().getInwardDiscountPercentForChargeType(pm, scheme, admType, InwardChargeType.MedicalCareICU);
+
         for (PatientRoom p : patientRooms) {
             if (p.getAdmittedAt() == null) {
                 p.setAdmittedAt(new Date());
@@ -2614,18 +2669,38 @@ public class BhtSummeryController implements Serializable {
                 calculateMedicalCareCharge(p);
             }
 
-            p.setAdjustedMaintainCharge(p.getCalculatedMaintainCharge());
-            p.setAdjustedMoCharge(p.getCalculatedMoCharge());
-            p.setAdjustedRoomCharge(p.getCalculatedRoomCharge());
-
-            p.setAjdustedAdministrationCharge(p.getCalculatedAdministrationCharge());
-            p.setAjdustedLinenCharge(p.getCalculatedLinenCharge());
-            p.setAjdustedMedicalCareCharge(p.getCalculatedMedicalCareCharge());
-            p.setAjdustedNursingCharge(p.getCalculatedNursingCharge());
+            applyRoomChargeDiscounts(p, roomPct, maintainPct, linenPct, nursingPct, moPct, adminPct, medicalCarePct);
 
             getPatientRoomFacade().edit(p);
-
         }
+    }
+
+    private void applyRoomChargeDiscounts(PatientRoom p,
+            double roomPct, double maintainPct, double linenPct, double nursingPct,
+            double moPct, double adminPct, double medicalCarePct) {
+        double roomDisc = (roomPct / 100.0) * p.getCalculatedRoomCharge();
+        double maintainDisc = (maintainPct / 100.0) * p.getCalculatedMaintainCharge();
+        double linenDisc = (linenPct / 100.0) * p.getCalculatedLinenCharge();
+        double nursingDisc = (nursingPct / 100.0) * p.getCalculatedNursingCharge();
+        double moDisc = (moPct / 100.0) * p.getCalculatedMoCharge();
+        double adminDisc = (adminPct / 100.0) * p.getCalculatedAdministrationCharge();
+        double medicalCareDisc = (medicalCarePct / 100.0) * p.getCalculatedMedicalCareCharge();
+
+        p.setDiscountRoomCharge(roomDisc);
+        p.setDiscountMaintainCharge(maintainDisc);
+        p.setDiscountLinenCharge(linenDisc);
+        p.setDiscountNursingCharge(nursingDisc);
+        p.setDiscountMoCharge(moDisc);
+        p.setDiscountAdministrationCharge(adminDisc);
+        p.setDiscountMedicalCareCharge(medicalCareDisc);
+
+        p.setAdjustedRoomCharge(p.getCalculatedRoomCharge() - roomDisc);
+        p.setAdjustedMaintainCharge(p.getCalculatedMaintainCharge() - maintainDisc);
+        p.setAjdustedLinenCharge(p.getCalculatedLinenCharge() - linenDisc);
+        p.setAjdustedNursingCharge(p.getCalculatedNursingCharge() - nursingDisc);
+        p.setAdjustedMoCharge(p.getCalculatedMoCharge() - moDisc);
+        p.setAjdustedAdministrationCharge(p.getCalculatedAdministrationCharge() - adminDisc);
+        p.setAjdustedMedicalCareCharge(p.getCalculatedMedicalCareCharge() - medicalCareDisc);
     }
 
     private void calculateLinenCharge(PatientRoom p) {
@@ -2754,14 +2829,7 @@ public class BhtSummeryController implements Serializable {
         }
 
         if (getPatientEncounter().getCurrentPatientRoom().equals(patientRoom)) {
-            if (patientRoom.isDischarged()) {
-                //System.out.println("value * getInwardBean().calCount(timedFee, patientRoom.getAdmittedAt(), dischargeAt); = " + value * getInwardBean().calCount(timedFee, patientRoom.getAdmittedAt(), dischargeAt));
-                return value * getInwardBean().calCount(timedFee, patientRoom.getAdmittedAt(), dischargeAt);
-            } else {
-                // System.out.println("value * getInwardBean().calCountWithoutOverShoot(timedFee, patientRoom.getAdmittedAt(), dischargeAt) = " + value * getInwardBean().calCountWithoutOverShoot(timedFee, patientRoom.getAdmittedAt(), dischargeAt));
-                return value * getInwardBean().calCountWithoutOverShoot(timedFee, patientRoom.getAdmittedAt(), dischargeAt);
-            }
-
+            return value * getInwardBean().calCount(timedFee, patientRoom.getAdmittedAt(), dischargeAt);
         } else {
             //System.out.println("value * getInwardBean().calCount(timedFee, patientRoom.getAdmittedAt(), dischargeAt) = " + value * getInwardBean().calCount(timedFee, patientRoom.getAdmittedAt(), dischargeAt));
             return value * getInwardBean().calCount(timedFee, patientRoom.getAdmittedAt(), dischargeAt);
@@ -3423,6 +3491,74 @@ public class BhtSummeryController implements Serializable {
 
     public void setChildPatientEncouters(List<PatientEncounter> childPatientEncouters) {
         this.childPatientEncouters = childPatientEncouters;
+    }
+
+    /**
+     * Computes a detailed duration breakdown for a PatientRoom that mirrors
+     * the slot-counting logic in InwardBeanController.calCount(). Used by the
+     * room details page to show how the billed slot count is derived.
+     */
+    public RoomDurationBreakdown getRoomDurationBreakdown(PatientRoom pr) {
+        if (pr == null || pr.getRoomFacilityCharge() == null
+                || pr.getRoomFacilityCharge().getTimedItemFee() == null
+                || pr.getAdmittedAt() == null) {
+            return null;
+        }
+        TimedItemFee tif = pr.getRoomFacilityCharge().getTimedItemFee();
+        Date dischargedAt = pr.getDischargedAt() != null ? pr.getDischargedAt() : new Date();
+
+        long totalMinutes = CommonFunctions.calculateDurationMin(pr.getAdmittedAt(), dischargedAt);
+        double slotMinutes = tif.getDurationHours() * 60.0;
+        double overshootMinutes = tif.getOverShootHours() * 60.0;
+
+        if (slotMinutes == 0) {
+            return new RoomDurationBreakdown(totalMinutes, slotMinutes, 0, totalMinutes, overshootMinutes, false, 0);
+        }
+
+        long completeSlots = (long) (totalMinutes / slotMinutes);
+        double remainderMinutes = totalMinutes - (completeSlots * slotMinutes);
+        boolean extraSlotCharged = (overshootMinutes != 0 && overshootMinutes <= remainderMinutes) || completeSlots == 0;
+        long billedSlots = completeSlots + (extraSlotCharged ? 1 : 0);
+
+        return new RoomDurationBreakdown(totalMinutes, slotMinutes, completeSlots,
+                remainderMinutes, overshootMinutes, extraSlotCharged, billedSlots);
+    }
+
+    public static class RoomDurationBreakdown {
+
+        private final long totalMinutes;
+        private final double slotMinutes;
+        private final long completeSlots;
+        private final double remainderMinutes;
+        private final double overshootMinutes;
+        private final boolean extraSlotCharged;
+        private final long billedSlots;
+
+        public RoomDurationBreakdown(long totalMinutes, double slotMinutes, long completeSlots,
+                double remainderMinutes, double overshootMinutes,
+                boolean extraSlotCharged, long billedSlots) {
+            this.totalMinutes = totalMinutes;
+            this.slotMinutes = slotMinutes;
+            this.completeSlots = completeSlots;
+            this.remainderMinutes = remainderMinutes;
+            this.overshootMinutes = overshootMinutes;
+            this.extraSlotCharged = extraSlotCharged;
+            this.billedSlots = billedSlots;
+        }
+
+        public long getTotalMinutes() { return totalMinutes; }
+        public long getTotalHours() { return totalMinutes / 60; }
+        public long getTotalRemainingMinutes() { return totalMinutes % 60; }
+        public double getSlotMinutes() { return slotMinutes; }
+        public double getSlotHours() { return slotMinutes / 60.0; }
+        public long getCompleteSlots() { return completeSlots; }
+        public double getRemainderMinutes() { return remainderMinutes; }
+        public long getRemainderHours() { return (long) remainderMinutes / 60; }
+        public long getRemainderRemainingMinutes() { return (long) remainderMinutes % 60; }
+        public double getOvershootMinutes() { return overshootMinutes; }
+        public double getOvershootHours() { return overshootMinutes / 60.0; }
+        public boolean isExtraSlotCharged() { return extraSlotCharged; }
+        public long getBilledSlots() { return billedSlots; }
     }
 
 }

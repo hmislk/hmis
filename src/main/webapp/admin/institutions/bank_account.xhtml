@@ -21,7 +21,13 @@
                 <p:panel header="Manage Bank Account" >
                     <div class="row">
                         <div class="col-md-5">
-                            <p:commandButton id="btnAdd" value="Add New" 
+                            <p:selectOneMenu id="cmbFilterBank" value="#{bankAccountController.filterBank}"
+                                             styleClass="w-100 mb-2" >
+                                <f:selectItem itemLabel="All Banks" itemValue="#{null}" noSelectionOption="true"/>
+                                <f:selectItems value="#{institutionController.banks}" var="b" itemLabel="#{b.name}" itemValue="#{b}" />
+                                <p:ajax process="cmbFilterBank" update="lstSelect" listener="#{bankAccountController.onFilterBankChange()}"/>
+                            </p:selectOneMenu>
+                            <p:commandButton id="btnAdd" value="Add New"
                                              icon="fas fa-plus"
                                              action="#{bankAccountController.prepareAdd()}" class="ui-button-success" process="btnAdd"
                                              update="lstSelect gpDetail" >
@@ -45,16 +51,6 @@
                                 <p:panelGrid id="gpDetailText" columns="2" class="w-100" layout="tabular">
                                     <h:outputText  value="Name" ></h:outputText>
                                     <p:inputText autocomplete="off"  value="#{bankAccountController.current.accountName}"  class="w-100"  ></p:inputText>
-                                    <h:outputText  value="Type" ></h:outputText>
-                                    <p:selectOneMenu value="#{bankAccountController.current.bankAccountType}" >
-                                        <f:selectItem itemLabel="Select" ></f:selectItem>
-                                        <f:selectItems 
-                                            value="#{enumController.bankAccountTypes}"
-                                            var="bankAccountType"
-                                            itemLabel="#{bankAccountType.label}"
-                                            itemValue="#{bankAccountType}"></f:selectItems>
-                                    </p:selectOneMenu>
-
                                     <h:outputText  value="Account Number" ></h:outputText>
                                     <p:inputText autocomplete="off"  value="#{bankAccountController.current.accountNo}"  class="w-100"  ></p:inputText>
 
