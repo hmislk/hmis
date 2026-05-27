@@ -390,7 +390,7 @@
                         <h:outputText value="#{summary.department.institution.name}" rendered="#{!summary.floatRow and (summary.paymentHandover == null or summary.paymentHandover.name() != 'FLOATS')}" />
                         <h:outputText value="Shift Shortage"        rendered="#{summary.paymentHandover ne null and summary.paymentHandover.name() eq 'FLOATS'}" style="color:#dc3545; font-style:italic;" />
                         <h:outputText value="Float Sent (Cash)"     rendered="#{summary.floatRow and summary.paymentHandover ne null and summary.paymentHandover.name() eq 'FLOAT_OUT'}" style="color: red; font-weight: bold;" />
-                        <h:outputText value="Float Received (Cash)" rendered="#{summary.floatRow and summary.paymentHandover ne null and summary.paymentHandover.name() eq 'FLOAT_IN'}"  style="color: green; font-weight: bold;" />
+                        <h:outputText value="Net Float (Cash)"      rendered="#{summary.floatRow and summary.paymentHandover ne null and summary.paymentHandover.name() eq 'FLOAT_IN'}"  style="color: green; font-weight: bold;" />
                     </p:column>
 
                     <p:column headerText="Site" rendered="#{configOptionApplicationController.getBooleanValueByKey('Sites are Managed',true)}">

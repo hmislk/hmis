@@ -11,106 +11,100 @@
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
+    <!--
+        DTO-based PO request search composite (issue #21011 / #20299).
+        Binds to pharmacyBillSearch.poRequestSearchDtos
+        (List<PharmacyPurchaseOrderDTO>) populated by
+        SearchController.createTableByBillType() when billType == PharmacyOrder,
+        and by SearchController.processPharmacyBillSearch() for
+        PHARMACY_ORDER atomic searches.
+        COALESCE on person names and nullable fields prevents silent row drops.
+    -->
     <cc:implementation>
-        <h:panelGrid columns="5">         
-            <h:outputLabel value="Req No"/>
-            <h:outputLabel value="Supplier Name"/>
-            <h:outputLabel value="Net Total"/>
-            <h:outputLabel value="Item Name"/>
-            <h:outputLabel value="Item Code"/>
-            <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.requestNo}" />
-            <p:inputText autocomplete="off" value="#{searchController.searchKeyword.toInstitution}"/>
-            <p:inputText autocomplete="off" value="#{searchController.searchKeyword.netTotal}"/>
-            <p:inputText autocomplete="off" value="#{searchController.searchKeyword.itemName}"/>
-            <p:inputText autocomplete="off" value="#{searchController.searchKeyword.code}"/>
-        </h:panelGrid>
-        <p:dataTable rowIndexVar="i" id="tblBills" value="#{searchController.bills}" var="bill" >
+
+        <p:commandButton ajax="false" value="Download" icon="fa fa-download"
+                         styleClass="ui-button-success mb-2">
+            <p:dataExporter target="tblPoRequest" type="xlsx" fileName="po_request_list"/>
+        </p:commandButton>
+
+        <p:dataTable rowIndexVar="i"
+                     id="tblPoRequest"
+                     widgetVar="tblPoRequest"
+                     value="#{pharmacyBillSearch.poRequestSearchDtos}"
+                     var="dto"
+                     paginator="true"
+                     rows="10"
+                     paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                     rowsPerPageTemplate="10,20,50,100"
+                     emptyMessage="No Purchase Order Requests Found">
+
             <f:facet name="header">
                 <h:outputLabel value="PURCHASE ORDER REQUEST"/>
             </f:facet>
-            
-            <p:column headerText="Req No" >
-                <h:commandLink action="pharmacy_reprint_order_request?faces-redirect=true" value="#{bill.insId}">
-                    <h:outputLabel  ></h:outputLabel>
-                    <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
-                </h:commandLink>
+
+            <!-- Actions (not exported) -->
+            <p:column headerText="Actions" exportable="false" style="white-space:nowrap;">
+                <p:commandButton
+                    ajax="false"
+                    icon="fa fa-eye"
+                    styleClass="ui-button-info ui-button-sm"
+                    title="View PO Request"
+                    action="#{pharmacyBillSearch.navigateToReprintPharmacyOrderRequestById()}">
+                    <f:setPropertyActionListener value="#{dto.billId}" target="#{pharmacyBillSearch.billId}"/>
+                </p:commandButton>
             </p:column>
 
-            
-            <p:column headerText="Requested From"  >
-                <h:commandLink action="pharmacy_reprint_order_request?faces-redirect=true" value="#{bill.department.name}">
-                    <h:outputLabel  ></h:outputLabel>
-                    <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
-                </h:commandLink>
-            </p:column>                 
-            <p:column headerText="Delaor Name"  >
-                <h:commandLink action="pharmacy_reprint_order_request?faces-redirect=true" value="#{bill.toInstitution.name}">
-                    <h:outputLabel  ></h:outputLabel>
-                    <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
-                </h:commandLink>
-            </p:column>
-            <p:column headerText="Billed At"  >
-                <h:commandLink action="pharmacy_reprint_order_request?faces-redirect=true" >
-                    <h:outputLabel value="#{bill.createdAt}" >
-                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
-                    </h:outputLabel>
-                    <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
-                </h:commandLink>
-                <br/>
-                <h:panelGroup rendered="#{bill.cancelled}" >
-                    <h:outputLabel style="color: red;" value="Cancelled at " />
-                    <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" value="#{bill.cancelledBill.createdAt}" >
-                        <f:convertDateTime pattern="dd MMM yyyy hh mm a"/>
-                    </h:outputLabel>
-                </h:panelGroup>
-                <h:panelGroup rendered="#{bill.refunded}" >
-                    <h:outputLabel style="color: red;" value="Refunded at " />
-                    <h:outputLabel style="color: red;" rendered="#{bill.refunded}" value="#{bill.refundedBill.createdAt}" >
-                        <f:convertDateTime pattern="dd MMM yyyy hh mm a"/>
-                    </h:outputLabel>
-                </h:panelGroup>
-            </p:column>                 
-            <p:column headerText="Requested By" >
-                <h:commandLink action="pharmacy_reprint_order_request?faces-redirect=true" >
-                    <h:outputLabel value="#{bill.creater.webUserPerson.name}" >                                      
-                    </h:outputLabel>
-                    <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
-                </h:commandLink>
-                <br/>
-                <h:panelGroup rendered="#{bill.cancelled}" >
-                    <h:outputLabel style="color: red;" value="Cancelled By " />
-                    <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" value="#{bill.cancelledBill.creater.webUserPerson.name}" >                                       
-                    </h:outputLabel>
-                </h:panelGroup>
-                <h:panelGroup rendered="#{bill.refunded}" >
-                    <h:outputLabel style="color: red;" value="Refunded By " />
-                    <h:outputLabel style="color: red;" rendered="#{bill.refunded}" value="#{bill.refundedBill.creater.webUserPerson.name}" >
-
-                    </h:outputLabel>
-                </h:panelGroup>
-            </p:column>                       
-
-            <p:column headerText="Payment Method">
-                <h:commandLink action="pharmacy_reprint_order_request?faces-redirect=true" >
-                    <h:outputLabel value="#{bill.paymentMethod}" ></h:outputLabel>
-                    <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
-                </h:commandLink>
-            </p:column>                               
-            <p:column headerText="Net Value" filterBy="#{bill.netTotal}" style="text-align: right;"  >
-                <h:commandLink action="pharmacy_reprint_order_request?faces-redirect=true" >
-                    <h:outputLabel value="#{bill.netTotal}" >
-                        <f:convertNumber pattern="#,##0.00"/>
-                    </h:outputLabel>
-                    <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
-                </h:commandLink>
+            <p:column headerText="Req No"
+                      sortBy="#{dto.billNumber}"
+                      filterBy="#{dto.billNumber}"
+                      filterMatchMode="contains">
+                <h:outputLabel value="#{dto.billNumber}"/>
             </p:column>
 
-            <p:column headerText="Comments" >
-                <h:outputLabel rendered="#{bill.refundedBill ne null}" value="#{bill.refundedBill.comments}" >
-                </h:outputLabel>
-                <h:outputLabel  rendered="#{bill.cancelledBill ne null}" value="#{bill.cancelledBill.comments}" >
+            <p:column headerText="Requested From"
+                      sortBy="#{dto.departmentName}"
+                      filterBy="#{dto.departmentName}"
+                      filterMatchMode="contains">
+                <h:outputLabel value="#{dto.departmentName}"/>
+            </p:column>
+
+            <p:column headerText="Dealer Name"
+                      sortBy="#{dto.supplierName}"
+                      filterBy="#{dto.supplierName}"
+                      filterMatchMode="contains">
+                <h:outputLabel value="#{dto.supplierName}"/>
+            </p:column>
+
+            <p:column headerText="Billed At" sortBy="#{dto.createdAt}">
+                <h:outputLabel value="#{dto.createdAt}">
+                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                 </h:outputLabel>
             </p:column>
+
+            <p:column headerText="Requested By"
+                      sortBy="#{dto.creatorName}"
+                      filterBy="#{dto.creatorName}"
+                      filterMatchMode="contains">
+                <h:outputLabel value="#{dto.creatorName}"/>
+            </p:column>
+
+            <p:column headerText="Payment Method"
+                      sortBy="#{dto.paymentMethod}"
+                      filterBy="#{dto.paymentMethod}"
+                      filterMatchMode="contains">
+                <h:outputLabel value="#{dto.paymentMethod}"/>
+            </p:column>
+
+            <p:column headerText="Net Value" sortBy="#{dto.netTotal}" style="text-align:right;">
+                <h:outputLabel value="#{dto.netTotal}">
+                    <f:convertNumber pattern="#,##0.00"/>
+                </h:outputLabel>
+            </p:column>
+
+            <p:column headerText="Status" exportable="false">
+                <p:badge value="Cancelled" severity="danger" rendered="#{dto.cancelled}"/>
+            </p:column>
+
         </p:dataTable>
     </cc:implementation>
 </html>

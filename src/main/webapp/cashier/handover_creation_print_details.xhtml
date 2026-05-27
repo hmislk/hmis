@@ -22,10 +22,17 @@
                                 style="float: right;">
                                 <p:printer target="printArea" />
                             </p:commandButton>
+                            <p:commandButton
+                                value="Back to Summary"
+                                styleClass="ui-button-secondary mx-1"
+                                icon="pi pi-arrow-left"
+                                style="float: right;"
+                                action="#{financialTransactionController.navigateToHandoverCreationPrintSummary()}">
+                            </p:commandButton>
                         </f:facet>
                         <h:panelGrid id="printArea" class="w-100">
                             <div class="d-flex justify-content-center">
-                                <prints:five_five_paper_with_headings_for_handover_detail
+                                <prints:five_five_paper_with_headings_for_handover_creation_detail
                                     bundle="#{financialTransactionController.bundle}"/>
                             </div>
                         </h:panelGrid>

@@ -1,0 +1,989 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+
+            <ui:define name="content">
+                <h:form>
+                    <p:panel>
+                        <f:facet name="header">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div>
+                                    <h:outputLabel value="Purchase Order"/>
+                                </div>
+                                <div>
+                                    <p:commandButton
+                                        ajax="false"
+                                        value="Back To PO List"
+                                        rendered="#{webUserController.hasPrivilege('Pharmacy')}"
+                                        action="pharmacy_purhcase_order_list_to_approve_dto?faces-redirect=true"
+                                        class="ui-button-warning" icon="fas fa-arrow-left"/>
+                                    <p:commandButton
+                                        ajax="false"
+                                        value="Back To Good Receipt"
+                                        rendered="#{webUserController.hasPrivilege('PharmacyGoodReceive')}"
+                                        action="/pharmacy/pharmacy_purchase_order_list_for_recieve?faces-redirect=true"
+                                        class="ui-button-warning mx-2" icon="fas fa-arrow-left"/>
+                                    <p:commandButton
+                                        rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
+                                        value="Settings"
+                                        icon="fas fa-cog"
+                                        class="ui-button-secondary m-1"
+                                        type="button"
+                                        onclick="PF('poNativeConfigDialog').show();"/>
+                                    <p:commandButton
+                                        class="ui-button-info"
+                                        icon="fas fa-print"
+                                        value="Reprint" ajax="false">
+                                        <p:printer target="gpBillPreview"/>
+                                    </p:commandButton>
+                                    <p:commandButton
+                                        class="ui-button-success mx-1"
+                                        icon="fas fa-print"
+                                        rendered="#{webUserController.hasPrivilege('PrintOriginalPoBillFromReprint')}"
+                                        value="Print Original" ajax="false">
+                                        <p:printer target="gpOriginalBillPreview"/>
+                                    </p:commandButton>
+                                    <!-- Small non-prominent fallback to legacy entity-based page -->
+                                    <p:commandButton
+                                        ajax="false"
+                                        value="Legacy View"
+                                        title="Open original entity-based print page"
+                                        action="#{billSearch.navigateToViewBillByAtomicBillTypeByBillIdEntityBased(purchaseOrderNativeSqlController.currentBillId)}"
+                                        class="ui-button-secondary ms-3"
+                                        icon="fas fa-history"
+                                        style="font-size: 0.75rem; padding: 0.2rem 0.5rem;"/>
+                                </div>
+                            </div>
+                        </f:facet>
+
+                        <div class="row">
+                            <!-- Reprint column -->
+                            <div class="col-6 d-flex justify-content-center border border-light border-1">
+                                <h:panelGroup id="gpBillPreview" style="width: 212mm;">
+
+                                    <!-- Format 1: A4 Custom 1 (pharmacyA4.css) -->
+                                    <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Purchase Order Approval Print - A4 Custom 1 Paper Format', true)}">
+                                        <h:outputStylesheet library="css" name="pharmacyA4.css"/>
+                                        <div style="width: 212mm;">
+                                            <div class="institutionName">
+                                                <h:outputText value="#{purchaseOrderNativeSqlController.printDto.institutionName}"/>
+                                            </div>
+                                            <div class="institutionContact">
+                                                <div>
+                                                    <h:outputText value="Telephone : #{purchaseOrderNativeSqlController.printDto.institutionPhone} / #{purchaseOrderNativeSqlController.printDto.departmentTelephone1}"/>
+                                                </div>
+                                                <div>
+                                                    <h:outputText value="Fax : #{purchaseOrderNativeSqlController.printDto.institutionFax}"/>
+                                                </div>
+                                                <div>
+                                                    <h:outputText value="Email : #{purchaseOrderNativeSqlController.printDto.departmentEmail}"/>
+                                                </div>
+                                            </div>
+                                            <div class="headingBill">
+                                                <h:outputText value="Purchase Order" style="text-decoration: underline;"/>
+                                                <br/>
+                                                <h:outputText value="***Reprint***"/>
+                                                <h:outputText value="***Canceled***" rendered="#{purchaseOrderNativeSqlController.printDto.cancelled}" style="font-size: 18px;"/>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-6">
+                                                    <h:panelGrid columns="3" columnClasses="labelCol,valueCol,spacerCol" styleClass="table table-borderless">
+                                                        <h:outputText value="Supplier Name"/>
+                                                        <h:outputText value=":"/>
+                                                        <h:panelGroup>
+                                                            <h:outputText value="#{purchaseOrderNativeSqlController.printDto.supplierName}"/>
+                                                            <h:outputText value=" (" rendered="#{not empty purchaseOrderNativeSqlController.printDto.supplierCode}"/>
+                                                            <h:outputText value="#{purchaseOrderNativeSqlController.printDto.supplierCode}" rendered="#{not empty purchaseOrderNativeSqlController.printDto.supplierCode}"/>
+                                                            <h:outputText value=")" rendered="#{not empty purchaseOrderNativeSqlController.printDto.supplierCode}"/>
+                                                        </h:panelGroup>
+                                                        <h:outputText value="P.O. No"/>
+                                                        <h:outputText value=":"/>
+                                                        <h:outputText value="#{purchaseOrderNativeSqlController.printDto.poNumber}"/>
+                                                        <h:outputText value="Payment Method"/>
+                                                        <h:outputText value=":"/>
+                                                        <h:outputText value="#{purchaseOrderNativeSqlController.printDto.paymentMethod}"/>
+                                                        <h:outputText value="Request Comments"/>
+                                                        <h:outputText value=":"/>
+                                                        <h:outputText value="#{purchaseOrderNativeSqlController.printDto.requestComments}"/>
+                                                    </h:panelGrid>
+                                                </div>
+                                                <div class="col-6">
+                                                    <h:panelGrid columns="3" columnClasses="labelCol,valueCol,spacerCol" styleClass="table table-borderless">
+                                                        <h:outputText value="Credit Duration" rendered="#{purchaseOrderNativeSqlController.printDto.paymentMethod eq 'Credit'}"/>
+                                                        <h:outputText value=":" rendered="#{purchaseOrderNativeSqlController.printDto.paymentMethod eq 'Credit'}"/>
+                                                        <h:outputText value="#{purchaseOrderNativeSqlController.printDto.creditDuration}" rendered="#{purchaseOrderNativeSqlController.printDto.paymentMethod eq 'Credit'}"/>
+                                                        <h:outputText value="Order Department"/>
+                                                        <h:outputText value=":"/>
+                                                        <h:outputText value="#{purchaseOrderNativeSqlController.printDto.orderDepartmentName}"/>
+                                                        <h:outputText value="P.O. Date"/>
+                                                        <h:outputText value=":"/>
+                                                        <h:outputText value="#{purchaseOrderNativeSqlController.printDto.poDate}">
+                                                            <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                                                        </h:outputText>
+                                                        <h:outputText value="P.O. Time"/>
+                                                        <h:outputText value=":"/>
+                                                        <h:outputText value="#{purchaseOrderNativeSqlController.printDto.poTime}">
+                                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longTimeFormat}"/>
+                                                        </h:outputText>
+                                                        <h:outputText value="Consignment"/>
+                                                        <h:outputText value=":"/>
+                                                        <h:outputText value="#{purchaseOrderNativeSqlController.printDto.consignment ? 'Yes' : 'No'}"/>
+                                                        <h:outputText value="Approve Comments"/>
+                                                        <h:outputText value=":"/>
+                                                        <h:outputText value="#{purchaseOrderNativeSqlController.printDto.approveComments}"/>
+                                                    </h:panelGrid>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <table class="w-100" style="border-collapse: collapse; border: 1px solid black;">
+                                                    <thead>
+                                                        <tr>
+                                                            <th style="width: 30px; text-align: right; padding-right: 5px; border: 1px solid black;">No</th>
+                                                            <th style="text-align: left; min-width: 400px; border: 1px solid black;">Item Name</th>
+                                                            <th style="width: 100px; text-align: right; padding-right: 5px; border: 1px solid black;">P. Rate</th>
+                                                            <th style="width: 100px; text-align: right; padding-right: 5px; border: 1px solid black;">QTY</th>
+                                                            <th style="width: 100px; text-align: right; padding-right: 5px; border: 1px solid black;">Free QTY</th>
+                                                            <th style="width: 100px; text-align: right; padding-right: 5px; border: 1px solid black;">Total</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <ui:repeat value="#{purchaseOrderNativeSqlController.printDto.items}" var="lineItem" varStatus="status">
+                                                            <tr>
+                                                                <td style="width: 30px; text-align: right; padding-right: 5px; border: 1px solid black;">#{status.index + 1}</td>
+                                                                <td style="text-align: left; min-width: 400px; border: 1px solid black;">
+                                                                    <h:outputText value="#{lineItem.itemName}"/>
+                                                                    <h:outputText value="  ("/>
+                                                                    <h:outputText value="#{lineItem.itemCode}"/>
+                                                                    <h:outputText value=")"/>
+                                                                </td>
+                                                                <td style="width: 100px; text-align: right; padding-right: 5px; border: 1px solid black;">
+                                                                    <h:outputText value="#{lineItem.purchaseRate}">
+                                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                                    </h:outputText>
+                                                                </td>
+                                                                <td style="width: 100px; text-align: right; padding-right: 5px; border: 1px solid black;">
+                                                                    <h:outputText value="#{lineItem.quantity}">
+                                                                        <f:convertNumber/>
+                                                                    </h:outputText>
+                                                                </td>
+                                                                <td style="width: 100px; text-align: right; padding-right: 5px; border: 1px solid black;">
+                                                                    <h:outputText value="#{lineItem.freeQuantity}">
+                                                                        <f:convertNumber/>
+                                                                    </h:outputText>
+                                                                </td>
+                                                                <td style="width: 100px; text-align: right; padding-right: 5px; border: 1px solid black; font-weight: bold;">
+                                                                    <h:outputText value="#{lineItem.lineTotal}">
+                                                                        <f:convertNumber pattern="#,###.00"/>
+                                                                    </h:outputText>
+                                                                </td>
+                                                            </tr>
+                                                        </ui:repeat>
+                                                    </tbody>
+                                                    <tfoot>
+                                                        <tr>
+                                                            <th/>
+                                                            <th colspan="4">Total</th>
+                                                            <th style="width: 100px; text-align: right; padding-right: 5px; border: 1px solid black; font-weight: bold;">
+                                                                <h:outputText value="#{purchaseOrderNativeSqlController.printDto.netTotal}">
+                                                                    <f:convertNumber pattern="#,###.00"/>
+                                                                </h:outputText>
+                                                            </th>
+                                                        </tr>
+                                                    </tfoot>
+                                                </table>
+                                            </div>
+                                            <div class="row mt-1">
+                                                <div class="col-5">
+                                                    <h:outputText value="Prepared By :  "/>
+                                                    <h:outputText value="#{purchaseOrderNativeSqlController.printDto.preparedByName}"/>
+                                                </div>
+                                                <div class="col-2"/>
+                                                <div class="col-5" style="text-align: right;">
+                                                    <h:outputText value="Prepared At :  "/>
+                                                    <h:outputText value="#{purchaseOrderNativeSqlController.printDto.preparedAt}">
+                                                        <f:convertDateTime pattern="dd/MMM/yyyy HH:mm"/>
+                                                    </h:outputText>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-5">
+                                                    <h:outputText value="Approved By :  "/>
+                                                    <h:outputText value="#{purchaseOrderNativeSqlController.printDto.approvedByName}"/>
+                                                </div>
+                                                <div class="col-2"/>
+                                                <div class="col-5" style="text-align: right;">
+                                                    <h:outputText value="Approved At :  "/>
+                                                    <h:outputText value="#{purchaseOrderNativeSqlController.printDto.approvedAt}">
+                                                        <f:convertDateTime pattern="dd/MMM/yyyy HH:mm"/>
+                                                    </h:outputText>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <p>
+                                                    <h4 style="color: #000000;">Important Note :</h4>
+                                                    <ol type="1">
+                                                        <li>Purchase order number must appear on all documents pertaining to this purchase.</li>
+                                                        <li>If unable to supply above goods within above period, 10% penalty will be claimed on the invoice value.</li>
+                                                        <li>Goods receiving time - Monday to Friday 9.00 A.M to 3.30 P.M</li>
+                                                    </ol>
+                                                    <h5 style="color: #000000;">Comment :</h5>
+                                                </p>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-5">
+                                                    <h:outputText value="Printed By :  "/>
+                                                    <h:outputText value="#{sessionController.loggedUser.name}"/>
+                                                </div>
+                                                <div class="col-2"/>
+                                                <div class="col-5" style="text-align: right;">
+                                                    <h:outputText value="Printed At :  "/>
+                                                    <h:outputText value="#{sessionController.currentDate}">
+                                                        <f:convertDateTime pattern="dd/MMM/yyyy HH:mm"/>
+                                                    </h:outputText>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </h:panelGroup>
+
+                                    <!-- Format 2: A4 Custom 2 (pharmacyA4.css) — same layout, different notes -->
+                                    <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Purchase Order Approval Print - A4 Custom 2 Paper Format', false)}">
+                                        <h:outputStylesheet library="css" name="pharmacyA4.css"/>
+                                        <div style="width: 212mm;">
+                                            <div class="institutionName">
+                                                <h:outputText value="#{purchaseOrderNativeSqlController.printDto.institutionName}"/>
+                                            </div>
+                                            <div class="institutionContact">
+                                                <div>
+                                                    <h:outputText value="Telephone : #{purchaseOrderNativeSqlController.printDto.institutionPhone} / #{purchaseOrderNativeSqlController.printDto.departmentTelephone1}"/>
+                                                </div>
+                                                <div>
+                                                    <h:outputText value="Fax : #{purchaseOrderNativeSqlController.printDto.institutionFax}"/>
+                                                </div>
+                                                <div>
+                                                    <h:outputText value="Email : #{purchaseOrderNativeSqlController.printDto.departmentEmail}"/>
+                                                </div>
+                                            </div>
+                                            <div class="headingBill">
+                                                <h:outputText value="Purchase Order" style="text-decoration: underline;"/>
+                                                <br/>
+                                                <h:outputText value="***Reprint***"/>
+                                                <h:outputText value="***Canceled***" rendered="#{purchaseOrderNativeSqlController.printDto.cancelled}" style="font-size: 18px;"/>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-6">
+                                                    <h:panelGrid columns="3" columnClasses="labelCol,valueCol,spacerCol" styleClass="table table-borderless">
+                                                        <h:outputText value="Supplier Name"/>
+                                                        <h:outputText value=":"/>
+                                                        <h:panelGroup>
+                                                            <h:outputText value="#{purchaseOrderNativeSqlController.printDto.supplierName}"/>
+                                                            <h:outputText value=" (" rendered="#{not empty purchaseOrderNativeSqlController.printDto.supplierCode}"/>
+                                                            <h:outputText value="#{purchaseOrderNativeSqlController.printDto.supplierCode}" rendered="#{not empty purchaseOrderNativeSqlController.printDto.supplierCode}"/>
+                                                            <h:outputText value=")" rendered="#{not empty purchaseOrderNativeSqlController.printDto.supplierCode}"/>
+                                                        </h:panelGroup>
+                                                        <h:outputText value="P.O. No"/>
+                                                        <h:outputText value=":"/>
+                                                        <h:outputText value="#{purchaseOrderNativeSqlController.printDto.poNumber}"/>
+                                                        <h:outputText value="Payment Method"/>
+                                                        <h:outputText value=":"/>
+                                                        <h:outputText value="#{purchaseOrderNativeSqlController.printDto.paymentMethod}"/>
+                                                        <h:outputText value="Consignment"/>
+                                                        <h:outputText value=":"/>
+                                                        <h:outputText value="#{purchaseOrderNativeSqlController.printDto.consignment ? 'Yes' : 'No'}"/>
+                                                        <h:outputText value="Request Comments"/>
+                                                        <h:outputText value=":"/>
+                                                        <h:outputText value="#{purchaseOrderNativeSqlController.printDto.requestComments}"/>
+                                                    </h:panelGrid>
+                                                </div>
+                                                <div class="col-6">
+                                                    <h:panelGrid columns="3" columnClasses="labelCol,valueCol,spacerCol" styleClass="table table-borderless">
+                                                        <h:outputText value="Credit Duration" rendered="#{purchaseOrderNativeSqlController.printDto.paymentMethod eq 'Credit'}"/>
+                                                        <h:outputText value=":" rendered="#{purchaseOrderNativeSqlController.printDto.paymentMethod eq 'Credit'}"/>
+                                                        <h:outputText value="#{purchaseOrderNativeSqlController.printDto.creditDuration}" rendered="#{purchaseOrderNativeSqlController.printDto.paymentMethod eq 'Credit'}"/>
+                                                        <h:outputText value="Order Department"/>
+                                                        <h:outputText value=":"/>
+                                                        <h:outputText value="#{purchaseOrderNativeSqlController.printDto.orderDepartmentName}"/>
+                                                        <h:outputText value="P.O. Date"/>
+                                                        <h:outputText value=":"/>
+                                                        <h:outputText value="#{purchaseOrderNativeSqlController.printDto.poDate}">
+                                                            <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                                                        </h:outputText>
+                                                        <h:outputText value="P.O. Time"/>
+                                                        <h:outputText value=":"/>
+                                                        <h:outputText value="#{purchaseOrderNativeSqlController.printDto.poTime}">
+                                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longTimeFormat}"/>
+                                                        </h:outputText>
+                                                        <h:outputText value="Approve Comments"/>
+                                                        <h:outputText value=":"/>
+                                                        <h:outputText value="#{purchaseOrderNativeSqlController.printDto.approveComments}"/>
+                                                    </h:panelGrid>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <table class="w-100" style="border-collapse: collapse; border: 1px solid black;">
+                                                    <thead>
+                                                        <tr>
+                                                            <th style="width: 30px; text-align: right; padding-right: 5px; border: 1px solid black;">No</th>
+                                                            <th style="text-align: left; min-width: 400px; border: 1px solid black;">Item Name</th>
+                                                            <th style="width: 100px; text-align: right; padding-right: 5px; border: 1px solid black;">P. Rate</th>
+                                                            <th style="width: 100px; text-align: right; padding-right: 5px; border: 1px solid black;">QTY</th>
+                                                            <th style="width: 100px; text-align: right; padding-right: 5px; border: 1px solid black;">Free QTY</th>
+                                                            <th style="width: 100px; text-align: right; padding-right: 5px; border: 1px solid black;">Total</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <ui:repeat value="#{purchaseOrderNativeSqlController.printDto.items}" var="lineItem" varStatus="status">
+                                                            <tr>
+                                                                <td style="width: 30px; text-align: right; padding-right: 5px; border: 1px solid black;">#{status.index + 1}</td>
+                                                                <td style="text-align: left; min-width: 400px; border: 1px solid black;">
+                                                                    <h:outputText value="#{lineItem.itemName}"/>
+                                                                    <h:outputText value="  ("/>
+                                                                    <h:outputText value="#{lineItem.itemCode}"/>
+                                                                    <h:outputText value=")"/>
+                                                                </td>
+                                                                <td style="width: 100px; text-align: right; padding-right: 5px; border: 1px solid black;">
+                                                                    <h:outputText value="#{lineItem.purchaseRate}">
+                                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                                    </h:outputText>
+                                                                </td>
+                                                                <td style="width: 100px; text-align: right; padding-right: 5px; border: 1px solid black;">
+                                                                    <h:outputText value="#{lineItem.quantity}">
+                                                                        <f:convertNumber/>
+                                                                    </h:outputText>
+                                                                </td>
+                                                                <td style="width: 100px; text-align: right; padding-right: 5px; border: 1px solid black;">
+                                                                    <h:outputText value="#{lineItem.freeQuantity}">
+                                                                        <f:convertNumber/>
+                                                                    </h:outputText>
+                                                                </td>
+                                                                <td style="width: 100px; text-align: right; padding-right: 5px; border: 1px solid black; font-weight: bold;">
+                                                                    <h:outputText value="#{lineItem.lineTotal}">
+                                                                        <f:convertNumber pattern="#,###.00"/>
+                                                                    </h:outputText>
+                                                                </td>
+                                                            </tr>
+                                                        </ui:repeat>
+                                                    </tbody>
+                                                    <tfoot>
+                                                        <tr>
+                                                            <th/>
+                                                            <th colspan="4">Total</th>
+                                                            <th style="width: 100px; text-align: right; padding-right: 5px; border: 1px solid black; font-weight: bold;">
+                                                                <h:outputText value="#{purchaseOrderNativeSqlController.printDto.netTotal}">
+                                                                    <f:convertNumber pattern="#,###.00"/>
+                                                                </h:outputText>
+                                                            </th>
+                                                        </tr>
+                                                    </tfoot>
+                                                </table>
+                                            </div>
+                                            <div class="row mt-1">
+                                                <div class="col-5">
+                                                    <h:outputText value="Prepared By :  "/>
+                                                    <h:outputText value="#{purchaseOrderNativeSqlController.printDto.preparedByName}"/>
+                                                </div>
+                                                <div class="col-2"/>
+                                                <div class="col-5" style="text-align: right;">
+                                                    <h:outputText value="Prepared At :  "/>
+                                                    <h:outputText value="#{purchaseOrderNativeSqlController.printDto.preparedAt}">
+                                                        <f:convertDateTime pattern="dd/MMM/yyyy HH:mm"/>
+                                                    </h:outputText>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-5">
+                                                    <h:outputText value="Approved By :  "/>
+                                                    <h:outputText value="#{purchaseOrderNativeSqlController.printDto.approvedByName}"/>
+                                                </div>
+                                                <div class="col-2"/>
+                                                <div class="col-5" style="text-align: right;">
+                                                    <h:outputText value="Approved At :  "/>
+                                                    <h:outputText value="#{purchaseOrderNativeSqlController.printDto.approvedAt}">
+                                                        <f:convertDateTime pattern="dd/MMM/yyyy HH:mm"/>
+                                                    </h:outputText>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <p>
+                                                    <h4 style="color: #000000;">Important Note :</h4>
+                                                    <ol type="1">
+                                                        <li>Purchase order number must appear on all documents pertaining to this purchase.</li>
+                                                        <li>Comments:</li>
+                                                    </ol>
+                                                    <h5 style="color: #000000;">Good Receiving time - Monday to Friday 9.00 A.M to 3.30 P.M</h5>
+                                                </p>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-5">
+                                                    <h:outputText value="Printed By :  "/>
+                                                    <h:outputText value="#{sessionController.loggedUser.name}"/>
+                                                </div>
+                                                <div class="col-2"/>
+                                                <div class="col-5" style="text-align: right;">
+                                                    <h:outputText value="Printed At :  "/>
+                                                    <h:outputText value="#{sessionController.currentDate}">
+                                                        <f:convertDateTime pattern="dd/MMM/yyyy HH:mm"/>
+                                                    </h:outputText>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </h:panelGroup>
+
+                                    <!-- Format 3: Letter (pharmacyLetter.css) — site/dept header, no price column -->
+                                    <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Purchase Order Approval Print - Letter Paper Format', false)}">
+                                        <h:outputStylesheet library="css" name="pharmacyLetter.css"/>
+                                        <div style="width: 212mm; height: 275mm; padding-left: 0px">
+                                            <div class="institutionName">
+                                                <h:outputText value="#{purchaseOrderNativeSqlController.printDto.orderSiteName}"/>
+                                                <br/>
+                                                <h:outputText value="#{purchaseOrderNativeSqlController.printDto.orderDepartmentName}"/>
+                                            </div>
+                                            <div class="institutionContact">
+                                                <div>
+                                                    <h:outputText value="#{purchaseOrderNativeSqlController.printDto.orderDepartmentAddress}" rendered="#{not empty purchaseOrderNativeSqlController.printDto.orderDepartmentAddress}"/>
+                                                </div>
+                                                <div>
+                                                    <h:outputText value="Telephone : " rendered="#{not empty purchaseOrderNativeSqlController.printDto.orderDepartmentTelephone1}"/>
+                                                    <h:outputText value="#{purchaseOrderNativeSqlController.printDto.orderDepartmentTelephone1}" rendered="#{not empty purchaseOrderNativeSqlController.printDto.orderDepartmentTelephone1}"/>
+                                                    <h:outputText value="/" rendered="#{not empty purchaseOrderNativeSqlController.printDto.orderDepartmentTelephone2}"/>
+                                                    <h:outputText value="#{purchaseOrderNativeSqlController.printDto.orderDepartmentTelephone2}" rendered="#{not empty purchaseOrderNativeSqlController.printDto.orderDepartmentTelephone2}"/>
+                                                </div>
+                                                <div>
+                                                    <h:outputText value="Fax :     #{purchaseOrderNativeSqlController.printDto.orderDepartmentFax}" rendered="#{not empty purchaseOrderNativeSqlController.printDto.orderDepartmentFax}"/>
+                                                </div>
+                                                <div>
+                                                    <h:outputText value="Email :  " rendered="#{not empty purchaseOrderNativeSqlController.printDto.orderInstitutionEmail}"/>
+                                                    <h:outputText value="#{purchaseOrderNativeSqlController.printDto.orderInstitutionEmail}" rendered="#{not empty purchaseOrderNativeSqlController.printDto.orderInstitutionEmail}"/>
+                                                </div>
+                                            </div>
+                                            <div class="headingBill">
+                                                <h:outputText value="Purchase Order" style="text-decoration: underline;"/>
+                                                <br/>
+                                                <h:outputText value="***Duplicate***"/>
+                                                <h:outputText value="***Cancelled***" rendered="#{purchaseOrderNativeSqlController.printDto.cancelled}" style="font-size: 18px;"/>
+                                            </div>
+                                            <div>
+                                                <table class="table table-borderless">
+                                                    <tr style="line-height: 10px">
+                                                        <td>Supplier Name</td><td>:</td>
+                                                        <td colspan="4">
+                                                            <h:outputText value="#{purchaseOrderNativeSqlController.printDto.supplierName}"/>
+                                                            <h:outputText value=" (" rendered="#{not empty purchaseOrderNativeSqlController.printDto.supplierCode}"/>
+                                                            <h:outputText value="#{purchaseOrderNativeSqlController.printDto.supplierCode}" rendered="#{not empty purchaseOrderNativeSqlController.printDto.supplierCode}"/>
+                                                            <h:outputText value=")" rendered="#{not empty purchaseOrderNativeSqlController.printDto.supplierCode}"/>
+                                                        </td>
+                                                    </tr>
+                                                    <tr style="line-height: 10px">
+                                                        <td>P.O. No</td><td>:</td>
+                                                        <td><h:outputText value="#{purchaseOrderNativeSqlController.printDto.poNumber}"/></td>
+                                                        <td>Order Department</td><td>:</td>
+                                                        <td><h:outputText value="#{purchaseOrderNativeSqlController.printDto.orderDepartmentName}"/></td>
+                                                    </tr>
+                                                    <tr style="line-height: 10px">
+                                                        <td>Consignment</td><td>:</td>
+                                                        <td><h:outputText value="#{purchaseOrderNativeSqlController.printDto.consignment ? 'Yes' : 'No'}"/></td>
+                                                        <td>P.O. Date/Time</td><td>:</td>
+                                                        <td>
+                                                            <h:outputText value="#{purchaseOrderNativeSqlController.printDto.poDate}">
+                                                                <f:convertDateTime pattern="dd/MMM/yyyy HH:mm"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                    </tr>
+                                                    <tr style="line-height: 10px">
+                                                        <td>Payment Method</td><td>:</td>
+                                                        <td><h:outputText value="#{purchaseOrderNativeSqlController.printDto.paymentMethod}"/></td>
+                                                        <td><h:outputText value="Credit Duration" rendered="#{purchaseOrderNativeSqlController.printDto.paymentMethod eq 'Credit'}"/></td>
+                                                        <td><h:outputText value=":" rendered="#{purchaseOrderNativeSqlController.printDto.paymentMethod eq 'Credit'}"/></td>
+                                                        <td><h:outputText value="#{purchaseOrderNativeSqlController.printDto.creditDuration}" rendered="#{purchaseOrderNativeSqlController.printDto.paymentMethod eq 'Credit'}"/></td>
+                                                    </tr>
+                                                </table>
+                                            </div>
+                                            <div>
+                                                <table class="w-100" style="border-collapse: collapse; border: 1px solid black;">
+                                                    <thead>
+                                                        <tr>
+                                                            <th style="width: 30px; text-align: right; padding-right: 5px; border: 1px solid black;">No</th>
+                                                            <th style="text-align: left; min-width: 400px; border: 1px solid black;">Item Name</th>
+                                                            <th style="width: 100px; text-align: right; padding-right: 5px; border: 1px solid black;">P. Rate</th>
+                                                            <th style="width: 100px; text-align: right; padding-right: 5px; border: 1px solid black;">QTY</th>
+                                                            <th style="width: 100px; text-align: right; padding-right: 5px; border: 1px solid black;">Total</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <ui:repeat value="#{purchaseOrderNativeSqlController.printDto.items}" var="lineItem" varStatus="status">
+                                                            <tr>
+                                                                <td style="width: 30px; text-align: right; padding-right: 5px; border: 1px solid black;">#{status.index + 1}</td>
+                                                                <td style="text-align: left; min-width: 400px; border: 1px solid black;">
+                                                                    <h:outputText value="#{lineItem.itemName}"/>
+                                                                    <h:outputText value="  ("/>
+                                                                    <h:outputText value="#{lineItem.itemCode}"/>
+                                                                    <h:outputText value=")"/>
+                                                                </td>
+                                                                <td style="width: 100px; text-align: right; padding-right: 9px; border: 1px solid black;">
+                                                                    <h:outputText value="#{lineItem.purchaseRate}">
+                                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                                    </h:outputText>
+                                                                </td>
+                                                                <td style="width: 100px; text-align: right; padding-right: 9px; border: 1px solid black;">
+                                                                    <h:outputText value="#{lineItem.quantity}">
+                                                                        <f:convertNumber/>
+                                                                    </h:outputText>
+                                                                </td>
+                                                                <td style="width: 100px; text-align: right; padding-right: 5px; border: 1px solid black; font-weight: bold;">
+                                                                    <h:outputText value="#{lineItem.lineTotal}">
+                                                                        <f:convertNumber pattern="#,###.00"/>
+                                                                    </h:outputText>
+                                                                </td>
+                                                            </tr>
+                                                        </ui:repeat>
+                                                    </tbody>
+                                                    <tfoot>
+                                                        <tr>
+                                                            <th/><th colspan="3">Total</th>
+                                                            <th style="width: 100px; text-align: right; padding-right: 5px; border: 1px solid black; font-weight: bold;">
+                                                                <h:outputText value="#{purchaseOrderNativeSqlController.printDto.netTotal}">
+                                                                    <f:convertNumber pattern="#,###.00"/>
+                                                                </h:outputText>
+                                                            </th>
+                                                        </tr>
+                                                    </tfoot>
+                                                </table>
+                                            </div>
+                                            <div style="font-size: 16px">
+                                                <h:outputText value="Request Comments : #{purchaseOrderNativeSqlController.printDto.requestComments}"/>
+                                            </div>
+                                            <div style="font-size: 16px">
+                                                <h:outputText value="Approve Comments : #{purchaseOrderNativeSqlController.printDto.approveComments}"/>
+                                            </div>
+                                            <div class="row mt-1">
+                                                <div class="col-5">
+                                                    <h:outputText value="Prepared By :  #{purchaseOrderNativeSqlController.printDto.preparedByName}"/>
+                                                </div>
+                                                <div class="col-2"/>
+                                                <div class="col-5" style="text-align: right;">
+                                                    <h:outputText value="Prepared At :  "/>
+                                                    <h:outputText value="#{purchaseOrderNativeSqlController.printDto.preparedAt}">
+                                                        <f:convertDateTime pattern="dd/MMM/yyyy HH:mm"/>
+                                                    </h:outputText>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-5">
+                                                    <h:outputText value="Approved By :  #{purchaseOrderNativeSqlController.printDto.approvedByName}"/>
+                                                </div>
+                                                <div class="col-2"/>
+                                                <div class="col-5" style="text-align: right;">
+                                                    <h:outputText value="Approved At :  "/>
+                                                    <h:outputText value="#{purchaseOrderNativeSqlController.printDto.approvedAt}">
+                                                        <f:convertDateTime pattern="dd/MMM/yyyy HH:mm"/>
+                                                    </h:outputText>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <h:outputText value="Important Note :" style="display:block;color:#000;font-weight:600;font-size:1.25rem;"/>
+                                                <h:outputText value="Purchase order number must appear on all documents pertaining to this purchase."/>
+                                                <h:outputText value="Goods receiving time - Monday to Friday 9.00 A.M. to 3.30 P.M." style="display:block;color:#000;font-size: 18px; font-weight: 500;"/>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-5">
+                                                    <h:outputText value="Printed By :  #{sessionController.loggedUser.name}"/>
+                                                </div>
+                                                <div class="col-2"/>
+                                                <div class="col-5" style="text-align: right;">
+                                                    <h:outputText value="Printed At :  "/>
+                                                    <h:outputText value="#{sessionController.currentDate}">
+                                                        <f:convertDateTime pattern="dd/MMM/yyyy HH:mm"/>
+                                                    </h:outputText>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </h:panelGroup>
+
+                                    <!-- Format 4: Custom 4 Letter (pharmacyLetter.css) — institution header, UOM column, no price -->
+                                    <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Purchase Order Approval Print - Custom 4 Paper Format', false)}">
+                                        <h:outputStylesheet library="css" name="pharmacyLetter.css"/>
+                                        <div style="width: 212mm; height: 275mm; padding-left: 0px">
+                                            <div class="institutionName">
+                                                <h:outputText value="#{purchaseOrderNativeSqlController.printDto.orderInstitutionName}"/>
+                                            </div>
+                                            <div class="institutionContact">
+                                                <div>
+                                                    <h:outputText value="#{purchaseOrderNativeSqlController.printDto.orderDepartmentAddress}" rendered="#{not empty purchaseOrderNativeSqlController.printDto.orderDepartmentAddress}"/>
+                                                </div>
+                                                <div>
+                                                    <h:outputText value="Telephone : " rendered="#{not empty purchaseOrderNativeSqlController.printDto.orderDepartmentTelephone1}"/>
+                                                    <h:outputText value="#{purchaseOrderNativeSqlController.printDto.orderDepartmentTelephone1}" rendered="#{not empty purchaseOrderNativeSqlController.printDto.orderDepartmentTelephone1}"/>
+                                                    <h:outputText value="/" rendered="#{not empty purchaseOrderNativeSqlController.printDto.orderDepartmentTelephone2}"/>
+                                                    <h:outputText value="#{purchaseOrderNativeSqlController.printDto.orderDepartmentTelephone2}" rendered="#{not empty purchaseOrderNativeSqlController.printDto.orderDepartmentTelephone2}"/>
+                                                </div>
+                                                <div>
+                                                    <h:outputText value="Fax :     #{purchaseOrderNativeSqlController.printDto.orderDepartmentFax}" rendered="#{not empty purchaseOrderNativeSqlController.printDto.orderDepartmentFax}"/>
+                                                </div>
+                                                <div>
+                                                    <h:outputText value="Email :  " rendered="#{not empty purchaseOrderNativeSqlController.printDto.orderInstitutionEmail}"/>
+                                                    <h:outputText value="#{purchaseOrderNativeSqlController.printDto.orderInstitutionEmail}" rendered="#{not empty purchaseOrderNativeSqlController.printDto.orderInstitutionEmail}"/>
+                                                </div>
+                                            </div>
+                                            <div class="institutionName">
+                                                <h:outputText value="#{purchaseOrderNativeSqlController.printDto.orderDepartmentName}"/>
+                                            </div>
+                                            <div class="headingBill">
+                                                <h:outputText value="Purchase Order" style="text-decoration: underline;"/>
+                                                <br/>
+                                                <h:outputText value="***Duplicate***"/>
+                                                <h:outputText value="***Cancelled***" rendered="#{purchaseOrderNativeSqlController.printDto.cancelled}" style="font-size: 18px;"/>
+                                            </div>
+                                            <div>
+                                                <table class="table table-borderless">
+                                                    <tr style="line-height: 10px">
+                                                        <td>Supplier Name</td><td>:</td>
+                                                        <td colspan="4">
+                                                            <h:outputText value="#{purchaseOrderNativeSqlController.printDto.supplierName}"/>
+                                                            <h:outputText value=" (" rendered="#{not empty purchaseOrderNativeSqlController.printDto.supplierCode}"/>
+                                                            <h:outputText value="#{purchaseOrderNativeSqlController.printDto.supplierCode}" rendered="#{not empty purchaseOrderNativeSqlController.printDto.supplierCode}"/>
+                                                            <h:outputText value=")" rendered="#{not empty purchaseOrderNativeSqlController.printDto.supplierCode}"/>
+                                                        </td>
+                                                    </tr>
+                                                    <tr style="line-height: 10px">
+                                                        <td>P.O. No</td><td>:</td>
+                                                        <td><h:outputText value="#{purchaseOrderNativeSqlController.printDto.poNumber}"/></td>
+                                                        <td>Order Department</td><td>:</td>
+                                                        <td><h:outputText value="#{purchaseOrderNativeSqlController.printDto.orderDepartmentName}"/></td>
+                                                    </tr>
+                                                    <tr style="line-height: 10px">
+                                                        <td>Consignment</td><td>:</td>
+                                                        <td><h:outputText value="#{purchaseOrderNativeSqlController.printDto.consignment ? 'Yes' : 'No'}"/></td>
+                                                        <td>P.O. Date/Time</td><td>:</td>
+                                                        <td>
+                                                            <h:outputText value="#{purchaseOrderNativeSqlController.printDto.poDate}">
+                                                                <f:convertDateTime pattern="dd/MMM/yyyy HH:mm"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                    </tr>
+                                                    <tr style="line-height: 10px">
+                                                        <td>Payment Method</td><td>:</td>
+                                                        <td><h:outputText value="#{purchaseOrderNativeSqlController.printDto.paymentMethod}"/></td>
+                                                        <td><h:outputText value="Credit Duration" rendered="#{purchaseOrderNativeSqlController.printDto.paymentMethod eq 'Credit'}"/></td>
+                                                        <td><h:outputText value=":" rendered="#{purchaseOrderNativeSqlController.printDto.paymentMethod eq 'Credit'}"/></td>
+                                                        <td><h:outputText value="#{purchaseOrderNativeSqlController.printDto.creditDuration} Days" rendered="#{purchaseOrderNativeSqlController.printDto.paymentMethod eq 'Credit'}"/></td>
+                                                    </tr>
+                                                </table>
+                                            </div>
+                                            <div>
+                                                <table class="w-100 mb-2" style="border-collapse: collapse; border: 1px solid black;">
+                                                    <thead>
+                                                        <tr>
+                                                            <th style="width: 30px; text-align: right; padding-right: 5px; border: 1px solid black;">No</th>
+                                                            <th style="text-align: left; min-width: 400px; border: 1px solid black;">Item Name</th>
+                                                            <th style="width: 100px; text-align: right; padding-right: 5px; border: 1px solid black;">UOM</th>
+                                                            <th style="width: 100px; text-align: right; padding-right: 5px; border: 1px solid black;">QTY</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <ui:repeat value="#{purchaseOrderNativeSqlController.printDto.items}" var="lineItem" varStatus="status">
+                                                            <tr>
+                                                                <td style="width: 30px; text-align: right; padding-right: 5px; border: 1px solid black;">#{status.index + 1}</td>
+                                                                <td style="text-align: left; min-width: 400px; border: 1px solid black;">
+                                                                    <h:outputText value="#{lineItem.itemName}"/>
+                                                                    <h:outputText value="  ("/>
+                                                                    <h:outputText value="#{lineItem.itemCode}"/>
+                                                                    <h:outputText value=")"/>
+                                                                </td>
+                                                                <td style="width: 100px; text-align: right; padding-right: 9px; border: 1px solid black;">
+                                                                    <h:outputText value="#{lineItem.issueUnitName}"/>
+                                                                </td>
+                                                                <td style="width: 100px; text-align: right; padding-right: 9px; border: 1px solid black;">
+                                                                    <h:outputText value="#{lineItem.quantity}">
+                                                                        <f:convertNumber/>
+                                                                    </h:outputText>
+                                                                </td>
+                                                            </tr>
+                                                        </ui:repeat>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                            <div style="font-size: 16px">
+                                                <h:outputText value="Request Comments : #{purchaseOrderNativeSqlController.printDto.requestComments}"/>
+                                            </div>
+                                            <div style="font-size: 16px">
+                                                <h:outputText value="Approve Comments : #{purchaseOrderNativeSqlController.printDto.approveComments}"/>
+                                            </div>
+                                            <div class="row mt-1">
+                                                <div class="col-5">
+                                                    <h:outputText value="Prepared By :  #{purchaseOrderNativeSqlController.printDto.preparedByName}"/>
+                                                </div>
+                                                <div class="col-2"/>
+                                                <div class="col-5" style="text-align: right;">
+                                                    <h:outputText value="Prepared At :  "/>
+                                                    <h:outputText value="#{purchaseOrderNativeSqlController.printDto.preparedAt}">
+                                                        <f:convertDateTime pattern="dd/MMM/yyyy HH:mm"/>
+                                                    </h:outputText>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-5">
+                                                    <h:outputText value="Approved By :  #{purchaseOrderNativeSqlController.printDto.approvedByName}"/>
+                                                </div>
+                                                <div class="col-2"/>
+                                                <div class="col-5" style="text-align: right;">
+                                                    <h:outputText value="Approved At :  "/>
+                                                    <h:outputText value="#{purchaseOrderNativeSqlController.printDto.approvedAt}">
+                                                        <f:convertDateTime pattern="dd/MMM/yyyy HH:mm"/>
+                                                    </h:outputText>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <h:outputText value="Important Note :" style="display:block;color:#000;font-weight:600;font-size:1.25rem;"/>
+                                                <h:outputText value="Purchase order number must appear on all documents pertaining to this purchase."/>
+                                                <h:outputText value="Goods receiving time - Monday to Friday 9.00 A.M. to 3.30 P.M." style="display:block;color:#000;font-size: 18px; font-weight: 500;"/>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-5">
+                                                    <h:outputText value="Printed By :  #{sessionController.loggedUser.name}"/>
+                                                </div>
+                                                <div class="col-2"/>
+                                                <div class="col-5" style="text-align: right;">
+                                                    <h:outputText value="Printed At :  "/>
+                                                    <h:outputText value="#{sessionController.currentDate}">
+                                                        <f:convertDateTime pattern="dd/MMM/yyyy HH:mm"/>
+                                                    </h:outputText>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </h:panelGroup>
+
+                                </h:panelGroup>
+                            </div>
+
+                            <!-- Original print column (privilege-gated) -->
+                            <div class="col-6 d-flex justify-content-center border border-light border-1">
+                                <h:panelGroup id="gpOriginalBillPreview" style="width: 212mm;"
+                                              rendered="#{webUserController.hasPrivilege('PrintOriginalPoBillFromReprint')}">
+
+                                    <!-- Format 1 original -->
+                                    <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Purchase Order Approval Print - A4 Custom 1 Paper Format', true)}">
+                                        <h:outputStylesheet library="css" name="pharmacyA4.css"/>
+                                        <div style="width: 212mm;">
+                                            <div class="institutionName">
+                                                <h:outputText value="#{purchaseOrderNativeSqlController.printDto.institutionName}"/>
+                                            </div>
+                                            <div class="institutionContact">
+                                                <div>
+                                                    <h:outputText value="Telephone : #{purchaseOrderNativeSqlController.printDto.institutionPhone} / #{purchaseOrderNativeSqlController.printDto.departmentTelephone1}"/>
+                                                </div>
+                                                <div>
+                                                    <h:outputText value="Fax : #{purchaseOrderNativeSqlController.printDto.institutionFax}"/>
+                                                </div>
+                                                <div>
+                                                    <h:outputText value="Email : #{purchaseOrderNativeSqlController.printDto.departmentEmail}"/>
+                                                </div>
+                                            </div>
+                                            <div class="headingBill">
+                                                <h:outputText value="Purchase Order" style="text-decoration: underline;"/>
+                                                <br/>
+                                                <h:outputText value="***Canceled***" rendered="#{purchaseOrderNativeSqlController.printDto.cancelled}" style="font-size: 18px;"/>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-6">
+                                                    <h:panelGrid columns="3" columnClasses="labelCol,valueCol,spacerCol" styleClass="table table-borderless">
+                                                        <h:outputText value="Supplier Name"/><h:outputText value=":"/>
+                                                        <h:panelGroup>
+                                                            <h:outputText value="#{purchaseOrderNativeSqlController.printDto.supplierName}"/>
+                                                            <h:outputText value=" (" rendered="#{not empty purchaseOrderNativeSqlController.printDto.supplierCode}"/>
+                                                            <h:outputText value="#{purchaseOrderNativeSqlController.printDto.supplierCode}" rendered="#{not empty purchaseOrderNativeSqlController.printDto.supplierCode}"/>
+                                                            <h:outputText value=")" rendered="#{not empty purchaseOrderNativeSqlController.printDto.supplierCode}"/>
+                                                        </h:panelGroup>
+                                                        <h:outputText value="P.O. No"/><h:outputText value=":"/>
+                                                        <h:outputText value="#{purchaseOrderNativeSqlController.printDto.poNumber}"/>
+                                                        <h:outputText value="Payment Method"/><h:outputText value=":"/>
+                                                        <h:outputText value="#{purchaseOrderNativeSqlController.printDto.paymentMethod}"/>
+                                                        <h:outputText value="Request Comments"/><h:outputText value=":"/>
+                                                        <h:outputText value="#{purchaseOrderNativeSqlController.printDto.requestComments}"/>
+                                                    </h:panelGrid>
+                                                </div>
+                                                <div class="col-6">
+                                                    <h:panelGrid columns="3" columnClasses="labelCol,valueCol,spacerCol" styleClass="table table-borderless">
+                                                        <h:outputText value="Credit Duration" rendered="#{purchaseOrderNativeSqlController.printDto.paymentMethod eq 'Credit'}"/>
+                                                        <h:outputText value=":" rendered="#{purchaseOrderNativeSqlController.printDto.paymentMethod eq 'Credit'}"/>
+                                                        <h:outputText value="#{purchaseOrderNativeSqlController.printDto.creditDuration}" rendered="#{purchaseOrderNativeSqlController.printDto.paymentMethod eq 'Credit'}"/>
+                                                        <h:outputText value="Order Department"/><h:outputText value=":"/>
+                                                        <h:outputText value="#{purchaseOrderNativeSqlController.printDto.orderDepartmentName}"/>
+                                                        <h:outputText value="P.O. Date"/><h:outputText value=":"/>
+                                                        <h:outputText value="#{purchaseOrderNativeSqlController.printDto.poDate}">
+                                                            <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                                                        </h:outputText>
+                                                        <h:outputText value="P.O. Time"/><h:outputText value=":"/>
+                                                        <h:outputText value="#{purchaseOrderNativeSqlController.printDto.poTime}">
+                                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longTimeFormat}"/>
+                                                        </h:outputText>
+                                                        <h:outputText value="Consignment"/><h:outputText value=":"/>
+                                                        <h:outputText value="#{purchaseOrderNativeSqlController.printDto.consignment ? 'Yes' : 'No'}"/>
+                                                        <h:outputText value="Approve Comments"/><h:outputText value=":"/>
+                                                        <h:outputText value="#{purchaseOrderNativeSqlController.printDto.approveComments}"/>
+                                                    </h:panelGrid>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <table class="w-100" style="border-collapse: collapse; border: 1px solid black;">
+                                                    <thead>
+                                                        <tr>
+                                                            <th style="width: 30px; text-align: right; padding-right: 5px; border: 1px solid black;">No</th>
+                                                            <th style="text-align: left; min-width: 400px; border: 1px solid black;">Item Name</th>
+                                                            <th style="width: 100px; text-align: right; padding-right: 5px; border: 1px solid black;">P. Rate</th>
+                                                            <th style="width: 100px; text-align: right; padding-right: 5px; border: 1px solid black;">QTY</th>
+                                                            <th style="width: 100px; text-align: right; padding-right: 5px; border: 1px solid black;">Free QTY</th>
+                                                            <th style="width: 100px; text-align: right; padding-right: 5px; border: 1px solid black;">Total</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <ui:repeat value="#{purchaseOrderNativeSqlController.printDto.items}" var="lineItem" varStatus="status">
+                                                            <tr>
+                                                                <td style="width: 30px; text-align: right; padding-right: 5px; border: 1px solid black;">#{status.index + 1}</td>
+                                                                <td style="text-align: left; min-width: 400px; border: 1px solid black;">
+                                                                    <h:outputText value="#{lineItem.itemName}"/>
+                                                                    <h:outputText value="  ("/><h:outputText value="#{lineItem.itemCode}"/><h:outputText value=")"/>
+                                                                </td>
+                                                                <td style="width: 100px; text-align: right; padding-right: 5px; border: 1px solid black;">
+                                                                    <h:outputText value="#{lineItem.purchaseRate}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                                                </td>
+                                                                <td style="width: 100px; text-align: right; padding-right: 5px; border: 1px solid black;">
+                                                                    <h:outputText value="#{lineItem.quantity}"><f:convertNumber/></h:outputText>
+                                                                </td>
+                                                                <td style="width: 100px; text-align: right; padding-right: 5px; border: 1px solid black;">
+                                                                    <h:outputText value="#{lineItem.freeQuantity}"><f:convertNumber/></h:outputText>
+                                                                </td>
+                                                                <td style="width: 100px; text-align: right; padding-right: 5px; border: 1px solid black; font-weight: bold;">
+                                                                    <h:outputText value="#{lineItem.lineTotal}"><f:convertNumber pattern="#,###.00"/></h:outputText>
+                                                                </td>
+                                                            </tr>
+                                                        </ui:repeat>
+                                                    </tbody>
+                                                    <tfoot>
+                                                        <tr>
+                                                            <th/><th colspan="4">Total</th>
+                                                            <th style="width: 100px; text-align: right; padding-right: 5px; border: 1px solid black; font-weight: bold;">
+                                                                <h:outputText value="#{purchaseOrderNativeSqlController.printDto.netTotal}"><f:convertNumber pattern="#,###.00"/></h:outputText>
+                                                            </th>
+                                                        </tr>
+                                                    </tfoot>
+                                                </table>
+                                            </div>
+                                            <div class="row mt-1">
+                                                <div class="col-5"><h:outputText value="Prepared By :  #{purchaseOrderNativeSqlController.printDto.preparedByName}"/></div>
+                                                <div class="col-2"/>
+                                                <div class="col-5" style="text-align: right;">
+                                                    <h:outputText value="Prepared At :  "/>
+                                                    <h:outputText value="#{purchaseOrderNativeSqlController.printDto.preparedAt}"><f:convertDateTime pattern="dd/MMM/yyyy HH:mm"/></h:outputText>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-5"><h:outputText value="Approved By :  #{purchaseOrderNativeSqlController.printDto.approvedByName}"/></div>
+                                                <div class="col-2"/>
+                                                <div class="col-5" style="text-align: right;">
+                                                    <h:outputText value="Approved At :  "/>
+                                                    <h:outputText value="#{purchaseOrderNativeSqlController.printDto.approvedAt}"><f:convertDateTime pattern="dd/MMM/yyyy HH:mm"/></h:outputText>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <p>
+                                                    <h4 style="color: #000000;">Important Note :</h4>
+                                                    <ol type="1">
+                                                        <li>Purchase order number must appear on all documents pertaining to this purchase.</li>
+                                                        <li>If unable to supply above goods within above period, 10% penalty will be claimed on the invoice value.</li>
+                                                        <li>Goods receiving time - Monday to Friday 9.00 A.M to 3.30 P.M</li>
+                                                    </ol>
+                                                    <h5 style="color: #000000;">Comment :</h5>
+                                                </p>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-5"><h:outputText value="Printed By :  #{sessionController.loggedUser.name}"/></div>
+                                                <div class="col-2"/>
+                                                <div class="col-5" style="text-align: right;">
+                                                    <h:outputText value="Printed At :  "/>
+                                                    <h:outputText value="#{sessionController.currentDate}"><f:convertDateTime pattern="dd/MMM/yyyy HH:mm"/></h:outputText>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </h:panelGroup>
+
+                                </h:panelGroup>
+                            </div>
+                        </div>
+
+                    </p:panel>
+                </h:form>
+
+                <!-- Print config dialog -->
+                <p:dialog id="poNativeConfigDialog"
+                          header="Purchase Order Print Configuration"
+                          widgetVar="poNativeConfigDialog"
+                          modal="true"
+                          width="800"
+                          height="500"
+                          resizable="true"
+                          maximizable="true"
+                          closeOnEscape="true">
+                    <p:ajax event="open" listener="#{purchaseOrderConfigController.loadCurrentConfig}" update="poNativeConfigForm"/>
+                    <h:form id="poNativeConfigForm">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="card config-section">
+                                    <div class="card-header">
+                                        <h6><i class="fas fa-file-alt"/> Purchase Order Print Paper Settings</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="mb-3">
+                                            <h:selectBooleanCheckbox id="a4custom1paperNative" value="#{purchaseOrderConfigController.a4custom1paper}"/>
+                                            <p:outputLabel for="a4custom1paperNative" value="A4 Paper Custom Format 1" class="ms-2"/>
+                                            <small class="form-text text-muted d-block">A4 purchase order format - Custom 1</small>
+                                        </div>
+                                        <div class="mb-3">
+                                            <h:selectBooleanCheckbox id="a4custom2paperNative" value="#{purchaseOrderConfigController.a4custom2paper}"/>
+                                            <p:outputLabel for="a4custom2paperNative" value="A4 Paper Custom Format 2" class="ms-2"/>
+                                            <small class="form-text text-muted d-block">A4 purchase order format - Custom 2</small>
+                                        </div>
+                                        <div class="mb-3">
+                                            <h:selectBooleanCheckbox id="letterPaperNative" value="#{purchaseOrderConfigController.letterPaper}"/>
+                                            <p:outputLabel for="letterPaperNative" value="Letter Paper Format" class="ms-2"/>
+                                            <small class="form-text text-muted d-block">Purchase order format - Letter Paper</small>
+                                        </div>
+                                        <div class="mb-3">
+                                            <h:selectBooleanCheckbox id="custom4paperNative" value="#{purchaseOrderConfigController.custom4paper}"/>
+                                            <p:outputLabel for="custom4paperNative" value="Custom 4 Paper Format" class="ms-2"/>
+                                            <small class="form-text text-muted d-block">Purchase order format - Custom 4 Paper</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <p:messages id="poNativeConfigMessages" showDetail="true" closable="true"/>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div class="d-flex gap-2">
+                                                <p:commandButton value="Apply &amp; Close" icon="fas fa-save"
+                                                                 class="ui-button-success" ajax="false"
+                                                                 action="#{purchaseOrderConfigController.saveConfig}"/>
+                                                <p:commandButton value="Cancel" icon="fas fa-times"
+                                                                 class="ui-button-secondary"
+                                                                 onclick="PF('poNativeConfigDialog').hide(); return false;"
+                                                                 type="button"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </h:form>
+                </p:dialog>
+
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

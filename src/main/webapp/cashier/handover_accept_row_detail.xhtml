@@ -51,30 +51,74 @@
                             </div>
                         </f:facet>
 
-                        <!-- Net Float row: synthetic, no payment records -->
+                        <!-- Float row: show individual fund-transfer payments if available -->
                         <h:panelGroup rendered="#{financialTransactionController.selectedBundle.floatRow}">
-                            <div class="alert alert-info m-2">
-                                This row represents the net cash float received from other cashiers.
-                                No individual payment records are associated with this entry.
-                            </div>
-                            <table class="table table-bordered table-sm w-100">
-                                <thead class="thead-dark">
-                                    <tr>
-                                        <th>Description</th>
-                                        <th class="text-end">Value</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td>Net Float (Cash)</td>
-                                        <td class="text-end">
-                                            <h:outputText value="#{financialTransactionController.selectedBundle.cashValue}">
-                                                <f:convertNumber pattern="#,##0.00" />
-                                            </h:outputText>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                            <h:panelGroup rendered="#{not empty financialTransactionController.selectedBundle.reportTemplateRows}">
+                                <p:dataTable
+                                    value="#{financialTransactionController.selectedBundle.reportTemplateRows}"
+                                    var="row"
+                                    emptyMessage="No float transfer records found"
+                                    paginator="true"
+                                    paginatorAlwaysVisible="false"
+                                    rows="50"
+                                    paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                    currentPageReportTemplate="(Page {currentPage} of {totalPages})">
+
+                                    <p:column headerText="Bill No" sortBy="#{row.payment.bill.deptId}">
+                                        <h:outputText value="#{row.payment.bill.deptId}" rendered="#{row.payment.bill.deptId ne null}" />
+                                        <h:outputText value="#{row.payment.bill.id}" rendered="#{row.payment.bill.deptId eq null}" />
+                                    </p:column>
+
+                                    <p:column headerText="Date" sortBy="#{row.payment.createdAt}">
+                                        <h:outputText value="#{row.payment.createdAt}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                        </h:outputText>
+                                    </p:column>
+
+                                    <p:column headerText="Type">
+                                        <h:outputText value="Float Sent"
+                                                      rendered="#{row.payment.bill.billTypeAtomic ne null and row.payment.bill.billTypeAtomic.name() eq 'FUND_TRANSFER_BILL'}"
+                                                      style="color:#dc3545;" />
+                                        <h:outputText value="Float Received"
+                                                      rendered="#{row.payment.bill.billTypeAtomic ne null and row.payment.bill.billTypeAtomic.name() eq 'FUND_TRANSFER_RECEIVED_BILL'}"
+                                                      style="color:#198754;" />
+                                    </p:column>
+
+                                    <p:column headerText="Value" class="text-end" sortBy="#{row.payment.paidValue}">
+                                        <h:outputText value="#{row.payment.paidValue}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </p:column>
+
+                                </p:dataTable>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{empty financialTransactionController.selectedBundle.reportTemplateRows}">
+                                <div class="alert alert-info m-2">
+                                    No individual float transfer records found for this entry.
+                                </div>
+                            </h:panelGroup>
+
+                            <p:panel class="m-2" header="Summary">
+                                <table class="table table-bordered table-sm w-50">
+                                    <thead class="thead-dark">
+                                        <tr>
+                                            <th>Description</th>
+                                            <th class="text-end">Value</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>Net Float (Cash)</td>
+                                            <td class="text-end">
+                                                <h:outputText value="#{financialTransactionController.selectedBundle.cashValue}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputText>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </p:panel>
                         </h:panelGroup>
 
                         <!-- Normal and shortage rows: list all payment records -->
@@ -91,7 +135,8 @@
                                 currentPageReportTemplate="(Page {currentPage} of {totalPages})">
 
                                 <p:column headerText="Bill No" sortBy="#{row.payment.bill.deptId}">
-                                    <h:outputText value="#{row.payment.bill.deptId}" />
+                                    <h:outputText value="#{row.payment.bill.deptId}" rendered="#{row.payment.bill.deptId ne null}" />
+                                    <h:outputText value="#{row.payment.bill.id}" rendered="#{row.payment.bill.deptId eq null}" />
                                 </p:column>
 
                                 <p:column headerText="Date" sortBy="#{row.payment.createdAt}">

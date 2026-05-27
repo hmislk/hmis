@@ -90,7 +90,6 @@
                                         class="my-1 w-100 ui-button-warning"
                                         value="Record Shift Shortage"
                                         icon="pi pi-minus"
-                                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Shift Shortage Bills are enabled')}"
                                         ajax="false"
                                         action="#{financialTransactionController.navigateToRecordShiftShortage()}">
                                     </p:commandButton>
@@ -108,7 +107,6 @@
                                     <p:commandButton
                                         class="my-1 w-100 ui-button-info"
                                         value="Shift Shortage Bill Search"
-                                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Shift Shortage Bills are enabled')}"
                                         icon="fa fa-search"
                                         ajax="false"
                                         action="#{financialTransactionController.navigateToCashierShiftBillSearch()}">
@@ -143,6 +141,15 @@
                                         icon="pi pi-save"
                                         ajax="false"
                                         action="#{financialTransactionController.navigateToFundDepositBill()}">
+                                    </p:commandButton>
+
+                                    <p:commandButton
+                                        class="my-1 w-100 ui-button-success"
+                                        value="Settle Non-Cash Payments"
+                                        icon="pi pi-check-circle"
+                                        ajax="false"
+                                        action="#{paymentSettlementController.navigateToSettleNonCash()}"
+                                        rendered="#{webUserController.hasPrivilege('SettleNonCashPayments')}">
                                     </p:commandButton>
 
                                     <p:commandButton

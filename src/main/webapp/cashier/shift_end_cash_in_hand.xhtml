@@ -119,20 +119,22 @@
                                                 <p:outputLabel value="#{deno.denomination.displayName}" ></p:outputLabel>
                                             </p:column>
                                             <p:column  title="Number">
-                                                <p:inputText 
-                                                    class="text-end w-100" 
+                                                <p:inputText
+                                                    class="text-end w-100"
                                                     id="txtDenoQtyHandover"
-                                                    value="#{deno.denominationQty}" 
-                                                    style="width: 100%;" 
-                                                    label="Cash Handover" 
-                                                    onfocus="this.select()">
+                                                    value="#{deno.denominationQty}"
+                                                    style="width: 100%;"
+                                                    label="Cash Handover"
+                                                    onfocus="this.select()"
+                                                    oninput="this.value=this.value.replace(/[^0-9]/g,'');">
                                                     <f:convertNumber integerOnly="true" />
-                                                    <p:ajax 
+                                                    <f:validateLongRange minimum="0" />
+                                                    <p:ajax
                                                         event="blur"
-                                                        process="txtDenoQtyHandover" 
+                                                        process="txtDenoQtyHandover"
                                                         listener="#{financialTransactionController.bundle.calculateTotalHandoverByDenominationQuantities()}"
-                                                        update=":#{p:resolveFirstComponentWithId('txtCashHandover',view).clientId} txtDenoVal :#{p:resolveFirstComponentWithId('tblCashier',view).clientId} " ></p:ajax>
-                                                </p:inputText>  
+                                                        update=":#{p:resolveFirstComponentWithId('txtCashHandover',view).clientId} txtDenoVal :#{p:resolveFirstComponentWithId('tblCashier',view).clientId} :growl" ></p:ajax>
+                                                </p:inputText>
                                             </p:column>
                                             <p:column >
                                                 <p:outputLabel

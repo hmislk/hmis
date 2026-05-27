@@ -1268,10 +1268,12 @@ public class StaffSalaryController implements Serializable {
         String sql = "select sc from StaffSalaryComponant sc "
                 + " where sc.retired=false "
                 + " and sc.salaryCycle=:sc "
-                + " and sc.staff=:stf";
+                + " and sc.staff=:stf"
+                + " and sc.staffPaysheetComponent.paysheetComponent.componentType=:ct";
         HashMap hm = new HashMap();
         hm.put("sc", getSalaryCycle());
         hm.put("stf", getCurrent().getStaff());
+        hm.put("ct", PaysheetComponentType.Salary_Advance_Deduction);
         StaffSalaryComponant salaryComponant = staffSalaryComponantFacade.findFirstByJpql(sql, hm);
 
         if (salaryComponant != null) {
@@ -1630,7 +1632,7 @@ public class StaffSalaryController implements Serializable {
                             + "Salary not Generated for Emp. - " + s.getPerson().getNameWithTitle() + "(" + s.getCode() + ")");
                     continue;
                 }
-                if (!(s.getDateJoined().getTime() > salaryCycle.getDayOffPhToDate().getTime())) {
+                if (s.getDateJoined() == null || !(s.getDateJoined().getTime() > salaryCycle.getDayOffPhToDate().getTime())) {
                     double workedDays = humanResourceBean.calculateWorkedDaysForSalary(salaryCycle.getDayOffPhFromDate(), salaryCycle.getDayOffPhToDate(), s);
                     if (workedDays == 0.0) {
                         JsfUtil.addErrorMessage("No Working Days - " + s.getPerson().getName());

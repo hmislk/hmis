@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "additionalDirectories": [
+      "C:\\Development\\hmis.wiki"
+    ],
+    "allow": [
+      "Bash(mysql *)"
+    ]
+  }
+}

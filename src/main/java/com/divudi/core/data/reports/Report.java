@@ -14,7 +14,9 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.FillPatternType;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
+import org.apache.poi.ss.usermodel.IndexedColors;
 import org.apache.poi.ss.usermodel.VerticalAlignment;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.util.WorkbookUtil;
@@ -27,10 +29,15 @@ import org.primefaces.model.StreamedContent;
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfWriter;
 import com.itextpdf.kernel.pdf.canvas.draw.SolidLine;
+import com.divudi.bean.channel.ChannelReportController;
 import com.divudi.bean.channel.ChannelReportTemplateController.OnlineBookingDetialRow;
+import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.OnlineBookingStatus;
+import com.divudi.core.data.ReportTemplateRow;
 import com.divudi.core.data.dto.channel.ChannelAbsentPatientsDTO;
+import com.divudi.core.data.dto.channel.ChannelUserSummeryDTO;
+import com.divudi.core.data.dto.channel.ChannelUserSummeryDTO.ChannelUserSummeryByDateDTO;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.RefundBill;
 import com.divudi.core.util.JsfUtil;
@@ -357,31 +364,7 @@ public class Report<T> {
         }
 
         // Data Rows
-        int serial = 1;
-        int dataCol = 0;
-        for (T row : data) {
-            Row dataRow = dataSheet.createRow(currentRow++);
-            dataCol = 0;
-
-            if (serialNoColumnAtStart) {
-                dataRow.createCell(dataCol++).setCellValue(serial++);
-            }
-            for (ReportColumn<T> column : columns.values()) {
-                Object value = column.extractData(row);
-                org.apache.poi.ss.usermodel.Cell cell = dataRow.createCell(dataCol++);
-                if (value instanceof String)  {
-                    String text = (String) value;
-                    cell.setCellValue(text);
-                    if (text.contains("\n")) {
-                        cell.setCellStyle(wrapTextStyle);
-                    }
-                } else if (value instanceof Double) {
-                    cell.setCellValue((Double) value);
-                } else {
-                    cell.setCellValue(value != null ? value.toString() : "");
-                }
-            }
-        }
+        currentRow = addDataRowToExcelSheet(workbook, dataSheet, currentRow);
 
         // Footer Row
         if (footers != null && !footers.isEmpty()) {
@@ -542,7 +525,7 @@ public class Report<T> {
         }
     }
 
-    public void addDataRows(Table table) {
+    public void addDataRows(Table table) throws IOException {
         int serial = 1;
         for (T row : data) {
             if (serialNoColumnAtStart) {
@@ -690,6 +673,46 @@ public class Report<T> {
         }
 
         rowIndex++;
+
+        return rowIndex;
+    }
+
+    public int addDataRowToExcelSheet(XSSFWorkbook wb, XSSFSheet sheet, int rowIndex) {
+        if (wb == null || sheet == null || data == null) {
+            return rowIndex;
+        }
+        if (rowIndex < 0) {
+            return 0;
+        }
+
+        CellStyle wrapTextStyle = wb.createCellStyle();
+        wrapTextStyle.setWrapText(true);
+
+        int serial = 1;
+        int dataCol = 0;
+        for (T row : data) {
+            Row dataRow = sheet.createRow(rowIndex++);
+            dataCol = 0;
+
+            if (serialNoColumnAtStart) {
+                dataRow.createCell(dataCol++).setCellValue(serial++);
+            }
+            for (ReportColumn<T> column : columns.values()) {
+                Object value = column.extractData(row);
+                org.apache.poi.ss.usermodel.Cell cell = dataRow.createCell(dataCol++);
+                if (value instanceof String)  {
+                    String text = (String) value;
+                    cell.setCellValue(text);
+                    if (text.contains("\n")) {
+                        cell.setCellStyle(wrapTextStyle);
+                    }
+                } else if (value instanceof Double) {
+                    cell.setCellValue((Double) value);
+                } else {
+                    cell.setCellValue(value != null ? value.toString() : "");
+                }
+            }
+        }
 
         return rowIndex;
     }
@@ -884,6 +907,17 @@ public class Report<T> {
                             if (r.isRefunded() && r.getRefundedBill() != null && r.getRefundedBill().getCreatedAt() != null) {
                                 date += "\n(Refunded: " + new SimpleDateFormat("dd MMM yyyy hh:mm a").format(r.getRefundedBill().getCreatedAt()) + ")";
                             }
+
+                            return date;
+                    },
+                    TextAlignment.LEFT,
+                    "%s",
+                    3f));
+
+            rpCols.put("Appointment Date", new ReportColumn<>("Appointment Date",
+                    row -> {
+                            Bill r = (Bill) row;
+                            String date = (r.getSingleBillSession() != null && r.getSingleBillSession().getSessionInstance() != null && r.getSingleBillSession().getSessionInstance().getSessionDate() != null) ? new SimpleDateFormat("dd MMM yyyy").format(r.getSingleBillSession().getSessionInstance().getSessionDate()) : "";
 
                             return date;
                     },
@@ -1150,4 +1184,574 @@ public class Report<T> {
         
     }
 
+    public static class ChannelIncomeReport extends Report<ReportTemplateRow> {
+        private static final LinkedHashMap<String, ReportColumn<ReportTemplateRow>> rpCols;
+
+        static {
+            rpCols = new LinkedHashMap<>();
+            rpCols.put("Billed Date", new ReportColumn<>("Billed Date",
+                    row -> {
+                            ReportTemplateRow r = (ReportTemplateRow) row;
+                            Bill b = r.getBill();
+                            if (b == null) {
+                                return "";
+                            }
+                            String date = (b.getCreatedAt() != null) ? new SimpleDateFormat("dd MMM yyyy hh:mm a").format(b.getCreatedAt()) : "";
+
+                            if (b.isCancelled() && b.getCancelledBill() != null && b.getCancelledBill().getCreatedAt() != null) {
+                                date += "\n(Cancelled: " + new SimpleDateFormat("dd MMM yyyy hh:mm a").format(b.getCancelledBill().getCreatedAt()) + ")";
+                            }
+                            if (b.isRefunded() && b.getRefundedBill() != null && b.getRefundedBill().getCreatedAt() != null ) {
+                                date += "\n(Refunded: " + new SimpleDateFormat("dd MMM yyyy hh:mm a").format(b.getRefundedBill().getCreatedAt()) + ")";
+                            }
+
+                            return date;
+                    },
+                    TextAlignment.LEFT,
+                    "%s",
+                    3.5f));
+
+            rpCols.put("Appointment Date", new ReportColumn<>("Appointment Date",
+                    row -> {
+                            ReportTemplateRow r = (ReportTemplateRow) row;
+                            Bill b = r.getBill();
+                            if (b == null) {
+                                return "";
+                            }
+                            String date = (b.getSingleBillSession() != null && b.getSingleBillSession().getSessionInstance() != null && b.getSingleBillSession().getSessionInstance().getSessionDate() != null) ? new SimpleDateFormat("dd MMM yyyy").format(b.getSingleBillSession().getSessionInstance().getSessionDate()) : "";
+
+                            return date;
+                    },
+                    TextAlignment.LEFT,
+                    "%s",
+                    3f));
+
+            rpCols.put("Bill No", new ReportColumn<>("Bill No",
+                    row -> {
+                            ReportTemplateRow r = (ReportTemplateRow) row;
+                            Bill b = r.getBill();
+                            if (b == null) {
+                                return "";
+                            }
+                            String billDept = b.getDeptId() != null ? b.getDeptId() : "";
+                            if (b.isCancelled()) {
+                                billDept += "\n(Cancelled" + (b.getCancelledBill() != null ? (": " + b.getCancelledBill().getDeptId()) : "") + ")";
+                            }
+                            if (b.isRefunded()) {
+                                billDept += "\n(Refunded" + (b.getRefundedBill() != null ? (": " + b.getRefundedBill().getDeptId()) : "" ) + ")";
+                            }
+                            if (b instanceof RefundBill) {
+                                billDept += "\n(Refund Bill)";
+                            }
+                            if (b.getBillTypeAtomic() != null && b.getBillTypeAtomic() == BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT) {
+                                billDept += "\n(Cancel Bill)";
+                            }
+                            return billDept;
+                    },
+                    TextAlignment.LEFT,
+                    "%s",
+                    5f));
+
+            rpCols.put("Bill Type", new ReportColumn<>("Bill Type",
+                    row -> {
+                            ReportTemplateRow r = (ReportTemplateRow) row;
+                            Bill b = r.getBill();
+                            if (b == null || b.getBillTypeAtomic() == null) {
+                                return "";
+                            }
+                            String billType = "";
+                            if (b.getBillTypeAtomic() == BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_SESSION) {
+                                billType = "Dr Payment";
+                            } else if (b.getBillTypeAtomic() == BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_RETURN) {
+                                billType = "Dr Payment Return";
+                            } else if (b.getBillTypeAtomic() == BillTypeAtomic.CHANNEL_AGENT_PAID_TO_HOSPITAL_FOR_ONLINE_BOOKINGS_BILL) {
+                                billType = "OB Agent Payment To Hospital";
+                            } else if (b.getBillTypeAtomic() == BillTypeAtomic.CHANNEL_AGENT_PAID_TO_HOSPITAL_FOR_ONLINE_BOOKINGS_BILL_CANCELLATION) {
+                                billType = "OB Agent Cancel Payment To Hospital";
+                            } else {
+                                billType = "Channel Bill";
+                            }
+                            return billType;
+                    },
+                    TextAlignment.LEFT,
+                    "%s",
+                    5f));
+
+            rpCols.put("Patient", new ReportColumn<>("Patient",
+                    row -> {
+                            ReportTemplateRow r = (ReportTemplateRow) row;
+                            Bill b = r.getBill();
+                            if (b == null || b.getBillTypeAtomic() == null) {
+                                return "";
+                            }
+                            String patientName = "";
+                            if (b.getBillTypeAtomic() != null) {
+                                if (b.getBillTypeAtomic() == BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT) {
+                                    patientName = (b.getReferenceBill() != null && b.getReferenceBill().getOnlineBooking() != null) ? b.getReferenceBill().getOnlineBooking().getPatientName() : "";
+                                } else if (b.getBillTypeAtomic() == BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING) {
+                                patientName = (b.getBilledBill() != null && b.getBilledBill().getReferenceBill() != null && b.getBilledBill().getReferenceBill().getOnlineBooking() != null) ? b.getBilledBill().getReferenceBill().getOnlineBooking().getPatientName() : "";
+                                } else {
+                                    patientName = (b.getPatient() != null && b.getPatient().getPerson() != null) ? b.getPatient().getPerson().getNameWithTitle() : "";
+                                }
+                            }
+                            return patientName;
+                    },
+                    TextAlignment.LEFT,
+                    "%s",
+                    5f));
+
+            rpCols.put("Cashier", new ReportColumn<>("Cashier",
+                    row -> {
+                            ReportTemplateRow r = (ReportTemplateRow) row;
+                            Bill b = r.getBill();
+                            if (b == null) {
+                                return "";
+                            }
+                            return (b.getCreater() != null && b.getCreater().getName() != null ? b.getCreater().getName() : "");
+                    },
+                    TextAlignment.LEFT,
+                    "%s",
+                    3.5f));
+
+
+
+            rpCols.put("Payment Method", new ReportColumn<>("Payment Method",
+                    row -> {
+                            ReportTemplateRow r = (ReportTemplateRow) row;
+                            Bill b = r.getBill();
+                            if (b == null) {
+                                return "";
+                            }
+                            String pM = "";
+                            if (b.getBillTypeAtomic() == BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT || b.getBillTypeAtomic() == BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING) {
+                                pM = "WEB";
+                            } else {
+                                pM = b.getPaymentMethod() != null ? b.getPaymentMethod().getLabel() : "";
+                            }
+                            if (b.getBillTypeAtomic() == BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT && b.getReferenceBill() != null && b.getReferenceBill().getOnlineBooking() != null && b.getReferenceBill().getOnlineBooking().getAgency() != null) {
+                                pM += "\n(" + b.getReferenceBill().getOnlineBooking().getAgency().getName() + ")";
+                            } else if (b.getBillTypeAtomic() == BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING && b.getBilledBill() != null && b.getBilledBill().getReferenceBill() != null && b.getBilledBill().getReferenceBill().getOnlineBooking() != null && b.getBilledBill().getReferenceBill().getOnlineBooking().getAgency() != null) {
+                                pM += "\n(" + b.getBilledBill().getReferenceBill().getOnlineBooking().getAgency().getName() + ")";
+                            } else if (b.getBillType() == BillType.ChannelAgent && b.getBillTypeAtomic() != BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT && b.getBillTypeAtomic() != BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING && b.getCreditCompany() != null) {
+                                pM += "\n(" + (b.getCreditCompany().getName()) + ")";
+                            }
+                            return pM ;
+                    },
+                    TextAlignment.LEFT,
+                    "%s",
+                    4f));
+
+            rpCols.put("Hospital Fee", new ReportColumn<>("Hospital Fee",
+                    row -> {
+                            ReportTemplateRow r = (ReportTemplateRow) row;
+                            Bill b = r.getBill();
+                            if (b == null) {
+                                return "";
+                            }
+                            return b.getHospitalFee();
+                    },
+                    TextAlignment.RIGHT,
+                    "%,.2f",
+                    3.5f));
+            rpCols.put("Staff Fee", new ReportColumn<>("Staff Fee",
+                    row -> {
+                            ReportTemplateRow r = (ReportTemplateRow) row;
+                            Bill b = r.getBill();
+                            if (b == null) {
+                                return "";
+                            }
+                            return b.getStaffFee();
+                    },
+                    TextAlignment.RIGHT,
+                    "%,.2f",
+                    3.5f));
+            rpCols.put("Gross Total", new ReportColumn<>("Gross Total",
+                    row -> {
+                            ReportTemplateRow r = (ReportTemplateRow) row;
+                            Bill b = r.getBill();
+                            if (b == null) {
+                                return "";
+                            }
+                            return b.getTotal();
+                    },
+                    TextAlignment.RIGHT,
+                    "%,.2f",
+                    3.5f));
+        }
+
+        public ChannelIncomeReport(String fileName, String institutionName, Map<String, Object> searchCriteria, List<ReportTemplateRow> data, boolean addNetTotalColumns, ChannelReportController.PaymentMethodFlags f, String reportGeneratedBy) {
+            super(new LinkedHashMap<>(rpCols));
+            if (addNetTotalColumns) {
+                LinkedHashMap<String, ReportColumn<ReportTemplateRow>> columns = this.getColumns();
+                columns.put("Discount", new ReportColumn<>("Discount",
+                    row -> {
+                            ReportTemplateRow r = (ReportTemplateRow) row;
+                            Bill b = r.getBill();
+                            if (b == null) {
+                                return "";
+                            }
+                            return b.getDiscount();
+                    },
+                    TextAlignment.RIGHT,
+                    "%,.2f",
+                    3.5f));
+
+                columns.put("Net Total", new ReportColumn<>("Net Total",
+                    row -> {
+                            ReportTemplateRow r = (ReportTemplateRow) row;
+                            Bill b = r.getBill();
+                            if (b == null) {
+                                return "";
+                            }
+                            return b.getNetTotal();
+                    },
+                    TextAlignment.RIGHT,
+                    "%,.2f",
+                    3.5f));
+            }
+            setPaymentMethodColumns(f);
+            this.setSerialNoColumnAtStart(true);
+            this.setReportName("Channel Income Report");
+            this.setFileName(fileName);
+            this.setInstitutionName(institutionName);
+            this.setSearchCriteria(searchCriteria);
+            this.setData(data);
+            this.setReportGeneratedBy(reportGeneratedBy);
+
+        }
+
+        public void setPaymentMethodColumns(ChannelReportController.PaymentMethodFlags f) {
+            if (f == null) {
+                return;
+            }
+
+            LinkedHashMap<String, ReportColumn<ReportTemplateRow>> payCols = this.getColumns();
+
+            if (f.hasCash) {
+                payCols.put("Cash", new ReportColumn<>("Cash",
+                    row -> {
+                            ReportTemplateRow r = (ReportTemplateRow) row;
+                            return r.getCashValue();
+                    },
+                    TextAlignment.RIGHT,
+                    "%,.2f",
+                    3.5f));}
+
+            if (f.hasCard) {
+                payCols.put("Card", new ReportColumn<>("Card",
+                    row -> {
+                            ReportTemplateRow r = (ReportTemplateRow) row;
+                            return r.getCardValue();
+                    },
+                    TextAlignment.RIGHT,
+                    "%,.2f",
+                    3.5f));}
+
+            if (f.hasCredit) {
+                payCols.put("Credit", new ReportColumn<>("Credit",
+                    row -> {
+                            ReportTemplateRow r = (ReportTemplateRow) row;
+                            return r.getCreditValue();
+                    },
+                    TextAlignment.RIGHT,
+                    "%,.2f",
+                    3.5f));}
+
+            if (f.hasStaffWelfare) {
+                payCols.put("Staff Welfare", new ReportColumn<>("Staff Welfare",
+                    row -> {
+                            ReportTemplateRow r = (ReportTemplateRow) row;
+                            return r.getStaffWelfareValue();
+                    },
+                    TextAlignment.RIGHT,
+                    "%,.2f",
+                    3.5f));}
+
+            if (f.hasVoucher) {
+                payCols.put("Voucher", new ReportColumn<>("Voucher",
+                    row -> {
+                            ReportTemplateRow r = (ReportTemplateRow) row;
+                            return r.getVoucherValue();
+                    },
+                    TextAlignment.RIGHT,
+                    "%,.2f",
+                    3.5f));}
+
+            if (f.hasIou) {
+                payCols.put("IOU", new ReportColumn<>("IOU",
+                    row -> {
+                            ReportTemplateRow r = (ReportTemplateRow) row;
+                            return r.getIouValue();
+                    },
+                    TextAlignment.RIGHT,
+                    "%,.2f",
+                    3.5f));}
+
+            if (f.hasAgent) {
+                payCols.put("Agent", new ReportColumn<>("Agent",
+                    row -> {
+                            ReportTemplateRow r = (ReportTemplateRow) row;
+                            return r.getAgentValue();
+                    },
+                    TextAlignment.RIGHT,
+                    "%,.2f",
+                    3.5f));}
+
+            if (f.hasCheque) {
+                payCols.put("Cheque", new ReportColumn<>("Cheque",
+                    row -> {
+                            ReportTemplateRow r = (ReportTemplateRow) row;
+                            return r.getChequeValue();
+                    },
+                    TextAlignment.RIGHT,
+                    "%,.2f",
+                    3.5f));}
+
+            if (f.hasSlip) {
+                payCols.put("Slip", new ReportColumn<>("Slip",
+                    row -> {
+                            ReportTemplateRow r = (ReportTemplateRow) row;
+                            return r.getSlipValue();
+                    },
+                    TextAlignment.RIGHT,
+                    "%,.2f",
+                    3.5f));}
+
+            if (f.hasEWallet) {
+                payCols.put("eWallet", new ReportColumn<>("eWallet",
+                    row -> {
+                            ReportTemplateRow r = (ReportTemplateRow) row;
+                            return r.getEwalletValue();
+                    },
+                    TextAlignment.RIGHT,
+                    "%,.2f",
+                    3.5f));}
+
+            if (f.hasPatientDeposit) {
+                payCols.put("Patient Deposits", new ReportColumn<>("Patient Deposits",
+                    row -> {
+                            ReportTemplateRow r = (ReportTemplateRow) row;
+                            return r.getPatientDepositValue();
+                    },
+                    TextAlignment.RIGHT,
+                    "%,.2f",
+                    3.5f));}
+
+            if (f.hasPatientPoints) {
+                payCols.put("Patient Points", new ReportColumn<>("Patient Points",
+                    row -> {
+                            ReportTemplateRow r = (ReportTemplateRow) row;
+                            return r.getPatientPointsValue();
+                    },
+                    TextAlignment.RIGHT,
+                    "%,.2f",
+                    3.5f));}
+
+            if (f.hasOnlineSettlement) {
+                payCols.put("Online Settlement", new ReportColumn<>("Online Settlement",
+                    row -> {
+                            ReportTemplateRow r = (ReportTemplateRow) row;
+                            return r.getOnlineSettlementValue();
+                    },
+                    TextAlignment.RIGHT,
+                    "%,.2f",
+                    3.5f));}
+        }
+    }
+
+    public static class ChannelUserWiseSummeryReport extends Report<ChannelUserSummeryDTO> {
+
+        private static final LinkedHashMap<String, ReportColumn<ChannelUserSummeryDTO>> rpCols;
+
+        static {
+            rpCols = new LinkedHashMap<>();
+
+            rpCols.put("Bill Date", new ReportColumn<>("Bill Date",
+                    row -> {
+                            return "Total";
+                    },
+                    TextAlignment.LEFT,
+                    "%s",
+                    3f));
+            rpCols.put("User", new ReportColumn<>("User",
+                    row -> {
+                            return "";
+                    },
+                    TextAlignment.LEFT,
+                    "%s",
+                    3f));
+            rpCols.put("Bill Date", new ReportColumn<>("Client",
+                    row -> {
+                            return "";
+                    },
+                    TextAlignment.LEFT,
+                    "%s",
+                    3f));
+
+            rpCols.put("Billed Count", new ReportColumn<>("Billed Count", ChannelUserSummeryDTO::getBilledCount, TextAlignment.CENTER, "%,d", 3f));
+            rpCols.put("Cancelled Count", new ReportColumn<>("Cancelled Count", ChannelUserSummeryDTO::getCancelledCount, TextAlignment.CENTER, "%,d", 3f));
+            rpCols.put("Refund Count", new ReportColumn<>("Refund Count", ChannelUserSummeryDTO::getRefundCount, TextAlignment.CENTER, "%,d", 3f));
+            rpCols.put("Total Count", new ReportColumn<>("Total Count", ChannelUserSummeryDTO::getTotalCount, TextAlignment.CENTER, "%,d", 3f));
+            rpCols.put("Doctor Fee", new ReportColumn<>("Doctor Fee", ChannelUserSummeryDTO::getDoctorFee, TextAlignment.RIGHT, "%,.2f", 4f));
+            rpCols.put("Hospital Fee", new ReportColumn<>("Hospital Fee", ChannelUserSummeryDTO::getHosFee, TextAlignment.RIGHT, "%,.2f", 4f));
+            rpCols.put("Total", new ReportColumn<>("Total", ChannelUserSummeryDTO::getTotal, TextAlignment.RIGHT, "%,.2f", 4f));
+        }
+
+        public ChannelUserWiseSummeryReport(String fileName, String institutionName, Map<String, Object> searchCriteria, List<ChannelUserSummeryDTO> data, String reportGeneratedBy) {
+            super(rpCols);
+            this.setSerialNoColumnAtStart(false);
+            this.setReportName("Channel User Wise Summary");
+            this.setFileName(fileName);
+            this.setInstitutionName(institutionName);
+            this.setSearchCriteria(searchCriteria);
+            this.setData(data);
+            this.setReportGeneratedBy(reportGeneratedBy);
+        }
+
+        @Override
+        public int addDataRowToExcelSheet(XSSFWorkbook wb, XSSFSheet sheet, int rowIndex) {
+            if (wb == null || sheet == null || this.getData() == null) {
+                return rowIndex;
+            }
+            if (rowIndex < 0) {
+                return 0;
+            }
+
+            org.apache.poi.ss.usermodel.Font boldFont = wb.createFont();
+            boldFont.setBold(true);
+            CellStyle summaryRowCellStyle = wb.createCellStyle();
+            summaryRowCellStyle.setFont(boldFont);
+
+            int dataCol;
+            for (ChannelUserSummeryDTO row : this.getData()) {
+                for (ChannelUserSummeryDTO.ChannelUserSummeryByDateDTO dto : row.getEntriesByDate()) {
+                    Row dataRow = sheet.createRow(rowIndex++);
+                    dataCol = 0;
+
+                    for (String columnKey : this.getColumns().keySet()) {
+                        org.apache.poi.ss.usermodel.Cell cell = dataRow.createCell(dataCol++);
+                        switch (columnKey) {
+                            case "Bill Date":
+                                String dateText = dto.getBilledDate() != null ? new SimpleDateFormat("dd/MM/yyyy").format(dto.getBilledDate()) : "";
+                                cell.setCellValue(dateText);
+                                break;
+                            case "User":
+                                cell.setCellValue(dto.getUser() != null ? dto.getUser() : "");
+                                break;
+                            case "Billed Count":
+                                cell.setCellValue(dto.getBilledCount());
+                                break;
+                            case "Cancelled Count":
+                                cell.setCellValue(dto.getCancelledCount());
+                                break;
+                            case "Refund Count":
+                                cell.setCellValue(dto.getRefundCount());
+                                break;
+                            case "Total Count":
+                                cell.setCellValue(dto.getTotalCount());
+                                break;
+                            case "Doctor Fee":
+                                cell.setCellValue(dto.getDoctorFee());
+                                break;
+                            case "Hospital Fee":
+                                cell.setCellValue(dto.getHosFee());
+                                break;
+                            case "Total":
+                                cell.setCellValue(dto.getTotal());
+                                break;
+                            default:
+                                cell.setCellValue("");
+                                break;
+                        }
+                    }
+                }
+
+                // Summary Row
+                Row sumRow = sheet.createRow(rowIndex++);
+                dataCol = 0;
+                for (ReportColumn<ChannelUserSummeryDTO> column : this.getColumns().values()) {
+                    Object value = column.extractData(row);
+                    org.apache.poi.ss.usermodel.Cell cell = sumRow.createCell(dataCol++);
+                    cell.setCellStyle(summaryRowCellStyle);
+                    if (value instanceof String)  {
+                        String text = (String) value;
+                        cell.setCellValue(text);
+                    } else if (value instanceof Double) {
+                        cell.setCellValue((Double) value);
+                    } else if (value instanceof Long) {
+                        cell.setCellValue((Long) value);
+                    } else {
+                        cell.setCellValue(value != null ? value.toString() : "");
+                    }
+                }
+            }
+
+            return rowIndex;
+        }
+
+        @Override
+        public void addDataRows(Table table) throws IOException {
+            // Build PDF table rows same as Excel: one row per date-entry, then a summary row per user
+            for (ChannelUserSummeryDTO r : this.getData()) {
+                ChannelUserSummeryDTO row = (ChannelUserSummeryDTO) r;
+
+                // entries by date
+                for (ChannelUserSummeryDTO.ChannelUserSummeryByDateDTO dto : row.getEntriesByDate()) {
+                    for (String columnKey : this.getColumns().keySet()) {
+                        ReportColumn<ChannelUserSummeryDTO> col = (ReportColumn<ChannelUserSummeryDTO>) this.getColumns().get(columnKey);
+                        String text = "";
+                        switch (columnKey) {
+                            case "Bill Date":
+                                text = dto.getBilledDate() != null ? new SimpleDateFormat("dd/MM/yyyy").format(dto.getBilledDate()) : "";
+                                break;
+                            case "User":
+                                text = dto.getUser() != null ? dto.getUser() : "";
+                                break;
+                            case "Billed Count":
+                                text = String.format("%,d", dto.getBilledCount());
+                                break;
+                            case "Cancelled Count":
+                                text = String.format("%,d", dto.getCancelledCount());
+                                break;
+                            case "Refund Count":
+                                text = String.format("%,d", dto.getRefundCount());
+                                break;
+                            case "Total Count":
+                                text = String.format("%,d", dto.getTotalCount());
+                                break;
+                            case "Doctor Fee":
+                                text = String.format("%,.2f", dto.getDoctorFee());
+                                break;
+                            case "Hospital Fee":
+                                text = String.format("%,.2f", dto.getHosFee());
+                                break;
+                            case "Total":
+                                text = String.format("%,.2f", dto.getTotal());
+                                break;
+                            default:
+                                text = "";
+                                break;
+                        }
+
+                        Paragraph p = new Paragraph(text).setFontSize(this.getFontSize()).setTextAlignment(col.getTextAlignment());
+                        Cell cell = new Cell().add(p);
+                        cell.setKeepTogether(true);
+                        table.addCell(cell);
+                    }
+                }
+
+                // summary row (bold)
+                for (ReportColumn<ChannelUserSummeryDTO> column : this.getColumns().values()) {
+                    Object cellValue = column.extractData(row);
+                    String text = cellValue != null ? String.format(column.getFormat(), cellValue) : "";
+                    Paragraph p = new Paragraph(text).setFontSize(this.getFontSize()).setFont(PdfFontFactory.createFont(getBoldFont()));
+                    Cell cell = new Cell().add(p).setTextAlignment(column.getTextAlignment());
+                    cell.setBackgroundColor(new DeviceRgb(211, 211, 211));
+                    cell.setKeepTogether(true);
+                    table.addCell(cell);
+                }
+            }
+        }
+
+    }
 }

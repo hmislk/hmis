@@ -94,13 +94,15 @@
                                                 class="text-end w-100"
                                                 id="txtDenoQty"
                                                 value="#{deno.denominationQty}"
-                                                onfocus="this.select()">
+                                                onfocus="this.select()"
+                                                oninput="this.value=this.value.replace(/[^0-9]/g,'');">
                                                 <f:convertNumber integerOnly="true"/>
+                                                <f:validateLongRange minimum="0" />
                                                 <p:ajax
                                                     event="blur"
                                                     process="txtDenoQty"
                                                     listener="#{financialTransactionController.calculateFundTransferDenominationTotal()}"
-                                                    update="txtDenoVal txtDenoTotal"/>
+                                                    update="txtDenoVal txtDenoTotal :growl"/>
                                             </p:inputText>
                                         </p:column>
                                         <p:column headerText="Value" styleClass="text-end">
