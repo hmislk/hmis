@@ -188,6 +188,9 @@ public class PharmacyBillSearch implements Serializable {
     private List<com.divudi.core.data.dto.PharmacyTransferReceivedListDTO> transferReceiveSearchDtos;
     private List<com.divudi.core.data.dto.PharmacyPreBillSearchDTO> preBillSearchDtos;
     private List<com.divudi.core.data.dto.PharmacyWholeSaleSearchDTO> wholeSaleSearchDtos;
+    private List<com.divudi.core.data.dto.PharmacyPurchaseOrderDTO> poRequestSearchDtos;
+    private List<com.divudi.core.data.dto.PharmacyPurchaseOrderDTO> poApproveSearchDtos;
+    private List<com.divudi.core.data.dto.PharmacyGrnSearchDTO> grnSearchDtos;
 
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Constructors">
@@ -252,6 +255,20 @@ public class PharmacyBillSearch implements Serializable {
         return "/pharmacy/pharmacy_reprint_po?faces-redirect=true";
     }
 
+    public String navigateToReprintPharmacyOrderRequestById() {
+        if (billId == null) {
+            JsfUtil.addErrorMessage("No Bill Selected");
+            return null;
+        }
+        Bill tb = billBean.fetchBillWithItemsAndFees(billId);
+        if (tb == null) {
+            JsfUtil.addErrorMessage("Bill not found");
+            return null;
+        }
+        bill = tb;
+        return "/pharmacy/pharmacy_reprint_order_request?faces-redirect=true";
+    }
+
     public String navigateToImportBillsFromJson() {
         return "/pharmacy/admin/import_bill?faces-redirect=true";
     }
@@ -282,6 +299,23 @@ public class PharmacyBillSearch implements Serializable {
     }
 
     public String navigateToPharmacyGrnReprint() {
+        if (isManageCostingEnabled()) {
+            return "/pharmacy/pharmacy_reprint_grn_with_costing?faces-redirect=true";
+        }
+        return "/pharmacy/pharmacy_reprint_grn?faces-redirect=true";
+    }
+
+    public String navigateToPharmacyGrnReprintById() {
+        if (billId == null) {
+            JsfUtil.addErrorMessage("No Bill Selected");
+            return null;
+        }
+        Bill tb = billBean.fetchBillWithItemsAndFees(billId);
+        if (tb == null) {
+            JsfUtil.addErrorMessage("Bill not found");
+            return null;
+        }
+        bill = tb;
         if (isManageCostingEnabled()) {
             return "/pharmacy/pharmacy_reprint_grn_with_costing?faces-redirect=true";
         }
@@ -5081,6 +5115,152 @@ public class PharmacyBillSearch implements Serializable {
         }
         if (wholeSaleSearchDtos == null) {
             wholeSaleSearchDtos = new ArrayList<>();
+        }
+    }
+
+    public List<com.divudi.core.data.dto.PharmacyPurchaseOrderDTO> getPoRequestSearchDtos() {
+        return poRequestSearchDtos;
+    }
+
+    public void setPoRequestSearchDtos(List<com.divudi.core.data.dto.PharmacyPurchaseOrderDTO> poRequestSearchDtos) {
+        this.poRequestSearchDtos = poRequestSearchDtos;
+    }
+
+    public void fetchPoRequestSearchDtos(int maxResult) {
+        Map<String, Object> m = new HashMap<>();
+        m.put("bt", com.divudi.core.data.BillType.PharmacyOrder);
+        m.put("dep", sessionController.getDepartment());
+        m.put("fd", searchController.getFromDate());
+        m.put("td", searchController.getToDate());
+        String sql = "SELECT new com.divudi.core.data.dto.PharmacyPurchaseOrderDTO("
+                + "b.id, "
+                + "COALESCE(b.insId, ''), "
+                + "COALESCE(b.deptId, ''), "
+                + "b.createdAt, "
+                + "COALESCE(b.department.name, ''), "
+                + "COALESCE(b.toInstitution.name, ''), "
+                + "b.paymentMethod, "
+                + "b.cancelled, "
+                + "COALESCE(creatorPerson.name, ''), "
+                + "b.netTotal) "
+                + "FROM BilledBill b "
+                + "LEFT JOIN b.creater creater "
+                + "LEFT JOIN creater.webUserPerson creatorPerson "
+                + "WHERE b.billType = :bt "
+                + "AND b.createdAt BETWEEN :fd AND :td "
+                + "AND b.department = :dep "
+                + "AND b.retired = false "
+                + "ORDER BY b.createdAt DESC";
+        if (maxResult > 0) {
+            poRequestSearchDtos =
+                    (List<com.divudi.core.data.dto.PharmacyPurchaseOrderDTO>)
+                    billFacade.findLightsByJpql(sql, m, TemporalType.TIMESTAMP, maxResult);
+        } else {
+            poRequestSearchDtos =
+                    (List<com.divudi.core.data.dto.PharmacyPurchaseOrderDTO>)
+                    billFacade.findLightsByJpql(sql, m, TemporalType.TIMESTAMP);
+        }
+        if (poRequestSearchDtos == null) {
+            poRequestSearchDtos = new ArrayList<>();
+        }
+    }
+
+    public List<com.divudi.core.data.dto.PharmacyPurchaseOrderDTO> getPoApproveSearchDtos() {
+        return poApproveSearchDtos;
+    }
+
+    public void setPoApproveSearchDtos(List<com.divudi.core.data.dto.PharmacyPurchaseOrderDTO> poApproveSearchDtos) {
+        this.poApproveSearchDtos = poApproveSearchDtos;
+    }
+
+    public void fetchPoApproveSearchDtos(int maxResult) {
+        Map<String, Object> m = new HashMap<>();
+        m.put("bt", com.divudi.core.data.BillType.PharmacyOrderApprove);
+        m.put("dep", sessionController.getDepartment());
+        m.put("fd", searchController.getFromDate());
+        m.put("td", searchController.getToDate());
+        String sql = "SELECT new com.divudi.core.data.dto.PharmacyPurchaseOrderDTO("
+                + "b.id, "
+                + "COALESCE(b.deptId, ''), "
+                + "refBill.id, "
+                + "COALESCE(refBill.insId, ''), "
+                + "b.createdAt, "
+                + "COALESCE(b.department.name, ''), "
+                + "COALESCE(creatorPerson.name, ''), "
+                + "COALESCE(b.toInstitution.name, ''), "
+                + "b.paymentMethod, "
+                + "b.cancelled, "
+                + "b.netTotal) "
+                + "FROM BilledBill b "
+                + "LEFT JOIN b.referenceBill refBill "
+                + "LEFT JOIN b.creater creater "
+                + "LEFT JOIN creater.webUserPerson creatorPerson "
+                + "WHERE b.billType = :bt "
+                + "AND b.createdAt BETWEEN :fd AND :td "
+                + "AND b.department = :dep "
+                + "AND b.retired = false "
+                + "ORDER BY b.createdAt DESC";
+        if (maxResult > 0) {
+            poApproveSearchDtos =
+                    (List<com.divudi.core.data.dto.PharmacyPurchaseOrderDTO>)
+                    billFacade.findLightsByJpql(sql, m, TemporalType.TIMESTAMP, maxResult);
+        } else {
+            poApproveSearchDtos =
+                    (List<com.divudi.core.data.dto.PharmacyPurchaseOrderDTO>)
+                    billFacade.findLightsByJpql(sql, m, TemporalType.TIMESTAMP);
+        }
+        if (poApproveSearchDtos == null) {
+            poApproveSearchDtos = new ArrayList<>();
+        }
+    }
+
+    public List<com.divudi.core.data.dto.PharmacyGrnSearchDTO> getGrnSearchDtos() {
+        return grnSearchDtos;
+    }
+
+    public void setGrnSearchDtos(List<com.divudi.core.data.dto.PharmacyGrnSearchDTO> grnSearchDtos) {
+        this.grnSearchDtos = grnSearchDtos;
+    }
+
+    public void fetchGrnSearchDtos(int maxResult) {
+        Map<String, Object> m = new HashMap<>();
+        m.put("bt", com.divudi.core.data.BillType.PharmacyGrnBill);
+        m.put("dep", sessionController.getDepartment());
+        m.put("fd", searchController.getFromDate());
+        m.put("td", searchController.getToDate());
+        String sql = "SELECT new com.divudi.core.data.dto.PharmacyGrnSearchDTO("
+                + "b.id, "
+                + "COALESCE(b.deptId, ''), "
+                + "COALESCE(refBill.deptId, ''), "
+                + "COALESCE(b.invoiceNumber, ''), "
+                + "b.invoiceDate, "
+                + "COALESCE(b.fromInstitution.name, ''), "
+                + "b.createdAt, "
+                + "COALESCE(creatorPerson.name, ''), "
+                + "b.paymentMethod, "
+                + "b.netTotal, "
+                + "b.saleValue, "
+                + "b.cancelled) "
+                + "FROM BilledBill b "
+                + "LEFT JOIN b.referenceBill refBill "
+                + "LEFT JOIN b.creater creater "
+                + "LEFT JOIN creater.webUserPerson creatorPerson "
+                + "WHERE b.billType = :bt "
+                + "AND b.createdAt BETWEEN :fd AND :td "
+                + "AND b.department = :dep "
+                + "AND b.retired = false "
+                + "ORDER BY b.createdAt DESC";
+        if (maxResult > 0) {
+            grnSearchDtos =
+                    (List<com.divudi.core.data.dto.PharmacyGrnSearchDTO>)
+                    billFacade.findLightsByJpql(sql, m, TemporalType.TIMESTAMP, maxResult);
+        } else {
+            grnSearchDtos =
+                    (List<com.divudi.core.data.dto.PharmacyGrnSearchDTO>)
+                    billFacade.findLightsByJpql(sql, m, TemporalType.TIMESTAMP);
+        }
+        if (grnSearchDtos == null) {
+            grnSearchDtos = new ArrayList<>();
         }
     }
 
