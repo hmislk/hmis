@@ -3857,6 +3857,50 @@ public class PharmacyController implements Serializable {
         }
     }
 
+    /**
+     * Multiplier to convert a stored {@code valueAt*Rate} into consumption-direction value.
+     *
+     * <p>Stored {@code billItemFinanceDetails.valueAt*Rate} (and the matching
+     * {@code billFinanceDetails.total*Value}) use a stock-direction sign: negative when
+     * stock leaves the source department, positive when it comes back. Consumption
+     * accounting is the inverse — an issue adds to consumption, a return/cancel subtracts.
+     * For every disposal-issue bill in this convention the contribution to consumption
+     * value is therefore {@code -valueAt*Rate}.</p>
+     *
+     * <p>See {@code DataAdministrationController.isFinanceValueNegative} for the canonical
+     * sign rules.</p>
+     */
+    private static double consumptionValueSign(BillTypeAtomic bta) {
+        if (bta == null) {
+            return 1.0;
+        }
+        switch (bta) {
+            case PHARMACY_DISPOSAL_ISSUE:
+            case PHARMACY_DISPOSAL_ISSUE_RETURN:
+            case PHARMACY_DISPOSAL_ISSUE_CANCELLED:
+                return -1.0;
+            default:
+                return 1.0;
+        }
+    }
+
+    /**
+     * Multiplier to convert a stored {@code billItem.qty} into consumption-direction qty.
+     * Issues add to consumption (+1); returns and cancellations subtract (-1).
+     */
+    private static double consumptionQtySign(BillTypeAtomic bta) {
+        if (bta == null) {
+            return 1.0;
+        }
+        switch (bta) {
+            case PHARMACY_DISPOSAL_ISSUE_RETURN:
+            case PHARMACY_DISPOSAL_ISSUE_CANCELLED:
+                return -1.0;
+            default:
+                return 1.0;
+        }
+    }
+
     public void generateConsumptionReportTableByBill(List<BillTypeAtomic> billTypeAtomics) {
         try {
             bills = new ArrayList<>();
@@ -3927,10 +3971,26 @@ public class PharmacyController implements Serializable {
                 PharmacyRow row = new PharmacyRow();
                 row.setBill(b);
 
-                // Simply aggregate the values displayed in the columns without manipulation
-                totalPurchase += b.getBillFinanceDetails().getTotalPurchaseValue() != null ? b.getBillFinanceDetails().getTotalPurchaseValue().doubleValue() : 0.0;
-                totalCostValue += b.getBillFinanceDetails().getTotalCostValue() != null ? b.getBillFinanceDetails().getTotalCostValue().doubleValue() : 0.0;
-                totalRetailValue += b.getBillFinanceDetails().getTotalRetailSaleValue() != null ? b.getBillFinanceDetails().getTotalRetailSaleValue().doubleValue() : 0.0;
+                // Apply consumption-direction sign so returns/cancellations subtract
+                // from net consumption rather than adding (issue #21025).
+                if (b.getBillFinanceDetails() != null) {
+                    double sign = consumptionValueSign(b.getBillTypeAtomic());
+
+                    double rowPurchase = b.getBillFinanceDetails().getTotalPurchaseValue() != null
+                            ? sign * b.getBillFinanceDetails().getTotalPurchaseValue().doubleValue() : 0.0;
+                    double rowCost = b.getBillFinanceDetails().getTotalCostValue() != null
+                            ? sign * b.getBillFinanceDetails().getTotalCostValue().doubleValue() : 0.0;
+                    double rowRetail = b.getBillFinanceDetails().getTotalRetailSaleValue() != null
+                            ? sign * b.getBillFinanceDetails().getTotalRetailSaleValue().doubleValue() : 0.0;
+
+                    row.setConsumptionPurchaseValue(rowPurchase);
+                    row.setConsumptionCostValue(rowCost);
+                    row.setConsumptionRetailValue(rowRetail);
+
+                    totalPurchase += rowPurchase;
+                    totalCostValue += rowCost;
+                    totalRetailValue += rowRetail;
+                }
 
                 pharmacyRows.add(row);
 
@@ -4113,23 +4173,32 @@ public class PharmacyController implements Serializable {
             totalRetailValue = 0.0;
 
             for (PharmacyRow row : pharmacyRows) {
-                // Simply aggregate the values displayed in the columns without manipulation
+                // Apply consumption-direction sign so returns/cancellations subtract
+                // from net consumption rather than adding (issue #21025).
                 if (row.getBillItem() != null && row.getBillItem().getBillItemFinanceDetails() != null) {
                     BigDecimal valueAtPurchase = row.getBillItem().getBillItemFinanceDetails().getValueAtPurchaseRate();
                     BigDecimal valueAtCost = row.getBillItem().getBillItemFinanceDetails().getValueAtCostRate();
                     BigDecimal valueAtRetail = row.getBillItem().getBillItemFinanceDetails().getValueAtRetailRate();
 
-                    if (valueAtPurchase != null) {
-                        totalPurchase += valueAtPurchase.doubleValue();
-                    }
+                    BillTypeAtomic bta = row.getBillItem().getBill() != null
+                            ? row.getBillItem().getBill().getBillTypeAtomic()
+                            : null;
+                    double valueSign = consumptionValueSign(bta);
+                    double qtySign = consumptionQtySign(bta);
 
-                    if (valueAtCost != null) {
-                        totalCostValue += valueAtCost.doubleValue();
-                    }
+                    double rowPurchase = valueAtPurchase != null ? valueSign * valueAtPurchase.doubleValue() : 0.0;
+                    double rowCost = valueAtCost != null ? valueSign * valueAtCost.doubleValue() : 0.0;
+                    double rowRetail = valueAtRetail != null ? valueSign * valueAtRetail.doubleValue() : 0.0;
+                    double rowQty = qtySign * (row.getBillItem().getQty() != null ? row.getBillItem().getQty() : 0.0);
 
-                    if (valueAtRetail != null) {
-                        totalRetailValue += valueAtRetail.doubleValue();
-                    }
+                    row.setConsumptionPurchaseValue(rowPurchase);
+                    row.setConsumptionCostValue(rowCost);
+                    row.setConsumptionRetailValue(rowRetail);
+                    row.setConsumptionQty(rowQty);
+
+                    totalPurchase += rowPurchase;
+                    totalCostValue += rowCost;
+                    totalRetailValue += rowRetail;
                 }
             }
 
@@ -4519,17 +4588,23 @@ public class PharmacyController implements Serializable {
             try {
                 List<Object[]> results = getBillItemFacade().findObjectsArrayByJpql(jpql, parameters, TemporalType.TIMESTAMP);
 
+                // Apply consumption-direction sign so returns/cancellations subtract
+                // from net consumption rather than adding (issue #21025). netTotal is
+                // already stored with the correct sign, so it does not need flipping.
+                double valueSign = consumptionValueSign(billType);
+                double qtySign = consumptionQtySign(billType);
+
                 // Convert Object[] to DepartmentCategoryWiseItems
                 for (Object[] row : results) {
                     Department mainDept = (Department) row[0];
                     Department consumptionDept = (Department) row[1];
                     Item item = (Item) row[2];
                     Category category = (item != null) ? item.getCategory() : null;
-                    Double purchaseValue = row[3] != null ? ((Number) row[3]).doubleValue() : 0.0;
-                    Double costValue = row[4] != null ? ((Number) row[4]).doubleValue() : 0.0;
-                    Double retailValue = row[5] != null ? ((Number) row[5]).doubleValue() : 0.0;
+                    Double purchaseValue = row[3] != null ? valueSign * ((Number) row[3]).doubleValue() : 0.0;
+                    Double costValue = row[4] != null ? valueSign * ((Number) row[4]).doubleValue() : 0.0;
+                    Double retailValue = row[5] != null ? valueSign * ((Number) row[5]).doubleValue() : 0.0;
                     Double netTotal = row[6] != null ? ((Number) row[6]).doubleValue() : 0.0;
-                    Double qty = row[7] != null ? ((Number) row[7]).doubleValue() : 0.0;
+                    Double qty = row[7] != null ? qtySign * ((Number) row[7]).doubleValue() : 0.0;
 
                     DepartmentCategoryWiseItems dtoItem = new DepartmentCategoryWiseItems(
                             mainDept, consumptionDept, item, category,
@@ -12678,20 +12753,17 @@ public class PharmacyController implements Serializable {
                     table.addCell(new PdfPCell(new Phrase(bill.getInvoiceNumber() != null ? bill.getInvoiceNumber() : "", normalFont)));
 
                     PdfPCell purchaseCell = new PdfPCell(new Phrase(
-                            bill.getBillFinanceDetails() != null && bill.getBillFinanceDetails().getTotalPurchaseValue() != null
-                                    ? decimalFormat.format(bill.getBillFinanceDetails().getTotalPurchaseValue()) : "0.00", normalFont));
+                            decimalFormat.format(row.getConsumptionPurchaseValue()), normalFont));
                     purchaseCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
                     table.addCell(purchaseCell);
 
                     PdfPCell costCell = new PdfPCell(new Phrase(
-                            bill.getBillFinanceDetails() != null && bill.getBillFinanceDetails().getTotalCostValue() != null
-                                    ? decimalFormat.format(bill.getBillFinanceDetails().getTotalCostValue()) : "0.00", normalFont));
+                            decimalFormat.format(row.getConsumptionCostValue()), normalFont));
                     costCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
                     table.addCell(costCell);
 
                     PdfPCell retailCell = new PdfPCell(new Phrase(
-                            bill.getBillFinanceDetails() != null && bill.getBillFinanceDetails().getTotalRetailSaleValue() != null
-                                    ? decimalFormat.format(bill.getBillFinanceDetails().getTotalRetailSaleValue()) : "0.00", normalFont));
+                            decimalFormat.format(row.getConsumptionRetailValue()), normalFont));
                     retailCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
                     table.addCell(retailCell);
 

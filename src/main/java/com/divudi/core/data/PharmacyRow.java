@@ -194,6 +194,11 @@ public class PharmacyRow implements Serializable {
     private BigDecimal valueOfStocksAtPurchaseRate = BigDecimal.ZERO;
     private BigDecimal valueOfStocksAtRetailSaleRate = BigDecimal.ZERO;
 
+    private double consumptionQty;
+    private double consumptionPurchaseValue;
+    private double consumptionCostValue;
+    private double consumptionRetailValue;
+
     private BigDecimal grossSaleRate = BigDecimal.ZERO;
     private BigDecimal discountRate = BigDecimal.ZERO;
     private BigDecimal marginRate = BigDecimal.ZERO;
@@ -1753,5 +1758,37 @@ public class PharmacyRow implements Serializable {
 
     public void setValueOfStocksAtRetailSaleRate(BigDecimal valueOfStocksAtRetailSaleRate) {
         this.valueOfStocksAtRetailSaleRate = valueOfStocksAtRetailSaleRate;
+    }
+
+    public double getConsumptionQty() {
+        return consumptionQty;
+    }
+
+    public void setConsumptionQty(double consumptionQty) {
+        this.consumptionQty = consumptionQty;
+    }
+
+    public double getConsumptionPurchaseValue() {
+        return consumptionPurchaseValue;
+    }
+
+    public void setConsumptionPurchaseValue(double consumptionPurchaseValue) {
+        this.consumptionPurchaseValue = consumptionPurchaseValue;
+    }
+
+    public double getConsumptionCostValue() {
+        return consumptionCostValue;
+    }
+
+    public void setConsumptionCostValue(double consumptionCostValue) {
+        this.consumptionCostValue = consumptionCostValue;
+    }
+
+    public double getConsumptionRetailValue() {
+        return consumptionRetailValue;
+    }
+
+    public void setConsumptionRetailValue(double consumptionRetailValue) {
+        this.consumptionRetailValue = consumptionRetailValue;
     }
 }
