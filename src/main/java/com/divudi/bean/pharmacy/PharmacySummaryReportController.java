@@ -326,6 +326,8 @@ public class PharmacySummaryReportController implements Serializable {
 
     private List<HistoricalRecord> historicalRecords;
 
+    private boolean includeArchived = false;
+
     //transferOuts;
     //adjustments;
 // </editor-fold>
@@ -469,6 +471,9 @@ public class PharmacySummaryReportController implements Serializable {
      * @return The total stock value at retail rate, or 0.0 if calculation fails
      */
     private double calculateStockValueAtRetailRate(Date date, Department dept) {
+        if (includeArchived) {
+            return stockHistoryFacade.calculateStockValueAtRetailRateOptimized(date, dept != null ? dept.getId() : null, true);
+        }
         try {
             Map<String, Object> params = new HashMap<>();
             StringBuilder jpql = new StringBuilder();
@@ -3951,6 +3956,14 @@ public class PharmacySummaryReportController implements Serializable {
 
     public void setFloatRows(List<IncomeRow> floatRows) {
         this.floatRows = floatRows;
+    }
+
+    public boolean isIncludeArchived() {
+        return includeArchived;
+    }
+
+    public void setIncludeArchived(boolean includeArchived) {
+        this.includeArchived = includeArchived;
     }
 
     public void retireHistoricalRecord(HistoricalRecord hr) {
