@@ -130,6 +130,7 @@ public class FeeMarginAllowedController implements Serializable {
             return;
         }
         for (ItemFeeMarginGroup group : groups) {
+            group.setAllSelected(value);
             for (FeeRow row : group.getFeeRows()) {
                 row.setSelected(value);
             }
