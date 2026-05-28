@@ -8,6 +8,7 @@
  */
 package com.divudi.bean.inward;
 
+import com.divudi.bean.cashTransaction.FinancialTransactionController;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.core.util.JsfUtil;
@@ -51,6 +52,8 @@ public class InwardRefundController implements Serializable {
     PaymentService paymentService;
     @Inject
     private SessionController sessionController;
+    @Inject
+    private FinancialTransactionController financialTransactionController;
     private double paidAmount;
     double netTotal;
     private Bill current;
@@ -65,6 +68,21 @@ public class InwardRefundController implements Serializable {
         current = null;
         paidAmount = 0.0;
         printPreview = false;
+    }
+
+    /**
+     * Navigate to the inward deposit refund page, requiring an active shift.
+     * If the logged user has no open shift start fund bill, show an error and
+     * send them to the cashier index to start a shift first.
+     */
+    public String navigateToInwardDepositRefund() {
+        makeNull();
+        financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
+        if (financialTransactionController.getNonClosedShiftStartFundBill() == null) {
+            JsfUtil.addErrorMessage("Start Your Shift First !");
+            return "/cashier/index?faces-redirect=true";
+        }
+        return "/inward/inward_bill_refund?faces-redirect=true";
     }
 
     public PaymentMethod[] getPaymentMethods() {

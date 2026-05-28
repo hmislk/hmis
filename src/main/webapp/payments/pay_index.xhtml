@@ -153,13 +153,12 @@
                                                 actionListener="#{searchController.makeListNull}" 
                                                 rendered="#{webUserController.hasPrivilege('InwardBillSearch')}" >
                                             </p:commandButton>
-                                            <p:commandButton 
-                                                styleClass="w-100 ui-button-info ui-button-outlined" 
-                                                ajax="false" 
-                                                value="Refund" 
-                                                title="Refund" 
-                                                action="/inward/inward_bill_refund?faces-redirect=true" 
-                                                actionListener="#{inwardRefundController.makeNull}" 
+                                            <p:commandButton
+                                                styleClass="w-100 ui-button-info ui-button-outlined"
+                                                ajax="false"
+                                                value="Refund"
+                                                title="Refund"
+                                                action="#{inwardRefundController.navigateToInwardDepositRefund()}"
                                                 rendered="#{webUserController.hasPrivilege('InwardBilling')}" >
                                             </p:commandButton>
                                             <p:commandButton 
