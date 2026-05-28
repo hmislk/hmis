@@ -146,6 +146,22 @@ public class CashRecieveBillController implements Serializable {
         return "/credit/credit_compnay_bill_inward?faces-redirect=true";
     }
 
+    /**
+     * Navigate to inward CC payment by company, requiring an active shift.
+     * If the logged user has no open shift start fund bill, show an error and
+     * send them to the cashier index to start a shift first.
+     */
+    public String navigateToCreditCompanyBillPaymentInward() {
+        financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
+        if (financialTransactionController.getNonClosedShiftStartFundBill() == null) {
+            // Use Flash scope to preserve error message across redirect
+            FacesContext.getCurrentInstance().getExternalContext().getFlash().setKeepMessages(true);
+            JsfUtil.addErrorMessage("Start Your Shift First !");
+            return "/cashier/index?faces-redirect=true";
+        }
+        return "/credit/credit_compnay_bill_payment_inward?faces-redirect=true";
+    }
+
     public void selectInstitutionListener() {
         Institution ins = creditCompany;
         makeNull();
