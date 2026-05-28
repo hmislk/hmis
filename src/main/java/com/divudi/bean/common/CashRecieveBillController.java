@@ -139,7 +139,6 @@ public class CashRecieveBillController implements Serializable {
         financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
         if (financialTransactionController.getNonClosedShiftStartFundBill() == null) {
             // Use Flash scope to preserve error message across redirect
-            FacesContext.getCurrentInstance().getExternalContext().getFlash().setKeepMessages(true);
             JsfUtil.addErrorMessage("Start Your Shift First !");
             return "/cashier/index?faces-redirect=true";
         }
@@ -155,7 +154,6 @@ public class CashRecieveBillController implements Serializable {
         financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
         if (financialTransactionController.getNonClosedShiftStartFundBill() == null) {
             // Use Flash scope to preserve error message across redirect
-            FacesContext.getCurrentInstance().getExternalContext().getFlash().setKeepMessages(true);
             JsfUtil.addErrorMessage("Start Your Shift First !");
             return "/cashier/index?faces-redirect=true";
         }
