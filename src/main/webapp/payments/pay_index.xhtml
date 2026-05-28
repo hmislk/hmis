@@ -137,13 +137,12 @@
 
                                     <p:tab title="Inward Deposit">
                                         <div class="d-grid gap-2">
-                                            <p:commandButton 
-                                                styleClass="w-100 ui-button-info ui-button-outlined" 
-                                                ajax="false" 
-                                                value="Payment" 
-                                                title="Payment" 
-                                                action="/inward/inward_bill_payment?faces-redirect=true" 
-                                                actionListener="#{inwardPaymentController.makeNull}" 
+                                            <p:commandButton
+                                                styleClass="w-100 ui-button-info ui-button-outlined"
+                                                ajax="false"
+                                                value="Payment"
+                                                title="Payment"
+                                                action="#{inwardPaymentController.navigateToInwardDepositPayment()}"
                                                 rendered="#{webUserController.hasPrivilege('InwardBilling')}">
                                             </p:commandButton>
                                             <p:commandButton 
