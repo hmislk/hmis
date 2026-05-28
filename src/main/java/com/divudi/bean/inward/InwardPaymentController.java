@@ -131,9 +131,16 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
 
     }
 
-    /** Navigate to the inward patient co-payment collection page. */
+    /** Navigate to the inward patient co-payment collection page, requiring an active shift. */
     public String navigateToInwardPatientCopayment() {
         makeNull();
+        financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
+        if (financialTransactionController.getNonClosedShiftStartFundBill() == null) {
+            // Use Flash scope to preserve error message across redirect
+            FacesContext.getCurrentInstance().getExternalContext().getFlash().setKeepMessages(true);
+            JsfUtil.addErrorMessage("Start Your Shift First !");
+            return "/cashier/index?faces-redirect=true";
+        }
         return "/credit/inward_patient_copay_payment?faces-redirect=true";
     }
 
