@@ -11,6 +11,9 @@
         <ui:composition template="/inward/inward_administration.xhtml">
 
             <ui:define name="subcontent">
+                <style>
+                    .fee-margin-table td { padding: 8px !important; }
+                </style>
                 <h:form id="form">
 
                     <p:panel header="Service Charge Allowed - Fee Update" class="row w-100">
@@ -21,46 +24,36 @@
                                 <h:outputLabel value="Filter" class="mx-2" />
                             </f:facet>
 
-                            <div class="row">
-                                <div class="col-2">
-                                    <h:outputLabel value="Department" class="mt-2" />
-                                </div>
-                                <div class="col-10">
+                            <div class="d-flex align-items-end flex-wrap gap-3">
+                                <div>
+                                    <h:outputLabel value="Department" class="d-block mb-1" />
                                     <p:autoComplete
                                         id="department"
                                         value="#{feeMarginAllowedController.department}"
                                         forceSelection="true"
+                                        placeholder="Select Department"
                                         completeMethod="#{departmentController.completeDept}"
                                         var="dep"
                                         inputStyleClass="form-control"
-                                        class="w-100"
+                                        style="width: 24em;"
                                         itemLabel="#{dep.name}"
                                         itemValue="#{dep}">
-                                        <p:column>
+                                        <p:column style="padding: 8px;">
                                             <h:outputLabel value="#{dep.name}" />
                                         </p:column>
-                                        <p:column>
+                                        <p:column style="padding: 8px;">
                                             <h:outputLabel value="#{dep.institution.name}" />
                                         </p:column>
                                     </p:autoComplete>
                                 </div>
-                            </div>
-
-                            <div class="row mt-2">
-                                <div class="col-2">
-                                    <h:outputLabel value="Item Type" class="mt-2" />
-                                </div>
-                                <div class="col-10">
-                                    <p:selectOneMenu id="itemType" value="#{feeMarginAllowedController.itemType}" class="w-100">
+                                <div>
+                                    <h:outputLabel value="Item Type" class="d-block mb-1" />
+                                    <p:selectOneMenu id="itemType" value="#{feeMarginAllowedController.itemType}" style="width: 12em;">
                                         <f:selectItem itemLabel="Service" itemValue="Service" />
                                         <f:selectItem itemLabel="Investigation" itemValue="Investigation" />
                                     </p:selectOneMenu>
                                 </div>
-                            </div>
-
-                            <div class="row mt-3">
-                                <div class="col-2"></div>
-                                <div class="col-10">
+                                <div>
                                     <p:commandButton
                                         value="Process"
                                         icon="fa fa-search"
@@ -103,19 +96,21 @@
                                 var="g"
                                 rowIndexVar="itemIndex"
                                 emptyMessage="No items to display."
-                                class="w-100">
+                                class="w-100 fee-margin-table">
 
-                                <p:column headerText="No" width="3em">
+                                <p:column headerText="No" width="2em" class="text-center">
                                     <h:outputLabel value="#{itemIndex + 1}" />
                                 </p:column>
-                                <p:column headerText="Item Code" width="10em">
-                                    <h:outputLabel value="#{g.item.code}" />
-                                </p:column>
-                                <p:column headerText="Name">
+                                <p:column headerText="Name" width="16em">
                                     <h:outputLabel value="#{g.item.name}" />
                                 </p:column>
-                                <p:column headerText="Type" width="10em">
+                                <p:column headerText="Type" width="7em">
                                     <h:outputLabel value="#{g.type}" />
+                                </p:column>
+                                <p:column headerText="Select All Fees" width="6em" class="text-center">
+                                    <p:selectBooleanCheckbox value="#{g.allSelected}">
+                                        <p:ajax listener="#{g.toggleAllFees}" update="@(.fee-margin-table)" />
+                                    </p:selectBooleanCheckbox>
                                 </p:column>
 
                                 <p:column headerText="Fees">
@@ -125,34 +120,34 @@
                                         rowIndexVar="feeIndex"
                                         class="w-100">
 
-                                        <p:column headerText="No" width="3em">
+                                        <p:column headerText="No" width="2em" class="text-center">
                                             <h:outputLabel value="#{feeIndex + 1}" />
                                         </p:column>
-                                        <p:column headerText="Fee Name">
+                                        <p:column headerText="Fee Name" width="12em">
                                             <h:outputLabel value="#{fr.itemFee.name}" />
                                         </p:column>
-                                        <p:column headerText="Fee Type" width="10em">
+                                        <p:column headerText="Fee Type" width="4em">
                                             <h:outputLabel value="#{fr.itemFee.feeType.label}" />
                                         </p:column>
-                                        <p:column headerText="Local Fee" width="8em" class="text-end">
+                                        <p:column headerText="Local Fee" width="7em" class="text-end">
                                             <h:outputLabel value="#{fr.itemFee.fee}">
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </h:outputLabel>
                                         </p:column>
-                                        <p:column headerText="Foreigner Fee" width="8em" class="text-end">
+                                        <p:column headerText="Foreigner Fee" width="7em" class="text-end">
                                             <h:outputLabel value="#{fr.itemFee.ffee}">
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </h:outputLabel>
                                         </p:column>
-                                        <p:column headerText="Margin Allowed" width="9em">
+                                        <p:column headerText="Margin Allowed" width="8em" class="text-center">
                                             <p:badge value="Allowed" styleClass="ui-badge-success" rendered="#{fr.itemFee.marginAllowed}" />
                                             <p:badge value="Not Allowed" styleClass="ui-badge-danger" rendered="#{!fr.itemFee.marginAllowed}" />
                                         </p:column>
-                                        <p:column headerText="Discount Allowed" width="9em">
+                                        <p:column headerText="Discount Allowed" width="8em" class="text-center">
                                             <p:badge value="Allowed" styleClass="ui-badge-success" rendered="#{fr.itemFee.discountAllowed}" />
                                             <p:badge value="Not Allowed" styleClass="ui-badge-danger" rendered="#{!fr.itemFee.discountAllowed}" />
                                         </p:column>
-                                        <p:column headerText="Select" width="5em">
+                                        <p:column headerText="Select" width="3em" class="text-center">
                                             <p:selectBooleanCheckbox value="#{fr.selected}" />
                                         </p:column>
                                     </p:dataTable>
