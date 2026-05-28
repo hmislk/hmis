@@ -64,7 +64,7 @@
                             </div>
                         </p:panel>
 
-                        <p:panel class="mt-2" rendered="#{feeMarginAllowedController.groups ne null}">
+                        <p:panel class="mt-2" rendered="#{not empty feeMarginAllowedController.groups}">
                             <f:facet name="header">
                                 <h:outputLabel value="Items and Fees" class="mt-2" />
                                 <div class="d-flex gap-2" style="float: right;">
