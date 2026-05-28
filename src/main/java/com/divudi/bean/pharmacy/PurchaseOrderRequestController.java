@@ -516,9 +516,9 @@ public class PurchaseOrderRequestController implements Serializable {
             return 0.0;
         }
 
-        boolean manageCosting = configOptionApplicationController.getBooleanValueByKey("Manage Costing", true);
-        if (manageCosting) {
-            return fetchLastFinanceRateForItem(item, "bi.billItemFinanceDetails.lineGrossRate", "purchase");
+        Double rate = fetchLastFinanceRateForItem(item, "bi.billItemFinanceDetails.lineGrossRate", "purchase");
+        if (rate > 0.0) {
+            return rate;
         }
 
         return fetchLastItemBatchRateForItem(item, "bi.pharmaceuticalBillItem.itemBatch.purcahseRate", "purchase");
@@ -529,9 +529,9 @@ public class PurchaseOrderRequestController implements Serializable {
             return 0.0;
         }
 
-        boolean manageCosting = configOptionApplicationController.getBooleanValueByKey("Manage Costing", true);
-        if (manageCosting) {
-            return fetchLastFinanceRateForItem(item, "bi.billItemFinanceDetails.retailSaleRate", "retail");
+        Double rate = fetchLastFinanceRateForItem(item, "bi.billItemFinanceDetails.retailSaleRate", "retail");
+        if (rate > 0.0) {
+            return rate;
         }
 
         return fetchLastItemBatchRateForItem(item, "bi.pharmaceuticalBillItem.itemBatch.retailsaleRate", "retail");
