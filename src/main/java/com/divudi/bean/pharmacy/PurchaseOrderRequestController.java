@@ -44,6 +44,7 @@ import com.divudi.core.entity.AppEmail;
 import com.divudi.core.data.MessageType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.dataStructure.PaymentMethodData;
+import com.divudi.core.data.dto.PharmacyPurchaseOrderRateDTO;
 import com.divudi.service.BillService;
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -487,9 +488,19 @@ public class PurchaseOrderRequestController implements Serializable {
             return;
         }
 
-        double purchaseRate = fetchLastPurchaseRateForItem(billItem.getItem());
-        double retailRate = fetchLastRetailRateForItem(billItem.getItem());
+        List<Item> items = new ArrayList<>();
+        items.add(billItem.getItem());
 
+        Map<Long, Double> purchaseRates = fetchLastPurchaseRatesForItems(items);
+        Map<Long, Double> retailRates = fetchLastRetailRatesForItems(items);
+
+        applyLastRatesToBillItem(
+                billItem,
+                getRateForItem(purchaseRates, billItem.getItem()),
+                getRateForItem(retailRates, billItem.getItem()));
+    }
+
+    private void applyLastRatesToBillItem(BillItem billItem, double purchaseRate, double retailRate) {
         PharmaceuticalBillItem pharmaceuticalBillItem = billItem.getPharmaceuticalBillItem();
         pharmaceuticalBillItem.setPurchaseRate(purchaseRate);
         pharmaceuticalBillItem.setRetailRate(retailRate);
@@ -511,128 +522,210 @@ public class PurchaseOrderRequestController implements Serializable {
         return BigDecimal.ONE;
     }
 
-    private Double fetchLastPurchaseRateForItem(Item item) {
-        if (item == null || item.getId() == null) {
-            return 0.0;
-        }
-
-        Double rate = fetchLastFinanceRateForItem(item, "bi.billItemFinanceDetails.lineGrossRate", "purchase");
-        if (rate > 0.0) {
-            return rate;
-        }
-
-        return fetchLastItemBatchRateForItem(item, "bi.pharmaceuticalBillItem.itemBatch.purcahseRate", "purchase");
+    private Map<Long, Double> fetchLastPurchaseRatesForItems(List<Item> items) {
+        return fetchLastRatesForItems(items,
+                "billItemFinanceDetails.lineGrossRate",
+                "pharmaceuticalBillItem.itemBatch.purcahseRate",
+                "purchase");
     }
 
-    private Double fetchLastRetailRateForItem(Item item) {
-        if (item == null || item.getId() == null) {
-            return 0.0;
-        }
-
-        Double rate = fetchLastFinanceRateForItem(item, "bi.billItemFinanceDetails.retailSaleRate", "retail");
-        if (rate > 0.0) {
-            return rate;
-        }
-
-        return fetchLastItemBatchRateForItem(item, "bi.pharmaceuticalBillItem.itemBatch.retailsaleRate", "retail");
+    private Map<Long, Double> fetchLastRetailRatesForItems(List<Item> items) {
+        return fetchLastRatesForItems(items,
+                "billItemFinanceDetails.retailSaleRate",
+                "pharmaceuticalBillItem.itemBatch.retailsaleRate",
+                "retail");
     }
 
-    private Double fetchLastFinanceRateForItem(Item item, String rateExpression, String rateLabel) {
+    private Map<Long, Double> fetchLastRatesForItems(List<Item> items, String financeRatePath, String itemBatchRatePath, String rateLabel) {
+        List<Item> lookupItems = getUniqueItemsWithIds(items);
+        Map<Long, Double> ratesByItemId = new HashMap<>();
+        if (lookupItems.isEmpty()) {
+            return ratesByItemId;
+        }
+
         DepartmentLookupScope scope = getDepartmentLookupScope();
 
-        Double rate = fetchLastFinanceRateForItem(item, rateExpression, rateLabel, "department", scope.department);
-        if (rate > 0.0) {
-            return rate;
-        }
+        mergeMissingRates(ratesByItemId, fetchScopedFinanceRatesForItems(lookupItems, financeRatePath, rateLabel, "department", scope.department));
+        mergeMissingRates(ratesByItemId, fetchScopedFinanceRatesForItems(getItemsMissingRates(lookupItems, ratesByItemId), financeRatePath, rateLabel, "institution", scope.institution));
+        mergeMissingRates(ratesByItemId, fetchScopedFinanceRatesForItems(getItemsMissingRates(lookupItems, ratesByItemId), financeRatePath, rateLabel, "global", null));
 
-        rate = fetchLastFinanceRateForItem(item, rateExpression, rateLabel, "institution", scope.institution);
-        if (rate > 0.0) {
-            return rate;
-        }
+        mergeMissingItemBatchRates(ratesByItemId, lookupItems, itemBatchRatePath, rateLabel, "department", scope.department);
+        mergeMissingItemBatchRates(ratesByItemId, lookupItems, itemBatchRatePath, rateLabel, "institution", scope.institution);
+        mergeMissingItemBatchRates(ratesByItemId, lookupItems, itemBatchRatePath, rateLabel, "global", null);
 
-        return fetchLastFinanceRateForItem(item, rateExpression, rateLabel, "global", null);
+        return ratesByItemId;
     }
 
-    private Double fetchLastFinanceRateForItem(Item item, String rateExpression, String rateLabel, String scope, Object scopeValue) {
-        if (scopeValue == null && !"global".equals(scope)) {
-            return 0.0;
+    private List<Item> getUniqueItemsWithIds(List<Item> items) {
+        Map<Long, Item> uniqueItems = new HashMap<>();
+        if (items == null) {
+            return new ArrayList<>();
+        }
+        for (Item item : items) {
+            if (item != null && item.getId() != null && !uniqueItems.containsKey(item.getId())) {
+                uniqueItems.put(item.getId(), item);
+            }
+        }
+        return new ArrayList<>(uniqueItems.values());
+    }
+
+    private List<Item> getItemsMissingRates(List<Item> items, Map<Long, Double> ratesByItemId) {
+        List<Item> missingItems = new ArrayList<>();
+        if (items == null) {
+            return missingItems;
+        }
+        for (Item item : items) {
+            if (item != null && item.getId() != null && getRateForItem(ratesByItemId, item) <= 0.0) {
+                missingItems.add(item);
+            }
+        }
+        return missingItems;
+    }
+
+    private void mergeMissingRates(Map<Long, Double> ratesByItemId, Map<Long, Double> newRatesByItemId) {
+        if (newRatesByItemId == null || newRatesByItemId.isEmpty()) {
+            return;
+        }
+        for (Map.Entry<Long, Double> rateEntry : newRatesByItemId.entrySet()) {
+            if (rateEntry.getKey() != null && rateEntry.getValue() != null && rateEntry.getValue() > 0.0
+                    && getRateByItemId(ratesByItemId, rateEntry.getKey()) <= 0.0) {
+                ratesByItemId.put(rateEntry.getKey(), rateEntry.getValue());
+            }
+        }
+    }
+
+    private Map<Long, Double> fetchScopedFinanceRatesForItems(List<Item> items, String ratePath, String rateLabel, String scope, Object scopeValue) {
+        Map<Long, Double> ratesByItemId = new HashMap<>();
+        if (items == null || items.isEmpty() || (scopeValue == null && !"global".equals(scope))) {
+            return ratesByItemId;
         }
 
-        String jpql = "SELECT " + rateExpression + " "
+        String rateExpression = "bi." + ratePath;
+        String subqueryRateExpression = "bi2." + ratePath;
+
+        String jpql = "SELECT new com.divudi.core.data.dto.PharmacyPurchaseOrderRateDTO("
+                + "bi.item.id, " + rateExpression + ", bi.id) "
                 + "FROM BillItem bi "
-                + "WHERE bi.item = :item "
+                + "WHERE bi.item.id IN :itemIds "
                 + "AND bi.retired = false "
                 + "AND bi.bill.cancelled = false "
                 + "AND bi.billItemFinanceDetails IS NOT NULL "
                 + "AND " + rateExpression + " IS NOT NULL "
                 + "AND " + rateExpression + " > 0 "
                 + "AND bi.bill.billType IN :billTypes "
-                + getScopeCondition(scope)
+                + getScopeCondition(scope, "bi")
+                + "AND NOT EXISTS ("
+                + "SELECT bi2.id FROM BillItem bi2 "
+                + "WHERE bi2.item.id = bi.item.id "
+                + "AND bi2.retired = false "
+                + "AND bi2.bill.cancelled = false "
+                + "AND bi2.billItemFinanceDetails IS NOT NULL "
+                + "AND " + subqueryRateExpression + " IS NOT NULL "
+                + "AND " + subqueryRateExpression + " > 0 "
+                + "AND bi2.bill.billType IN :billTypes "
+                + getScopeCondition(scope, "bi2")
+                + "AND bi2.id > bi.id) "
                 + "ORDER BY bi.id DESC";
 
-        Map<String, Object> params = createRateLookupParameters(item);
+        Map<String, Object> params = createRateLookupParameters(items);
         addScopeParameter(params, scope, scopeValue);
-
-        return fetchSingleRate(jpql, params, rateLabel, item);
+        return fetchRateDtos(jpql, params, rateLabel);
     }
 
-    private Double fetchLastItemBatchRateForItem(Item item, String rateExpression, String rateLabel) {
-        DepartmentLookupScope scope = getDepartmentLookupScope();
-        Item batchItem = getItemForItemBatchRate(item);
-
-        Double rate = fetchLastItemBatchRateForItem(batchItem, rateExpression, rateLabel, "department", scope.department);
-        if (rate > 0.0) {
-            return rate;
+    private void mergeMissingItemBatchRates(Map<Long, Double> ratesByItemId, List<Item> originalItems, String ratePath, String rateLabel, String scope, Object scopeValue) {
+        List<Item> missingItems = getItemsMissingRates(originalItems, ratesByItemId);
+        if (missingItems.isEmpty() || (scopeValue == null && !"global".equals(scope))) {
+            return;
         }
 
-        rate = fetchLastItemBatchRateForItem(batchItem, rateExpression, rateLabel, "institution", scope.institution);
-        if (rate > 0.0) {
-            return rate;
+        List<Item> batchItems = new ArrayList<>();
+        Map<Long, Long> batchItemIdByOriginalItemId = new HashMap<>();
+        for (Item item : missingItems) {
+            Item batchItem = getItemForItemBatchRate(item);
+            if (batchItem != null && batchItem.getId() != null) {
+                batchItems.add(batchItem);
+                batchItemIdByOriginalItemId.put(item.getId(), batchItem.getId());
+            }
         }
 
-        return fetchLastItemBatchRateForItem(batchItem, rateExpression, rateLabel, "global", null);
+        Map<Long, Double> batchRatesByBatchItemId = fetchScopedItemBatchRatesForItems(getUniqueItemsWithIds(batchItems), ratePath, rateLabel, scope, scopeValue);
+        for (Item item : missingItems) {
+            Long batchItemId = batchItemIdByOriginalItemId.get(item.getId());
+            Double rate = batchRatesByBatchItemId.get(batchItemId);
+            if (rate != null && rate > 0.0 && getRateForItem(ratesByItemId, item) <= 0.0) {
+                ratesByItemId.put(item.getId(), rate);
+            }
+        }
     }
 
-    private Double fetchLastItemBatchRateForItem(Item item, String rateExpression, String rateLabel, String scope, Object scopeValue) {
-        if (item == null || (scopeValue == null && !"global".equals(scope))) {
-            return 0.0;
+    private Map<Long, Double> fetchScopedItemBatchRatesForItems(List<Item> items, String ratePath, String rateLabel, String scope, Object scopeValue) {
+        Map<Long, Double> ratesByItemId = new HashMap<>();
+        if (items == null || items.isEmpty() || (scopeValue == null && !"global".equals(scope))) {
+            return ratesByItemId;
         }
 
-        String jpql = "SELECT " + rateExpression + " "
+        String rateExpression = "bi." + ratePath;
+        String subqueryRateExpression = "bi2." + ratePath;
+
+        String jpql = "SELECT new com.divudi.core.data.dto.PharmacyPurchaseOrderRateDTO("
+                + "bi.pharmaceuticalBillItem.itemBatch.item.id, " + rateExpression + ", bi.id) "
                 + "FROM BillItem bi "
                 + "WHERE bi.retired = false "
                 + "AND bi.bill.cancelled = false "
                 + "AND bi.pharmaceuticalBillItem IS NOT NULL "
                 + "AND bi.pharmaceuticalBillItem.itemBatch IS NOT NULL "
-                + "AND bi.pharmaceuticalBillItem.itemBatch.item = :item "
+                + "AND bi.pharmaceuticalBillItem.itemBatch.item.id IN :itemIds "
                 + "AND " + rateExpression + " > 0 "
                 + "AND bi.bill.billType IN :billTypes "
-                + getScopeCondition(scope)
+                + getScopeCondition(scope, "bi")
+                + "AND NOT EXISTS ("
+                + "SELECT bi2.id FROM BillItem bi2 "
+                + "WHERE bi2.retired = false "
+                + "AND bi2.bill.cancelled = false "
+                + "AND bi2.pharmaceuticalBillItem IS NOT NULL "
+                + "AND bi2.pharmaceuticalBillItem.itemBatch IS NOT NULL "
+                + "AND bi2.pharmaceuticalBillItem.itemBatch.item.id = bi.pharmaceuticalBillItem.itemBatch.item.id "
+                + "AND " + subqueryRateExpression + " > 0 "
+                + "AND bi2.bill.billType IN :billTypes "
+                + getScopeCondition(scope, "bi2")
+                + "AND bi2.id > bi.id) "
                 + "ORDER BY bi.id DESC";
 
-        Map<String, Object> params = createRateLookupParameters(item);
+        Map<String, Object> params = createRateLookupParameters(items);
         addScopeParameter(params, scope, scopeValue);
-
-        return fetchSingleRate(jpql, params, rateLabel, item);
+        return fetchRateDtos(jpql, params, rateLabel);
     }
 
-    private Map<String, Object> createRateLookupParameters(Item item) {
+    private Map<String, Object> createRateLookupParameters(List<Item> items) {
         List<BillType> purchaseBillTypes = new ArrayList<>();
         purchaseBillTypes.add(BillType.PharmacyGrnBill);
         purchaseBillTypes.add(BillType.PharmacyPurchaseBill);
 
         Map<String, Object> params = new HashMap<>();
-        params.put("item", item);
+        params.put("itemIds", getItemIds(items));
         params.put("billTypes", purchaseBillTypes);
         return params;
     }
 
-    private String getScopeCondition(String scope) {
+    private List<Long> getItemIds(List<Item> items) {
+        List<Long> itemIds = new ArrayList<>();
+        if (items == null) {
+            return itemIds;
+        }
+        for (Item item : items) {
+            if (item != null && item.getId() != null && !itemIds.contains(item.getId())) {
+                itemIds.add(item.getId());
+            }
+        }
+        return itemIds;
+    }
+
+    private String getScopeCondition(String scope, String alias) {
         if ("department".equals(scope)) {
-            return "AND bi.bill.department = :department ";
+            return "AND " + alias + ".bill.department = :department ";
         }
         if ("institution".equals(scope)) {
-            return "AND bi.bill.department.institution = :institution ";
+            return "AND " + alias + ".bill.department.institution = :institution ";
         }
         return "";
     }
@@ -645,26 +738,24 @@ public class PurchaseOrderRequestController implements Serializable {
         }
     }
 
-    private Double fetchSingleRate(String jpql, Map<String, Object> params, String rateLabel, Item item) {
+    private Map<Long, Double> fetchRateDtos(String jpql, Map<String, Object> params, String rateLabel) {
+        Map<Long, Double> ratesByItemId = new HashMap<>();
         try {
-            List<?> results = billItemFacade.findLightsByJpql(jpql, params, null, 1);
-            if (results != null && !results.isEmpty() && results.get(0) != null) {
-                return convertRateToDouble(results.get(0));
+            @SuppressWarnings("unchecked")
+            List<PharmacyPurchaseOrderRateDTO> results = (List<PharmacyPurchaseOrderRateDTO>) billItemFacade.findLightsByJpql(jpql, params);
+            if (results == null) {
+                return ratesByItemId;
+            }
+            for (PharmacyPurchaseOrderRateDTO result : results) {
+                if (result != null && result.getItemId() != null && result.getRate() != null && result.getRate() > 0.0
+                        && getRateByItemId(ratesByItemId, result.getItemId()) <= 0.0) {
+                    ratesByItemId.put(result.getItemId(), result.getRate());
+                }
             }
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Failed to fetch last " + rateLabel + " rate for item " + item.getId(), e);
+            LOGGER.log(Level.SEVERE, "Failed to fetch last " + rateLabel + " rates for purchase order request", e);
         }
-        return 0.0;
-    }
-
-    private Double convertRateToDouble(Object rate) {
-        if (rate instanceof BigDecimal) {
-            return ((BigDecimal) rate).doubleValue();
-        }
-        if (rate instanceof Number) {
-            return ((Number) rate).doubleValue();
-        }
-        return 0.0;
+        return ratesByItemId;
     }
 
     private Item getItemForItemBatchRate(Item item) {
@@ -672,6 +763,24 @@ public class PurchaseOrderRequestController implements Serializable {
             return ((Ampp) item).getAmp();
         }
         return item;
+    }
+
+    private double getRateForItem(Map<Long, Double> ratesByItemId, Item item) {
+        if (item == null || item.getId() == null) {
+            return 0.0;
+        }
+        return getRateByItemId(ratesByItemId, item.getId());
+    }
+
+    private double getRateByItemId(Map<Long, Double> ratesByItemId, Long itemId) {
+        if (ratesByItemId == null || itemId == null) {
+            return 0.0;
+        }
+        Double rate = ratesByItemId.get(itemId);
+        if (rate == null || rate <= 0.0) {
+            return 0.0;
+        }
+        return rate;
     }
 
     private DepartmentLookupScope getDepartmentLookupScope() {
@@ -790,9 +899,8 @@ public class PurchaseOrderRequestController implements Serializable {
         boolean preventDuplicates = configOptionApplicationController.getBooleanValueByKey("Prevent Duplicate Items in Purchase Orders", false);
         int skippedCount = 0;
 
-        // Create bill items and fetch rates individually (LIMIT 1 per item)
+        List<Item> itemsToAdd = new ArrayList<>();
         for (Item i : items) {
-            // Check for duplicate items if configuration is enabled
             if (preventDuplicates) {
                 boolean isDuplicate = false;
                 for (BillItem existingItem : getBillItems()) {
@@ -808,7 +916,13 @@ public class PurchaseOrderRequestController implements Serializable {
                     continue; // Skip this item as it already exists
                 }
             }
+            itemsToAdd.add(i);
+        }
 
+        Map<Long, Double> purchaseRatesByItemId = fetchLastPurchaseRatesForItems(itemsToAdd);
+        Map<Long, Double> retailRatesByItemId = fetchLastRetailRatesForItems(itemsToAdd);
+
+        for (Item i : itemsToAdd) {
             BillItem bi = new BillItem();
             bi.setItem(i);
 
@@ -818,7 +932,10 @@ public class PurchaseOrderRequestController implements Serializable {
 
             bi.setSearialNo(serialStart++);
 
-            applyLastRatesToBillItem(bi);
+            applyLastRatesToBillItem(
+                    bi,
+                    getRateForItem(purchaseRatesByItemId, i),
+                    getRateForItem(retailRatesByItemId, i));
 
             getBillItems().add(bi);
         }
