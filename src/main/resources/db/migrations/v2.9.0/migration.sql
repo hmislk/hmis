@@ -16,8 +16,12 @@
 --   Scans INFORMATION_SCHEMA for EVERY table in the current schema whose single-column
 --   BIGINT primary key named ID is missing AUTO_INCREMENT, and re-adds it (preserving
 --   the existing column type). Healthy tables are never selected, so they are skipped.
---   If a single table cannot be altered, the CONTINUE HANDLER skips it and moves on to
---   the next table instead of aborting the whole migration.
+--   If a single table cannot be altered (e.g. lock timeout or missing privilege) the
+--   per-table CONTINUE HANDLER skips it so the remaining tables are still attempted.
+--   AFTER the loop the procedure re-counts the columns that are STILL missing
+--   AUTO_INCREMENT and, if any remain, raises SIGNAL SQLSTATE '45000'. That error
+--   propagates through CALL to the Java migration runner, which records the migration
+--   as FAILED — so a partially-applied fix can never be recorded as SUCCESS.
 --
 -- Idempotent: a no-op on healthy databases (the scan returns no rows). Safe to re-run.
 -- MySQL auto-sets each table's next value to MAX(id)+1, so no row data is modified.
@@ -53,24 +57,7 @@ DROP PROCEDURE IF EXISTS hmis_fix_autoincrement_v290;
 DELIMITER $$
 CREATE PROCEDURE hmis_fix_autoincrement_v290()
 BEGIN
-    DECLARE v_done INT DEFAULT 0;
-    DECLARE v_table   VARCHAR(255);
-    DECLARE v_col     VARCHAR(255);
-    DECLARE v_coltype VARCHAR(255);
-
-    -- Only tables whose single-column BIGINT PK named ID lacks AUTO_INCREMENT.
-    DECLARE cur CURSOR FOR
-        SELECT TABLE_NAME, COLUMN_NAME, COLUMN_TYPE
-        FROM INFORMATION_SCHEMA.COLUMNS
-        WHERE TABLE_SCHEMA = DATABASE()
-          AND UPPER(COLUMN_NAME) = 'ID'
-          AND COLUMN_KEY = 'PRI'
-          AND DATA_TYPE = 'bigint'
-          AND EXTRA NOT LIKE '%auto_increment%';
-
-    DECLARE CONTINUE HANDLER FOR NOT FOUND SET v_done = 1;
-    -- If one table cannot be altered, skip it and continue with the next.
-    DECLARE CONTINUE HANDLER FOR SQLEXCEPTION BEGIN END;
+    DECLARE v_remaining INT DEFAULT 0;
 
     -- Save and relax session state for the rebuild:
     --   * sql_mode='' so rebuilding a table whose OTHER columns carry legacy invalid
@@ -83,22 +70,67 @@ BEGIN
     SET SESSION sql_mode = '';
     SET FOREIGN_KEY_CHECKS = 0;
 
-    OPEN cur;
-    read_loop: LOOP
-        FETCH cur INTO v_table, v_col, v_coltype;
-        IF v_done = 1 THEN
-            LEAVE read_loop;
-        END IF;
-        SET @ddl = CONCAT('ALTER TABLE `', v_table, '` MODIFY COLUMN `', v_col, '` ', v_coltype, ' NOT NULL AUTO_INCREMENT');
-        PREPARE st FROM @ddl;
-        EXECUTE st;
-        DEALLOCATE PREPARE st;
-    END LOOP;
-    CLOSE cur;
+    -- Per-table fix loop lives in its OWN block so its tolerant SQLEXCEPTION
+    -- handler (skip one failing table, keep going) does NOT also swallow the
+    -- verification SIGNAL raised in the outer block below.
+    fix_block: BEGIN
+        DECLARE v_done    INT DEFAULT 0;
+        DECLARE v_table   VARCHAR(255);
+        DECLARE v_col     VARCHAR(255);
+        DECLARE v_coltype VARCHAR(255);
+
+        -- Only tables whose single-column BIGINT PK named ID lacks AUTO_INCREMENT.
+        DECLARE cur CURSOR FOR
+            SELECT TABLE_NAME, COLUMN_NAME, COLUMN_TYPE
+            FROM INFORMATION_SCHEMA.COLUMNS
+            WHERE TABLE_SCHEMA = DATABASE()
+              AND UPPER(COLUMN_NAME) = 'ID'
+              AND COLUMN_KEY = 'PRI'
+              AND DATA_TYPE = 'bigint'
+              AND EXTRA NOT LIKE '%auto_increment%';
+
+        DECLARE CONTINUE HANDLER FOR NOT FOUND SET v_done = 1;
+        -- Skip a single un-alterable table (lock/timeout/privilege) and continue;
+        -- the outer verification below still fails the migration if any remain.
+        DECLARE CONTINUE HANDLER FOR SQLEXCEPTION BEGIN END;
+
+        OPEN cur;
+        read_loop: LOOP
+            FETCH cur INTO v_table, v_col, v_coltype;
+            IF v_done = 1 THEN
+                LEAVE read_loop;
+            END IF;
+            SET @ddl = CONCAT('ALTER TABLE `', v_table, '` MODIFY COLUMN `', v_col, '` ', v_coltype, ' NOT NULL AUTO_INCREMENT');
+            PREPARE st FROM @ddl;
+            EXECUTE st;
+            DEALLOCATE PREPARE st;
+        END LOOP;
+        CLOSE cur;
+    END fix_block;
 
     -- Restore the original session state so the pooled connection is left clean.
     SET SESSION sql_mode = @hmis_old_sql_mode;
     SET FOREIGN_KEY_CHECKS = @hmis_old_fk_checks;
+
+    -- Verification (outer block — NO SQLEXCEPTION handler here): count the ID
+    -- primary keys that are STILL missing AUTO_INCREMENT. If any table could not
+    -- be fixed, fail loudly so the runner records the migration as FAILED rather
+    -- than SUCCESS. The Java runner never inspects SELECT output, so the failure
+    -- must be raised here as a SIGNAL that propagates out through CALL.
+    SELECT COUNT(*) INTO v_remaining
+    FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE()
+      AND UPPER(COLUMN_NAME) = 'ID'
+      AND COLUMN_KEY = 'PRI'
+      AND DATA_TYPE = 'bigint'
+      AND EXTRA NOT LIKE '%auto_increment%';
+
+    IF v_remaining > 0 THEN
+        -- MESSAGE_TEXT is capped at 128 chars by MySQL; keep this short.
+        SET @hmis_fail_msg = CONCAT('v2.9.0 FAILED: ', v_remaining,
+            ' ID PK(s) lack AUTO_INCREMENT after fix; resolve lock/privilege & re-run.');
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = @hmis_fail_msg;
+    END IF;
 END$$
 DELIMITER ;
 
