@@ -23,6 +23,8 @@ import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.BillItemFinanceDetails;
 import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Item;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.core.entity.pharmacy.Ampp;
@@ -257,25 +259,7 @@ public class PurchaseOrderRequestController implements Serializable {
 
         getCurrentBillItem().setSearialNo(getBillItems().size());
 
-        // PERFORMANCE: Fetch last purchase and retail rates (replaces 9-second individual calls!)
-        Long itemId = getCurrentBillItem().getItem().getId();
-        getCurrentBillItem().getPharmaceuticalBillItem().setPurchaseRate(
-                fetchLastPurchaseRateForItem(itemId));
-        getCurrentBillItem().getPharmaceuticalBillItem().setRetailRate(
-                fetchLastRetailRateForItem(itemId));
-
-        if (getCurrentBillItem().getItem() instanceof Ampp) {
-            BigDecimal unitsPerPack = BigDecimal.valueOf(getCurrentBillItem().getItem().getDblValue());
-            if (unitsPerPack == null || unitsPerPack.doubleValue() <= 0) {
-                unitsPerPack = BigDecimal.ONE;
-            }
-            getCurrentBillItem().getBillItemFinanceDetails().setUnitsPerPack(unitsPerPack);
-        } else {
-            getCurrentBillItem().getBillItemFinanceDetails().setUnitsPerPack(BigDecimal.ONE);
-        }
-
-        getCurrentBillItem().getBillItemFinanceDetails().setLineGrossRate(BigDecimal.valueOf(getCurrentBillItem().getPharmaceuticalBillItem().getPurchaseRate()));
-        getCurrentBillItem().getBillItemFinanceDetails().setLineNetRate(getCurrentBillItem().getBillItemFinanceDetails().getLineGrossRate());
+        applyLastRatesToBillItem(getCurrentBillItem());
 
         getBillItems().add(getCurrentBillItem());
 
@@ -498,84 +482,213 @@ public class PurchaseOrderRequestController implements Serializable {
         this.itemHistoryVisible = itemHistoryVisible;
     }
 
-    /**
-     * PERFORMANCE OPTIMIZATION: Get last purchase rate for a single item
-     * Replaces pharmacyBean.getLastPurchaseRate() call (9 seconds!)
-     */
-    private Double fetchLastPurchaseRateForItem(Long itemId) {
-        if (itemId == null) {
+    private void applyLastRatesToBillItem(BillItem billItem) {
+        if (billItem == null || billItem.getItem() == null) {
+            return;
+        }
+
+        double purchaseRate = fetchLastPurchaseRateForItem(billItem.getItem());
+        double retailRate = fetchLastRetailRateForItem(billItem.getItem());
+
+        PharmaceuticalBillItem pharmaceuticalBillItem = billItem.getPharmaceuticalBillItem();
+        pharmaceuticalBillItem.setPurchaseRate(purchaseRate);
+        pharmaceuticalBillItem.setRetailRate(retailRate);
+
+        BillItemFinanceDetails financeDetails = billItem.getBillItemFinanceDetails();
+        financeDetails.setUnitsPerPack(getUnitsPerPack(billItem.getItem()));
+        financeDetails.setLineGrossRate(BigDecimal.valueOf(purchaseRate));
+        financeDetails.setLineNetRate(financeDetails.getLineGrossRate());
+        financeDetails.setRetailSaleRate(BigDecimal.valueOf(retailRate));
+    }
+
+    private BigDecimal getUnitsPerPack(Item item) {
+        if (item instanceof Ampp) {
+            BigDecimal unitsPerPack = BigDecimal.valueOf(item.getDblValue());
+            if (unitsPerPack.doubleValue() > 0) {
+                return unitsPerPack;
+            }
+        }
+        return BigDecimal.ONE;
+    }
+
+    private Double fetchLastPurchaseRateForItem(Item item) {
+        if (item == null || item.getId() == null) {
             return 0.0;
         }
 
-        String jpql = "SELECT pbi.purchaseRate "
-                + "FROM PharmaceuticalBillItem pbi "
-                + "JOIN pbi.billItem bi "
-                + "WHERE bi.item.id = :itemId "
-                + "AND bi.retired = false "
-                + "AND pbi.purchaseRate > 0 "
-                + "AND bi.bill.department = :department "
-                + "AND bi.bill.billType IN :billTypes "
-                + "ORDER BY bi.bill.createdAt DESC";
+        boolean manageCosting = configOptionApplicationController.getBooleanValueByKey("Manage Costing", true);
+        if (manageCosting) {
+            return fetchLastFinanceRateForItem(item, "bi.billItemFinanceDetails.lineGrossRate", "purchase");
+        }
 
+        return fetchLastItemBatchRateForItem(item, "bi.pharmaceuticalBillItem.itemBatch.purcahseRate", "purchase");
+    }
+
+    private Double fetchLastRetailRateForItem(Item item) {
+        if (item == null || item.getId() == null) {
+            return 0.0;
+        }
+
+        boolean manageCosting = configOptionApplicationController.getBooleanValueByKey("Manage Costing", true);
+        if (manageCosting) {
+            return fetchLastFinanceRateForItem(item, "bi.billItemFinanceDetails.retailSaleRate", "retail");
+        }
+
+        return fetchLastItemBatchRateForItem(item, "bi.pharmaceuticalBillItem.itemBatch.retailsaleRate", "retail");
+    }
+
+    private Double fetchLastFinanceRateForItem(Item item, String rateExpression, String rateLabel) {
+        DepartmentLookupScope scope = getDepartmentLookupScope();
+
+        Double rate = fetchLastFinanceRateForItem(item, rateExpression, rateLabel, "department", scope.department);
+        if (rate > 0.0) {
+            return rate;
+        }
+
+        rate = fetchLastFinanceRateForItem(item, rateExpression, rateLabel, "institution", scope.institution);
+        if (rate > 0.0) {
+            return rate;
+        }
+
+        return fetchLastFinanceRateForItem(item, rateExpression, rateLabel, "global", null);
+    }
+
+    private Double fetchLastFinanceRateForItem(Item item, String rateExpression, String rateLabel, String scope, Object scopeValue) {
+        if (scopeValue == null && !"global".equals(scope)) {
+            return 0.0;
+        }
+
+        String jpql = "SELECT " + rateExpression + " "
+                + "FROM BillItem bi "
+                + "WHERE bi.item = :item "
+                + "AND bi.retired = false "
+                + "AND bi.bill.cancelled = false "
+                + "AND bi.billItemFinanceDetails IS NOT NULL "
+                + "AND " + rateExpression + " IS NOT NULL "
+                + "AND " + rateExpression + " > 0 "
+                + "AND bi.bill.billType IN :billTypes "
+                + getScopeCondition(scope)
+                + "ORDER BY bi.id DESC";
+
+        Map<String, Object> params = createRateLookupParameters(item);
+        addScopeParameter(params, scope, scopeValue);
+
+        return fetchSingleRate(jpql, params, rateLabel, item);
+    }
+
+    private Double fetchLastItemBatchRateForItem(Item item, String rateExpression, String rateLabel) {
+        DepartmentLookupScope scope = getDepartmentLookupScope();
+        Item batchItem = getItemForItemBatchRate(item);
+
+        Double rate = fetchLastItemBatchRateForItem(batchItem, rateExpression, rateLabel, "department", scope.department);
+        if (rate > 0.0) {
+            return rate;
+        }
+
+        rate = fetchLastItemBatchRateForItem(batchItem, rateExpression, rateLabel, "institution", scope.institution);
+        if (rate > 0.0) {
+            return rate;
+        }
+
+        return fetchLastItemBatchRateForItem(batchItem, rateExpression, rateLabel, "global", null);
+    }
+
+    private Double fetchLastItemBatchRateForItem(Item item, String rateExpression, String rateLabel, String scope, Object scopeValue) {
+        if (item == null || (scopeValue == null && !"global".equals(scope))) {
+            return 0.0;
+        }
+
+        String jpql = "SELECT " + rateExpression + " "
+                + "FROM BillItem bi "
+                + "WHERE bi.retired = false "
+                + "AND bi.bill.cancelled = false "
+                + "AND bi.pharmaceuticalBillItem IS NOT NULL "
+                + "AND bi.pharmaceuticalBillItem.itemBatch IS NOT NULL "
+                + "AND bi.pharmaceuticalBillItem.itemBatch.item = :item "
+                + "AND " + rateExpression + " > 0 "
+                + "AND bi.bill.billType IN :billTypes "
+                + getScopeCondition(scope)
+                + "ORDER BY bi.id DESC";
+
+        Map<String, Object> params = createRateLookupParameters(item);
+        addScopeParameter(params, scope, scopeValue);
+
+        return fetchSingleRate(jpql, params, rateLabel, item);
+    }
+
+    private Map<String, Object> createRateLookupParameters(Item item) {
         List<BillType> purchaseBillTypes = new ArrayList<>();
         purchaseBillTypes.add(BillType.PharmacyGrnBill);
         purchaseBillTypes.add(BillType.PharmacyPurchaseBill);
 
         Map<String, Object> params = new HashMap<>();
-        params.put("itemId", itemId);
-        params.put("department", sessionController.getDepartment());
+        params.put("item", item);
         params.put("billTypes", purchaseBillTypes);
+        return params;
+    }
 
+    private String getScopeCondition(String scope) {
+        if ("department".equals(scope)) {
+            return "AND bi.bill.department = :department ";
+        }
+        if ("institution".equals(scope)) {
+            return "AND bi.bill.department.institution = :institution ";
+        }
+        return "";
+    }
+
+    private void addScopeParameter(Map<String, Object> params, String scope, Object scopeValue) {
+        if ("department".equals(scope)) {
+            params.put("department", scopeValue);
+        } else if ("institution".equals(scope)) {
+            params.put("institution", scopeValue);
+        }
+    }
+
+    private Double fetchSingleRate(String jpql, Map<String, Object> params, String rateLabel, Item item) {
         try {
-            @SuppressWarnings("unchecked")
-            List<Double> results = (List<Double>) itemFacade.findLightsByJpql(jpql, params, null, 1);
+            List<?> results = billItemFacade.findLightsByJpql(jpql, params, null, 1);
             if (results != null && !results.isEmpty() && results.get(0) != null) {
-                return results.get(0);
+                return convertRateToDouble(results.get(0));
             }
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Failed to fetch last purchase rate for item " + itemId, e);
+            LOGGER.log(Level.SEVERE, "Failed to fetch last " + rateLabel + " rate for item " + item.getId(), e);
         }
         return 0.0;
     }
 
-    /**
-     * PERFORMANCE OPTIMIZATION: Get last retail rate for a single item Replaces
-     * pharmacyBean.getLastRetailRate() call
-     */
-    private Double fetchLastRetailRateForItem(Long itemId) {
-        if (itemId == null) {
-            return 0.0;
+    private Double convertRateToDouble(Object rate) {
+        if (rate instanceof BigDecimal) {
+            return ((BigDecimal) rate).doubleValue();
         }
-
-        String jpql = "SELECT pbi.retailRate "
-                + "FROM PharmaceuticalBillItem pbi "
-                + "JOIN pbi.billItem bi "
-                + "WHERE bi.item.id = :itemId "
-                + "AND bi.retired = false "
-                + "AND pbi.retailRate > 0 "
-                + "AND bi.bill.department = :department "
-                + "AND bi.bill.billType IN :billTypes "
-                + "ORDER BY bi.bill.createdAt DESC";
-
-        List<BillType> purchaseBillTypes = new ArrayList<>();
-        purchaseBillTypes.add(BillType.PharmacyGrnBill);
-        purchaseBillTypes.add(BillType.PharmacyPurchaseBill);
-
-        Map<String, Object> params = new HashMap<>();
-        params.put("itemId", itemId);
-        params.put("department", sessionController.getDepartment());
-        params.put("billTypes", purchaseBillTypes);
-
-        try {
-            @SuppressWarnings("unchecked")
-            List<Double> results = (List<Double>) itemFacade.findLightsByJpql(jpql, params, null, 1);
-            if (results != null && !results.isEmpty() && results.get(0) != null) {
-                return results.get(0);
-            }
-        } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Failed to fetch last retail rate for item " + itemId, e);
+        if (rate instanceof Number) {
+            return ((Number) rate).doubleValue();
         }
         return 0.0;
+    }
+
+    private Item getItemForItemBatchRate(Item item) {
+        if (item instanceof Ampp) {
+            return ((Ampp) item).getAmp();
+        }
+        return item;
+    }
+
+    private DepartmentLookupScope getDepartmentLookupScope() {
+        DepartmentLookupScope scope = new DepartmentLookupScope();
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            scope.department = sessionController.getDepartment();
+            scope.institution = sessionController.getDepartment().getInstitution();
+        }
+        return scope;
+    }
+
+    private static class DepartmentLookupScope implements Serializable {
+
+        private static final long serialVersionUID = 1L;
+
+        private Department department;
+        private Institution institution;
     }
 
     public void saveBill() {
@@ -705,9 +818,7 @@ public class PurchaseOrderRequestController implements Serializable {
 
             bi.setSearialNo(serialStart++);
 
-            // PERFORMANCE: Fetch last rates individually (LIMIT 1 query per item)
-            tmp.setPurchaseRate(fetchLastPurchaseRateForItem(i.getId()));
-            tmp.setRetailRate(fetchLastRetailRateForItem(i.getId()));
+            applyLastRatesToBillItem(bi);
 
             getBillItems().add(bi);
         }
