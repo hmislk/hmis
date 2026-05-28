@@ -523,17 +523,41 @@ public class PurchaseOrderRequestController implements Serializable {
     }
 
     private Map<Long, Double> fetchLastPurchaseRatesForItems(List<Item> items) {
-        return fetchLastRatesForItems(items,
+        Map<Long, Double> ratesByItemId = fetchLastRatesForItems(items,
                 "billItemFinanceDetails.lineGrossRate",
                 "pharmaceuticalBillItem.itemBatch.purcahseRate",
                 "purchase");
+
+        Department dept = getDepartmentLookupScope().department;
+        if (dept != null) {
+            for (Item item : getItemsMissingRates(getUniqueItemsWithIds(items), ratesByItemId)) {
+                double rate = pharmacyBean.getLastPurchaseRate(item, dept, true);
+                if (rate > 0.0) {
+                    ratesByItemId.put(item.getId(), rate);
+                }
+            }
+        }
+
+        return ratesByItemId;
     }
 
     private Map<Long, Double> fetchLastRetailRatesForItems(List<Item> items) {
-        return fetchLastRatesForItems(items,
+        Map<Long, Double> ratesByItemId = fetchLastRatesForItems(items,
                 "billItemFinanceDetails.retailSaleRate",
                 "pharmaceuticalBillItem.itemBatch.retailsaleRate",
                 "retail");
+
+        Department dept = getDepartmentLookupScope().department;
+        if (dept != null) {
+            for (Item item : getItemsMissingRates(getUniqueItemsWithIds(items), ratesByItemId)) {
+                double rate = pharmacyBean.getLastRetailRate(item, dept, true);
+                if (rate > 0.0) {
+                    ratesByItemId.put(item.getId(), rate);
+                }
+            }
+        }
+
+        return ratesByItemId;
     }
 
     private Map<Long, Double> fetchLastRatesForItems(List<Item> items, String financeRatePath, String itemBatchRatePath, String rateLabel) {
@@ -601,7 +625,6 @@ public class PurchaseOrderRequestController implements Serializable {
         }
 
         String rateExpression = "bi." + ratePath;
-        String subqueryRateExpression = "bi2." + ratePath;
 
         String jpql = "SELECT new com.divudi.core.data.dto.PharmacyPurchaseOrderRateDTO("
                 + "bi.item.id, " + rateExpression + ", bi.id) "
@@ -614,17 +637,6 @@ public class PurchaseOrderRequestController implements Serializable {
                 + "AND " + rateExpression + " > 0 "
                 + "AND bi.bill.billType IN :billTypes "
                 + getScopeCondition(scope, "bi")
-                + "AND NOT EXISTS ("
-                + "SELECT bi2.id FROM BillItem bi2 "
-                + "WHERE bi2.item.id = bi.item.id "
-                + "AND bi2.retired = false "
-                + "AND bi2.bill.cancelled = false "
-                + "AND bi2.billItemFinanceDetails IS NOT NULL "
-                + "AND " + subqueryRateExpression + " IS NOT NULL "
-                + "AND " + subqueryRateExpression + " > 0 "
-                + "AND bi2.bill.billType IN :billTypes "
-                + getScopeCondition(scope, "bi2")
-                + "AND bi2.id > bi.id) "
                 + "ORDER BY bi.id DESC";
 
         Map<String, Object> params = createRateLookupParameters(items);
@@ -665,7 +677,6 @@ public class PurchaseOrderRequestController implements Serializable {
         }
 
         String rateExpression = "bi." + ratePath;
-        String subqueryRateExpression = "bi2." + ratePath;
 
         String jpql = "SELECT new com.divudi.core.data.dto.PharmacyPurchaseOrderRateDTO("
                 + "bi.pharmaceuticalBillItem.itemBatch.item.id, " + rateExpression + ", bi.id) "
@@ -678,17 +689,6 @@ public class PurchaseOrderRequestController implements Serializable {
                 + "AND " + rateExpression + " > 0 "
                 + "AND bi.bill.billType IN :billTypes "
                 + getScopeCondition(scope, "bi")
-                + "AND NOT EXISTS ("
-                + "SELECT bi2.id FROM BillItem bi2 "
-                + "WHERE bi2.retired = false "
-                + "AND bi2.bill.cancelled = false "
-                + "AND bi2.pharmaceuticalBillItem IS NOT NULL "
-                + "AND bi2.pharmaceuticalBillItem.itemBatch IS NOT NULL "
-                + "AND bi2.pharmaceuticalBillItem.itemBatch.item.id = bi.pharmaceuticalBillItem.itemBatch.item.id "
-                + "AND " + subqueryRateExpression + " > 0 "
-                + "AND bi2.bill.billType IN :billTypes "
-                + getScopeCondition(scope, "bi2")
-                + "AND bi2.id > bi.id) "
                 + "ORDER BY bi.id DESC";
 
         Map<String, Object> params = createRateLookupParameters(items);
