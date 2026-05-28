@@ -124,6 +124,18 @@ public class PatientDepositController implements Serializable, ControllerWithPat
         return "/patient_deposit/receive?faces-redirect=true";
     }
 
+    public String navigateToReturnPatientDeposit() {
+        clearDataForPatientDeposit();
+        financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
+        if (financialTransactionController.getNonClosedShiftStartFundBill() == null) {
+            // Use Flash scope to preserve error message across redirect
+            FacesContext.getCurrentInstance().getExternalContext().getFlash().setKeepMessages(true);
+            JsfUtil.addErrorMessage("Start Your Shift First !");
+            return "/cashier/index?faces-redirect=true";
+        }
+        return "/patient_deposit/pay?faces-redirect=true";
+    }
+
     public String navigateToPatientDepositRefundFromOPDBill(Patient p) {
         clearDataForPatientDeposit();
         patient = p;
