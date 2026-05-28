@@ -13,7 +13,7 @@
             <p:panel>
 
                 <f:facet name="header">
-                    <p:outputLabel value="Select Request For Department : #{sessionController.department.name}"/>
+                    <p:outputLabel value="Select Request For Department : #{sessionController.department.name}" id="pageHeaderLabel"/>
 
 
                     <!-- Admin Config Button (Admin Only) -->
@@ -69,16 +69,22 @@
                     </div>
                     <div class='col-10'>
                         <p:dataTable
+                            id="transferIssuedListTable"
+                            widgetVar="transferIssuedListTable"
                             value="#{searchController.transferIssuedListDtos}"
                             var="p"
+                            rowIndexVar="rowIndex"
+                            rowKey="#{p.billId}"
                             paginator="true" paginatorPosition="bottom"
                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                             rowsPerPageTemplate="5,10,15"
+                            summary="Pharmacy transfer issues awaiting receive at this department"
                             >
                             <p:column headerText="Issue No">
                                 <p:commandLink
                                     ajax="false"
                                     value="#{p.deptId}"
+                                    title="View issue #{p.deptId}"
                                     styleClass="#{p.cancelled ? 'text-danger text-decoration-line-through' : ''}"
                                     action="#{transferIssueNativeSqlController.viewByBillId(p.billId)}"/>
                             </p:column>
@@ -120,6 +126,7 @@
                                     id="btnToReceive"
                                     ajax="false"
                                     value="Receive"
+                                    title="Receive items from #{p.deptId}"
                                     class="ui-button-warning mx-1"
                                     action="#{transferReceiveController.navigateToRecieveRequest()}"
                                     disabled="#{p.cancelled or p.fullyIssued}">
@@ -130,6 +137,7 @@
                                     id="btnToReceiveFast"
                                     ajax="false"
                                     value="Fast Receive"
+                                    title="Fast receive items from #{p.deptId}"
                                     class="ui-button-success mx-1"
                                     action="#{transferReceiveNativeSqlController.navigateToReceiveRequestNative()}"
                                     disabled="#{p.cancelled or p.fullyIssued}">
@@ -140,13 +148,16 @@
                             <p:column headerText="Received">
                                 <div class="d-flex flex-wrap gap-1">
                                     <ui:repeat value="#{p.receivedBills}" var="b" varStatus="loop">
-                                        <p:commandButton
-                                            ajax="false"
-                                            value="#{b.deptId}"
-                                            styleClass="#{b.cancelled ? 'ui-button-danger' : 'ui-button-secondary'}"
-                                            action="#{billSearch.navigateToViewBillByAtomicBillTypeBySelectedId}">
-                                            <f:setPropertyActionListener value="#{b.billId}" target="#{billSearch.selectedBillId}"/>
-                                        </p:commandButton>
+                                        <h:panelGroup rendered="#{not empty b.deptId}">
+                                            <p:commandButton
+                                                ajax="false"
+                                                value="#{b.deptId}"
+                                                title="View receive bill #{b.deptId}"
+                                                styleClass="#{b.cancelled ? 'ui-button-danger' : 'ui-button-secondary'}"
+                                                action="#{billSearch.navigateToViewBillByAtomicBillTypeBySelectedId}">
+                                                <f:setPropertyActionListener value="#{b.billId}" target="#{billSearch.selectedBillId}"/>
+                                            </p:commandButton>
+                                        </h:panelGroup>
                                     </ui:repeat>
                                 </div>
                             </p:column>

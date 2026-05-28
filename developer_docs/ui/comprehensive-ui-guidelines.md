@@ -217,6 +217,21 @@ Rules:
 - Honour configuration toggles (feature flags, color schemes) via `configOptionApplicationController`.
 - Prefer server-side sanitised data and avoid embedding secrets or hard-coded environment values.
 
+### Accessibility-first development (required)
+
+We drive Chrome via the Playwright MCP server for end-to-end verification. Playwright's accessibility snapshot is the primary way Claude and tooling identify elements, so every interactive component must carry an accessible name. **Do this while writing the page, not after.**
+
+**On every new or modified page:**
+
+- Give the `p:dataTable` an `id`, `widgetVar`, `summary`, `rowKey="#{row.id}"`, and `rowIndexVar="rowIndex"`. The `summary` becomes the table's accessible description; `rowKey` makes specific rows targetable.
+- Every `p:commandButton`, `p:commandLink`, and `p:button` must have an interpolated `title` that includes the row's identifier — e.g. `title="Fast receive items from #{p.deptId}"`, `title="View bill #{b.deptId}"`. The button's visible label alone (`"Fast Receive"`, `"View"`) is identical across rows and useless to Playwright.
+- For buttons that render only an icon (no `value`), add `title="…"` with the action AND the row identifier. Without it the accessibility tree falls back to the base CSS class (`"ui-button"`) and the row becomes anonymous.
+- Wrap row-level buttons that depend on a value in `<h:panelGroup rendered="#{not empty value}">` so an empty value doesn't render a button with no accessible name.
+- Add `id` to every form input, calendar, and dropdown — Playwright `browser_fill_form` needs stable ids. Inside iterating components (column inside dataTable, `ui:repeat`) JSF auto-prefixes ids with the iteration index, which is fine — just give them a stable suffix.
+- For status badges and other read-only indicators, prefer text + colour over colour alone, and surface the status in a `title` if the badge is icon-only.
+
+When you finish a UI change, mentally check: "If I asked Playwright to click the Fast Receive button on row PHPHTI/2878, can it identify that row uniquely from the accessibility snapshot?" If not, add titles until it can.
+
 ---
 
 ## Troubleshooting Checklist
