@@ -165,10 +165,17 @@ public class FeeMarginAllowedController implements Serializable {
         private final Item item;
         private final String type;
         private final List<FeeRow> feeRows = new ArrayList<>();
+        private boolean allSelected;
 
         public ItemFeeMarginGroup(Item item, String type) {
             this.item = item;
             this.type = type;
+        }
+
+        public void toggleAllFees() {
+            for (FeeRow row : feeRows) {
+                row.setSelected(allSelected);
+            }
         }
 
         public Item getItem() {
@@ -182,6 +189,14 @@ public class FeeMarginAllowedController implements Serializable {
         public List<FeeRow> getFeeRows() {
             return feeRows;
         }
+
+        public boolean isAllSelected() {
+            return allSelected;
+        }
+
+        public void setAllSelected(boolean allSelected) {
+            this.allSelected = allSelected;
+        }
     }
 
     public static class FeeRow implements Serializable {
@@ -191,7 +206,7 @@ public class FeeMarginAllowedController implements Serializable {
 
         public FeeRow(ItemFee itemFee) {
             this.itemFee = itemFee;
-            this.selected = !Boolean.TRUE.equals(itemFee.getMarginAllowed());
+            this.selected = false;
         }
 
         public ItemFee getItemFee() {
