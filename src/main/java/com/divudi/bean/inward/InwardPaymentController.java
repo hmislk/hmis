@@ -47,6 +47,7 @@ import java.util.HashMap;
 import java.util.List;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
+import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
 
@@ -145,6 +146,8 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
         makeNull();
         financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
         if (financialTransactionController.getNonClosedShiftStartFundBill() == null) {
+            // Use Flash scope to preserve error message across redirect
+            FacesContext.getCurrentInstance().getExternalContext().getFlash().setKeepMessages(true);
             JsfUtil.addErrorMessage("Start Your Shift First !");
             return "/cashier/index?faces-redirect=true";
         }
