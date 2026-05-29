@@ -498,14 +498,16 @@ public class StaffSalaryAdvanceController implements Serializable {
 
     private StaffSalaryComponant createStaffSalaryComponant(PaysheetComponentType paysheetComponentType) {
         StaffSalaryComponant ss = new StaffSalaryComponant();
-//        ss.setStaffSalary(getCurrent());
         ss.setCreatedAt(new Date());
         ss.setSalaryCycle(salaryCycle);
         ss.setCreater(getSessionController().getLoggedUser());
-        ss.setStaffPaysheetComponent(getHumanResourceBean().getComponent(getCurrent().getStaff(), getSessionController().getLoggedUser(), paysheetComponentType));
-        getHumanResourceBean().setEpf(ss, getHrmVariablesController().getCurrent().getEpfRate(), getHrmVariablesController().getCurrent().getEpfCompanyRate());
-        getHumanResourceBean().setEtf(ss, getHrmVariablesController().getCurrent().getEtfRate(), getHrmVariablesController().getCurrent().getEtfCompanyRate());
-
+        ss.setStaff(getCurrent().getStaff()); // ← ADD THIS LINE
+        ss.setStaffPaysheetComponent(getHumanResourceBean().getComponent(
+                getCurrent().getStaff(), getSessionController().getLoggedUser(), paysheetComponentType));
+        getHumanResourceBean().setEpf(ss, getHrmVariablesController().getCurrent().getEpfRate(),
+                getHrmVariablesController().getCurrent().getEpfCompanyRate());
+        getHumanResourceBean().setEtf(ss, getHrmVariablesController().getCurrent().getEtfRate(),
+                getHrmVariablesController().getCurrent().getEtfCompanyRate());
         return ss;
     }
 
