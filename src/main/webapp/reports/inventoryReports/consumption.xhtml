@@ -209,7 +209,10 @@
                             <p:commandButton class="ui-button-warning mx-1"
                                              icon="fas fa-cogs"
                                              value="Process"
-                                             update="@form"
+                                             widgetVar="wBtnProcess"
+                                             update="@form :growl"
+                                             onstart="PF('wBtnProcess').disable()"
+                                             oncomplete="PF('wBtnProcess').enable()"
                                              action="#{pharmacyController.createConsumptionReportTable()}">
                             </p:commandButton>
                             <p:commandButton class="ui-button- mx-1" icon="fas fa-print" ajax="false" value="Print All"
