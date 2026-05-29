@@ -208,8 +208,11 @@
                         <div class="d-flex align-items-center mt-3">
                             <p:commandButton class="ui-button-warning mx-1"
                                              icon="fas fa-cogs"
-                                             ajax="false"
                                              value="Process"
+                                             widgetVar="wBtnProcess"
+                                             update="@form :growl"
+                                             onstart="PF('wBtnProcess').disable()"
+                                             oncomplete="PF('wBtnProcess').enable()"
                                              action="#{pharmacyController.createConsumptionReportTable()}">
                             </p:commandButton>
                             <p:commandButton class="ui-button- mx-1" icon="fas fa-print" ajax="false" value="Print All"
