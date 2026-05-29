@@ -133,6 +133,7 @@ import com.divudi.bean.pharmacy.TransferIssueNativeSqlController;
 import com.divudi.bean.pharmacy.TransferReceiveNativeSqlController;
 import com.divudi.bean.pharmacy.InpatientDirectIssueNativeSqlController;
 import com.divudi.bean.pharmacy.RetailSaleNativeSqlController;
+import com.divudi.bean.pharmacy.PurchaseOrderNativeSqlController;
 import static com.divudi.core.data.BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE;
 import static com.divudi.core.data.BillTypeAtomic.PHARMACY_ISSUE;
 import static com.divudi.core.data.BillTypeAtomic.PHARMACY_RECEIVE;
@@ -336,6 +337,8 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
     InpatientDirectIssueNativeSqlController inpatientDirectIssueNativeSqlController;
     @Inject
     RetailSaleNativeSqlController retailSaleNativeSqlController;
+    @Inject
+    PurchaseOrderNativeSqlController purchaseOrderNativeSqlController;
     /**
      * Class Variables
      */
@@ -4792,6 +4795,9 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
             case PHARMACY_TRANSFER_REQUEST_PRE:
             case PHARMACY_TRANSFER_REQUEST:
                 return pharmacyBillSearch.viewRequestByBillId(BillId);
+            case PHARMACY_ORDER:
+            case PHARMACY_ORDER_APPROVAL:
+                return purchaseOrderNativeSqlController.viewByBillId(BillId);
             default:
                 return navigateToViewBillByAtomicBillTypeByBillIdEntityBased(BillId);
         }
@@ -5126,9 +5132,11 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
                 return pharmacyBillSearch.navigateToViewPharmacyBill();
 
             case PHARMACY_ORDER:
+            case PHARMACY_ORDER_APPROVAL:
+                return purchaseOrderNativeSqlController.viewByBillId(bill.getId());
+
             case PHARMACY_ORDER_PRE:
             case PHARMACY_ORDER_CANCELLED:
-            case PHARMACY_ORDER_APPROVAL:
             case PHARMACY_ORDER_APPROVAL_CANCELLED:
                 pharmacyBillSearch.setBill(bill);
                 return pharmacyBillSearch.navigatePharmacyReprintPo();

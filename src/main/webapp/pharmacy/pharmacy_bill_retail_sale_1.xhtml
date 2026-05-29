@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8' ?>
+﻿<?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
@@ -38,7 +38,7 @@
                                 maxResults="20"
                                 minQueryLength="3"
                                 inputStyleClass="w-100"
-                                completeMethod="#{itemController.completeAmpItem}"
+                                queryDelay="300" completeMethod="#{itemController.completeAmpItem}"
                                 var="vt"
                                 onfocus="this.select()"
                                 itemLabel="#{vt.name}"
@@ -155,7 +155,7 @@
                                                         styleClass="w-100"
                                                         forceSelection="true"
                                                         value="#{pharmacySaleController1.stockDto}"
-                                                        completeMethod="#{pharmacySaleController1.completeAvailableStockOptimizedDto}"
+                                                        queryDelay="300" completeMethod="#{pharmacySaleController1.completeAvailableStockOptimizedDto}"
                                                         converter="#{pharmacySaleController1.stockDtoConverter}"
                                                         var="i"
                                                         itemLabel="#{i.itemName}"

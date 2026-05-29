@@ -4,8 +4,10 @@
  */
 package com.divudi.core.util;
 
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Data class for migration metadata parsed from migration-info.json
@@ -28,7 +30,10 @@ public class MigrationInfo {
     private List<String> postMigrationVerification;
     private List<String> rollbackNotes;
     private List<MigrationStep> migrationSteps;
-    private List<String> verificationQueries;
+    // Tolerates either a JSON array (["q1", "q2"]) or an object grouping queries by
+    // environment ({"common": [...], "production": [...]}). Typed as Object so a single
+    // file's shape variation never fails the whole migration list load.
+    private Object verificationQueries;
 
     // Inner class for migration steps
     public static class MigrationStep {
@@ -205,11 +210,11 @@ public class MigrationInfo {
         this.migrationSteps = migrationSteps;
     }
 
-    public List<String> getVerificationQueries() {
+    public Object getVerificationQueries() {
         return verificationQueries;
     }
 
-    public void setVerificationQueries(List<String> verificationQueries) {
+    public void setVerificationQueries(Object verificationQueries) {
         this.verificationQueries = verificationQueries;
     }
 
@@ -223,7 +228,16 @@ public class MigrationInfo {
     }
 
     public boolean hasVerificationQueries() {
-        return verificationQueries != null && !verificationQueries.isEmpty();
+        if (verificationQueries == null) {
+            return false;
+        }
+        if (verificationQueries instanceof Collection) {
+            return !((Collection<?>) verificationQueries).isEmpty();
+        }
+        if (verificationQueries instanceof Map) {
+            return !((Map<?, ?>) verificationQueries).isEmpty();
+        }
+        return true;
     }
 
     public boolean hasMigrationSteps() {

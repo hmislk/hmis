@@ -1,0 +1,20 @@
+{
+  "version": "v2.9.0",
+  "description": "Restore AUTO_INCREMENT on every ID primary key that lost it during a database import",
+  "issue": "Bill settle fails with SQLException 1364 'Field ID doesn't have a default value' when the ID primary key is not AUTO_INCREMENT",
+  "author": "H.K. Damith Deshan",
+  "date": "2026-05-28",
+  "type": "schema",
+  "tables_affected": ["ALL (dynamically detected — every table whose single-column BIGINT ID primary key is missing AUTO_INCREMENT)"],
+  "data_changes": false,
+  "requires_downtime": true,
+  "estimated_duration_minutes": 30,
+  "preRequisites": [
+    "Database backup completed",
+    "Datasource user has CREATE ROUTINE privilege (the migration creates and drops a temporary stored procedure)",
+    "Datasource user has ALTER privilege on the affected tables",
+    "Run inside a maintenance window: the ALTER TABLE ... MODIFY COLUMN operations rebuild each affected table and block writes for its duration"
+  ],
+  "note": "Entities map @GeneratedValue(strategy = IDENTITY), which requires the underlying ID column to be AUTO_INCREMENT. Some databases were restored from dumps that dropped the AUTO_INCREMENT attribute, so every INSERT into those tables fails with MySQL error 1364. This migration scans INFORMATION_SCHEMA for every table in the current schema whose single-column BIGINT primary key named ID lacks AUTO_INCREMENT and re-adds it (preserving the existing column type). It is idempotent and a no-op on healthy databases, where the scan returns no rows. DOWNTIME: adding AUTO_INCREMENT via ALTER TABLE ... MODIFY COLUMN is not an in-place change in MySQL/InnoDB — it copies/rebuilds the whole table under a metadata + table lock, which blocks writes (and DDL) on each affected table for the rebuild. On large tables (bill, billitem, and the *archive tables) this can take a long time, so the migration must run during a maintenance window; the 30-minute estimate scales with the largest affected table and the disk. For the duration of the rebuild it disables foreign-key checks (so child-table ALTERs succeed) and relaxes sql_mode (so tables whose other columns carry legacy invalid defaults such as TIMESTAMP DEFAULT '0000-00-00 00:00:00' do not fail with error 1067); both session settings are restored afterwards. After the loop the procedure re-counts ID primary keys that still lack AUTO_INCREMENT and raises SIGNAL SQLSTATE '45000' if any remain, so a table that could not be altered fails the migration instead of being silently recorded as SUCCESS. MySQL auto-sets each table's next value to MAX(id)+1, so no row data is modified.",
+  "rollback": "rollback.sql"
+}

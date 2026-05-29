@@ -123,7 +123,7 @@ public class PharmacyTransferRequestListDTO implements Serializable {
     // Basic constructor without cancellation details
     public PharmacyTransferRequestListDTO(Long billId, Object deptId, Date createdAt,
             Object fromDepartmentName, Object creatorName) {
-        
+
         this.billId = billId;
         this.deptId = deptId != null ? deptId.toString() : "";
         this.createdAt = createdAt;

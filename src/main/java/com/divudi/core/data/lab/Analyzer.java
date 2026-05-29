@@ -25,7 +25,8 @@ public enum Analyzer {
     HumaStar600("HumaStar600"),
     MaglumiX3HL7("Maglumi X3 HL7"),
     XL_200("XL 200"),
-    AIA_360("AIA 360");
+    AIA_360("AIA 360"),
+    AutoLumo("AutoLumo");
 
     private final String label;
 
