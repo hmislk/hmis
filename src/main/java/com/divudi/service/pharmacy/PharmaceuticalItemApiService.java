@@ -167,8 +167,10 @@ public class PharmaceuticalItemApiService implements Serializable {
         StringBuilder jpql = new StringBuilder();
         jpql.append("SELECT new com.divudi.core.data.dto.VmpDto(")
                 .append("i.id, i.name, i.code, i.descreption, i.retired, i.inactive, ")
-                .append("i.vtm.id, i.vtm.name, i.dosageForm.id, i.dosageForm.name) ")
+                .append("vtm.id, vtm.name, df.id, df.name) ")
                 .append("FROM Vmp i ")
+                .append("LEFT JOIN i.vtm vtm ")
+                .append("LEFT JOIN i.dosageForm df ")
                 .append("WHERE i.retired = false ")
                 .append("AND (upper(i.name) LIKE :query OR upper(i.code) LIKE :query) ");
 
@@ -190,9 +192,11 @@ public class PharmaceuticalItemApiService implements Serializable {
         StringBuilder jpql = new StringBuilder();
         jpql.append("SELECT new com.divudi.core.data.dto.AmpDto(")
                 .append("i.id, i.name, i.code, i.barcode, i.inactive, ")
-                .append("i.vmp.id, i.vmp.name, i.category.id, i.category.name, ")
+                .append("vmp.id, vmp.name, cat.id, cat.name, ")
                 .append("df.id, df.name) ")
                 .append("FROM Amp i ")
+                .append("LEFT JOIN i.vmp vmp ")
+                .append("LEFT JOIN i.category cat ")
                 .append("LEFT JOIN i.dosageForm df ")
                 .append("WHERE i.retired = false ")
                 .append("AND (upper(i.name) LIKE :query OR upper(i.code) LIKE :query) ");
@@ -215,8 +219,9 @@ public class PharmaceuticalItemApiService implements Serializable {
         StringBuilder jpql = new StringBuilder();
         jpql.append("SELECT new com.divudi.core.data.dto.VmppDto(")
                 .append("i.id, i.name, i.code, i.retired, i.inactive, ")
-                .append("i.vmp.id, i.vmp.name) ")
+                .append("vmp.id, vmp.name) ")
                 .append("FROM Vmpp i ")
+                .append("LEFT JOIN i.vmp vmp ")
                 .append("WHERE i.retired = false ")
                 .append("AND (upper(i.name) LIKE :query OR upper(i.code) LIKE :query) ");
 
@@ -238,8 +243,10 @@ public class PharmaceuticalItemApiService implements Serializable {
         StringBuilder jpql = new StringBuilder();
         jpql.append("SELECT new com.divudi.core.data.dto.AmppDto(")
                 .append("i.id, i.name, i.code, i.retired, i.inactive, ")
-                .append("i.dblValue, i.packUnit.name, i.amp.id, i.amp.name) ")
+                .append("i.dblValue, pu.name, amp.id, amp.name) ")
                 .append("FROM Ampp i ")
+                .append("LEFT JOIN i.packUnit pu ")
+                .append("LEFT JOIN i.amp amp ")
                 .append("WHERE i.retired = false ")
                 .append("AND (upper(i.name) LIKE :query OR upper(i.code) LIKE :query) ");
 
