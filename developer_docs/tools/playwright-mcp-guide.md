@@ -30,7 +30,7 @@ Then restart your terminal and reopen `claude`. The tools will appear as `mcp__p
 
 ### Verify it works
 
-```
+```text
 Use mcp__playwright__browser_navigate to open https://example.com
 ```
 
@@ -64,7 +64,7 @@ Use mcp__playwright__browser_navigate to open https://example.com
 
 ## Core Workflow
 
-```
+```text
 1. browser_navigate      → open the page
 2. browser_snapshot      → inspect accessibility tree, get element refs
 3. browser_click         → click a button or link by ref
@@ -79,7 +79,7 @@ Use mcp__playwright__browser_navigate to open https://example.com
 **Use `browser_snapshot`** to find elements. It returns the accessibility tree with
 `[ref=eXXX]` identifiers you can pass to `browser_click`, `browser_type`, etc.
 
-```
+```bash
 browser_snapshot depth=4   ← limit depth to keep output small
 ```
 
@@ -96,14 +96,14 @@ error, re-run `browser_snapshot` to get fresh refs before retrying.
 ## Clicking Patterns
 
 ### Standard click
-```
+```bash
 browser_click ref="e123"
 ```
 
 ### Label intercepts the click (hidden radio/checkbox)
 When clicking a radio button gives "label intercepts pointer events", click the **label**
 element instead of the input:
-```
+```bash
 browser_snapshot   ← find the <label> ref, not the <input> ref
 browser_click ref="e456"   ← click the label
 ```
@@ -111,7 +111,7 @@ browser_click ref="e456"   ← click the label
 ### Overlay blocks click (modal/dropdown still open)
 After dismissing a dropdown, an invisible overlay can block the next click. Fix: press Tab
 to move focus away, then click:
-```
+```bash
 browser_press_key key="Tab"
 browser_click ref="e789"
 ```
@@ -130,12 +130,12 @@ browser_evaluate script="() => {
 ## Dropdown Patterns
 
 ### Native `<select>`
-```
-browser_select_option ref="eXXX" value="option-value"
+```bash
+browser_select_option target="eXXX" values=["option-value"]
 ```
 
 ### Semantic UI / custom combobox (e.g. InvenioRDM, Zenodo)
-```
+```text
 1. browser_click ref="<combobox container ref>"
 2. browser_type  ref="<input ref>" text="search term"
 3. browser_snapshot   ← find the option ref in the dropdown list
@@ -146,9 +146,9 @@ browser_select_option ref="eXXX" value="option-value"
 ---
 
 ## File Upload
-```
+```text
 1. browser_click ref="<Upload button ref>"   ← opens OS file chooser
-2. browser_file_upload path="C:\\absolute\\path\\to\\file.pdf"
+2. browser_file_upload paths=["C:\\absolute\\path\\to\\file.pdf"]
 ```
 
 Use absolute paths. Relative paths may not resolve correctly.
@@ -186,7 +186,7 @@ Claude loads them automatically via `ToolSearch` when you ask to use them. You d
 to do anything special; just ask Claude to use a Playwright tool and it will fetch the schema.
 
 If Claude seems stuck, you can prompt it explicitly:
-```
+```text
 Use ToolSearch to load the mcp__playwright__browser_navigate schema, then navigate to X.
 ```
 
