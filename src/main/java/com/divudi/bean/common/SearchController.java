@@ -4621,7 +4621,11 @@ public class SearchController implements Serializable {
 
         // PharmacyIssue atomics: redirect to DTO fetch so pharmacy_issue.xhtml composite
         // (which binds to issueSearchDtos) shows results from the atomic search path.
-        if (billTypeAtomic.getBillType() == BillType.PharmacyIssue) {
+        // ISSUE_MEDICINE_ON_REQUEST_INWARD is excluded: the atomic search page renders
+        // pharmacy_issue_for_inpatients.xhtml for that atomic, which still reads
+        // searchController.bills and must fall through to the generic query below.
+        if (billTypeAtomic.getBillType() == BillType.PharmacyIssue
+                && billTypeAtomic != BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD) {
             pharmacyBillSearch.fetchIssueSearchDtos(maxResult);
             return;
         }
