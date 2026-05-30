@@ -13,7 +13,7 @@
 **UI-ONLY CHANGES**: When UI improvements are requested, make ONLY frontend/XHTML changes
 **KEEP IT SIMPLE**: Use existing controller properties and methods - avoid introducing filteredValues, globalFilter, or new backend logic
 **FRONTEND FOCUS**: Stick to HTML/CSS styling, PrimeFaces component attributes, and layout improvements
-**ERP UI RULE**: Use `h:outputText` for ALL text content in JSF pages — headings, labels, descriptions, static strings, and link labels. Do NOT write bare text nodes directly inside `<td>`, `<p:panel>`, or any JSF composite component. This is a project-wide convention enforced by CodeRabbit.
+**ERP UI RULE**: Use `h:outputText` for ALL text content in JSF pages — headings, labels, descriptions, static strings, and link labels. Do NOT write bare text nodes directly inside `<td>`, `<p:panel>`, or any JSF composite component. This is JSF best practice.
 **PRIMEFACES CSS**: Use PrimeFaces button classes, not Bootstrap button classes
 **XHTML STRUCTURE**: HTML DOCTYPE with `ui:composition` and template inside `h:body`
 **XML ENTITIES**: Always escape ampersands as `&amp;` in XHTML attributes
