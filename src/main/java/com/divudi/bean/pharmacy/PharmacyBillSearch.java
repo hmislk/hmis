@@ -5404,7 +5404,7 @@ public class PharmacyBillSearch implements Serializable {
         m.put("bt", com.divudi.core.data.BillType.PharmacyGrnReturn);
         m.put("fd", searchController.getFromDate());
         m.put("td", searchController.getToDate());
-        m.put("dep", sessionController.getLoggedUser().getDepartment());
+        m.put("dep", sessionController.getDepartment());
         String sql = "SELECT new com.divudi.core.data.dto.PharmacyGrnReturnSearchDTO("
                 + "b.id, COALESCE(b.deptId, ''), COALESCE(b.referenceBill.deptId, ''), "
                 + "COALESCE(b.toInstitution.name, ''), b.createdAt, COALESCE(creatorPerson.name, ''), "
@@ -5446,7 +5446,7 @@ public class PharmacyBillSearch implements Serializable {
         m.put("bt", com.divudi.core.data.BillType.PharmacyReturnWithoutTraising);
         m.put("fd", searchController.getFromDate());
         m.put("td", searchController.getToDate());
-        m.put("dep", sessionController.getLoggedUser().getDepartment());
+        m.put("dep", sessionController.getDepartment());
         String sql = "SELECT new com.divudi.core.data.dto.PharmacyReturnWithoutTraisingSearchDTO("
                 + "b.id, COALESCE(b.deptId, ''), COALESCE(b.toInstitution.name, ''), "
                 + "b.createdAt, COALESCE(creatorPerson.name, ''), "
