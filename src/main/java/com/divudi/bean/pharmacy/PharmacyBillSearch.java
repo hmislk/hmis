@@ -197,6 +197,7 @@ public class PharmacyBillSearch implements Serializable {
     private List<com.divudi.core.data.dto.PharmacyDirectPurchaseSearchDTO> purchaseSearchDtos;
     private List<com.divudi.core.data.dto.PharmacyGrnReturnSearchDTO> grnReturnSearchDtos;
     private List<com.divudi.core.data.dto.PharmacyReturnWithoutTraisingSearchDTO> returnWithoutTraisingSearchDtos;
+    private List<com.divudi.core.data.dto.PharmacyIssueSearchDTO> issueSearchDtos;
 
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Constructors">
@@ -5471,6 +5472,44 @@ public class PharmacyBillSearch implements Serializable {
         }
         if (returnWithoutTraisingSearchDtos == null) {
             returnWithoutTraisingSearchDtos = new ArrayList<>();
+        }
+    }
+
+    public List<com.divudi.core.data.dto.PharmacyIssueSearchDTO> getIssueSearchDtos() {
+        return issueSearchDtos;
+    }
+
+    public void setIssueSearchDtos(List<com.divudi.core.data.dto.PharmacyIssueSearchDTO> issueSearchDtos) {
+        this.issueSearchDtos = issueSearchDtos;
+    }
+
+    @SuppressWarnings("unchecked")
+    public void fetchIssueSearchDtos(int maxResult) {
+        Map<String, Object> m = new HashMap<>();
+        m.put("bt", com.divudi.core.data.BillType.PharmacyIssue);
+        m.put("fd", searchController.getFromDate());
+        m.put("td", searchController.getToDate());
+        m.put("dep", sessionController.getDepartment());
+        String sql = "SELECT new com.divudi.core.data.dto.PharmacyIssueSearchDTO("
+                + "b.id, COALESCE(b.deptId, ''), COALESCE(b.insId, ''), "
+                + "COALESCE(b.toDepartment.name, ''), b.createdAt, COALESCE(creatorPerson.name, ''), "
+                + "b.cancelled, cb.createdAt, COALESCE(cancellerPerson.name, ''), "
+                + "COALESCE(cb.comments, ''), b.netTotal) "
+                + "FROM BilledBill b "
+                + "LEFT JOIN b.creater creater LEFT JOIN creater.webUserPerson creatorPerson "
+                + "LEFT JOIN b.cancelledBill cb LEFT JOIN cb.creater canceller "
+                + "LEFT JOIN canceller.webUserPerson cancellerPerson "
+                + "WHERE b.billType = :bt AND b.createdAt BETWEEN :fd AND :td "
+                + "AND b.department = :dep AND b.retired = false ORDER BY b.createdAt DESC";
+        if (maxResult > 0) {
+            issueSearchDtos = (List<com.divudi.core.data.dto.PharmacyIssueSearchDTO>)
+                    billFacade.findLightsByJpql(sql, m, TemporalType.TIMESTAMP, maxResult);
+        } else {
+            issueSearchDtos = (List<com.divudi.core.data.dto.PharmacyIssueSearchDTO>)
+                    billFacade.findLightsByJpql(sql, m, TemporalType.TIMESTAMP);
+        }
+        if (issueSearchDtos == null) {
+            issueSearchDtos = new ArrayList<>();
         }
     }
 

@@ -4619,6 +4619,17 @@ public class SearchController implements Serializable {
             return;
         }
 
+        // PharmacyIssue atomics: redirect to DTO fetch so pharmacy_issue.xhtml composite
+        // (which binds to issueSearchDtos) shows results from the atomic search path.
+        // ISSUE_MEDICINE_ON_REQUEST_INWARD is excluded: the atomic search page renders
+        // pharmacy_issue_for_inpatients.xhtml for that atomic, which still reads
+        // searchController.bills and must fall through to the generic query below.
+        if (billTypeAtomic.getBillType() == BillType.PharmacyIssue
+                && billTypeAtomic != BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD) {
+            pharmacyBillSearch.fetchIssueSearchDtos(maxResult);
+            return;
+        }
+
         String jpql;
         Map params = new HashMap();
 
@@ -4798,6 +4809,12 @@ public class SearchController implements Serializable {
         // PharmacyReturnWithoutTraising: use lightweight DTO query (issue #21014 / #20299).
         if (billType == BillType.PharmacyReturnWithoutTraising) {
             pharmacyBillSearch.fetchReturnWithoutTraisingSearchDtos(maxResult);
+            return;
+        }
+
+        // PharmacyIssue: use lightweight DTO query (issue #21015 / #20299).
+        if (billType == BillType.PharmacyIssue) {
+            pharmacyBillSearch.fetchIssueSearchDtos(maxResult);
             return;
         }
 
