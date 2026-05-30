@@ -4605,6 +4605,20 @@ public class SearchController implements Serializable {
             return;
         }
 
+        // PharmacyGrnReturn atomics: redirect to DTO fetch so grn_return.xhtml composite
+        // (which binds to grnReturnSearchDtos) shows results from the atomic search path.
+        if (billTypeAtomic.getBillType() == BillType.PharmacyGrnReturn) {
+            pharmacyBillSearch.fetchGrnReturnSearchDtos(maxResult);
+            return;
+        }
+
+        // PharmacyReturnWithoutTraising: redirect to DTO fetch so grn_return_without_traising.xhtml
+        // composite (which binds to returnWithoutTraisingSearchDtos) shows results from the atomic search path.
+        if (billTypeAtomic.getBillType() == BillType.PharmacyReturnWithoutTraising) {
+            pharmacyBillSearch.fetchReturnWithoutTraisingSearchDtos(maxResult);
+            return;
+        }
+
         String jpql;
         Map params = new HashMap();
 
@@ -4772,6 +4786,18 @@ public class SearchController implements Serializable {
         // PharmacyPurchaseBill: use lightweight DTO query (issue #21013 / #20299).
         if (billType == BillType.PharmacyPurchaseBill) {
             pharmacyBillSearch.fetchPurchaseSearchDtos(maxResult);
+            return;
+        }
+
+        // PharmacyGrnReturn: use lightweight DTO query (issue #21014 / #20299).
+        if (billType == BillType.PharmacyGrnReturn) {
+            pharmacyBillSearch.fetchGrnReturnSearchDtos(maxResult);
+            return;
+        }
+
+        // PharmacyReturnWithoutTraising: use lightweight DTO query (issue #21014 / #20299).
+        if (billType == BillType.PharmacyReturnWithoutTraising) {
+            pharmacyBillSearch.fetchReturnWithoutTraisingSearchDtos(maxResult);
             return;
         }
 
