@@ -4632,7 +4632,10 @@ public class SearchController implements Serializable {
 
         // PharmacyAdjustment atomics: redirect to DTO fetch so adjustment.xhtml composite
         // (which binds to adjustmentSearchDtos) shows results from the atomic search path.
-        if (billTypeAtomic.getBillType() == BillType.PharmacyAdjustment) {
+        // PharmacyStockAdjustmentBill is also included: pharmacy_search_by_bill_type_atomic.xhtml
+        // renders <se:adjustment/> for that BillType too, so it must populate adjustmentSearchDtos.
+        if (billTypeAtomic.getBillType() == BillType.PharmacyAdjustment
+                || billTypeAtomic.getBillType() == BillType.PharmacyStockAdjustmentBill) {
             pharmacyBillSearch.fetchAdjustmentSearchDtos(maxResult);
             return;
         }
