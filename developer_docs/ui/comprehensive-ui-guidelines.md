@@ -13,7 +13,7 @@
 **UI-ONLY CHANGES**: When UI improvements are requested, make ONLY frontend/XHTML changes
 **KEEP IT SIMPLE**: Use existing controller properties and methods - avoid introducing filteredValues, globalFilter, or new backend logic
 **FRONTEND FOCUS**: Stick to HTML/CSS styling, PrimeFaces component attributes, and layout improvements
-**ERP UI RULE**: Use `h:outputText` instead of HTML headings (h1-h6)
+**ERP UI RULE**: Use `h:outputText` for ALL text content in JSF pages — headings, labels, descriptions, static strings, and link labels. Do NOT write bare text nodes directly inside `<td>`, `<p:panel>`, or any JSF composite component. This is a project-wide convention enforced by CodeRabbit.
 **PRIMEFACES CSS**: Use PrimeFaces button classes, not Bootstrap button classes
 **XHTML STRUCTURE**: HTML DOCTYPE with `ui:composition` and template inside `h:body`
 **XML ENTITIES**: Always escape ampersands as `&amp;` in XHTML attributes
@@ -55,7 +55,7 @@
 ## Layout, Typography, and Containers
 - Use **PrimeFaces components for interaction** (buttons, dialogs, tables) and **Bootstrap utilities for layout** (`row`, `col-*`, `d-flex`, spacing helpers).
 - Prefer `p:panelGrid` when you only need a grid with a header; only wrap in `p:panel` when you need facets or panel styling.
-- Use `h:outputText` and `p:outputLabel` for headings, labels, and messages instead of HTML heading tags. Attach Bootstrap utility classes for emphasis when needed.
+- Use `h:outputText` and `p:outputLabel` for **all text content** — headings, labels, messages, descriptions, static strings, and link labels. Never write bare text nodes directly inside JSF/PrimeFaces components. Attach Bootstrap utility classes for emphasis when needed.
 - Keep screens dense and business-focused; avoid marketing-style hero headers.
 
 ---

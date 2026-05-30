@@ -428,17 +428,15 @@
                                     <tr>
                                         <td><strong>Fill Bill Department Type (NULL bills)</strong></td>
                                         <td colspan="3">
-                                            Use native SQL instead — it completes in seconds regardless of database size.
-                                            The previous Java button loaded all NULL bills into memory and updated them
-                                            one by one (very slow on large databases).
+                                            <h:outputText value="Use native SQL instead — it completes in seconds regardless of database size. The previous Java button loaded all NULL bills into memory and updated them one by one (very slow on large databases)." />
                                             <br/>
-                                            See wiki:
+                                            <h:outputText value="See wiki: " />
                                             <a href="https://github.com/hmislk/hmis/wiki/Admin-Fill-Bill-Department-Type-SQL"
                                                target="_blank"
                                                rel="noopener noreferrer">
-                                                Admin-Fill-Bill-Department-Type-SQL
+                                                <h:outputText value="Admin-Fill-Bill-Department-Type-SQL" />
                                             </a>
-                                            for the recommended SQL commands.
+                                            <h:outputText value=" for the recommended SQL commands." />
                                         </td>
                                     </tr>
 
