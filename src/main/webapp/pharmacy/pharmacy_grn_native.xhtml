@@ -1,0 +1,362 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+
+                <style>
+                    .grn-native-info-label { font-weight: bold; color: #555; }
+                    .grn-native-badge-cancelled { color: #fff; background-color: #dc3545;
+                        padding: 2px 8px; border-radius: 4px; font-size: 0.85rem; }
+                    @media print {
+                        .grn-native-no-print { display: none !important; }
+                    }
+                </style>
+
+                <h:form id="grnNativeForm">
+                    <p:panel id="grnNativePanel">
+
+                        <!-- ====================================================
+                             Panel header: Back | Manage Bill | Reprint
+                             ==================================================== -->
+                        <f:facet name="header">
+                            <div style="display:flex;justify-content:space-between;align-items:center;width:100%;">
+                                <span>
+                                    Good Receive Note — Quick View
+                                    <h:outputText value=" [CANCELLED]"
+                                                  rendered="#{grnNativeSqlController.header.cancelled}"
+                                                  styleClass="grn-native-badge-cancelled"/>
+                                </span>
+                                <div class="d-flex gap-2 grn-native-no-print">
+                                    <p:commandButton
+                                        ajax="false"
+                                        value="Back"
+                                        icon="fa fa-arrow-left"
+                                        styleClass="ui-button-secondary ui-button-sm"
+                                        title="Return to previous page"
+                                        action="#{grnNativeSqlController.navigateBack()}"/>
+                                    <p:commandButton
+                                        ajax="false"
+                                        value="Manage Bill"
+                                        icon="fa fa-edit"
+                                        styleClass="ui-button-warning ui-button-sm"
+                                        title="Load full bill details and open the GRN management page"
+                                        action="#{grnNativeSqlController.navigateToManageBill()}"/>
+                                    <p:commandButton
+                                        ajax="false"
+                                        value="Print"
+                                        icon="fa fa-print"
+                                        styleClass="ui-button-success ui-button-sm">
+                                        <p:printer target="grnNativePanel"/>
+                                    </p:commandButton>
+                                </div>
+                            </div>
+                        </f:facet>
+
+                        <!-- ====================================================
+                             Bill header info — two-column layout
+                             ==================================================== -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <table class="table table-sm table-borderless">
+                                    <tbody>
+                                        <tr>
+                                            <td class="grn-native-info-label" style="width:45%;">Department</td>
+                                            <td>
+                                                <h:outputText value="#{grnNativeSqlController.header.departmentPrintingName}"/>
+                                                <h:outputText rendered="#{empty grnNativeSqlController.header.departmentPrintingName}"
+                                                              value="#{grnNativeSqlController.header.departmentName}"/>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="grn-native-info-label">Address</td>
+                                            <td><h:outputText value="#{grnNativeSqlController.header.departmentAddress}"/></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="grn-native-info-label">Telephone</td>
+                                            <td>
+                                                <h:outputText value="#{grnNativeSqlController.header.departmentTelephone1}"/>
+                                                <h:outputText rendered="#{not empty grnNativeSqlController.header.departmentTelephone2}"
+                                                              value=" / #{grnNativeSqlController.header.departmentTelephone2}"/>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="grn-native-info-label">Fax</td>
+                                            <td><h:outputText value="#{grnNativeSqlController.header.departmentFax}"/></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="grn-native-info-label">Email</td>
+                                            <td><h:outputText value="#{grnNativeSqlController.header.departmentEmail}"/></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="grn-native-info-label">Supplier</td>
+                                            <td><h:outputText value="#{grnNativeSqlController.header.supplierName}"/></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="grn-native-info-label">Prepared By</td>
+                                            <td><h:outputText value="#{grnNativeSqlController.header.createdByName}"/></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="col-md-6">
+                                <table class="table table-sm table-borderless">
+                                    <tbody>
+                                        <tr>
+                                            <td class="grn-native-info-label" style="width:45%;">GRN No</td>
+                                            <td><h:outputText value="#{grnNativeSqlController.header.grnNumber}"/></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="grn-native-info-label">GRN Date</td>
+                                            <td>
+                                                <h:outputText value="#{grnNativeSqlController.header.createdAt}">
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                                </h:outputText>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="grn-native-info-label">Invoice No</td>
+                                            <td><h:outputText value="#{grnNativeSqlController.header.invoiceNumber}"/></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="grn-native-info-label">PO No</td>
+                                            <td><h:outputText value="#{grnNativeSqlController.header.poNumber}"/></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="grn-native-info-label">PO Date</td>
+                                            <td>
+                                                <h:outputText value="#{grnNativeSqlController.header.poCreatedAt}">
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                                </h:outputText>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="grn-native-info-label">PO Approver</td>
+                                            <td><h:outputText value="#{grnNativeSqlController.header.poApproverName}"/></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="grn-native-info-label">Payment Method</td>
+                                            <td>
+                                                <h:outputText value="#{grnNativeSqlController.header.paymentMethod}"/>
+                                                <h:outputText rendered="#{grnNativeSqlController.header.paymentMethod eq 'Credit'}"
+                                                              value=" (#{grnNativeSqlController.header.creditDuration} days)"/>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="grn-native-info-label">Consignment</td>
+                                            <td>
+                                                <h:outputText value="Yes" rendered="#{grnNativeSqlController.header.consignment}"/>
+                                                <h:outputText value="No"  rendered="#{not grnNativeSqlController.header.consignment}"/>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- ====================================================
+                             Items table — all BillItemFinanceDetails + pharma fields
+                             ==================================================== -->
+                        <div style="overflow-x:auto;">
+                            <p:dataTable id="tblGrnItems"
+                                         widgetVar="tblGrnItems"
+                                         value="#{grnNativeSqlController.items}"
+                                         var="item"
+                                         rowIndexVar="i"
+                                         paginator="true"
+                                         rows="20"
+                                         paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                         rowsPerPageTemplate="10,20,50,100,0"
+                                         emptyMessage="No items found"
+                                         tableStyle="white-space:nowrap; font-size:0.875rem;">
+
+                                <p:column headerText="#" style="width:40px; text-align:center;">
+                                    <h:outputText value="#{i + 1}"/>
+                                </p:column>
+
+                                <p:column headerText="Item Name" sortBy="#{item.itemName}"
+                                          filterBy="#{item.itemName}" filterMatchMode="contains">
+                                    <h:outputText value="#{item.itemName}"/>
+                                </p:column>
+
+                                <p:column headerText="Code" sortBy="#{item.itemCode}"
+                                          filterBy="#{item.itemCode}" filterMatchMode="contains">
+                                    <h:outputText value="#{item.itemCode}"/>
+                                </p:column>
+
+                                <p:column headerText="Unit">
+                                    <h:outputText value="#{item.issueUnitName}"/>
+                                </p:column>
+
+                                <p:column headerText="Batch">
+                                    <h:outputText value="#{item.batchNumber}"/>
+                                </p:column>
+
+                                <p:column headerText="DOE">
+                                    <h:outputText value="#{item.doe}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
+                                    </h:outputText>
+                                </p:column>
+
+                                <p:column headerText="Qty" style="text-align:right;" sortBy="#{item.quantity}">
+                                    <h:outputText value="#{item.quantity}">
+                                        <f:convertNumber pattern="#,##0.##"/>
+                                    </h:outputText>
+                                </p:column>
+
+                                <p:column headerText="Free Qty" style="text-align:right;" sortBy="#{item.freeQuantity}">
+                                    <h:outputText value="#{item.freeQuantity}">
+                                        <f:convertNumber pattern="#,##0.##"/>
+                                    </h:outputText>
+                                </p:column>
+
+                                <p:column headerText="Qty (Units)" style="text-align:right;" sortBy="#{item.totalQuantityByUnits}">
+                                    <h:outputText value="#{item.totalQuantityByUnits}">
+                                        <f:convertNumber pattern="#,##0.##"/>
+                                    </h:outputText>
+                                </p:column>
+
+                                <p:column headerText="Purchase Rate" style="text-align:right;" sortBy="#{item.lineGrossRate}">
+                                    <h:outputText value="#{item.lineGrossRate}">
+                                        <f:convertNumber pattern="#,##0.0000"/>
+                                    </h:outputText>
+                                </p:column>
+
+                                <p:column headerText="Disc %" style="text-align:right;" sortBy="#{item.lineDiscountRate}">
+                                    <h:outputText value="#{item.lineDiscountRate}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </p:column>
+
+                                <p:column headerText="Net Total" style="text-align:right;" sortBy="#{item.lineNetTotal}">
+                                    <h:outputText value="#{item.lineNetTotal}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </p:column>
+
+                                <p:column headerText="Retail Rate" style="text-align:right;" sortBy="#{item.retailSaleRate}">
+                                    <h:outputText value="#{item.retailSaleRate}">
+                                        <f:convertNumber pattern="#,##0.0000"/>
+                                    </h:outputText>
+                                </p:column>
+
+                                <p:column headerText="Retail Rate/Unit" style="text-align:right;" sortBy="#{item.retailSaleRatePerUnit}">
+                                    <h:outputText value="#{item.retailSaleRatePerUnit}">
+                                        <f:convertNumber pattern="#,##0.0000"/>
+                                    </h:outputText>
+                                </p:column>
+
+                                <p:column headerText="Total Cost" style="text-align:right;" sortBy="#{item.totalCost}">
+                                    <h:outputText value="#{item.totalCost}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </p:column>
+
+                            </p:dataTable>
+                        </div>
+
+                        <!-- ====================================================
+                             Bill totals
+                             ==================================================== -->
+                        <div class="row mt-3">
+                            <div class="col-md-6 offset-md-6">
+                                <table class="table table-sm table-bordered">
+                                    <tbody>
+                                        <tr>
+                                            <td class="grn-native-info-label">Sub Total</td>
+                                            <td class="text-end">
+                                                <h:outputText value="#{grnNativeSqlController.header.total}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </td>
+                                        </tr>
+                                        <tr rendered="#{grnNativeSqlController.header.expenseTotal != 0}">
+                                            <td class="grn-native-info-label">Expenses</td>
+                                            <td class="text-end">
+                                                <h:outputText value="#{grnNativeSqlController.header.expenseTotal}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </td>
+                                        </tr>
+                                        <tr rendered="#{grnNativeSqlController.header.expensesConsideredForCosting != 0}">
+                                            <td class="grn-native-info-label">Expenses (for Costing)</td>
+                                            <td class="text-end">
+                                                <h:outputText value="#{grnNativeSqlController.header.expensesConsideredForCosting}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </td>
+                                        </tr>
+                                        <tr rendered="#{grnNativeSqlController.header.expensesNotConsideredForCosting != 0}">
+                                            <td class="grn-native-info-label">Expenses (not for Costing)</td>
+                                            <td class="text-end">
+                                                <h:outputText value="#{grnNativeSqlController.header.expensesNotConsideredForCosting}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </td>
+                                        </tr>
+                                        <tr rendered="#{grnNativeSqlController.header.tax != 0}">
+                                            <td class="grn-native-info-label">Tax</td>
+                                            <td class="text-end">
+                                                <h:outputText value="#{grnNativeSqlController.header.tax}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </td>
+                                        </tr>
+                                        <tr rendered="#{grnNativeSqlController.header.discount != 0}">
+                                            <td class="grn-native-info-label">Discount</td>
+                                            <td class="text-end">
+                                                <h:outputText value="#{grnNativeSqlController.header.discount}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </td>
+                                        </tr>
+                                        <tr style="font-weight:bold;">
+                                            <td class="grn-native-info-label">Net Total</td>
+                                            <td class="text-end">
+                                                <h:outputText value="#{grnNativeSqlController.header.netTotal}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="grn-native-info-label">Total Bill Value</td>
+                                            <td class="text-end">
+                                                <h:outputText value="#{grnNativeSqlController.header.totalBillValue}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="grn-native-info-label">Total Cost Value</td>
+                                            <td class="text-end">
+                                                <h:outputText value="#{grnNativeSqlController.header.totalCostValue}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="grn-native-info-label">Total Retail Sale Value</td>
+                                            <td class="text-end">
+                                                <h:outputText value="#{grnNativeSqlController.header.totalRetailSaleValue}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                    </p:panel>
+                </h:form>
+
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>
