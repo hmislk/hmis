@@ -148,32 +148,30 @@
                                         <p:outputLabel value="Item" for="itemAutoComplete"/>
                                         <p:autoComplete
                                             id="itemAutoComplete"
-                                            value="#{transferRequestController.currentBillItem.item}"
+                                            value="#{transferRequestController.currentItemDto}"
                                             forceSelection="true"
                                             class="w-100"
                                             inputStyleClass="w-100"
-                                            minQueryLength="3" queryDelay="300" completeMethod="#{transferRequestController.completeAmpAmppVmpVmppItemsForRequestingDepartment}"
+                                            minQueryLength="3" queryDelay="300"
+                                            completeMethod="#{transferRequestController.completeAmpAmppVmpVmppItemsForRequestingDepartment}"
                                             var="vt"
                                             itemLabel="#{vt.name}"
                                             itemValue="#{vt}"
+                                            converter="#{itemDtoConverter}"
                                             >
                                             <p:column headerText="Item" style="padding: 6px;">
-                                                <h:outputLabel value="#{vt.name}"></h:outputLabel>
+                                                <h:outputLabel value="#{vt.name}" />
                                             </p:column>
-                                            <p:column headerText="Code"  style="padding: 6px;">
-                                                <h:outputLabel value="#{vt.code}" ></h:outputLabel>
+                                            <p:column headerText="Code" style="padding: 6px;">
+                                                <h:outputLabel value="#{vt.code}" />
                                             </p:column>
                                             <p:column headerText="Type" style="padding: 6px;">
-                                                <h:outputLabel value="#{vt.class.simpleName}" />
+                                                <h:outputLabel value="#{vt.itemTypeName}" />
                                             </p:column>
-                                            <p:column headerText="Pack Size" 
-                                                      style="padding: 6px;" >
-                                                <p:outputLabel value="#{vt.dblValue}"
-                                                               rendered="#{vt.class eq 'class com.divudi.core.entity.pharmacy.Ampp'}">
-                                                    <f:convertNumber pattern="0.#" ></f:convertNumber>
-                                                </p:outputLabel>
-                                                <p:outputLabel value="1"
-                                                               rendered="#{vt.class eq 'class com.divudi.core.entity.pharmacy.Amp'}"/>
+                                            <p:column headerText="Pack Size" style="padding: 6px;">
+                                                <h:outputText value="#{(vt.dblValue ne null and vt.dblValue gt 0) ? vt.dblValue : 1}">
+                                                    <f:convertNumber pattern="0.#" />
+                                                </h:outputText>
                                             </p:column>
                                             <p:ajax event="itemSelect"
                                                     listener="#{transferRequestController.populateRatesOnItemSelect}"
@@ -215,7 +213,8 @@
                                             icon="fas fa-plus"
                                             class="ui-button-success w-100"
                                             action="#{transferRequestController.addItem}"
-                                            ajax="false"/>
+                                            process="@form"
+                                            update="itemAutoComplete txtQty txtLineGrossRate txtLineNetValue itemList requestTotals focusItem"/>
                                     </div>
                                 </div>
                                 <p:focus id="focusQty" for="txtQty" ></p:focus>
@@ -247,13 +246,10 @@
                                     </p:column>
 
                                     <p:column headerText="Pack Size"  width="8em" >
-                                        <p:outputLabel 
-                                            value="#{bi.item.dblValue}"
-                                            rendered="#{bi.item.class eq 'class com.divudi.core.entity.pharmacy.Ampp'}">
-                                            <f:convertNumber pattern="0.#" ></f:convertNumber>
-                                        </p:outputLabel>
-                                        <p:outputLabel value="1"
-                                                       rendered="#{bi.item.class eq 'class com.divudi.core.entity.pharmacy.Amp'}"/>
+                                        <h:outputText
+                                            value="#{(bi.item.class.simpleName eq 'Ampp' or bi.item.class.simpleName eq 'Vmpp') ? bi.item.dblValue : 1}">
+                                            <f:convertNumber pattern="0.#" />
+                                        </h:outputText>
                                     </p:column>
 
                                     <p:column headerText="Qty"  class="text-end" width="8em">
