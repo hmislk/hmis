@@ -1180,6 +1180,16 @@ public class BillItem implements Serializable, RetirableEntity {
         return prescription;
     }
 
+    /**
+     * Returns true only when a Prescription has been explicitly associated with
+     * this BillItem (i.e. it was persisted before or carries meaningful data).
+     * Use this instead of {@code getPrescription() != null} to avoid the
+     * auto-create side-effect of the getter.
+     */
+    public boolean hasPrescription() {
+        return prescription != null && prescription.getId() != null;
+    }
+
     public void setPrescription(Prescription prescription) {
         this.prescription = prescription;
     }
