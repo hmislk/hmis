@@ -123,9 +123,7 @@
                             icon="fa fa-eye"
                             styleClass="ui-button-info ui-button-sm"
                             title="View GRN"
-                            action="#{pharmacyBillSearch.navigateToPharmacyGrnReprintById()}">
-                            <f:setPropertyActionListener value="#{dto.id}" target="#{pharmacyBillSearch.billId}"/>
-                        </p:commandButton>
+                            action="#{billSearch.navigateToViewBillByAtomicBillTypeByBillId(dto.id)}"/>
                     </p:column>
 
                 </p:dataTable>
