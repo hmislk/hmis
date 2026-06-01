@@ -77,7 +77,7 @@ public class PharmacyGrnNativeSqlService {
             return doLoadItems(billId);
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Failed to load GRN item DTOs for billId=" + billId, e);
-            return null;
+            return new ArrayList<>();
         }
     }
 
