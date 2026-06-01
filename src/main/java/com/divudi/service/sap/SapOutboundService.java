@@ -314,12 +314,15 @@ public class SapOutboundService implements Serializable {
 
         // Record the confirmation — must succeed before returning 200 to SAP.
         // If this throws, the exception propagates as a 5xx so SAP can retry.
+        // Use GSON serialization to avoid JSON injection from user-supplied fields.
         String confirmedAt = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
-        String value = "{\"sapDocNumber\":\"" + dto.getSapDocumentNumber().trim()
-                + "\",\"amount\":" + dto.getAmount()
-                + ",\"currency\":\"" + (dto.getCurrency() != null ? dto.getCurrency() : "")
-                + "\",\"postingDate\":\"" + (dto.getPostingDate() != null ? dto.getPostingDate() : "")
-                + "\",\"confirmedAt\":\"" + confirmedAt + "\"}";
+        Map<String, Object> record = new HashMap<>();
+        record.put("sapDocNumber", dto.getSapDocumentNumber().trim());
+        record.put("amount", dto.getAmount());
+        record.put("currency", dto.getCurrency() != null ? dto.getCurrency() : "");
+        record.put("postingDate", dto.getPostingDate() != null ? dto.getPostingDate() : "");
+        record.put("confirmedAt", confirmedAt);
+        String value = GSON.toJson(record);
         configController.saveShortTextOption("SAP Bill Confirm - " + bill.getId(), value);
 
         Map<String, Object> result = new HashMap<>();
@@ -345,10 +348,11 @@ public class SapOutboundService implements Serializable {
 
     private void recordPush(Long billId, SapJournalEntryResponseDTO resp) {
         try {
-            String value = "{\"sapDocNumber\":\"" + resp.getAccountingDocument()
-                    + "\",\"fiscalYear\":\"" + resp.getFiscalYear()
-                    + "\",\"sentAt\":\"" + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()) + "\"}";
-            configController.saveShortTextOption("SAP Bill Push - " + billId, value);
+            Map<String, Object> record = new HashMap<>();
+            record.put("sapDocNumber", resp.getAccountingDocument());
+            record.put("fiscalYear", resp.getFiscalYear());
+            record.put("sentAt", new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
+            configController.saveShortTextOption("SAP Bill Push - " + billId, GSON.toJson(record));
         } catch (Exception e) {
             // Non-fatal: log but do not fail the push
             LOG.log(Level.WARNING, "Could not record SAP push result for bill " + billId, e);
