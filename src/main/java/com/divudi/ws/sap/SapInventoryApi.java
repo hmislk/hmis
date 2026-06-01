@@ -16,6 +16,8 @@ import com.google.gson.GsonBuilder;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
@@ -46,6 +48,8 @@ import javax.ws.rs.core.Response;
 @Path("sap/inventory")
 @RequestScoped
 public class SapInventoryApi {
+
+    private static final Logger LOG = Logger.getLogger(SapInventoryApi.class.getName());
 
     @Context
     private HttpServletRequest requestContext;
@@ -82,9 +86,11 @@ public class SapInventoryApi {
             SapInventorySyncResultDTO result = sapInventorySyncService.sync(fromDate, toDate);
             return successResponse(result);
         } catch (SapIntegrationException e) {
-            return errorResponse(e.getMessage(), 502);
+            LOG.log(Level.SEVERE, "SAP inventory sync failed", e);
+            return errorResponse("SAP sync failed", 502);
         } catch (Exception e) {
-            return errorResponse("Unexpected error: " + e.getMessage(), 500);
+            LOG.log(Level.SEVERE, "Unexpected error during SAP inventory sync", e);
+            return errorResponse("Internal server error", 500);
         }
     }
 

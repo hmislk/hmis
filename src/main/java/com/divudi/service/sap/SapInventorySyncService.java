@@ -93,6 +93,9 @@ public class SapInventorySyncService implements Serializable {
             return skipped;
         }
 
+        // isForwardSync: true when caller did not supply an explicit fromDate (normal incremental run)
+        boolean isForwardSync = (fromDate == null || fromDate.isBlank());
+
         String resolvedFrom = resolveFromDate(fromDate);
         String resolvedTo   = toDate != null && !toDate.isBlank() ? toDate : todayString();
 
@@ -125,7 +128,7 @@ public class SapInventorySyncService implements Serializable {
                 continue;
             }
 
-            Item item = findItemByField(materialCodeField, materialNumber);
+            Item item = findItemByField(materialCodeField, materialNumber, result);
             if (item == null) {
                 result.addUnmatched(materialNumber);
                 LOG.log(Level.WARNING, "SAP material {0} not found in HMIS Item master (field: {1})",
@@ -141,10 +144,16 @@ public class SapInventorySyncService implements Serializable {
         result.setMatchedItems(matched);
         result.setUnmatchedItems(unmatched);
 
-        // Record sync timestamp
-        String syncTimestamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
-        result.setLastSyncTimestamp(syncTimestamp);
-        configController.saveShortTextOption("SAP Integration - Inventory Last Sync", syncTimestamp);
+        // Only advance the watermark for normal forward syncs, not for explicit backfill ranges.
+        // Store the effective SAP upper bound (resolvedTo end-of-day) for full timestamp precision.
+        if (isForwardSync) {
+            String watermark = resolvedTo + "T23:59:59";
+            result.setLastSyncTimestamp(watermark);
+            configController.saveShortTextOption("SAP Integration - Inventory Last Sync", watermark);
+        } else {
+            result.setLastSyncTimestamp(null);
+            result.addWarning("Watermark not updated — explicit date range supplied (backfill mode)");
+        }
 
         return result;
     }
@@ -159,7 +168,7 @@ public class SapInventorySyncService implements Serializable {
             // SAP OData datetime filter format: PostingDate ge datetime'2024-01-01T00:00:00'
             String filter = "PostingDate ge datetime'" + fromDate + "T00:00:00'"
                     + " and PostingDate le datetime'" + toDate + "T23:59:59'";
-            String url = baseUrl + SAP_MATERIAL_DOC_PATH
+            String firstUrl = baseUrl + SAP_MATERIAL_DOC_PATH
                     + "?$filter=" + URLEncoder.encode(filter, StandardCharsets.UTF_8)
                     + "&$select=" + URLEncoder.encode(SELECT_FIELDS, StandardCharsets.UTF_8)
                     + "&$format=json";
@@ -168,36 +177,41 @@ public class SapInventorySyncService implements Serializable {
                     .connectTimeout(Duration.ofSeconds(30))
                     .build();
 
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(url))
-                    .header("Accept", "application/json")
-                    .header("Authorization", "Bearer " + token)
-                    .GET()
-                    .timeout(Duration.ofSeconds(60))
-                    .build();
+            List<SapMaterialDocumentDTO> allItems = new ArrayList<>();
+            String nextUrl = firstUrl;
+            boolean retried = false;
 
-            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-
-            if (response.statusCode() == 401) {
-                tokenService.invalidate();
-                token = tokenService.getBearerToken();
-                request = HttpRequest.newBuilder()
-                        .uri(URI.create(url))
+            // Follow SAP OData server-driven paging via d.__next links
+            while (nextUrl != null) {
+                HttpRequest request = HttpRequest.newBuilder()
+                        .uri(URI.create(nextUrl))
                         .header("Accept", "application/json")
                         .header("Authorization", "Bearer " + token)
                         .GET()
                         .timeout(Duration.ofSeconds(60))
                         .build();
-                response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+                HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+                if (response.statusCode() == 401 && !retried) {
+                    retried = true;
+                    tokenService.invalidate();
+                    token = tokenService.getBearerToken();
+                    continue;
+                }
+
+                if (response.statusCode() < 200 || response.statusCode() >= 300) {
+                    throw new SapIntegrationException(
+                            "SAP material document API returned HTTP " + response.statusCode()
+                            + ": " + response.body());
+                }
+
+                PageResult page = parsePage(response.body());
+                allItems.addAll(page.items);
+                nextUrl = page.nextLink;
             }
 
-            if (response.statusCode() < 200 || response.statusCode() >= 300) {
-                throw new SapIntegrationException(
-                        "SAP material document API returned HTTP " + response.statusCode()
-                        + ": " + response.body());
-            }
-
-            return parseMaterialDocItems(response.body());
+            return allItems;
 
         } catch (SapIntegrationException e) {
             throw e;
@@ -207,24 +221,43 @@ public class SapInventorySyncService implements Serializable {
         }
     }
 
-    private List<SapMaterialDocumentDTO> parseMaterialDocItems(String body) throws SapIntegrationException {
+    private static class PageResult {
+        final List<SapMaterialDocumentDTO> items;
+        final String nextLink;
+        PageResult(List<SapMaterialDocumentDTO> items, String nextLink) {
+            this.items = items;
+            this.nextLink = nextLink;
+        }
+    }
+
+    private PageResult parsePage(String body) throws SapIntegrationException {
         try {
-            // SAP OData v2 JSON: {"d":{"results":[...]}}
+            // SAP OData v2 JSON: {"d":{"results":[...], "__next":"..."}}
             JsonObject root = JsonParser.parseString(body).getAsJsonObject();
             JsonArray results;
-            if (root.has("d") && root.getAsJsonObject("d").has("results")) {
-                results = root.getAsJsonObject("d").getAsJsonArray("results");
+            String nextLink = null;
+
+            if (root.has("d")) {
+                JsonObject d = root.getAsJsonObject("d");
+                results = d.has("results") ? d.getAsJsonArray("results") : new JsonArray();
+                if (d.has("__next") && !d.get("__next").isJsonNull()) {
+                    nextLink = d.get("__next").getAsString();
+                }
             } else if (root.has("value")) {
                 results = root.getAsJsonArray("value");
+                if (root.has("@odata.nextLink") && !root.get("@odata.nextLink").isJsonNull()) {
+                    nextLink = root.get("@odata.nextLink").getAsString();
+                }
             } else {
-                throw new SapIntegrationException("Unexpected SAP response structure: " + body.substring(0, Math.min(300, body.length())));
+                throw new SapIntegrationException("Unexpected SAP response structure: "
+                        + body.substring(0, Math.min(300, body.length())));
             }
 
             List<SapMaterialDocumentDTO> items = new ArrayList<>();
             for (JsonElement el : results) {
                 items.add(GSON.fromJson(el, SapMaterialDocumentDTO.class));
             }
-            return items;
+            return new PageResult(items, nextLink);
         } catch (SapIntegrationException e) {
             throw e;
         } catch (Exception e) {
@@ -232,14 +265,20 @@ public class SapInventorySyncService implements Serializable {
         }
     }
 
-    private Item findItemByField(String fieldName, String value) {
+    private Item findItemByField(String fieldName, String value, SapInventorySyncResultDTO result) {
         String jpql;
         switch (fieldName) {
             case "barcode":
                 jpql = "SELECT i FROM Item i WHERE i.barcode = :val AND i.retired = false";
                 break;
             case "code":
+                jpql = "SELECT i FROM Item i WHERE i.code = :val AND i.retired = false";
+                break;
             default:
+                result.addWarning("Unsupported SAP Integration - Material Code Field value: '"
+                        + fieldName + "'. Supported values: code, barcode. Falling back to 'code'.");
+                LOG.log(Level.WARNING,
+                        "Unsupported materialCodeField ''{0}'' — falling back to ''code''", fieldName);
                 jpql = "SELECT i FROM Item i WHERE i.code = :val AND i.retired = false";
                 break;
         }
@@ -255,7 +294,7 @@ public class SapInventorySyncService implements Serializable {
         String stored = configController.getShortTextValueByKey(
                 "SAP Integration - Inventory Last Sync", "");
         if (stored != null && !stored.isBlank()) {
-            // stored is "yyyy-MM-dd HH:mm:ss" — extract date part
+            // stored is "yyyy-MM-ddT23:59:59" — extract date part for OData date filter
             return stored.substring(0, 10);
         }
         // Fall back to N days ago
