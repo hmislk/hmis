@@ -38,7 +38,10 @@ public class SapErrorResponseDTO {
 
     public String extractMessage() {
         if (error == null) return "Unknown SAP error";
-        if (error.getMessage() == null) return error.getCode() != null ? error.getCode() : "Unknown SAP error";
-        return error.getMessage().getValue();
+        if (error.getMessage() != null) {
+            String val = error.getMessage().getValue();
+            if (val != null && !val.trim().isEmpty()) return val;
+        }
+        return error.getCode() != null ? error.getCode() : "Unknown SAP error";
     }
 }

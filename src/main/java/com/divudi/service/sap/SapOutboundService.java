@@ -42,7 +42,7 @@ import javax.json.JsonReader;
  *
  * <p>Mapping:
  * <ul>
- *   <li>One debit line (AR account) for the bill total</li>
+ *   <li>One debit line (AR account) for the bill net total (post-discount)</li>
  *   <li>One credit line per non-retired BillItem (revenue account)</li>
  * </ul>
  *
@@ -97,7 +97,18 @@ public class SapOutboundService implements Serializable {
      */
     public Map<String, Object> pushBillToSap(Long billId) throws SapIntegrationException {
         if (!tokenService.isEnabled()) {
-            throw new SapIntegrationException("SAP integration is disabled or not configured");
+            Map<String, Object> skipped = new HashMap<>();
+            skipped.put("billId", billId);
+            skipped.put("status", "skipped");
+            skipped.put("reason", "SAP integration is disabled");
+            return skipped;
+        }
+
+        // Idempotency: return existing record if this bill was already pushed
+        Map<String, Object> existing = getPushStatus(billId);
+        if (existing != null) {
+            existing.put("status", "already_pushed");
+            return existing;
         }
 
         Bill bill = billFacade.find(billId);
@@ -106,6 +117,9 @@ public class SapOutboundService implements Serializable {
         }
         if (bill.isCancelled()) {
             throw new SapIntegrationException("Bill " + billId + " is cancelled and cannot be pushed to SAP");
+        }
+        if (!bill.isCompleted()) {
+            throw new SapIntegrationException("Bill " + billId + " is not yet completed and cannot be pushed to SAP");
         }
 
         String companyCode   = requiredConfig(KEY_COMPANY_CODE);
@@ -163,10 +177,10 @@ public class SapOutboundService implements Serializable {
 
         List<SapJournalEntryItemDTO> items = new ArrayList<>();
 
-        // Debit: AR receivable for gross total
+        // Debit: AR receivable for net total (post-discount), matching sum of credit lines
         items.add(new SapJournalEntryItemDTO(
                 arAccount,
-                bill.getTotal(),
+                bill.getNetTotal(),
                 currency,
                 "S",
                 "AR Bill " + bill.getId()));

@@ -6,6 +6,7 @@
 package com.divudi.core.data.dto.sap;
 
 import java.util.List;
+import java.util.Locale;
 
 /**
  * SAP S/4HANA Cloud Journal Entry request payload.
@@ -33,7 +34,7 @@ public class SapJournalEntryDTO {
         public SapJournalEntryItemDTO(String glAccount, double amount, String currency,
                 String debitCreditCode, String text) {
             this.GLAccount = glAccount;
-            this.AmountInTransactionCurrency = String.format("%.2f", amount);
+            this.AmountInTransactionCurrency = String.format(Locale.ROOT, "%.2f", amount);
             this.TransactionCurrency = currency;
             this.DebitCreditCode = debitCreditCode;
             this.DocumentItemText = text;
