@@ -150,8 +150,8 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
     
     Map<String, Object> originalAdmission;
     Map<String, Object> updatedAdmission;
-
     // </editor-fold>
+    
     // <editor-fold defaultstate="collapsed" desc="Functons">
     public void addPatientAllergy() {
         if (currentPatientAllergy == null || currentPatientAllergy.getItemValue() == null) {
@@ -706,9 +706,9 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
         }
         
         if (getCurrentCompany().getContactPerson() == null) {
-        JsfUtil.addErrorMessage("Company Contact Person is Missing");
-        return "";
-    }
+            JsfUtil.addErrorMessage("Company Contact Person is Missing");
+            return "";
+        }
 
         if (getCurrentCompany().getContactPerson().getEmail() == null || getCurrentCompany().getContactPerson().getEmail().trim().equalsIgnoreCase("")) {
             JsfUtil.addErrorMessage("Company Email is Missing");
@@ -766,8 +766,8 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
         patientRoom = getPatientRoomFacade().findByJpql(sql, hm);
 
     }
-
     // </editor-fold>
+    
     // <editor-fold defaultstate="collapsed" desc="Getter & Setters">
     public void setSelectedItems(List<Admission> selectedItems) {
         this.selectedItems = selectedItems;
@@ -1027,8 +1027,8 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
     public void setCurrecntEncounterCreditCompany(EncounterCreditCompany currecntEncounterCreditCompany) {
         this.currecntEncounterCreditCompany = currecntEncounterCreditCompany;
     }
-
     // </editor-fold>
+    
     @Override
     public Patient getPatient() {
         if (current != null) {
