@@ -2408,6 +2408,29 @@ public class AnthropicApiService implements Serializable {
                     {"GET", "/qb/paymentreturn/{institution_code}/{last_return_payment_id}",    "Payment return / refund records"}
                 });
 
+        // ── SAP Integration ───────────────────────────────────────────────────
+        appendModule(sb, "SAP Integration - Billing", "/sap/billing",
+                "Push HMIS bills to SAP S/4HANA Cloud FI as journal entries, and receive payment confirmations from SAP. "
+                + "Requires SAP integration to be enabled via ConfigOption keys. "
+                + "All endpoints use the Finance header.",
+                null,
+                new String[][]{
+                    {"POST", "/sap/billing/push/{billId}",          "Push an HMIS bill to SAP FI as a journal entry (debit AR, credit revenue per line item)"},
+                    {"GET",  "/sap/billing/status/{billId}",        "Get the SAP push status and SAP document number for a bill"},
+                    {"POST", "/sap/billing/confirm",                "Receive a payment confirmation webhook from SAP (body: sapDocumentNumber, hmsBillReference, amount, currency, postingDate)"},
+                    {"GET",  "/sap/billing/confirm/status/{billId}", "Get the SAP payment confirmation status for a bill"}
+                });
+
+        appendModule(sb, "SAP Integration - Inventory", "/sap/inventory",
+                "Fetch SAP S/4HANA Cloud MM goods-receipt material documents and match them to HMIS pharmacy items. "
+                + "Read-only audit sync — matches SAP materials to HMIS Item master by code or barcode field (configurable). "
+                + "Does not create GRN bills; pharmacy GRN workflows handle actual stock updates. "
+                + "fromDate defaults to last-sync watermark or N-days-ago fallback; watermark advances only on forward syncs.",
+                null,
+                new String[][]{
+                    {"GET", "/sap/inventory/sync", "Trigger SAP MM goods-receipt sync. Query params: fromDate (yyyy-MM-dd, optional), toDate (yyyy-MM-dd, optional)"}
+                });
+
         // ── Clinical ──────────────────────────────────────────────────────────
         appendModule(sb, "Clinical - Metadata", "/clinical/metadata",
                 "Manage EMR clinical master data. Required param: type. "

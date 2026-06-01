@@ -50,6 +50,10 @@ public class PharmacyGrnNativeSqlService {
 
     /**
      * Loads the GRN header DTO for the given bill ID.
+     *
+     * @param billId  ID of any GRN-family bill (PHARMACY_GRN, PHARMACY_GRN_PRE,
+     *                PHARMACY_GRN_CANCELLED, PHARMACY_GRN_REFUND, or wholesale variants)
+     * @return populated header DTO, or null when not found / on error
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public GrnPrintHeaderDto loadHeaderByBillId(long billId) {
@@ -63,6 +67,9 @@ public class PharmacyGrnNativeSqlService {
 
     /**
      * Loads the GRN item DTOs for the given bill ID.
+     *
+     * @param billId  ID of the GRN bill whose items to load
+     * @return list of item DTOs (empty list when none found), or null on error
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public List<GrnPrintItemDto> loadItemsByBillId(long billId) {
