@@ -760,7 +760,9 @@ public class EnumController implements Serializable {
     }
 
     public InwardChargeType[] getInwardChargeTypesForSetting() {
-        return InwardChargeType.values();
+        return Arrays.stream(InwardChargeType.values())
+                .filter(InwardChargeType::isAllowToSetItems)
+                .toArray(InwardChargeType[]::new);
     }
 
     public PatientEncounterComponentType[] getPatientEncounterComponentTypes() {
