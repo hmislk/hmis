@@ -213,27 +213,38 @@
                         </h:panelGrid>
                     </div>
 
-                    <p:dataTable id="dList" value="#{bhtSummeryController.chargeItemTotals}" var="c" scrollable="true"
-                                 scrollHeight="300" >
+                    <p:dataTable 
+                        id="dList" 
+                        value="#{bhtSummeryController.chargeItemTotals}" 
+                        var="c" 
+                        scrollHeight="300"
+                        scrollable="true">
+
                         <p:column headerText="Inward Charge Type" filterBy="#{c.inwardChargeType.name}" filterMatchMode="contains">
                             <h:outputLabel value="#{c.inwardChargeType.name}"/>
                         </p:column>
+
                         <p:column headerText="Total" sortBy="#{c.total}">
                             <h:outputLabel value="#{c.total}">
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
                         </p:column>
+
                         <p:column headerText="Discount">
-                            <p:inputText autocomplete="off" id="catDiscount" value="#{c.discount}" disabled="#{c.inwardChargeType eq 'RoomCharges'
-                                                                                      or c.inwardChargeType eq 'MOCharges'
-                                                                                      or c.inwardChargeType eq 'MaintainCharges'
-                                                                                      or c.inwardChargeType eq 'NursingCharges'
-                                                                                      or c.inwardChargeType eq 'LinenCharges'
-                                                                                      or c.inwardChargeType eq 'MedicalCareICU'
-                                                                                      or c.inwardChargeType eq 'AdministrationCharge'
-                                                                                      or c.inwardChargeType eq 'ProfessionalCharge'
-                                                                                      or c.inwardChargeType eq 'MedicalCare' 
-                                                                                      or c.total eq 0}">
+                            <p:inputText 
+                                autocomplete="off" 
+                                id="catDiscount" 
+                                value="#{c.discount}"
+                                disabled="#{c.inwardChargeType eq 'RoomCharges'
+                                            or c.inwardChargeType eq 'MOCharges'
+                                            or c.inwardChargeType eq 'MaintainCharges'
+                                            or c.inwardChargeType eq 'NursingCharges'
+                                            or c.inwardChargeType eq 'LinenCharges'
+                                            or c.inwardChargeType eq 'MedicalCareICU'
+                                            or c.inwardChargeType eq 'AdministrationCharge'
+                                            or c.inwardChargeType eq 'ProfessionalCharge'
+                                            or c.inwardChargeType eq 'MedicalCare' 
+                                            or c.total eq 0}">
                                 <f:convertNumber pattern="#,##0.00"/>
                                 <p:ajax process="@this"
                                         update="@this catNetTotal :#{p:resolveFirstComponentWithId('tot',view).clientId}  "
@@ -244,21 +255,26 @@
                                         listener="#{bhtSummeryController.changeIsMade()}"/>
                             </p:inputText>
                         </p:column>
+
                         <p:column headerText="NetTotal">
                             <h:outputLabel id="catNetTotal" value="#{c.netTotal}">
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
                         </p:column>
+
                         <p:column>
-                            <p:inputText autocomplete="off" id="catAdj" value="#{c.adjustedTotal}"
-                                         disabled="#{c.inwardChargeType eq 'RoomCharges' 
-                                                     or c.inwardChargeType eq 'MOCharges'
-                                                     or c.inwardChargeType eq 'MaintainCharges'
-                                                     or c.inwardChargeType eq 'NursingCharges'
-                                                     or c.inwardChargeType eq 'LinenCharges'
-                                                     or c.inwardChargeType eq 'MedicalCareICU'
-                                                     or c.inwardChargeType eq 'AdministrationCharge'
-                                                     or c.inwardChargeType eq 'ProfessionalCharge'}">
+                            <p:inputText 
+                                autocomplete="off" 
+                                id="catAdj" 
+                                value="#{c.adjustedTotal}"
+                                disabled="#{c.inwardChargeType eq 'RoomCharges' 
+                                            or c.inwardChargeType eq 'MOCharges'
+                                            or c.inwardChargeType eq 'MaintainCharges'
+                                            or c.inwardChargeType eq 'NursingCharges'
+                                            or c.inwardChargeType eq 'LinenCharges'
+                                            or c.inwardChargeType eq 'MedicalCareICU'
+                                            or c.inwardChargeType eq 'AdministrationCharge'
+                                            or c.inwardChargeType eq 'ProfessionalCharge'}">
                                 <f:convertNumber pattern="#,##0.00"/>
                                 <p:ajax process="@this" update=":#{p:resolveFirstComponentWithId('tot',view).clientId} "
                                         event="blur"
@@ -268,11 +284,10 @@
                                         listener="#{bhtSummeryController.changeIsMade()}"/>
                             </p:inputText>
                         </p:column>
+
                     </p:dataTable>
 
-                    <p:panel id="creditAllocationPanel" styleClass="mx-1 my-3"
-                             rendered="#{bhtSummeryController.patientEncounter.paymentMethod eq 'Credit'
-                                         and not empty bhtSummeryController.creditCompanyAllocations}">
+                    <p:panel id="creditAllocationPanel" styleClass="mx-1 my-3" rendered="#{bhtSummeryController.patientEncounter.paymentMethod eq 'Credit' and not empty bhtSummeryController.creditCompanyAllocations}">
                         <f:facet name="header">
                             <h:outputLabel value="Credit Company Allocation" />
                         </f:facet>
