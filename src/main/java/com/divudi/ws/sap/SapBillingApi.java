@@ -6,18 +6,21 @@
 package com.divudi.ws.sap;
 
 import com.divudi.bean.common.ApiKeyController;
+import com.divudi.core.data.dto.sap.SapPaymentConfirmationDTO;
 import com.divudi.core.entity.ApiKey;
 import com.divudi.core.entity.WebUser;
 import com.divudi.service.sap.SapIntegrationException;
 import com.divudi.service.sap.SapOutboundService;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonSyntaxException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -28,12 +31,14 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 /**
- * REST API for SAP S/4HANA Cloud billing outbound integration.
+ * REST API for SAP S/4HANA Cloud billing integration (outbound and inbound).
  *
  * <p>Endpoints:
  * <ul>
- *   <li>{@code POST /api/sap/billing/push/{billId}} — push a finalized HMIS bill to SAP FI</li>
+ *   <li>{@code POST /api/sap/billing/push/{billId}}   — push a finalized HMIS bill to SAP FI</li>
  *   <li>{@code GET  /api/sap/billing/status/{billId}} — check whether a bill has been pushed</li>
+ *   <li>{@code POST /api/sap/billing/confirm}         — inbound: SAP posts payment confirmation</li>
+ *   <li>{@code GET  /api/sap/billing/confirm/status/{billId}} — check confirmation record</li>
  * </ul>
  *
  * <p>Auth: {@code Finance} header with a valid HMIS API key.
@@ -101,6 +106,62 @@ public class SapBillingApi {
             Map<String, Object> status = sapOutboundService.getPushStatus(billId);
             if (status == null) {
                 return errorResponse("Bill " + billId + " has not been pushed to SAP", 404);
+            }
+            return successResponse(status);
+        } catch (Exception e) {
+            return errorResponse("Unexpected error: " + e.getMessage(), 500);
+        }
+    }
+
+    /**
+     * Inbound: SAP posts a payment confirmation after posting in SAP FI.
+     * Looks up the HMIS bill by reference and records the confirmation.
+     * Idempotent: re-confirming returns 200 with status=already_confirmed.
+     */
+    @POST
+    @Path("/confirm")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response confirmPayment(String requestBody) {
+        WebUser user = validateApiKey(requestContext.getHeader("Finance"));
+        if (user == null) {
+            return errorResponse("Not a valid key", 401);
+        }
+        SapPaymentConfirmationDTO dto;
+        try {
+            dto = GSON.fromJson(requestBody, SapPaymentConfirmationDTO.class);
+        } catch (JsonSyntaxException e) {
+            return errorResponse("Invalid JSON: " + e.getMessage(), 400);
+        }
+        try {
+            Map<String, Object> result = sapOutboundService.confirmPayment(dto);
+            return successResponse(result);
+        } catch (SapIntegrationException e) {
+            int code = e.getMessage() != null && e.getMessage().contains("not found") ? 404 : 400;
+            return errorResponse(e.getMessage(), code);
+        } catch (Exception e) {
+            return errorResponse("Unexpected error: " + e.getMessage(), 500);
+        }
+    }
+
+    /**
+     * Returns the SAP confirmation record for a bill, or 404 if not yet confirmed.
+     */
+    @GET
+    @Path("/confirm/status/{billId}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response confirmStatus(@PathParam("billId") Long billId) {
+        WebUser user = validateApiKey(requestContext.getHeader("Finance"));
+        if (user == null) {
+            return errorResponse("Not a valid key", 401);
+        }
+        if (billId == null || billId <= 0) {
+            return errorResponse("Invalid bill ID", 400);
+        }
+        try {
+            Map<String, Object> status = sapOutboundService.getConfirmStatus(billId);
+            if (status == null) {
+                return errorResponse("Bill " + billId + " has not received a SAP payment confirmation", 404);
             }
             return successResponse(status);
         } catch (Exception e) {
