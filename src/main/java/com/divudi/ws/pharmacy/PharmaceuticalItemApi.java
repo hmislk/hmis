@@ -74,10 +74,7 @@ public class PharmaceuticalItemApi {
             String query = uriInfo.getQueryParameters().getFirst("query");
             String departmentType = uriInfo.getQueryParameters().getFirst("departmentType");
             String limitStr = uriInfo.getQueryParameters().getFirst("limit");
-
-            if (query == null || query.trim().isEmpty()) {
-                return errorResponse("Query parameter is required", 400);
-            }
+            String offsetStr = uriInfo.getQueryParameters().getFirst("offset");
 
             Integer limit = null;
             if (limitStr != null && !limitStr.trim().isEmpty()) {
@@ -88,7 +85,16 @@ public class PharmaceuticalItemApi {
                 }
             }
 
-            List<?> results = itemService.searchItems(type, query.trim(), departmentType, limit);
+            Integer offset = null;
+            if (offsetStr != null && !offsetStr.trim().isEmpty()) {
+                try {
+                    offset = Integer.parseInt(offsetStr.trim());
+                } catch (NumberFormatException e) {
+                    return errorResponse("Invalid offset format", 400);
+                }
+            }
+
+            List<?> results = itemService.searchItems(type, query, departmentType, limit, offset);
             return successResponse(results);
 
         } catch (Exception e) {

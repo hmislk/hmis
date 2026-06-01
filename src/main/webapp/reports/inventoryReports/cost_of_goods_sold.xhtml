@@ -199,10 +199,13 @@
                         </p:panelGrid>
 
                         <div class="d-flex align-items-center">
-                            <p:commandButton class="ui-button-warning mx-1" 
-                                             icon="fas fa-cogs" 
-                                             ajax="false"  
-                                             value="Process" 
+                            <p:commandButton class="ui-button-warning mx-1"
+                                             icon="fas fa-cogs"
+                                             value="Process"
+                                             widgetVar="wBtnProcess"
+                                             update="@form :growl"
+                                             onstart="PF('wBtnProcess').disable()"
+                                             oncomplete="PF('wBtnProcess').enable()"
                                              action="#{pharmacyReportController.processCostOfGoodSoldReport()}">
                             </p:commandButton>
                            
