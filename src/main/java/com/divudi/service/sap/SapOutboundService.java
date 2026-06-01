@@ -8,6 +8,7 @@ package com.divudi.service.sap;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.core.data.dto.sap.SapErrorResponseDTO;
 import com.divudi.core.data.dto.sap.SapJournalEntryDTO;
+import com.divudi.core.data.dto.sap.SapPaymentConfirmationDTO;
 import com.divudi.core.data.dto.sap.SapJournalEntryDTO.SapJournalEntryItemDTO;
 import com.divudi.core.data.dto.sap.SapJournalEntryResponseDTO;
 import com.divudi.core.entity.BillItem;
@@ -268,6 +269,80 @@ public class SapOutboundService implements Serializable {
         Map<String, Object> result = new HashMap<>();
         result.put("billId", billId);
         result.put("pushRecord", stored);
+        return result;
+    }
+
+    /**
+     * Records an inbound SAP payment confirmation against the HMIS bill identified by
+     * {@code dto.hmsBillReference} (matches {@code Bill.deptId}).
+     *
+     * <p>Idempotent: re-confirming an already-confirmed bill returns a map with
+     * {@code status=already_confirmed} instead of an error.
+     *
+     * @return result map with {@code billId}, {@code billReference}, {@code sapDocumentNumber},
+     *         {@code confirmedAt}, and {@code status}
+     * @throws SapIntegrationException if required fields are missing or bill is not found
+     */
+    public Map<String, Object> confirmPayment(SapPaymentConfirmationDTO dto) throws SapIntegrationException {
+        if (dto == null) {
+            throw new SapIntegrationException("Confirmation payload is required");
+        }
+        if (dto.getSapDocumentNumber() == null || dto.getSapDocumentNumber().trim().isEmpty()) {
+            throw new SapIntegrationException("sapDocumentNumber is required");
+        }
+        if (dto.getHmsBillReference() == null || dto.getHmsBillReference().trim().isEmpty()) {
+            throw new SapIntegrationException("hmsBillReference is required");
+        }
+
+        String billRef = dto.getHmsBillReference().trim();
+
+        // Look up bill by deptId (HMIS bill reference number)
+        String jpql = "SELECT b FROM Bill b WHERE b.deptId = :ref AND b.retired = false";
+        java.util.Map<String, Object> params = new HashMap<>();
+        params.put("ref", billRef);
+        Bill bill = billFacade.findFirstByJpql(jpql, params);
+        if (bill == null) {
+            throw new SapIntegrationException("Bill not found for reference: " + billRef);
+        }
+
+        // Idempotency: return existing record if already confirmed
+        Map<String, Object> existing = getConfirmStatus(bill.getId());
+        if (existing != null) {
+            existing.put("status", "already_confirmed");
+            return existing;
+        }
+
+        // Record the confirmation
+        String confirmedAt = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
+        String value = "{\"sapDocNumber\":\"" + dto.getSapDocumentNumber().trim()
+                + "\",\"amount\":" + dto.getAmount()
+                + ",\"currency\":\"" + (dto.getCurrency() != null ? dto.getCurrency() : "")
+                + "\",\"postingDate\":\"" + (dto.getPostingDate() != null ? dto.getPostingDate() : "")
+                + "\",\"confirmedAt\":\"" + confirmedAt + "\"}";
+        try {
+            configController.saveShortTextOption("SAP Bill Confirm - " + bill.getId(), value);
+        } catch (Exception e) {
+            LOG.log(Level.WARNING, "Could not record SAP confirmation for bill " + bill.getId(), e);
+        }
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("billId", bill.getId());
+        result.put("billReference", billRef);
+        result.put("sapDocumentNumber", dto.getSapDocumentNumber().trim());
+        result.put("confirmedAt", confirmedAt);
+        result.put("status", "confirmed");
+        return result;
+    }
+
+    /**
+     * Returns the stored SAP confirmation record for {@code billId}, or {@code null} if not yet confirmed.
+     */
+    public Map<String, Object> getConfirmStatus(Long billId) {
+        String stored = configController.getShortTextValueByKey("SAP Bill Confirm - " + billId, "");
+        if (stored == null || stored.isBlank()) return null;
+        Map<String, Object> result = new HashMap<>();
+        result.put("billId", billId);
+        result.put("confirmRecord", stored);
         return result;
     }
 
