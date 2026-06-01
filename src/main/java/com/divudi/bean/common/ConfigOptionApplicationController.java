@@ -1582,6 +1582,7 @@ public class ConfigOptionApplicationController implements Serializable {
         getShortTextValueByKey("SAP Integration - Client Secret", "");
         getShortTextValueByKey("SAP Integration - Material Code Field", "code");
         getShortTextValueByKey("SAP Integration - Inventory Last Sync", "");
+        getShortTextValueByKey("SAP Integration - Inventory Sync From Days", "7");
         getShortTextValueByKey("SAP Integration - Company Code", "");
         getShortTextValueByKey("SAP Integration - AR Account", "");
         getShortTextValueByKey("SAP Integration - Revenue Account", "");
