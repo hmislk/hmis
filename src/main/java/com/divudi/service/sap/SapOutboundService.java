@@ -312,18 +312,15 @@ public class SapOutboundService implements Serializable {
             return existing;
         }
 
-        // Record the confirmation
+        // Record the confirmation — must succeed before returning 200 to SAP.
+        // If this throws, the exception propagates as a 5xx so SAP can retry.
         String confirmedAt = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
         String value = "{\"sapDocNumber\":\"" + dto.getSapDocumentNumber().trim()
                 + "\",\"amount\":" + dto.getAmount()
                 + ",\"currency\":\"" + (dto.getCurrency() != null ? dto.getCurrency() : "")
                 + "\",\"postingDate\":\"" + (dto.getPostingDate() != null ? dto.getPostingDate() : "")
                 + "\",\"confirmedAt\":\"" + confirmedAt + "\"}";
-        try {
-            configController.saveShortTextOption("SAP Bill Confirm - " + bill.getId(), value);
-        } catch (Exception e) {
-            LOG.log(Level.WARNING, "Could not record SAP confirmation for bill " + bill.getId(), e);
-        }
+        configController.saveShortTextOption("SAP Bill Confirm - " + bill.getId(), value);
 
         Map<String, Object> result = new HashMap<>();
         result.put("billId", bill.getId());
