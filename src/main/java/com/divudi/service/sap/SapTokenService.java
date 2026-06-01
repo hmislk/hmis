@@ -11,6 +11,7 @@ import java.io.StringReader;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.net.http.HttpClient;
+import java.util.Base64;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
@@ -129,9 +130,15 @@ public class SapTokenService implements Serializable {
                     .connectTimeout(Duration.ofSeconds(15))
                     .build();
 
+            String basicCredentials = Base64.getEncoder().encodeToString(
+                    (URLEncoder.encode(clientId, StandardCharsets.UTF_8)
+                            + ":" + URLEncoder.encode(clientSecret, StandardCharsets.UTF_8))
+                            .getBytes(StandardCharsets.UTF_8));
+
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(tokenUrl))
                     .header("Content-Type", "application/x-www-form-urlencoded")
+                    .header("Authorization", "Basic " + basicCredentials)
                     .POST(HttpRequest.BodyPublishers.ofString(body))
                     .timeout(Duration.ofSeconds(15))
                     .build();
@@ -152,9 +159,11 @@ public class SapTokenService implements Serializable {
 
                 cachedToken = json.getString("access_token");
 
-                // expires_in is in seconds; subtract 30s buffer to refresh before actual expiry
+                // expires_in is in seconds; subtract 30s buffer so we refresh before actual expiry.
+                // Use 0 as the floor (not 30) so short-lived tokens don't get cached past their real expiry.
                 int expiresIn = json.containsKey("expires_in") ? json.getInt("expires_in") : 3600;
-                tokenExpiresAt = Instant.now().plusSeconds(Math.max(expiresIn - 30, 30));
+                long refreshIn = Math.max(expiresIn - 30L, 0L);
+                tokenExpiresAt = Instant.now().plusSeconds(refreshIn);
 
                 LOG.log(Level.INFO, "SAP bearer token refreshed, expires in {0}s", expiresIn);
                 return cachedToken;
