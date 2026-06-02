@@ -22,98 +22,103 @@
         available via the View action.
     -->
     <cc:implementation>
-        <h:panelGrid columns="3" styleClass="mb-2">
-            <h:outputLabel value="Issue No"/>
-            <h:outputLabel value="To Department"/>
-            <h:outputLabel value="Net Total"/>
-            <p:inputText autocomplete="off" value="#{searchController.searchKeyword.billNo}"/>
-            <p:inputText autocomplete="off" value="#{searchController.searchKeyword.department}"/>
-            <p:inputText autocomplete="off" value="#{searchController.searchKeyword.netTotal}"/>
-        </h:panelGrid>
-
-        <p:commandButton ajax="false" value="Download" icon="fa fa-download"
-                         styleClass="ui-button-success mb-2">
-            <p:dataExporter target="tblTransferIssue" type="xlsx" fileName="transfer_issue_list"/>
-        </p:commandButton>
-
-        <p:dataTable rowIndexVar="i"
-                     id="tblTransferIssue"
-                     widgetVar="tblTransferIssue"
-                     value="#{pharmacyBillSearch.transferIssueSearchDtos}"
-                     var="dto"
-                     paginator="true"
-                     rows="10"
-                     paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                     rowsPerPageTemplate="10,20,50,100"
-                     emptyMessage="No Transfer Issues Found">
-
+        <p:panel>
             <f:facet name="header">
-                <h:outputLabel value="TRANSFER ISSUE"/>
+                <div style="display:flex;justify-content:space-between;align-items:center;width:100%;">
+                    <span>TRANSFER ISSUE</span>
+                    <p:commandButton ajax="false" value="Download" icon="fa fa-download"
+                                     styleClass="ui-button-success ui-button-sm">
+                        <p:dataExporter target="tblTransferIssue" type="xlsx" fileName="transfer_issue_list"/>
+                    </p:commandButton>
+                </div>
             </f:facet>
 
-            <!-- Actions (not exported) -->
-            <p:column headerText="Actions" exportable="false" style="white-space:nowrap;">
-                <p:commandButton
-                    ajax="false"
-                    icon="fa fa-eye"
-                    styleClass="ui-button-info ui-button-sm"
-                    title="View Transfer Issue"
-                    action="#{pharmacyBillSearch.navigateToViewPharmacyTransferIssueById()}">
-                    <f:setPropertyActionListener value="#{dto.billId}" target="#{pharmacyBillSearch.billId}"/>
-                </p:commandButton>
-            </p:column>
+            <h:panelGrid columns="3" styleClass="mb-2">
+                <h:outputLabel value="Issue No"/>
+                <h:outputLabel value="To Department"/>
+                <h:outputLabel value="Net Total"/>
+                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.billNo}"/>
+                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.department}"/>
+                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.netTotal}"/>
+            </h:panelGrid>
 
-            <p:column headerText="Issue No"
-                      sortBy="#{dto.deptId}"
-                      filterBy="#{dto.deptId}"
-                      filterMatchMode="contains">
-                <h:outputLabel value="#{dto.deptId}"/>
-            </p:column>
+            <div class="pharma-search-wrapper">
+                <p:dataTable rowIndexVar="i"
+                             id="tblTransferIssue"
+                             widgetVar="tblTransferIssue"
+                             value="#{pharmacyBillSearch.transferIssueSearchDtos}"
+                             var="dto"
+                             paginator="true"
+                             rows="10"
+                             paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                             rowsPerPageTemplate="10,20,50,100"
+                             emptyMessage="No Transfer Issues Found">
 
-            <p:column headerText="To Department"
-                      sortBy="#{dto.toDepartmentName}"
-                      filterBy="#{dto.toDepartmentName}"
-                      filterMatchMode="contains">
-                <h:outputLabel value="#{dto.toDepartmentName}"/>
-            </p:column>
+                    <p:column headerText="Issue No"
+                              sortBy="#{dto.deptId}"
+                              filterBy="#{dto.deptId}"
+                              filterMatchMode="contains">
+                        <h:outputLabel value="#{dto.deptId}"/>
+                    </p:column>
 
-            <p:column headerText="Issued At" sortBy="#{dto.createdAt}">
-                <h:outputLabel value="#{dto.createdAt}">
-                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
-                </h:outputLabel>
-            </p:column>
+                    <p:column headerText="To Department"
+                              sortBy="#{dto.toDepartmentName}"
+                              filterBy="#{dto.toDepartmentName}"
+                              filterMatchMode="contains">
+                        <h:outputLabel value="#{dto.toDepartmentName}"/>
+                    </p:column>
 
-            <p:column headerText="Issued By"
-                      sortBy="#{dto.creatorName}"
-                      filterBy="#{dto.creatorName}"
-                      filterMatchMode="contains">
-                <h:outputLabel value="#{dto.creatorName}"/>
-            </p:column>
+                    <p:column headerText="Issued At" sortBy="#{dto.createdAt}">
+                        <h:outputLabel value="#{dto.createdAt}">
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                        </h:outputLabel>
+                    </p:column>
 
-            <p:column headerText="Staff"
-                      sortBy="#{dto.transporterName}"
-                      filterBy="#{dto.transporterName}"
-                      filterMatchMode="contains">
-                <h:outputLabel value="#{dto.transporterName}"/>
-            </p:column>
+                    <p:column headerText="Issued By"
+                              sortBy="#{dto.creatorName}"
+                              filterBy="#{dto.creatorName}"
+                              filterMatchMode="contains">
+                        <h:outputLabel value="#{dto.creatorName}"/>
+                    </p:column>
 
-            <p:column headerText="Net Value" style="text-align: right;">
-                <h:outputLabel value="#{dto.netTotal}">
-                    <f:convertNumber pattern="#,##0.00"/>
-                </h:outputLabel>
-            </p:column>
+                    <p:column headerText="Staff"
+                              sortBy="#{dto.transporterName}"
+                              filterBy="#{dto.transporterName}"
+                              filterMatchMode="contains">
+                        <h:outputLabel value="#{dto.transporterName}"/>
+                    </p:column>
 
-            <p:column headerText="Comments"
-                      sortBy="#{dto.comments}"
-                      filterBy="#{dto.comments}"
-                      filterMatchMode="contains">
-                <h:outputLabel value="#{dto.comments}"/>
-            </p:column>
+                    <p:column headerText="Net Value" style="text-align:right;">
+                        <h:outputLabel value="#{dto.netTotal}">
+                            <f:convertNumber pattern="#,##0.00"/>
+                        </h:outputLabel>
+                    </p:column>
 
-            <p:column headerText="Status" exportable="false">
-                <p:badge value="Cancelled" severity="danger" rendered="#{dto.cancelled}"/>
-            </p:column>
+                    <p:column headerText="Comments"
+                              sortBy="#{dto.comments}"
+                              filterBy="#{dto.comments}"
+                              filterMatchMode="contains">
+                        <h:outputLabel value="#{dto.comments}"/>
+                    </p:column>
 
-        </p:dataTable>
+                    <p:column headerText="Status" exportable="false">
+                        <p:badge value="Cancelled" severity="danger" rendered="#{dto.cancelled}"/>
+                    </p:column>
+
+                    <!-- Actions (last column, not exported) -->
+                    <p:column headerText="Actions" exportable="false" style="white-space:nowrap;">
+                        <p:commandButton
+                            ajax="false"
+                            icon="fa fa-eye"
+                            styleClass="ui-button-info ui-button-sm"
+                            title="View Transfer Issue"
+                            action="#{pharmacyBillSearch.navigateToViewPharmacyTransferIssueById()}">
+                            <f:setPropertyActionListener value="#{dto.billId}" target="#{pharmacyBillSearch.billId}"/>
+                        </p:commandButton>
+                    </p:column>
+
+                </p:dataTable>
+            </div>
+        </p:panel>
     </cc:implementation>
 </html>

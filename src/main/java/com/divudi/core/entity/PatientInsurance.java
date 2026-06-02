@@ -2,6 +2,7 @@ package com.divudi.core.entity;
 
 import java.io.Serializable;
 import java.util.Date;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -43,6 +44,8 @@ public class PatientInsurance implements Serializable {
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date validTo;
 
+    // "primary" is a reserved word in MySQL; map to a safe column name.
+    @Column(name = "isPrimary")
     private boolean primary;
     private boolean active;
 

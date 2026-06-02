@@ -6,6 +6,7 @@ package com.divudi.bean.common;
 
 import com.divudi.bean.cashTransaction.CashBookEntryController;
 import com.divudi.bean.cashTransaction.DrawerController;
+import com.divudi.bean.cashTransaction.FinancialTransactionController;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.inward.AdmissionController;
 import com.divudi.bean.membership.PaymentSchemeController;
@@ -47,6 +48,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
+import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
 
@@ -93,6 +95,8 @@ public class CashRecieveBillController implements Serializable {
     private DrawerController drawerController;
     @Inject
     WebUserController webUserController;
+    @Inject
+    private FinancialTransactionController financialTransactionController;
 
     private Bill current;
     private boolean printPreview = false;
@@ -124,6 +128,36 @@ public class CashRecieveBillController implements Serializable {
         creditCompany = null;
         bhtCreditCompanies = null;
         recreateModel();
+    }
+
+    /**
+     * Navigate to inward CC payment by BHT, requiring an active shift.
+     * If the logged user has no open shift start fund bill, show an error and
+     * send them to the cashier index to start a shift first.
+     */
+    public String navigateToCreditCompanyBillInward() {
+        financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
+        if (financialTransactionController.getNonClosedShiftStartFundBill() == null) {
+            // Use Flash scope to preserve error message across redirect
+            JsfUtil.addErrorMessage("Start Your Shift First !");
+            return "/cashier/index?faces-redirect=true";
+        }
+        return "/credit/credit_compnay_bill_inward?faces-redirect=true";
+    }
+
+    /**
+     * Navigate to inward CC payment by company, requiring an active shift.
+     * If the logged user has no open shift start fund bill, show an error and
+     * send them to the cashier index to start a shift first.
+     */
+    public String navigateToCreditCompanyBillPaymentInward() {
+        financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
+        if (financialTransactionController.getNonClosedShiftStartFundBill() == null) {
+            // Use Flash scope to preserve error message across redirect
+            JsfUtil.addErrorMessage("Start Your Shift First !");
+            return "/cashier/index?faces-redirect=true";
+        }
+        return "/credit/credit_compnay_bill_payment_inward?faces-redirect=true";
     }
 
     public void selectInstitutionListener() {

@@ -697,6 +697,19 @@ public class GrnReturnWorkflowController implements Serializable {
             // Process zero quantity items before approval
             processZeroQuantityItems();
 
+            // Approve re-submits the same form, so JSF rebinds fd.quantity / fd.freeQuantity
+            // to the positive number shown in the inputs. Re-apply the stock-out sign and
+            // persist each line so the approved bill keeps the correct sign. (hmislk/hmis#21052)
+            normalizeReturnFinanceSigns();
+            if (billItems != null) {
+                for (BillItem bi : billItems) {
+                    if (bi == null || bi.isRetired() || bi.getId() == null) {
+                        continue;
+                    }
+                    billItemFacade.edit(bi);
+                }
+            }
+
             // Mark the current bill as completed (approved)
             currentBill.setCompleted(true);
             currentBill.setCompletedBy(sessionController.getLoggedUser());
@@ -932,6 +945,12 @@ public class GrnReturnWorkflowController implements Serializable {
             return;
         }
 
+        // The qty / free-qty inputs are bound directly to fd.quantity / fd.freeQuantity,
+        // so JSF rewrites them as the positive number the user typed on submit, undoing
+        // the negative sign calculateLineTotal() applied during the blur ajax. Re-apply
+        // the stock-out sign here, immediately before persistence. (hmislk/hmis#21052)
+        normalizeReturnFinanceSigns();
+
         for (BillItem bi : billItems) {
             if (bi == null) {
                 continue;
@@ -972,6 +991,43 @@ public class GrnReturnWorkflowController implements Serializable {
                 pharmaceuticalBillItemFacade.create(phi);
             } else {
                 pharmaceuticalBillItemFacade.edit(phi);
+            }
+        }
+    }
+
+    /**
+     * Normalises the stock-direction sign on the user-entered quantity fields of
+     * every return line.
+     *
+     * The "Returning Qty" / "Returning Free Qty" inputs are value-bound directly to
+     * {@code BillItemFinanceDetails.quantity} / {@code freeQuantity}. JSF's
+     * UPDATE_MODEL_VALUES phase therefore rewrites them as the positive number the
+     * user typed on every submit, overwriting the negative value
+     * {@link #calculateLineTotal(BillItem)} set during the blur ajax. A GRN return
+     * moves stock OUT of the department, so these fields must be negative. Re-applying
+     * {@code abs().negate()} right before persistence keeps them consistent with the
+     * other stock-direction fields ({@code quantityByUnits}, {@code totalQuantity},
+     * {@code bi.qty}, {@code pbi.qty}). (hmislk/hmis#21052)
+     *
+     * Financial fields are intentionally left untouched here.
+     */
+    private void normalizeReturnFinanceSigns() {
+        if (billItems == null) {
+            return;
+        }
+        for (BillItem bi : billItems) {
+            if (bi == null || bi.isRetired()) {
+                continue;
+            }
+            BillItemFinanceDetails fd = bi.getBillItemFinanceDetails();
+            if (fd == null) {
+                continue;
+            }
+            if (fd.getQuantity() != null) {
+                fd.setQuantity(fd.getQuantity().abs().negate());
+            }
+            if (fd.getFreeQuantity() != null) {
+                fd.setFreeQuantity(fd.getFreeQuantity().abs().negate());
             }
         }
     }
