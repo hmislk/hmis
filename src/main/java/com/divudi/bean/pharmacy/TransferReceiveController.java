@@ -729,7 +729,8 @@ public class TransferReceiveController implements Serializable {
         // Also negate BillFinanceDetails totals to match
         inputBill.getBillFinanceDetails().setNetTotal(BigDecimal.valueOf(netTotal));
         inputBill.getBillFinanceDetails().setGrossTotal(BigDecimal.valueOf(netTotal));
-
+        inputBill.getBillFinanceDetails().setBillNetTotal(BigDecimal.ZERO);
+        inputBill.getBillFinanceDetails().setBillGrossTotal(BigDecimal.ZERO);
 
     }
 
