@@ -23,7 +23,7 @@
                                 <p:printer target="printArea" />
                             </p:commandButton>
                             <p:commandButton
-                                value="View Details"
+                                value="To Print Details"
                                 styleClass="ui-button-success mx-1"
                                 icon="pi pi-list"
                                 style="float: right;"
@@ -32,7 +32,7 @@
                         </f:facet>
                         <h:panelGrid id="printArea" class="w-100">
                             <div class="d-flex justify-content-center">
-                                <prints:five_five_paper_with_headings_for_handover
+                                <prints:five_five_paper_with_headings_for_handover_creation_summary
                                     bundle="#{financialTransactionController.bundle}"/>
                             </div>
                         </h:panelGrid>

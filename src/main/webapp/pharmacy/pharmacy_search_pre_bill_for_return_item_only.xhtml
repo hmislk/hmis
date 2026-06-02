@@ -101,9 +101,7 @@
                                             ajax="false"
                                             id="viewBill"
                                             icon="fas fa-file-invoice"
-                                            action="pharmacy_reprint_bill_sale">
-                                            <f:setPropertyActionListener value="#{searchController.loadBillById(bill.referenceBillId)}"
-                                                                         target="#{pharmacyBillSearch.bill}"/>
+                                            action="#{billSearch.navigateToViewBillByAtomicBillTypeByBillId(bill.referenceBillId)}">
                                         </p:commandButton>
                                         <p:tooltip for="viewBill" value="View Bill"  showDelay="0" hideDelay="0"></p:tooltip>
                                         <p:commandButton

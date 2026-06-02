@@ -1,0 +1,21 @@
+{
+  "version": "v2.6.0",
+  "description": "ItemBatch and Stock archival tables — reduces live table bloat from expired zero-stock batches",
+  "issue": "#20724 — archive expired zero-stock ItemBatch records to reduce table bloat",
+  "author": "Dr M H B Ariyaratne",
+  "date": "2026-05-23",
+  "type": "schema",
+  "tables_affected": ["itembatch", "stock", "pharmaceuticalbillitem", "itembatcharchive", "stockarchive"],
+  "data_changes": false,
+  "requires_downtime": false,
+  "estimated_duration_minutes": 2,
+  "tables_created": [
+    "ITEMBATCHARCHIVE — same schema as ITEMBATCH + ARCHIVEDAT timestamp; keeps original IDs",
+    "STOCKARCHIVE — same schema as STOCK + ARCHIVEDAT timestamp; keeps original IDs"
+  ],
+  "columns_added": [
+    "PHARMACEUTICALBILLITEM.ARCHIVEDITEMBATCH_ID BIGINT NULL — FK to ITEMBATCHARCHIVE; set by archival job before live ITEMBATCH_ID is nullified so bill viewing falls back to archive"
+  ],
+  "note": "This migration only creates the schema. The archival job (ItemBatchArchivalService) performs the actual data movement. Run a dry-run preview from the admin page before the first live run.",
+  "rollback": "rollback.sql"
+}

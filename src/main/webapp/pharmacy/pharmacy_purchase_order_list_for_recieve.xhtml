@@ -279,18 +279,20 @@
                                                 title="Create a GRN for Selected Approved PO with costing"
                                                 rendered="#{configOptionApplicationController.getBooleanValueByKey('Manage Costing', true)}"
                                                 action="#{grnCostingController.navigateToResiveCostingWithSaveApprove()}"
+                                                onclick="return confirm('Create GRN for PO #{p.deptId}? This will start a new Goods Receipt with costing.');"
                                                 disabled="#{p.cancelled or p.billClosed or p.fullyIssued}">
                                                 <f:setPropertyActionListener target="#{grnCostingController.approveBill}" value="#{p}"/>
                                             </p:commandButton>
 
-                                            <p:commandButton 
-                                                ajax="false" 
+                                            <p:commandButton
+                                                ajax="false"
                                                 class="ui-button-info  w-100"
                                                 icon="fas fa-store"
-                                                value="Wholesale GRN" 
+                                                value="Wholesale GRN"
                                                 title="Create Wholesale GRN"
                                                 rendered="#{configOptionApplicationController.getBooleanValueByKey('Manage Pharmacy Wholesales', true)}"
-                                                action="#{grnController.navigateToReceiveWholesale()}" 
+                                                action="#{grnController.navigateToReceiveWholesale()}"
+                                                onclick="return confirm('Create Wholesale GRN for PO #{p.deptId}? This will start a new Wholesale Goods Receipt.');"
                                                 disabled="#{p.cancelled or p.billClosed or p.fullyIssued}"
                                                 style="min-width: 120px;">
                                                 <f:setPropertyActionListener target="#{grnController.approveBill}" value="#{p}"/>

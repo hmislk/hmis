@@ -761,19 +761,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         ));
 
         // Patient Management and Security Configurations
-        metadata.addConfigOption(new ConfigOptionInfo(
-                "Enable blacklist patient management in the system",
-                "Enables global blacklist functionality for patients across the entire system",
-                "OpdBillController.java line 3022: Global blacklist check in settleOpdBill()",
-                OptionScope.APPLICATION
-        ));
-
-        metadata.addConfigOption(new ConfigOptionInfo(
-                "Enable blacklist patient management for OPD from the system",
-                "Enables blacklist validation specifically for OPD billing to prevent billing blacklisted patients",
-                "OpdBillController.java line 3023: OPD-specific blacklist check in settleOpdBill()",
-                OptionScope.APPLICATION
-        ));
 
         // Item Listing Strategy Configuration
         metadata.addConfigOption(new ConfigOptionInfo(
@@ -3227,12 +3214,9 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             return true;
         }
 
-        if (configOptionApplicationController.getBooleanValueByKey("Enable blacklist patient management in the system", false)
-                && configOptionApplicationController.getBooleanValueByKey("Enable blacklist patient management for OPD from the system", false)) {
-            if (getPatient().isBlacklisted()) {
-                JsfUtil.addErrorMessage("This patient is blacklisted from the system. Can't Bill.");
-                return true;
-            }
+        if (getPatient().isBlacklisted()) {
+            JsfUtil.addErrorMessage("This patient is blacklisted from the system. Can't Bill.");
+            return true;
         }
 
         if (getPatient().getPerson() == null) {

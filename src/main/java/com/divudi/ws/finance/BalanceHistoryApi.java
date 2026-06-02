@@ -85,6 +85,8 @@ public class BalanceHistoryApi {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getDrawerEntries(
             @QueryParam("billId") Long billId,
+            @QueryParam("drawerId") Long drawerId,
+            @QueryParam("userId") Long userId,
             @QueryParam("fromDate") String fromDateStr,
             @QueryParam("toDate") String toDateStr,
             @QueryParam("paymentMethod") String paymentMethod,
@@ -103,6 +105,16 @@ public class BalanceHistoryApi {
             if (billId != null) {
                 jpql.append(" AND de.bill.id = :billId");
                 params.put("billId", billId);
+            }
+
+            if (drawerId != null) {
+                jpql.append(" AND de.drawer.id = :drawerId");
+                params.put("drawerId", drawerId);
+            }
+
+            if (userId != null) {
+                jpql.append(" AND de.webUser.id = :userId");
+                params.put("userId", userId);
             }
 
             if (paymentMethod != null && !paymentMethod.trim().isEmpty()) {
@@ -400,6 +412,12 @@ public class BalanceHistoryApi {
         dto.setPaymentId(entry.getPayment() != null ? entry.getPayment().getId() : null);
         dto.setCreatedAt(entry.getCreatedAt());
         dto.setCreaterName(entry.getCreater() != null ? entry.getCreater().getName() : null);
+        dto.setBillTypeAtomic(entry.getBill() != null && entry.getBill().getBillTypeAtomic() != null
+                ? entry.getBill().getBillTypeAtomic().getLabel() : null);
+        dto.setBeforeShortageExcess(entry.getBeforeShortageExcess());
+        dto.setAfterShortageExcess(entry.getAfterShortageExcess());
+        dto.setWebUserId(entry.getWebUser() != null ? entry.getWebUser().getId() : null);
+        dto.setWebUserName(entry.getWebUser() != null ? entry.getWebUser().getName() : null);
         return dto;
     }
 

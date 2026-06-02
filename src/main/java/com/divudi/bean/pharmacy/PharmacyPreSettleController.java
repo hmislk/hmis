@@ -931,6 +931,7 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
 
     private void updatePreBill() {
         getPreBill().setReferenceBill(getSaleBill());
+        getBillFacade().editAndCommit(getPreBill());
     }
 
     /**

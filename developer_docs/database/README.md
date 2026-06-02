@@ -26,6 +26,14 @@ This directory contains comprehensive database documentation for the HMIS projec
 - Environment synchronization
 - GitHub Actions workflows
 
+### [InnoDB Space Reclamation with OPTIMIZE TABLE](innodb-space-reclamation.md)
+**Diagnose and reclaim page-level fragmentation in production InnoDB tables**
+- Why `data_free` under-reports real waste
+- Dump-and-restore comparison to predict reclaim
+- Pre-flight checks, per-table template, verification with fresh stats
+- Risk profile (locks, disk, online DDL) and safe sequencing
+- Maintenance cadence for UPDATE-heavy billing/stock tables
+
 ## Quick Reference
 
 ### Credential Locations (NEVER commit to git)

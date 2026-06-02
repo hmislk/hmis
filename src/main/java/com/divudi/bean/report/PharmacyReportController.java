@@ -379,6 +379,7 @@ public class PharmacyReportController implements Serializable {
     private Institution toSite;
 
     private boolean consignmentItem;
+    private boolean includeArchived = false;
     private List<PharmacyRow> pharmacyRows;
     private List<BillItemDTO> billItemsDtos;
     private List<CostOfGoodSoldBillDTO> cogsBillDtos;
@@ -10647,7 +10648,13 @@ public class PharmacyReportController implements Serializable {
             }
 
             jpql.append(" ORDER BY s.id");
-            stockLedgerDtos = (List<StockLedgerDTO>) facade.findLightsByJpql(jpql.toString(), m, TemporalType.TIMESTAMP);
+            stockLedgerDtos = new java.util.ArrayList<>((List<StockLedgerDTO>) facade.findLightsByJpql(jpql.toString(), m, TemporalType.TIMESTAMP));
+            if (includeArchived) {
+                String archiveJpql = jpql.toString().replace("FROM StockHistory ", "FROM StockHistoryArchive ");
+                List<StockLedgerDTO> archiveDtos = (List<StockLedgerDTO>) facade.findLightsByJpql(archiveJpql, m, TemporalType.TIMESTAMP);
+                stockLedgerDtos.addAll(archiveDtos);
+                stockLedgerDtos.sort(java.util.Comparator.comparing(com.divudi.core.data.dto.StockLedgerDTO::getCreatedAt, java.util.Comparator.nullsLast(java.util.Comparator.naturalOrder())));
+            }
         }, InventoryReports.STOCK_LEDGER_DTO_REPORT, sessionController.getLoggedUser());
     }
 
@@ -10989,6 +10996,37 @@ public class PharmacyReportController implements Serializable {
 
             rows.add(row);
         }
+
+        if (includeArchived) {
+            String archiveJpql = jpql.toString().replace("FROM StockHistory ", "FROM StockHistoryArchive ");
+            @SuppressWarnings("unchecked")
+            List<PharmacyRow> archiveDtoRows = (List<PharmacyRow>) facade.findLightsByJpql(archiveJpql, params, TemporalType.TIMESTAMP);
+            java.util.Set<Long> liveItemIds = new java.util.HashSet<>();
+            for (PharmacyRow r : dtoRows) {
+                if (r.getItem() != null) liveItemIds.add(r.getItem().getId());
+            }
+            for (PharmacyRow row : archiveDtoRows) {
+                if (row == null || row.getItem() == null) continue;
+                if (liveItemIds.contains(row.getItem().getId())) continue;
+                double itemQty = row.getStockQty() != null ? row.getStockQty() : 0.0;
+                if (isConsignmentItem()) { if (itemQty > 0) continue; } else { if (itemQty <= 0) continue; }
+                if (department != null) {
+                    row.setQuantity(row.getStockQty());
+                } else if (institution != null) {
+                    row.setQuantity(row.getGrossTotal());
+                    row.setPurchaseValue(row.getDiscount());
+                    row.setSaleValue(row.getNetTotal());
+                    row.setCostValue(row.getHospitalTotal());
+                } else {
+                    row.setQuantity(row.getPaidTotal());
+                    row.setPurchaseValue(row.getTax());
+                    row.setSaleValue(row.getActualTotal());
+                    row.setCostValue(row.getStaffTotal());
+                }
+                rows.add(row);
+            }
+            rows.sort(java.util.Comparator.comparing(r -> r.getItem() != null ? r.getItem().getName() : ""));
+        }
     }
 
     /**
@@ -11211,6 +11249,35 @@ public class PharmacyReportController implements Serializable {
             }
 
             rows.add(row);
+        }
+
+        if (includeArchived) {
+            String archiveJpql = jpql.toString().replace("FROM StockHistory ", "FROM StockHistoryArchive ");
+            @SuppressWarnings("unchecked")
+            List<PharmacyRow> archiveDtoRows = (List<PharmacyRow>) facade.findLightsByJpql(archiveJpql, params, TemporalType.TIMESTAMP);
+            java.util.Set<Long> liveBatchIds = new java.util.HashSet<>();
+            for (PharmacyRow r : dtoRows) {
+                if (r.getItemBatch() != null) liveBatchIds.add(r.getItemBatch().getId());
+            }
+            for (PharmacyRow row : archiveDtoRows) {
+                if (row == null || row.getItem() == null || row.getItemBatch() == null) continue;
+                if (liveBatchIds.contains(row.getItemBatch().getId())) continue;
+                double batchQty = row.getStockQty() != null ? row.getStockQty() : 0.0;
+                if (isConsignmentItem()) { if (batchQty > 0) continue; } else { if (batchQty <= 0) continue; }
+                if (institution != null && department == null) {
+                    row.setQuantity(row.getGrossTotal());
+                    row.setPurchaseValue(row.getDiscount());
+                    row.setSaleValue(row.getNetTotal());
+                    row.setCostValue(row.getHospitalTotal());
+                } else if (department == null) {
+                    row.setQuantity(row.getPaidTotal());
+                    row.setPurchaseValue(row.getTax());
+                    row.setSaleValue(row.getActualTotal());
+                    row.setCostValue(row.getStaffTotal());
+                }
+                rows.add(row);
+            }
+            rows.sort(java.util.Comparator.comparing(r -> r.getItem() != null ? r.getItem().getName() : ""));
         }
     }
 
@@ -16407,6 +16474,14 @@ public class PharmacyReportController implements Serializable {
 
     public void setConsignmentItem(boolean consignmentItem) {
         this.consignmentItem = consignmentItem;
+    }
+
+    public boolean isIncludeArchived() {
+        return includeArchived;
+    }
+
+    public void setIncludeArchived(boolean includeArchived) {
+        this.includeArchived = includeArchived;
     }
 
     public List<StockCorrectionRow> getStockCorrectionRows() {

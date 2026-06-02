@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8' ?>
+﻿<?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
@@ -62,7 +62,7 @@
                                             inputStyleClass="w-100"
                                             id="acAmpp"
                                             value="#{storeAmppController.selectedAmppDto}"
-                                            completeMethod="#{storeAmppController.completeAmppDto}"
+                                            queryDelay="300" completeMethod="#{storeAmppController.completeAmppDto}"
                                             var="dto"
                                             itemLabel="#{dto.name}"
                                             itemValue="#{dto}"
@@ -223,7 +223,7 @@
                                             forceSelection="true"
                                             required="true"
                                             requiredMessage="AMP selection is required"
-                                            completeMethod="#{storeAmpController.completeAmp}"
+                                            queryDelay="300" completeMethod="#{storeAmpController.completeAmp}"
                                             var="pta"
                                             itemLabel="#{pta.name}"
                                             itemValue="#{pta}"

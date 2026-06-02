@@ -58,14 +58,18 @@ public class ApplicationConfig extends Application {
         resources.add(com.divudi.ws.institution.InstitutionApi.class);
         resources.add(com.divudi.ws.institution.SiteApi.class);
         resources.add(com.divudi.ws.investigation.InvestigationApi.class);
+        resources.add(com.divudi.ws.investigation.InvestigationFormatApi.class);
         resources.add(com.divudi.ws.inward.ApiInward.class);
         resources.add(com.divudi.ws.inward.InwardDiscountMatrixApi.class);
         resources.add(com.divudi.ws.inward.InwardRoomApi.class);
         resources.add(com.divudi.ws.inward.InwardRoomCategoryApi.class);
         resources.add(com.divudi.ws.inward.InwardRoomFacilityChargeApi.class);
+        resources.add(com.divudi.ws.lims.AnalyzerTestApi.class);
         resources.add(com.divudi.ws.lims.Lims.class);
         resources.add(com.divudi.ws.lims.LimsMiddlewareController.class);
+        resources.add(com.divudi.ws.lims.MachineApi.class);
         resources.add(com.divudi.ws.lims.MiddlewareController.class);
+        resources.add(com.divudi.ws.lims.PatientSampleApi.class);
         resources.add(com.divudi.ws.pharmacy.PharmaceuticalConfigApi.class);
         resources.add(com.divudi.ws.pharmacy.PharmaceuticalItemApi.class);
         resources.add(com.divudi.ws.pharmacy.PharmacyAdjustmentApi.class);
@@ -76,6 +80,8 @@ public class ApplicationConfig extends Application {
         resources.add(com.divudi.ws.pharmacy.PharmacySearchApi.class);
         resources.add(com.divudi.ws.pharmacy.StockHistoryApi.class);
         resources.add(com.divudi.ws.pricing.CollectingCentreFeesApi.class);
+        resources.add(com.divudi.ws.sap.SapBillingApi.class);
+        resources.add(com.divudi.ws.sap.SapInventoryApi.class);
         resources.add(com.divudi.ws.service.ServiceApi.class);
     }
     

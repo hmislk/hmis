@@ -41,8 +41,7 @@
                                                 ajax="false"
                                                 value="Return Patient Deposits"
                                                 title="Process patient deposit returns"
-                                                action="/patient_deposit/pay?faces-redirect=true"
-                                                actionListener="#{patientDepositController.clearDataForPatientDeposit()}"
+                                                action="#{patientDepositController.navigateToReturnPatientDeposit()}"
                                                 class="w-100 m-1 ui-button-warning"/>
 
                                             <p:commandButton

@@ -56,3 +56,14 @@ claude-*.jsonl
 
 # Claude Code temporary working directories
 tmpclaude-*
+
+# Claude Code runtime artifacts
+.claude/*.lock
+
+# Playwright MCP screenshots / artifacts
+.playwright-mcp/
+
+# Ad-hoc artifacts dropped at repo root (screenshots, scratch configs)
+/*.png
+/*.yml
+/*.yaml

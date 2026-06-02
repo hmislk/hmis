@@ -1524,7 +1524,7 @@ public class PharmacySaleBhtController implements Serializable {
                 JsfUtil.addErrorMessage("Item Qty is Zero " + tbi.getItem().getName());
                 return;
             }
-            if (tbi.getPharmaceuticalBillItem().getQty() > tbi.getPharmaceuticalBillItem().getStock().getStock()) {
+            if (Math.abs(tbi.getPharmaceuticalBillItem().getQty()) > tbi.getPharmaceuticalBillItem().getStock().getStock()) {
                 JsfUtil.addErrorMessage("Not Enough Stock " + tbi.getItem().getName());
                 return;
             }
@@ -2261,8 +2261,8 @@ public class PharmacySaleBhtController implements Serializable {
                     }
                     billItem = new BillItem();
                     billItem.setPharmaceuticalBillItem(new PharmaceuticalBillItem());
-                    billItem.getPharmaceuticalBillItem().setQtyInUnit(sq.getQty());
-//                billItem.getPharmaceuticalBillItem().setQtyInUnit((double) (0 - sq.getQty()));
+                    billItem.getPharmaceuticalBillItem().setQtyInUnit(0 - sq.getQty());
+                    billItem.getPharmaceuticalBillItem().setQty(0 - sq.getQty());
                     billItem.getPharmaceuticalBillItem().setStock(sq.getStock());
                     billItem.getPharmaceuticalBillItem().setItemBatch(sq.getStock().getItemBatch());
 
@@ -2273,11 +2273,6 @@ public class PharmacySaleBhtController implements Serializable {
                     billItem.getPharmaceuticalBillItem().setDoe(sq.getStock().getItemBatch().getDateOfExpire());
                     billItem.getPharmaceuticalBillItem().setFreeQty(0.0f);
                     billItem.getPharmaceuticalBillItem().setItemBatch(sq.getStock().getItemBatch());
-                    billItem.getPharmaceuticalBillItem().setQtyInUnit(sq.getQty());
-//                billItem.getPharmaceuticalBillItem().setQtyInUnit((double) (0 - sq.getQty()));
-//                billItem.getPharmaceuticalBillItem().setQtyInUnit((double) (0 - sq.getQty()));
-//                billItem.getPharmaceuticalBillItem().setQtyInUnit((double) (0 - sq.getQty()));
-//                billItem.getPharmaceuticalBillItem().setQtyInUnit((double) (0 - sq.getQty()));
                     billItem.setGrossValue(sq.getStock().getItemBatch().getRetailsaleRate() * sq.getQty());
                     billItem.setNetValue(sq.getQty() * sq.getStock().getItemBatch().getRetailsaleRate());
 
@@ -2293,7 +2288,8 @@ public class PharmacySaleBhtController implements Serializable {
             } else {
                 billItem = new BillItem();
                 billItem.setPharmaceuticalBillItem(new PharmaceuticalBillItem());
-                billItem.getPharmaceuticalBillItem().setQtyInUnit(issuableQty);
+                billItem.getPharmaceuticalBillItem().setQtyInUnit(0 - issuableQty);
+                billItem.getPharmaceuticalBillItem().setQty(0 - issuableQty);
                 billItem.getPharmaceuticalBillItem().setStock(null);
                 billItem.getPharmaceuticalBillItem().setItemBatch(null);
                 billItem.setItem(i.getItem());
