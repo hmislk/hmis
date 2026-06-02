@@ -279,6 +279,24 @@ public class CapabilityStatementResource {
                         + "POST /recalculate?institutionId=X recalculates item totals for all items with CC fees.",
                         "API Key",
                         "GET", "POST", "PUT", "DELETE"))
+                .add(resource("SAP Integration - Billing", "/api/sap/billing",
+                        "Bidirectional SAP S/4HANA Cloud FI integration. "
+                        + "POST /push/{billId} pushes an HMIS bill to SAP as a journal entry (debit AR, credit revenue). "
+                        + "GET /status/{billId} returns the push status and SAP document number. "
+                        + "POST /confirm receives a payment confirmation webhook from SAP. "
+                        + "GET /confirm/status/{billId} returns the confirmation status. "
+                        + "Auth: Finance header.",
+                        "API Key (Finance header)",
+                        "GET", "POST"))
+                .add(resource("SAP Integration - Inventory", "/api/sap/inventory",
+                        "SAP S/4HANA Cloud MM inventory sync. "
+                        + "GET /sync?fromDate=yyyy-MM-dd&toDate=yyyy-MM-dd fetches SAP goods-receipt material documents "
+                        + "and matches them to HMIS pharmacy items by code or barcode (configurable). "
+                        + "fromDate defaults to last-sync watermark; toDate defaults to today. "
+                        + "Read-only audit sync — does not create GRN bills. "
+                        + "Auth: Finance header.",
+                        "API Key (Finance header)",
+                        "GET"))
                 .add(resource("FHIR Patient", "/api/fhir/Patient",
                         "FHIR R5 Patient search, read, create, update",
                         "API Key (use FHIR header, not Finance)",

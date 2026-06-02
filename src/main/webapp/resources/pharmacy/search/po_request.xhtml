@@ -21,90 +21,94 @@
         COALESCE on person names and nullable fields prevents silent row drops.
     -->
     <cc:implementation>
-
-        <p:commandButton ajax="false" value="Download" icon="fa fa-download"
-                         styleClass="ui-button-success mb-2">
-            <p:dataExporter target="tblPoRequest" type="xlsx" fileName="po_request_list"/>
-        </p:commandButton>
-
-        <p:dataTable rowIndexVar="i"
-                     id="tblPoRequest"
-                     widgetVar="tblPoRequest"
-                     value="#{pharmacyBillSearch.poRequestSearchDtos}"
-                     var="dto"
-                     paginator="true"
-                     rows="10"
-                     paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                     rowsPerPageTemplate="10,20,50,100"
-                     emptyMessage="No Purchase Order Requests Found">
-
+        <p:panel>
             <f:facet name="header">
-                <h:outputLabel value="PURCHASE ORDER REQUEST"/>
+                <div style="display:flex;justify-content:space-between;align-items:center;width:100%;">
+                    <span>PURCHASE ORDER REQUEST</span>
+                    <p:commandButton ajax="false" value="Download" icon="fa fa-download"
+                                     styleClass="ui-button-success ui-button-sm">
+                        <p:dataExporter target="tblPoRequest" type="xlsx" fileName="po_request_list"/>
+                    </p:commandButton>
+                </div>
             </f:facet>
 
-            <!-- Actions (not exported) -->
-            <p:column headerText="Actions" exportable="false" style="white-space:nowrap;">
-                <p:commandButton
-                    ajax="false"
-                    icon="fa fa-eye"
-                    styleClass="ui-button-info ui-button-sm"
-                    title="View PO Request"
-                    action="#{pharmacyBillSearch.navigateToReprintPharmacyOrderRequestById()}">
-                    <f:setPropertyActionListener value="#{dto.billId}" target="#{pharmacyBillSearch.billId}"/>
-                </p:commandButton>
-            </p:column>
+            <div class="pharma-search-wrapper">
+                <p:dataTable rowIndexVar="i"
+                             id="tblPoRequest"
+                             widgetVar="tblPoRequest"
+                             value="#{pharmacyBillSearch.poRequestSearchDtos}"
+                             var="dto"
+                             paginator="true"
+                             rows="10"
+                             paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                             rowsPerPageTemplate="10,20,50,100"
+                             emptyMessage="No Purchase Order Requests Found">
 
-            <p:column headerText="Req No"
-                      sortBy="#{dto.billNumber}"
-                      filterBy="#{dto.billNumber}"
-                      filterMatchMode="contains">
-                <h:outputLabel value="#{dto.billNumber}"/>
-            </p:column>
+                    <p:column headerText="Req No"
+                              sortBy="#{dto.billNumber}"
+                              filterBy="#{dto.billNumber}"
+                              filterMatchMode="contains">
+                        <h:outputLabel value="#{dto.billNumber}"/>
+                    </p:column>
 
-            <p:column headerText="Requested From"
-                      sortBy="#{dto.departmentName}"
-                      filterBy="#{dto.departmentName}"
-                      filterMatchMode="contains">
-                <h:outputLabel value="#{dto.departmentName}"/>
-            </p:column>
+                    <p:column headerText="Requested From"
+                              sortBy="#{dto.departmentName}"
+                              filterBy="#{dto.departmentName}"
+                              filterMatchMode="contains">
+                        <h:outputLabel value="#{dto.departmentName}"/>
+                    </p:column>
 
-            <p:column headerText="Dealer Name"
-                      sortBy="#{dto.supplierName}"
-                      filterBy="#{dto.supplierName}"
-                      filterMatchMode="contains">
-                <h:outputLabel value="#{dto.supplierName}"/>
-            </p:column>
+                    <p:column headerText="Dealer Name"
+                              sortBy="#{dto.supplierName}"
+                              filterBy="#{dto.supplierName}"
+                              filterMatchMode="contains">
+                        <h:outputLabel value="#{dto.supplierName}"/>
+                    </p:column>
 
-            <p:column headerText="Billed At" sortBy="#{dto.createdAt}">
-                <h:outputLabel value="#{dto.createdAt}">
-                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
-                </h:outputLabel>
-            </p:column>
+                    <p:column headerText="Billed At" sortBy="#{dto.createdAt}">
+                        <h:outputLabel value="#{dto.createdAt}">
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                        </h:outputLabel>
+                    </p:column>
 
-            <p:column headerText="Requested By"
-                      sortBy="#{dto.creatorName}"
-                      filterBy="#{dto.creatorName}"
-                      filterMatchMode="contains">
-                <h:outputLabel value="#{dto.creatorName}"/>
-            </p:column>
+                    <p:column headerText="Requested By"
+                              sortBy="#{dto.creatorName}"
+                              filterBy="#{dto.creatorName}"
+                              filterMatchMode="contains">
+                        <h:outputLabel value="#{dto.creatorName}"/>
+                    </p:column>
 
-            <p:column headerText="Payment Method"
-                      sortBy="#{dto.paymentMethod}"
-                      filterBy="#{dto.paymentMethod}"
-                      filterMatchMode="contains">
-                <h:outputLabel value="#{dto.paymentMethod}"/>
-            </p:column>
+                    <p:column headerText="Payment Method"
+                              sortBy="#{dto.paymentMethod}"
+                              filterBy="#{dto.paymentMethod}"
+                              filterMatchMode="contains">
+                        <h:outputLabel value="#{dto.paymentMethod}"/>
+                    </p:column>
 
-            <p:column headerText="Net Value" sortBy="#{dto.netTotal}" style="text-align:right;">
-                <h:outputLabel value="#{dto.netTotal}">
-                    <f:convertNumber pattern="#,##0.00"/>
-                </h:outputLabel>
-            </p:column>
+                    <p:column headerText="Net Value" sortBy="#{dto.netTotal}" style="text-align:right;">
+                        <h:outputLabel value="#{dto.netTotal}">
+                            <f:convertNumber pattern="#,##0.00"/>
+                        </h:outputLabel>
+                    </p:column>
 
-            <p:column headerText="Status" exportable="false">
-                <p:badge value="Cancelled" severity="danger" rendered="#{dto.cancelled}"/>
-            </p:column>
+                    <p:column headerText="Status" exportable="false">
+                        <p:badge value="Cancelled" severity="danger" rendered="#{dto.cancelled}"/>
+                    </p:column>
 
-        </p:dataTable>
+                    <!-- Actions (last column, not exported) -->
+                    <p:column headerText="Actions" exportable="false" style="white-space:nowrap;">
+                        <p:commandButton
+                            ajax="false"
+                            icon="fa fa-eye"
+                            styleClass="ui-button-info ui-button-sm"
+                            title="View PO Request"
+                            action="#{pharmacyBillSearch.navigateToReprintPharmacyOrderRequestById()}">
+                            <f:setPropertyActionListener value="#{dto.billId}" target="#{pharmacyBillSearch.billId}"/>
+                        </p:commandButton>
+                    </p:column>
+
+                </p:dataTable>
+            </div>
+        </p:panel>
     </cc:implementation>
 </html>

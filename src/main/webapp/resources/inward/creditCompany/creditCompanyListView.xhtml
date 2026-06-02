@@ -28,11 +28,33 @@
                     <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
                 </h:outputText>
             </p:column>
-            <p:column headerText="Policy No">
+            <p:column headerText="Policy No" class="text-center">
                 <h:outputText value="#{ecc.policyNo}" />
             </p:column>
-            <p:column headerText="Reference No">
+            <p:column headerText="Reference No" class="text-center">
                 <h:outputText value="#{ecc.referanceNo}" />
+            </p:column>
+
+            <p:column headerText="Action" width="17em;" class="text-center">
+                <div class="d-flex gap-2">
+                    <p:commandButton 
+                        ajax="false"
+                        value="To Send Mail"
+                        title="Send confirmation mail to Company"
+                        action="#{cc.attrs.controller.navigateToSendMailToCompany(ecc)}"
+                        icon="fa fa-paper-plane"
+                        class="ui-button-secondary" >
+                    </p:commandButton>
+                    <p:commandButton  
+                        id="btnRemove"
+                        ajax="false"
+                        value="Remove"
+                        icon="fas fa-trash" 
+                        action="#{cc.attrs.controller.removeCreditCompany(ecc)}"
+                        styleClass="ui-button-danger" >
+                    </p:commandButton>
+                </div>
+
             </p:column>
         </p:dataTable>
     </cc:implementation>
