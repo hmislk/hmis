@@ -30,6 +30,9 @@ import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.dataStructure.CategoryWithItem;
 import com.divudi.core.data.dataStructure.PharmacySummery;
 import com.divudi.core.data.dto.AmpDto;
+import com.divudi.core.data.dto.ConsumptionBillDto;
+import com.divudi.core.data.dto.ConsumptionBillItemDto;
+import com.divudi.core.data.dto.ConsumptionCategoryItemDto;
 import com.divudi.core.data.dto.PharmacyGrnItemDTO;
 import com.divudi.core.data.dto.BeforeStockTakingDTO;
 import com.divudi.core.data.dto.PharmacyGrnReturnItemDTO;
@@ -3691,6 +3694,7 @@ public class PharmacyController implements Serializable {
         }
     }
 
+    @Deprecated
     public void createConsumptionReportTable() {
         reportTimerController.trackReportExecution(() -> {
             resetFields();
@@ -3725,6 +3729,428 @@ public class PharmacyController implements Serializable {
                     throw new IllegalArgumentException("Invalid report type: " + reportType);
             }
         }, InventoryReports.CONSUMPTION_REPORT, sessionController.getLoggedUser());
+    }
+
+    public void createConsumptionReportTableDto() {
+        reportTimerController.trackReportExecution(() -> {
+            resetConsumptionDtoFields();
+            List<BillTypeAtomic> disposalBillTypes = new ArrayList<>();
+            disposalBillTypes.add(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE);
+            disposalBillTypes.add(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_RETURN);
+            disposalBillTypes.add(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_CANCELLED);
+
+            switch (reportType) {
+                case "byBill":
+                    if (item != null) {
+                        JsfUtil.addErrorMessage("You can not use List By Bill when an item is selected");
+                        return;
+                    }
+                    if (category != null) {
+                        JsfUtil.addErrorMessage("You can not use List By Bill when a category is selected");
+                        return;
+                    }
+                    generateConsumptionByBillDto(disposalBillTypes);
+                    break;
+                case "byBillItem":
+                    generateConsumptionByBillItemDto(disposalBillTypes);
+                    break;
+                case "summeryReport":
+                case "categoryWise":
+                    generateConsumptionSummaryAndCategoryDto(disposalBillTypes);
+                    break;
+                default:
+                    throw new IllegalArgumentException("Invalid report type: " + reportType);
+            }
+        }, InventoryReports.CONSUMPTION_REPORT, sessionController.getLoggedUser());
+    }
+
+    private void resetConsumptionDtoFields() {
+        consumptionBillDtos = new ArrayList<>();
+        consumptionBillItemDtos = new ArrayList<>();
+        consumptionCategoryDtoMap = new HashMap<>();
+        totalPurchase = 0.0;
+        totalCostValue = 0.0;
+        totalRetailValue = 0.0;
+        totalSaleValue = 0.0;
+        departmentTotals = new HashMap<>();
+    }
+
+    public void generateConsumptionByBillDto(List<BillTypeAtomic> billTypeAtomics) {
+        try {
+            StringBuilder jpql = new StringBuilder();
+            jpql.append("SELECT b.id, b.deptId, b.invoiceNumber, ");
+            jpql.append("toDept.name, ");
+            jpql.append("b.cancelled, b.fullReturned, ");
+            jpql.append("cb.id, cb.deptId, ");
+            jpql.append("rb.id, rb.deptId, ");
+            jpql.append("obb.id, obb.deptId, ");
+            jpql.append("bfd.totalPurchaseValue, bfd.totalCostValue, bfd.totalRetailSaleValue, ");
+            jpql.append("b.createdAt, wu.name, b.comments, b.billTypeAtomic ");
+            jpql.append("FROM Bill b ");
+            jpql.append("LEFT JOIN b.toDepartment toDept ");
+            jpql.append("LEFT JOIN b.cancelledBill cb ");
+            jpql.append("LEFT JOIN b.refundedBill rb ");
+            jpql.append("LEFT JOIN b.billedBill obb ");
+            jpql.append("LEFT JOIN b.billFinanceDetails bfd ");
+            jpql.append("LEFT JOIN b.creater cr ");
+            jpql.append("LEFT JOIN cr.webUserPerson wu ");
+            jpql.append("WHERE (b.retired = false OR b.retired IS NULL) ");
+            jpql.append("AND b.completed = true ");
+            jpql.append("AND b.billTypeAtomic IN :billTypeAtomics ");
+            jpql.append("AND b.createdAt BETWEEN :fromDate AND :toDate ");
+
+            Map<String, Object> params = new HashMap<>();
+            params.put("billTypeAtomics", billTypeAtomics);
+            params.put("fromDate", fromDate);
+            params.put("toDate", toDate);
+
+            if (institution != null) {
+                jpql.append("AND b.institution = :institution ");
+                params.put("institution", institution);
+            }
+            if (site != null) {
+                jpql.append("AND b.department.site = :site ");
+                params.put("site", site);
+            }
+            if (dept != null) {
+                jpql.append("AND b.department = :dept ");
+                params.put("dept", dept);
+            }
+            if (dosageForm != null) {
+                jpql.append("AND EXISTS (SELECT bi2 FROM BillItem bi2 WHERE bi2.bill = b AND bi2.item.dosageForm = :df) ");
+                params.put("df", dosageForm);
+            }
+            if (toDepartment != null) {
+                jpql.append("AND b.toDepartment = :toDept2 ");
+                params.put("toDept2", toDepartment);
+            }
+            if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
+                jpql.append("AND b.departmentType IN :departmentTypes ");
+                params.put("departmentTypes", selectedDepartmentTypes);
+            }
+            jpql.append("ORDER BY b.createdAt ASC");
+
+            List<Object[]> rows = getBillFacade().findObjectsArrayByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+
+            consumptionBillDtos = new ArrayList<>();
+            totalPurchase = 0.0;
+            totalCostValue = 0.0;
+            totalRetailValue = 0.0;
+
+            for (Object[] row : rows) {
+                BillTypeAtomic bta = row[18] != null ? (BillTypeAtomic) row[18] : null;
+                double valueSign = consumptionValueSign(bta);
+
+                double rawPurchase = row[12] != null ? ((Number) row[12]).doubleValue() : 0.0;
+                double rawCost = row[13] != null ? ((Number) row[13]).doubleValue() : 0.0;
+                double rawRetail = row[14] != null ? ((Number) row[14]).doubleValue() : 0.0;
+
+                double purchase = valueSign * rawPurchase;
+                double cost = valueSign * rawCost;
+                double retail = valueSign * rawRetail;
+
+                ConsumptionBillDto dto = new ConsumptionBillDto(
+                        row[0] != null ? ((Number) row[0]).longValue() : null,
+                        (String) row[1],
+                        (String) row[2],
+                        (String) row[3],
+                        row[4] != null ? (Boolean) row[4] : false,
+                        row[5] != null ? (Boolean) row[5] : false,
+                        row[6] != null ? ((Number) row[6]).longValue() : null,
+                        (String) row[7],
+                        row[8] != null ? ((Number) row[8]).longValue() : null,
+                        (String) row[9],
+                        row[10] != null ? ((Number) row[10]).longValue() : null,
+                        (String) row[11],
+                        purchase, cost, retail,
+                        (java.util.Date) row[15],
+                        (String) row[16],
+                        (String) row[17]
+                );
+
+                consumptionBillDtos.add(dto);
+                totalPurchase += purchase;
+                totalCostValue += cost;
+                totalRetailValue += retail;
+            }
+        } catch (Exception e) {
+            Logger.getLogger(PharmacyController.class.getName()).log(Level.SEVERE, "Error generating consumption by bill DTO", e);
+            JsfUtil.addErrorMessage(e, "Failed to generate Consumption By Bill report.");
+        }
+    }
+
+    public void generateConsumptionByBillItemDto(List<BillTypeAtomic> billTypeAtomics) {
+        try {
+            StringBuilder jpql = new StringBuilder();
+            jpql.append("SELECT bi.id, b.id, b.deptId, b.invoiceNumber, ");
+            jpql.append("toDept.name, ");
+            jpql.append("i.name, cat.name, df.name, ");
+            jpql.append("bi.qty, ");
+            jpql.append("b.cancelled, b.fullReturned, ");
+            jpql.append("cb.id, cb.deptId, ");
+            jpql.append("rb.id, rb.deptId, ");
+            jpql.append("obb.id, obb.deptId, ");
+            jpql.append("bifd.purchaseRate, bifd.valueAtPurchaseRate, ");
+            jpql.append("bifd.retailSaleRate, bifd.valueAtRetailRate, ");
+            jpql.append("bifd.costRate, bifd.valueAtCostRate, ");
+            jpql.append("b.createdAt, wu.name, b.comments, b.billTypeAtomic ");
+            jpql.append("FROM BillItem bi ");
+            jpql.append("JOIN bi.bill b ");
+            jpql.append("LEFT JOIN b.toDepartment toDept ");
+            jpql.append("LEFT JOIN bi.item i ");
+            jpql.append("LEFT JOIN i.category cat ");
+            jpql.append("LEFT JOIN i.dosageForm df ");
+            jpql.append("LEFT JOIN b.cancelledBill cb ");
+            jpql.append("LEFT JOIN b.refundedBill rb ");
+            jpql.append("LEFT JOIN b.billedBill obb ");
+            jpql.append("LEFT JOIN bi.billItemFinanceDetails bifd ");
+            jpql.append("LEFT JOIN b.creater cr ");
+            jpql.append("LEFT JOIN cr.webUserPerson wu ");
+            jpql.append("WHERE (bi.retired = false OR bi.retired IS NULL) ");
+            jpql.append("AND (b.retired = false OR b.retired IS NULL) ");
+            jpql.append("AND b.completed = true ");
+            jpql.append("AND b.billTypeAtomic IN :billTypeAtomics ");
+            jpql.append("AND b.createdAt BETWEEN :fromDate AND :toDate ");
+
+            Map<String, Object> params = new HashMap<>();
+            params.put("billTypeAtomics", billTypeAtomics);
+            params.put("fromDate", fromDate);
+            params.put("toDate", toDate);
+
+            if (institution != null) {
+                jpql.append("AND b.institution = :institution ");
+                params.put("institution", institution);
+            }
+            if (site != null) {
+                jpql.append("AND b.department.site = :site ");
+                params.put("site", site);
+            }
+            if (dept != null) {
+                jpql.append("AND b.department = :department ");
+                params.put("department", dept);
+            }
+            if (category != null) {
+                jpql.append("AND i.category = :category ");
+                params.put("category", category);
+            }
+            if (dosageForm != null) {
+                jpql.append("AND i.dosageForm = :df ");
+                params.put("df", dosageForm);
+            }
+            if (item != null) {
+                jpql.append("AND bi.item = :item ");
+                params.put("item", item);
+            }
+            if (toDepartment != null) {
+                jpql.append("AND b.toDepartment = :toDepartment ");
+                params.put("toDepartment", toDepartment);
+            }
+            if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
+                jpql.append("AND b.departmentType IN :departmentTypes ");
+                params.put("departmentTypes", selectedDepartmentTypes);
+            }
+            jpql.append("ORDER BY b.createdAt ASC");
+
+            List<Object[]> rows = getBillItemFacade().findObjectsArrayByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+
+            consumptionBillItemDtos = new ArrayList<>();
+            totalPurchase = 0.0;
+            totalCostValue = 0.0;
+            totalRetailValue = 0.0;
+
+            for (Object[] row : rows) {
+                BillTypeAtomic bta = row[26] != null ? (BillTypeAtomic) row[26] : null;
+                double valueSign = consumptionValueSign(bta);
+                double qtySign = consumptionQtySign(bta);
+
+                double rawPurchaseVal = row[18] != null ? ((Number) row[18]).doubleValue() : 0.0;
+                double rawRetailVal = row[20] != null ? ((Number) row[20]).doubleValue() : 0.0;
+                double rawCostVal = row[22] != null ? ((Number) row[22]).doubleValue() : 0.0;
+                double rawQty = row[8] != null ? ((Number) row[8]).doubleValue() : 0.0;
+
+                double purchaseVal = valueSign * rawPurchaseVal;
+                double retailVal = valueSign * rawRetailVal;
+                double costVal = valueSign * rawCostVal;
+                double qty = qtySign * rawQty;
+
+                ConsumptionBillItemDto dto = new ConsumptionBillItemDto(
+                        row[0] != null ? ((Number) row[0]).longValue() : null,
+                        row[1] != null ? ((Number) row[1]).longValue() : null,
+                        (String) row[2],
+                        (String) row[3],
+                        (String) row[4],
+                        (String) row[5],
+                        (String) row[6],
+                        (String) row[7],
+                        qty,
+                        row[9] != null ? (Boolean) row[9] : false,
+                        row[10] != null ? (Boolean) row[10] : false,
+                        row[11] != null ? ((Number) row[11]).longValue() : null,
+                        (String) row[12],
+                        row[13] != null ? ((Number) row[13]).longValue() : null,
+                        (String) row[14],
+                        row[15] != null ? ((Number) row[15]).longValue() : null,
+                        (String) row[16],
+                        row[17] != null ? ((Number) row[17]).doubleValue() : 0.0,
+                        purchaseVal,
+                        row[19] != null ? ((Number) row[19]).doubleValue() : 0.0,
+                        retailVal,
+                        row[21] != null ? ((Number) row[21]).doubleValue() : 0.0,
+                        costVal,
+                        (java.util.Date) row[23],
+                        (String) row[24],
+                        (String) row[25]
+                );
+
+                consumptionBillItemDtos.add(dto);
+                totalPurchase += purchaseVal;
+                totalCostValue += costVal;
+                totalRetailValue += retailVal;
+            }
+        } catch (Exception e) {
+            Logger.getLogger(PharmacyController.class.getName()).log(Level.SEVERE, "Error generating consumption by bill item DTO", e);
+            JsfUtil.addErrorMessage(e, "Failed to generate Consumption By Bill Item report.");
+        }
+    }
+
+    public void generateConsumptionSummaryAndCategoryDto(List<BillTypeAtomic> billTypeAtomics) {
+        totalSaleValue = 0.0;
+        totalCostValue = 0.0;
+        totalPurchase = 0.0;
+        totalRetailValue = 0.0;
+
+        List<ConsumptionCategoryItemDto> allItems = new ArrayList<>();
+
+        for (BillTypeAtomic billType : billTypeAtomics) {
+            Map<String, Object> parameters = new HashMap<>();
+            String jpql = "SELECT "
+                    + "b.toDepartment.name, "
+                    + "bi.item.category.name, "
+                    + "bi.item.name, "
+                    + "SUM(COALESCE(bi.billItemFinanceDetails.valueAtPurchaseRate, 0.0)), "
+                    + "SUM(COALESCE(bi.billItemFinanceDetails.valueAtCostRate, 0.0)), "
+                    + "SUM(COALESCE(bi.billItemFinanceDetails.valueAtRetailRate, 0.0)), "
+                    + "SUM(COALESCE(bi.billItemFinanceDetails.netTotal, 0.0)), "
+                    + "SUM(bi.qty) "
+                    + "FROM BillItem bi "
+                    + "JOIN bi.bill b "
+                    + "WHERE (bi.retired = false OR bi.retired IS NULL) "
+                    + "AND (b.retired = false OR b.retired IS NULL) "
+                    + "AND b.completed = true "
+                    + "AND bi.billItemFinanceDetails IS NOT NULL "
+                    + "AND b.createdAt BETWEEN :fromDate AND :toDate "
+                    + "AND b.billTypeAtomic = :billTypeAtomic ";
+
+            parameters.put("fromDate", fromDate);
+            parameters.put("toDate", toDate);
+            parameters.put("billTypeAtomic", billType);
+
+            if (institution != null) {
+                jpql += "AND b.institution = :institution ";
+                parameters.put("institution", institution);
+            }
+            if (site != null) {
+                jpql += "AND b.department.site = :site ";
+                parameters.put("site", site);
+            }
+            if (dept != null) {
+                jpql += "AND b.department = :department ";
+                parameters.put("department", dept);
+            }
+            if (category != null) {
+                jpql += "AND bi.item.category = :category ";
+                parameters.put("category", category);
+            }
+            if (item != null) {
+                jpql += "AND bi.item = :item ";
+                parameters.put("item", item);
+            }
+            if (toDepartment != null) {
+                jpql += "AND b.toDepartment = :toDepartment ";
+                parameters.put("toDepartment", toDepartment);
+            }
+            if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
+                jpql += "AND b.departmentType IN :departmentTypes ";
+                parameters.put("departmentTypes", selectedDepartmentTypes);
+            }
+
+            jpql += "GROUP BY b.toDepartment.name, bi.item.category.name, bi.item.name "
+                    + "ORDER BY b.toDepartment.name, bi.item.category.name, bi.item.name";
+
+            try {
+                List<Object[]> results = getBillItemFacade().findObjectsArrayByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+                double valueSign = consumptionValueSign(billType);
+                double qtySign = consumptionQtySign(billType);
+
+                for (Object[] row : results) {
+                    String deptName = (String) row[0];
+                    String catName = (String) row[1];
+                    String iName = (String) row[2];
+                    Double purchase = row[3] != null ? valueSign * ((Number) row[3]).doubleValue() : 0.0;
+                    Double cost = row[4] != null ? valueSign * ((Number) row[4]).doubleValue() : 0.0;
+                    Double retail = row[5] != null ? valueSign * ((Number) row[5]).doubleValue() : 0.0;
+                    Double net = row[6] != null ? ((Number) row[6]).doubleValue() : 0.0;
+                    Double qty = row[7] != null ? qtySign * ((Number) row[7]).doubleValue() : 0.0;
+
+                    ConsumptionCategoryItemDto dto = new ConsumptionCategoryItemDto(
+                            deptName, catName, iName, qty, purchase, cost, retail, net);
+                    allItems.add(dto);
+                }
+            } catch (Exception e) {
+                Logger.getLogger(PharmacyController.class.getName()).log(Level.SEVERE, "Error generating consumption summary/category DTO for " + billType, e);
+            }
+        }
+
+        // Aggregate by dept + category + item
+        Map<String, ConsumptionCategoryItemDto> aggregated = new LinkedHashMap<>();
+        for (ConsumptionCategoryItemDto dto : allItems) {
+            String key = dto.getDepartmentName() + "||" + dto.getCategoryName() + "||" + dto.getItemName();
+            ConsumptionCategoryItemDto existing = aggregated.get(key);
+            if (existing == null) {
+                aggregated.put(key, new ConsumptionCategoryItemDto(
+                        dto.getDepartmentName(), dto.getCategoryName(), dto.getItemName(),
+                        dto.getQty(), dto.getTotalPurchaseValue(), dto.getTotalCostValue(),
+                        dto.getTotalRetailValue(), dto.getNetTotal()));
+            } else {
+                existing.setQty(existing.getQty() + dto.getQty());
+                existing.setTotalPurchaseValue(existing.getTotalPurchaseValue() + dto.getTotalPurchaseValue());
+                existing.setTotalCostValue(existing.getTotalCostValue() + dto.getTotalCostValue());
+                existing.setTotalRetailValue(existing.getTotalRetailValue() + dto.getTotalRetailValue());
+                existing.setNetTotal(existing.getNetTotal() + dto.getNetTotal());
+            }
+        }
+
+        List<ConsumptionCategoryItemDto> aggregatedList = new ArrayList<>(aggregated.values());
+
+        // Build category map for categoryWise view
+        Map<String, Map<String, List<ConsumptionCategoryItemDto>>> catMap = new TreeMap<>();
+        // Build department totals (scalar map) for summary view
+        Map<String, Map<String, Double[]>> deptTotals = new TreeMap<>();
+
+        for (ConsumptionCategoryItemDto dto : aggregatedList) {
+            String deptName = dto.getDepartmentName();
+            String catName = dto.getCategoryName();
+            if (deptName == null || deptName.trim().isEmpty()) continue;
+            if (catName == null || catName.trim().isEmpty()) continue;
+            if (dto.getQty() == 0.0) continue;
+
+            catMap.computeIfAbsent(deptName, k -> new TreeMap<>())
+                    .computeIfAbsent(catName, k -> new ArrayList<>())
+                    .add(dto);
+
+            deptTotals.computeIfAbsent(deptName, k -> new TreeMap<>())
+                    .merge(catName,
+                            new Double[]{dto.getTotalPurchaseValue(), dto.getTotalCostValue(), dto.getTotalRetailValue(), dto.getNetTotal()},
+                            (ex, nv) -> new Double[]{ex[0] + nv[0], ex[1] + nv[1], ex[2] + nv[2], ex[3] + nv[3]});
+
+            totalPurchase += dto.getTotalPurchaseValue();
+            totalCostValue += dto.getTotalCostValue();
+            totalRetailValue += dto.getTotalRetailValue();
+            totalSaleValue += dto.getNetTotal();
+        }
+
+        consumptionCategoryDtoMap = catMap;
+        setDepartmentTotals(deptTotals);
     }
 
     private void resetFields() {
@@ -9072,6 +9498,10 @@ public class PharmacyController implements Serializable {
     private List<com.divudi.core.data.dto.PharmacyTransferReceiveByDepartmentDTO> transferReceivesByDepartment;
     private List<com.divudi.core.data.dto.PharmacyDisposeIssueByDepartmentDTO> disposeIssuesByDepartment;
 
+    private List<ConsumptionBillDto> consumptionBillDtos;
+    private List<ConsumptionBillItemDto> consumptionBillItemDtos;
+    private Map<String, Map<String, List<ConsumptionCategoryItemDto>>> consumptionCategoryDtoMap = new HashMap<>();
+
     private List<InstitutionSale> institutionTransferIssue;
     private List<InstitutionSale> institutionIssue;
 
@@ -10947,6 +11377,30 @@ public class PharmacyController implements Serializable {
 
     public void setDisposeIssuesByDepartment(List<com.divudi.core.data.dto.PharmacyDisposeIssueByDepartmentDTO> disposeIssuesByDepartment) {
         this.disposeIssuesByDepartment = disposeIssuesByDepartment;
+    }
+
+    public List<ConsumptionBillDto> getConsumptionBillDtos() {
+        return consumptionBillDtos;
+    }
+
+    public void setConsumptionBillDtos(List<ConsumptionBillDto> consumptionBillDtos) {
+        this.consumptionBillDtos = consumptionBillDtos;
+    }
+
+    public List<ConsumptionBillItemDto> getConsumptionBillItemDtos() {
+        return consumptionBillItemDtos;
+    }
+
+    public void setConsumptionBillItemDtos(List<ConsumptionBillItemDto> consumptionBillItemDtos) {
+        this.consumptionBillItemDtos = consumptionBillItemDtos;
+    }
+
+    public Map<String, Map<String, List<ConsumptionCategoryItemDto>>> getConsumptionCategoryDtoMap() {
+        return consumptionCategoryDtoMap;
+    }
+
+    public void setConsumptionCategoryDtoMap(Map<String, Map<String, List<ConsumptionCategoryItemDto>>> consumptionCategoryDtoMap) {
+        this.consumptionCategoryDtoMap = consumptionCategoryDtoMap;
     }
 
     public Double getTotalDisposeIssuesByDepartmentQuantity() {
