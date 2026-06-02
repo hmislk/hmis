@@ -4164,7 +4164,34 @@ public class PharmacyController implements Serializable {
         billTableCostTotal = 0.0;
     }
 
-    public void generateConsumptionReportTableByBill(BillType billType) {
+    private static double consumptionValueSign(BillTypeAtomic bta) {
+        if (bta == null) {
+            return 1.0;
+        }
+        switch (bta) {
+            case PHARMACY_DISPOSAL_ISSUE:
+            case PHARMACY_DISPOSAL_ISSUE_RETURN:
+            case PHARMACY_DISPOSAL_ISSUE_CANCELLED:
+                return -1.0;
+            default:
+                return 1.0;
+        }
+    }
+
+    private static double consumptionQtySign(BillTypeAtomic bta) {
+        if (bta == null) {
+            return 1.0;
+        }
+        switch (bta) {
+            case PHARMACY_DISPOSAL_ISSUE_RETURN:
+            case PHARMACY_DISPOSAL_ISSUE_CANCELLED:
+                return -1.0;
+            default:
+                return 1.0;
+        }
+    }
+
+        public void generateConsumptionReportTableByBill(BillType billType) {
         try {
             bills = new ArrayList<>();
 
@@ -5175,6 +5202,64 @@ public class PharmacyController implements Serializable {
     private String formatNumber(double value) {
         DecimalFormat df = new DecimalFormat("#,##0.00");
         return df.format(value);
+    }
+
+    // DTO-aware helpers that read directly from consumptionCategoryDtoMap
+    // (outer key = consumptionDept, inner key = category)
+    public String getDtoDeptPurchaseTotalForConsumptionReport(final String deptName) {
+        double total = consumptionCategoryDtoMap.getOrDefault(deptName, Collections.emptyMap())
+                .values().stream().flatMap(List::stream)
+                .mapToDouble(dto -> dto.getTotalPurchaseValue() != null ? dto.getTotalPurchaseValue() : 0.0).sum();
+        return formatNumber(total);
+    }
+
+    public String getDtoDeptCostTotalForConsumptionReport(final String deptName) {
+        double total = consumptionCategoryDtoMap.getOrDefault(deptName, Collections.emptyMap())
+                .values().stream().flatMap(List::stream)
+                .mapToDouble(dto -> dto.getTotalCostValue() != null ? dto.getTotalCostValue() : 0.0).sum();
+        return formatNumber(total);
+    }
+
+    public String getDtoDeptRetailTotalForConsumptionReport(final String deptName) {
+        double total = consumptionCategoryDtoMap.getOrDefault(deptName, Collections.emptyMap())
+                .values().stream().flatMap(List::stream)
+                .mapToDouble(dto -> dto.getTotalRetailValue() != null ? dto.getTotalRetailValue() : 0.0).sum();
+        return formatNumber(total);
+    }
+
+    public String getDtoDeptNetTotalForConsumptionReport(final String deptName) {
+        double total = consumptionCategoryDtoMap.getOrDefault(deptName, Collections.emptyMap())
+                .values().stream().flatMap(List::stream)
+                .mapToDouble(dto -> dto.getNetTotal() != null ? dto.getNetTotal() : 0.0).sum();
+        return formatNumber(total);
+    }
+
+    public String getDtoCategoryPurchaseTotalForConsumptionReport(final String deptName, final String catName) {
+        double total = consumptionCategoryDtoMap.getOrDefault(deptName, Collections.emptyMap())
+                .getOrDefault(catName, Collections.emptyList()).stream()
+                .mapToDouble(dto -> dto.getTotalPurchaseValue() != null ? dto.getTotalPurchaseValue() : 0.0).sum();
+        return formatNumber(total);
+    }
+
+    public String getDtoCategoryCostTotalForConsumptionReport(final String deptName, final String catName) {
+        double total = consumptionCategoryDtoMap.getOrDefault(deptName, Collections.emptyMap())
+                .getOrDefault(catName, Collections.emptyList()).stream()
+                .mapToDouble(dto -> dto.getTotalCostValue() != null ? dto.getTotalCostValue() : 0.0).sum();
+        return formatNumber(total);
+    }
+
+    public String getDtoCategoryRetailTotalForConsumptionReport(final String deptName, final String catName) {
+        double total = consumptionCategoryDtoMap.getOrDefault(deptName, Collections.emptyMap())
+                .getOrDefault(catName, Collections.emptyList()).stream()
+                .mapToDouble(dto -> dto.getTotalRetailValue() != null ? dto.getTotalRetailValue() : 0.0).sum();
+        return formatNumber(total);
+    }
+
+    public String getDtoCategoryNetTotalForConsumptionReport(final String deptName, final String catName) {
+        double total = consumptionCategoryDtoMap.getOrDefault(deptName, Collections.emptyMap())
+                .getOrDefault(catName, Collections.emptyList()).stream()
+                .mapToDouble(dto -> dto.getNetTotal() != null ? dto.getNetTotal() : 0.0).sum();
+        return formatNumber(total);
     }
 
     public void generateConsumptionReportTableAsDepartmentSummary(final List<DepartmentCategoryWiseItems> list) {
