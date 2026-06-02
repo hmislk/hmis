@@ -435,7 +435,8 @@
                                         ajax="false" 
                                         value="1. Closing Stock" 
                                         action="#{reportController.navigateToClosingStockReport()}"/>
-                                    <p:commandButton   class="w-100"  ajax="false" value="2. Consumption" action="#{reportController.navigateToconsumption()}"  />
+                                    <p:commandButton class="w-100 ui-button-secondary" ajax="false" value="2. Consumption (Legacy)" action="#{reportController.navigateToconsumption()}" title="Legacy entity-based report (deprecated)"/>
+                                    <p:commandButton class="w-100 ui-button-success" ajax="false" value="2. Consumption" action="#{reportController.navigateToConsumptionDto()}" icon="fa fa-rocket" title="High-performance DTO-based Consumption report"/>
                                     <p:commandButton   class="w-100"  ajax="false" value="3. Stock Transfers"  action="#{reportController.navigateToStockTransferReport()}" />
                                     <p:commandButton   class="w-100"  ajax="false" value="4. Cost Of Good Sold" action="#{reportController.navigateToCostOfGoodsSold()}" />
                                     <p:commandButton   class="w-100"  ajax="false" value="5. Good in Transit" action="#{reportController.navigateToGoodInTransit()}" />

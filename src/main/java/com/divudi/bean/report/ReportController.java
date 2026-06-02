@@ -4518,8 +4518,13 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         return "/reports/inpatientReports/room_change?faces-redirect=true";
     }
 
+    @Deprecated
     public String navigateToconsumption() {
         return "/reports/inventoryReports/consumption?faces-redirect=true";
+    }
+
+    public String navigateToConsumptionDto() {
+        return "/reports/inventoryReports/consumption_dto?faces-redirect=true";
     }
 
     public String navigateToCostOfGoodSoldReports() {
