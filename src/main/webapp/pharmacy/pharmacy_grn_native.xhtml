@@ -276,7 +276,7 @@
                                                 </h:outputText>
                                             </td>
                                         </tr>
-                                        <tr rendered="#{grnNativeSqlController.header.expenseTotal != 0}">
+                                        <tr style="#{grnNativeSqlController.header.expenseTotal != 0 ? '' : 'display:none;'}">
                                             <td class="grn-native-info-label">Expenses</td>
                                             <td class="text-end">
                                                 <h:outputText value="#{grnNativeSqlController.header.expenseTotal}">
@@ -284,7 +284,7 @@
                                                 </h:outputText>
                                             </td>
                                         </tr>
-                                        <tr rendered="#{grnNativeSqlController.header.expensesConsideredForCosting != 0}">
+                                        <tr style="#{grnNativeSqlController.header.expensesConsideredForCosting != 0 ? '' : 'display:none;'}">
                                             <td class="grn-native-info-label">Expenses (for Costing)</td>
                                             <td class="text-end">
                                                 <h:outputText value="#{grnNativeSqlController.header.expensesConsideredForCosting}">
@@ -292,7 +292,7 @@
                                                 </h:outputText>
                                             </td>
                                         </tr>
-                                        <tr rendered="#{grnNativeSqlController.header.expensesNotConsideredForCosting != 0}">
+                                        <tr style="#{grnNativeSqlController.header.expensesNotConsideredForCosting != 0 ? '' : 'display:none;'}">
                                             <td class="grn-native-info-label">Expenses (not for Costing)</td>
                                             <td class="text-end">
                                                 <h:outputText value="#{grnNativeSqlController.header.expensesNotConsideredForCosting}">
@@ -300,7 +300,7 @@
                                                 </h:outputText>
                                             </td>
                                         </tr>
-                                        <tr rendered="#{grnNativeSqlController.header.tax != 0}">
+                                        <tr style="#{grnNativeSqlController.header.tax != 0 ? '' : 'display:none;'}">
                                             <td class="grn-native-info-label">Tax</td>
                                             <td class="text-end">
                                                 <h:outputText value="#{grnNativeSqlController.header.tax}">
@@ -308,7 +308,7 @@
                                                 </h:outputText>
                                             </td>
                                         </tr>
-                                        <tr rendered="#{grnNativeSqlController.header.discount != 0}">
+                                        <tr style="#{grnNativeSqlController.header.discount != 0 ? '' : 'display:none;'}">
                                             <td class="grn-native-info-label">Discount</td>
                                             <td class="text-end">
                                                 <h:outputText value="#{grnNativeSqlController.header.discount}">
