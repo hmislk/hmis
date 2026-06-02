@@ -409,13 +409,12 @@
                                                     <h:outputLabel value=" : " class="mx-3"/>
                                                     <h:panelGroup class="d-flex">
 
-                                                        <p:outputLabel class="ml-4" value="#{opdBillController.patient.person.nameWithTitle}" rendered="#{not empty opdBillController.patient.person.nameWithTitle and !configOptionApplicationController.getBooleanValueByKey('Enable patient specific status management in the system')}" />
-
-                                                        <p:badge rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable patient specific status management in the system')}" style="transform: translate(110%, -40%);background-color: #{empty opdBillController.patient.specificStatus ? 'white' : '#FF401F'} ; font-style: italic;" value="#{opdBillController.patient.specificStatus}" severity="danger">
+                                                        
+                                                        <p:badge style="transform: translate(110%, -40%);background-color: #{opdBillController.patient.specificStatus != null and opdBillController.patient.specificStatus.name() != 'NORMAL' ? '#FF401F' : 'white'} ; font-style: italic;" value="#{opdBillController.patient.specificStatus}" severity="danger">
                                                             <p:outputLabel value="#{opdBillController.patient.person.nameWithTitle}" rendered="#{not empty opdBillController.patient.person.nameWithTitle}" />
                                                         </p:badge> 
 
-                                                        <p:badge rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable blacklist patient management in the system') and configOptionApplicationController.getBooleanValueByKey('Enable blacklist patient management for OPD from the system', false)}" style="transform: translate(110%, -40%);background-color: #{opdBillController.patient.blacklisted ? 'black' : 'white'} ; font-style: italic; font-size: 15px" value="X #{opdBillController.patient.blacklisted ? 'Blacklisted' : 'Active'}" severity="danger">
+                                                        <p:badge style="transform: translate(110%, -40%);background-color: #{opdBillController.patient.blacklisted ? 'black' : 'white'} ; font-style: italic; font-size: 15px" value="X #{opdBillController.patient.blacklisted ? 'Blacklisted' : 'Active'}" severity="danger">
 
                                                         </p:badge>
 

@@ -553,19 +553,6 @@ public class PharmacySaleForCashierController1 implements Serializable, Controll
                 OptionScope.APPLICATION
         ));
 
-        metadata.addConfigOption(new ConfigOptionInfo(
-                "Enable blacklist patient management in the system",
-                "Enables system-wide blacklist patient management functionality",
-                "Controller: Patient blacklist checking",
-                OptionScope.APPLICATION
-        ));
-
-        metadata.addConfigOption(new ConfigOptionInfo(
-                "Enable blacklist patient management for Pharmacy from the system",
-                "Enables blacklist patient management specifically for pharmacy module",
-                "Controller: Pharmacy-specific patient blacklist checking",
-                OptionScope.APPLICATION
-        ));
 
         metadata.addConfigOption(new ConfigOptionInfo(
                 "Referring Doctor is required in Pharmacy Retail Sale",
@@ -3444,10 +3431,12 @@ public class PharmacySaleForCashierController1 implements Serializable, Controll
             newlyCreatedBillItemForSaleBill.setCreatedAt(Calendar.getInstance().getTime());
             newlyCreatedBillItemForSaleBill.setCreater(getSessionController().getLoggedUser());
 
-            if (preBillItem.getPrescription() != null) {
+            if (preBillItem.hasPrescription()) {
                 Prescription newlyCreatedPrescreptionForSaleBillItem = preBillItem.getPrescription().cloneForNewEntity();
                 newlyCreatedBillItemForSaleBill.setPrescription(newlyCreatedPrescreptionForSaleBillItem);
-                newlyCreatedPrescreptionForSaleBillItem.setPatient(patient);
+                if (patient != null && patient.getId() != null) {
+                    newlyCreatedPrescreptionForSaleBillItem.setPatient(patient);
+                }
                 newlyCreatedPrescreptionForSaleBillItem.setCreatedAt(new Date());
                 newlyCreatedPrescreptionForSaleBillItem.setCreater(sessionController.getWebUser());
                 newlyCreatedPrescreptionForSaleBillItem.setInstitution(sessionController.getInstitution());
@@ -3483,9 +3472,11 @@ public class PharmacySaleForCashierController1 implements Serializable, Controll
                 getBillItemFacade().create(newBil);
             }
 
-            if (tbi.getPrescription() != null) {
+            if (tbi.hasPrescription()) {
                 newBil.setPrescription(tbi.getPrescription());
-                tbi.getPrescription().setPatient(patient);
+                if (patient != null && patient.getId() != null) {
+                    tbi.getPrescription().setPatient(patient);
+                }
                 tbi.getPrescription().setCreatedAt(new Date());
                 tbi.getPrescription().setCreater(sessionController.getWebUser());
                 tbi.getPrescription().setInstitution(sessionController.getInstitution());
@@ -3732,13 +3723,10 @@ public class PharmacySaleForCashierController1 implements Serializable, Controll
             }
         }
 
-        if (configOptionApplicationController.getBooleanValueByKey("Enable blacklist patient management in the system", false)
-                && configOptionApplicationController.getBooleanValueByKey("Enable blacklist patient management for Pharmacy from the system", false)) {
-            if (getPatient().isBlacklisted()) {
-                JsfUtil.addErrorMessage("This patient is blacklisted from the system. Can't Bill.");
-                billSettlingStarted = false;
-                return null;
-            }
+        if (getPatient().isBlacklisted()) {
+            JsfUtil.addErrorMessage("This patient is blacklisted from the system. Can't Bill.");
+            billSettlingStarted = false;
+            return null;
         }
 
         // Referring Doctor validation

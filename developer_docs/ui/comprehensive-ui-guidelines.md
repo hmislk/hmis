@@ -13,7 +13,7 @@
 **UI-ONLY CHANGES**: When UI improvements are requested, make ONLY frontend/XHTML changes
 **KEEP IT SIMPLE**: Use existing controller properties and methods - avoid introducing filteredValues, globalFilter, or new backend logic
 **FRONTEND FOCUS**: Stick to HTML/CSS styling, PrimeFaces component attributes, and layout improvements
-**ERP UI RULE**: Use `h:outputText` instead of HTML headings (h1-h6)
+**ERP UI RULE**: Use `h:outputText` for ALL text content in JSF pages — headings, labels, descriptions, static strings, and link labels. Do NOT write bare text nodes directly inside `<td>`, `<p:panel>`, or any JSF composite component. This is JSF best practice.
 **PRIMEFACES CSS**: Use PrimeFaces button classes, not Bootstrap button classes
 **XHTML STRUCTURE**: HTML DOCTYPE with `ui:composition` and template inside `h:body`
 **XML ENTITIES**: Always escape ampersands as `&amp;` in XHTML attributes
@@ -55,7 +55,7 @@
 ## Layout, Typography, and Containers
 - Use **PrimeFaces components for interaction** (buttons, dialogs, tables) and **Bootstrap utilities for layout** (`row`, `col-*`, `d-flex`, spacing helpers).
 - Prefer `p:panelGrid` when you only need a grid with a header; only wrap in `p:panel` when you need facets or panel styling.
-- Use `h:outputText` and `p:outputLabel` for headings, labels, and messages instead of HTML heading tags. Attach Bootstrap utility classes for emphasis when needed.
+- Use `h:outputText` and `p:outputLabel` for **all text content** — headings, labels, messages, descriptions, static strings, and link labels. Never write bare text nodes directly inside JSF/PrimeFaces components. Attach Bootstrap utility classes for emphasis when needed.
 - Keep screens dense and business-focused; avoid marketing-style hero headers.
 
 ---
@@ -216,6 +216,21 @@ Rules:
 - Provide `title` attributes or `aria` labels for buttons and links.
 - Honour configuration toggles (feature flags, color schemes) via `configOptionApplicationController`.
 - Prefer server-side sanitised data and avoid embedding secrets or hard-coded environment values.
+
+### Accessibility-first development (required)
+
+We drive Chrome via the Playwright MCP server for end-to-end verification. Playwright's accessibility snapshot is the primary way Claude and tooling identify elements, so every interactive component must carry an accessible name. **Do this while writing the page, not after.**
+
+**On every new or modified page:**
+
+- Give the `p:dataTable` an `id`, `widgetVar`, `summary`, `rowKey="#{row.id}"`, and `rowIndexVar="rowIndex"`. The `summary` becomes the table's accessible description; `rowKey` makes specific rows targetable.
+- Every `p:commandButton`, `p:commandLink`, and `p:button` must have an interpolated `title` that includes the row's identifier — e.g. `title="Fast receive items from #{p.deptId}"`, `title="View bill #{b.deptId}"`. The button's visible label alone (`"Fast Receive"`, `"View"`) is identical across rows and useless to Playwright.
+- For buttons that render only an icon (no `value`), add `title="…"` with the action AND the row identifier. Without it the accessibility tree falls back to the base CSS class (`"ui-button"`) and the row becomes anonymous.
+- Wrap row-level buttons that depend on a value in `<h:panelGroup rendered="#{not empty value}">` so an empty value doesn't render a button with no accessible name.
+- Add `id` to every form input, calendar, and dropdown — Playwright `browser_fill_form` needs stable ids. Inside iterating components (column inside dataTable, `ui:repeat`) JSF auto-prefixes ids with the iteration index, which is fine — just give them a stable suffix.
+- For status badges and other read-only indicators, prefer text + colour over colour alone, and surface the status in a `title` if the badge is icon-only.
+
+When you finish a UI change, mentally check: "If I asked Playwright to click the Fast Receive button on row PHPHTI/2878, can it identify that row uniquely from the accessibility snapshot?" If not, add titles until it can.
 
 ---
 

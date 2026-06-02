@@ -312,14 +312,28 @@
                         value="Add Family" 
                         rendered="#{webUserController.hasPrivilege('MemberShipAdd')}"
                         icon="fa fa-users"></p:menuitem>
-                    <p:menuitem 
-                        ajax="false" 
+                    <p:menuitem
+                        ajax="false"
                         action="#{patientController.navigateToSearchFamilyMembership()}"
-                        value="Search Families" 
+                        value="Search Families"
                         rendered="#{webUserController.hasPrivilege('MemberShipSearch')}"
                         icon="fa fa-search-plus"></p:menuitem>
-                    <p:menuitem 
-                        ajax="false" 
+                    <p:separator />
+                    <p:menuitem
+                        ajax="false"
+                        action="#{patientController.navigateToAddNewCorporateMembership()}"
+                        value="Add Corporate Member"
+                        rendered="#{webUserController.hasPrivilege('MemberShipAdd')}"
+                        icon="fa fa-building"></p:menuitem>
+                    <p:menuitem
+                        ajax="false"
+                        action="#{patientController.navigateToSearchCorporateMembership()}"
+                        value="Search Corporate Members"
+                        rendered="#{webUserController.hasPrivilege('MemberShipSearch')}"
+                        icon="fa fa-search"></p:menuitem>
+                    <p:separator />
+                    <p:menuitem
+                        ajax="false"
                         id="mnuItemMembershipAnalytics"
                         action="#{membershipController.navigateToMembershipAnalyticsIndex()}"
                         value="Analytics"
@@ -1907,7 +1921,7 @@
                         icon="fa fa-cogs" value="Processes"  />
                     <p:menuitem  
                         ajax="false"  
-                        action="/hr/hr_reports" 
+                        action="/hr/hr_reports?faces-redirect=true" 
                         icon="fa fa-chart-bar" value="HR Analytics" 
                         rendered="#{webUserController.hasPrivilege('HrReports')}" />
 
@@ -2092,12 +2106,19 @@
                         value="Membership Administration" 
                         icon="fa fa-bar-chart"
                         rendered="#{webUserController.hasPrivilege('MembershipAdministration')}" ></p:menuitem>
-                    <p:menuitem  
-                        ajax="false"  
-                        action="#{dataAdministrationController.navigateToAdminDataAdministration()}" 
-                        value="Manage Metadata " 
+                    <p:menuitem
+                        ajax="false"
+                        action="#{dataAdministrationController.navigateToAdminDataAdministration()}"
+                        value="Manage Metadata "
                         icon="fa fa-database"
                         rendered="#{webUserController.hasPrivilege('AdminItems')}" >
+                    </p:menuitem>
+                    <p:menuitem
+                        ajax="false"
+                        action="#{patientController.navigateToInactivePatients()}"
+                        value="Inactive Patients"
+                        icon="fa fa-user-slash"
+                        rendered="#{webUserController.hasPrivilege('AdminInactivePatients')}" >
                     </p:menuitem>
 
                 </p:submenu>

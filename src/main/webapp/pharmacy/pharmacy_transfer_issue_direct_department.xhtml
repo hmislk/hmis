@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8' ?>
+﻿<?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 template="/pharmacy/disbursement_index.xhtml"
@@ -123,7 +123,7 @@
                                                 inputStyleClass="w-100"
                                                 id="acStock"
                                                 value="#{transferIssueDirectController.stockDto}"
-                                                completeMethod="#{stockController.completeAvailableStocksWithItemStockDtoForAllowedDepartments}"
+                                                minQueryLength="3" queryDelay="300" completeMethod="#{stockController.completeAvailableStocksWithItemStockDtoForAllowedDepartments}"
                                                 converter="stockDtoConverter"
                                                 var="i"
                                                 itemLabel="#{i.itemName}"

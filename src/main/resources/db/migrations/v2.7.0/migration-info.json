@@ -1,0 +1,26 @@
+{
+  "version": "v2.7.0",
+  "description": "Performance indexes for STOCKHISTORYARCHIVE (x3) — prevents full-table scans on archive queries",
+  "issue": "#20729 — StockHistory archive read paths",
+  "author": "Dr M H B Ariyaratne",
+  "date": "2026-05-23",
+  "type": "performance",
+  "tables_affected": ["stockhistoryarchive"],
+  "data_changes": false,
+  "requires_downtime": false,
+  "estimated_duration_minutes": 1,
+  "indexes_added": [
+    "stockhistoryarchive.idx_stockhistoryarchive_batch_date_retired (ITEMBATCH_ID, CREATEDAT, RETIRED)",
+    "stockhistoryarchive.idx_stockhistoryarchive_date_dept_retired (CREATEDAT, DEPARTMENT_ID, RETIRED)",
+    "stockhistoryarchive.idx_stockhistoryarchive_historytype_dept_createdat (HISTORYTYPE, DEPARTMENT_ID, CREATEDAT)"
+  ],
+  "indexes_dropped": [],
+  "performance_impact": {
+    "before": "STOCKHISTORYARCHIVE has only a single-column index on CREATEDAT (added by v2.1.18). Archive queries introduced in #20729 (bin card, stock ledger, closing stock) would full-table-scan the archive once rows accumulate.",
+    "after": "Archive queries use the same index strategies as STOCKHISTORY: batch+date range scans, dept+date range scans, historytype+dept scans.",
+    "improvement": "Archive table queries match STOCKHISTORY query plan quality once archival begins moving rows."
+  },
+  "note": "STOCKHISTORYARCHIVE is currently empty on all deployments — this migration runs instantly and will not block. These indexes are a prerequisite for the include-archived report feature introduced in #20729.",
+  "dependencies": ["v2.1.18"],
+  "rollback": "rollback.sql"
+}

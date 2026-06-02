@@ -9,6 +9,7 @@
 package com.divudi.bean.inward;
 
 import com.divudi.bean.cashTransaction.CashBookEntryController;
+import com.divudi.bean.cashTransaction.FinancialTransactionController;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.ControllerWithMultiplePayments;
@@ -46,6 +47,7 @@ import java.util.HashMap;
 import java.util.List;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
+import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
 
@@ -92,6 +94,8 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
     ConfigOptionApplicationController configOptionApplicationController;
     @Inject
     private PaymentSchemeController paymentSchemeController;
+    @Inject
+    private FinancialTransactionController financialTransactionController;
     // </editor-fold>
     
     // <editor-fold defaultstate="collapsed" desc="Variables">
@@ -127,10 +131,32 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
 
     }
 
-    /** Navigate to the inward patient co-payment collection page. */
+    /** Navigate to the inward patient co-payment collection page, requiring an active shift. */
     public String navigateToInwardPatientCopayment() {
         makeNull();
+        financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
+        if (financialTransactionController.getNonClosedShiftStartFundBill() == null) {
+            // Use Flash scope to preserve error message across redirect
+            JsfUtil.addErrorMessage("Start Your Shift First !");
+            return "/cashier/index?faces-redirect=true";
+        }
         return "/credit/inward_patient_copay_payment?faces-redirect=true";
+    }
+
+    /**
+     * Navigate to the inward deposit payment page, requiring an active shift.
+     * If the logged user has no open shift start fund bill, show an error and
+     * send them to the cashier index to start a shift first.
+     */
+    public String navigateToInwardDepositPayment() {
+        makeNull();
+        financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
+        if (financialTransactionController.getNonClosedShiftStartFundBill() == null) {
+            // Use Flash scope to preserve error message across redirect
+            JsfUtil.addErrorMessage("Start Your Shift First !");
+            return "/cashier/index?faces-redirect=true";
+        }
+        return "/inward/inward_bill_payment?faces-redirect=true";
     }
 
     /** CC amount committed against this admission (sum of CC commitment bills created at finalization). */

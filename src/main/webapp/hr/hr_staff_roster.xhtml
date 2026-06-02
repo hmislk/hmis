@@ -8,68 +8,91 @@
                 xmlns:hr="http://xmlns.jcp.org/jsf/composite/autocomplete">
 
     <ui:define name="content">
-        <h:form>
-            <p:panel header="Manage Staff Roster" >
-                <h:panelGrid id ="gpVeda" columns="2" >
 
-                    <h:panelGrid id="gpDetail" columns="1">
-                        <p:panel>
-                            <h:panelGrid id="gpDetailText" columns="2">
-                                <h:outputText  value="Roster" ></h:outputText>
-                                <p:selectOneMenu  value="#{rosterStaffController.currentRoster}">
-                                    <f:selectItem itemLabel="Select Roster"/>
-                                    <f:selectItems value="#{rosterController.items}" var="d" itemLabel="#{d.name}" itemValue="#{d}"/>
-                                    <f:ajax event="change" execute="@this" render="col" listener="#{rosterStaffController.createStaff}"/>
-                                </p:selectOneMenu>
-                                <h:outputLabel  value="Staff" ></h:outputLabel>
-                                <hr:completeStaff value="#{rosterStaffController.currentStaff}"/>
+        <h:outputText value="Manage Staff Roster" styleClass="h1" />
 
-                                <p:commandButton id="btnAddStaff" value="Add Staff" ajax="false"
-                                                 action="#{rosterStaffController.add}"  >
-                                </p:commandButton>
-                                <p:defaultCommand target="btnAddStaff"/>
-                            </h:panelGrid>
-                        </p:panel>
-                        <p:panel id="col" styleClass="noBorder summeryBorder">
-                            <f:facet name="header">
-                                <p:commandButton ajax="false" value="Print"  styleClass="noPrintButton" style="float: right;" >
-                                    <p:printer target="col" />
-                                </p:commandButton>
-                            </f:facet>
-                            <p:dataTable  value="#{rosterStaffController.staffList}" var="s">
-                                <f:facet name="header">
-                                    <h:outputLabel value="#{sessionController.loggedUser.institution.name}"/><br></br>
-                                    <h:outputLabel value="Staff List"/><br></br>
-                                    <h:outputLabel value="Roster : #{rosterStaffController.currentRoster.name}" rendered="#{rosterStaffController.currentRoster ne null}"/><br></br>
-                                    <h:outputLabel value="Department : #{rosterStaffController.currentRoster.department.name}" rendered="#{rosterStaffController.currentRoster ne null}"/>
-                                </f:facet>
-                                <p:column headerText="Staff" >
-                                    <h:outputLabel value="#{s.person.nameWithTitle}"/>
-                                </p:column>
-                                <p:column headerText="Code" >
-                                    <h:outputLabel value="#{s.code}"/>
-                                </p:column>
-                                <p:column styleClass="noPrintButton">
-                                    <p:commandLink ajax="false" value="Remove" action="#{rosterStaffController.remove}" >
-                                        <f:setPropertyActionListener value="#{s}" target="#{rosterStaffController.currentStaff}"/>
-                                    </p:commandLink>
-                                </p:column>
-                                <f:facet name="footer">
-                                    <p:outputLabel value="Print By : #{sessionController.loggedUser.webUserPerson.name} - " />
-                                    <p:outputLabel value="Print At : " />
-                                    <p:outputLabel value="#{commonFunctionsProxy.currentDateTime}" >
-                                        <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a " />
-                                    </p:outputLabel>
-                                </f:facet>
-                            </p:dataTable>
-                        </p:panel>
-                    </h:panelGrid>
+        <h:form id="form">
+            <div class="row m-3">
+                <div class="col-3">
+                    <div class="row m-3">
+                        <div class="col-3">
+                            <h:outputLabel for="roster" value="Roster" />
+                        </div>
+                        <div class="col-9">
+                            <p:selectOneMenu id="roster" value="#{rosterStaffController.currentRoster}">
+                                <f:selectItem itemLabel="Select Roster"/>
+                                <f:selectItems value="#{rosterController.items}" var="d"
+                                               itemLabel="#{d.name}" itemValue="#{d}"/>
+                                <f:ajax event="change" execute="@this" render="col"
+                                        listener="#{rosterStaffController.createStaff}"/>
+                            </p:selectOneMenu>
+                        </div>
+                    </div>
+                    <div class="row m-3">
+                        <div class="col-3">
+                            <h:outputLabel value="Staff" />
+                        </div>
+                        <div class="col-9">
+                            <hr:completeStaff value="#{rosterStaffController.currentStaff}"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-3">
+                    <div class="m-2">
+                        <p:commandButton id="btnAddStaff" value="Add Staff" ajax="false"
+                                         action="#{rosterStaffController.add}"
+                                         styleClass="m-1" />
+                        <p:defaultCommand target="btnAddStaff" />
+                    </div>
+                </div>
+            </div>
 
-                </h:panelGrid>
+            <p:panel id="col" styleClass="m-3 noBorder summeryBorder">
+                <f:facet name="header">
+                    <p:commandButton ajax="false" value="Print" styleClass="noPrintButton"
+                                     style="float: right;">
+                        <p:printer target="col"/>
+                    </p:commandButton>
+                </f:facet>
+
+                <p:dataTable value="#{rosterStaffController.staffList}" var="s">
+                    <f:facet name="header">
+                        <h:outputText value="#{sessionController.loggedUser.institution.name}"/><br/>
+                        <h:outputText value="Staff List"/><br/>
+                        <h:outputText value="Roster : #{rosterStaffController.currentRoster.name}"
+                                       rendered="#{rosterStaffController.currentRoster ne null}"/><br/>
+                        <h:outputText value="Department : #{rosterStaffController.currentRoster.department.name}"
+                                       rendered="#{rosterStaffController.currentRoster ne null}"/>
+                    </f:facet>
+
+                    <p:column headerText="Staff">
+                        <h:outputLabel value="#{s.person.nameWithTitle}"/>
+                    </p:column>
+
+                    <p:column headerText="Code">
+                        <h:outputLabel value="#{s.code}"/>
+                    </p:column>
+
+                    <p:column styleClass="noPrintButton">
+                        <p:commandLink ajax="false" value="Remove"
+                                       action="#{rosterStaffController.remove}">
+                            <f:setPropertyActionListener value="#{s}"
+                                                         target="#{rosterStaffController.currentStaff}"/>
+                        </p:commandLink>
+                    </p:column>
+
+                    <f:facet name="footer">
+                        <p:outputLabel value="Print By : #{sessionController.loggedUser.webUserPerson.name} - "/>
+                        <p:outputLabel value="Print At : "/>
+                        <p:outputLabel value="#{commonFunctionsProxy.currentDateTime}">
+                            <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a"/>
+                        </p:outputLabel>
+                    </f:facet>
+                </p:dataTable>
             </p:panel>
 
-
         </h:form>
+
     </ui:define>
 
 </ui:composition>

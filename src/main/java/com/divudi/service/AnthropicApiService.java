@@ -603,6 +603,147 @@ public class AnthropicApiService implements Serializable {
                         .add("required", Json.createArrayBuilder().add("method")))
                 .build();
 
+        JsonObject manageInvestigationFormatTool = Json.createObjectBuilder()
+                .add("name", "manage_investigation_format")
+                .add("description",
+                        "Manage the report format of an investigation: items (report fields), "
+                        + "item values (dropdown options), calculations (formulas), "
+                        + "flags (reference ranges), and dynamic labels (conditional text). "
+                        + "First use manage_investigations GET to find the investigation ID, "
+                        + "then use this tool with the investigation_id.")
+                .add("input_schema", Json.createObjectBuilder()
+                        .add("type", "object")
+                        .add("properties", Json.createObjectBuilder()
+                                .add("resource_type", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Which sub-resource: ITEM, VALUE, CALCULATION, FLAG, DYNAMIC_LABEL. Required."))
+                                .add("method", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "ITEM supports LIST/GET/POST/PUT/DELETE. VALUE, CALCULATION, FLAG, DYNAMIC_LABEL support LIST/POST/PUT/DELETE (no GET by id). Required."))
+                                .add("investigation_id", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "ID of the parent investigation. Required for all operations."))
+                                .add("item_id", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Investigation item ID. Required for GET/PUT/DELETE on ITEM; required for VALUE LIST/POST."))
+                                .add("id", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Record ID for PUT/DELETE on VALUE, CALCULATION, FLAG, DYNAMIC_LABEL."))
+                                .add("name", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Name. Required for ITEM POST and VALUE POST."))
+                                .add("code", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Short code. Auto-generated from name if omitted."))
+                                .add("description", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Description text for items."))
+                                .add("order_no", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Display order number."))
+                                .add("ix_item_type", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "InvestigationItemType: Label, Value, Calculation, Flag, DynamicLabel, Css, Barcode, Html, MeasurementUnit, Image. Required for ITEM POST."))
+                                .add("ix_item_value_type", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "InvestigationItemValueType: Varchar, Memo, Double, Integer, Long, List. Required for Value-type items."))
+                                .add("automated", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "'true' if value comes from an automated analyzer."))
+                                .add("result_code", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Result code for analyzer mapping."))
+                                .add("format_prefix", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Prefix displayed before the value."))
+                                .add("format_suffix", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Suffix displayed after the value (e.g. unit)."))
+                                .add("htmltext", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "HTML content for Label/Html type items."))
+                                .add("can_not_approve_if_empty", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "'true' to block approval if value is empty."))
+                                .add("absolute_low_value", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Absolute minimum acceptable value."))
+                                .add("absolute_high_value", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Absolute maximum acceptable value."))
+                                .add("cal_ix_item_id", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "CALCULATION: ID of the calculated (target) item."))
+                                .add("val_ix_item_id", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "CALCULATION: ID of the source value item (when calculationType=Value)."))
+                                .add("calculation_type", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "CalculationType: Value, Constant, Addition, Substraction, Multiplication, Devision, Power, OpeningBracket, ClosingBracket, AgeInMonths, AgeInYears, AgeInDays, GenderDependentConstant, JavaScript."))
+                                .add("constant_value", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Constant value for Constant type."))
+                                .add("male_constant_value", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Male constant for GenderDependentConstant."))
+                                .add("female_constant_value", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Female constant for GenderDependentConstant."))
+                                .add("javascript", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "JavaScript expression for JavaScript calculation type."))
+                                .add("investigation_item_of_value_type_id", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "FLAG: ID of the value item to monitor."))
+                                .add("investigation_item_of_flag_type_id", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "FLAG: ID of the flag display item."))
+                                .add("investigation_item_of_label_type_id", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "DYNAMIC_LABEL: ID of the label item."))
+                                .add("sex", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Sex filter: Male, Female, or omit for both. FLAG/DYNAMIC_LABEL."))
+                                .add("from_age", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Minimum age in days. FLAG/DYNAMIC_LABEL."))
+                                .add("to_age", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Maximum age in days. FLAG/DYNAMIC_LABEL."))
+                                .add("from_val", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "FLAG: Lower bound of value range."))
+                                .add("to_val", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "FLAG: Upper bound of value range."))
+                                .add("flag_message", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Flag/label message text."))
+                                .add("high_message", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "FLAG: Message when value is above range."))
+                                .add("low_message", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "FLAG: Message when value is below range."))
+                                .add("normal_message", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "FLAG: Message when value is within range."))
+                                .add("display_flag_message", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "FLAG: 'true' to display the flag message."))
+                                .add("display_high_message", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "FLAG: 'true' to display the high message."))
+                                .add("display_low_message", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "FLAG: 'true' to display the low message."))
+                                .add("display_normal_message", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "FLAG: 'true' to display the normal message.")))
+                        .add("required", Json.createArrayBuilder()
+                                .add("resource_type").add("method").add("investigation_id")))
+                .build();
+
         return Json.createArrayBuilder()
                 .add(searchCodeTool)
                 .add(fetchFileTool)
@@ -612,6 +753,7 @@ public class AnthropicApiService implements Serializable {
                 .add(inwardDiscountMatrixTool)
                 .add(inwardRoomsTool)
                 .add(manageInvestigationsTool)
+                .add(manageInvestigationFormatTool)
                 .build();
     }
 
@@ -704,6 +846,61 @@ public class AnthropicApiService implements Serializable {
                     String reportType = toolInput.containsKey("reportType") ? toolInput.getString("reportType", "") : "";
                     String bypass = toolInput.containsKey("bypassSampleWorkflow") ? toolInput.getString("bypassSampleWorkflow", "") : "";
                     return callInvestigationApi(method, id, query, inactive, limit, name, code, printName, reportType, bypass, hmisBaseUrl, hmisApiKey);
+                }
+                case "manage_investigation_format": {
+                    String resourceType = toolInput.getString("resource_type", "ITEM");
+                    String method = toolInput.getString("method", "LIST");
+                    String investigationId = toolInput.getString("investigation_id", "");
+                    String itemId = toolInput.containsKey("item_id") ? toolInput.getString("item_id", "") : "";
+                    String id = toolInput.containsKey("id") ? toolInput.getString("id", "") : "";
+                    String name = toolInput.containsKey("name") ? toolInput.getString("name", "") : "";
+                    String code = toolInput.containsKey("code") ? toolInput.getString("code", "") : "";
+                    String desc = toolInput.containsKey("description") ? toolInput.getString("description", "") : "";
+                    String orderNo = toolInput.containsKey("order_no") ? toolInput.getString("order_no", "") : "";
+                    String ixItemType = toolInput.containsKey("ix_item_type") ? toolInput.getString("ix_item_type", "") : "";
+                    String ixItemValueType = toolInput.containsKey("ix_item_value_type") ? toolInput.getString("ix_item_value_type", "") : "";
+                    String automated = toolInput.containsKey("automated") ? toolInput.getString("automated", "") : "";
+                    String resultCode = toolInput.containsKey("result_code") ? toolInput.getString("result_code", "") : "";
+                    String formatPrefix = toolInput.containsKey("format_prefix") ? toolInput.getString("format_prefix", "") : "";
+                    String formatSuffix = toolInput.containsKey("format_suffix") ? toolInput.getString("format_suffix", "") : "";
+                    String htmltext = toolInput.containsKey("htmltext") ? toolInput.getString("htmltext", "") : "";
+                    String canNotApproveIfEmpty = toolInput.containsKey("can_not_approve_if_empty") ? toolInput.getString("can_not_approve_if_empty", "") : "";
+                    String absoluteLowValue = toolInput.containsKey("absolute_low_value") ? toolInput.getString("absolute_low_value", "") : "";
+                    String absoluteHighValue = toolInput.containsKey("absolute_high_value") ? toolInput.getString("absolute_high_value", "") : "";
+                    String calIxItemId = toolInput.containsKey("cal_ix_item_id") ? toolInput.getString("cal_ix_item_id", "") : "";
+                    String valIxItemId = toolInput.containsKey("val_ix_item_id") ? toolInput.getString("val_ix_item_id", "") : "";
+                    String calculationType = toolInput.containsKey("calculation_type") ? toolInput.getString("calculation_type", "") : "";
+                    String constantValue = toolInput.containsKey("constant_value") ? toolInput.getString("constant_value", "") : "";
+                    String maleConstantValue = toolInput.containsKey("male_constant_value") ? toolInput.getString("male_constant_value", "") : "";
+                    String femaleConstantValue = toolInput.containsKey("female_constant_value") ? toolInput.getString("female_constant_value", "") : "";
+                    String javascript = toolInput.containsKey("javascript") ? toolInput.getString("javascript", "") : "";
+                    String valueItemId = toolInput.containsKey("investigation_item_of_value_type_id") ? toolInput.getString("investigation_item_of_value_type_id", "") : "";
+                    String flagItemId = toolInput.containsKey("investigation_item_of_flag_type_id") ? toolInput.getString("investigation_item_of_flag_type_id", "") : "";
+                    String labelItemId = toolInput.containsKey("investigation_item_of_label_type_id") ? toolInput.getString("investigation_item_of_label_type_id", "") : "";
+                    String sex = toolInput.containsKey("sex") ? toolInput.getString("sex", "") : "";
+                    String fromAge = toolInput.containsKey("from_age") ? toolInput.getString("from_age", "") : "";
+                    String toAge = toolInput.containsKey("to_age") ? toolInput.getString("to_age", "") : "";
+                    String fromVal = toolInput.containsKey("from_val") ? toolInput.getString("from_val", "") : "";
+                    String toVal = toolInput.containsKey("to_val") ? toolInput.getString("to_val", "") : "";
+                    String flagMessage = toolInput.containsKey("flag_message") ? toolInput.getString("flag_message", "") : "";
+                    String highMessage = toolInput.containsKey("high_message") ? toolInput.getString("high_message", "") : "";
+                    String lowMessage = toolInput.containsKey("low_message") ? toolInput.getString("low_message", "") : "";
+                    String normalMessage = toolInput.containsKey("normal_message") ? toolInput.getString("normal_message", "") : "";
+                    String displayFlagMessage = toolInput.containsKey("display_flag_message") ? toolInput.getString("display_flag_message", "") : "";
+                    String displayHighMessage = toolInput.containsKey("display_high_message") ? toolInput.getString("display_high_message", "") : "";
+                    String displayLowMessage = toolInput.containsKey("display_low_message") ? toolInput.getString("display_low_message", "") : "";
+                    String displayNormalMessage = toolInput.containsKey("display_normal_message") ? toolInput.getString("display_normal_message", "") : "";
+                    return callInvestigationFormatApi(resourceType, method, investigationId, itemId, id,
+                            name, code, desc, orderNo, ixItemType, ixItemValueType,
+                            automated, resultCode, formatPrefix, formatSuffix, htmltext,
+                            canNotApproveIfEmpty, absoluteLowValue, absoluteHighValue,
+                            calIxItemId, valIxItemId, calculationType, constantValue,
+                            maleConstantValue, femaleConstantValue, javascript,
+                            valueItemId, flagItemId, labelItemId,
+                            sex, fromAge, toAge, fromVal, toVal,
+                            flagMessage, highMessage, lowMessage, normalMessage,
+                            displayFlagMessage, displayHighMessage, displayLowMessage, displayNormalMessage,
+                            hmisBaseUrl, hmisApiKey);
                 }
                 case "manage_inward_rooms": {
                     String method         = toolInput.getString("method", "LIST_CATEGORIES");
@@ -1637,6 +1834,246 @@ public class AnthropicApiService implements Serializable {
         } catch (Exception e) { return "Investigation API error: "+e.getMessage(); }
     }
 
+    private String callInvestigationFormatApi(String resourceType, String method,
+            String investigationId, String itemId, String id,
+            String name, String code, String description, String orderNo,
+            String ixItemType, String ixItemValueType,
+            String automated, String resultCode, String formatPrefix, String formatSuffix, String htmltext,
+            String canNotApproveIfEmpty, String absoluteLowValue, String absoluteHighValue,
+            String calIxItemId, String valIxItemId, String calculationType,
+            String constantValue, String maleConstantValue, String femaleConstantValue, String javascript,
+            String valueItemId, String flagItemId, String labelItemId,
+            String sex, String fromAge, String toAge, String fromVal, String toVal,
+            String flagMessage, String highMessage, String lowMessage, String normalMessage,
+            String displayFlagMessage, String displayHighMessage, String displayLowMessage, String displayNormalMessage,
+            String hmisBaseUrl, String hmisApiKey) {
+        try {
+            String root = (hmisBaseUrl != null) ? hmisBaseUrl.trim().replaceAll("/+$", "") : "";
+            if (root.isEmpty()) return "Error: HMIS base URL is not configured.";
+            String key = (hmisApiKey != null) ? hmisApiKey.trim() : "";
+            if (investigationId == null || investigationId.isEmpty()) return "Error: investigation_id is required.";
+            HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).build();
+
+            String basePath = root + "/api/investigations/" + investigationId + "/format";
+            String subPath;
+            javax.json.JsonObjectBuilder body = null;
+
+            switch (resourceType.toUpperCase()) {
+                case "ITEM": {
+                    switch (method.toUpperCase()) {
+                        case "LIST": subPath = basePath + "/items"; break;
+                        case "GET":
+                            if (itemId == null || itemId.isEmpty()) return "Error: item_id is required for ITEM GET.";
+                            subPath = basePath + "/items/" + itemId; break;
+                        case "POST":
+                            subPath = basePath + "/items";
+                            body = Json.createObjectBuilder();
+                            if (!name.isEmpty()) body.add("name", name);
+                            if (!code.isEmpty()) body.add("code", code);
+                            if (!description.isEmpty()) body.add("description", description);
+                            if (!orderNo.isEmpty()) body.add("orderNo", Integer.parseInt(orderNo));
+                            if (!ixItemType.isEmpty()) body.add("ixItemType", ixItemType);
+                            if (!ixItemValueType.isEmpty()) body.add("ixItemValueType", ixItemValueType);
+                            if (!automated.isEmpty()) body.add("automated", Boolean.parseBoolean(automated));
+                            if (!resultCode.isEmpty()) body.add("resultCode", resultCode);
+                            if (!formatPrefix.isEmpty()) body.add("formatPrefix", formatPrefix);
+                            if (!formatSuffix.isEmpty()) body.add("formatSuffix", formatSuffix);
+                            if (!htmltext.isEmpty()) body.add("htmltext", htmltext);
+                            if (!canNotApproveIfEmpty.isEmpty()) body.add("canNotApproveIfValueIsEmpty", Boolean.parseBoolean(canNotApproveIfEmpty));
+                            if (!absoluteLowValue.isEmpty()) body.add("absoluteLowValue", Double.parseDouble(absoluteLowValue));
+                            if (!absoluteHighValue.isEmpty()) body.add("absoluteHighValue", Double.parseDouble(absoluteHighValue));
+                            break;
+                        case "PUT":
+                            if (itemId == null || itemId.isEmpty()) return "Error: item_id is required for ITEM PUT.";
+                            subPath = basePath + "/items/" + itemId;
+                            body = Json.createObjectBuilder();
+                            if (!name.isEmpty()) body.add("name", name);
+                            if (!code.isEmpty()) body.add("code", code);
+                            if (!description.isEmpty()) body.add("description", description);
+                            if (!orderNo.isEmpty()) body.add("orderNo", Integer.parseInt(orderNo));
+                            if (!ixItemType.isEmpty()) body.add("ixItemType", ixItemType);
+                            if (!ixItemValueType.isEmpty()) body.add("ixItemValueType", ixItemValueType);
+                            if (!automated.isEmpty()) body.add("automated", Boolean.parseBoolean(automated));
+                            if (!resultCode.isEmpty()) body.add("resultCode", resultCode);
+                            if (!formatPrefix.isEmpty()) body.add("formatPrefix", formatPrefix);
+                            if (!formatSuffix.isEmpty()) body.add("formatSuffix", formatSuffix);
+                            if (!htmltext.isEmpty()) body.add("htmltext", htmltext);
+                            if (!canNotApproveIfEmpty.isEmpty()) body.add("canNotApproveIfValueIsEmpty", Boolean.parseBoolean(canNotApproveIfEmpty));
+                            if (!absoluteLowValue.isEmpty()) body.add("absoluteLowValue", Double.parseDouble(absoluteLowValue));
+                            if (!absoluteHighValue.isEmpty()) body.add("absoluteHighValue", Double.parseDouble(absoluteHighValue));
+                            break;
+                        case "DELETE":
+                            if (itemId == null || itemId.isEmpty()) return "Error: item_id is required for ITEM DELETE.";
+                            subPath = basePath + "/items/" + itemId; break;
+                        default: return "Error: Unsupported method for ITEM: " + method;
+                    }
+                    break;
+                }
+                case "VALUE": {
+                    switch (method.toUpperCase()) {
+                        case "LIST":
+                            if (itemId == null || itemId.isEmpty()) return "Error: item_id is required for VALUE LIST.";
+                            subPath = basePath + "/items/" + itemId + "/values"; break;
+                        case "POST":
+                            if (itemId == null || itemId.isEmpty()) return "Error: item_id is required for VALUE POST.";
+                            subPath = basePath + "/items/" + itemId + "/values";
+                            body = Json.createObjectBuilder();
+                            if (!name.isEmpty()) body.add("name", name);
+                            if (!code.isEmpty()) body.add("code", code);
+                            if (!orderNo.isEmpty()) body.add("orderNo", Integer.parseInt(orderNo));
+                            break;
+                        case "PUT":
+                            if (id == null || id.isEmpty()) return "Error: id is required for VALUE PUT.";
+                            subPath = basePath + "/values/" + id;
+                            body = Json.createObjectBuilder();
+                            if (!name.isEmpty()) body.add("name", name);
+                            if (!code.isEmpty()) body.add("code", code);
+                            if (!orderNo.isEmpty()) body.add("orderNo", Integer.parseInt(orderNo));
+                            break;
+                        case "DELETE":
+                            if (id == null || id.isEmpty()) return "Error: id is required for VALUE DELETE.";
+                            subPath = basePath + "/values/" + id; break;
+                        default: return "Error: Unsupported method for VALUE: " + method;
+                    }
+                    break;
+                }
+                case "CALCULATION": {
+                    switch (method.toUpperCase()) {
+                        case "LIST": subPath = basePath + "/calculations"; break;
+                        case "POST":
+                            subPath = basePath + "/calculations";
+                            body = Json.createObjectBuilder();
+                            if (!calIxItemId.isEmpty()) body.add("calIxItemId", Long.parseLong(calIxItemId));
+                            if (!valIxItemId.isEmpty()) body.add("valIxItemId", Long.parseLong(valIxItemId));
+                            if (!calculationType.isEmpty()) body.add("calculationType", calculationType);
+                            if (!constantValue.isEmpty()) body.add("constantValue", Double.parseDouble(constantValue));
+                            if (!maleConstantValue.isEmpty()) body.add("maleConstantValue", Double.parseDouble(maleConstantValue));
+                            if (!femaleConstantValue.isEmpty()) body.add("femaleConstantValue", Double.parseDouble(femaleConstantValue));
+                            if (!javascript.isEmpty()) body.add("javascript", javascript);
+                            if (!orderNo.isEmpty()) body.add("orderNo", Integer.parseInt(orderNo));
+                            break;
+                        case "PUT":
+                            if (id == null || id.isEmpty()) return "Error: id is required for CALCULATION PUT.";
+                            subPath = basePath + "/calculations/" + id;
+                            body = Json.createObjectBuilder();
+                            if (!calIxItemId.isEmpty()) body.add("calIxItemId", Long.parseLong(calIxItemId));
+                            if (!valIxItemId.isEmpty()) body.add("valIxItemId", Long.parseLong(valIxItemId));
+                            if (!calculationType.isEmpty()) body.add("calculationType", calculationType);
+                            if (!constantValue.isEmpty()) body.add("constantValue", Double.parseDouble(constantValue));
+                            if (!maleConstantValue.isEmpty()) body.add("maleConstantValue", Double.parseDouble(maleConstantValue));
+                            if (!femaleConstantValue.isEmpty()) body.add("femaleConstantValue", Double.parseDouble(femaleConstantValue));
+                            if (!javascript.isEmpty()) body.add("javascript", javascript);
+                            if (!orderNo.isEmpty()) body.add("orderNo", Integer.parseInt(orderNo));
+                            break;
+                        case "DELETE":
+                            if (id == null || id.isEmpty()) return "Error: id is required for CALCULATION DELETE.";
+                            subPath = basePath + "/calculations/" + id; break;
+                        default: return "Error: Unsupported method for CALCULATION: " + method;
+                    }
+                    break;
+                }
+                case "FLAG": {
+                    switch (method.toUpperCase()) {
+                        case "LIST": subPath = basePath + "/flags"; break;
+                        case "POST":
+                            subPath = basePath + "/flags";
+                            body = Json.createObjectBuilder();
+                            if (!valueItemId.isEmpty()) body.add("investigationItemOfValueTypeId", Long.parseLong(valueItemId));
+                            if (!flagItemId.isEmpty()) body.add("investigationItemOfFlagTypeId", Long.parseLong(flagItemId));
+                            if (!sex.isEmpty()) body.add("sex", sex);
+                            if (!fromAge.isEmpty()) body.add("fromAge", Long.parseLong(fromAge));
+                            if (!toAge.isEmpty()) body.add("toAge", Long.parseLong(toAge));
+                            if (!fromVal.isEmpty()) body.add("fromVal", Double.parseDouble(fromVal));
+                            if (!toVal.isEmpty()) body.add("toVal", Double.parseDouble(toVal));
+                            if (!flagMessage.isEmpty()) body.add("flagMessage", flagMessage);
+                            if (!highMessage.isEmpty()) body.add("highMessage", highMessage);
+                            if (!lowMessage.isEmpty()) body.add("lowMessage", lowMessage);
+                            if (!normalMessage.isEmpty()) body.add("normalMessage", normalMessage);
+                            if (!displayFlagMessage.isEmpty()) body.add("displayFlagMessage", Boolean.parseBoolean(displayFlagMessage));
+                            if (!displayHighMessage.isEmpty()) body.add("displayHighMessage", Boolean.parseBoolean(displayHighMessage));
+                            if (!displayLowMessage.isEmpty()) body.add("displayLowMessage", Boolean.parseBoolean(displayLowMessage));
+                            if (!displayNormalMessage.isEmpty()) body.add("displayNormalMessage", Boolean.parseBoolean(displayNormalMessage));
+                            break;
+                        case "PUT":
+                            if (id == null || id.isEmpty()) return "Error: id is required for FLAG PUT.";
+                            subPath = basePath + "/flags/" + id;
+                            body = Json.createObjectBuilder();
+                            if (!valueItemId.isEmpty()) body.add("investigationItemOfValueTypeId", Long.parseLong(valueItemId));
+                            if (!flagItemId.isEmpty()) body.add("investigationItemOfFlagTypeId", Long.parseLong(flagItemId));
+                            if (!sex.isEmpty()) body.add("sex", sex);
+                            if (!fromAge.isEmpty()) body.add("fromAge", Long.parseLong(fromAge));
+                            if (!toAge.isEmpty()) body.add("toAge", Long.parseLong(toAge));
+                            if (!fromVal.isEmpty()) body.add("fromVal", Double.parseDouble(fromVal));
+                            if (!toVal.isEmpty()) body.add("toVal", Double.parseDouble(toVal));
+                            if (!flagMessage.isEmpty()) body.add("flagMessage", flagMessage);
+                            if (!highMessage.isEmpty()) body.add("highMessage", highMessage);
+                            if (!lowMessage.isEmpty()) body.add("lowMessage", lowMessage);
+                            if (!normalMessage.isEmpty()) body.add("normalMessage", normalMessage);
+                            if (!displayFlagMessage.isEmpty()) body.add("displayFlagMessage", Boolean.parseBoolean(displayFlagMessage));
+                            if (!displayHighMessage.isEmpty()) body.add("displayHighMessage", Boolean.parseBoolean(displayHighMessage));
+                            if (!displayLowMessage.isEmpty()) body.add("displayLowMessage", Boolean.parseBoolean(displayLowMessage));
+                            if (!displayNormalMessage.isEmpty()) body.add("displayNormalMessage", Boolean.parseBoolean(displayNormalMessage));
+                            break;
+                        case "DELETE":
+                            if (id == null || id.isEmpty()) return "Error: id is required for FLAG DELETE.";
+                            subPath = basePath + "/flags/" + id; break;
+                        default: return "Error: Unsupported method for FLAG: " + method;
+                    }
+                    break;
+                }
+                case "DYNAMIC_LABEL": {
+                    switch (method.toUpperCase()) {
+                        case "LIST": subPath = basePath + "/dynamic-labels"; break;
+                        case "POST":
+                            subPath = basePath + "/dynamic-labels";
+                            body = Json.createObjectBuilder();
+                            if (!labelItemId.isEmpty()) body.add("investigationItemOfLabelTypeId", Long.parseLong(labelItemId));
+                            if (!sex.isEmpty()) body.add("sex", sex);
+                            if (!fromAge.isEmpty()) body.add("fromAge", Long.parseLong(fromAge));
+                            if (!toAge.isEmpty()) body.add("toAge", Long.parseLong(toAge));
+                            if (!flagMessage.isEmpty()) body.add("flagMessage", flagMessage);
+                            break;
+                        case "PUT":
+                            if (id == null || id.isEmpty()) return "Error: id is required for DYNAMIC_LABEL PUT.";
+                            subPath = basePath + "/dynamic-labels/" + id;
+                            body = Json.createObjectBuilder();
+                            if (!labelItemId.isEmpty()) body.add("investigationItemOfLabelTypeId", Long.parseLong(labelItemId));
+                            if (!sex.isEmpty()) body.add("sex", sex);
+                            if (!fromAge.isEmpty()) body.add("fromAge", Long.parseLong(fromAge));
+                            if (!toAge.isEmpty()) body.add("toAge", Long.parseLong(toAge));
+                            if (!flagMessage.isEmpty()) body.add("flagMessage", flagMessage);
+                            break;
+                        case "DELETE":
+                            if (id == null || id.isEmpty()) return "Error: id is required for DYNAMIC_LABEL DELETE.";
+                            subPath = basePath + "/dynamic-labels/" + id; break;
+                        default: return "Error: Unsupported method for DYNAMIC_LABEL: " + method;
+                    }
+                    break;
+                }
+                default:
+                    return "Error: Unsupported resource_type: " + resourceType
+                            + ". Allowed: ITEM, VALUE, CALCULATION, FLAG, DYNAMIC_LABEL.";
+            }
+
+            HttpRequest.Builder rb;
+            if ("DELETE".equalsIgnoreCase(method)) {
+                rb = HttpRequest.newBuilder().uri(URI.create(subPath)).DELETE();
+            } else if (body != null) {
+                String httpMethod = "POST".equalsIgnoreCase(method) ? "POST" : "PUT";
+                rb = HttpRequest.newBuilder().uri(URI.create(subPath))
+                        .method(httpMethod, HttpRequest.BodyPublishers.ofString(body.build().toString()))
+                        .header("Content-Type", "application/json");
+            } else {
+                rb = HttpRequest.newBuilder().uri(URI.create(subPath)).GET();
+            }
+            if (!key.isEmpty()) rb.header("Finance", key);
+            HttpResponse<String> resp = client.send(rb.build(), HttpResponse.BodyHandlers.ofString());
+            return "HTTP " + resp.statusCode() + "\n" + resp.body();
+        } catch (Exception e) {
+            return "Investigation Format API error: " + e.getMessage();
+        }
+    }
+
     public String buildSystemPrompt(String hmisApiBaseUrl, String userHmisApiKey, String githubBranch) {
         String branch = (githubBranch != null && !githubBranch.trim().isEmpty())
                 ? githubBranch.trim() : "development";
@@ -1665,7 +2102,7 @@ public class AnthropicApiService implements Serializable {
         }
 
         sb.append("## Tools Available to You\n");
-        sb.append("You have eight tools to ground your answers in the actual codebase, live configuration, clinical master data, collecting-centre fees, inward discount matrix entries, and investigation master records:\n\n");
+        sb.append("You have nine tools to ground your answers in the actual codebase, live configuration, clinical master data, collecting-centre fees, inward discount matrix entries, investigation master records, and investigation report formats:\n\n");
         sb.append("### search_github_code\n");
         sb.append("Searches the hmislk/hmis repository source code for files matching keywords. ");
         sb.append("Use this first when a user asks about system behaviour, page logic, or wants to understand how something works.\n\n");
@@ -1699,6 +2136,19 @@ public class AnthropicApiService implements Serializable {
           .append("so always check before creating to avoid duplicates. ")
           .append("Use PUT to update name, code, printName, reportType, or bypassSampleWorkflow. ")
           .append("Always confirm with the user before POST or PUT — these changes affect live investigation billing.\n\n");
+        sb.append("### manage_investigation_format\n");
+        sb.append("Manage the internal report format of an investigation: items (report fields like labels, values, ")
+          .append("calculations, flags), item values (dropdown options for List-type items), calculations (formulas ")
+          .append("that compute results from other fields), flags (reference range flags by age/sex that show high/low/normal), ")
+          .append("and dynamic labels (conditional text that changes based on patient age/sex). ")
+          .append("First look up the investigation ID using manage_investigations GET, then use this tool. ")
+          .append("resource_type: ITEM, VALUE, CALCULATION, FLAG, DYNAMIC_LABEL. ")
+          .append("method: LIST, GET, POST, PUT, DELETE. ")
+          .append("For ITEM POST, name and ix_item_type are required. For Value-type items, also set ix_item_value_type. ")
+          .append("For CALCULATION POST, cal_ix_item_id and calculation_type are required. ")
+          .append("For FLAG POST, investigation_item_of_value_type_id and investigation_item_of_flag_type_id are required. ")
+          .append("Always LIST items first to get the item IDs before creating calculations, flags, or dynamic labels. ")
+          .append("Always confirm with the user before POST, PUT, or DELETE.\n\n");
         sb.append("### manage_inward_rooms\n");
         sb.append("Manage inward room master data: room categories (/inward/room-categories), ")
           .append("rooms (/inward/rooms), and room facility charges — i.e. room fee configurations — (/inward/room-facility-charges). ")
@@ -1956,6 +2406,29 @@ public class AnthropicApiService implements Serializable {
                     {"GET", "/qb/jurList/{institution_code}/{last_return_grn_id}/{last_date}",  "Journal entries"},
                     {"GET", "/qb/cusPayList/{institution_code}/{last_payment_id}/{last_date}",  "Customer payment records"},
                     {"GET", "/qb/paymentreturn/{institution_code}/{last_return_payment_id}",    "Payment return / refund records"}
+                });
+
+        // ── SAP Integration ───────────────────────────────────────────────────
+        appendModule(sb, "SAP Integration - Billing", "/sap/billing",
+                "Push HMIS bills to SAP S/4HANA Cloud FI as journal entries, and receive payment confirmations from SAP. "
+                + "Requires SAP integration to be enabled via ConfigOption keys. "
+                + "All endpoints use the Finance header.",
+                null,
+                new String[][]{
+                    {"POST", "/sap/billing/push/{billId}",          "Push an HMIS bill to SAP FI as a journal entry (debit AR, credit revenue per line item)"},
+                    {"GET",  "/sap/billing/status/{billId}",        "Get the SAP push status and SAP document number for a bill"},
+                    {"POST", "/sap/billing/confirm",                "Receive a payment confirmation webhook from SAP (body: sapDocumentNumber, hmsBillReference, amount, currency, postingDate)"},
+                    {"GET",  "/sap/billing/confirm/status/{billId}", "Get the SAP payment confirmation status for a bill"}
+                });
+
+        appendModule(sb, "SAP Integration - Inventory", "/sap/inventory",
+                "Fetch SAP S/4HANA Cloud MM goods-receipt material documents and match them to HMIS pharmacy items. "
+                + "Read-only audit sync — matches SAP materials to HMIS Item master by code or barcode field (configurable). "
+                + "Does not create GRN bills; pharmacy GRN workflows handle actual stock updates. "
+                + "fromDate defaults to last-sync watermark or N-days-ago fallback; watermark advances only on forward syncs.",
+                null,
+                new String[][]{
+                    {"GET", "/sap/inventory/sync", "Trigger SAP MM goods-receipt sync. Query params: fromDate (yyyy-MM-dd, optional), toDate (yyyy-MM-dd, optional)"}
                 });
 
         // ── Clinical ──────────────────────────────────────────────────────────

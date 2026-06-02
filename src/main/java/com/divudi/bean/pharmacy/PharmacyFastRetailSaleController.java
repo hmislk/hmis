@@ -1407,7 +1407,7 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
             PharmaceuticalBillItem tmpPh = tbi.getPharmaceuticalBillItem();
             tbi.setPharmaceuticalBillItem(null);
 
-            if (tbi.getPrescription() != null) {
+            if (tbi.hasPrescription()) {
                 if (tbi.getPrescription().getId() == null) {
                     prescriptionFacade.create(tbi.getPrescription());
                 } else {
@@ -1493,7 +1493,7 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
                 getBillItemFacade().create(newBil);
             }
 
-            if (tbi.getPrescription() != null) {
+            if (tbi.hasPrescription()) {
                 if (tbi.getPrescription().getId() == null) {
                     prescriptionFacade.create(tbi.getPrescription());
                 } else {
@@ -1501,7 +1501,9 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
                 }
 
                 newBil.setPrescription(tbi.getPrescription());
-                tbi.getPrescription().setPatient(patient);
+                if (patient != null && patient.getId() != null) {
+                    tbi.getPrescription().setPatient(patient);
+                }
                 tbi.getPrescription().setCreatedAt(new Date());
                 tbi.getPrescription().setCreater(sessionController.getWebUser());
                 tbi.getPrescription().setInstitution(sessionController.getInstitution());
@@ -1652,13 +1654,10 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
             }
         }
         
-        if(configOptionApplicationController.getBooleanValueByKey("Enable blacklist patient management in the system", false) 
-                && configOptionApplicationController.getBooleanValueByKey("Enable blacklist patient management for Pharmacy from the system", false)){
-            if(getPatient().isBlacklisted()){
-                JsfUtil.addErrorMessage("This patient is blacklisted from the system. Can't Bill.");
-                billSettlingStarted = false;
-                return;
-            }
+        if (getPatient().isBlacklisted()) {
+            JsfUtil.addErrorMessage("This patient is blacklisted from the system. Can't Bill.");
+            billSettlingStarted = false;
+            return;
         }
 
         if (configOptionApplicationController.getBooleanValueByKey("Check for Allergies during Dispensing")) {
