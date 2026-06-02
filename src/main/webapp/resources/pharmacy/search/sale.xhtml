@@ -19,115 +19,112 @@
         COALESCE prevents nullable LEFT JOINs from silently dropping rows.
     -->
     <cc:implementation>
-        <h:panelGrid columns="3" styleClass="mb-2">
-            <h:outputLabel value="Bill No"/>
-            <h:outputLabel value="Net Total"/>
-            <h:outputLabel value="Patient Name"/>
-            <p:inputText autocomplete="off" value="#{searchController.searchKeyword.billNo}" />
-            <p:inputText autocomplete="off" value="#{searchController.searchKeyword.netTotal}"/>
-            <p:inputText autocomplete="off" value="#{searchController.searchKeyword.patientName}"/>
-        </h:panelGrid>
-
-        <p:commandButton ajax="false" value="Download" icon="fa fa-download"
-                         class="ui-button-success mb-2">
-            <p:dataExporter target="tblSale" type="xlsx" fileName="sale_bill_list"/>
-        </p:commandButton>
-
-        <p:dataTable rowIndexVar="i"
-                     id="tblSale"
-                     widgetVar="tblSale"
-                     value="#{pharmacyBillSearch.saleBillDtos}"
-                     var="dto"
-                     paginator="true"
-                     rows="10"
-                     paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                     rowsPerPageTemplate="10,20,50,100"
-                     emptyMessage="No Bills Found">
-
+        <p:panel>
             <f:facet name="header">
-                <h:outputLabel value="SALE BILL SEARCH"/>
+                <div style="display:flex;justify-content:space-between;align-items:center;width:100%;">
+                    <span>SALE BILL SEARCH</span>
+                    <p:commandButton ajax="false" value="Download" icon="fa fa-download"
+                                     styleClass="ui-button-success ui-button-sm">
+                        <p:dataExporter target="tblSale" type="xlsx" fileName="sale_bill_list"/>
+                    </p:commandButton>
+                </div>
             </f:facet>
 
-            <!-- Actions (not exported) -->
-            <p:column headerText="Actions" exportable="false" style="white-space:nowrap;">
-                <p:commandButton
-                    ajax="false"
-                    icon="fa fa-file-invoice"
-                    styleClass="ui-button-info ui-button-sm"
-                    title="View / Manage Bill"
-                    action="#{pharmacyBillSearch.navigatePharmacyReprintRetailBill()}">
-                    <f:setPropertyActionListener value="#{dto.id}" target="#{pharmacyBillSearch.billId}"/>
-                </p:commandButton>
-            </p:column>
+            <h:panelGrid columns="3" styleClass="mb-2">
+                <h:outputLabel value="Bill No"/>
+                <h:outputLabel value="Net Total"/>
+                <h:outputLabel value="Patient Name"/>
+                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.billNo}" />
+                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.netTotal}"/>
+                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.patientName}"/>
+            </h:panelGrid>
 
-            <p:column headerText="Bill No"
-                      sortBy="#{dto.deptId}"
-                      filterBy="#{dto.deptId}"
-                      filterMatchMode="contains">
-                <h:outputLabel value="#{dto.deptId}"/>
-            </p:column>
+            <div class="pharma-search-wrapper">
+                <p:dataTable rowIndexVar="i"
+                             id="tblSale"
+                             widgetVar="tblSale"
+                             value="#{pharmacyBillSearch.saleBillDtos}"
+                             var="dto"
+                             paginator="true"
+                             rows="10"
+                             paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                             rowsPerPageTemplate="10,20,50,100"
+                             emptyMessage="No Bills Found">
 
-            <p:column headerText="Billed At" sortBy="#{dto.createdAt}">
-                <h:outputLabel value="#{dto.createdAt}">
-                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
-                </h:outputLabel>
-                <h:panelGroup rendered="#{dto.cancelled}">
-                    <br/>
-                    <h:outputLabel style="color:red;" value="Cancelled"/>
-                </h:panelGroup>
-                <h:panelGroup rendered="#{dto.refunded}">
-                    <br/>
-                    <h:outputLabel style="color:orange;" value="Refunded"/>
-                </h:panelGroup>
-            </p:column>
+                    <p:column headerText="Bill No"
+                              sortBy="#{dto.deptId}"
+                              filterBy="#{dto.deptId}"
+                              filterMatchMode="contains">
+                        <h:outputLabel value="#{dto.deptId}"/>
+                    </p:column>
 
-            <p:column headerText="Billed By"
-                      sortBy="#{dto.creatorName}"
-                      filterBy="#{dto.creatorName}"
-                      filterMatchMode="contains">
-                <h:outputLabel value="#{dto.creatorName}"/>
-            </p:column>
+                    <p:column headerText="Billed At" sortBy="#{dto.createdAt}">
+                        <h:outputLabel value="#{dto.createdAt}">
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                        </h:outputLabel>
+                    </p:column>
 
-            <p:column headerText="Patient"
-                      sortBy="#{dto.patientName}"
-                      filterBy="#{dto.patientName}"
-                      filterMatchMode="contains">
-                <h:outputLabel value="#{dto.patientName}"/>
-            </p:column>
+                    <p:column headerText="Billed By"
+                              sortBy="#{dto.creatorName}"
+                              filterBy="#{dto.creatorName}"
+                              filterMatchMode="contains">
+                        <h:outputLabel value="#{dto.creatorName}"/>
+                    </p:column>
 
-            <p:column headerText="Payment Method"
-                      sortBy="#{dto.paymentMethod}"
-                      filterBy="#{dto.paymentMethod}"
-                      filterMatchMode="exact">
-                <f:facet name="filter">
-                    <p:selectOneMenu onchange="PF('tblSale').filter()" styleClass="custom-filter">
-                        <f:selectItem itemLabel="All" itemValue="#{null}" noSelectionOption="true"/>
-                        <f:selectItems value="#{enumController.paymentMethods}"/>
-                    </p:selectOneMenu>
-                </f:facet>
-                <h:outputLabel value="#{dto.paymentMethod}"/>
-            </p:column>
+                    <p:column headerText="Patient"
+                              sortBy="#{dto.patientName}"
+                              filterBy="#{dto.patientName}"
+                              filterMatchMode="contains">
+                        <h:outputLabel value="#{dto.patientName}"/>
+                    </p:column>
 
-            <p:column headerText="Discount Scheme"
-                      sortBy="#{dto.paymentSchemeName}"
-                      filterBy="#{dto.paymentSchemeName}"
-                      filterMatchMode="contains">
-                <h:outputLabel value="#{dto.paymentSchemeName}"/>
-            </p:column>
+                    <p:column headerText="Payment Method"
+                              sortBy="#{dto.paymentMethod}"
+                              filterBy="#{dto.paymentMethod}"
+                              filterMatchMode="exact">
+                        <f:facet name="filter">
+                            <p:selectOneMenu onchange="PF('tblSale').filter()" styleClass="custom-filter">
+                                <f:selectItem itemLabel="All" itemValue="#{null}" noSelectionOption="true"/>
+                                <f:selectItems value="#{enumController.paymentMethods}"/>
+                            </p:selectOneMenu>
+                        </f:facet>
+                        <h:outputLabel value="#{dto.paymentMethod}"/>
+                    </p:column>
 
-            <p:column headerText="Net Value"
-                      style="text-align:right;"
-                      sortBy="#{dto.netTotal}">
-                <h:outputLabel value="#{dto.netTotal}">
-                    <f:convertNumber pattern="#,##0.00"/>
-                </h:outputLabel>
-            </p:column>
+                    <p:column headerText="Discount Scheme"
+                              sortBy="#{dto.paymentSchemeName}"
+                              filterBy="#{dto.paymentSchemeName}"
+                              filterMatchMode="contains">
+                        <h:outputLabel value="#{dto.paymentSchemeName}"/>
+                    </p:column>
 
-            <p:column headerText="Status" exportable="false">
-                <p:badge value="Cancelled" severity="danger"  rendered="#{dto.cancelled}"/>
-                <p:badge value="Refunded"  severity="warning" rendered="#{dto.refunded}"/>
-            </p:column>
+                    <p:column headerText="Net Value"
+                              style="text-align:right;"
+                              sortBy="#{dto.netTotal}">
+                        <h:outputLabel value="#{dto.netTotal}">
+                            <f:convertNumber pattern="#,##0.00"/>
+                        </h:outputLabel>
+                    </p:column>
 
-        </p:dataTable>
+                    <p:column headerText="Status" exportable="false">
+                        <p:badge value="Cancelled" severity="danger"  rendered="#{dto.cancelled}"/>
+                        <p:badge value="Refunded"  severity="warning" rendered="#{dto.refunded}"/>
+                    </p:column>
+
+                    <!-- Actions (last column, not exported) -->
+                    <p:column headerText="Actions" exportable="false" style="white-space:nowrap;">
+                        <p:commandButton
+                            ajax="false"
+                            icon="fa fa-file-invoice"
+                            styleClass="ui-button-info ui-button-sm"
+                            title="View / Manage Bill"
+                            action="#{pharmacyBillSearch.navigatePharmacyReprintRetailBill()}">
+                            <f:setPropertyActionListener value="#{dto.id}" target="#{pharmacyBillSearch.billId}"/>
+                        </p:commandButton>
+                    </p:column>
+
+                </p:dataTable>
+            </div>
+        </p:panel>
     </cc:implementation>
 </html>
