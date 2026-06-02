@@ -21,111 +21,113 @@
         LEFT JOIN on referenceBill and creater prevents silent row drops.
     -->
     <cc:implementation>
-
-        <p:commandButton ajax="false" value="Download" icon="fa fa-download"
-                         styleClass="ui-button-success mb-2">
-            <p:dataExporter target="tblGrn" type="xlsx" fileName="grn_list"/>
-        </p:commandButton>
-
-        <p:dataTable rowIndexVar="i"
-                     id="tblGrn"
-                     widgetVar="tblGrn"
-                     value="#{pharmacyBillSearch.grnSearchDtos}"
-                     var="dto"
-                     paginator="true"
-                     rows="10"
-                     paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                     rowsPerPageTemplate="10,20,50,100"
-                     emptyMessage="No GRN Bills Found">
-
+        <p:panel>
             <f:facet name="header">
-                <h:outputLabel value="GOOD RECEIVE NOTE"/>
+                <div style="display:flex;justify-content:space-between;align-items:center;width:100%;">
+                    <span>GOOD RECEIVE NOTE</span>
+                    <p:commandButton ajax="false" value="Download" icon="fa fa-download"
+                                     styleClass="ui-button-success ui-button-sm">
+                        <p:dataExporter target="tblGrn" type="xlsx" fileName="grn_list"/>
+                    </p:commandButton>
+                </div>
             </f:facet>
 
-            <!-- Actions (not exported) -->
-            <p:column headerText="Actions" exportable="false" style="white-space:nowrap;">
-                <p:commandButton
-                    ajax="false"
-                    icon="fa fa-eye"
-                    styleClass="ui-button-info ui-button-sm"
-                    title="View GRN"
-                    action="#{pharmacyBillSearch.navigateToPharmacyGrnReprintById()}">
-                    <f:setPropertyActionListener value="#{dto.id}" target="#{pharmacyBillSearch.billId}"/>
-                </p:commandButton>
-            </p:column>
+            <div class="pharma-search-wrapper">
+                <p:dataTable rowIndexVar="i"
+                             id="tblGrn"
+                             widgetVar="tblGrn"
+                             value="#{pharmacyBillSearch.grnSearchDtos}"
+                             var="dto"
+                             paginator="true"
+                             rows="10"
+                             paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                             rowsPerPageTemplate="10,20,50,100"
+                             emptyMessage="No GRN Bills Found">
 
-            <p:column headerText="GRN No"
-                      sortBy="#{dto.deptId}"
-                      filterBy="#{dto.deptId}"
-                      filterMatchMode="contains">
-                <h:outputLabel value="#{dto.deptId}"/>
-            </p:column>
+                    <p:column headerText="GRN No"
+                              sortBy="#{dto.deptId}"
+                              filterBy="#{dto.deptId}"
+                              filterMatchMode="contains">
+                        <h:outputLabel value="#{dto.deptId}"/>
+                    </p:column>
 
-            <p:column headerText="PO No"
-                      sortBy="#{dto.referenceBillDeptId}"
-                      filterBy="#{dto.referenceBillDeptId}"
-                      filterMatchMode="contains">
-                <h:outputLabel value="#{dto.referenceBillDeptId}"/>
-            </p:column>
+                    <p:column headerText="PO No"
+                              sortBy="#{dto.referenceBillDeptId}"
+                              filterBy="#{dto.referenceBillDeptId}"
+                              filterMatchMode="contains">
+                        <h:outputLabel value="#{dto.referenceBillDeptId}"/>
+                    </p:column>
 
-            <p:column headerText="Invoice No"
-                      sortBy="#{dto.invoiceNumber}"
-                      filterBy="#{dto.invoiceNumber}"
-                      filterMatchMode="contains">
-                <h:outputLabel value="#{dto.invoiceNumber}"/>
-            </p:column>
+                    <p:column headerText="Invoice No"
+                              sortBy="#{dto.invoiceNumber}"
+                              filterBy="#{dto.invoiceNumber}"
+                              filterMatchMode="contains">
+                        <h:outputLabel value="#{dto.invoiceNumber}"/>
+                    </p:column>
 
-            <p:column headerText="Invoice Date" sortBy="#{dto.invoiceDate}">
-                <h:outputLabel value="#{dto.invoiceDate}">
-                    <f:convertDateTime timeZone="Asia/Colombo"
-                                       pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
-                </h:outputLabel>
-            </p:column>
+                    <p:column headerText="Invoice Date" sortBy="#{dto.invoiceDate}">
+                        <h:outputLabel value="#{dto.invoiceDate}">
+                            <f:convertDateTime timeZone="Asia/Colombo"
+                                               pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
+                        </h:outputLabel>
+                    </p:column>
 
-            <p:column headerText="Dealer Name"
-                      sortBy="#{dto.fromInstitutionName}"
-                      filterBy="#{dto.fromInstitutionName}"
-                      filterMatchMode="contains">
-                <h:outputLabel value="#{dto.fromInstitutionName}"/>
-            </p:column>
+                    <p:column headerText="Dealer Name"
+                              sortBy="#{dto.fromInstitutionName}"
+                              filterBy="#{dto.fromInstitutionName}"
+                              filterMatchMode="contains">
+                        <h:outputLabel value="#{dto.fromInstitutionName}"/>
+                    </p:column>
 
-            <p:column headerText="Billed At" sortBy="#{dto.createdAt}">
-                <h:outputLabel value="#{dto.createdAt}">
-                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
-                </h:outputLabel>
-            </p:column>
+                    <p:column headerText="Billed At" sortBy="#{dto.createdAt}">
+                        <h:outputLabel value="#{dto.createdAt}">
+                            <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                        </h:outputLabel>
+                    </p:column>
 
-            <p:column headerText="Billed By"
-                      sortBy="#{dto.creatorName}"
-                      filterBy="#{dto.creatorName}"
-                      filterMatchMode="contains">
-                <h:outputLabel value="#{dto.creatorName}"/>
-            </p:column>
+                    <p:column headerText="Billed By"
+                              sortBy="#{dto.creatorName}"
+                              filterBy="#{dto.creatorName}"
+                              filterMatchMode="contains">
+                        <h:outputLabel value="#{dto.creatorName}"/>
+                    </p:column>
 
-            <p:column headerText="Payment Method"
-                      sortBy="#{dto.paymentMethod}"
-                      filterBy="#{dto.paymentMethod}"
-                      filterMatchMode="contains">
-                <h:outputLabel value="#{dto.paymentMethod}"/>
-            </p:column>
+                    <p:column headerText="Payment Method"
+                              sortBy="#{dto.paymentMethod}"
+                              filterBy="#{dto.paymentMethod}"
+                              filterMatchMode="contains">
+                        <h:outputLabel value="#{dto.paymentMethod}"/>
+                    </p:column>
 
-            <p:column headerText="Net Value" sortBy="#{dto.netTotal}" style="text-align:right;">
-                <h:outputLabel value="#{dto.netTotal}">
-                    <f:convertNumber pattern="#,##0.00"/>
-                </h:outputLabel>
-            </p:column>
+                    <p:column headerText="Net Value" sortBy="#{dto.netTotal}" style="text-align:right;">
+                        <h:outputLabel value="#{dto.netTotal}">
+                            <f:convertNumber pattern="#,##0.00"/>
+                        </h:outputLabel>
+                    </p:column>
 
-            <p:column headerText="Sale Value" sortBy="#{dto.saleValue}" style="text-align:right;">
-                <h:outputLabel value="#{dto.saleValue}">
-                    <f:convertNumber pattern="#,##0.00"/>
-                </h:outputLabel>
-            </p:column>
+                    <p:column headerText="Sale Value" sortBy="#{dto.saleValue}" style="text-align:right;">
+                        <h:outputLabel value="#{dto.saleValue}">
+                            <f:convertNumber pattern="#,##0.00"/>
+                        </h:outputLabel>
+                    </p:column>
 
-            <p:column headerText="Status">
-                <h:outputText value="Cancelled" rendered="#{dto.cancelled}" style="display:none;"/>
-                <p:badge value="Cancelled" severity="danger" rendered="#{dto.cancelled}"/>
-            </p:column>
+                    <p:column headerText="Status">
+                        <h:outputText value="Cancelled" rendered="#{dto.cancelled}" style="display:none;"/>
+                        <p:badge value="Cancelled" severity="danger" rendered="#{dto.cancelled}"/>
+                    </p:column>
 
-        </p:dataTable>
+                    <!-- Actions (last column, not exported) -->
+                    <p:column headerText="Actions" exportable="false" style="width:6em;white-space:nowrap;">
+                        <p:commandButton
+                            ajax="false"
+                            icon="fa fa-eye"
+                            styleClass="ui-button-info ui-button-sm"
+                            title="View GRN"
+                            action="#{billSearch.navigateToViewBillByAtomicBillTypeByBillId(dto.id)}"/>
+                    </p:column>
+
+                </p:dataTable>
+            </div>
+        </p:panel>
     </cc:implementation>
 </html>
