@@ -266,9 +266,7 @@
                                 <p:dataExporter type="xlsx" target="tblListBillItemsDto"
                                                 fileName="#{pharmacyController.generateFileNameForReport('Consumption')}"/>
                             </p:commandButton>
-                            <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false"
-                                             value="Download" rendered="#{pharmacyController.reportType eq 'categoryWise'}"
-                                             action="#{pharmacyController.exportConsumptionReportCategoryWiseToExcel()}"/>
+                            <!-- Category-wise Excel export uses legacy departmentCategoryMap; new DTO export is future work -->
 
                             <p:commandButton class="ui-button-danger mx-1" icon="fas fa-file-pdf" ajax="false" value="PDF"
                                              rendered="#{pharmacyController.reportType eq 'summeryReport' or pharmacyController.reportType eq null or empty pharmacyController.reportType}"
@@ -285,10 +283,7 @@
                                 <p:dataExporter type="pdf" target="tblListBillItemsDto"
                                                 fileName="#{pharmacyController.generateFileNameForReport('Consumption')}"/>
                             </p:commandButton>
-                            <p:commandButton class="ui-button-danger mx-1" icon="fas fa-file-pdf" ajax="false" value="PDF"
-                                             rendered="#{pharmacyController.reportType eq 'categoryWise'}"
-                                             action="#{pharmacyController.exportConsumptionReportCategoryWiseToPdf()}">
-                            </p:commandButton>
+                            <!-- Category-wise PDF export uses legacy departmentCategoryMap; new DTO export is future work -->
                         </div>
 
                         <h:panelGroup rendered="#{pharmacyController.reportType eq 'summeryReport' and (pharmacyController.totalPurchase != 0 or pharmacyController.totalCostValue != 0 or pharmacyController.totalRetailValue != 0 or pharmacyController.totalSaleValue != 0)}" id="tbl1">
@@ -850,16 +845,16 @@
                                             <p:column headerText="#{map.key}" style="font-weight: bold; background: #70a4ca"
                                                       colspan="2"/>
                                             <p:column
-                                                headerText="#{pharmacyController.getDepartmentPurchaseTotalForConsumptionReport(map.key)}"
+                                                headerText="#{pharmacyController.getDtoDeptPurchaseTotalForConsumptionReport(map.key)}"
                                                 style="font-weight: bold; background: #70a4ca; text-align: right;"/>
                                             <p:column
-                                                headerText="#{pharmacyController.getDepartmentCostTotalForConsumptionReport(map.key)}"
+                                                headerText="#{pharmacyController.getDtoDeptCostTotalForConsumptionReport(map.key)}"
                                                 style="font-weight: bold; background: #70a4ca; text-align: right;"/>
                                             <p:column
-                                                headerText="#{pharmacyController.getDepartmentRetailTotalForConsumptionReport(map.key)}"
+                                                headerText="#{pharmacyController.getDtoDeptRetailTotalForConsumptionReport(map.key)}"
                                                 style="font-weight: bold; background: #70a4ca; text-align: right;"/>
                                             <p:column
-                                                headerText="#{pharmacyController.getDepartmentNetTotalForConsumptionReport(map.key)}"
+                                                headerText="#{pharmacyController.getDtoDeptNetTotalForConsumptionReport(map.key)}"
                                                 style="font-weight: bold; background: #70a4ca; text-align: right;"/>
                                         </p:row>
                                         <p:row>
@@ -881,16 +876,16 @@
                                             <p:row>
                                                 <p:column headerText="#{entry.key}" style="font-weight: bold;" colspan="2"/>
                                                 <p:column
-                                                    headerText="#{pharmacyController.getCategoryPurchaseTotalForConsumptionReport(map.key, entry.key)}"
+                                                    headerText="#{pharmacyController.getDtoCategoryPurchaseTotalForConsumptionReport(map.key, entry.key)}"
                                                     style="font-weight: bold; text-align: right;"/>
                                                 <p:column
-                                                    headerText="#{pharmacyController.getCategoryCostTotalForConsumptionReport(map.key, entry.key)}"
+                                                    headerText="#{pharmacyController.getDtoCategoryCostTotalForConsumptionReport(map.key, entry.key)}"
                                                     style="font-weight: bold; text-align: right;"/>
                                                 <p:column
-                                                    headerText="#{pharmacyController.getCategoryRetailTotalForConsumptionReport(map.key, entry.key)}"
+                                                    headerText="#{pharmacyController.getDtoCategoryRetailTotalForConsumptionReport(map.key, entry.key)}"
                                                     style="font-weight: bold; text-align: right;"/>
                                                 <p:column
-                                                    headerText="#{pharmacyController.getCategoryNetTotalForConsumptionReport(map.key, entry.key)}"
+                                                    headerText="#{pharmacyController.getDtoCategoryNetTotalForConsumptionReport(map.key, entry.key)}"
                                                     style="font-weight: bold; text-align: right;"/>
                                             </p:row>
                                         </p:columnGroup>
