@@ -8188,7 +8188,7 @@ public class PharmacyController implements Serializable {
         m.put("btas", billTypeAtomics);
         sql = "select i.bill.department,"
                 + " sum(i.netValue),"
-                + " sum(i.pharmaceuticalBillItem.qty) "
+                + " sum(i.qty) "
                 + " from BillItem i "
                 + " where i.bill.department.institution=:ins"
                 + " and i.item=:itm "
