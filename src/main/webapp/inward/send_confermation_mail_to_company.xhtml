@@ -163,10 +163,9 @@
 
                                 </p:panel>
 
-                                <common:patient_details_for_addmission 
-                                    controller="#{bhtEditController}" 
-                                    editable="false">
-                                </common:patient_details_for_addmission>
+                                <common:patient_details_view
+                                    patient="#{bhtEditController.patient}">
+                                </common:patient_details_view>
 
                                 <p:panel class="my-2">
                                     <f:facet name="header">
@@ -185,6 +184,7 @@
                                             yearNavigator="true"
                                             monthNavigator="true"
                                             showButtonBar="true"
+                                            readonly="true"
                                             timeInput="true">
                                             <f:ajax event="dateSelect" execute="@this" />
                                         </p:datePicker>
@@ -199,6 +199,7 @@
                                             id="refCon"
                                             completeMethod="#{consultantController.completeConsultant}" 
                                             var="mysp" 
+                                            readonly="true"
                                             itemLabel="#{mysp.person.name}" 
                                             itemValue="#{mysp}"
                                             styleClass="form-control w-100"
@@ -214,6 +215,7 @@
                                             value="#{bhtEditController.current.opdDoctor}" 
                                             completeMethod="#{doctorController.completeDoctor}"
                                             var="mys" 
+                                            readonly="true"
                                             itemLabel="#{mys.person.name}" 
                                             itemValue="#{mys}"
                                             styleClass="form-control w-100"
@@ -228,7 +230,8 @@
                                             completeMethod="#{doctorController.completeDoctor}" 
                                             var="ix"
                                             itemLabel="#{ix.person.name}" 
-                                            itemValue="#{ix}" 
+                                            itemValue="#{ix}"
+                                            readonly="true"
                                             styleClass="form-control w-100"
                                             class="w-100" 
                                             inputStyleClass="w-100">
@@ -242,6 +245,7 @@
                                             var="ix"
                                             class="w-100 form-control" 
                                             styleClass="w-100" 
+                                            readonly="true"
                                             inputStyleClass="w-100"
                                             itemLabel="#{ix.person.name}" 
                                             itemValue="#{ix}">
@@ -255,6 +259,7 @@
                                             var="refi"
                                             itemLabel="#{refi.name}" 
                                             itemValue="#{refi}" 
+                                            readonly="true"
                                             class="w-100 form-control" 
                                             styleClass="w-100" 
                                             inputStyleClass="w-100">
@@ -269,6 +274,7 @@
                                             value="#{bhtEditController.current.workplace}"
                                             completeMethod="#{institutionController.completeIns}" 
                                             var="mysp"
+                                            readonly="true"
                                             itemLabel="#{mysp.name}" 
                                             itemValue="#{mysp}" 
                                             class="w-100 form-control" 
@@ -277,17 +283,19 @@
                                         </p:autoComplete>
 
                                         <p:outputLabel  value="Referral Number"  />
-                                        <p:inputText  class="w-100"  value="#{bhtEditController.current.referralId}" ></p:inputText>
+                                        <p:inputText  class="w-100"  value="#{bhtEditController.current.referralId}" readonly="true" ></p:inputText>
 
                                         <p:outputLabel  value="Local/Foreigner"  />
                                         <p:selectBooleanCheckbox 
                                             value="#{bhtEditController.current.foriegner}" 
+                                            disabled="true"
                                             itemLabel="Foreigner">
                                         </p:selectBooleanCheckbox>
 
                                         <p:outputLabel  class="w-100"  value="Claimable/Non-Claimable"  />
                                         <p:selectBooleanCheckbox 
                                             value="#{bhtEditController.current.claimable}" 
+                                            disabled="true"
                                             itemLabel="Claimable">
                                         </p:selectBooleanCheckbox>
 

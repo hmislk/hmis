@@ -119,6 +119,7 @@ public class ConfigOptionApplicationController implements Serializable {
             loadDatabaseVersionConfigurationDefaults();
             loadAiChatConfigurationDefaults();
             loadStockHistoryArchiveConfigurationDefaults();
+            loadSapIntegrationConfigurationDefaults();
             enumController.resetPaymentMethods();
         } finally {
             isLoadingApplicationOptions = false;
@@ -1571,6 +1572,21 @@ public class ConfigOptionApplicationController implements Serializable {
 
     public void listApplicationOptions() {
         options = getApplicationOptions();
+    }
+
+    private void loadSapIntegrationConfigurationDefaults() {
+        getBooleanValueByKey("SAP Integration - Enabled", false);
+        getShortTextValueByKey("SAP Integration - Base URL", "");
+        getShortTextValueByKey("SAP Integration - Token URL", "");
+        getShortTextValueByKey("SAP Integration - Client ID", "");
+        getShortTextValueByKey("SAP Integration - Client Secret", "");
+        getShortTextValueByKey("SAP Integration - Material Code Field", "code");
+        getShortTextValueByKey("SAP Integration - Inventory Last Sync", "");
+        getShortTextValueByKey("SAP Integration - Inventory Sync From Days", "7");
+        getShortTextValueByKey("SAP Integration - Company Code", "");
+        getShortTextValueByKey("SAP Integration - AR Account", "");
+        getShortTextValueByKey("SAP Integration - Revenue Account", "");
+        getShortTextValueByKey("SAP Integration - Currency", "LKR");
     }
 
 }
