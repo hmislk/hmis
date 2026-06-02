@@ -8170,7 +8170,7 @@ public class PharmacyController implements Serializable {
 
     }
 
-    public List<Object[]> calDepartmentBhtIssue(Institution institution, BillType billType) {
+    public List<Object[]> calDepartmentBhtIssue(Institution institution, List<BillType> billTypes) {
         Item item;
 
         if (pharmacyItem instanceof Ampp) {
@@ -8185,14 +8185,14 @@ public class PharmacyController implements Serializable {
         m.put("ins", institution);
         m.put("frm", getFromDate());
         m.put("to", getToDate());
-        m.put("btp", billType);
+        m.put("btps", billTypes);
         sql = "select i.bill.department,"
                 + " sum(i.netValue),"
                 + " sum(i.pharmaceuticalBillItem.qty) "
                 + " from BillItem i "
                 + " where i.bill.department.institution=:ins"
                 + " and i.item=:itm "
-                + " and i.bill.billType=:btp "
+                + " and i.bill.billType in :btps "
                 + " and i.createdAt between :frm and :to  "
                 + " group by i.bill.department";
 
@@ -9015,7 +9015,7 @@ public class PharmacyController implements Serializable {
             List<DepartmentSale> list = new ArrayList<>();
             double totalValue = 0;
             double totalQty = 0;
-            List<Object[]> objs = calDepartmentBhtIssue(ins, BillType.PharmacyBhtPre);
+            List<Object[]> objs = calDepartmentBhtIssue(ins, java.util.Arrays.asList(BillType.PharmacyBhtPre, BillType.PharmacyIssue));
 
             for (Object[] obj : objs) {
                 DepartmentSale r = new DepartmentSale();
