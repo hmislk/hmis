@@ -4347,7 +4347,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
     }
 
     private String personName(Person person) {
-        return person != null && person.getName() != null ? person.getName() : "";
+        return person != null && person.getNameWithTitle() != null ? person.getNameWithInitials() : "";
     }
 
     private String webUserName(WebUser webUser) {
