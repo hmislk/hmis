@@ -169,13 +169,13 @@
                                                 <h:outputLabel value="#{vt.itemTypeName}" />
                                             </p:column>
                                             <p:column headerText="Pack Size" style="padding: 6px;">
-                                                <h:outputText value="#{(vt.dblValue ne null and vt.dblValue gt 0) ? vt.dblValue : 1}">
+                                                <h:outputText value="#{((vt.itemTypeName eq 'Ampp' or vt.itemTypeName eq 'Vmpp') and vt.dblValue ne null and vt.dblValue gt 0) ? vt.dblValue : 1}">
                                                     <f:convertNumber pattern="0.#" />
                                                 </h:outputText>
                                             </p:column>
                                             <p:ajax event="itemSelect"
                                                     listener="#{transferRequestController.populateRatesOnItemSelect}"
-                                                    update="txtLineCostRate txtLineGrossRate txtLineNetValue requestTotals focusQty selDepartmentType"/>
+                                                    update="txtLineCostRate panelRateInput panelValueInput requestTotals focusQty selDepartmentType"/>
                                         </p:autoComplete>
                                     </div>
                                     <div class="col-1">
@@ -183,27 +183,27 @@
                                         <p:inputText id="txtQty" autocomplete="off" class="w-100"
                                                      value="#{transferRequestController.currentBillItem.qty}"
                                                      onfocus="this.select();">
-                                            <p:ajax event="keyup" listener="#{transferRequestController.onCurrentQtyChange}" update="txtLineNetValue requestTotals" />
+                                            <p:ajax event="keyup" listener="#{transferRequestController.onCurrentQtyChange}" update="panelValueInput requestTotals" />
                                         </p:inputText>
                                     </div>
-                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Stock Request - Show Rate and Value', false) and webUserController.hasPrivilege('StockRequestViewRates')}">
+                                    <h:panelGroup id="panelRateInput" rendered="#{configOptionApplicationController.getBooleanValueByKey('Stock Request - Show Rate and Value', false) and webUserController.hasPrivilege('StockRequestViewRates')}">
                                         <div class="col-1" >
                                             <p:outputLabel value="Rate" for="txtLineGrossRate"/>
                                             <p:inputText id="txtLineGrossRate" class="w-100 text-end"
                                                          value="#{transferRequestController.currentBillItem.billItemFinanceDetails.lineGrossRate}">
                                                 <f:convertNumber pattern="#,##0.00" />
-                                                <p:ajax event="keyup" listener="#{transferRequestController.onCurrentLineGrossRateChange}" update="txtLineNetValue requestTotals"/>
+                                                <p:ajax event="keyup" listener="#{transferRequestController.onCurrentLineGrossRateChange}" update="panelValueInput requestTotals"/>
                                             </p:inputText>
                                         </div>
                                     </h:panelGroup>
-                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Stock Request - Show Rate and Value', false) and webUserController.hasPrivilege('StockRequestViewRates')}" >
+                                    <h:panelGroup id="panelValueInput" rendered="#{configOptionApplicationController.getBooleanValueByKey('Stock Request - Show Rate and Value', false) and webUserController.hasPrivilege('StockRequestViewRates')}" >
                                         <div class="col-1">
                                             <p:outputLabel value="Value" for="txtLineNetValue"/>
                                             <p:inputText id="txtLineNetValue" class="w-100 text-end"
                                                          value="#{transferRequestController.currentBillItem.billItemFinanceDetails.lineNetTotal}">
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </p:inputText>
-                                        </div>      
+                                        </div>
                                     </h:panelGroup>
 
                                     <div class="col-1">
@@ -214,7 +214,7 @@
                                             class="ui-button-success w-100"
                                             action="#{transferRequestController.addItem}"
                                             process="@form"
-                                            update="itemAutoComplete txtQty txtLineGrossRate txtLineNetValue itemList requestTotals focusItem"/>
+                                            update="itemAutoComplete txtQty panelRateInput panelValueInput itemList requestTotals focusItem"/>
                                     </div>
                                 </div>
                                 <p:focus id="focusQty" for="txtQty" ></p:focus>
