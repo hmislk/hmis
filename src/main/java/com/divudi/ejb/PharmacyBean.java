@@ -9,6 +9,7 @@ import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillNumberSuffix;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.HistoryType;
 import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.ItemBatchQty;
 import com.divudi.core.data.StockQty;
@@ -1567,6 +1568,7 @@ public class PharmacyBean {
         Date now = new Date();
         Calendar cal = Calendar.getInstance();
 
+        sh.setHistoryType(resolveStockHistoryType(phItem));
         sh.setFromDate(now);
         sh.setPbItem(phItem);
         sh.setHxDate(cal.get(Calendar.DATE));
@@ -1651,6 +1653,28 @@ public class PharmacyBean {
         getPharmaceuticalBillItemFacade().editAndCommit(phItem);
     }
 
+    private HistoryType resolveStockHistoryType(PharmaceuticalBillItem phItem) {
+        if (phItem == null || phItem.getBillItem() == null || phItem.getBillItem().getBill() == null) {
+            return null;
+        }
+        BillType bt = phItem.getBillItem().getBill().getBillType();
+        if (bt == null) return null;
+        switch (bt) {
+            case PharmacySale:
+            case PharmacySaleWithoutStock:
+                return HistoryType.Sale;
+            case PharmacyIssue:
+            case PharmacyTransferIssue:
+                return HistoryType.Issue;
+            case PharmacyGrnBill:
+            case PharmacyGrnBillImport:
+            case PharmacyGrnReturn:
+            case PharmacyTransferReceive:
+                return HistoryType.GoodReceive;
+            default:
+                return HistoryType.Stock;
+        }
+    }
 
     public void addToStockHistoryForCosting(BillItem billItem, Stock stock, Department d) {
         if (billItem == null) {
@@ -1776,6 +1800,7 @@ public class PharmacyBean {
         }
 
         StockHistory sh = new StockHistory();
+        sh.setHistoryType(resolveStockHistoryType(phItem));
         sh.setFromDate(Calendar.getInstance().getTime());
         sh.setPbItem(phItem);
         sh.setHxDate(Calendar.getInstance().get(Calendar.DATE));

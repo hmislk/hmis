@@ -845,6 +845,8 @@ public class TransferIssueForRequestsController implements Serializable {
             bill.getBillFinanceDetails().setLineGrossTotal(lineGrossTotal);
             bill.getBillFinanceDetails().setNetTotal(netTotal);
             bill.getBillFinanceDetails().setLineNetTotal(lineNetTotal);
+            bill.getBillFinanceDetails().setBillNetTotal(BigDecimal.ZERO);
+            bill.getBillFinanceDetails().setBillGrossTotal(BigDecimal.ZERO);
         }
 
 //        getBillFacade().edit(bill);
