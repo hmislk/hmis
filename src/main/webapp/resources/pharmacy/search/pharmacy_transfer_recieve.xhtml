@@ -14,7 +14,13 @@
     <cc:implementation>
         <p:panel>
             <f:facet name="header">
-                <span>Pharmacy Transfer Receive</span>
+                <div style="display:flex;justify-content:space-between;align-items:center;width:100%;">
+                    <span>Pharmacy Transfer Receive</span>
+                    <p:commandButton ajax="false" value="Download" icon="fa fa-download"
+                                     styleClass="ui-button-success ui-button-sm">
+                        <p:dataExporter target="tblBills" type="xlsx" fileName="pharmacy_transfer_receive"/>
+                    </p:commandButton>
+                </div>
             </f:facet>
 
             <h:panelGrid columns="4" styleClass="mb-2">

@@ -81,7 +81,7 @@
 
                     <p:column headerText="Billed At" sortBy="#{dto.createdAt}">
                         <h:outputLabel value="#{dto.createdAt}">
-                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                            <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                         </h:outputLabel>
                     </p:column>
 
@@ -117,7 +117,7 @@
                     </p:column>
 
                     <!-- Actions (last column, not exported) -->
-                    <p:column headerText="Actions" exportable="false" style="white-space:nowrap;">
+                    <p:column headerText="Actions" exportable="false" style="width:6em;white-space:nowrap;">
                         <p:commandButton
                             ajax="false"
                             icon="fa fa-eye"
