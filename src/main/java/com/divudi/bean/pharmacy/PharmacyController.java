@@ -3995,7 +3995,10 @@ public class PharmacyController implements Serializable {
 
         for (BillTypeAtomic billType : billTypeAtomics) {
             Map<String, Object> parameters = new HashMap<>();
+            // [0]=sourceDept [1]=consumptionDept [2]=category [3]=item
+            // [4]=purchaseVal [5]=costVal [6]=retailVal [7]=netTotal [8]=qty
             String jpql = "SELECT "
+                    + "b.department.name, "
                     + "b.toDepartment.name, "
                     + "bi.item.category.name, "
                     + "bi.item.name, "
@@ -4033,6 +4036,10 @@ public class PharmacyController implements Serializable {
                 jpql += "AND bi.item.category = :category ";
                 parameters.put("category", category);
             }
+            if (dosageForm != null) {
+                jpql += "AND bi.item.dosageForm = :df ";
+                parameters.put("df", dosageForm);
+            }
             if (item != null) {
                 jpql += "AND bi.item = :item ";
                 parameters.put("item", item);
@@ -4046,8 +4053,8 @@ public class PharmacyController implements Serializable {
                 parameters.put("departmentTypes", selectedDepartmentTypes);
             }
 
-            jpql += "GROUP BY b.toDepartment.name, bi.item.category.name, bi.item.name "
-                    + "ORDER BY b.toDepartment.name, bi.item.category.name, bi.item.name";
+            jpql += "GROUP BY b.department.name, b.toDepartment.name, bi.item.category.name, bi.item.name "
+                    + "ORDER BY b.department.name, b.toDepartment.name, bi.item.category.name, bi.item.name";
 
             try {
                 List<Object[]> results = getBillItemFacade().findObjectsArrayByJpql(jpql, parameters, TemporalType.TIMESTAMP);
@@ -4055,17 +4062,18 @@ public class PharmacyController implements Serializable {
                 double qtySign = consumptionQtySign(billType);
 
                 for (Object[] row : results) {
-                    String deptName = (String) row[0];
-                    String catName = (String) row[1];
-                    String iName = (String) row[2];
-                    Double purchase = row[3] != null ? valueSign * ((Number) row[3]).doubleValue() : 0.0;
-                    Double cost = row[4] != null ? valueSign * ((Number) row[4]).doubleValue() : 0.0;
-                    Double retail = row[5] != null ? valueSign * ((Number) row[5]).doubleValue() : 0.0;
-                    Double net = row[6] != null ? ((Number) row[6]).doubleValue() : 0.0;
-                    Double qty = row[7] != null ? qtySign * ((Number) row[7]).doubleValue() : 0.0;
+                    String sourceDeptName = (String) row[0];
+                    String deptName = (String) row[1];
+                    String catName = (String) row[2];
+                    String iName = (String) row[3];
+                    Double purchase = row[4] != null ? valueSign * ((Number) row[4]).doubleValue() : 0.0;
+                    Double cost = row[5] != null ? valueSign * ((Number) row[5]).doubleValue() : 0.0;
+                    Double retail = row[6] != null ? valueSign * ((Number) row[6]).doubleValue() : 0.0;
+                    Double net = row[7] != null ? ((Number) row[7]).doubleValue() : 0.0;
+                    Double qty = row[8] != null ? qtySign * ((Number) row[8]).doubleValue() : 0.0;
 
                     ConsumptionCategoryItemDto dto = new ConsumptionCategoryItemDto(
-                            deptName, catName, iName, qty, purchase, cost, retail, net);
+                            sourceDeptName, deptName, catName, iName, qty, purchase, cost, retail, net);
                     allItems.add(dto);
                 }
             } catch (Exception e) {
@@ -4073,14 +4081,14 @@ public class PharmacyController implements Serializable {
             }
         }
 
-        // Aggregate by dept + category + item
+        // Aggregate by sourceDept + consumptionDept + category + item
         Map<String, ConsumptionCategoryItemDto> aggregated = new LinkedHashMap<>();
         for (ConsumptionCategoryItemDto dto : allItems) {
-            String key = dto.getDepartmentName() + "||" + dto.getCategoryName() + "||" + dto.getItemName();
+            String key = dto.getSourceDepartmentName() + "||" + dto.getDepartmentName() + "||" + dto.getCategoryName() + "||" + dto.getItemName();
             ConsumptionCategoryItemDto existing = aggregated.get(key);
             if (existing == null) {
                 aggregated.put(key, new ConsumptionCategoryItemDto(
-                        dto.getDepartmentName(), dto.getCategoryName(), dto.getItemName(),
+                        dto.getSourceDepartmentName(), dto.getDepartmentName(), dto.getCategoryName(), dto.getItemName(),
                         dto.getQty(), dto.getTotalPurchaseValue(), dto.getTotalCostValue(),
                         dto.getTotalRetailValue(), dto.getNetTotal()));
             } else {
@@ -4094,26 +4102,37 @@ public class PharmacyController implements Serializable {
 
         List<ConsumptionCategoryItemDto> aggregatedList = new ArrayList<>(aggregated.values());
 
-        // Build category map for categoryWise view
+        // consumptionCategoryDtoMap: consumptionDept -> category -> items (for categoryWise view)
         Map<String, Map<String, List<ConsumptionCategoryItemDto>>> catMap = new TreeMap<>();
-        // Build department totals (scalar map) for summary view
+        // departmentTotals: sourceDept -> consumptionDept -> [purchase,cost,retail,net] (mirrors legacy summary)
         Map<String, Map<String, Double[]>> deptTotals = new TreeMap<>();
+        // pharmacyTotals: sourceDept -> [purchase,cost,retail,net] (for excel/pdf export)
+        Map<String, Double[]> pharmTotals = new TreeMap<>();
 
         for (ConsumptionCategoryItemDto dto : aggregatedList) {
+            String sourceDeptName = dto.getSourceDepartmentName();
             String deptName = dto.getDepartmentName();
             String catName = dto.getCategoryName();
             if (deptName == null || deptName.trim().isEmpty()) continue;
             if (catName == null || catName.trim().isEmpty()) continue;
             if (dto.getQty() == 0.0) continue;
 
+            // Category map: consumptionDept -> category -> items
             catMap.computeIfAbsent(deptName, k -> new TreeMap<>())
                     .computeIfAbsent(catName, k -> new ArrayList<>())
                     .add(dto);
 
-            deptTotals.computeIfAbsent(deptName, k -> new TreeMap<>())
-                    .merge(catName,
-                            new Double[]{dto.getTotalPurchaseValue(), dto.getTotalCostValue(), dto.getTotalRetailValue(), dto.getNetTotal()},
-                            (ex, nv) -> new Double[]{ex[0] + nv[0], ex[1] + nv[1], ex[2] + nv[2], ex[3] + nv[3]});
+            if (sourceDeptName != null && !sourceDeptName.trim().isEmpty()) {
+                // Summary map: sourceDept -> consumptionDept -> [values]
+                deptTotals.computeIfAbsent(sourceDeptName, k -> new TreeMap<>())
+                        .merge(deptName,
+                                new Double[]{dto.getTotalPurchaseValue(), dto.getTotalCostValue(), dto.getTotalRetailValue(), dto.getNetTotal()},
+                                (ex, nv) -> new Double[]{ex[0] + nv[0], ex[1] + nv[1], ex[2] + nv[2], ex[3] + nv[3]});
+                // Export totals: sourceDept -> [values]
+                pharmTotals.merge(sourceDeptName,
+                        new Double[]{dto.getTotalPurchaseValue(), dto.getTotalCostValue(), dto.getTotalRetailValue(), dto.getNetTotal()},
+                        (ex, nv) -> new Double[]{ex[0] + nv[0], ex[1] + nv[1], ex[2] + nv[2], ex[3] + nv[3]});
+            }
 
             totalPurchase += dto.getTotalPurchaseValue();
             totalCostValue += dto.getTotalCostValue();
@@ -4123,6 +4142,7 @@ public class PharmacyController implements Serializable {
 
         consumptionCategoryDtoMap = catMap;
         setDepartmentTotals(deptTotals);
+        setPharmacyTotals(pharmTotals);
     }
 
     private void resetFields() {
