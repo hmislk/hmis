@@ -5,6 +5,8 @@
 package com.divudi.service.archival;
 
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
@@ -65,15 +67,16 @@ public class ItemBatchArchivalBatchTx {
 
         // Step 1 — copy ItemBatch rows to archive, skipping any that gained stock
         // between fetchNextBatchIds() and this transaction (race condition guard).
-        String archivedSubquery = "SELECT ID FROM " + itemBatchArchive + " WHERE ID IN (:ids)";
+        String placeholders = placeholdersFor(ids);
+        String archivedSubquery = "SELECT ID FROM " + itemBatchArchive + " WHERE ID IN (" + placeholders + ")";
         Query q1 = em.createNativeQuery(
                 "INSERT INTO " + itemBatchArchive + " (" + itemBatchCols + ", ARCHIVEDAT) "
                 + "SELECT " + itemBatchCols + ", NOW() FROM " + itemBatchTable
-                + " WHERE ID IN (:ids)"
+                + " WHERE ID IN (" + placeholders + ")"
                 + " AND NOT EXISTS ("
                 + "   SELECT 1 FROM " + stockTable
                 + "   WHERE ITEMBATCH_ID = " + itemBatchTable + ".ID AND STOCK > 0)");
-        q1.setParameter("ids", ids);
+        bindIds(q1, ids);
         q1.executeUpdate();
 
         // Steps 2-6 operate only on IDs actually inserted in step 1, so any batch
@@ -84,7 +87,7 @@ public class ItemBatchArchivalBatchTx {
                 "INSERT INTO " + stockArchive + " (" + stockCols + ", ARCHIVEDAT) "
                 + "SELECT " + stockCols + ", NOW() FROM " + stockTable
                 + " WHERE ITEMBATCH_ID IN (" + archivedSubquery + ")");
-        q2.setParameter("ids", ids);
+        bindIds(q2, ids);
         q2.executeUpdate();
 
         // Step 3 — record archive pointer on PBI before releasing the live FK
@@ -92,7 +95,7 @@ public class ItemBatchArchivalBatchTx {
                 "UPDATE " + pbiTable
                 + " SET ARCHIVEDITEMBATCH_ID = ITEMBATCH_ID"
                 + " WHERE ITEMBATCH_ID IN (" + archivedSubquery + ")");
-        q3.setParameter("ids", ids);
+        bindIds(q3, ids);
         q3.executeUpdate();
 
         // Step 4 — nullify the live ItemBatch FK on PBI so the DELETE can proceed
@@ -100,21 +103,33 @@ public class ItemBatchArchivalBatchTx {
                 "UPDATE " + pbiTable
                 + " SET ITEMBATCH_ID = NULL"
                 + " WHERE ITEMBATCH_ID IN (" + archivedSubquery + ")");
-        q4.setParameter("ids", ids);
+        bindIds(q4, ids);
         q4.executeUpdate();
 
         // Step 5 — delete live Stock rows
         Query q5 = em.createNativeQuery(
                 "DELETE FROM " + stockTable
                 + " WHERE ITEMBATCH_ID IN (" + archivedSubquery + ")");
-        q5.setParameter("ids", ids);
+        bindIds(q5, ids);
         q5.executeUpdate();
 
         // Step 6 — delete live ItemBatch rows (PBI FK nullified in step 4)
         Query q6 = em.createNativeQuery(
                 "DELETE FROM " + itemBatchTable
                 + " WHERE ID IN (" + archivedSubquery + ")");
-        q6.setParameter("ids", ids);
+        bindIds(q6, ids);
         return q6.executeUpdate();
+    }
+
+    private static String placeholdersFor(List<Long> ids) {
+        return IntStream.range(0, ids.size())
+                .mapToObj(i -> "?")
+                .collect(Collectors.joining(","));
+    }
+
+    private static void bindIds(Query query, List<Long> ids) {
+        for (int i = 0; i < ids.size(); i++) {
+            query.setParameter(i + 1, ids.get(i));
+        }
     }
 }

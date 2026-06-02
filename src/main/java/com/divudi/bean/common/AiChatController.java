@@ -74,6 +74,7 @@ public class AiChatController implements Serializable {
 
     // Input state
     private String userInput;
+    private transient UploadedFile pendingAttachmentFile;
     private String pendingAttachmentBase64;
     private String pendingAttachmentMimeType;
     private String pendingAttachmentName;
@@ -167,6 +168,9 @@ public class AiChatController implements Serializable {
         LOG.info("sendMessage() called");
         if (currentConversation == null) {
             startNewConversation();
+        }
+        if (!readPendingAttachmentFile()) {
+            return;
         }
         if ((userInput == null || userInput.trim().isEmpty()) && pendingAttachmentBase64 == null) {
             JsfUtil.addErrorMessage("Please enter a message or attach a file.");
@@ -264,23 +268,41 @@ public class AiChatController implements Serializable {
     }
 
     public void handleFileUpload(FileUploadEvent event) {
-        UploadedFile file = event.getFile();
-        if (file == null) {
+        if (event == null) {
             return;
         }
+        storeAttachment(event.getFile());
+    }
+
+    private boolean readPendingAttachmentFile() {
+        if (pendingAttachmentFile == null || pendingAttachmentFile.getSize() <= 0) {
+            return true;
+        }
+        return storeAttachment(pendingAttachmentFile);
+    }
+
+    private boolean storeAttachment(UploadedFile file) {
+        if (file == null) {
+            return true;
+        }
         if (file.getSize() > MAX_ATTACHMENT_BYTES) {
+            clearPendingAttachment();
             JsfUtil.addErrorMessage("Attachment is too large. Maximum allowed size is 5 MB.");
-            return;
+            return false;
         }
         try (InputStream is = file.getInputStream()) {
             byte[] bytes = is.readAllBytes();
             pendingAttachmentBase64 = Base64.getEncoder().encodeToString(bytes);
             pendingAttachmentMimeType = file.getContentType();
             pendingAttachmentName = file.getFileName();
+            pendingAttachmentFile = null;
             JsfUtil.addSuccessMessage("File attached: " + file.getFileName());
+            return true;
         } catch (IOException e) {
+            clearPendingAttachment();
             LOG.log(Level.SEVERE, "Error reading uploaded file", e);
             JsfUtil.addErrorMessage("Failed to read uploaded file: " + e.getMessage());
+            return false;
         }
     }
 
@@ -367,6 +389,7 @@ public class AiChatController implements Serializable {
     }
 
     private void clearPendingAttachment() {
+        pendingAttachmentFile = null;
         pendingAttachmentBase64 = null;
         pendingAttachmentMimeType = null;
         pendingAttachmentName = null;
@@ -423,6 +446,14 @@ public class AiChatController implements Serializable {
 
     public void setUserInput(String userInput) {
         this.userInput = userInput;
+    }
+
+    public UploadedFile getPendingAttachmentFile() {
+        return pendingAttachmentFile;
+    }
+
+    public void setPendingAttachmentFile(UploadedFile pendingAttachmentFile) {
+        this.pendingAttachmentFile = pendingAttachmentFile;
     }
 
     public String getPendingAttachmentName() {
