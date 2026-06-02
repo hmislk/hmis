@@ -12,6 +12,7 @@
         xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod">
 
     <ui:define name="admin">
+        <f:event type="preRenderView" listener="#{financialTransactionController.redirectIfShiftNotStarted()}"/>
         <h:panelGroup >
             <h:form  >
                 <p:growl id="growl" showDetail="true" />

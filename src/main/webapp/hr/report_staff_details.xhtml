@@ -4,153 +4,218 @@
                 xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:f="http://xmlns.jcp.org/jsf/core"            
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns:hr="http://xmlns.jcp.org/jsf/composite/autocomplete">
+
     <ui:define name="content">
-        <h:panelGroup >
-            <h:form  >
+
+        <h:panelGroup>
+            <h:form styleClass="staff-details-form">
+
                 <p:growl />
-                <p:panel header="Staff Details Report" >
 
-                    <h:panelGrid columns="5" >
+                <h:outputStylesheet>
+                    .staff-details-form {
+                        padding: 2rem 1.75rem;
+                    }
 
-                        <p:selectOneMenu id="mnuCat" value="#{formFormatController.formCategory}" >
-                            <f:selectItem itemLabel="Select Form" ></f:selectItem>
-                            <f:selectItems value="#{formFormatController.items}" var="rf" itemLabel="#{rf.name}" itemValue="#{rf}" />
-                        </p:selectOneMenu>
+                    .page-header {
+                        margin-bottom: 1.75rem;
+                    }
 
-                        <hr:institution value="#{hrReportController.reportKeyWord.institution}" id="inst"/>
-                        <hr:department value="#{hrReportController.reportKeyWord.department}" id="dept"/>
+                    .page-title {
+                        font-size: 18px;
+                        font-weight: 600;
+                        margin: 0 0 4px 0;
+                    }
 
-                        <p:commandButton ajax="false" value="Process" action="#{formFormatController.fillStaffDetailReport()}" ></p:commandButton>
+                    .page-subtitle {
+                        font-size: 13px;
+                        color: #888;
+                        margin: 0;
+                    }
 
+                    .controls-panel .ui-panel-content {
+                        padding: 1.5rem 1.75rem !important;
+                    }
 
-                        <h:outputScript library="js" name="excellentexport.js" ></h:outputScript>
-                        <a download="staff_detail.xls" href="#" onclick="return ExcellentExport.excel(this, 'tbl', 'Sheet1');"
-                           style="padding: .3em 1em;  background: #D7D0C0; " 
-                           styleClass="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only ui-button-text ui-c noPrintButton" >Export to Excel</a>
+                    .controls-grid {
+                        display: flex;
+                        flex-direction: column;
+                        gap: 1.25rem;
+                    }
 
-                    </h:panelGrid>
+                    .fields-grid {
+                        display: grid;
+                        grid-template-columns: repeat(2, 1fr);
+                        gap: 1rem 1.5rem;
+                    }
 
+                    .field-group {
+                        display: flex;
+                        flex-direction: column;
+                        gap: 6px;
+                    }
 
-                    <table class="standardTable" id="tbl" >
+                    .field-label {
+                        font-size: 11.5px !important;
+                        font-weight: 600 !important;
+                        text-transform: uppercase;
+                        letter-spacing: 0.05em;
+                        color: #888 !important;
+                    }
+
+                    .controls-actions {
+                        display: flex;
+                        gap: 10px;
+                        align-items: center;
+                        flex-wrap: wrap;
+                    }
+
+                    .btn-action {
+                        height: 36px !important;
+                        padding: 0 18px !important;
+                        font-size: 13px !important;
+                    }
+
+                    .report-panel {
+                        margin-top: 1.5rem;
+                    }
+
+                    .report-panel .ui-panel-content {
+                        padding: 1rem !important;
+                        overflow-x: auto;
+                    }
+
+                    .standardTable {
+                        width: 100%;
+                        border-collapse: collapse;
+                        font-size: 13px;
+                    }
+
+                    .standardTable th {
+                        padding: 10px 14px;
+                        text-align: left;
+                        font-size: 12px;
+                        font-weight: 600;
+                        text-transform: uppercase;
+                        letter-spacing: 0.03em;
+                        color: #888;
+                        background: #f9f9f9;
+                        border-bottom: 1px solid #e8e8e8;
+                        white-space: nowrap;
+                    }
+
+                    .standardTable td {
+                        padding: 10px 14px;
+                        font-size: 13px;
+                        border-bottom: 1px solid #f0f0f0;
+                        white-space: nowrap;
+                    }
+
+                    .standardTable tr:hover td {
+                        background: #f5f7ff;
+                    }
+                </h:outputStylesheet>
+
+                <div class="page-header">
+                    <p class="page-title"><h:outputText value="Staff Details Report" /></p>
+                    <p class="page-subtitle"><h:outputText value="Select a form, filter by institution or department, then process to generate" /></p>
+                </div>
+
+                <p:panel styleClass="controls-panel">
+                    <div class="controls-grid">
+
+                        <div class="fields-grid">
+                            <div class="field-group">
+                                <p:outputLabel for="mnuCat" value="Form" styleClass="field-label" />
+                                <p:selectOneMenu id="mnuCat"
+                                                 value="#{formFormatController.formCategory}"
+                                                 appendTo="@body"
+                                                 autoWidth="false"
+                                                 style="width: 100%;">
+                                    <f:selectItem itemLabel="Select form" />
+                                    <f:selectItems value="#{formFormatController.items}"
+                                                   var="rf"
+                                                   itemLabel="#{rf.name}"
+                                                   itemValue="#{rf}" />
+                                </p:selectOneMenu>
+                            </div>
+
+                            <div class="field-group">
+                                <p:outputLabel value="Institution" styleClass="field-label" />
+                                <hr:institution value="#{hrReportController.reportKeyWord.institution}" id="inst" />
+                            </div>
+
+                            <div class="field-group">
+                                <p:outputLabel value="Department" styleClass="field-label" />
+                                <hr:department value="#{hrReportController.reportKeyWord.department}" id="dept" />
+                            </div>
+                        </div>
+
+                        <div class="controls-actions">
+                            <p:commandButton value="Process"
+                                             ajax="false"
+                                             action="#{formFormatController.fillStaffDetailReport()}"
+                                             icon="pi pi-sync"
+                                             styleClass="btn-action" />
+                            <h:outputScript library="js" name="excellentexport.js" />
+                            <a download="staff_detail.xls"
+                               href="#"
+                               onclick="return ExcellentExport.excel(this, 'tbl', 'Sheet1');"
+                               style="padding: .3em 1em; background: #D7D0C0;"
+                               styleClass="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only ui-button-text ui-c noPrintButton">Export to Excel</a>
+                        </div>
+
+                    </div>
+                </p:panel>
+
+                <p:panel styleClass="report-panel">
+                    <table class="standardTable" id="tbl">
                         <tr>
-
-                            <th>
-                                <h:outputText  value="Name" ></h:outputText>
-                            </th>
-
-                            <th>
-                                <h:outputText  value="Full Name" ></h:outputText>
-                            </th>
-
-                            <th>
-                                <h:outputText  value="Name with Initials" ></h:outputText>
-                            </th>
-
-                            <th>
-                                <h:outputText  value="NIC / Passport No" ></h:outputText>
-                            </th>
-
-                            <th>
-                                <h:outputText  value="Gender" ></h:outputText>
-                            </th>
-
-                            <th>
-                                <h:outputText  value="Finger Print Id" ></h:outputText>
-                            </th>
-
-                            <th>
-                                <h:outputText  value="Code" ></h:outputText>
-                            </th>
-
-                            <th>
-                                <h:outputText  value="EPF" ></h:outputText>
-                            </th>
-                            <th>
-                                <h:outputText  value="Registration" ></h:outputText>
-                            </th>
-                            <th>
-                                <h:outputText  value="Qualification" ></h:outputText>
-                            </th>
-                            <th>
-                                <p:outputLabel value="Date Joined "/>
-                            </th>
-
-                            <th>
-                                <h:outputText value="Speciality" />
-                            </th>
-
-                            <ui:repeat value="#{formFormatController.formItems}" var="fi" >
-                                <th>
-                                    <h:outputText value="#{fi.name}" ></h:outputText>
-                                </th>
+                            <th><h:outputText value="Name" /></th>
+                            <th><h:outputText value="Full Name" /></th>
+                            <th><h:outputText value="Name with Initials" /></th>
+                            <th><h:outputText value="NIC / Passport No" /></th>
+                            <th><h:outputText value="Gender" /></th>
+                            <th><h:outputText value="Finger Print ID" /></th>
+                            <th><h:outputText value="Code" /></th>
+                            <th><h:outputText value="EPF" /></th>
+                            <th><h:outputText value="Registration" /></th>
+                            <th><h:outputText value="Qualification" /></th>
+                            <th><h:outputText value="Date Joined" /></th>
+                            <th><h:outputText value="Speciality" /></th>
+                            <ui:repeat value="#{formFormatController.formItems}" var="fi">
+                                <th><h:outputText value="#{fi.name}" /></th>
                             </ui:repeat>
-
                         </tr>
 
-                        <ui:repeat value="#{formFormatController.staffes}" var="staff"  >
+                        <ui:repeat value="#{formFormatController.staffes}" var="staff">
                             <tr>
+                                <td><h:outputLabel value="#{staff.person.name}" /></td>
+                                <td><h:outputLabel value="#{staff.person.fullName}" /></td>
+                                <td><h:outputLabel value="#{staff.person.nameWithInitials}" /></td>
+                                <td><h:outputLabel value="#{staff.person.nic}" /></td>
+                                <td><h:outputLabel value="#{staff.person.sex}" /></td>
+                                <td><h:outputLabel value="#{staff.acNo}" /></td>
+                                <td><h:outputLabel value="#{staff.code}" /></td>
+                                <td><h:outputLabel value="#{staff.epfNo}" /></td>
+                                <td><h:outputLabel value="#{staff.registration}" /></td>
+                                <td><h:outputLabel value="#{staff.qualification}" /></td>
                                 <td>
-                                    <h:outputLabel value="#{staff.person.name}"  />
-                                </td>
-                                <td>
-                                    <h:outputLabel value="#{staff.person.fullName}"  />
-                                </td>
-                                <td>
-                                    <h:outputLabel value="#{staff.person.nameWithInitials}"  />
-                                </td>
-                                <td>
-                                    <h:outputLabel  value="#{staff.person.nic}"  />
-                                </td>
-                                <td>
-                                    <h:outputLabel   value="#{staff.person.sex}" >
+                                    <h:outputLabel value="#{staff.dateJoined}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
                                     </h:outputLabel>
                                 </td>
-                                <td>
-                                    <h:outputLabel  value="#{staff.acNo}"  />
-                                </td>
-                                <td>
-                                    <h:outputLabel   value="#{staff.code}"  />
-                                </td>
-                                <td>
-                                    <h:outputLabel  value="#{staff.epfNo}"  />
-                                </td>
-                                <td>
-                                    <h:outputLabel  value="#{staff.registration}"  />             
-                                </td>
-                                <td>
-                                    <h:outputLabel  value="#{staff.qualification}"  />                
-                                </td>
-                                <td>
-                                    <h:outputLabel value="#{staff.dateJoined}" >
-                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
-                                    </h:outputLabel>
-                                </td>
-                                <td>
-                                    <h:outputLabel value="#{staff.speciality}" >
-                                    </h:outputLabel>
-                                </td>
-
-                                <ui:repeat value="#{formFormatController.formItems}" var="fiv" >
-                                    <td>
-                                        <h:outputLabel value="#{staffController.formItemValue(fiv, staff.person)}" ></h:outputLabel>
-                                    </td>
+                                <td><h:outputLabel value="#{staff.speciality}" /></td>
+                                <ui:repeat value="#{formFormatController.formItems}" var="fiv">
+                                    <td><h:outputLabel value="#{staffController.formItemValue(fiv, staff.person)}" /></td>
                                 </ui:repeat>
-
                             </tr>
-
-
-
                         </ui:repeat>
-
                     </table>
-
-
-
-
-
                 </p:panel>
+
             </h:form>
         </h:panelGroup>
     </ui:define>

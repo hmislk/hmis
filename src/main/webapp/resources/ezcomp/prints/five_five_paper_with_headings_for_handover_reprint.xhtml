@@ -218,10 +218,26 @@
                                     <tbody>
                                         <h:panelGroup rendered="#{cc.attrs.bundle.hasCashTransaction}">
                                             <tr>
-                                                <td>Cash Including Floats</td>
-                                                <td class="text-end"><h:outputText value="#{cc.attrs.bundle.cashValue + cc.attrs.bundle.cashFloatNetTotal}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                                <td>Cash</td>
+                                                <td class="text-end"><h:outputText value="#{cc.attrs.bundle.cashValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
                                                 <td class="text-end"><h:outputText value="#{cc.attrs.bundle.cashHandoverValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
-                                                <td class="text-end"><h:outputText value="#{cc.attrs.bundle.cashValue + cc.attrs.bundle.cashFloatNetTotal - cc.attrs.bundle.cashHandoverValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                                <td class="text-end"><h:outputText value="#{cc.attrs.bundle.cashValue - cc.attrs.bundle.cashHandoverValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                            </tr>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{cc.attrs.bundle.cashFloatInTotal gt 0}">
+                                            <tr>
+                                                <td>Float Received (Cash)</td>
+                                                <td class="text-end" style="color: green;"><h:outputText value="#{cc.attrs.bundle.cashFloatInTotal}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                                <td class="text-end">-</td>
+                                                <td class="text-end">-</td>
+                                            </tr>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{cc.attrs.bundle.cashFloatOutTotal gt 0}">
+                                            <tr>
+                                                <td>Float Sent (Cash)</td>
+                                                <td class="text-end" style="color: red;"><h:outputText value="#{-cc.attrs.bundle.cashFloatOutTotal}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                                <td class="text-end">-</td>
+                                                <td class="text-end">-</td>
                                             </tr>
                                         </h:panelGroup>
                                         <h:panelGroup rendered="#{cc.attrs.bundle.hasCardTransaction}">
@@ -492,6 +508,109 @@
 
                 </p:dataTable>
 
+                <!-- Shortage transactions — individual shortage/cancellation bills -->
+                <ui:repeat value="#{cc.attrs.bundle.selectedBundles}" var="shortageBundle">
+                    <h:panelGroup rendered="#{shortageBundle.paymentHandover ne null and shortageBundle.paymentHandover.name() eq 'FLOATS' and not empty shortageBundle.reportTemplateRows}">
+                        <hr/>
+                        <div style="font-weight: bold; margin: 8px 0 4px 0;">Shortage Transactions</div>
+                        <table class="table table-bordered table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Date / Time</th>
+                                    <th>Bill Type</th>
+                                    <th>Bill Number</th>
+                                    <th class="text-end">Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <ui:repeat value="#{shortageBundle.reportTemplateRows}" var="shortageRow">
+                                    <tr>
+                                        <td>
+                                            <h:outputText value="#{shortageRow.payment.createdAt}">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                            </h:outputText>
+                                        </td>
+                                        <td>
+                                            <h:outputText
+                                                value="Shift Shortage"
+                                                rendered="#{shortageRow.payment.bill.billTypeAtomic ne null and shortageRow.payment.bill.billTypeAtomic.name() eq 'FUND_SHIFT_SHORTAGE_BILL'}"
+                                                style="color: #dc3545; font-weight: bold;" />
+                                            <h:outputText
+                                                value="Shortage Cancellation"
+                                                rendered="#{shortageRow.payment.bill.billTypeAtomic ne null and shortageRow.payment.bill.billTypeAtomic.name() eq 'FUND_SHIFT_SHORTAGE_BILL_CANCELLED'}"
+                                                style="color: green; font-weight: bold;" />
+                                        </td>
+                                        <td>
+                                            <h:outputText value="#{shortageRow.payment.bill.deptId}"
+                                                rendered="#{not empty shortageRow.payment.bill.deptId}" />
+                                            <h:outputText value="Bill Number not recorded"
+                                                rendered="#{empty shortageRow.payment.bill.deptId}"
+                                                style="color: #999; font-style: italic;" />
+                                        </td>
+                                        <td class="text-end">
+                                            <h:outputText value="#{shortageRow.payment.paidValue}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </td>
+                                    </tr>
+                                </ui:repeat>
+                            </tbody>
+                        </table>
+                    </h:panelGroup>
+                </ui:repeat>
+
+                <!-- Float transactions — individual rows from reportTemplateRows -->
+                <h:panelGroup rendered="#{not empty cc.attrs.bundle.reportTemplateRows}">
+                    <hr/>
+                    <div style="font-weight: bold; margin: 8px 0 4px 0;">Float Transactions</div>
+                    <table class="table table-bordered table-sm">
+                        <thead>
+                            <tr>
+                                <th>Date / Time</th>
+                                <th>Direction</th>
+                                <th>From User</th>
+                                <th>To User</th>
+                                <th class="text-end">Amount</th>
+                                <th>Reference / Comments</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <ui:repeat value="#{cc.attrs.bundle.reportTemplateRows}" var="floatRow">
+                                <tr>
+                                    <td>
+                                        <h:outputText value="#{floatRow.payment.createdAt}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                        </h:outputText>
+                                    </td>
+                                    <td>
+                                        <h:outputText
+                                            value="Float Sent"
+                                            rendered="#{floatRow.payment.bill.billTypeAtomic ne null and floatRow.payment.bill.billTypeAtomic.name() eq 'FUND_TRANSFER_BILL'}"
+                                            style="color: red; font-weight: bold;" />
+                                        <h:outputText
+                                            value="Float Received"
+                                            rendered="#{floatRow.payment.bill.billTypeAtomic ne null and floatRow.payment.bill.billTypeAtomic.name() eq 'FUND_TRANSFER_RECEIVED_BILL'}"
+                                            style="color: green; font-weight: bold;" />
+                                    </td>
+                                    <td>
+                                        <h:outputText value="#{floatRow.payment.creater.webUserPerson.nameWithTitle}" />
+                                    </td>
+                                    <td>
+                                        <h:outputText value="#{floatRow.payment.floatRecipient ne null ? floatRow.payment.floatRecipient.webUserPerson.nameWithTitle : floatRow.payment.bill.toWebUser.webUserPerson.nameWithTitle}" />
+                                    </td>
+                                    <td class="text-end">
+                                        <h:outputText value="#{floatRow.payment.paidValue}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </td>
+                                    <td>
+                                        <h:outputText value="#{floatRow.payment.bill.comments}" />
+                                    </td>
+                                </tr>
+                            </ui:repeat>
+                        </tbody>
+                    </table>
+                </h:panelGroup>
 
             </div>
 

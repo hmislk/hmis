@@ -45,7 +45,7 @@ public class TransferReceiveItemRowDto implements Serializable {
     /** Reference to the issued BillItem ID (used as referanceBillItem_ID on receive BillItem). */
     private Long issuedBillItemId;
 
-    /** stock_ID from the issued item's PharmaceuticalBillItem (staff stock to deduct from). */
+    /** staffStock_ID from the issued item's PharmaceuticalBillItem (transit stock to deduct from on receive). */
     private Long staffStockId;
 
     private Long itemBatchId;

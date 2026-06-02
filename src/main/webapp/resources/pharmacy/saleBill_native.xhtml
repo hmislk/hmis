@@ -241,10 +241,11 @@
                         <td class="totalsBlock" style="text-align: left;">
                             <h:outputLabel rendered="#{cc.attrs.bill.discountPercentPharmacy ne 0.0}" value="Discount Percent" style="font-weight: bolder!important;"/>
                         </td>
-                        <td class="totalsBlock" style="text-align: right!important; font-weight: bold;">
-                            <h:outputLabel rendered="#{cc.attrs.bill.discountPercentPharmacy ne 0.0}" value="#{cc.attrs.bill.discountPercentPharmacy} %">
-                                <f:convertNumber pattern="#,##0.0"/>
+                        <td class="totalsBlock gap-2" style="text-align: right!important; font-weight: bold;">
+                            <h:outputLabel  rendered="#{cc.attrs.bill.discountPercentPharmacy ne 0.0}" value="#{cc.attrs.bill.discountPercentPharmacy}">
+                                <f:convertNumber pattern="#,##0.0" />
                             </h:outputLabel>
+                            <h:outputLabel rendered="#{cc.attrs.bill.discountPercentPharmacy ne 0.0}" value="%"/>
                         </td>
                     </tr>
                     <tr>

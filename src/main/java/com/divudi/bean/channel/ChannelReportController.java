@@ -4,11 +4,23 @@
  */
 package com.divudi.bean.channel;
 
+import com.divudi.bean.channel.ChannelReportController.WrapperDtoForChannelFutureIncome;
+import com.divudi.bean.channel.ChannelReportTemplateController.AgentHistoryWithDate;
+import com.divudi.bean.channel.ChannelReportTemplateController.BookingCountSummryRow;
+import com.divudi.bean.channel.ChannelReportTemplateController.ChannelBillTotals;
+import com.divudi.bean.channel.ChannelReportTemplateController.ChannelReportColumnModel;
+import com.divudi.bean.channel.ChannelReportTemplateController.ChannelReportColumnModelBundle;
+import com.divudi.bean.channel.ChannelReportTemplateController.DepartmentBill;
+import com.divudi.bean.channel.ChannelReportTemplateController.DoctorPaymentSummeryRow;
+import com.divudi.bean.channel.ChannelReportTemplateController.DoctorPaymentSummeryRowSub;
+import com.divudi.bean.channel.ChannelReportTemplateController.FeetypeFee;
 import com.divudi.bean.channel.analytics.ReportTemplateController;
 import com.divudi.bean.common.ExcelController;
 import com.divudi.bean.common.InstitutionController;
 import com.divudi.bean.common.PdfController;
 import com.divudi.bean.common.ReportTimerController;
+import com.divudi.bean.common.SearchController;
+import com.divudi.bean.common.ServiceCategoryController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.pharmacy.PharmacyController;
 import com.divudi.core.data.BillClassType;
@@ -29,10 +41,14 @@ import com.divudi.core.data.dataStructure.ChannelDoctor;
 import com.divudi.core.data.dataStructure.WebUserBillsTotal;
 import com.divudi.core.data.dto.ChannelServiceCategorywiseDetailsWrapperDTO;
 import com.divudi.core.data.dto.channel.ChannelAbsentPatientsDTO;
+import com.divudi.core.data.dto.channel.ChannelIncomeDTO;
+import com.divudi.core.data.dto.channel.ChannelUserSummeryDTO;
+import com.divudi.core.data.dto.channel.ChannelUserSummeryDTO.ChannelUserSummeryByDateDTO;
 import com.divudi.core.data.hr.ReportKeyWord;
 import com.divudi.core.data.reports.PharmacyReports;
 import com.divudi.core.data.reports.Report;
 import com.divudi.core.data.reports.Report.ChannelPatientAbsentReport;
+import com.divudi.core.data.reports.Report.ChannelUserWiseSummeryReport;
 import com.divudi.core.data.reports.Report.OnlineBookingCountReport;
 import com.divudi.core.data.reports.ReportColumn;
 import com.divudi.core.data.table.String1Value1;
@@ -191,6 +207,8 @@ public class ChannelReportController implements Serializable {
     ExcelController excelController;
     @Inject
     PharmacyController pharmacyController;
+    @Inject
+    ServiceCategoryController serviceCategoryController;
 
     @EJB
     DepartmentFacade departmentFacade;
@@ -445,13 +463,46 @@ public class ChannelReportController implements Serializable {
     }
 
     public void generateChannelCategorywiseDetailsForShitEndFromChannelReportController(Long shiftStartBillId){
+        bookingsByShiftDto = null;
         categorywiseDetailsWrapperDTO = reportTemplateController.generateChannelCategorywiseDetailsForShitEnd(shiftStartBillId);
+    }
+
+    private WrapperDtoForChannelFutureIncome bookingsByShiftDto;
+
+    public WrapperDtoForChannelFutureIncome getBookingsByShiftDto() {
+        return bookingsByShiftDto;
+    }
+
+    public void setBookingsByShiftDto(WrapperDtoForChannelFutureIncome bookingsByShiftDto) {
+        this.bookingsByShiftDto = bookingsByShiftDto;
+    }
+
+    public void generateChannelBookingBillsForShitEndFromChannelReportController(Long shiftStartBillId){
+        categorywiseDetailsWrapperDTO = null;
+        bookingsByShiftDto = channelService.fetchAndGenerateChannelBookingBillsForShiftEnd(shiftStartBillId, categoryList, paymentMethods);
+        if (bookingsByShiftDto == null) {
+            return;
+        }
+
+        bookingsByShiftDto.setProcessedBy(sessionController.getLoggedUser().getWebUserPerson().getName());
+    }
+
+    public void updateChannelBookingBillsForShitEndFromChannelReportController(){
+        if (bookingsByShiftDto == null) {
+            return;
+        }
+        if (bookingsByShiftDto.getShiftStartBillId() == null) {
+            return;
+        }
+        bookingsByShiftDto  = channelService.updateChannelBookingBillsForShitEnd(bookingsByShiftDto.getShiftStartBillId(), bookingsByShiftDto.getShiftEndBillId(), bookingsByShiftDto.getCashierId(), bookingsByShiftDto.getHospital(), categoryList, paymentMethods, bookingsByShiftDto.getShiftStartAt(), bookingsByShiftDto.getShiftEndAt(), bookingsByShiftDto.getCashierUserName());
+
     }
     
     
     public void listShiftStartBills() {
         
         categorywiseDetailsWrapperDTO = null;
+        bookingsByShiftDto = null;
         
         String jpql = "select b "
                 + " from Bill b "
@@ -593,13 +644,14 @@ public class ChannelReportController implements Serializable {
 
         private boolean isCancelled;
         private String cancelledBillDeptId;
+        private Long cancelBillId;
 
         private boolean isRefunded;
         private String refundBillDeptId;
 
 
 
-        public ChannelIncomeDetailDto(long bsId, long billId, BillTypeAtomic billTypeAtomic, Date appoinmentDate, Date billedDate, String billedBy, String patientName, String patientPhone, PaymentMethod paymentMethod, double doctorFee, double hosFee, double totalAppoinmentFee, String remark, boolean isCancelled, boolean isRefunded) {
+        public ChannelIncomeDetailDto(long bsId, long billId, BillTypeAtomic billTypeAtomic, Date appoinmentDate, Date billedDate, String billedBy, String patientName, String patientPhone, PaymentMethod paymentMethod, double doctorFee, double hosFee, double totalAppoinmentFee, String remark, boolean isCancelled, boolean isRefunded, Long cancelBillId) {
             this.bsId = bsId;
             this.billId = billId;
             this.billTypeAtomic = billTypeAtomic;
@@ -615,6 +667,7 @@ public class ChannelReportController implements Serializable {
             this.remark = remark;
             this.isCancelled = isCancelled;
             this.isRefunded = isRefunded;
+            this.cancelBillId = cancelBillId != null ? cancelBillId : null;
         }
 
          // constructor for channel income card payments
@@ -751,6 +804,14 @@ public class ChannelReportController implements Serializable {
             this.billId = billId;
         }
 
+        public Long getCancelBillId() {
+            return cancelBillId;
+        }
+
+        public void setCancelBillId(Long billId) {
+            this.cancelBillId = billId;
+        }
+
         public Date getBilledDate() {
             return billedDate;
         }
@@ -831,6 +892,14 @@ public class ChannelReportController implements Serializable {
         private double allRefundTotal;
         private double allCancelAppoinments;
         private double allRefundAppoinments;
+
+        //shift details
+        private Date shiftStartAt;
+        private Date shiftEndAt;
+        private String cashierUserName;
+        private Long cashierId;
+        private Long shiftStartBillId;
+        private Long shiftEndBillId;
 
          // fee Totals
         private double allHosFeeTotal;
@@ -964,6 +1033,54 @@ public class ChannelReportController implements Serializable {
         public void setAllTotalAmount(double allTotalAmount) {
             this.allTotalAmount = allTotalAmount;
         }
+
+        public Date getShiftStartAt() {
+            return shiftStartAt;
+        }
+
+        public void setShiftStartAt(Date shiftStartAt) {
+            this.shiftStartAt = shiftStartAt;
+        }
+
+        public Date getShiftEndAt() {
+            return shiftEndAt;
+        }
+
+        public void setShiftEndAt(Date shiftEndAt) {
+            this.shiftEndAt = shiftEndAt;
+        }
+
+        public Long getShiftStartBillId() {
+            return shiftStartBillId;
+        }
+
+        public void setShiftStartBillId(Long shiftStart) {
+            this.shiftStartBillId = shiftStart;
+        }
+
+        public Long getShiftEndBillId() {
+            return shiftEndBillId;
+        }
+
+        public void setShiftEndBillId(Long shiftEnd) {
+            this.shiftEndBillId = shiftEnd;
+        }
+
+        public String getCashierUserName() {
+            return cashierUserName;
+        }
+
+        public void setCashierUserName(String cashierUserName) {
+            this.cashierUserName = cashierUserName;
+        }
+
+        public Long getCashierId() {
+            return cashierId;
+        }
+
+        public void setCashierId(Long cashierId) {
+            this.cashierId = cashierId;
+        }        
 
     }
 
@@ -1113,7 +1230,7 @@ public class ChannelReportController implements Serializable {
             return;
         }
 
-        wrapperDto = channelService.fetchChannelIncomeByUser(fromDate, toDate, institution, webUser, categoryList, reportStatus, reportStatus);
+        wrapperDto = channelService.fetchChannelIncomeByUser(fromDate, toDate, institution, webUser, categoryList, reportStatus, reportStatus, paymentMethods);
 
         if (wrapperDto == null) {
             return;
@@ -4265,9 +4382,12 @@ public class ChannelReportController implements Serializable {
         valueList = null;
         dataBundle = null;
         categoryList = null;
+        paymentMethods = null;
         webUser = null;
         shiftStartBills = null;
         categorywiseDetailsWrapperDTO = null;
+        bookingsByShiftDto = null;
+        userSummaryDtos = null;
     }
 
     List<BillSession> nurseViewSessions;
@@ -4853,6 +4973,30 @@ public class ChannelReportController implements Serializable {
 
         return getAgentHistoryFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
+    }
+
+    private List<ChannelUserSummeryDTO> userSummaryDtos;
+
+    public List<ChannelUserSummeryDTO> getUserSummeryDtos() {
+        return userSummaryDtos;
+    }
+
+    public void setUserSummeryDtos(List<ChannelUserSummeryDTO> dtos) {
+        this.userSummaryDtos = dtos;
+    }
+
+    private Map<String, Object> userSummeryRpSC;
+
+    public void processUserWiseSummeryReport() {
+        userSummaryDtos = new ArrayList<>();
+
+        userSummaryDtos = channelService.fetchChannelUserSummeryDTOs(fromDate, institution, department, paymentMethod);
+
+        if (userSummaryDtos == null) {
+            return;
+        }
+
+        userSummeryRpSC = getFiltersForUserWiseSummeryReport();
     }
 
     /**
@@ -5554,6 +5698,30 @@ public class ChannelReportController implements Serializable {
         return downloadingExcel;
     }
 
+    // Excel Export: Channel Summary Collection Report
+    public StreamedContent getChannelSummaryCollectionReportAsExcel() {
+        if (bookingsByShiftDto == null || bookingsByShiftDto.getIncomeDtos() == null || bookingsByShiftDto.getIncomeDtos().isEmpty()) {
+            JsfUtil.addErrorMessage("Please generate the Summary Collection report before exporting.");
+            return null;
+        }
+
+        StreamedContent downloadingExcel = null;
+        try {
+            String fileName = "Channel_Summary_Collection_Report";
+            String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
+            if (dates != null && !dates.isEmpty()) {
+                fileName += "_" + dates;
+            }
+            
+            downloadingExcel = excelController.createExcelForChannelSummaryCollectionReport(bookingsByShiftDto, fileName, getFiltersForSummaryCollectionReport());
+        } catch (IOException e) {
+            logger.error("getChannelSummaryCollectionReportAsExcel: Error creating downloadingExcel via excelController.createExcelForChannelSummaryCollectionReport", e);
+            downloadingExcel = null;
+            JsfUtil.addErrorMessage("Failed to generate Channel Summary Collection Report Excel file. Please try again.");
+        }
+        return downloadingExcel;
+    }
+
     // PostProcessor for Income With Agent Booking excel export
     public void postProcessIncomeWithAgentBookingReportExcel(Object document) {
         if (document == null) {
@@ -5686,6 +5854,16 @@ public class ChannelReportController implements Serializable {
         return result.toString();
     }
 
+    // Filters for Channel Summary Collection Report
+    public Map<String, Object> getFiltersForSummaryCollectionReport() {
+        Map<String, Object> params = new LinkedHashMap<>();
+
+        params.put("Category", getCategoryListAsString());
+        params.put("Payment Method", getSelectedPaymentMethodsAsString());
+
+        return params;
+    }
+
     // Filters for Channel Income Daily Summary  Report
     public Map<String, Object> getFiltersForChannelIncomeDailySummaryReport() {
         Map<String, Object> params = new LinkedHashMap<>();
@@ -5705,6 +5883,7 @@ public class ChannelReportController implements Serializable {
         params.put("Report Status", reportStatusString);
         params.put("User", webUser != null ? webUser.getName() : "All Users");
         params.put("Category", getCategoryListAsString());
+        params.put("Payment Method", getSelectedPaymentMethodsAsString());
 
         return params;
     }
@@ -5715,6 +5894,61 @@ public class ChannelReportController implements Serializable {
 
     public void setAbsentPatientsDTO(List<ChannelAbsentPatientsDTO> absentPatientsDTO) {
         this.absentPatientsDTO = absentPatientsDTO;
+    }
+
+    public ChannelUserWiseSummeryReport getUserWiseSummaryReport() {
+        String fileName = "User_Wise_Summery_Report";
+        String dates;
+        if (userSummeryRpSC != null && userSummeryRpSC.get("Appointment Date") instanceof String) {
+            dates = (String) userSummeryRpSC.get("Appointment Date");
+        } else {
+            dates = CommonFunctions.dateRangeForFileName(fromDate, null, sessionController.getApplicationPreference().getLongDateFormat(), true);
+        }
+        if (dates != null && !dates.isEmpty()) {
+            fileName += "_" + dates;
+        }
+        String institutionName = "";
+        String userName = "";
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            if (sessionController.getLoggedUser().getInstitution() != null && sessionController.getLoggedUser().getInstitution().getName() != null) {
+                institutionName = sessionController.getLoggedUser().getInstitution().getName();
+            }
+            if (sessionController.getLoggedUser().getName() != null) {
+                userName = sessionController.getLoggedUser().getName();
+            }
+        }
+
+        ChannelUserWiseSummeryReport uWReport = new ChannelUserWiseSummeryReport(fileName, institutionName, userSummeryRpSC != null ? userSummeryRpSC : getFiltersForUserWiseSummeryReport(), userSummaryDtos, userName);
+
+        return uWReport;
+    }
+
+    public StreamedContent getUserWiseSummeryReportAsPdf() {
+        if (userSummaryDtos == null || userSummaryDtos.isEmpty()) {
+            JsfUtil.addErrorMessage("Please generate the User Wise Summery report before exporting.");
+            return null;
+        }
+        return getUserWiseSummaryReport().createPdfAsStream();
+    }
+
+    public StreamedContent getUserWiseSummeryReportAsExcel() {
+        if (userSummaryDtos == null || userSummaryDtos.isEmpty()) {
+            JsfUtil.addErrorMessage("Please generate the User Wise Summery report before exporting.");
+            return null;
+        }
+        return getUserWiseSummaryReport().createExcelAsStream();
+    }
+
+    // Filters for Channel Income Daily Summary  Report
+    public Map<String, Object> getFiltersForUserWiseSummeryReport() {
+        Map<String, Object> params = new LinkedHashMap<>();
+
+        params.put("Appointment Date", new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateFormat()).format(fromDate));
+        params.put("Institution", institution != null ? institution.getName() : "All Institutions");
+        params.put("Department", department != null ? department.getName() : "All Departments");
+        params.put("Payment Method", paymentMethod != null ? paymentMethod.getLabel() : "All Payment Methods");
+
+        return params;
     }
 
     public class ChannelReportColumnModelBundle implements Serializable {

@@ -317,7 +317,7 @@ public class InvestigationCategoryController implements Serializable {
 
 
     public String navigateToRelationships() {
-        return "/admin/items/relationships.xhtml?faces-redirect=true";
+        return "/admin/patients/relationships.xhtml?faces-redirect=true";
     }
 
     public String navigateToReligion() {

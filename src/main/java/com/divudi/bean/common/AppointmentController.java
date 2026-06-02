@@ -547,7 +547,7 @@ public class AppointmentController implements Serializable, ControllerWithPatien
 
     public void settleBill() {
 
-        if (getPatient().getId() != null && getPatient().isBlacklisted() && configOptionApplicationController.getBooleanValueByKey("Enable blacklist patient management for inward from the system", false)) {
+        if (getPatient().getId() != null && getPatient().isBlacklisted()) {
             JsfUtil.addErrorMessage("This patient is blacklisted from the system.");
             return;
         }

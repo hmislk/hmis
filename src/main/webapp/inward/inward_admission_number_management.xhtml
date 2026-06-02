@@ -1,0 +1,84 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/inward/inward_administration.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui">
+
+    <ui:define name="subcontent">
+
+        <h:panelGroup>
+            <h:form id="admissionNumberForm">
+                <p:growl />
+
+                <p:panel header="BHT Number Management">
+                    <p:dataTable id="admissionNumberTable"
+                                 value="#{admissionNumberController.items}"
+                                 var="an"
+                                 emptyMessage="No BHT counter records found."
+                                 styleClass="w-100">
+                        <p:column headerText="Institution">
+                            <h:outputText value="#{an.institution != null ? an.institution.name : 'All Institutions'}" />
+                        </p:column>
+                        <p:column headerText="Admission Type">
+                            <h:outputText value="#{admissionNumberController.getTypeLabel(an)}" />
+                        </p:column>
+                        <p:column headerText="Last Used BHT">
+                            <h:outputText value="#{an.lastAdmissionNumber}" />
+                        </p:column>
+                        <p:column headerText="Next BHT to Issue">
+                            <h:outputText value="#{admissionNumberController.getNextBht(an)}" />
+                        </p:column>
+                        <p:column headerText="Action" style="width: 80px; text-align: center;">
+                            <p:commandButton value="Edit"
+                                             actionListener="#{admissionNumberController.prepareEdit(an)}"
+                                             update="editPanel"
+                                             process="@this" />
+                        </p:column>
+                    </p:dataTable>
+                </p:panel>
+
+                <h:panelGroup id="editPanel" layout="block" styleClass="mt-3"
+                              rendered="#{admissionNumberController.selected != null}">
+                    <p:panel header="Adjust BHT Counter">
+                        <h:panelGrid columns="3" cellpadding="4" styleClass="w-100">
+
+                            <p:outputLabel value="Institution" />
+                            <p:outputLabel value=": " style="width: 30px; text-align: center;" />
+                            <h:outputText value="#{admissionNumberController.selected.institution != null ? admissionNumberController.selected.institution.name : 'All Institutions'}" />
+
+                            <p:outputLabel value="Admission Type" />
+                            <p:outputLabel value=": " style="width: 30px; text-align: center;" />
+                            <h:outputText value="#{admissionNumberController.getTypeLabel(admissionNumberController.selected)}" />
+
+                            <p:outputLabel value="Last Used BHT Number"
+                                           for="lastBhtInput" />
+                            <p:outputLabel value=": " style="width: 30px; text-align: center;" />
+                            <p:inputText id="lastBhtInput"
+                                         value="#{admissionNumberController.selected.lastAdmissionNumber}"
+                                         class="w-100 m-1"
+                                         autocomplete="off">
+                                <f:validateLongRange minimum="0" />
+                            </p:inputText>
+
+                            <p:outputLabel value="Next BHT to be Issued" />
+                            <p:outputLabel value=": " style="width: 30px; text-align: center;" />
+                            <h:outputText value="#{admissionNumberController.getNextBht(admissionNumberController.selected)}" />
+
+                        </h:panelGrid>
+
+                        <p:commandButton value="Save"
+                                         action="#{admissionNumberController.saveSelected()}"
+                                         update="admissionNumberTable editPanel"
+                                         process="@form"
+                                         styleClass="mt-2" />
+                    </p:panel>
+                </h:panelGroup>
+
+            </h:form>
+        </h:panelGroup>
+
+    </ui:define>
+</ui:composition>

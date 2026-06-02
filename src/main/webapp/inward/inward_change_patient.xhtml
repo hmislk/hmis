@@ -241,13 +241,12 @@
                                         
                                         <h:panelGroup class="d-flex">
 
-                                            <p:outputLabel class="ml-4" value="#{admissionPatientChangeController.current.patient.person.nameWithTitle}" rendered="#{not empty admissionPatientChangeController.current.patient.person.nameWithTitle and !configOptionApplicationController.getBooleanValueByKey('Enable patient specific status management in the system')}" />
-
-                                            <p:badge rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable patient specific status management in the system')}" style="transform: translate(110%, -40%);background-color: #{empty admissionPatientChangeController.current.patient.specificStatus ? 'white' : '#FF401F'} ; font-style: italic;" value="#{admissionPatientChangeController.current.patient.specificStatus}" severity="danger">
+                                            
+                                            <p:badge style="transform: translate(110%, -40%);background-color: #{admissionPatientChangeController.current.patient.specificStatus != null and admissionPatientChangeController.current.patient.specificStatus.name() != 'NORMAL' ? '#FF401F' : 'white'} ; font-style: italic;" value="#{admissionPatientChangeController.current.patient.specificStatus != null and admissionPatientChangeController.current.patient.specificStatus.name() != 'NORMAL' ? admissionPatientChangeController.current.patient.specificStatus : ''}" severity="danger">
                                                 <p:outputLabel value="#{admissionPatientChangeController.current.patient.person.nameWithTitle}" rendered="#{not empty admissionPatientChangeController.current.patient.person.nameWithTitle}" />
                                             </p:badge>
 
-                                            <p:badge rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable blacklist patient management in the system') and configOptionApplicationController.getBooleanValueByKey('Enable blacklist patient management for Inward from the system', false)}" style="transform: translate(110%, -40%);background-color: #{admissionPatientChangeController.current.patient.blacklisted ? 'black' : 'white'} ; font-style: italic; font-size: 15px" value="X #{admissionPatientChangeController.current.patient.blacklisted ? 'Blacklisted' : 'Active'}" severity="danger">
+                                            <p:badge style="transform: translate(110%, -40%);background-color: #{admissionPatientChangeController.current.patient.blacklisted ? 'black' : 'white'} ; font-style: italic; font-size: 15px" value="X #{admissionPatientChangeController.current.patient.blacklisted ? 'Blacklisted' : 'Active'}" severity="danger">
 
                                             </p:badge>
 

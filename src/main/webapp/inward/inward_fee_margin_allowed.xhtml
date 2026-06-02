@@ -1,0 +1,163 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+
+        <ui:composition template="/inward/inward_administration.xhtml">
+
+            <ui:define name="subcontent">
+                <style>
+                    .fee-margin-table td { padding: 8px !important; }
+                </style>
+                <h:form id="form">
+
+                    <p:panel header="Service Charge Allowed - Fee Update" class="row w-100">
+
+                        <p:panel>
+                            <f:facet name="header">
+                                <h:outputText styleClass="fas fa-filter" />
+                                <h:outputLabel value="Filter" class="mx-2" />
+                            </f:facet>
+
+                            <div class="d-flex align-items-end flex-wrap gap-3">
+                                <div>
+                                    <h:outputLabel value="Department" class="d-block mb-1" />
+                                    <p:autoComplete
+                                        id="department"
+                                        value="#{feeMarginAllowedController.department}"
+                                        forceSelection="true"
+                                        placeholder="Select Department"
+                                        completeMethod="#{departmentController.completeDept}"
+                                        var="dep"
+                                        inputStyleClass="form-control"
+                                        style="width: 24em;"
+                                        itemLabel="#{dep.name}"
+                                        itemValue="#{dep}">
+                                        <p:column style="padding: 8px;">
+                                            <h:outputLabel value="#{dep.name}" />
+                                        </p:column>
+                                        <p:column style="padding: 8px;">
+                                            <h:outputLabel value="#{dep.institution.name}" />
+                                        </p:column>
+                                    </p:autoComplete>
+                                </div>
+                                <div>
+                                    <h:outputLabel value="Item Type" class="d-block mb-1" />
+                                    <p:selectOneMenu id="itemType" value="#{feeMarginAllowedController.itemType}" style="width: 12em;">
+                                        <f:selectItem itemLabel="Service" itemValue="Service" />
+                                        <f:selectItem itemLabel="Investigation" itemValue="Investigation" />
+                                    </p:selectOneMenu>
+                                </div>
+                                <div>
+                                    <p:commandButton
+                                        value="Process"
+                                        icon="fa fa-search"
+                                        class="ui-button-success"
+                                        ajax="false"
+                                        action="#{feeMarginAllowedController.process()}" />
+                                </div>
+                            </div>
+                        </p:panel>
+
+                        <p:panel class="mt-2" rendered="#{not empty feeMarginAllowedController.groups}">
+                            <f:facet name="header">
+                                <h:outputLabel value="Items and Fees" class="mt-2" />
+                                <div class="d-flex gap-2" style="float: right;">
+                                    <p:commandButton
+                                        value="Select All"
+                                        icon="fa fa-check-double"
+                                        class="ui-button-secondary"
+                                        ajax="false"
+                                        action="#{feeMarginAllowedController.selectAll()}" />
+                                    <p:commandButton
+                                        value="Clear"
+                                        icon="fa fa-times"
+                                        class="ui-button-warning mx-2"
+                                        ajax="false"
+                                        action="#{feeMarginAllowedController.deselectAll()}" />
+                                    <p:commandButton
+                                        value="Update Fees"
+                                        icon="fa fa-save"
+                                        class="ui-button-success"
+                                        ajax="false"
+                                        onclick="if (!confirm('Set Service Charge Allowed = Yes for all selected fees?')) return false;"
+                                        action="#{feeMarginAllowedController.updateSelectedFees()}" />
+                                </div>
+                            </f:facet>
+
+                            <p:dataTable
+                                id="items"
+                                value="#{feeMarginAllowedController.groups}"
+                                var="g"
+                                rowIndexVar="itemIndex"
+                                emptyMessage="No items to display."
+                                class="w-100 fee-margin-table">
+
+                                <p:column headerText="No" width="2em" class="text-center">
+                                    <h:outputLabel value="#{itemIndex + 1}" />
+                                </p:column>
+                                <p:column headerText="Name" width="16em">
+                                    <h:outputLabel value="#{g.item.name}" />
+                                </p:column>
+                                <p:column headerText="Type" width="7em">
+                                    <h:outputLabel value="#{g.type}" />
+                                </p:column>
+                                <p:column headerText="Select All Fees" width="6em" class="text-center">
+                                    <p:selectBooleanCheckbox value="#{g.allSelected}">
+                                        <p:ajax listener="#{g.toggleAllFees}" update="@(.fee-margin-table)" />
+                                    </p:selectBooleanCheckbox>
+                                </p:column>
+
+                                <p:column headerText="Fees">
+                                    <p:dataTable
+                                        value="#{g.feeRows}"
+                                        var="fr"
+                                        rowIndexVar="feeIndex"
+                                        class="w-100">
+
+                                        <p:column headerText="No" width="2em" class="text-center">
+                                            <h:outputLabel value="#{feeIndex + 1}" />
+                                        </p:column>
+                                        <p:column headerText="Fee Name" width="12em">
+                                            <h:outputLabel value="#{fr.itemFee.name}" />
+                                        </p:column>
+                                        <p:column headerText="Fee Type" width="4em">
+                                            <h:outputLabel value="#{fr.itemFee.feeType.label}" />
+                                        </p:column>
+                                        <p:column headerText="Local Fee" width="7em" class="text-end">
+                                            <h:outputLabel value="#{fr.itemFee.fee}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                        </p:column>
+                                        <p:column headerText="Foreigner Fee" width="7em" class="text-end">
+                                            <h:outputLabel value="#{fr.itemFee.ffee}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                        </p:column>
+                                        <p:column headerText="Margin Allowed" width="8em" class="text-center">
+                                            <p:badge value="Allowed" styleClass="ui-badge-success" rendered="#{fr.itemFee.marginAllowed}" />
+                                            <p:badge value="Not Allowed" styleClass="ui-badge-danger" rendered="#{!fr.itemFee.marginAllowed}" />
+                                        </p:column>
+                                        <p:column headerText="Discount Allowed" width="8em" class="text-center">
+                                            <p:badge value="Allowed" styleClass="ui-badge-success" rendered="#{fr.itemFee.discountAllowed}" />
+                                            <p:badge value="Not Allowed" styleClass="ui-badge-danger" rendered="#{!fr.itemFee.discountAllowed}" />
+                                        </p:column>
+                                        <p:column headerText="Select" width="3em" class="text-center">
+                                            <p:selectBooleanCheckbox value="#{fr.selected}" />
+                                        </p:column>
+                                    </p:dataTable>
+                                </p:column>
+                            </p:dataTable>
+                        </p:panel>
+
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>
