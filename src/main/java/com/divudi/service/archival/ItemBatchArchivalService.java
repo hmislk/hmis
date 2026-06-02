@@ -7,14 +7,18 @@ package com.divudi.service.archival;
 import com.divudi.core.data.dto.ArchiveResult;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.ejb.Asynchronous;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
+import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.PersistenceException;
 import javax.persistence.Query;
 
 /**
@@ -43,14 +47,22 @@ import javax.persistence.Query;
 @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
 public class ItemBatchArchivalService extends ArchivalServiceBase {
 
+    private static final int MAX_RETRIES = 3;
+    private static final long RETRY_SLEEP_MS = 2000;
+
     @PersistenceContext(unitName = "hmisPU")
     private EntityManager em;
+
+    private static final Logger LOGGER = Logger.getLogger(ItemBatchArchivalService.class.getName());
 
     @EJB
     private ArchivalBatchTx batchTx;
 
     @EJB
     private ItemBatchArchivalBatchTx itemBatchBatchTx;
+
+    @Inject
+    private ItemBatchArchivalTracker tracker;
 
     @Override
     protected EntityManager em() {
@@ -149,15 +161,19 @@ public class ItemBatchArchivalService extends ArchivalServiceBase {
         return result.isEmpty() ? upperName : result.get(0).toString();
     }
 
-    /**
-     * Run an archival pass using the 6-step ItemBatch-specific batch executor.
-     *
-     * Overrides the base {@link ArchivalServiceBase#archive} to use
-     * {@link ItemBatchArchivalBatchTx} which handles both ItemBatch and Stock
-     * tables atomically per batch.
-     */
     @Override
     public ArchiveResult archive(Date cutoff, int batchSize, int maxBatches, boolean dryRun) {
+        return archive(cutoff, batchSize, maxBatches, dryRun, null);
+    }
+
+    /**
+     * ItemBatch-specific archival loop that uses {@link ItemBatchArchivalBatchTx}
+     * (handles ItemBatch + Stock tables atomically per batch).
+     * Invokes {@code onBatchMoved} after each committed batch for progress tracking.
+     */
+    @Override
+    public ArchiveResult archive(Date cutoff, int batchSize, int maxBatches, boolean dryRun,
+                                  java.util.function.IntConsumer onBatchMoved) {
         Date startedAt = new Date();
         long candidates = countOlderThan(cutoff);
 
@@ -198,11 +214,14 @@ public class ItemBatchArchivalService extends ArchivalServiceBase {
             if (ids.isEmpty()) {
                 break;
             }
-            int moved = itemBatchBatchTx.archiveBatch(
+            int moved = archiveBatchWithRetry(
                     ibTable, ibArchive, stTable, stArchive, pbiTable,
                     ibCols, stCols, ids);
             totalArchived += moved;
             batchesRun++;
+            if (onBatchMoved != null) {
+                onBatchMoved.accept(moved);
+            }
             if (ids.size() < batchSize) {
                 break;
             }
@@ -215,5 +234,61 @@ public class ItemBatchArchivalService extends ArchivalServiceBase {
                 + (reachedLimit ? " (batch limit reached; more rows remain)" : "");
         return new ArchiveResult(false, candidates, totalArchived, batchesRun,
                 reachedLimit, startedAt, new Date(), msg);
+    }
+
+    /**
+     * Calls {@link ItemBatchArchivalBatchTx#archiveBatch} and retries up to
+     * {@value #MAX_RETRIES} times on MySQL lock wait timeout (error 1205).
+     * Since {@code ItemBatchArchivalService} runs NOT_SUPPORTED, each retry
+     * goes through the EJB proxy so {@code REQUIRES_NEW} is honoured afresh.
+     */
+    private int archiveBatchWithRetry(String ibTable, String ibArchive,
+            String stTable, String stArchive, String pbiTable,
+            String ibCols, String stCols, List<Long> ids) {
+        PersistenceException lastEx = null;
+        for (int attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+            try {
+                return itemBatchBatchTx.archiveBatch(
+                        ibTable, ibArchive, stTable, stArchive, pbiTable,
+                        ibCols, stCols, ids);
+            } catch (PersistenceException ex) {
+                if (!isLockTimeout(ex)) {
+                    throw ex;
+                }
+                lastEx = ex;
+                if (attempt < MAX_RETRIES) {
+                    LOGGER.log(Level.WARNING,
+                            "ItemBatch archival batch lock timeout (attempt {0}/{1}), retrying in {2}ms",
+                            new Object[]{attempt, MAX_RETRIES, RETRY_SLEEP_MS});
+                    try {
+                        Thread.sleep(RETRY_SLEEP_MS);
+                    } catch (InterruptedException ie) {
+                        Thread.currentThread().interrupt();
+                        throw ex;
+                    }
+                }
+            }
+        }
+        throw lastEx;
+    }
+
+    /**
+     * Fire-and-forget async wrapper for live archive runs.
+     */
+    @Asynchronous
+    public void archiveAsync(Date cutoff, int batchSize, int maxBatches) {
+        long candidates = countOlderThan(cutoff);
+        tracker.start(candidates, maxBatches);
+        try {
+            ArchiveResult result = archive(cutoff, batchSize, maxBatches, false,
+                    moved -> tracker.recordBatch(moved));
+            tracker.finish(result);
+        } catch (Exception ex) {
+            LOGGER.log(Level.SEVERE, "Async ItemBatch archival failed", ex);
+            ArchiveResult err = new ArchiveResult(false, tracker.getCandidates(),
+                    tracker.getArchivedSoFar(), tracker.getBatchesDone(), false,
+                    tracker.getStartedAt(), new Date(), "Error: " + ex.getMessage());
+            tracker.finish(err);
+        }
     }
 }

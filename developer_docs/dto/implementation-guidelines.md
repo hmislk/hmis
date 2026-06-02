@@ -366,18 +366,86 @@ public class PurchaseOrderListDTO {
 
 **If user needs cancellation details:** Provide a "View Details" action that navigates to the full bill view where all cancellation information is available.
 
+### ✅ SOLUTION 3 (Standard): COALESCE on every nullable LEFT JOIN String — always apply this
+
+Even when LEFT JOINs are present, a `null` value flowing into a `String` DTO constructor
+parameter causes that row to be dropped in some EclipseLink versions. **Always wrap every
+LEFT JOIN String field in `COALESCE(..., '')`** to guarantee rows are never silently omitted.
+
+```java
+// ✅ CORRECT — COALESCE on every nullable LEFT JOIN String
+String sql = "SELECT new com.divudi.core.data.dto.PharmacySaleSearchDTO("
+        + "b.id, b.deptId, b.department.name, b.createdAt, "
+        + "COALESCE(creatorPerson.name, ''), "     // nullable LEFT JOIN
+        + "COALESCE(patientPerson.name, ''), "     // nullable LEFT JOIN
+        + "COALESCE(refDoctorPerson.name, ''), "   // nullable LEFT JOIN
+        + "b.paymentMethod, "
+        + "COALESCE(ps.name, ''), "               // nullable LEFT JOIN
+        + "b.total, b.discount, b.netTotal, "
+        + "b.refunded, b.cancelled) "
+        + "FROM Bill b "
+        + "LEFT JOIN b.creater creater "
+        + "LEFT JOIN creater.webUserPerson creatorPerson "
+        + "LEFT JOIN b.patient patient "
+        + "LEFT JOIN patient.person patientPerson "
+        + "LEFT JOIN b.referredBy referredBy "
+        + "LEFT JOIN referredBy.person refDoctorPerson "
+        + "LEFT JOIN b.paymentScheme ps "
+        + "WHERE ...";
+```
+
+**Rule:** Every column from a LEFT-joined table that is a `String` in the DTO constructor
+**must** be wrapped in `COALESCE(expr, '')`. Numeric and boolean fields from the root entity
+(`b.total`, `b.cancelled`) are safe without COALESCE.
+
+### Row-limit parameter pattern
+
+When exposing a DTO fetch method that should respect the user's configured row limit,
+accept `int maxResult` directly (from `searchController.getMaxResult()`) rather than a
+boolean `maxNum` flag. Pass `0` or a negative value to mean "unlimited".
+
+```java
+// ✅ Preferred — caller controls the limit
+public void fetchSaleSearchDtosFromNativeBills(int maxResult) {
+    ...
+    if (maxResult > 0) {
+        saleBillDtos = (List<PharmacySaleSearchDTO>)
+                billFacade.findLightsByJpql(sql, m, TemporalType.TIMESTAMP, maxResult);
+    } else {
+        saleBillDtos = (List<PharmacySaleSearchDTO>)
+                billFacade.findLightsByJpql(sql, m, TemporalType.TIMESTAMP);
+    }
+}
+
+// ✅ Backward-compat shim keeps old callers working
+@Deprecated
+public void fetchSaleSearchDtosFromNativeBills(boolean maxNum) {
+    fetchSaleSearchDtosFromNativeBills(maxNum ? 25 : 0);
+}
+```
+
+### No subqueries in DTO fetch methods
+
+Do **not** add JPQL subqueries (e.g. `b.id IN (SELECT bi.bill.id FROM BillItem bi WHERE ...)`)
+inside DTO constructor queries. Subqueries inside `SELECT new DTO(...)` are not supported by
+EclipseLink and subqueries in the `WHERE` clause of a constructor query degrade performance
+significantly for large tables. If item-level filtering is required, discuss an alternative
+approach before implementing.
+
 ### Best Practices Summary
 
 1. **Always use wrapper types** (`Boolean`, `Integer`, `Long`) for DTO constructor parameters
 2. **Avoid nullable relationship traversal** - accessing `b.cancelledBill.createdAt` fails silently if `cancelledBill` is null
 3. **Use LEFT JOIN with explicit aliases** if you must access nullable relationships
-4. **Use COALESCE** for nullable String fields to provide default values
+4. **Always COALESCE every LEFT JOIN String field** — wrap with `COALESCE(expr, '')` to prevent silent row drops
 5. **Test COUNT separately** to verify data exists before troubleshooting DTO construction
 6. **Add debug logging** when implementing new DTO queries to catch silent failures early
 7. **Match parameter types exactly** - don't rely on implicit conversions with `Object`
 8. **Avoid cancellation details in list DTOs** - use boolean flags, let users navigate to details for full info
 9. **Test with minimal constructor first** - if a 4-param constructor works but 11-param fails, the issue is with the additional fields
 10. **Only use persisted fields in JPQL** - derived properties like `nameWithTitle` are not valid (see below)
+11. **Accept `int maxResult` not `boolean maxNum`** - lets the caller pass `searchController.getMaxResult()` directly
+12. **No subqueries in DTO fetch methods** - discuss alternatives before adding `WHERE b.id IN (SELECT ...)`
 
 ## 🚨 CRITICAL: Derived/Calculated Properties Cannot Be Used in JPQL
 

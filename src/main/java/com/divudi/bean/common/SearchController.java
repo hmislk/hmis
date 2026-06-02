@@ -4562,6 +4562,84 @@ public class SearchController implements Serializable {
             JsfUtil.addErrorMessage("Please Select Bill Type");
             return;
         }
+
+        // PharmacyPre atomics: redirect to DTO fetch so the pre_bill.xhtml composite
+        // (which binds to preBillSearchDtos) shows results from the atomic search path.
+        if (billTypeAtomic.getBillType() == BillType.PharmacyPre) {
+            pharmacyBillSearch.fetchPreBillSearchDtos(maxResult);
+            return;
+        }
+
+        // PharmacyWholeSale atomics: redirect to DTO fetch so the pharmacy_whole_sale.xhtml
+        // composite (which binds to wholeSaleSearchDtos) shows results from the atomic search path.
+        if (billTypeAtomic.getBillType() == BillType.PharmacyWholeSale) {
+            pharmacyBillSearch.fetchWholeSaleSearchDtos(maxResult);
+            return;
+        }
+
+        // PHARMACY_ORDER atomic: redirect to DTO fetch so po_request.xhtml composite
+        // (which binds to poRequestSearchDtos) shows results from the atomic search path.
+        if (billTypeAtomic == BillTypeAtomic.PHARMACY_ORDER) {
+            pharmacyBillSearch.fetchPoRequestSearchDtos(maxResult);
+            return;
+        }
+
+        // PHARMACY_ORDER_APPROVAL atomic: redirect to DTO fetch so po_approve.xhtml composite
+        // (which binds to poApproveSearchDtos) shows results from the atomic search path.
+        if (billTypeAtomic == BillTypeAtomic.PHARMACY_ORDER_APPROVAL) {
+            pharmacyBillSearch.fetchPoApproveSearchDtos(maxResult);
+            return;
+        }
+
+        // PHARMACY_GRN atomic: redirect to DTO fetch so grn.xhtml composite
+        // (which binds to grnSearchDtos) shows results from the atomic search path.
+        if (billTypeAtomic.getBillType() == BillType.PharmacyGrnBill) {
+            pharmacyBillSearch.fetchGrnSearchDtos(maxResult);
+            return;
+        }
+
+        // PHARMACY_DIRECT_PURCHASE atomics: redirect to DTO fetch so purchase.xhtml
+        // composite (which binds to purchaseSearchDtos) shows results from the atomic search path.
+        if (billTypeAtomic.getBillType() == BillType.PharmacyPurchaseBill) {
+            pharmacyBillSearch.fetchPurchaseSearchDtos(maxResult);
+            return;
+        }
+
+        // PharmacyGrnReturn atomics: redirect to DTO fetch so grn_return.xhtml composite
+        // (which binds to grnReturnSearchDtos) shows results from the atomic search path.
+        if (billTypeAtomic.getBillType() == BillType.PharmacyGrnReturn) {
+            pharmacyBillSearch.fetchGrnReturnSearchDtos(maxResult);
+            return;
+        }
+
+        // PharmacyReturnWithoutTraising: redirect to DTO fetch so grn_return_without_traising.xhtml
+        // composite (which binds to returnWithoutTraisingSearchDtos) shows results from the atomic search path.
+        if (billTypeAtomic.getBillType() == BillType.PharmacyReturnWithoutTraising) {
+            pharmacyBillSearch.fetchReturnWithoutTraisingSearchDtos(maxResult);
+            return;
+        }
+
+        // PharmacyIssue atomics: redirect to DTO fetch so pharmacy_issue.xhtml composite
+        // (which binds to issueSearchDtos) shows results from the atomic search path.
+        // ISSUE_MEDICINE_ON_REQUEST_INWARD is excluded: the atomic search page renders
+        // pharmacy_issue_for_inpatients.xhtml for that atomic, which still reads
+        // searchController.bills and must fall through to the generic query below.
+        if (billTypeAtomic.getBillType() == BillType.PharmacyIssue
+                && billTypeAtomic != BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD) {
+            pharmacyBillSearch.fetchIssueSearchDtos(maxResult);
+            return;
+        }
+
+        // PharmacyAdjustment atomics: redirect to DTO fetch so adjustment.xhtml composite
+        // (which binds to adjustmentSearchDtos) shows results from the atomic search path.
+        // PharmacyStockAdjustmentBill is also included: pharmacy_search_by_bill_type_atomic.xhtml
+        // renders <se:adjustment/> for that BillType too, so it must populate adjustmentSearchDtos.
+        if (billTypeAtomic.getBillType() == BillType.PharmacyAdjustment
+                || billTypeAtomic.getBillType() == BillType.PharmacyStockAdjustmentBill) {
+            pharmacyBillSearch.fetchAdjustmentSearchDtos(maxResult);
+            return;
+        }
+
         String jpql;
         Map params = new HashMap();
 
@@ -4665,43 +4743,103 @@ public class SearchController implements Serializable {
             JsfUtil.addErrorMessage("Please Select Bill Type");
             return;
         }
-        String jpql;
-        Map params = new HashMap();
 
         System.out.println("DEBUG: Selected billType = " + billType);
         System.out.println("DEBUG: FromDate = " + getFromDate());
         System.out.println("DEBUG: ToDate = " + getToDate());
         System.out.println("DEBUG: Current Department = " + (getSessionController().getDepartment() != null ? getSessionController().getDepartment().getId() + " - " + getSessionController().getDepartment().getName() : "NULL"));
 
-        // Special handling for PharmacyAdjustment - use bill type atomics instead
-        if (billType == BillType.PharmacyAdjustment) {
-            jpql = "select b from Bill b where b.retired=false and "
-                    + " b.department=:dep and b.billTypeAtomic in :billTypeAtomics "
-                    + " and b.createdAt between :fromDate and :toDate ";
-
-            // Include all adjustment-related bill type atomics
-            List<BillTypeAtomic> adjustmentAtomics = Arrays.asList(
-                    BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT,
-                    BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT_BILL,
-                    BillTypeAtomic.PHARMACY_STAFF_STOCK_ADJUSTMENT,
-                    BillTypeAtomic.PHARMACY_ADJUSTMENT,
-                    BillTypeAtomic.PHARMACY_ADJUSTMENT_CANCELLED,
-                    BillTypeAtomic.PHARMACY_PURCHASE_RATE_ADJUSTMENT,
-                    BillTypeAtomic.PHARMACY_RETAIL_RATE_ADJUSTMENT,
-                    BillTypeAtomic.PHARMACY_WHOLESALE_RATE_ADJUSTMENT,
-                    BillTypeAtomic.PHARMACY_COST_RATE_ADJUSTMENT,
-                    BillTypeAtomic.PHARMACY_STOCK_EXPIRY_DATE_AJUSTMENT
-            );
-            params.put("billTypeAtomics", adjustmentAtomics);
-
-            System.out.println("DEBUG: Using PharmacyAdjustment branch");
-        } else {
-            jpql = "select b from Bill b where b.retired=false and "
-                    + " (type(b)=:class1 or type(b)=:class2) "
-                    + " and b.department=:dep and b.billType = :billType "
-                    + " and b.createdAt between :fromDate and :toDate ";
-            params.put("billType", billType);
+        // PharmacySale: use lightweight DTO query via PharmacyBillSearch to avoid
+        // loading full entity graphs across wide date ranges (issue #21005 / #20299).
+        if (billType == BillType.PharmacySale) {
+            pharmacyBillSearch.fetchSaleSearchDtosFromNativeBills(maxResult);
+            return;
         }
+
+        // PharmacyTransferRequest: use lightweight DTO query (issue #21006 / #20299).
+        if (billType == BillType.PharmacyTransferRequest) {
+            pharmacyBillSearch.fetchTransferRequestSearchDtos(maxResult);
+            return;
+        }
+
+        // PharmacyTransferIssue: use lightweight DTO query (issue #21007 / #20299).
+        if (billType == BillType.PharmacyTransferIssue) {
+            pharmacyBillSearch.fetchTransferIssueSearchDtos(maxResult);
+            return;
+        }
+
+        // PharmacyTransferReceive: use lightweight DTO query (issue #21008 / #20299).
+        if (billType == BillType.PharmacyTransferReceive) {
+            pharmacyBillSearch.fetchTransferReceiveSearchDtos(maxResult);
+            return;
+        }
+
+        // PharmacyPre: use lightweight DTO query (issue #21009 / #20299).
+        if (billType == BillType.PharmacyPre) {
+            pharmacyBillSearch.fetchPreBillSearchDtos(maxResult);
+            return;
+        }
+
+        // PharmacyWholeSale: use lightweight DTO query (issue #21010 / #20299).
+        if (billType == BillType.PharmacyWholeSale) {
+            pharmacyBillSearch.fetchWholeSaleSearchDtos(maxResult);
+            return;
+        }
+
+        // PharmacyOrder (PO request): use lightweight DTO query (issue #21011 / #20299).
+        if (billType == BillType.PharmacyOrder) {
+            pharmacyBillSearch.fetchPoRequestSearchDtos(maxResult);
+            return;
+        }
+
+        // PharmacyOrderApprove (PO approval): use lightweight DTO query (issue #21011 / #20299).
+        if (billType == BillType.PharmacyOrderApprove) {
+            pharmacyBillSearch.fetchPoApproveSearchDtos(maxResult);
+            return;
+        }
+
+        // PharmacyGrnBill: use lightweight DTO query (issue #21012 / #20299).
+        if (billType == BillType.PharmacyGrnBill) {
+            pharmacyBillSearch.fetchGrnSearchDtos(maxResult);
+            return;
+        }
+
+        // PharmacyPurchaseBill: use lightweight DTO query (issue #21013 / #20299).
+        if (billType == BillType.PharmacyPurchaseBill) {
+            pharmacyBillSearch.fetchPurchaseSearchDtos(maxResult);
+            return;
+        }
+
+        // PharmacyGrnReturn: use lightweight DTO query (issue #21014 / #20299).
+        if (billType == BillType.PharmacyGrnReturn) {
+            pharmacyBillSearch.fetchGrnReturnSearchDtos(maxResult);
+            return;
+        }
+
+        // PharmacyReturnWithoutTraising: use lightweight DTO query (issue #21014 / #20299).
+        if (billType == BillType.PharmacyReturnWithoutTraising) {
+            pharmacyBillSearch.fetchReturnWithoutTraisingSearchDtos(maxResult);
+            return;
+        }
+
+        // PharmacyIssue: use lightweight DTO query (issue #21015 / #20299).
+        if (billType == BillType.PharmacyIssue) {
+            pharmacyBillSearch.fetchIssueSearchDtos(maxResult);
+            return;
+        }
+
+        // PharmacyAdjustment: use lightweight DTO query (issue #21016 / #20299).
+        if (billType == BillType.PharmacyAdjustment) {
+            pharmacyBillSearch.fetchAdjustmentSearchDtos(maxResult);
+            return;
+        }
+
+        String jpql = "select b from Bill b where b.retired=false and "
+                + " (type(b)=:class1 or type(b)=:class2) "
+                + " and b.department=:dep and b.billType = :billType "
+                + " and b.createdAt between :fromDate and :toDate ";
+        Map params = new HashMap();
+
         if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
             jpql += " and  ((b.deptId) like :billNo )";
             params.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
@@ -4768,12 +4906,9 @@ public class SearchController implements Serializable {
 
         jpql += " order by b.createdAt asc  ";
 
-        // Only set class1, class2, and billType parameters if not using billTypeAtomics
-        if (billType != BillType.PharmacyAdjustment) {
-            params.put("class1", BilledBill.class);
-            params.put("class2", PreBill.class);
-            params.put("billType", billType);
-        }
+        params.put("class1", BilledBill.class);
+        params.put("class2", PreBill.class);
+        params.put("billType", billType);
         params.put("dep", getSessionController().getDepartment());
         params.put("toDate", getToDate());
         params.put("fromDate", getFromDate());

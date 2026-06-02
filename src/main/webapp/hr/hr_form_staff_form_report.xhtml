@@ -5,276 +5,445 @@
                 xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns:p="http://primefaces.org/ui"
-
                 xmlns:hr="http://xmlns.jcp.org/jsf/composite/autocomplete">
 
     <ui:define name="content">
-        <h:form>
-            <p:panel header="Form Working Shift Sheet">
-                <h:panelGrid columns="2">
 
-                    <p:panel header="Search Forms">
-                        <h:panelGrid columns="2">
-                            <h:panelGrid columns="2">
-                                <h:outputLabel value="From Date"/>
-                                <p:calendar value="#{staffAdditionalFormController.fromDate}"
-                                            pattern="yyyy MM dd HH:mm:ss" >
-                                </p:calendar>
-                                <h:outputLabel value="To Date"/>
-                                <p:calendar id="forDateS" value="#{staffAdditionalFormController.toDate}"
-                                            pattern="yyyy MM dd HH:mm:ss" >
-                                </p:calendar>
-                                <h:outputLabel value="Institution : "/>
-                                <hr:institution value="#{staffAdditionalFormController.reportKeyWord.institution}"/>
-                                <h:outputLabel value="Department : "/>
-                                <hr:department value="#{staffAdditionalFormController.reportKeyWord.department}"/>
-                                <h:outputLabel value="Employee : "/>
-                                <hr:completeStaff value="#{staffAdditionalFormController.reportKeyWord.staff}"/>
-                                <h:outputLabel value="Staff Category : "/>
-                                <hr:completeStaffCategory value="#{staffAdditionalFormController.reportKeyWord.staffCategory}"/>
-                                <h:outputLabel value="Staff Designation : "/>
-                                <hr:completeDesignation value="#{staffAdditionalFormController.reportKeyWord.designation}"/>
-                                <h:outputLabel value="Staff Roster : "/>
-                                <hr:completeRoster value="#{staffAdditionalFormController.reportKeyWord.roster}"/>
-                                <h:outputLabel value="Time Type : "/>
-                                <p:selectOneMenu   value="#{staffAdditionalFormController.reportKeyWord.times}">
-                                    <f:selectItem itemLabel="Please Day Type "/>
-                                    <f:selectItems  value="#{enumController.timeses}" ></f:selectItems>
-                                </p:selectOneMenu>
+        <h:form styleClass="form-shift-sheet-form">
 
+            <h:outputStylesheet>
+                .form-shift-sheet-form {
+                    padding: 2rem 1.75rem;
+                }
 
+                .page-header {
+                    margin-bottom: 1.75rem;
+                }
 
-                            </h:panelGrid>
-                            <h:panelGrid columns="2" rendered="false">
-                                <h:outputLabel value="Day Type"/>
-                                <p:selectManyCheckbox value="#{staffAdditionalFormController.reportKeyWord.dayTypes}" layout="grid" columns="1" >
-                                    <f:selectItems value="#{enumController.dayTypes}" var="e" itemLabel="#{e}" itemValue="#{e}" ></f:selectItems>
-                                </p:selectManyCheckbox>
-                            </h:panelGrid>
-                        </h:panelGrid>
-                        <p:commandButton ajax="false" value="Search By Created Date" action="#{staffAdditionalFormController.searchFormByCreatedDate()}" />
-                        <p:commandButton ajax="false" value="Search By Shift Date" action="#{staffAdditionalFormController.searchFormByShiftDate()}" />
-                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton"  >
-                            <p:dataExporter type="xlsx" target="tb1" fileName="hr_form_staff_form_report"  />
+                .page-title {
+                    font-size: 18px;
+                    font-weight: 600;
+                    margin: 0 0 4px 0;
+                }
+
+                .page-subtitle {
+                    font-size: 13px;
+                    color: #888;
+                    margin: 0;
+                }
+
+                .controls-panel .ui-panel-content {
+                    padding: 1.5rem 1.75rem !important;
+                }
+
+                .controls-grid {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 1.25rem;
+                }
+
+                .fields-grid {
+                    display: grid;
+                    grid-template-columns: repeat(2, 1fr);
+                    gap: 1rem 1.5rem;
+                }
+
+                .field-group {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 6px;
+                }
+
+                .field-label {
+                    font-size: 11.5px !important;
+                    font-weight: 600 !important;
+                    text-transform: uppercase;
+                    letter-spacing: 0.05em;
+                    color: #888 !important;
+                }
+
+                .controls-actions {
+                    display: flex;
+                    gap: 10px;
+                    align-items: center;
+                    flex-wrap: wrap;
+                }
+
+                .controls-actions-secondary {
+                    display: flex;
+                    gap: 10px;
+                    align-items: center;
+                    flex-wrap: wrap;
+                    padding-top: 0.75rem;
+                    border-top: 1px solid #e8e8e8;
+                }
+
+                .btn-action {
+                    height: 36px !important;
+                    padding: 0 18px !important;
+                    font-size: 13px !important;
+                }
+
+                .report-panel {
+                    margin-top: 1.5rem;
+                }
+
+                .report-panel .ui-panel-content {
+                    padding: 0 !important;
+                }
+
+                .report-header-wrap {
+                    text-align: center;
+                    padding: 1.5rem 1.5rem 1rem;
+                    border-bottom: 1px solid #e8e8e8;
+                }
+
+                .report-title-label {
+                    font-size: 13px;
+                    color: #666;
+                    display: block;
+                    margin-bottom: 2px;
+                }
+
+                .report-meta {
+                    font-size: 13px;
+                    color: #555;
+                    margin-top: 4px;
+                }
+
+                .wt-table .ui-datatable-tablewrapper {
+                    overflow-x: auto !important;
+                    width: 100% !important;
+                }
+
+                .wt-table table {
+                    width: auto !important;
+                    table-layout: auto !important;
+                }
+
+                .wt-table .ui-datatable-data td,
+                .wt-table .ui-datatable-thead th {
+                    padding: 10px 14px !important;
+                    white-space: nowrap;
+                    font-size: 13px !important;
+                    width: auto !important;
+                }
+
+                .wt-table .ui-datatable-thead th {
+                    font-size: 12px !important;
+                    font-weight: 600 !important;
+                    text-transform: uppercase;
+                    letter-spacing: 0.03em;
+                    color: #888 !important;
+                    background: #f9f9f9 !important;
+                    border-bottom: 1px solid #e8e8e8 !important;
+                }
+
+                .wt-table .ui-datatable-data tr:hover td {
+                    background: #f5f7ff !important;
+                }
+
+                .wt-table .col-text {
+                    text-align: left !important;
+                }
+
+                .wt-table .col-num {
+                    text-align: right !important;
+                }
+
+                .wt-table .col-name .ui-outputlabel {
+                    font-weight: 500;
+                }
+
+                .wt-table tfoot td {
+                    background: #f9f9f9 !important;
+                    font-size: 12px !important;
+                    border-top: 2px solid #e0e0e0 !important;
+                    padding: 10px 14px !important;
+                    color: #999;
+                }
+
+                .report-table-footer {
+                    display: flex;
+                    justify-content: flex-end;
+                    align-items: center;
+                    gap: 6px;
+                    padding: 0.85rem 1.5rem;
+                    border-top: 1px solid #e8e8e8;
+                    font-size: 12px;
+                    color: #999;
+                }
+            </h:outputStylesheet>
+
+            <div class="page-header">
+                <p class="page-title"><h:outputText value="Form Working Shift Sheet" /></p>
+                <p class="page-subtitle"><h:outputText value="Filter by date range, employee, department or time type and process to generate" /></p>
+            </div>
+
+            <p:panel styleClass="controls-panel">
+                <div class="controls-grid">
+
+                    <div class="fields-grid">
+                        <div class="field-group">
+                            <p:outputLabel for="fromDate" value="From date" styleClass="field-label" />
+                            <p:calendar id="fromDate"
+                                        value="#{staffAdditionalFormController.fromDate}"
+                                        pattern="yyyy MM dd HH:mm:ss"
+                                        style="width: 100%;" />
+                        </div>
+
+                        <div class="field-group">
+                            <p:outputLabel for="forDateS" value="To date" styleClass="field-label" />
+                            <p:calendar id="forDateS"
+                                        value="#{staffAdditionalFormController.toDate}"
+                                        pattern="yyyy MM dd HH:mm:ss"
+                                        style="width: 100%;" />
+                        </div>
+
+                        <div class="field-group">
+                            <p:outputLabel value="Institution" styleClass="field-label" />
+                            <hr:institution value="#{staffAdditionalFormController.reportKeyWord.institution}" />
+                        </div>
+
+                        <div class="field-group">
+                            <p:outputLabel value="Department" styleClass="field-label" />
+                            <hr:department value="#{staffAdditionalFormController.reportKeyWord.department}" />
+                        </div>
+
+                        <div class="field-group">
+                            <p:outputLabel value="Employee" styleClass="field-label" />
+                            <hr:completeStaff value="#{staffAdditionalFormController.reportKeyWord.staff}" />
+                        </div>
+
+                        <div class="field-group">
+                            <p:outputLabel value="Staff category" styleClass="field-label" />
+                            <hr:completeStaffCategory value="#{staffAdditionalFormController.reportKeyWord.staffCategory}" />
+                        </div>
+
+                        <div class="field-group">
+                            <p:outputLabel value="Staff designation" styleClass="field-label" />
+                            <hr:completeDesignation value="#{staffAdditionalFormController.reportKeyWord.designation}" />
+                        </div>
+
+                        <div class="field-group">
+                            <p:outputLabel value="Staff roster" styleClass="field-label" />
+                            <hr:completeRoster value="#{staffAdditionalFormController.reportKeyWord.roster}" />
+                        </div>
+
+                        <div class="field-group">
+                            <p:outputLabel for="timeType" value="Time type" styleClass="field-label" />
+                            <p:selectOneMenu id="timeType"
+                                             value="#{staffAdditionalFormController.reportKeyWord.times}"
+                                             appendTo="@body"
+                                             autoWidth="false"
+                                             style="width: 100%;">
+                                <f:selectItem itemLabel="Select time type" />
+                                <f:selectItems value="#{enumController.timeses}" />
+                            </p:selectOneMenu>
+                        </div>
+                    </div>
+
+                    <!-- preserved as-is: rendered="false" day type checkbox block -->
+                    <h:panelGrid columns="2" rendered="false">
+                        <h:outputLabel value="Day Type" />
+                        <p:selectManyCheckbox value="#{staffAdditionalFormController.reportKeyWord.dayTypes}" layout="grid" columns="1">
+                            <f:selectItems value="#{enumController.dayTypes}" var="e" itemLabel="#{e}" itemValue="#{e}" />
+                        </p:selectManyCheckbox>
+                    </h:panelGrid>
+
+                    <div class="controls-actions">
+                        <p:commandButton value="Search By Created Date"
+                                         ajax="false"
+                                         action="#{staffAdditionalFormController.searchFormByCreatedDate()}"
+                                         icon="pi pi-search"
+                                         styleClass="btn-action" />
+                        <p:commandButton value="Search By Shift Date"
+                                         ajax="false"
+                                         action="#{staffAdditionalFormController.searchFormByShiftDate()}"
+                                         icon="pi pi-search"
+                                         styleClass="btn-action" />
+                    </div>
+
+                    <div class="controls-actions-secondary">
+                        <p:commandButton value="Print"
+                                         type="button"
+                                         icon="pi pi-print"
+                                         styleClass="btn-action">
+                            <p:printer target="gpBillPreview" />
                         </p:commandButton>
-                        <p:commandButton value="Print" ajax="false" action="#" >
-                            <p:printer target="gpBillPreview" ></p:printer>
+                        <p:commandButton value="Export Excel"
+                                         ajax="false"
+                                         icon="pi pi-file-excel"
+                                         styleClass="btn-action noPrintButton">
+                            <p:dataExporter type="xlsx" target="tb1" fileName="hr_form_staff_form_report" />
                         </p:commandButton>
+                    </div>
 
-                        <p:panel id="gpBillPreview" styleClass="noBorder summeryBorder" >
-
-                            <p:dataTable  value="#{staffAdditionalFormController.hrForms}"
-                                          var="add" id="tb1" >
-
-                                <f:facet name="header">
-
-                                    <h:outputLabel value="Additional Working Shift Sheet"/><br/>
-                                    <h:outputLabel value="  From : "  />
-                                    <h:outputLabel  value="#{staffAdditionalFormController.fromDate}" >
-                                        <f:convertDateTime pattern="dd MM yy "/>
-                                    </h:outputLabel>
-                                    <h:outputLabel/>
-                                    <h:outputLabel/>
-                                    <h:outputLabel value="  To : "/>
-                                    <h:outputLabel  value="#{staffAdditionalFormController.toDate}">
-                                        <f:convertDateTime pattern="dd MM yy "/>
-                                    </h:outputLabel><br/>
-                                    <h:panelGroup rendered="#{staffAdditionalFormController.reportKeyWord.institution ne null}" >
-                                        <h:outputLabel value="#{staffAdditionalFormController.reportKeyWord.institution.name}" />
-                                        <br/>
-                                    </h:panelGroup>
-                                    <h:panelGroup rendered="#{staffAdditionalFormController.reportKeyWord.department ne null}" >
-                                        <h:outputLabel value="Department : #{staffAdditionalFormController.reportKeyWord.department.name}"/>
-                                        <br/>
-                                    </h:panelGroup>
-                                    <h:panelGroup rendered="#{staffAdditionalFormController.reportKeyWord.staff ne null}" >
-                                        <h:outputLabel value="Staff : #{staffAdditionalFormController.reportKeyWord.staff.person.name}"/>
-                                        <br/>
-                                    </h:panelGroup>
-                                </f:facet>
-
-                                <p:column headerText="Form Number" sortBy="#{add.code}">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Form Number"/>
-                                    </f:facet>
-                                    <p:outputLabel value="#{add.code}" ></p:outputLabel>
-                                </p:column>
-
-                                <p:column headerText="Code" sortBy="#{add.staff.codeInterger}">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Code"/>
-                                    </f:facet>
-                                    <p:outputLabel value="#{add.staff.codeInterger}" ></p:outputLabel>
-                                </p:column>
-
-                                <p:column headerText="Staff">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Staff"/>
-                                    </f:facet>
-                                    <p:outputLabel value="#{add.staff.person.nameWithTitle}" ></p:outputLabel>
-                                </p:column>
-
-                                <p:column headerText="Created At" sortBy="#{add.createdAt}">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Created At"/>
-                                    </f:facet>
-                                    <p:outputLabel value="#{add.createdAt}" >
-                                        <f:convertDateTime pattern="yyyy MM dd HH:mm:ss" />
-                                    </p:outputLabel>
-                                </p:column>
-                                <p:column headerText="Class">
-                                    <h:outputLabel value="#{add}"/>
-                                </p:column>
-
-                                <p:column headerText="Roster">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Roster"/>
-                                    </f:facet>
-                                    <p:outputLabel value="#{add.staffShift.roster.name}" ></p:outputLabel>
-                                </p:column>
-
-                                <p:column headerText="Shift Start">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Shift Start Time"/>
-                                    </f:facet>
-                                    <p:outputLabel value="#{add.staffShift.shiftStartTime}" >
-                                        <f:convertDateTime pattern="yyyy MM dd HH:mm:ss" />
-                                    </p:outputLabel>
-                                </p:column>
-
-                                <p:column headerText="Shift End">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Shift End Time"/>
-                                    </f:facet>
-                                    <p:outputLabel value="#{add.staffShift.shiftEndTime}" >
-                                        <f:convertDateTime pattern="yyyy MM dd HH:mm:ss" />
-                                    </p:outputLabel>
-                                </p:column>
-
-
-                                <p:column headerText="From">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Additional From "/>
-                                    </f:facet>
-                                    <p:outputLabel value="#{add.fromTime}" >
-                                        <f:convertDateTime pattern="yyyy MM dd HH:mm:ss" />
-                                    </p:outputLabel>
-                                </p:column>
-
-                                <p:column headerText="To">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Additional Form To"/>
-                                    </f:facet>
-                                    <p:outputLabel value="#{add.toTime}" >
-                                        <f:convertDateTime pattern="yyyy MM dd HH:mm:ss" />
-                                    </p:outputLabel>
-                                </p:column>
-
-
-                                <p:column headerText="Time">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Time"/>
-                                    </f:facet>
-                                    <p:outputLabel value="#{add.times}" ></p:outputLabel>
-                                </p:column>
-
-
-                                <p:column headerText="Day Type">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Day Type"/>
-                                    </f:facet>
-                                    <p:outputLabel value="#{add.staffShift.dayType}" ></p:outputLabel>
-                                </p:column>
-
-                                <p:column headerText="Additionl OT Before Shift">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Additionl OT Before Shift"/>
-                                    </f:facet>
-                                    <p:outputLabel value="#{add.staffShift.extraTimeFromStartRecordVarified/ 60}" >
-                                        <f:convertNumber pattern="0"/>
-                                    </p:outputLabel>
-                                </p:column>
-
-                                <p:column headerText="Additional OT After Shift">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Additional OT After Shift"/>
-                                    </f:facet>
-                                    <p:outputLabel value="#{add.staffShift.extraTimeFromEndRecordVarified / 60}" >
-                                        <f:convertNumber pattern="0"/>
-                                    </p:outputLabel>
-                                </p:column>
-
-                                <p:column headerText="PH/DAY OFF">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="PH/DAY OFF"/>
-                                    </f:facet>
-                                    <p:outputLabel value="#{add.staffShift.extraTimeCompleteRecordVarified / 60}" >
-                                        <f:convertNumber pattern="0"/>
-                                    </p:outputLabel>
-                                </p:column>
-
-                                <p:column headerText="In Time Varified">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="In Time Varified"/>
-                                    </f:facet>
-                                    <p:outputLabel value="#{add.staffShift.startRecord.recordTimeStamp}" >
-                                        <f:convertDateTime pattern="yyyy MM dd HH:mm:ss" />
-                                    </p:outputLabel>
-                                </p:column>
-
-                                <p:column headerText="Out Time Varified">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Out Time Varified"/>
-                                    </f:facet>
-                                    <p:outputLabel value="#{add.staffShift.endRecord.recordTimeStamp}" >
-                                        <f:convertDateTime pattern="yyyy MM dd HH:mm:ss" />
-                                    </p:outputLabel>
-                                </p:column>
-
-                                <p:column headerText="Aproved By">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Aproved By"/>
-                                    </f:facet>
-                                    <p:outputLabel value="#{add.approvedStaff.person.nameWithTitle}" ></p:outputLabel>
-                                </p:column>
-
-                                <p:column headerText="Comment">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Comment"/>
-                                    </f:facet>
-                                    <p:outputLabel value="#{add.comments}" ></p:outputLabel>
-                                </p:column>
-
-                                <p:column headerText="ID">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="ID"/>
-                                    </f:facet>
-                                    <p:outputLabel value="#{add.id}" ></p:outputLabel>
-                                </p:column>
-                                <p:column headerText="Retired">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Retired"/>
-                                    </f:facet>
-                                    <p:selectBooleanCheckbox value="#{add.retired}" />
-                                </p:column>
-
-                                <p:column>
-                                    <p:commandButton ajax="false" value="Update"
-                                                     action="#{staffAdditionalFormController.update(add)}"/>
-                                </p:column>
-
-                                <f:facet name="footer">
-                                    <p:outputLabel value="Print By : #{sessionController.loggedUser.webUserPerson.name} - " />
-                                    <p:outputLabel value="Print At : " />
-                                    <p:outputLabel value="#{commonFunctionsProxy.currentDateTime}" >
-                                        <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a " />
-                                    </p:outputLabel>
-                                </f:facet>
-                            </p:dataTable>
-                        </p:panel>
-                    </p:panel>
-                </h:panelGrid>
+                </div>
             </p:panel>
+
+            <p:panel id="gpBillPreview" styleClass="report-panel noBorder summeryBorder">
+
+                <f:facet name="header">
+                    <div class="report-header-wrap">
+                        <span class="report-title-label">Form Working Shift Sheet</span>
+                        <h:panelGroup rendered="#{staffAdditionalFormController.fromDate ne null}">
+                            <p class="report-meta">
+                                <h:outputText value="#{staffAdditionalFormController.fromDate}">
+                                    <f:convertDateTime pattern="dd MM yy" />
+                                </h:outputText>
+                                —
+                                <h:outputText value="#{staffAdditionalFormController.toDate}">
+                                    <f:convertDateTime pattern="dd MM yy" />
+                                </h:outputText>
+                            </p>
+                        </h:panelGroup>
+                        <h:panelGroup rendered="#{staffAdditionalFormController.reportKeyWord.institution ne null}">
+                            <p class="report-meta">
+                                <h:outputText value="#{staffAdditionalFormController.reportKeyWord.institution.name}" />
+                            </p>
+                        </h:panelGroup>
+                        <h:panelGroup rendered="#{staffAdditionalFormController.reportKeyWord.department ne null}">
+                            <p class="report-meta">
+                                Department: <h:outputText value="#{staffAdditionalFormController.reportKeyWord.department.name}" />
+                            </p>
+                        </h:panelGroup>
+                        <h:panelGroup rendered="#{staffAdditionalFormController.reportKeyWord.staff ne null}">
+                            <p class="report-meta">
+                                Employee: <h:outputText value="#{staffAdditionalFormController.reportKeyWord.staff.person.name}" />
+                            </p>
+                        </h:panelGroup>
+                    </div>
+                </f:facet>
+
+                <p:dataTable id="tb1"
+                             value="#{staffAdditionalFormController.hrForms}"
+                             var="add"
+                             styleClass="wt-table">
+
+                    <p:column headerText="Form No" styleClass="col-text" sortBy="#{add.code}">
+                        <p:outputLabel value="#{add.code}" />
+                    </p:column>
+
+                    <p:column headerText="Code" styleClass="col-text" sortBy="#{add.staff.codeInterger}">
+                        <p:outputLabel value="#{add.staff.codeInterger}" />
+                    </p:column>
+
+                    <p:column headerText="Staff" styleClass="col-text col-name" style="min-width: 180px;">
+                        <p:outputLabel value="#{add.staff.person.nameWithTitle}" />
+                    </p:column>
+
+                    <p:column headerText="Created At" styleClass="col-text" sortBy="#{add.createdAt}">
+                        <p:outputLabel value="#{add.createdAt}">
+                            <f:convertDateTime pattern="yyyy MM dd HH:mm:ss" />
+                        </p:outputLabel>
+                    </p:column>
+
+                    <p:column headerText="Class" styleClass="col-text">
+                        <h:outputLabel value="#{add}" />
+                    </p:column>
+
+                    <p:column headerText="Roster" styleClass="col-text">
+                        <p:outputLabel value="#{add.staffShift.roster.name}" />
+                    </p:column>
+
+                    <p:column headerText="Shift Start" styleClass="col-text">
+                        <p:outputLabel value="#{add.staffShift.shiftStartTime}">
+                            <f:convertDateTime pattern="yyyy MM dd HH:mm:ss" />
+                        </p:outputLabel>
+                    </p:column>
+
+                    <p:column headerText="Shift End" styleClass="col-text">
+                        <p:outputLabel value="#{add.staffShift.shiftEndTime}">
+                            <f:convertDateTime pattern="yyyy MM dd HH:mm:ss" />
+                        </p:outputLabel>
+                    </p:column>
+
+                    <p:column headerText="From" styleClass="col-text">
+                        <p:outputLabel value="#{add.fromTime}">
+                            <f:convertDateTime pattern="yyyy MM dd HH:mm:ss" />
+                        </p:outputLabel>
+                    </p:column>
+
+                    <p:column headerText="To" styleClass="col-text">
+                        <p:outputLabel value="#{add.toTime}">
+                            <f:convertDateTime pattern="yyyy MM dd HH:mm:ss" />
+                        </p:outputLabel>
+                    </p:column>
+
+                    <p:column headerText="Time" styleClass="col-text">
+                        <p:outputLabel value="#{add.times}" />
+                    </p:column>
+
+                    <p:column headerText="Day Type" styleClass="col-text">
+                        <p:outputLabel value="#{add.staffShift.dayType}" />
+                    </p:column>
+
+                    <p:column headerText="OT Before Shift (mins)" styleClass="col-num">
+                        <p:outputLabel value="#{add.staffShift.extraTimeFromStartRecordVarified / 60}">
+                            <f:convertNumber pattern="0" />
+                        </p:outputLabel>
+                    </p:column>
+
+                    <p:column headerText="OT After Shift (mins)" styleClass="col-num">
+                        <p:outputLabel value="#{add.staffShift.extraTimeFromEndRecordVarified / 60}">
+                            <f:convertNumber pattern="0" />
+                        </p:outputLabel>
+                    </p:column>
+
+                    <p:column headerText="PH/Day Off (mins)" styleClass="col-num">
+                        <p:outputLabel value="#{add.staffShift.extraTimeCompleteRecordVarified / 60}">
+                            <f:convertNumber pattern="0" />
+                        </p:outputLabel>
+                    </p:column>
+
+                    <p:column headerText="In Time Verified" styleClass="col-text">
+                        <p:outputLabel value="#{add.staffShift.startRecord.recordTimeStamp}">
+                            <f:convertDateTime pattern="yyyy MM dd HH:mm:ss" />
+                        </p:outputLabel>
+                    </p:column>
+
+                    <p:column headerText="Out Time Verified" styleClass="col-text">
+                        <p:outputLabel value="#{add.staffShift.endRecord.recordTimeStamp}">
+                            <f:convertDateTime pattern="yyyy MM dd HH:mm:ss" />
+                        </p:outputLabel>
+                    </p:column>
+
+                    <p:column headerText="Approved By" styleClass="col-text">
+                        <p:outputLabel value="#{add.approvedStaff.person.nameWithTitle}" />
+                    </p:column>
+
+                    <p:column headerText="Comment" styleClass="col-text">
+                        <p:outputLabel value="#{add.comments}" />
+                    </p:column>
+
+                    <p:column headerText="ID" styleClass="col-text">
+                        <p:outputLabel value="#{add.id}" />
+                    </p:column>
+
+                    <p:column headerText="Retired" styleClass="col-text">
+                        <p:selectBooleanCheckbox value="#{add.retired}" />
+                    </p:column>
+
+                    <p:column>
+                        <p:commandButton ajax="false" value="Update"
+                                         action="#{staffAdditionalFormController.update(add)}" />
+                    </p:column>
+
+                    <f:facet name="footer">
+                        <div class="report-table-footer">
+                            <p:outputLabel value="Print by: #{sessionController.loggedUser.webUserPerson.name}" />
+                            <span>·</span>
+                            <p:outputLabel value="#{commonFunctionsProxy.currentDateTime}">
+                                <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a" />
+                            </p:outputLabel>
+                        </div>
+                    </f:facet>
+
+                </p:dataTable>
+
+            </p:panel>
+
         </h:form>
     </ui:define>
 

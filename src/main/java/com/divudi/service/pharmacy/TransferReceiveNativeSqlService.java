@@ -449,13 +449,24 @@ public class TransferReceiveNativeSqlService {
                 .setParameter(3, billId)
                 .executeUpdate();
 
-        // Step 8: Link backwardReferenceBill and forwardReferenceBills
+        // Step 8: Link backwardReferenceBill, referenceBill (both directions), and forwardReferenceBills
         if (bill.getBackwardReferenceBill() != null && bill.getBackwardReferenceBill().getId() != null) {
             long issuedBillId = bill.getBackwardReferenceBill().getId();
 
-            em.createNativeQuery("UPDATE " + billTable() + " SET backwardReferenceBill_ID=? WHERE ID=?")
+            // The Received column on pharmacy_transfer_issued_list joins on the receive
+            // bill's referenceBill_ID (see SearchController.fetchReceivedBillsForIssuedIds).
+            // The regular TransferReceiveController.settle path sets both sides — mirror
+            // that here so fast-receive bills also appear in the Received column.
+            em.createNativeQuery("UPDATE " + billTable()
+                    + " SET backwardReferenceBill_ID=?, referenceBill_ID=? WHERE ID=?")
                     .setParameter(1, issuedBillId)
-                    .setParameter(2, billId)
+                    .setParameter(2, issuedBillId)
+                    .setParameter(3, billId)
+                    .executeUpdate();
+
+            em.createNativeQuery("UPDATE " + billTable() + " SET referenceBill_ID=? WHERE ID=?")
+                    .setParameter(1, billId)
+                    .setParameter(2, issuedBillId)
                     .executeUpdate();
 
             // Insert into the Bill.forwardReferenceBills join table

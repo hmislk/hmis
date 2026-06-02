@@ -81,10 +81,8 @@ public class PharmaceuticalItemApiService implements Serializable {
 
     // ==================== SEARCH ====================
 
-    public List<?> searchItems(String type, String query, String departmentTypeStr, Integer limit) throws Exception {
-        if (query == null || query.trim().isEmpty()) {
-            throw new Exception("Query parameter is required");
-        }
+    public List<?> searchItems(String type, String query, String departmentTypeStr, Integer limit, Integer offset) throws Exception {
+        boolean hasQuery = query != null && !query.trim().isEmpty();
 
         DepartmentType deptType = null;
         if (departmentTypeStr != null && !departmentTypeStr.trim().isEmpty()) {
@@ -95,37 +93,46 @@ public class PharmaceuticalItemApiService implements Serializable {
             }
         }
 
+        if (!hasQuery && deptType == null) {
+            throw new Exception("query or departmentType is required");
+        }
+
         int resultLimit = (limit != null && limit > 0 && limit <= 100) ? limit : 20;
+        int resultOffset = (offset != null && offset > 0) ? offset : 0;
+        String trimmedQuery = hasQuery ? query.trim() : null;
 
         switch (type) {
             case "vtm":
-                return searchVtms(query.trim(), deptType, resultLimit);
+                return searchVtms(trimmedQuery, deptType, resultLimit, resultOffset);
             case "atm":
-                return searchAtms(query.trim(), deptType, resultLimit);
+                return searchAtms(trimmedQuery, deptType, resultLimit, resultOffset);
             case "vmp":
-                return searchVmps(query.trim(), deptType, resultLimit);
+                return searchVmps(trimmedQuery, deptType, resultLimit, resultOffset);
             case "amp":
-                return searchAmps(query.trim(), deptType, resultLimit);
+                return searchAmps(trimmedQuery, deptType, resultLimit, resultOffset);
             case "vmpp":
-                return searchVmpps(query.trim(), deptType, resultLimit);
+                return searchVmpps(trimmedQuery, deptType, resultLimit, resultOffset);
             case "ampp":
-                return searchAmpps(query.trim(), deptType, resultLimit);
+                return searchAmpps(trimmedQuery, deptType, resultLimit, resultOffset);
             default:
                 throw new Exception("Invalid item type: " + type);
         }
     }
 
     @SuppressWarnings("unchecked")
-    private List<VtmDto> searchVtms(String query, DepartmentType deptType, int limit) {
+    private List<VtmDto> searchVtms(String query, DepartmentType deptType, int limit, int offset) {
         Map<String, Object> params = new HashMap<>();
-        params.put("query", "%" + query.toUpperCase() + "%");
 
         StringBuilder jpql = new StringBuilder();
         jpql.append("SELECT new com.divudi.core.data.dto.VtmDto(")
                 .append("i.id, i.name, i.code, i.descreption, i.instructions, i.retired, i.inactive) ")
                 .append("FROM Vtm i ")
-                .append("WHERE i.retired = false ")
-                .append("AND (upper(i.name) LIKE :query OR upper(i.code) LIKE :query) ");
+                .append("WHERE i.retired = false ");
+
+        if (query != null) {
+            jpql.append("AND (upper(i.name) LIKE :query OR upper(i.code) LIKE :query) ");
+            params.put("query", "%" + query.toUpperCase() + "%");
+        }
 
         if (deptType != null) {
             jpql.append("AND i.departmentType = :deptType ");
@@ -134,20 +141,23 @@ public class PharmaceuticalItemApiService implements Serializable {
 
         jpql.append("ORDER BY i.name");
 
-        return (List<VtmDto>) vtmFacade.findLightsByJpql(jpql.toString(), params, javax.persistence.TemporalType.TIMESTAMP, limit);
+        return (List<VtmDto>) vtmFacade.findLightsByJpql(jpql.toString(), params, javax.persistence.TemporalType.TIMESTAMP, limit, offset);
     }
 
     @SuppressWarnings("unchecked")
-    private List<AtmDto> searchAtms(String query, DepartmentType deptType, int limit) {
+    private List<AtmDto> searchAtms(String query, DepartmentType deptType, int limit, int offset) {
         Map<String, Object> params = new HashMap<>();
-        params.put("query", "%" + query.toUpperCase() + "%");
 
         StringBuilder jpql = new StringBuilder();
         jpql.append("SELECT new com.divudi.core.data.dto.AtmDto(")
                 .append("i.id, i.name, i.code, i.descreption, i.retired, i.inactive) ")
                 .append("FROM Atm i ")
-                .append("WHERE i.retired = false ")
-                .append("AND (upper(i.name) LIKE :query OR upper(i.code) LIKE :query) ");
+                .append("WHERE i.retired = false ");
+
+        if (query != null) {
+            jpql.append("AND (upper(i.name) LIKE :query OR upper(i.code) LIKE :query) ");
+            params.put("query", "%" + query.toUpperCase() + "%");
+        }
 
         if (deptType != null) {
             jpql.append("AND i.departmentType = :deptType ");
@@ -156,21 +166,26 @@ public class PharmaceuticalItemApiService implements Serializable {
 
         jpql.append("ORDER BY i.name");
 
-        return (List<AtmDto>) atmFacade.findLightsByJpql(jpql.toString(), params, javax.persistence.TemporalType.TIMESTAMP, limit);
+        return (List<AtmDto>) atmFacade.findLightsByJpql(jpql.toString(), params, javax.persistence.TemporalType.TIMESTAMP, limit, offset);
     }
 
     @SuppressWarnings("unchecked")
-    private List<VmpDto> searchVmps(String query, DepartmentType deptType, int limit) {
+    private List<VmpDto> searchVmps(String query, DepartmentType deptType, int limit, int offset) {
         Map<String, Object> params = new HashMap<>();
-        params.put("query", "%" + query.toUpperCase() + "%");
 
         StringBuilder jpql = new StringBuilder();
         jpql.append("SELECT new com.divudi.core.data.dto.VmpDto(")
                 .append("i.id, i.name, i.code, i.descreption, i.retired, i.inactive, ")
-                .append("i.vtm.id, i.vtm.name, i.dosageForm.id, i.dosageForm.name) ")
+                .append("vtm.id, vtm.name, df.id, df.name) ")
                 .append("FROM Vmp i ")
-                .append("WHERE i.retired = false ")
-                .append("AND (upper(i.name) LIKE :query OR upper(i.code) LIKE :query) ");
+                .append("LEFT JOIN i.vtm vtm ")
+                .append("LEFT JOIN i.dosageForm df ")
+                .append("WHERE i.retired = false ");
+
+        if (query != null) {
+            jpql.append("AND (upper(i.name) LIKE :query OR upper(i.code) LIKE :query) ");
+            params.put("query", "%" + query.toUpperCase() + "%");
+        }
 
         if (deptType != null) {
             jpql.append("AND i.departmentType = :deptType ");
@@ -179,23 +194,28 @@ public class PharmaceuticalItemApiService implements Serializable {
 
         jpql.append("ORDER BY i.name");
 
-        return (List<VmpDto>) vmpFacade.findLightsByJpql(jpql.toString(), params, javax.persistence.TemporalType.TIMESTAMP, limit);
+        return (List<VmpDto>) vmpFacade.findLightsByJpql(jpql.toString(), params, javax.persistence.TemporalType.TIMESTAMP, limit, offset);
     }
 
     @SuppressWarnings("unchecked")
-    private List<AmpDto> searchAmps(String query, DepartmentType deptType, int limit) {
+    private List<AmpDto> searchAmps(String query, DepartmentType deptType, int limit, int offset) {
         Map<String, Object> params = new HashMap<>();
-        params.put("query", "%" + query.toUpperCase() + "%");
 
         StringBuilder jpql = new StringBuilder();
         jpql.append("SELECT new com.divudi.core.data.dto.AmpDto(")
                 .append("i.id, i.name, i.code, i.barcode, i.inactive, ")
-                .append("i.vmp.id, i.vmp.name, i.category.id, i.category.name, ")
+                .append("vmp.id, vmp.name, cat.id, cat.name, ")
                 .append("df.id, df.name) ")
                 .append("FROM Amp i ")
+                .append("LEFT JOIN i.vmp vmp ")
+                .append("LEFT JOIN i.category cat ")
                 .append("LEFT JOIN i.dosageForm df ")
-                .append("WHERE i.retired = false ")
-                .append("AND (upper(i.name) LIKE :query OR upper(i.code) LIKE :query) ");
+                .append("WHERE i.retired = false ");
+
+        if (query != null) {
+            jpql.append("AND (upper(i.name) LIKE :query OR upper(i.code) LIKE :query) ");
+            params.put("query", "%" + query.toUpperCase() + "%");
+        }
 
         if (deptType != null) {
             jpql.append("AND i.departmentType = :deptType ");
@@ -204,21 +224,25 @@ public class PharmaceuticalItemApiService implements Serializable {
 
         jpql.append("ORDER BY i.name");
 
-        return (List<AmpDto>) ampFacade.findLightsByJpql(jpql.toString(), params, javax.persistence.TemporalType.TIMESTAMP, limit);
+        return (List<AmpDto>) ampFacade.findLightsByJpql(jpql.toString(), params, javax.persistence.TemporalType.TIMESTAMP, limit, offset);
     }
 
     @SuppressWarnings("unchecked")
-    private List<VmppDto> searchVmpps(String query, DepartmentType deptType, int limit) {
+    private List<VmppDto> searchVmpps(String query, DepartmentType deptType, int limit, int offset) {
         Map<String, Object> params = new HashMap<>();
-        params.put("query", "%" + query.toUpperCase() + "%");
 
         StringBuilder jpql = new StringBuilder();
         jpql.append("SELECT new com.divudi.core.data.dto.VmppDto(")
                 .append("i.id, i.name, i.code, i.retired, i.inactive, ")
-                .append("i.vmp.id, i.vmp.name) ")
+                .append("vmp.id, vmp.name) ")
                 .append("FROM Vmpp i ")
-                .append("WHERE i.retired = false ")
-                .append("AND (upper(i.name) LIKE :query OR upper(i.code) LIKE :query) ");
+                .append("LEFT JOIN i.vmp vmp ")
+                .append("WHERE i.retired = false ");
+
+        if (query != null) {
+            jpql.append("AND (upper(i.name) LIKE :query OR upper(i.code) LIKE :query) ");
+            params.put("query", "%" + query.toUpperCase() + "%");
+        }
 
         if (deptType != null) {
             jpql.append("AND i.departmentType = :deptType ");
@@ -227,21 +251,26 @@ public class PharmaceuticalItemApiService implements Serializable {
 
         jpql.append("ORDER BY i.name");
 
-        return (List<VmppDto>) vmppFacade.findLightsByJpql(jpql.toString(), params, javax.persistence.TemporalType.TIMESTAMP, limit);
+        return (List<VmppDto>) vmppFacade.findLightsByJpql(jpql.toString(), params, javax.persistence.TemporalType.TIMESTAMP, limit, offset);
     }
 
     @SuppressWarnings("unchecked")
-    private List<AmppDto> searchAmpps(String query, DepartmentType deptType, int limit) {
+    private List<AmppDto> searchAmpps(String query, DepartmentType deptType, int limit, int offset) {
         Map<String, Object> params = new HashMap<>();
-        params.put("query", "%" + query.toUpperCase() + "%");
 
         StringBuilder jpql = new StringBuilder();
         jpql.append("SELECT new com.divudi.core.data.dto.AmppDto(")
                 .append("i.id, i.name, i.code, i.retired, i.inactive, ")
-                .append("i.dblValue, i.packUnit.name, i.amp.id, i.amp.name) ")
+                .append("i.dblValue, pu.name, amp.id, amp.name) ")
                 .append("FROM Ampp i ")
-                .append("WHERE i.retired = false ")
-                .append("AND (upper(i.name) LIKE :query OR upper(i.code) LIKE :query) ");
+                .append("LEFT JOIN i.packUnit pu ")
+                .append("LEFT JOIN i.amp amp ")
+                .append("WHERE i.retired = false ");
+
+        if (query != null) {
+            jpql.append("AND (upper(i.name) LIKE :query OR upper(i.code) LIKE :query) ");
+            params.put("query", "%" + query.toUpperCase() + "%");
+        }
 
         if (deptType != null) {
             jpql.append("AND i.departmentType = :deptType ");
@@ -250,7 +279,7 @@ public class PharmaceuticalItemApiService implements Serializable {
 
         jpql.append("ORDER BY i.name");
 
-        return (List<AmppDto>) amppFacade.findLightsByJpql(jpql.toString(), params, javax.persistence.TemporalType.TIMESTAMP, limit);
+        return (List<AmppDto>) amppFacade.findLightsByJpql(jpql.toString(), params, javax.persistence.TemporalType.TIMESTAMP, limit, offset);
     }
 
     // ==================== GET BY ID ====================
