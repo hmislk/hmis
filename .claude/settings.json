@@ -7,7 +7,6 @@
       "Bash(mysql *)",
       "Bash(curl -s *)",
       "Bash(curl -sS *)",
-      "Bash(curl -s\"*)",
       "Bash(ping -c *)",
       "Bash(ss -tnlp*)",
       "Bash(/home/buddhika/payara/bin/asadmin list*)",

@@ -5,6 +5,7 @@ import java.io.Serializable;
 public class ConsumptionCategoryItemDto implements Serializable {
     private static final long serialVersionUID = 1L;
 
+    private String sourceDepartmentName;
     private String departmentName;
     private String categoryName;
     private String itemName;
@@ -30,6 +31,16 @@ public class ConsumptionCategoryItemDto implements Serializable {
         this.netTotal = netTotal != null ? netTotal : 0.0;
     }
 
+    public ConsumptionCategoryItemDto(
+            String sourceDepartmentName, String departmentName, String categoryName, String itemName,
+            double qty, Double totalPurchaseValue, Double totalCostValue,
+            Double totalRetailValue, Double netTotal) {
+        this(departmentName, categoryName, itemName, qty, totalPurchaseValue, totalCostValue, totalRetailValue, netTotal);
+        this.sourceDepartmentName = sourceDepartmentName;
+    }
+
+    public String getSourceDepartmentName() { return sourceDepartmentName; }
+    public void setSourceDepartmentName(String sourceDepartmentName) { this.sourceDepartmentName = sourceDepartmentName; }
     public String getDepartmentName() { return departmentName; }
     public void setDepartmentName(String departmentName) { this.departmentName = departmentName; }
     public String getCategoryName() { return categoryName; }

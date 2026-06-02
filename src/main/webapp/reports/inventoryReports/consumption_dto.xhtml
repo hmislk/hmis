@@ -274,9 +274,11 @@
                                              rendered="#{pharmacyController.reportType eq 'summeryReport' or pharmacyController.reportType eq null or empty pharmacyController.reportType}"
                                              action="#{pharmacyController.exportConsumptionReportSummaryToPdf()}">
                             </p:commandButton>
+                            <!-- By Bill PDF export uses pharmacyRows (legacy); use dataExporter from DTO table instead -->
                             <p:commandButton class="ui-button-danger mx-1" icon="fas fa-file-pdf" ajax="false" value="PDF"
-                                             rendered="#{pharmacyController.reportType eq 'byBill'}"
-                                             action="#{pharmacyController.exportConsumptionReportByBillToPdf()}">
+                                             rendered="#{pharmacyController.reportType eq 'byBill'}">
+                                <p:dataExporter type="pdf" target="tblListBillsDto"
+                                                fileName="#{pharmacyController.generateFileNameForReport('Consumption')}"/>
                             </p:commandButton>
                             <p:commandButton class="ui-button-danger mx-1" icon="fas fa-file-pdf" ajax="false" value="PDF"
                                              rendered="#{pharmacyController.reportType eq 'byBillItem'}">
@@ -842,11 +844,11 @@
                                     <p:columnGroup type="header">
                                         <p:row style="background: #e5e9ec" rendered="#{status.first}">
                                             <p:column headerText="Department Unit"
-                                                      style="font-weight: bold; background: #e5e9ec" colspan="7"/>
+                                                      style="font-weight: bold; background: #e5e9ec" colspan="6"/>
                                         </p:row>
                                         <p:row style="background: #70a4ca">
                                             <p:column headerText="#{map.key}" style="font-weight: bold; background: #70a4ca"
-                                                      colspan="3"/>
+                                                      colspan="2"/>
                                             <p:column
                                                 headerText="#{pharmacyController.getDepartmentPurchaseTotalForConsumptionReport(map.key)}"
                                                 style="font-weight: bold; background: #70a4ca; text-align: right;"/>
