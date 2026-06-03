@@ -44,17 +44,18 @@
                     padding: 8px !important;
                 }
             </style>
- 
-            <p:dataTable id="tb1"
-                         styleClass="mt-2 bhtFinalTable"
-                         value="#{cc.attrs.bill.billItems}" 
-                         var="bip"
-                         rowIndexVar="i"
-                         rowStyleClass="#{(bip.adjustedValue ne 0) ? '' : 'noDisplayRow' }"
-                         >
+
+            <p:dataTable 
+                id="tb1"
+                styleClass="mt-2 bhtFinalTable"
+                value="#{cc.attrs.bill.billItems}" 
+                var="bip"
+                rowStyleClass="#{(bip.adjustedValue ne 0) ? '' : 'noDisplayRow' }">
+                
                 <p:column headerText="Inward Charge Type">
                     <h:outputLabel   value="#{bip.inwardChargeType.name}"/>
                 </p:column>
+                
                 <p:column headerText="Total Value" style="text-align: right;">
                     <h:outputLabel  value="#{bip.grossValue}">
                         <f:convertNumber pattern="#,##0.00" />
@@ -64,7 +65,8 @@
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </f:facet>
-                </p:column>                            
+                </p:column>
+                
                 <p:column headerText="Discount Value"  style="text-align: right;">
                     <h:outputLabel  value="#{bip.discount}">
                         <f:convertNumber pattern="#,##0.00" />
@@ -92,7 +94,7 @@
                         <f:convertNumber pattern="#,##0.00" />
                     </h:outputLabel>
                 </p:column>
-                
+
                 <p:column headerText="Difference"  style="text-align: center; width: 12em;" exportable="false">
                     <h:panelGroup style="font-size: 18px; font-weight: 700">
                         <h:panelGroup rendered="#{(bip.adjustedValue - bip.netValue) ge 0.005}" style="color: green;">
@@ -115,13 +117,9 @@
                     </h:panelGroup>
                 </p:column>
 
-
             </p:dataTable>
 
         </p:panel>
-
-
-
 
     </cc:implementation>
 </html>
