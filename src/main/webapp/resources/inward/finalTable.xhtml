@@ -50,7 +50,7 @@
                 styleClass="mt-2 bhtFinalTable"
                 value="#{cc.attrs.bill.billItems}" 
                 var="bip"
-                rowStyleClass="#{(bip.adjustedValue ne 0) ? '' : 'noDisplayRow' }">
+                rowStyleClass="#{(bip.adjustedValue ne 0 or bip.netValue ne 0) ? '' : 'noDisplayRow' }">
                 
                 <p:column headerText="Inward Charge Type">
                     <h:outputLabel   value="#{bip.inwardChargeType.name}"/>
