@@ -64,27 +64,6 @@
                                         </p:commandButton>
                                     </div>
                                 </div>
-
-                                <h:panelGroup rendered="false">
-                                    <div class="d-flex justify-content-between mb-2" style="display: ">
-                                        <div></div>
-                                        <div class="d-flex gap-2">
-                                            <p:commandButton value="Final Bill &amp; Profesional Bill - Single page" ajax="false">
-                                                <p:printer  ></p:printer>
-                                            </p:commandButton>
-                                            <p:commandButton value="Final Bill &amp; Profesional Bill - 3 pages" ajax="false">
-                                                <p:printer  ></p:printer>
-                                            </p:commandButton> 
-                                            <p:commandButton value="Final Bill &amp; Profesional Bill (Duplicate)" ajax="false">
-                                                <p:printer  ></p:printer>
-                                            </p:commandButton>
-                                            <p:commandButton value="Print Credit Company Letter" ajax="false">
-                                                <p:printer  ></p:printer>
-                                            </p:commandButton>
-                                        </div>
-                                    </div>
-                                </h:panelGroup>
-
                             </f:facet>
 
                             <div class="row mt-3">
@@ -261,9 +240,9 @@
                                                     <p:ajax process="@this" update="@all"
                                                             event="change"
                                                             listener="#{inwardSearch.updateTotal()}"/>
-<!--                                                    <p:ajax process="@this" event="keyup"
-                                                            update="@all"
-                                                            listener="#{inwardSearch.changeIsMade()}"/>-->
+                                                    <!--                                                    <p:ajax process="@this" event="keyup"
+                                                                                                                update="@all"
+                                                                                                                listener="#{inwardSearch.changeIsMade()}"/>-->
                                                 </p:inputText>
                                             </p:column>
                                         </p:dataTable>
@@ -288,9 +267,9 @@
                                                             <p:ajax process="@this" update="@all"
                                                                     event="change"
                                                                     listener="#{inwardSearch.updateProTotal(bip)}"/>
-<!--                                                            <p:ajax process="@this" event="keyup"
-                                                                    update="@all"
-                                                                    listener="#{inwardSearch.changeIsMade()}"/>-->
+                                                            <!--                                                            <p:ajax process="@this" event="keyup"
+                                                                                                                                update="@all"
+                                                                                                                                listener="#{inwardSearch.changeIsMade()}"/>-->
                                                         </p:inputText>
                                                     </p:column>
                                                 </p:dataTable>
