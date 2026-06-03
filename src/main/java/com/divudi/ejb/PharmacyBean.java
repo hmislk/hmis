@@ -4,10 +4,12 @@
  */
 package com.divudi.ejb;
 
+import com.divudi.core.data.dto.ItemRatesDTO;
 import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillNumberSuffix;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.HistoryType;
 import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.ItemBatchQty;
 import com.divudi.core.data.StockQty;
@@ -1566,6 +1568,7 @@ public class PharmacyBean {
         Date now = new Date();
         Calendar cal = Calendar.getInstance();
 
+        sh.setHistoryType(resolveStockHistoryType(phItem));
         sh.setFromDate(now);
         sh.setPbItem(phItem);
         sh.setHxDate(cal.get(Calendar.DATE));
@@ -1650,6 +1653,28 @@ public class PharmacyBean {
         getPharmaceuticalBillItemFacade().editAndCommit(phItem);
     }
 
+    private HistoryType resolveStockHistoryType(PharmaceuticalBillItem phItem) {
+        if (phItem == null || phItem.getBillItem() == null || phItem.getBillItem().getBill() == null) {
+            return null;
+        }
+        BillType bt = phItem.getBillItem().getBill().getBillType();
+        if (bt == null) return null;
+        switch (bt) {
+            case PharmacySale:
+            case PharmacySaleWithoutStock:
+                return HistoryType.Sale;
+            case PharmacyIssue:
+            case PharmacyTransferIssue:
+                return HistoryType.Issue;
+            case PharmacyGrnBill:
+            case PharmacyGrnBillImport:
+            case PharmacyGrnReturn:
+            case PharmacyTransferReceive:
+                return HistoryType.GoodReceive;
+            default:
+                return HistoryType.Stock;
+        }
+    }
 
     public void addToStockHistoryForCosting(BillItem billItem, Stock stock, Department d) {
         if (billItem == null) {
@@ -1775,6 +1800,7 @@ public class PharmacyBean {
         }
 
         StockHistory sh = new StockHistory();
+        sh.setHistoryType(resolveStockHistoryType(phItem));
         sh.setFromDate(Calendar.getInstance().getTime());
         sh.setPbItem(phItem);
         sh.setHxDate(Calendar.getInstance().get(Calendar.DATE));
@@ -2477,6 +2503,49 @@ public class PharmacyBean {
         params.put("t1", BillType.PharmacyPurchaseBill);
 
         return getBillItemFacade().findFirstByJpql(jpql, params);
+    }
+
+    /**
+     * Fetches purchase, retail and cost rates for {@code rateItem} in a single
+     * database query (manageCosting=true path) instead of three separate
+     * entity-loading calls. Falls back to two PharmaceuticalBillItem queries
+     * when manageCosting is disabled.
+     *
+     * @param rateItem the Amp or Vmp item used for rate lookup (callers must
+     *                 resolve Ampp→Amp and Vmpp→Vmp before calling)
+     * @param dept     department for the non-costing fallback query
+     */
+    public ItemRatesDTO getLastRatesForItem(Item rateItem, Department dept) {
+        if (rateItem == null) {
+            return new ItemRatesDTO(0.0, 0.0, 0.0);
+        }
+        boolean manageCosting = configOptionApplicationController.getBooleanValueByKey("Manage Costing", true);
+        if (manageCosting) {
+            String jpql = "SELECT f.lineGrossRate, f.retailSaleRate, f.totalCostRate "
+                    + "FROM BillItem bi JOIN bi.billItemFinanceDetails f "
+                    + "WHERE bi.retired = false "
+                    + "AND bi.bill.cancelled = false "
+                    + "AND bi.item = :i "
+                    + "AND (bi.bill.billType = :t OR bi.bill.billType = :t1) "
+                    + "ORDER BY bi.id DESC";
+            Map<String, Object> params = new HashMap<>();
+            params.put("i", rateItem);
+            params.put("t", BillType.PharmacyGrnBill);
+            params.put("t1", BillType.PharmacyPurchaseBill);
+            List<?> rows = getBillItemFacade().findLightsByJpql(jpql, params, TemporalType.TIMESTAMP, 1);
+            if (!rows.isEmpty()) {
+                Object[] row = (Object[]) rows.get(0);
+                double purchase = row[0] instanceof java.math.BigDecimal ? ((java.math.BigDecimal) row[0]).doubleValue() : 0.0;
+                double retail   = row[1] instanceof java.math.BigDecimal ? ((java.math.BigDecimal) row[1]).doubleValue() : 0.0;
+                double cost     = row[2] instanceof java.math.BigDecimal ? ((java.math.BigDecimal) row[2]).doubleValue() : 0.0;
+                return new ItemRatesDTO(purchase, retail, cost);
+            }
+            return new ItemRatesDTO(0.0, 0.0, 0.0);
+        } else {
+            double purchaseRate = getLastPurchaseRateByPharmaceuticalBillItem(rateItem, dept);
+            double retailRate   = getLastRetailRateByPharmaceuticalBillItem(rateItem, dept);
+            return new ItemRatesDTO(purchaseRate, retailRate, purchaseRate);
+        }
     }
 
     public double getLastPurchaseRate(Item item, Department dept) {
