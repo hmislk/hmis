@@ -207,21 +207,29 @@
 
                     <h:panelGroup rendered="#{not empty kioskController.searchResults}" layout="block">
                         <ui:repeat value="#{kioskController.searchResults}" var="pt">
-                            <div class="patient-card">
-                                <div class="pt-name">
-                                    <h:outputText value="#{pt.person.title.label} #{pt.person.name}"/>
+                            <div class="patient-card" style="display:flex;align-items:center;justify-content:space-between">
+                                <div>
+                                    <div class="pt-name">
+                                        <h:outputText value="#{pt.person.title.label} #{pt.person.name}"/>
+                                    </div>
+                                    <div class="pt-meta">
+                                        <h:outputText value="NIC: #{pt.person.nic}" rendered="#{not empty pt.person.nic}"/>
+                                        <h:outputText value=" · DOB: "/>
+                                        <h:outputText value="#{pt.person.dob}">
+                                            <f:convertDateTime pattern="dd/MM/yyyy"/>
+                                        </h:outputText>
+                                    </div>
                                 </div>
-                                <div class="pt-meta">
-                                    <h:outputText value="NIC: #{pt.person.nic}" rendered="#{not empty pt.person.nic}"/>
-                                    <h:outputText value=" · DOB: "/>
-                                    <h:outputText value="#{pt.person.dob}">
-                                        <f:convertDateTime pattern="dd/MM/yyyy"/>
-                                    </h:outputText>
-                                </div>
+                                <p:commandButton value="This is me"
+                                                 icon="fas fa-check"
+                                                 styleClass="ui-button-success"
+                                                 style="font-size:0.85rem;padding:0.4rem 0.85rem"
+                                                 action="#{kioskController.selectExistingPatient(pt)}"
+                                                 update="form"/>
                             </div>
                         </ui:repeat>
                         <hr class="kiosk-divider"/>
-                        <p style="text-align:center;color:#6b7280;font-size:0.9rem">Not your profile? Register below.</p>
+                        <p style="text-align:center;color:#6b7280;font-size:0.9rem">Not listed above? Register as a new patient.</p>
                     </h:panelGroup>
 
                     <p:commandButton value="Register as New Patient"
@@ -375,8 +383,8 @@
                 <h:panelGroup id="donePanel" rendered="#{kioskController.showDone}" layout="block">
                     <div class="kiosk-header">
                         <div class="done-icon"><i class="fas fa-check"/></div>
-                        <h1>Registration Complete</h1>
-                        <p>Your patient profile has been created successfully.<br/>Please proceed to the reception desk.</p>
+                        <h1>All Done!</h1>
+                        <p>Welcome, <strong><h:outputText value="#{kioskController.patient.person.name}"/></strong>.<br/>Please proceed to the reception desk.</p>
                     </div>
 
                     <p:commandButton value="Start Over"

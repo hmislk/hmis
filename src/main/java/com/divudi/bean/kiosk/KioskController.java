@@ -50,14 +50,25 @@ public class KioskController implements Serializable {
             JsfUtil.addErrorMessage("Please enter a phone number to search.");
             return;
         }
-        Long phone = CommonFunctions.convertStringToLongOrZero(searchPhone.trim());
+        Long phone = CommonFunctions.removeSpecialCharsInPhonenumber(searchPhone.trim());
+        if (phone == null) {
+            JsfUtil.addErrorMessage("Please enter a valid phone number (digits only, e.g. 0771234567).");
+            return;
+        }
+        searchPhone = phone.toString();
         Map<String, Object> params = new HashMap<>();
         params.put("ph", phone);
         searchResults = patientFacade.findByJpql(
-                "select p from Patient p where p.retired=false and p.patientPhoneNumber=:ph order by p.id desc",
+                "select p from Patient p where p.retired=false and (p.patientPhoneNumber=:ph or p.patientMobileNumber=:ph) order by p.id desc",
                 params);
         showSearch = false;
         showResults = true;
+    }
+
+    public void selectExistingPatient(Patient selectedPt) {
+        this.patient = selectedPt;
+        showResults = false;
+        showDone = true;
     }
 
     public void startNewPatient() {
@@ -95,11 +106,15 @@ public class KioskController implements Serializable {
             return;
         }
 
-        Long phone = CommonFunctions.convertStringToLongOrZero(searchPhone);
+        Long phone = CommonFunctions.removeSpecialCharsInPhonenumber(searchPhone);
+        if (phone == null) {
+            JsfUtil.addErrorMessage("Invalid phone number. Please start over.");
+            return;
+        }
         patient.setPatientPhoneNumber(phone);
         patient.setPatientMobileNumber(phone);
-        patient.getPerson().setPhone(searchPhone);
-        patient.getPerson().setMobile(searchPhone);
+        patient.getPerson().setPhone(phone.toString());
+        patient.getPerson().setMobile(phone.toString());
         patient.setRegistrationSource(PatientRegistrationSource.KIOSK);
         patient.getPerson().setCreatedAt(new Date());
         personFacade.create(patient.getPerson());
