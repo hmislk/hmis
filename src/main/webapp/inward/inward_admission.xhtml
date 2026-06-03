@@ -72,6 +72,17 @@
                                     title="Record this admission as an On Admission Death (patient arrived dead, or died before registration was completed)"
                                     styleClass="ui-button-secondary ms-5"
                                     onclick="PF('dlgOnAdmissionDeath').show();"/>
+
+                                <!-- Rapid / Temp A&E admission. Opens a confirmation dialog, then admits
+                                     immediately with placeholder demographics that staff complete later.
+                                     (Issue #21183) -->
+                                <p:commandButton
+                                    type="button"
+                                    value="Rapid / Temp Admit (A&amp;E)"
+                                    icon="fas fa-truck-medical"
+                                    title="Quickly admit an A&amp;E patient with incomplete demographics. Blank name/address are filled with placeholders and demographic checks are skipped; complete the details later."
+                                    styleClass="ui-button-warning ms-2"
+                                    onclick="PF('dlgRapidTempAe').show();"/>
                             </div>
                         </div>
                     </f:facet>
@@ -633,6 +644,47 @@
                             action="#{admissionController.checkBeforeAdmitOnAdmissionDeath}"
                             update="@form"
                             onclick="PF('dlgOnAdmissionDeath').hide();"/>
+                    </div>
+                </div>
+            </p:dialog>
+
+            <!-- Rapid / Temp A&E confirmation dialog (Issue #21183) -->
+            <p:dialog id="dlgRapidTempAe"
+                      widgetVar="dlgRapidTempAe"
+                      header="Confirm Rapid / Temp A&amp;E Admission"
+                      modal="true"
+                      resizable="false"
+                      closable="true"
+                      style="width:520px">
+                <div style="padding:12px">
+                    <p style="font-weight:bold; font-size:1.05em;">
+                        Admit this patient as a <strong>Rapid / Temp A&amp;E</strong> registration?
+                    </p>
+                    <p>
+                        Use this for emergency admissions where full demographics are not
+                        yet available. Any blank <strong>Name</strong> or
+                        <strong>Address</strong> will be filled with placeholders, and the
+                        usual demographic checks are skipped so the patient can be admitted
+                        immediately.
+                    </p>
+                    <p class="text-muted">
+                        The admission will be flagged <strong>Rapid / Temp A&amp;E</strong>.
+                        Please complete the patient details later from the Inpatient Dashboard.
+                    </p>
+                    <div class="d-flex justify-content-end gap-2 mt-3">
+                        <p:commandButton
+                            value="Cancel"
+                            icon="fa fa-times"
+                            type="button"
+                            class="ui-button-secondary"
+                            onclick="PF('dlgRapidTempAe').hide(); return false;"/>
+                        <p:commandButton
+                            value="Confirm — Rapid / Temp Admit"
+                            icon="fas fa-truck-medical"
+                            class="ui-button-warning"
+                            action="#{admissionController.checkBeforeAdmitRapidTempAe}"
+                            update="@form"
+                            onclick="PF('dlgRapidTempAe').hide();"/>
                     </div>
                 </div>
             </p:dialog>

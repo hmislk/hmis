@@ -1582,6 +1582,14 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
                 if (getCurrent() != null
                         && getCurrent().getEncounterRegistrationFlag() == EncounterRegistrationFlag.ON_ADMISSION_DEATH) {
                     getPatient().setRegistrationSource(PatientRegistrationSource.ON_ADMISSION_DEATH);
+                } else if (getCurrent() != null
+                        && getCurrent().getEncounterRegistrationFlag() == EncounterRegistrationFlag.RAPID_TEMP_AE) {
+                    // Rapid / Temp A&E: the patient physically walked in (arrived
+                    // alive) — only their demographics are incomplete. The
+                    // registrationSource records HOW the patient was registered
+                    // (walk-in); the encounter flag records the temporary state.
+                    // (Issue #21183)
+                    getPatient().setRegistrationSource(PatientRegistrationSource.WALK_IN);
                 } else {
                     getPatient().setRegistrationSource(PatientRegistrationSource.INWARD_ADMISSION);
                 }
@@ -1732,7 +1740,10 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             return true;
         }
 
-        if (configOptionApplicationController.getBooleanValueByKey("Patient Details Required in Patient Admission", false)) {
+        // Rapid / Temp A&E admissions are admitted with incomplete demographics
+        // by design; blank name/address are placeholder-filled and the required
+        // patient-detail checks below are skipped. (Issue #21183)
+        if (!isRapidTempAe() && configOptionApplicationController.getBooleanValueByKey("Patient Details Required in Patient Admission", false)) {
             if (configOptionApplicationController.getBooleanValueByKey("Patient Title is Required in Patient Admission", false)) {
                 if (getCurrent().getPatient().getPerson().getTitle() == null) {
                     JsfUtil.addErrorMessage("Patient Title is Required");
@@ -1853,7 +1864,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             }
         }
 
-        if (configOptionApplicationController.getBooleanValueByKey("Guardian Details Required in Patient Admission")) {
+        if (!isRapidTempAe() && configOptionApplicationController.getBooleanValueByKey("Guardian Details Required in Patient Admission")) {
             if (getCurrent().getGuardian() == null) {
                 JsfUtil.addErrorMessage("Guardian is Required");
                 return true;
@@ -2052,6 +2063,78 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         proceedWithAdmissionCheck();
     }
 
+    /**
+     * Entry point for the secondary "Rapid / Temp Admit (A&E)" button. Intended
+     * for emergency / A&E admissions where full demographics are not yet
+     * available. Flags the encounter as
+     * {@link EncounterRegistrationFlag#RAPID_TEMP_AE}, fills any blank patient
+     * name/address with configurable placeholders, and bypasses the demographic
+     * validations in {@link #errorCheck()} so the patient can be admitted
+     * immediately. Demographics are completed later from the inpatient
+     * dashboard. The patient's {@code registrationSource} is stamped
+     * {@link PatientRegistrationSource#WALK_IN} in {@link #savePatient()} — the
+     * patient physically arrived; only their details are incomplete.
+     * (Issue #21183)
+     */
+    public void checkBeforeAdmitRapidTempAe() {
+        getCurrent().setEncounterRegistrationFlag(EncounterRegistrationFlag.RAPID_TEMP_AE);
+        // Placeholders are applied later in saveSelected(), only after the
+        // non-demographic validations pass, so a failed/aborted admit never
+        // mutates the patient and the placeholders cannot leak into a
+        // subsequent standard admission. (Issue #21183)
+        proceedWithAdmissionCheck();
+    }
+
+    /**
+     * Fills blank patient name/address with site-configurable placeholders so a
+     * Rapid / Temp A&E admission can proceed without demographic verification.
+     * NIC, phone and other identifiers are intentionally left untouched (never
+     * faked) — they are completed later. Called from {@link #saveSelected()}
+     * only after {@link #errorCheck()} has passed. (Issue #21183)
+     */
+    private void applyRapidTempPlaceholders() {
+        if (getCurrent() == null || getCurrent().getPatient() == null) {
+            return;
+        }
+        Person person = getCurrent().getPatient().getPerson();
+        if (person == null) {
+            return;
+        }
+        if (person.getName() == null || person.getName().trim().isEmpty()) {
+            person.setName(configOptionApplicationController.getShortTextValueByKey(
+                    "Inward Admission - Rapid Temp A&E Placeholder Name", "Unidentified Patient"));
+        }
+        if (person.getAddress() == null || person.getAddress().trim().isEmpty()) {
+            person.setAddress(configOptionApplicationController.getShortTextValueByKey(
+                    "Inward Admission - Rapid Temp A&E Placeholder Address", "Unknown"));
+        }
+    }
+
+    /**
+     * @return {@code true} when the current encounter is being admitted as a
+     * Rapid / Temp A&E registration, for which demographic-required validations
+     * are skipped. (Issue #21183)
+     */
+    private boolean isRapidTempAe() {
+        return getCurrent() != null
+                && getCurrent().getEncounterRegistrationFlag() == EncounterRegistrationFlag.RAPID_TEMP_AE;
+    }
+
+    /**
+     * Clears the {@link EncounterRegistrationFlag#RAPID_TEMP_AE} flag once staff
+     * have completed the patient's demographics, returning the encounter to
+     * {@link EncounterRegistrationFlag#STANDARD}. (Issue #21183)
+     */
+    public void markRapidTempAdmissionComplete() {
+        if (getCurrent() == null) {
+            JsfUtil.addErrorMessage("No admission selected");
+            return;
+        }
+        getCurrent().setEncounterRegistrationFlag(EncounterRegistrationFlag.STANDARD);
+        getFacade().edit(getCurrent());
+        JsfUtil.addSuccessMessage("Registration marked as complete.");
+    }
+
     private void proceedWithAdmissionCheck() {
         if (getCurrent().getPatient() != null && isPatientAlreadyAdmitted()) {
             PrimeFaces.current().executeScript("PF('dlgActiveAdmission').show();");
@@ -2076,6 +2159,14 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         if (errorCheck()) {
             admittingProcessStarted = false;
             return;
+        }
+        // Rapid / Temp A&E: now that all non-demographic validations have
+        // passed and we are committed to saving, backfill the placeholder
+        // demographics. Doing it here (rather than at button-click time) keeps
+        // the patient untouched on a failed admit and prevents the placeholders
+        // from leaking into a standard admission. (Issue #21183)
+        if (isRapidTempAe()) {
+            applyRapidTempPlaceholders();
         }
         savePatient();
         savePatientAllergies();
