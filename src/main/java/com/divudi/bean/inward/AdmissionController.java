@@ -49,6 +49,7 @@ import com.divudi.core.facade.PatientFacade;
 import com.divudi.core.facade.PatientRoomFacade;
 import com.divudi.core.facade.PatientTransferRequestFacade;
 import com.divudi.core.entity.inward.PatientTransferRequest;
+import com.divudi.core.data.inward.EncounterRegistrationFlag;
 import com.divudi.core.data.inward.TransferRequestStatus;
 import com.divudi.core.facade.PersonFacade;
 import com.divudi.core.facade.RoomFacade;
@@ -1570,8 +1571,20 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             // Stamp the registration source once, on the brand-new patient being
             // admitted. A baby admission has already set NEWBORN; everything else
             // registered at admission time is an inward admission. (Issue #21181)
+            //
+            // Dual-write rule: when the admission is flagged On Admission Death and
+            // the patient record is being created now, the patient's registration
+            // channel is the posthumous admission itself. For patients that already
+            // existed (getId() != null, handled in the else branch below) we never
+            // touch registrationSource — their original channel is preserved.
+            // (Issue #21182)
             if (getPatient().getRegistrationSource() == null) {
-                getPatient().setRegistrationSource(PatientRegistrationSource.INWARD_ADMISSION);
+                if (getCurrent() != null
+                        && getCurrent().getEncounterRegistrationFlag() == EncounterRegistrationFlag.ON_ADMISSION_DEATH) {
+                    getPatient().setRegistrationSource(PatientRegistrationSource.ON_ADMISSION_DEATH);
+                } else {
+                    getPatient().setRegistrationSource(PatientRegistrationSource.INWARD_ADMISSION);
+                }
             }
             getPatientFacade().createAndFlush(getPatient());  // Immediate flush
         } else {
@@ -2020,6 +2033,26 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
      * the normal save.
      */
     public void checkBeforeAdmit() {
+        // Standard admission flow — explicitly stamp STANDARD so a prior click on
+        // the "On Admission Death" button on the same form does not leak its flag
+        // into a subsequent normal admit. (Issue #21182)
+        getCurrent().setEncounterRegistrationFlag(EncounterRegistrationFlag.STANDARD);
+        proceedWithAdmissionCheck();
+    }
+
+    /**
+     * Entry point for the secondary "On Admission Death" button. Flags the
+     * encounter as {@link EncounterRegistrationFlag#ON_ADMISSION_DEATH} before
+     * running the same pre-admission checks and save flow. The dual-write of
+     * {@code patient.registrationSource} for brand-new patients happens in
+     * {@link #savePatient()}. (Issue #21182)
+     */
+    public void checkBeforeAdmitOnAdmissionDeath() {
+        getCurrent().setEncounterRegistrationFlag(EncounterRegistrationFlag.ON_ADMISSION_DEATH);
+        proceedWithAdmissionCheck();
+    }
+
+    private void proceedWithAdmissionCheck() {
         if (getCurrent().getPatient() != null && isPatientAlreadyAdmitted()) {
             PrimeFaces.current().executeScript("PF('dlgActiveAdmission').show();");
         } else {
