@@ -2078,7 +2078,10 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
      */
     public void checkBeforeAdmitRapidTempAe() {
         getCurrent().setEncounterRegistrationFlag(EncounterRegistrationFlag.RAPID_TEMP_AE);
-        applyRapidTempPlaceholders();
+        // Placeholders are applied later in saveSelected(), only after the
+        // non-demographic validations pass, so a failed/aborted admit never
+        // mutates the patient and the placeholders cannot leak into a
+        // subsequent standard admission. (Issue #21183)
         proceedWithAdmissionCheck();
     }
 
@@ -2086,7 +2089,8 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
      * Fills blank patient name/address with site-configurable placeholders so a
      * Rapid / Temp A&E admission can proceed without demographic verification.
      * NIC, phone and other identifiers are intentionally left untouched (never
-     * faked) — they are completed later. (Issue #21183)
+     * faked) — they are completed later. Called from {@link #saveSelected()}
+     * only after {@link #errorCheck()} has passed. (Issue #21183)
      */
     private void applyRapidTempPlaceholders() {
         if (getCurrent() == null || getCurrent().getPatient() == null) {
@@ -2155,6 +2159,14 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         if (errorCheck()) {
             admittingProcessStarted = false;
             return;
+        }
+        // Rapid / Temp A&E: now that all non-demographic validations have
+        // passed and we are committed to saving, backfill the placeholder
+        // demographics. Doing it here (rather than at button-click time) keeps
+        // the patient untouched on a failed admit and prevents the placeholders
+        // from leaking into a standard admission. (Issue #21183)
+        if (isRapidTempAe()) {
+            applyRapidTempPlaceholders();
         }
         savePatient();
         savePatientAllergies();
