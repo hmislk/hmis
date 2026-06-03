@@ -91,8 +91,9 @@
                                             </div>
 
                                         </f:facet>
-
-                                        <div class="row">
+                                        
+                                        <div  style="font-size: 20px; font-weight: 700;">
+                                            <div class="row">
                                             <div class="col-md-5">
                                                 <h:outputLabel value="Bill No" ></h:outputLabel>
                                             </div>
@@ -104,7 +105,7 @@
                                             </div>
                                         </div> 
 
-                                        <div class="row">
+                                        <div class="row mt-3">
                                             <div class="col-md-5">
                                                 <h:outputLabel value="Total" ></h:outputLabel>
                                             </div>
@@ -118,15 +119,16 @@
                                             </div>
                                         </div>
 
-                                        <div class="row">
+                                        <div class="row mt-3">
                                             <div class="col-md-5">
-                                                <h:outputLabel value="Discount" ></h:outputLabel>
+                                                <h:outputLabel value="Discount" class="mt-2"></h:outputLabel>
                                             </div>
                                             <div class="col-md-1 justify-content-end d-flex">
-                                                <p:outputLabel value=":" class="mx-2"/>
+                                                <p:outputLabel value=":" class="mx-2 mt-2"/>
                                             </div>
                                             <div class="col-md-6">
-                                                <p:inputText value="#{inwardSearch.bill.discount}" style="float: right;" >
+                                                <p:inputText value="#{inwardSearch.bill.discount}" class="text-end" style="float: right;" onfocus="this.select()">
+                                                    <f:convertNumber pattern="#,##0.00" />
                                                     <p:ajax process="@this" update="@all"
                                                             event="change"
                                                             listener="#{inwardSearch.updateTotal()}"/>
@@ -134,7 +136,7 @@
                                             </div>
                                         </div>
 
-                                        <div class="row">
+                                        <div class="row mt-3">
                                             <div class="col-md-5">
                                                 <h:outputLabel value="Net Total" ></h:outputLabel>
                                             </div>
@@ -148,7 +150,7 @@
                                             </div>
                                         </div>
 
-                                        <div class="row">
+                                        <div class="row mt-3">
                                             <div class="col-md-5">
                                                 <h:outputLabel value="Paid Amount" ></h:outputLabel>
                                             </div>
@@ -162,7 +164,7 @@
                                             </div>
                                         </div>
 
-                                        <div class="row">
+                                        <div class="row mt-3">
                                             <div class="col-md-5">
                                                 <h:outputLabel value="Due " ></h:outputLabel>
                                             </div>
@@ -177,7 +179,7 @@
                                         </div>
 
                                         <h:panelGroup rendered="#{inwardSearch.bill.patientEncounter.paymentMethod eq 'Credit'}">
-                                            <div class="row">
+                                            <div class="row mt-3">
                                                 <div class="col-md-5 mt-2 d-flex gap-2">
                                                     <h:outputLabel value="Credit Limit" class="mt-2"/>
                                                     <p:commandButton 
@@ -201,6 +203,9 @@
                                             <p:tooltip for="edit_credit_limit" value="Edit Credit Limit"  showDelay="0" hideDelay="0"></p:tooltip>
 
                                         </h:panelGroup>
+                                        </div>
+
+                                        
 
                                     </p:panel>
                                 </div>
@@ -236,13 +241,11 @@
                                                 <f:facet name="header">
                                                     <h:outputLabel value="Charge (Rs.)"/>
                                                 </f:facet>
-                                                <p:inputText value="#{bip.adjustedValue}" disabled="#{bip.inwardChargeType eq 'ProfessionalCharge'}" >
+                                                <p:inputText value="#{bip.adjustedValue}" disabled="#{bip.inwardChargeType eq 'ProfessionalCharge'}" onfocus="this.select()">
+                                                    <f:convertNumber pattern="#,##0.00" />
                                                     <p:ajax process="@this" update="@all"
                                                             event="change"
                                                             listener="#{inwardSearch.updateTotal()}"/>
-                                                    <!--                                                    <p:ajax process="@this" event="keyup"
-                                                                                                                update="@all"
-                                                                                                                listener="#{inwardSearch.changeIsMade()}"/>-->
                                                 </p:inputText>
                                             </p:column>
                                         </p:dataTable>
