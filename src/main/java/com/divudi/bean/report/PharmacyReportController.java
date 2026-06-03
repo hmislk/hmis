@@ -6306,11 +6306,14 @@ public class PharmacyReportController implements Serializable {
 
                 double rawQty = row[9] != null ? ((Number) row[9]).doubleValue() : 0.0;
                 double rawPurchaseRate = row[10] != null ? ((Number) row[10]).doubleValue() : 0.0;
-                double rawPurchaseVal = row[11] != null ? ((Number) row[11]).doubleValue() : 0.0;
                 double rawCostRate = row[12] != null ? ((Number) row[12]).doubleValue() : 0.0;
-                double rawCostVal = row[13] != null ? ((Number) row[13]).doubleValue() : 0.0;
                 double rawRetailRate = row[14] != null ? ((Number) row[14]).doubleValue() : 0.0;
-                double rawRetailVal = row[15] != null ? ((Number) row[15]).doubleValue() : 0.0;
+                // RETURN stores bifd values as positive (inflow); ISSUE/CANCELLED as negative (outflow).
+                // When bifd row is absent fall back to qty*rate with matching sign.
+                double bifdSign = (bta == BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_RETURN) ? 1.0 : -1.0;
+                double rawPurchaseVal = row[11] != null ? ((Number) row[11]).doubleValue() : bifdSign * rawQty * rawPurchaseRate;
+                double rawCostVal     = row[13] != null ? ((Number) row[13]).doubleValue() : bifdSign * rawQty * rawCostRate;
+                double rawRetailVal   = row[15] != null ? ((Number) row[15]).doubleValue() : bifdSign * rawQty * rawRetailRate;
 
                 double qty = qtySign * rawQty;
                 double purchaseVal = valueSign * rawPurchaseVal;
