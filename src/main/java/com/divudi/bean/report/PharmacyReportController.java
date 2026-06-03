@@ -33,6 +33,7 @@ import com.divudi.core.data.dto.MovementReportDto;
 import com.divudi.core.data.dto.AmpDto;
 import com.divudi.core.data.dto.BillItemDTO;
 import com.divudi.core.data.dto.CostOfGoodSoldBillDTO;
+import com.divudi.core.data.dto.StockConsumptionItemDto;
 import com.divudi.core.data.dto.ExpiryItemListDto;
 import com.divudi.core.data.dto.ExpiryItemStockListDto;
 import com.divudi.core.data.dto.StockLedgerDTO;
@@ -387,6 +388,11 @@ public class PharmacyReportController implements Serializable {
     private double totalPurchaseValue;
     private double totalRetailValue;
     private double totalSaleValue;
+
+    private List<StockConsumptionItemDto> stockConsumptionItemDtos;
+    private double dtoStockConsumptionPurchaseTotal;
+    private double dtoStockConsumptionCostTotal;
+    private double dtoStockConsumptionRetailTotal;
 
     // Maps to store remaining quantities and values for Good In Transit report
     private Map<Long, Double> billItemRemainingQuantities = new HashMap<>();
@@ -6226,6 +6232,134 @@ public class PharmacyReportController implements Serializable {
         btasToGetBillItems.add(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_RETURN);
         retrieveBillItemsCompleted(btasToGetBillItems, true);
         calculateStockConsumptionTotals(billItems);
+    }
+
+    public void processStockConsumptionDto() {
+        stockConsumptionItemDtos = new ArrayList<>();
+        dtoStockConsumptionPurchaseTotal = 0.0;
+        dtoStockConsumptionCostTotal = 0.0;
+        dtoStockConsumptionRetailTotal = 0.0;
+        try {
+            List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_CANCELLED);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_RETURN);
+
+            StringBuilder jpql = new StringBuilder();
+            jpql.append("SELECT bi.id, b.id, b.deptId, ");
+            jpql.append("refBill.id, refBill.deptId, ");
+            jpql.append("b.createdAt, ");
+            jpql.append("i.name, i.code, ");
+            jpql.append("ib.batchNo, ");
+            jpql.append("bi.qty, ");
+            jpql.append("pbi.purchaseRate, bifd.valueAtPurchaseRate, ");
+            jpql.append("ib.costRate, bifd.valueAtCostRate, ");
+            jpql.append("ib.retailsaleRate, bifd.valueAtRetailRate, ");
+            jpql.append("toDept.name, b.comments, mu.name, ");
+            jpql.append("b.billTypeAtomic ");
+            jpql.append("FROM BillItem bi ");
+            jpql.append("JOIN bi.bill b ");
+            jpql.append("LEFT JOIN b.referenceBill refBill ");
+            jpql.append("LEFT JOIN bi.item i ");
+            jpql.append("LEFT JOIN bi.pharmaceuticalBillItem pbi ");
+            jpql.append("LEFT JOIN pbi.itemBatch ib ");
+            jpql.append("LEFT JOIN bi.billItemFinanceDetails bifd ");
+            jpql.append("LEFT JOIN b.toDepartment toDept ");
+            jpql.append("LEFT JOIN i.issueUnit mu ");
+            jpql.append("WHERE (bi.retired = false OR bi.retired IS NULL) ");
+            jpql.append("AND (b.retired = false OR b.retired IS NULL) ");
+            jpql.append("AND b.completed = true ");
+            jpql.append("AND b.billTypeAtomic IN :billTypeAtomics ");
+            jpql.append("AND b.createdAt BETWEEN :fromDate AND :toDate ");
+
+            Map<String, Object> params = new HashMap<>();
+            params.put("billTypeAtomics", billTypeAtomics);
+            params.put("fromDate", fromDate);
+            params.put("toDate", toDate);
+
+            if (institution != null) {
+                jpql.append("AND b.institution = :institution ");
+                params.put("institution", institution);
+            }
+            if (site != null) {
+                jpql.append("AND b.department.site = :site ");
+                params.put("site", site);
+            }
+            if (department != null) {
+                jpql.append("AND b.department = :department ");
+                params.put("department", department);
+            }
+            if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
+                jpql.append("AND b.departmentType IN :departmentTypes ");
+                params.put("departmentTypes", selectedDepartmentTypes);
+            }
+            jpql.append("ORDER BY b.createdAt ASC");
+
+            List<Object[]> rows = billItemFacade.findObjectsArrayByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+
+            for (Object[] row : rows) {
+                BillTypeAtomic bta = row[19] != null ? (BillTypeAtomic) row[19] : null;
+                double valueSign = stockConsumptionValueSign(bta);
+                double qtySign = stockConsumptionQtySign(bta);
+
+                double rawQty = row[9] != null ? ((Number) row[9]).doubleValue() : 0.0;
+                double rawPurchaseRate = row[10] != null ? ((Number) row[10]).doubleValue() : 0.0;
+                double rawCostRate = row[12] != null ? ((Number) row[12]).doubleValue() : 0.0;
+                double rawRetailRate = row[14] != null ? ((Number) row[14]).doubleValue() : 0.0;
+                // RETURN stores bifd values as positive (inflow); ISSUE/CANCELLED as negative (outflow).
+                // When bifd row is absent fall back to qty*rate with matching sign.
+                double bifdSign = (bta == BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_RETURN) ? 1.0 : -1.0;
+                double rawPurchaseVal = row[11] != null ? ((Number) row[11]).doubleValue() : bifdSign * rawQty * rawPurchaseRate;
+                double rawCostVal     = row[13] != null ? ((Number) row[13]).doubleValue() : bifdSign * rawQty * rawCostRate;
+                double rawRetailVal   = row[15] != null ? ((Number) row[15]).doubleValue() : bifdSign * rawQty * rawRetailRate;
+
+                double qty = qtySign * rawQty;
+                double purchaseVal = valueSign * rawPurchaseVal;
+                double costVal = valueSign * rawCostVal;
+                double retailVal = valueSign * rawRetailVal;
+
+                StockConsumptionItemDto dto = new StockConsumptionItemDto(
+                        row[0] != null ? ((Number) row[0]).longValue() : null,
+                        row[1] != null ? ((Number) row[1]).longValue() : null,
+                        (String) row[2],
+                        row[3] != null ? ((Number) row[3]).longValue() : null,
+                        (String) row[4],
+                        (java.util.Date) row[5],
+                        (String) row[6],
+                        (String) row[7],
+                        (String) row[8],
+                        qty,
+                        rawPurchaseRate,
+                        purchaseVal,
+                        rawCostRate,
+                        costVal,
+                        rawRetailRate,
+                        retailVal,
+                        (String) row[16],
+                        (String) row[17],
+                        (String) row[18]
+                );
+
+                stockConsumptionItemDtos.add(dto);
+                dtoStockConsumptionPurchaseTotal += purchaseVal;
+                dtoStockConsumptionCostTotal += costVal;
+                dtoStockConsumptionRetailTotal += retailVal;
+            }
+        } catch (Exception e) {
+            Logger.getLogger(PharmacyReportController.class.getName()).log(Level.SEVERE, "Error generating stock consumption DTO", e);
+            JsfUtil.addErrorMessage(e, "Failed to generate Stock Consumption DTO report.");
+        }
+    }
+
+    private static double stockConsumptionValueSign(BillTypeAtomic bta) {
+        return -1.0;
+    }
+
+    private static double stockConsumptionQtySign(BillTypeAtomic bta) {
+        if (bta == BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_RETURN) {
+            return -1.0;
+        }
+        return 1.0;
     }
 
     public void exportStockConsumptionToExcel() {
@@ -18317,5 +18451,37 @@ public class PharmacyReportController implements Serializable {
             filename += "_" + dates;
         }
         return filename;
+    }
+
+    public List<StockConsumptionItemDto> getStockConsumptionItemDtos() {
+        return stockConsumptionItemDtos;
+    }
+
+    public void setStockConsumptionItemDtos(List<StockConsumptionItemDto> stockConsumptionItemDtos) {
+        this.stockConsumptionItemDtos = stockConsumptionItemDtos;
+    }
+
+    public double getDtoStockConsumptionPurchaseTotal() {
+        return dtoStockConsumptionPurchaseTotal;
+    }
+
+    public void setDtoStockConsumptionPurchaseTotal(double dtoStockConsumptionPurchaseTotal) {
+        this.dtoStockConsumptionPurchaseTotal = dtoStockConsumptionPurchaseTotal;
+    }
+
+    public double getDtoStockConsumptionCostTotal() {
+        return dtoStockConsumptionCostTotal;
+    }
+
+    public void setDtoStockConsumptionCostTotal(double dtoStockConsumptionCostTotal) {
+        this.dtoStockConsumptionCostTotal = dtoStockConsumptionCostTotal;
+    }
+
+    public double getDtoStockConsumptionRetailTotal() {
+        return dtoStockConsumptionRetailTotal;
+    }
+
+    public void setDtoStockConsumptionRetailTotal(double dtoStockConsumptionRetailTotal) {
+        this.dtoStockConsumptionRetailTotal = dtoStockConsumptionRetailTotal;
     }
 }
