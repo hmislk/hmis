@@ -4530,6 +4530,10 @@ public class ReportController implements Serializable, ControllerWithReportFilte
     public String navigateToCostOfGoodSoldReports() {
         pharmacyReportController.setBillItems(new ArrayList<>());
         pharmacyReportController.setNetTotal(0.0);
+        pharmacyReportController.setStockConsumptionItemDtos(new ArrayList<>());
+        pharmacyReportController.setDtoStockConsumptionPurchaseTotal(0.0);
+        pharmacyReportController.setDtoStockConsumptionCostTotal(0.0);
+        pharmacyReportController.setDtoStockConsumptionRetailTotal(0.0);
 
         if (reportTemplateFileIndexName == null) {
             return "";

@@ -18369,11 +18369,23 @@ public class PharmacyReportController implements Serializable {
         return dtoStockConsumptionPurchaseTotal;
     }
 
+    public void setDtoStockConsumptionPurchaseTotal(double dtoStockConsumptionPurchaseTotal) {
+        this.dtoStockConsumptionPurchaseTotal = dtoStockConsumptionPurchaseTotal;
+    }
+
     public double getDtoStockConsumptionCostTotal() {
         return dtoStockConsumptionCostTotal;
     }
 
+    public void setDtoStockConsumptionCostTotal(double dtoStockConsumptionCostTotal) {
+        this.dtoStockConsumptionCostTotal = dtoStockConsumptionCostTotal;
+    }
+
     public double getDtoStockConsumptionRetailTotal() {
         return dtoStockConsumptionRetailTotal;
+    }
+
+    public void setDtoStockConsumptionRetailTotal(double dtoStockConsumptionRetailTotal) {
+        this.dtoStockConsumptionRetailTotal = dtoStockConsumptionRetailTotal;
     }
 }
