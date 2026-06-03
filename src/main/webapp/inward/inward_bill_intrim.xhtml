@@ -283,6 +283,7 @@
                                                 <h:outputLabel value="#{bhtSummeryController.grantTotal}">
                                                     <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputLabel>
+                                                
                                                 <h:outputLabel value="Paid By Patient   " />
                                                 <h:outputLabel value=":" class="mx-2"/>
                                                 <h:outputLabel value="#{bhtSummeryController.paid}">
@@ -291,7 +292,7 @@
 
                                                 <h:outputLabel value="Due" rendered="#{bhtSummeryController.patientEncounter.paymentMethod ne 'Credit' and bhtSummeryController.due > 0 }" />
                                                 <h:outputLabel value=":" class="mx-2" rendered="#{bhtSummeryController.patientEncounter.paymentMethod ne 'Credit' and bhtSummeryController.due > 0 }"/>
-                                                <h:outputLabel  value="#{bhtSummeryController.due}" rendered="#{bhtSummeryController.patientEncounter.paymentMethod ne 'Credit' and bhtSummeryController.due > 0 }">
+                                                <h:outputLabel value="#{bhtSummeryController.due}" rendered="#{bhtSummeryController.patientEncounter.paymentMethod ne 'Credit' and bhtSummeryController.due > 0 }">
                                                     <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputLabel>
                                             </h:panelGrid>
