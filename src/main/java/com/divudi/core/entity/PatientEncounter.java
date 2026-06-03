@@ -30,6 +30,8 @@ import javax.persistence.Inheritance;
 import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.PrePersist;
+import javax.persistence.PreUpdate;
 import javax.persistence.Temporal;
 import javax.persistence.Transient;
 
@@ -512,11 +514,31 @@ public class PatientEncounter implements Serializable, RetirableEntity {
     }
 
     public EncounterRegistrationFlag getEncounterRegistrationFlag() {
-        return encounterRegistrationFlag;
+        // Legacy rows created before this feature load with a NULL column. There is
+        // no meaningful "unknown" flag state — such an encounter simply was a
+        // standard admission — so normalise NULL to STANDARD on read. (Issue #21182)
+        return encounterRegistrationFlag == null
+                ? EncounterRegistrationFlag.STANDARD
+                : encounterRegistrationFlag;
     }
 
     public void setEncounterRegistrationFlag(EncounterRegistrationFlag encounterRegistrationFlag) {
         this.encounterRegistrationFlag = encounterRegistrationFlag;
+    }
+
+    /**
+     * Guarantees the encounter flag is never persisted as NULL. New entities
+     * already carry the STANDARD field default; this hook additionally back-fills
+     * STANDARD on the next write of any legacy row whose column is still NULL, so
+     * persisted rows progressively converge on a non-null value alongside the
+     * one-time DB migration (v2.1.20). (Issue #21182)
+     */
+    @PrePersist
+    @PreUpdate
+    private void defaultEncounterRegistrationFlag() {
+        if (encounterRegistrationFlag == null) {
+            encounterRegistrationFlag = EncounterRegistrationFlag.STANDARD;
+        }
     }
 
     public Institution getCreditCompany() {
