@@ -120,7 +120,7 @@ public class Patient implements Serializable, RetirableEntity {
     Date fromDate;
     @Temporal(TemporalType.TIMESTAMP)
     Date toDate;
-    @Size(max = 15)
+    @Size(max = 20)
     String phn;
 
     private Boolean hasAnAccount;
