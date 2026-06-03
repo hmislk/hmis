@@ -159,7 +159,13 @@ public class Patient implements Serializable, RetirableEntity {
     /**
      * How this patient was first registered. Set once at creation and never
      * changed. Null for patients created before this feature. (Issue #21181)
+     *
+     * <p>{@code updatable = false} keeps the value out of UPDATE statements, so
+     * once it is written on INSERT (by an explicit entry point or the
+     * {@code @PrePersist} default) no later edit flow can change it in the
+     * database — enforcing the "set once" identity anchor.</p>
      */
+    @Column(updatable = false)
     @Enumerated(EnumType.STRING)
     private PatientRegistrationSource registrationSource;
 
@@ -835,6 +841,11 @@ public class Patient implements Serializable, RetirableEntity {
     }
 
     public void setRegistrationSource(PatientRegistrationSource registrationSource) {
+        // Set once: refuse to overwrite an already-assigned source so the
+        // identity anchor cannot be silently changed by a later edit. (Issue #21181)
+        if (this.registrationSource != null && this.registrationSource != registrationSource) {
+            throw new IllegalStateException("registrationSource cannot be changed once set");
+        }
         this.registrationSource = registrationSource;
     }
 }

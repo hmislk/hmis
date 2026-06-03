@@ -22,7 +22,7 @@ public enum PatientRegistrationSource {
     NEWBORN("Newborn"),                       // baby registered via Baby Admission from mother's admission profile
     CALL_CENTRE("Call Centre"),               // registered by staff over the phone
     KIOSK("Kiosk"),                           // patient self-registered at a physical kiosk terminal
-    ONLINE_SELF("Online / Self"),             // patient portal / mobile app (deprecated — legacy data migration only)
+    ONLINE_SELF("Online / Self"),             // patient portal / mobile app self-registration; also back-filled from legacy selfRegistered=true
     THIRD_PARTY_AGENT("Third Party Agent"),   // external referral agent / partner submitted registration
     ON_ADMISSION_DEATH("On Admission Death"); // patient found dead, registered posthumously at time of admission
 
