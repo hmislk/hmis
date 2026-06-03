@@ -23,6 +23,11 @@
                                         <div class="m-2  align-items-center">
                                             <i class="fa fa-pencil m-2" aria-hidden="true"/>
                                             <p:outputLabel value="Edit Patient Demographic Details" />
+                                            <p:badge
+                                                rendered="#{not empty patientController.current.registrationSource}"
+                                                styleClass="m-2"
+                                                value="#{patientController.current.registrationSource.label}"
+                                                severity="info" />
                                         </div>
 
                                         <div class="">

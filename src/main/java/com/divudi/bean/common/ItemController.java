@@ -26,6 +26,7 @@ import com.divudi.core.entity.lab.Machine;
 import com.divudi.core.entity.Speciality;
 import com.divudi.core.entity.Staff;
 import com.divudi.core.data.dto.AmpDto;
+import com.divudi.core.data.dto.search.ItemDTO;
 import com.divudi.core.entity.pharmacy.Amp;
 import com.divudi.core.entity.pharmacy.Ampp;
 import com.divudi.core.entity.pharmacy.Atm;
@@ -3013,6 +3014,79 @@ public class ItemController implements Serializable {
         }
 
         return availableDepartmentTypesForPharmacyTransactions;
+    }
+
+    /**
+     * DTO-based autocomplete for transfer request item entry. Runs four
+     * lightweight constructor queries (one per subtype) instead of loading
+     * full Item entities. Returns at most {@code maxResults} entries sorted by
+     * name.
+     *
+     * @param query      text typed by the user
+     * @param dept       toDepartment used to resolve allowed department types
+     * @param typeFilter when non-null, restrict results to this department type
+     */
+    public List<ItemDTO> completeAmpAmppVmpVmppItemDtosForRequestingDepartment(
+            String query, Department dept, DepartmentType typeFilter) {
+
+        if (query == null || query.trim().isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        String q = "%" + query.trim().toUpperCase() + "%";
+        int barcodeMinLength = 8;
+        int maxResults = 30;
+
+        try {
+            barcodeMinLength = configOptionApplicationController.getIntegerValueByKey("BarcodeMinLength", 8);
+        } catch (Exception e) {
+            // use default
+        }
+        try {
+            maxResults = configOptionApplicationController.getIntegerValueByKey("PharmaceuticalAutocompleteMaxResults", 30);
+        } catch (Exception e) {
+            // use default
+        }
+
+        boolean includeBarcode = query.trim().length() >= barcodeMinLength;
+        String barcodeCondition = includeBarcode ? "OR UPPER(COALESCE(i.barcode, '')) LIKE :q " : "";
+
+        Department lookupDept = dept != null ? dept : sessionController.getDepartment();
+        List<DepartmentType> allowedTypes;
+        if (typeFilter != null) {
+            allowedTypes = java.util.Collections.singletonList(typeFilter);
+        } else {
+            allowedTypes = getAvailableDepartmentTypesForPharmacyTransactions(lookupDept);
+        }
+        if (allowedTypes == null || allowedTypes.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        String where = "WHERE i.retired = false AND i.inactive = false "
+                + "AND i.departmentType IN :dts "
+                + "AND (UPPER(i.name) LIKE :q OR UPPER(COALESCE(i.code, '')) LIKE :q "
+                + barcodeCondition + ") "
+                + "ORDER BY i.name";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("dts", allowedTypes);
+        params.put("q", q);
+
+        String dtoClass = "com.divudi.core.data.dto.search.ItemDTO";
+
+        String ampJpql  = "SELECT new " + dtoClass + "(i.id, i.name, COALESCE(i.code,''), i.dblValue, 'Amp',  i.id)     FROM Amp  i " + where;
+        String amppJpql = "SELECT new " + dtoClass + "(i.id, i.name, COALESCE(i.code,''), i.dblValue, 'Ampp', i.amp.id) FROM Ampp i " + where;
+        String vmpJpql  = "SELECT new " + dtoClass + "(i.id, i.name, COALESCE(i.code,''), i.dblValue, 'Vmp',  i.id)     FROM Vmp  i " + where;
+        String vmppJpql = "SELECT new " + dtoClass + "(i.id, i.name, COALESCE(i.code,''), i.dblValue, 'Vmpp', i.vmp.id) FROM Vmpp i " + where;
+
+        List<ItemDTO> results = new ArrayList<>();
+        results.addAll((List<ItemDTO>) getFacade().findLightsByJpql(ampJpql,  params, TemporalType.TIMESTAMP, maxResults));
+        results.addAll((List<ItemDTO>) getFacade().findLightsByJpql(amppJpql, params, TemporalType.TIMESTAMP, maxResults));
+        results.addAll((List<ItemDTO>) getFacade().findLightsByJpql(vmpJpql,  params, TemporalType.TIMESTAMP, maxResults));
+        results.addAll((List<ItemDTO>) getFacade().findLightsByJpql(vmppJpql, params, TemporalType.TIMESTAMP, maxResults));
+
+        results.sort(java.util.Comparator.comparing(dto -> dto.getName() != null ? dto.getName() : ""));
+        return results.size() > maxResults ? results.subList(0, maxResults) : results;
     }
 
     public List<Item> completeAmpAndVmpItem(String query) {
