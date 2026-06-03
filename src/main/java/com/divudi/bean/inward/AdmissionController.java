@@ -17,6 +17,7 @@ import com.divudi.bean.common.PageMetadataRegistry;
 import com.divudi.bean.common.PatientInsuranceController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.core.data.OptionScope;
+import com.divudi.core.data.PatientRegistrationSource;
 import com.divudi.core.data.admin.ConfigOptionInfo;
 import com.divudi.core.data.admin.PageMetadata;
 
@@ -764,6 +765,10 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         patient = null;
         yearMonthDay = null;
         getPatient();
+        // A baby registered from the mother's admission profile is a newborn. The
+        // source is stamped here on the freshly created patient so the later
+        // savePatient() does not overwrite it with INWARD_ADMISSION. (Issue #21181)
+        getPatient().setRegistrationSource(PatientRegistrationSource.NEWBORN);
         copyGuardianFromParentAdmission();
         setPrintPreview(false);
         return "/inward/inward_admission_child?faces-redirect=true";
@@ -1562,6 +1567,12 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         getPatient().setCreater(getSessionController().getLoggedUser());
 
         if (getPatient().getId() == null) {
+            // Stamp the registration source once, on the brand-new patient being
+            // admitted. A baby admission has already set NEWBORN; everything else
+            // registered at admission time is an inward admission. (Issue #21181)
+            if (getPatient().getRegistrationSource() == null) {
+                getPatient().setRegistrationSource(PatientRegistrationSource.INWARD_ADMISSION);
+            }
             getPatientFacade().createAndFlush(getPatient());  // Immediate flush
         } else {
             getPatientFacade().editAndFlush(getPatient());    // Immediate flush
@@ -1942,6 +1953,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         Patient pt = new Patient();
         patientDetailsEditable = true;
         pt.setPerson(p);
+        pt.setRegistrationSource(PatientRegistrationSource.INWARD_ADMISSION);
         getPatientFacade().create(pt);
         getCurrent().setPatient(pt);
         getFacade().edit(current);
