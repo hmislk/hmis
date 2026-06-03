@@ -263,29 +263,46 @@ public class ApplicationController {
         if (poi == null || poi.isEmpty()) {
             return null;
         }
+        // POI must be exactly 4 characters; V1 additionally requires all digits
+        if (poi.length() != 4) {
+            return null;
+        }
+        if ("V1".equals(version) && !poi.matches("\\d{4}")) {
+            return null;
+        }
 
         if ("V1".equals(version)) {
-            // V1: sequential numeric
+            // V1: sequential numeric — cache keyed by POI so global scope doesn't create
+            // per-institution sequences that collide when two institutions share the same POI
             InstitutionLastPhn iln = null;
             for (InstitutionLastPhn p : getInsPhns()) {
-                if (p.institution.equals(ins)) {
+                if (poi.equals(p.poi)) {
                     iln = p;
                 }
             }
             if (iln == null) {
                 iln = new InstitutionLastPhn();
-                String j = "select count(p) from Patient p "
-                        + " where p.createdInstitution=:ins ";
-                Map m = new HashMap();
-                m.put("ins", ins);
                 iln.institution = ins;
+                iln.poi = poi;
+                // Seed count from existing PHNs that start with this POI for accuracy
+                String j = "select count(p) from Patient p "
+                        + " where p.phn like :prefix ";
+                Map m = new HashMap();
+                m.put("prefix", poi + "%");
                 iln.patientCount = patientFacade.countByJpql(j, m);
                 getInsPhns().add(iln);
             }
-            iln.patientCount++;
-            String num = String.format("%010d", iln.patientCount);
-            String checkDigit = calculateCheckDigit(poi + num);
-            return poi + num + checkDigit;
+            // Find a non-colliding sequential value
+            for (int attempt = 0; attempt < 10; attempt++) {
+                iln.patientCount++;
+                String num = String.format("%010d", iln.patientCount);
+                String checkDigit = calculateCheckDigit(poi + num);
+                String phn = poi + num + checkDigit;
+                if (!thePhnNumberAlreadyExsists(phn)) {
+                    return phn;
+                }
+            }
+            return null;
         } else {
             // V2 (default): random alphanumeric
             String alpha = "BCDFGHJKMPQRTVWXY";
@@ -481,6 +498,7 @@ public class ApplicationController {
     class InstitutionLastPhn {
 
         Institution institution;
+        String poi;
         Long patientCount;
     }
 
