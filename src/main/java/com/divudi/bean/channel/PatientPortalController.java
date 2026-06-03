@@ -8,6 +8,7 @@ import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.hr.StaffController;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.MessageType;
+import com.divudi.core.data.PatientRegistrationSource;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.Sex;
 import com.divudi.core.data.Title;
@@ -234,6 +235,7 @@ public class PatientPortalController implements Serializable {
         patient.getPerson().setPhone(patientphoneNumber);
         patient.getPerson().setMobile(patientphoneNumber);
         patient.setSelfRegistered(true);
+        patient.setRegistrationSource(PatientRegistrationSource.ONLINE_SELF);
         patientController.save(patient);
         addNewPatient = false;
         patientSelected = true;

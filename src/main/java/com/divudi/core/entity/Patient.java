@@ -4,6 +4,7 @@
  */
 package com.divudi.core.entity;
 
+import com.divudi.core.data.PatientRegistrationSource;
 import com.divudi.core.data.SpecificPatientStatus;
 import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
@@ -23,6 +24,7 @@ import javax.persistence.Id;
 import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.PostLoad;
+import javax.persistence.PrePersist;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.Transient;
@@ -144,7 +146,22 @@ public class Patient implements Serializable, RetirableEntity {
     private SpecificPatientStatus specificStatus = SpecificPatientStatus.NORMAL;
     private String specificStatusComment;
     
+    /**
+     * @deprecated Superseded by {@link #registrationSource}. Kept for backward
+     * compatibility and existing portal logic. New code should read/write
+     * {@code registrationSource} instead; {@code selfRegistered == true} maps to
+     * {@link PatientRegistrationSource#ONLINE_SELF}. Physical removal is deferred
+     * until the data migration has run on all deployments. (Issue #21181)
+     */
+    @Deprecated
     private Boolean selfRegistered = false;
+
+    /**
+     * How this patient was first registered. Set once at creation and never
+     * changed. Null for patients created before this feature. (Issue #21181)
+     */
+    @Enumerated(EnumType.STRING)
+    private PatientRegistrationSource registrationSource;
 
     @Temporal(javax.persistence.TemporalType.DATE)
     private Date cardIssuedDate;
@@ -211,6 +228,21 @@ public class Patient implements Serializable, RetirableEntity {
     @Deprecated
     private void onLoad() {
         calAgeFromDob();
+    }
+
+    /**
+     * Records how this patient was first registered. The value is set once, at
+     * creation. Entry points that know their context set it explicitly before
+     * persist (e.g. inward admission, newborn, online self-registration). Any
+     * other brand-new patient — i.e. one registered at an OPD or pharmacy
+     * counter, or in the EMR — falls through to {@code WALK_IN} here. Existing
+     * patients are never touched, because this fires only on insert. (Issue #21181)
+     */
+    @PrePersist
+    private void defaultRegistrationSourceOnCreate() {
+        if (registrationSource == null) {
+            registrationSource = PatientRegistrationSource.WALK_IN;
+        }
     }
 
     @Deprecated
@@ -779,6 +811,10 @@ public class Patient implements Serializable, RetirableEntity {
         this.specificStatusComment = specificStatusComment;
     }
 
+    /**
+     * @deprecated Use {@link #getRegistrationSource()} instead. (Issue #21181)
+     */
+    @Deprecated
     public Boolean getSelfRegistered() {
         if(selfRegistered == null){
             return false;
@@ -786,7 +822,19 @@ public class Patient implements Serializable, RetirableEntity {
         return selfRegistered;
     }
 
+    /**
+     * @deprecated Use {@link #setRegistrationSource(PatientRegistrationSource)} instead. (Issue #21181)
+     */
+    @Deprecated
     public void setSelfRegistered(Boolean selfRegistered) {
         this.selfRegistered = selfRegistered;
+    }
+
+    public PatientRegistrationSource getRegistrationSource() {
+        return registrationSource;
+    }
+
+    public void setRegistrationSource(PatientRegistrationSource registrationSource) {
+        this.registrationSource = registrationSource;
     }
 }
