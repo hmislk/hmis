@@ -36,10 +36,17 @@
                 .noDisplayRow {
                     display: none;
                 }
+                .bhtFinalTable .ui-datatable-data td,
+                .bhtFinalTable .ui-datatable-data th,
+                .bhtFinalTable thead th,
+                .bhtFinalTable tbody td,
+                .bhtFinalTable tfoot td {
+                    padding: 8px !important;
+                }
             </style>
  
             <p:dataTable id="tb1"
-                         class="mt-2"
+                         styleClass="mt-2 bhtFinalTable"
                          value="#{cc.attrs.bill.billItems}" 
                          var="bip"
                          rowIndexVar="i"
