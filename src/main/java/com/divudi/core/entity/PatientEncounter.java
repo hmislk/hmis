@@ -7,6 +7,7 @@ package com.divudi.core.entity;
 import com.divudi.core.data.EncounterType;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.SymanticType;
+import com.divudi.core.data.inward.EncounterRegistrationFlag;
 import com.divudi.core.data.inward.PatientEncounterType;
 import com.divudi.core.entity.clinical.ClinicalEntity;
 import com.divudi.core.entity.clinical.ClinicalFindingValue;
@@ -122,6 +123,15 @@ public class PatientEncounter implements Serializable, RetirableEntity {
     private double creditPaidAmount;
     @Enumerated(EnumType.STRING)
     PatientEncounterType patientEncounterType;
+
+    /**
+     * Operational / clinical flag for this encounter, set at registration time.
+     * Defaults to {@link EncounterRegistrationFlag#STANDARD} so existing and
+     * normal admissions need no badge. Used to mark special scenarios such as
+     * On Admission Death. (Issue #21182)
+     */
+    @Enumerated(EnumType.STRING)
+    private EncounterRegistrationFlag encounterRegistrationFlag = EncounterRegistrationFlag.STANDARD;
     @OneToMany(mappedBy = "parentEncounter")
     List<PatientEncounter> childEncounters;
     @OneToMany(mappedBy = "encounter", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
@@ -499,6 +509,14 @@ public class PatientEncounter implements Serializable, RetirableEntity {
 
     public void setPatientEncounterType(PatientEncounterType patientEncounterType) {
         this.patientEncounterType = patientEncounterType;
+    }
+
+    public EncounterRegistrationFlag getEncounterRegistrationFlag() {
+        return encounterRegistrationFlag;
+    }
+
+    public void setEncounterRegistrationFlag(EncounterRegistrationFlag encounterRegistrationFlag) {
+        this.encounterRegistrationFlag = encounterRegistrationFlag;
     }
 
     public Institution getCreditCompany() {

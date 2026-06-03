@@ -19,6 +19,15 @@
                         <div>
                             <h:outputText styleClass="fa fa-id-card"/>
                             <p:outputLabel value="Inpatient Dashboard" class="mt-2 mx-3"/>
+                            <!-- Encounter flag badge — hidden for the STANDARD default to keep
+                                 the dashboard clean for the vast majority of records. (Issue #21182) -->
+                            <ui:fragment rendered="#{admissionController.current.encounterRegistrationFlag ne null
+                                                     and admissionController.current.encounterRegistrationFlag ne 'STANDARD'}">
+                                <p:tag value="#{admissionController.current.encounterRegistrationFlag.label}"
+                                       icon="fas fa-cross"
+                                       styleClass="mx-2"
+                                       style="background-color:#455a64; color:#ffffff;"/>
+                            </ui:fragment>
                         </div>
                         <div><div class="d-flex gap-2">
                                 <h:panelGroup rendered="#{webUserController.hasPrivilege('InwardSearch')}">

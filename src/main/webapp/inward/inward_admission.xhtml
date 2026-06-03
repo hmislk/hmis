@@ -61,6 +61,17 @@
                                         styleClass="ui-button-secondary ms-5">
                                     </p:commandButton>
                                 </h:panelGroup>
+
+                                <!-- Secondary, non-prominent action positioned away from the primary
+                                     "Admit" button. Opens a confirmation dialog before flagging the
+                                     admission as On Admission Death. (Issue #21182) -->
+                                <p:commandButton
+                                    type="button"
+                                    value="On Admission Death"
+                                    icon="fas fa-cross"
+                                    title="Record this admission as an On Admission Death (patient arrived dead, or died before registration was completed)"
+                                    styleClass="ui-button-secondary ms-5"
+                                    onclick="PF('dlgOnAdmissionDeath').show();"/>
                             </div>
                         </div>
                     </f:facet>
@@ -587,6 +598,41 @@
                             action="#{admissionController.saveSelected}"
                             update="@form"
                             onclick="PF('dlgActiveAdmission').hide();"/>
+                    </div>
+                </div>
+            </p:dialog>
+
+            <!-- On Admission Death confirmation dialog (Issue #21182) -->
+            <p:dialog id="dlgOnAdmissionDeath"
+                      widgetVar="dlgOnAdmissionDeath"
+                      header="Confirm On Admission Death"
+                      modal="true"
+                      resizable="false"
+                      closable="true"
+                      style="width:500px">
+                <div style="padding:12px">
+                    <p style="font-weight:bold; font-size:1.05em;">
+                        Record this admission as an <strong>On Admission Death</strong>?
+                    </p>
+                    <p>
+                        Use this only when the patient arrived dead, or died before
+                        registration was completed. The admission will be saved with the
+                        <strong>On Admission Death</strong> flag.
+                    </p>
+                    <div class="d-flex justify-content-end gap-2 mt-3">
+                        <p:commandButton
+                            value="Cancel"
+                            icon="fa fa-times"
+                            type="button"
+                            class="ui-button-secondary"
+                            onclick="PF('dlgOnAdmissionDeath').hide(); return false;"/>
+                        <p:commandButton
+                            value="Confirm — Save as On Admission Death"
+                            icon="fas fa-cross"
+                            class="ui-button-secondary"
+                            action="#{admissionController.checkBeforeAdmitOnAdmissionDeath}"
+                            update="@form"
+                            onclick="PF('dlgOnAdmissionDeath').hide();"/>
                     </div>
                 </div>
             </p:dialog>
