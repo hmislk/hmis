@@ -86,17 +86,25 @@
                     </h:outputLabel>
                 </p:column>
                 
-                <p:column headerText="Difference"  style="text-align: right;">
+                <p:column headerText="Difference"  style="text-align: center; width: 12em;" exportable="false">
                     <h:panelGroup style="font-size: 18px; font-weight: 700">
-                        <h:outputText styleClass="fas fa-arrow-down mx-1"
-                                      style="color: red;"
-                                      rendered="#{(bip.adjustedValue - bip.netValue) lt 0}" />
-                        <h:outputText styleClass="fas fa-arrow-up mx-1"
-                                      style="color: green;"
-                                      rendered="#{(bip.adjustedValue - bip.netValue) gt 0}" />
-                        <h:outputLabel  value="#{bip.adjustedValue - bip.netValue}">
-                            <f:convertNumber pattern="#,##0.00" />
-                        </h:outputLabel>
+                        <h:panelGroup rendered="#{(bip.adjustedValue - bip.netValue) ge 0.005}" style="color: green;">
+                            <h:outputText styleClass="fas fa-arrow-up mx-1" />
+                            <h:outputLabel value="#{bip.adjustedValue - bip.netValue}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                        </h:panelGroup>
+                        <h:panelGroup rendered="#{(bip.adjustedValue - bip.netValue) le -0.005}" style="color: red;">
+                            <h:outputText styleClass="fas fa-arrow-down mx-1" />
+                            <h:outputLabel value="#{bip.adjustedValue - bip.netValue}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                        </h:panelGroup>
+                        <h:panelGroup rendered="#{(bip.adjustedValue - bip.netValue) gt -0.005 and (bip.adjustedValue - bip.netValue) lt 0.005}" style="color: blue;">
+                            <h:outputLabel value="0">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                        </h:panelGroup>
                     </h:panelGroup>
                 </p:column>
 
