@@ -42,12 +42,9 @@
                          class="mt-2"
                          value="#{cc.attrs.bill.billItems}" 
                          var="bip"
-                         rowStyleClass="#{(bip.grossValue ne 0) ? '' : 'noDisplayRow' }"
+                         rowIndexVar="i"
+                         rowStyleClass="#{(bip.adjustedValue ne 0) ? '' : 'noDisplayRow' }"
                          >
-                <p:column headerText="searialNo">
-                    #{bip.id}
-                    <h:outputLabel   value="#{bip.searialNo}"/>
-                </p:column>
                 <p:column headerText="Inward Charge Type">
                     <h:outputLabel   value="#{bip.inwardChargeType.name}"/>
                 </p:column>
@@ -88,6 +85,21 @@
                         <f:convertNumber pattern="#,##0.00" />
                     </h:outputLabel>
                 </p:column>
+                
+                <p:column headerText="Difference"  style="text-align: right;">
+                    <h:panelGroup style="font-size: 18px; font-weight: 700">
+                        <h:outputText styleClass="fas fa-arrow-down mx-1"
+                                      style="color: red;"
+                                      rendered="#{(bip.adjustedValue - bip.netValue) lt 0}" />
+                        <h:outputText styleClass="fas fa-arrow-up mx-1"
+                                      style="color: green;"
+                                      rendered="#{(bip.adjustedValue - bip.netValue) gt 0}" />
+                        <h:outputLabel  value="#{bip.adjustedValue - bip.netValue}">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputLabel>
+                    </h:panelGroup>
+                </p:column>
+
 
             </p:dataTable>
 
