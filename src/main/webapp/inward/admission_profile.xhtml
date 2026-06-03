@@ -20,13 +20,20 @@
                             <h:outputText styleClass="fa fa-id-card"/>
                             <p:outputLabel value="Inpatient Dashboard" class="mt-2 mx-3"/>
                             <!-- Encounter flag badge — hidden for the STANDARD default to keep
-                                 the dashboard clean for the vast majority of records. (Issue #21182) -->
-                            <ui:fragment rendered="#{admissionController.current.encounterRegistrationFlag ne null
-                                                     and admissionController.current.encounterRegistrationFlag ne 'STANDARD'}">
+                                 the dashboard clean for the vast majority of records. Styling
+                                 is flag-aware: dark for On Admission Death, amber for the
+                                 Rapid / Temp A&E pending-completion state. (Issues #21182, #21183) -->
+                            <ui:fragment rendered="#{admissionController.current.encounterRegistrationFlag eq 'ON_ADMISSION_DEATH'}">
                                 <p:tag value="#{admissionController.current.encounterRegistrationFlag.label}"
                                        icon="fas fa-cross"
                                        styleClass="mx-2"
                                        style="background-color:#455a64; color:#ffffff;"/>
+                            </ui:fragment>
+                            <ui:fragment rendered="#{admissionController.current.encounterRegistrationFlag eq 'RAPID_TEMP_AE'}">
+                                <p:tag value="#{admissionController.current.encounterRegistrationFlag.label}"
+                                       icon="fas fa-truck-medical"
+                                       styleClass="mx-2"
+                                       style="background-color:#f0ad4e; color:#212529;"/>
                             </ui:fragment>
                         </div>
                         <div><div class="d-flex gap-2">
@@ -52,6 +59,43 @@
                         </div>
                     </div>
                 </f:facet>
+
+                <!-- Rapid / Temp A&E warning: demographics may be incomplete. Offers the
+                     follow-up actions (complete details, change patient if duplicate, or
+                     mark complete once verified). Hidden for all other flags. (Issue #21183) -->
+                <ui:fragment rendered="#{admissionController.current.encounterRegistrationFlag eq 'RAPID_TEMP_AE'}">
+                    <div class="alert alert-warning d-flex justify-content-between align-items-center flex-wrap gap-2 my-2" role="alert">
+                        <div>
+                            <h:outputText styleClass="fas fa-triangle-exclamation me-2"/>
+                            <h:outputText value="Temporary A&amp;E admission — patient demographics may be incomplete. Please complete the patient details, or change to the correct patient if this is a duplicate record."/>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <p:commandButton
+                                value="Complete Registration"
+                                ajax="false"
+                                icon="fa fa-user-edit"
+                                class="ui-button-success"
+                                action="#{patientController.navigateToOpdPatientEdit()}">
+                                <f:setPropertyActionListener
+                                    value="#{admissionController.current.patient}"
+                                    target="#{patientController.current}" />
+                            </p:commandButton>
+                            <p:commandButton
+                                value="Change Patient"
+                                ajax="false"
+                                icon="fa fa-user-friends"
+                                class="ui-button-warning"
+                                action="#{admissionPatientChangeController.navigateToChangeAdmissionPatient()}"/>
+                            <p:commandButton
+                                value="Mark as Complete"
+                                icon="fa fa-check"
+                                class="ui-button-secondary"
+                                process="@this"
+                                update="form"
+                                action="#{admissionController.markRapidTempAdmissionComplete}"/>
+                        </div>
+                    </div>
+                </ui:fragment>
 
                 <div class="row">
                     <!-- Column 1: Patient Info -->
