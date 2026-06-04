@@ -78,6 +78,7 @@ public class FormApiService {
         dc.setComponentPresentationType(ComponentPresentationType.DataEntryForm);
         dc.setRetired(false);
         designComponentFacade.create(dc);
+        designComponentFacade.flush();
         return toTemplateDto(dc, 0);
     }
 
@@ -168,6 +169,7 @@ public class FormApiService {
         field.setEditHtml((String) body.get("editHtml"));
         field.setViewHtml((String) body.get("viewHtml"));
         designComponentFacade.create(field);
+        designComponentFacade.flush();
         return toFieldDto(field);
     }
 
@@ -272,6 +274,7 @@ public class FormApiService {
         ch.setOrderNo(orderNo);
         ch.setRetired(false);
         designComponentChoiceFacade.create(ch);
+        designComponentChoiceFacade.flush();
         return new FormChoiceDto(ch.getId(), ch.getLabel(), ch.getValue(), ch.getOrderNo());
     }
 
