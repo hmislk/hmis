@@ -99,6 +99,7 @@ public enum Privileges {
     InwardReport("Inward Report"),
     InwardFinalBillReportEdit("Inward Final Bill Report Edit"),
     InwardAdministration("Inward Administration"),
+    InwardFormTemplateAdmin("Inward Form Template Admin"),
     InwardAdditionalPrivilages("Inward Additional Privileges"),
     InwardBillSearch("Inward Bill Search"),
     InwardBillItemSearch("Inward Bill Item Search"),
@@ -1060,6 +1061,7 @@ public enum Privileges {
             case InpatientClinicalAssessment:
             case InpatientClinicalDischarge:
             case InwardDocumentUpload:
+            case InwardFormTemplateAdmin:
                 return "Inward";
 
             case AdminInactivePatients:
