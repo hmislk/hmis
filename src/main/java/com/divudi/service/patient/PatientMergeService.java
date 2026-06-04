@@ -248,13 +248,16 @@ public class PatientMergeService {
 
     private void restorePatientReference(PatientMergeAffectedRecord ar) {
         Patient old = patientFacade.find(ar.getOldPatientId());
-        if (old == null) {
+        Patient current = patientFacade.find(ar.getNewPatientId());
+        if (old == null || current == null) {
             return;
         }
         Map<String, Object> params = new HashMap<>();
         params.put("old", old);
+        params.put("current", current);
         params.put("id", ar.getEntityId());
-        String jpql = "update " + ar.getEntityClass() + " e set e.patient = :old where e.id = :id";
+        // Guard by current patient to avoid overwriting a later reassignment
+        String jpql = "update " + ar.getEntityClass() + " e set e.patient = :old where e.id = :id and e.patient = :current";
         switch (ar.getEntityClass()) {
             case "Bill":
                 billFacade.updateByJpql(jpql, params);
