@@ -258,13 +258,13 @@
                                                 </div>
 
                                                 <div class="col-md-4">
-                                                    <div class="mb-3">
-                                                        <strong class="text-muted">Registered Type</strong><br/>
-                                                        <p:badge 
-                                                            value="#{patientController.current.selfRegistered eq true ? 'Self Registered' : 'System Registered'}"
-                                                            severity="#{patientController.current.selfRegistered eq true ? 'warning' : 'success'}">
+                                                    <h:panelGroup layout="block" styleClass="mb-3" rendered="#{not empty patientController.current.registrationSource}">
+                                                        <strong class="text-muted">Registration Source</strong><br/>
+                                                        <p:badge
+                                                            value="#{patientController.current.registrationSource.label}"
+                                                            severity="info">
                                                         </p:badge>
-                                                    </div>
+                                                    </h:panelGroup>
 
                                                 </div>
                                             </div>

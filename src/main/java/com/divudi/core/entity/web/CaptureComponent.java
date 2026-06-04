@@ -8,6 +8,8 @@ import com.divudi.core.data.web.ComponentDataType;
 import com.divudi.core.data.web.ComponentPresentationType;
 import com.divudi.core.data.web.TemplateComponentType;
 import com.divudi.core.entity.Item;
+import com.divudi.core.entity.WebUser;
+import com.divudi.core.entity.inward.PatientFormEntry;
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Entity;
@@ -64,6 +66,23 @@ public class CaptureComponent implements Serializable {
 
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date dateValue;
+
+    @ManyToOne
+    private PatientFormEntry patientFormEntry;
+
+    //Created properties
+    @ManyToOne
+    private WebUser creater;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date createdAt;
+
+    //Retiring properties
+    private boolean retired;
+    @ManyToOne
+    private WebUser retirer;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date retiredAt;
+    private String retireComments;
 
     public Long getId() {
         return id;
@@ -234,6 +253,60 @@ public class CaptureComponent implements Serializable {
         this.itemValue = itemValue;
     }
 
+    public PatientFormEntry getPatientFormEntry() {
+        return patientFormEntry;
+    }
 
+    public void setPatientFormEntry(PatientFormEntry patientFormEntry) {
+        this.patientFormEntry = patientFormEntry;
+    }
+
+    public WebUser getCreater() {
+        return creater;
+    }
+
+    public void setCreater(WebUser creater) {
+        this.creater = creater;
+    }
+
+    public Date getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Date createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public boolean isRetired() {
+        return retired;
+    }
+
+    public void setRetired(boolean retired) {
+        this.retired = retired;
+    }
+
+    public WebUser getRetirer() {
+        return retirer;
+    }
+
+    public void setRetirer(WebUser retirer) {
+        this.retirer = retirer;
+    }
+
+    public Date getRetiredAt() {
+        return retiredAt;
+    }
+
+    public void setRetiredAt(Date retiredAt) {
+        this.retiredAt = retiredAt;
+    }
+
+    public String getRetireComments() {
+        return retireComments;
+    }
+
+    public void setRetireComments(String retireComments) {
+        this.retireComments = retireComments;
+    }
 
 }

@@ -195,6 +195,13 @@
                                         </p:column>
                                         <p:column headerText="Patient Name"  >
                                             <h:outputText value="#{a.patient.person.nameWithTitle}" ></h:outputText>
+                                            <!-- Encounter flag badge — hidden for the STANDARD default. (Issue #21182) -->
+                                            <ui:fragment rendered="#{a.encounterRegistrationFlag ne null and a.encounterRegistrationFlag ne 'STANDARD'}">
+                                                <br/>
+                                                <p:tag value="#{a.encounterRegistrationFlag.label}"
+                                                       icon="fas fa-cross"
+                                                       style="background-color:#455a64; color:#ffffff;"/>
+                                            </ui:fragment>
                                         </p:column>
                                         <p:column headerText="Phone/Mobile" >
                                             <h:outputText value="#{a.patient.person.phone}" ></h:outputText>
