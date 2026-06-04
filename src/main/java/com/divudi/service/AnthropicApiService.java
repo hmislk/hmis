@@ -744,6 +744,108 @@ public class AnthropicApiService implements Serializable {
                                 .add("resource_type").add("method").add("investigation_id")))
                 .build();
 
+        JsonObject manageFormsTool = Json.createObjectBuilder()
+                .add("name", "manage_forms")
+                .add("description",
+                        "Design and manage dynamic clinical form templates (create/update/retire), "
+                        + "fields of all input types (text, number, date, calendar, signature, choice lists, boolean, rating, slider, spinner), "
+                        + "per-field choice options, and AI-generated HTML layout wrappers (editHtml/viewHtml) for custom C3 hybrid layout. "
+                        + "Also query filled form entries and their captured values for a given admission.\n\n"
+                        + "resource_type: TEMPLATE | FIELD | CHOICE | ENTRY | VALUE\n"
+                        + "method: LIST | GET | POST | PUT | DELETE\n\n"
+                        + "TEMPLATE: LIST returns all non-retired forms. GET requires id. POST requires name. PUT requires id. DELETE requires id.\n"
+                        + "FIELD: LIST requires form_id. POST requires form_id + name + componentPresentationType. PUT requires id. DELETE requires id.\n"
+                        + "  componentPresentationType values: Input_text, Input_text_Area, TextEditor, Input_Number, Spinner, Slider, Rating, Calendar,\n"
+                        + "  SelectBooleanCheckBox, SelectBooleanButton, ToggleSwitch, TriStateCheckBox, SelectOneMenu, SelectOneRadio,\n"
+                        + "  SelectOneListBox, SelectCheckBoxMenu, SelectManyButton, MultiSelectListBox, AutoComplete, Signature\n"
+                        + "  editHtml: wrap the {{INPUT}} placeholder with Bootstrap 5 HTML. {{LABEL}} is the field label.\n"
+                        + "  viewHtml: wrap {{LABEL}} and {{VALUE}} for the read-only view.\n"
+                        + "CHOICE: LIST requires field_id. POST requires field_id + label. PUT requires id. DELETE requires id.\n"
+                        + "ENTRY: LIST requires admission_id. Returns PatientFormEntry records for the admission.\n"
+                        + "VALUE: LIST requires entry_id. Returns CaptureComponent values for a filled entry.")
+                .add("input_schema", Json.createObjectBuilder()
+                        .add("type", "object")
+                        .add("properties", Json.createObjectBuilder()
+                                .add("resource_type", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("enum", Json.createArrayBuilder().add("TEMPLATE").add("FIELD").add("CHOICE").add("ENTRY").add("VALUE"))
+                                        .add("description", "Which sub-resource to operate on"))
+                                .add("method", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("enum", Json.createArrayBuilder().add("LIST").add("GET").add("POST").add("PUT").add("DELETE"))
+                                        .add("description", "CRUD operation"))
+                                .add("id", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Record ID (string) — required for GET/PUT/DELETE on templates, fields, and choices"))
+                                .add("form_id", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Form template ID — required when listing or adding fields"))
+                                .add("field_id", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Field ID — required when listing or adding choices"))
+                                .add("admission_id", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "PatientEncounter ID — required for ENTRY LIST"))
+                                .add("entry_id", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "PatientFormEntry ID — required for VALUE LIST"))
+                                .add("name", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Display name for a template, field, or choice label"))
+                                .add("description", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Description text (optional)"))
+                                .add("formCssClass", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Bootstrap CSS class for the form row wrapper (e.g. 'row row-cols-1 row-cols-md-3 g-3')"))
+                                .add("componentPresentationType", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Input widget type for a field (e.g. Input_text, Calendar, SelectOneMenu, Signature, etc.)"))
+                                .add("componentDataType", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Data type for a field (optional)"))
+                                .add("orderNo", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Display order number (integer as string)"))
+                                .add("required", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "'true' or 'false' — whether the field is mandatory"))
+                                .add("placeholder", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Placeholder text for text input fields"))
+                                .add("minValue", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Minimum value for numeric/range fields"))
+                                .add("maxValue", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Maximum value for numeric/range fields"))
+                                .add("stepSize", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Step increment for Slider/Spinner fields"))
+                                .add("maxRating", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Maximum star count for Rating fields"))
+                                .add("onLabel", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Label when SelectBooleanButton is ON"))
+                                .add("offLabel", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Label when SelectBooleanButton is OFF"))
+                                .add("editHtml", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "HTML wrapper for edit mode. Use {{LABEL}} for the field label, {{INPUT}} where the PrimeFaces widget will be rendered. Use Bootstrap 5 col classes."))
+                                .add("viewHtml", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "HTML wrapper for view mode. Use {{LABEL}} and {{VALUE}} tokens."))
+                                .add("label", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Choice label shown to the user"))
+                                .add("value", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Choice value stored (defaults to label if omitted)")))
+                        .add("required", Json.createArrayBuilder().add("resource_type").add("method")))
+                .build();
+
         return Json.createArrayBuilder()
                 .add(searchCodeTool)
                 .add(fetchFileTool)
@@ -754,6 +856,7 @@ public class AnthropicApiService implements Serializable {
                 .add(inwardRoomsTool)
                 .add(manageInvestigationsTool)
                 .add(manageInvestigationFormatTool)
+                .add(manageFormsTool)
                 .build();
     }
 
@@ -931,6 +1034,38 @@ public class AnthropicApiService implements Serializable {
                             moCharge, moAfterCharge, adminCharge, medCareCharge,
                             durationHours, overShoot, durationDays,
                             query, size, retireComments, hmisBaseUrl, hmisApiKey);
+                }
+                case "manage_forms": {
+                    String resourceType = toolInput.getString("resource_type", "TEMPLATE");
+                    String method       = toolInput.getString("method", "LIST");
+                    String id           = toolInput.containsKey("id")           ? toolInput.getString("id", "")           : "";
+                    String formId       = toolInput.containsKey("form_id")      ? toolInput.getString("form_id", "")      : "";
+                    String fieldId      = toolInput.containsKey("field_id")     ? toolInput.getString("field_id", "")     : "";
+                    String admissionId  = toolInput.containsKey("admission_id") ? toolInput.getString("admission_id", "") : "";
+                    String entryId      = toolInput.containsKey("entry_id")     ? toolInput.getString("entry_id", "")     : "";
+                    String name         = toolInput.containsKey("name")         ? toolInput.getString("name", null)       : null;
+                    String description  = toolInput.containsKey("description")  ? toolInput.getString("description", null): null;
+                    String formCssClass = toolInput.containsKey("formCssClass") ? toolInput.getString("formCssClass", null): null;
+                    String cpt          = toolInput.containsKey("componentPresentationType") ? toolInput.getString("componentPresentationType", null) : null;
+                    String cdt          = toolInput.containsKey("componentDataType")         ? toolInput.getString("componentDataType", null)         : null;
+                    String orderNo      = toolInput.containsKey("orderNo")      ? toolInput.getString("orderNo", null)    : null;
+                    String required     = toolInput.containsKey("required")     ? toolInput.getString("required", null)   : null;
+                    String placeholder  = toolInput.containsKey("placeholder")  ? toolInput.getString("placeholder", null): null;
+                    String minValue     = toolInput.containsKey("minValue")     ? toolInput.getString("minValue", null)   : null;
+                    String maxValue     = toolInput.containsKey("maxValue")     ? toolInput.getString("maxValue", null)   : null;
+                    String stepSize     = toolInput.containsKey("stepSize")     ? toolInput.getString("stepSize", null)   : null;
+                    String maxRating    = toolInput.containsKey("maxRating")    ? toolInput.getString("maxRating", null)  : null;
+                    String onLabel      = toolInput.containsKey("onLabel")      ? toolInput.getString("onLabel", null)    : null;
+                    String offLabel     = toolInput.containsKey("offLabel")     ? toolInput.getString("offLabel", null)   : null;
+                    String editHtml     = toolInput.containsKey("editHtml")     ? toolInput.getString("editHtml", null)   : null;
+                    String viewHtml     = toolInput.containsKey("viewHtml")     ? toolInput.getString("viewHtml", null)   : null;
+                    String label        = toolInput.containsKey("label")        ? toolInput.getString("label", null)      : null;
+                    String value        = toolInput.containsKey("value")        ? toolInput.getString("value", null)      : null;
+                    return callFormsApi(resourceType, method, id, formId, fieldId, admissionId, entryId,
+                            name, description, formCssClass, cpt, cdt, orderNo, required,
+                            placeholder, minValue, maxValue, stepSize, maxRating,
+                            onLabel, offLabel, editHtml, viewHtml, label, value,
+                            hmisBaseUrl, hmisApiKey);
                 }
                 default:
                     return "Unknown tool: " + toolName;
@@ -2074,6 +2209,180 @@ public class AnthropicApiService implements Serializable {
         }
     }
 
+    private String requireNumericId(String value, String fieldName) {
+        if (value == null || !value.trim().matches("\\d+")) {
+            throw new IllegalArgumentException("Error: " + fieldName + " must be a numeric id.");
+        }
+        return value.trim();
+    }
+
+    private String callFormsApi(
+            String resourceType, String method, String id, String formId, String fieldId,
+            String admissionId, String entryId, String name, String description, String formCssClass,
+            String cpt, String cdt, String orderNo, String required, String placeholder,
+            String minValue, String maxValue, String stepSize, String maxRating,
+            String onLabel, String offLabel, String editHtml, String viewHtml,
+            String label, String value,
+            String hmisBaseUrl, String hmisApiKey) {
+        if (hmisBaseUrl == null || hmisBaseUrl.trim().isEmpty()) {
+            return "Error: HMIS base URL not configured.";
+        }
+        if (hmisApiKey == null || hmisApiKey.trim().isEmpty()) {
+            return "Error: HMIS API key not configured.";
+        }
+        try {
+            HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).build();
+            String base = hmisBaseUrl.trim().replaceAll("/+$", "") + "/api/forms";
+
+            String url;
+            String httpMethod;
+            String requestBody = null;
+
+            switch (resourceType.toUpperCase()) {
+                case "TEMPLATE":
+                    switch (method.toUpperCase()) {
+                        case "LIST": url = base + "/templates"; httpMethod = "GET"; break;
+                        case "GET":  url = base + "/templates/" + requireNumericId(id, "id"); httpMethod = "GET"; break;
+                        case "POST": {
+                            url = base + "/templates"; httpMethod = "POST";
+                            Map<String, Object> body = new HashMap<>();
+                            if (name != null) body.put("name", name);
+                            if (description != null) body.put("description", description);
+                            if (formCssClass != null) body.put("formCssClass", formCssClass);
+                            requestBody = new com.google.gson.Gson().toJson(body);
+                            break;
+                        }
+                        case "PUT": {
+                            url = base + "/templates/" + requireNumericId(id, "id"); httpMethod = "PUT";
+                            Map<String, Object> body = new HashMap<>();
+                            if (name != null) body.put("name", name);
+                            if (description != null) body.put("description", description);
+                            if (formCssClass != null) body.put("formCssClass", formCssClass);
+                            requestBody = new com.google.gson.Gson().toJson(body);
+                            break;
+                        }
+                        case "DELETE": url = base + "/templates/" + requireNumericId(id, "id"); httpMethod = "DELETE"; break;
+                        default: return "Unknown method: " + method;
+                    }
+                    break;
+
+                case "FIELD":
+                    switch (method.toUpperCase()) {
+                        case "LIST": url = base + "/templates/" + requireNumericId(formId, "form_id") + "/fields"; httpMethod = "GET"; break;
+                        case "POST": {
+                            url = base + "/templates/" + requireNumericId(formId, "form_id") + "/fields"; httpMethod = "POST";
+                            Map<String, Object> body = new HashMap<>();
+                            if (name != null)        body.put("name", name);
+                            if (description != null) body.put("description", description);
+                            if (cpt != null)         body.put("componentPresentationType", cpt);
+                            if (cdt != null)         body.put("componentDataType", cdt);
+                            if (orderNo != null)     body.put("orderNo", orderNo);
+                            if (required != null)    body.put("required", required);
+                            if (placeholder != null) body.put("placeholder", placeholder);
+                            if (minValue != null)    body.put("minValue", minValue);
+                            if (maxValue != null)    body.put("maxValue", maxValue);
+                            if (stepSize != null)    body.put("stepSize", stepSize);
+                            if (maxRating != null)   body.put("maxRating", maxRating);
+                            if (onLabel != null)     body.put("onLabel", onLabel);
+                            if (offLabel != null)    body.put("offLabel", offLabel);
+                            if (editHtml != null)    body.put("editHtml", editHtml);
+                            if (viewHtml != null)    body.put("viewHtml", viewHtml);
+                            requestBody = new com.google.gson.Gson().toJson(body);
+                            break;
+                        }
+                        case "PUT": {
+                            url = base + "/fields/" + requireNumericId(id, "id"); httpMethod = "PUT";
+                            Map<String, Object> body = new HashMap<>();
+                            if (name != null)        body.put("name", name);
+                            if (description != null) body.put("description", description);
+                            if (cpt != null)         body.put("componentPresentationType", cpt);
+                            if (cdt != null)         body.put("componentDataType", cdt);
+                            if (orderNo != null)     body.put("orderNo", orderNo);
+                            if (required != null)    body.put("required", required);
+                            if (placeholder != null) body.put("placeholder", placeholder);
+                            if (minValue != null)    body.put("minValue", minValue);
+                            if (maxValue != null)    body.put("maxValue", maxValue);
+                            if (stepSize != null)    body.put("stepSize", stepSize);
+                            if (maxRating != null)   body.put("maxRating", maxRating);
+                            if (onLabel != null)     body.put("onLabel", onLabel);
+                            if (offLabel != null)    body.put("offLabel", offLabel);
+                            if (editHtml != null)    body.put("editHtml", editHtml);
+                            if (viewHtml != null)    body.put("viewHtml", viewHtml);
+                            requestBody = new com.google.gson.Gson().toJson(body);
+                            break;
+                        }
+                        case "DELETE": url = base + "/fields/" + requireNumericId(id, "id"); httpMethod = "DELETE"; break;
+                        default: return "Unknown method: " + method;
+                    }
+                    break;
+
+                case "CHOICE":
+                    switch (method.toUpperCase()) {
+                        case "LIST": url = base + "/fields/" + requireNumericId(fieldId, "field_id") + "/choices"; httpMethod = "GET"; break;
+                        case "POST": {
+                            url = base + "/fields/" + requireNumericId(fieldId, "field_id") + "/choices"; httpMethod = "POST";
+                            Map<String, Object> body = new HashMap<>();
+                            if (label != null)   body.put("label", label);
+                            if (value != null)   body.put("value", value);
+                            if (orderNo != null) body.put("orderNo", orderNo);
+                            requestBody = new com.google.gson.Gson().toJson(body);
+                            break;
+                        }
+                        case "PUT": {
+                            url = base + "/choices/" + requireNumericId(id, "id"); httpMethod = "PUT";
+                            Map<String, Object> body = new HashMap<>();
+                            if (label != null)   body.put("label", label);
+                            if (value != null)   body.put("value", value);
+                            if (orderNo != null) body.put("orderNo", orderNo);
+                            requestBody = new com.google.gson.Gson().toJson(body);
+                            break;
+                        }
+                        case "DELETE": url = base + "/choices/" + requireNumericId(id, "id"); httpMethod = "DELETE"; break;
+                        default: return "Unknown method: " + method;
+                    }
+                    break;
+
+                case "ENTRY":
+                    if (!"LIST".equalsIgnoreCase(method)) return "Unknown method: " + method + " for ENTRY";
+                    url = base + "/entries/" + requireNumericId(admissionId, "admission_id"); httpMethod = "GET"; break;
+
+                case "VALUE":
+                    if (!"LIST".equalsIgnoreCase(method)) return "Unknown method: " + method + " for VALUE";
+                    url = base + "/entries/" + requireNumericId(entryId, "entry_id") + "/values"; httpMethod = "GET"; break;
+
+                default:
+                    return "Unknown resource_type: " + resourceType;
+            }
+
+            HttpRequest.Builder reqBuilder = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .timeout(Duration.ofSeconds(15))
+                    .header("Finance", hmisApiKey);
+
+            if (requestBody != null) {
+                reqBuilder.header("Content-Type", "application/json");
+                if ("POST".equals(httpMethod)) {
+                    reqBuilder.POST(HttpRequest.BodyPublishers.ofString(requestBody));
+                } else {
+                    reqBuilder.PUT(HttpRequest.BodyPublishers.ofString(requestBody));
+                }
+            } else if ("DELETE".equals(httpMethod)) {
+                reqBuilder.DELETE();
+            } else {
+                reqBuilder.GET();
+            }
+
+            HttpResponse<String> response = client.send(reqBuilder.build(), HttpResponse.BodyHandlers.ofString());
+            return "HTTP " + response.statusCode() + ": " + response.body();
+
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return "Forms API call interrupted.";
+        } catch (Exception e) {
+            return "Forms API error: " + e.getMessage();
+        }
+    }
+
     public String buildSystemPrompt(String hmisApiBaseUrl, String userHmisApiKey, String githubBranch) {
         String branch = (githubBranch != null && !githubBranch.trim().isEmpty())
                 ? githubBranch.trim() : "development";
@@ -2102,7 +2411,7 @@ public class AnthropicApiService implements Serializable {
         }
 
         sb.append("## Tools Available to You\n");
-        sb.append("You have nine tools to ground your answers in the actual codebase, live configuration, clinical master data, collecting-centre fees, inward discount matrix entries, investigation master records, and investigation report formats:\n\n");
+        sb.append("You have ten tools to ground your answers in the actual codebase, live configuration, clinical master data, collecting-centre fees, inward discount matrix entries, investigation master records, investigation report formats, and dynamic clinical form templates:\n\n");
         sb.append("### search_github_code\n");
         sb.append("Searches the hmislk/hmis repository source code for files matching keywords. ");
         sb.append("Use this first when a user asks about system behaviour, page logic, or wants to understand how something works.\n\n");
@@ -2157,6 +2466,29 @@ public class AnthropicApiService implements Serializable {
           .append("PUT_CATEGORY / PUT_ROOM / PUT_CHARGE to update. ")
           .append("DELETE_CATEGORY / DELETE_ROOM / DELETE_CHARGE to soft-retire. ")
           .append("Always confirm with the user before POST, PUT, or DELETE — these changes affect live inward room billing.\n\n");
+        sb.append("### manage_forms\n");
+        sb.append("Design and manage dynamic clinical form templates end-to-end. ")
+          .append("resource_type: TEMPLATE | FIELD | CHOICE | ENTRY | VALUE. ")
+          .append("method: LIST | GET | POST | PUT | DELETE. ")
+          .append("Use TEMPLATE LIST to discover existing forms. ")
+          .append("Use TEMPLATE POST to create a form shell (name required, optional formCssClass for Bootstrap row layout). ")
+          .append("Use FIELD POST to add fields: required params are form_id, name, and componentPresentationType. ")
+          .append("Supported types: Input_text, Input_text_Area, TextEditor, Input_Number, Spinner, Slider, Rating, Calendar, ")
+          .append("SelectBooleanCheckBox, SelectBooleanButton, ToggleSwitch, TriStateCheckBox, SelectOneMenu, SelectOneRadio, ")
+          .append("SelectOneListBox, SelectCheckBoxMenu, SelectManyButton, MultiSelectListBox, AutoComplete, Signature. ")
+          .append("Use CHOICE POST (field_id + label required) to add options for SelectOneMenu, SelectOneRadio, and other choice-type fields. ")
+          .append("Use ENTRY LIST (admission_id required) to see filled forms for an inpatient admission. ")
+          .append("Use VALUE LIST (entry_id required) to read all captured field values for a specific form submission.\n\n")
+          .append("C3 Layout Pattern: When generating editHtml for a field, use these tokens:\n")
+          .append("  {{LABEL}} — the field label text\n")
+          .append("  {{INPUT}} — replaced at render time with the JSF PrimeFaces input component\n")
+          .append("Use Bootstrap 5 grid classes (col-12, col-md-6, col-md-4, col-md-3) for layout. Example:\n")
+          .append("  <div class=\"col-12 col-md-6 mb-3\">\n")
+          .append("    <label class=\"form-label fw-semibold\">{{LABEL}}</label>\n")
+          .append("    {{INPUT}}\n")
+          .append("  </div>\n")
+          .append("When generating viewHtml, use {{LABEL}} and {{VALUE}} (the formatted stored value).\n")
+          .append("Always confirm with the user before POST, PUT, or DELETE.\n\n");
 
         sb.append("## How to Use the Tools\n");
         sb.append("- When a user describes a problem or asks why something behaves a certain way, search the source code first.\n");
@@ -2614,6 +2946,29 @@ public class AnthropicApiService implements Serializable {
                     {"POST", "/config/setInteger/{key}/{value}",  "Set an integer config option by key name"}
                 });
 
+        appendModule(sb, "Dynamic Forms", "/forms",
+                "Design and manage dynamic clinical form templates (create/update/retire), fields of all input types, "
+                + "per-field choice options, and AI-generated HTML layout wrappers (editHtml/viewHtml) for the C3 hybrid pattern. "
+                + "Query filled form entries and captured values for admissions.",
+                githubUrl(branch, "developer_docs/forms/form-api-guide.md"),
+                new String[][]{
+                    {"GET",    "/forms/templates",                        "List all form templates"},
+                    {"GET",    "/forms/templates/{id}",                   "Get a form template by ID"},
+                    {"POST",   "/forms/templates",                        "Create a form template (name required)"},
+                    {"PUT",    "/forms/templates/{id}",                   "Update a form template"},
+                    {"DELETE", "/forms/templates/{id}",                   "Retire a form template"},
+                    {"GET",    "/forms/templates/{id}/fields",            "List fields for a form"},
+                    {"POST",   "/forms/templates/{id}/fields",            "Add a field to a form"},
+                    {"PUT",    "/forms/fields/{id}",                      "Update a field"},
+                    {"DELETE", "/forms/fields/{id}",                      "Retire a field"},
+                    {"GET",    "/forms/fields/{id}/choices",              "List choices for a choice-type field"},
+                    {"POST",   "/forms/fields/{id}/choices",              "Add a choice to a field"},
+                    {"PUT",    "/forms/choices/{id}",                     "Update a choice"},
+                    {"DELETE", "/forms/choices/{id}",                     "Retire a choice"},
+                    {"GET",    "/forms/entries/{admissionId}",            "List filled form entries for an admission"},
+                    {"GET",    "/forms/entries/{entryId}/values",         "List captured field values for a form entry"}
+                });
+
         sb.append("## Your Capabilities\n");
         sb.append("- Search the live codebase and configuration to answer questions grounded in actual system behaviour\n");
         sb.append("- Query and search HMIS data via REST API calls\n");
@@ -2624,7 +2979,8 @@ public class AnthropicApiService implements Serializable {
         sb.append("- Access inpatient admission records and process payments\n");
         sb.append("- Query login history and audit trails\n");
         sb.append("- Analyse reports and uploaded images/documents, including medicine lists\n");
-        sb.append("- Troubleshoot and explain system behaviour using the actual source code\n\n");
+        sb.append("- Troubleshoot and explain system behaviour using the actual source code\n");
+        sb.append("- Design and manage dynamic clinical form templates, fields, choices, and layout wrappers using the C3 hybrid pattern\n\n");
         sb.append("When making API calls, always explain what you are doing and present results clearly. ");
         sb.append("When answering questions about system behaviour, use the tools to search the actual source code and configuration rather than guessing.\n");
 

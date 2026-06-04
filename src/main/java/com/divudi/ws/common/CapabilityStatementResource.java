@@ -288,6 +288,16 @@ public class CapabilityStatementResource {
                         + "Auth: Finance header.",
                         "API Key (Finance header)",
                         "GET", "POST"))
+                .add(resource("Dynamic Forms", "/api/forms",
+                        "Design and manage dynamic clinical form templates and capture filled values. "
+                        + "Templates: GET /forms/templates lists all; GET /forms/templates/{id} returns one with field count; POST creates; PUT updates; DELETE retires. "
+                        + "Fields: GET /forms/templates/{id}/fields; POST adds a field (componentPresentationType, componentDataType, editHtml, viewHtml, choices). "
+                        + "PUT /forms/fields/{id} updates; DELETE /forms/fields/{id} retires. "
+                        + "Choices: GET /forms/fields/{id}/choices; POST adds; PUT /forms/choices/{id} updates; DELETE /forms/choices/{id} retires. "
+                        + "Filled data: GET /forms/entries/{admissionId} lists all PatientFormEntry records for an admission; "
+                        + "GET /forms/entries/{entryId}/values lists all CaptureComponent values for a filled entry.",
+                        "API Key",
+                        "GET", "POST", "PUT", "DELETE"))
                 .add(resource("SAP Integration - Inventory", "/api/sap/inventory",
                         "SAP S/4HANA Cloud MM inventory sync. "
                         + "GET /sync?fromDate=yyyy-MM-dd&toDate=yyyy-MM-dd fetches SAP goods-receipt material documents "
