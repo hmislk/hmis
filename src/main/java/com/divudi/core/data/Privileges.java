@@ -697,6 +697,7 @@ public enum Privileges {
     AdminPrices("Admin Prices"),
     AdminPatientRelationships("Manage Patient Relationships"),
     AdminInactivePatients("Manage Inactive Patients"),
+    MergePatients("Merge Patients"),
     ManageCreditCompany("Manage Credit Company"),
     AdminFilterWithoutDepartment("Admin Filter Without Department"),
     //</editor-fold>
@@ -1062,6 +1063,7 @@ public enum Privileges {
                 return "Inward";
 
             case AdminInactivePatients:
+            case MergePatients:
                 return "Admin";
 
             default:
