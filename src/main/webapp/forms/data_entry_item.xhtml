@@ -31,9 +31,10 @@
                     </div>
                     <div class="col-12 col-md-4 mb-2">
                         <p:outputLabel value="Input Type" class="form-label" />
-                        <p:selectOneMenu filter="true" filterMatchMode="contains"
+                        <p:selectOneMenu id="selInputType" filter="true" filterMatchMode="contains"
                                          value="#{designComponentController.currentDataEntryItem.componentPresentationType}"
                                          class="w-100">
+                            <p:ajax update="panelMeta panelChoices" />
                             <f:selectItem itemLabel="-- Select --" itemValue="#{null}" noSelectionOption="true" />
                             <f:selectItems value="#{designComponentController.componentPresentationTypes}"
                                            var="pt" itemLabel="#{pt}" itemValue="#{pt}" />
@@ -62,6 +63,96 @@
                         </div>
                     </div>
                 </div>
+
+                <h:panelGroup id="panelMeta" layout="block">
+                    <div class="row">
+                        <div class="col-12 col-md-6 mb-2"
+                             style="#{designComponentController.textInputType ? '' : 'display:none'}">
+                            <p:outputLabel value="Placeholder" class="form-label" />
+                            <p:inputText value="#{designComponentController.currentDataEntryItem.placeholder}"
+                                         class="w-100" />
+                        </div>
+                        <div class="col-12 col-md-3 mb-2"
+                             style="#{designComponentController.numericType ? '' : 'display:none'}">
+                            <p:outputLabel value="Min Value" class="form-label" />
+                            <p:inputNumber value="#{designComponentController.currentDataEntryItem.minValue}"
+                                           class="w-100" />
+                        </div>
+                        <div class="col-12 col-md-3 mb-2"
+                             style="#{designComponentController.numericType ? '' : 'display:none'}">
+                            <p:outputLabel value="Max Value" class="form-label" />
+                            <p:inputNumber value="#{designComponentController.currentDataEntryItem.maxValue}"
+                                           class="w-100" />
+                        </div>
+                        <div class="col-12 col-md-3 mb-2"
+                             style="#{designComponentController.numericType ? '' : 'display:none'}">
+                            <p:outputLabel value="Step Size" class="form-label" />
+                            <p:inputNumber value="#{designComponentController.currentDataEntryItem.stepSize}"
+                                           class="w-100" />
+                        </div>
+                        <div class="col-12 col-md-3 mb-2"
+                             style="#{designComponentController.ratingType ? '' : 'display:none'}">
+                            <p:outputLabel value="Max Stars" class="form-label" />
+                            <p:spinner value="#{designComponentController.currentDataEntryItem.maxRating}"
+                                       min="1" max="10" class="w-100" />
+                        </div>
+                        <div class="col-12 col-md-3 mb-2"
+                             style="#{designComponentController.booleanButtonType ? '' : 'display:none'}">
+                            <p:outputLabel value="On Label" class="form-label" />
+                            <p:inputText value="#{designComponentController.currentDataEntryItem.onLabel}"
+                                         class="w-100" />
+                        </div>
+                        <div class="col-12 col-md-3 mb-2"
+                             style="#{designComponentController.booleanButtonType ? '' : 'display:none'}">
+                            <p:outputLabel value="Off Label" class="form-label" />
+                            <p:inputText value="#{designComponentController.currentDataEntryItem.offLabel}"
+                                         class="w-100" />
+                        </div>
+                    </div>
+                </h:panelGroup>
+
+                <h:panelGroup id="panelChoices" layout="block">
+                    <p:panel header="Choice Options" class="mt-2"
+                             rendered="#{designComponentController.choiceType}">
+                        <p:dataTable value="#{designComponentController.currentItemChoices}" var="ch"
+                                     emptyMessage="No choices added yet">
+                            <p:column headerText="Order" style="width:5rem">
+                                <h:outputText value="#{ch.orderNo}" />
+                            </p:column>
+                            <p:column headerText="Label">
+                                <h:outputText value="#{ch.label}" />
+                            </p:column>
+                            <p:column headerText="Value">
+                                <h:outputText value="#{ch.value}" />
+                            </p:column>
+                            <p:column headerText="Remove" style="width:6rem;text-align:center">
+                                <p:commandButton icon="fa fa-trash" styleClass="ui-button-danger"
+                                                 process="@this" update="panelChoices"
+                                                 action="#{designComponentController.removeChoice(ch)}" />
+                            </p:column>
+                        </p:dataTable>
+                        <div class="row mt-2">
+                            <div class="col-5">
+                                <p:outputLabel value="Label" class="form-label" />
+                                <p:inputText id="txtChoiceLabel"
+                                             value="#{designComponentController.currentChoice.label}"
+                                             class="w-100" />
+                            </div>
+                            <div class="col-5">
+                                <p:outputLabel value="Value (blank = same as label)" class="form-label" />
+                                <p:inputText id="txtChoiceValue"
+                                             value="#{designComponentController.currentChoice.value}"
+                                             class="w-100" />
+                            </div>
+                            <div class="col-2 d-flex align-items-end">
+                                <p:commandButton value="Add" icon="fa fa-plus"
+                                                 process="@this txtChoiceLabel txtChoiceValue"
+                                                 update="panelChoices"
+                                                 action="#{designComponentController.addChoice()}" />
+                            </div>
+                        </div>
+                    </p:panel>
+                </h:panelGroup>
 
                 <div class="d-flex gap-2 mt-2">
                     <p:commandButton ajax="false" value="Save" icon="fa fa-save"

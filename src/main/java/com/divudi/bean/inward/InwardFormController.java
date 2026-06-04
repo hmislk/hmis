@@ -10,9 +10,11 @@ import com.divudi.core.data.web.ComponentPresentationType;
 import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.entity.web.CaptureComponent;
 import com.divudi.core.entity.web.DesignComponent;
+import com.divudi.core.entity.web.DesignComponentChoice;
 import com.divudi.core.entity.inward.PatientFormEntry;
 import com.divudi.core.facade.PatientFormEntryFacade;
 import com.divudi.core.facade.web.CaptureComponentFacade;
+import com.divudi.core.facade.web.DesignComponentChoiceFacade;
 import com.divudi.core.facade.web.DesignComponentFacade;
 import com.divudi.core.util.JsfUtil;
 import java.io.Serializable;
@@ -44,6 +46,8 @@ public class InwardFormController implements Serializable {
     private CaptureComponentFacade captureComponentFacade;
     @EJB
     private DesignComponentFacade designComponentFacade;
+    @EJB
+    private DesignComponentChoiceFacade designComponentChoiceFacade;
 
     @Inject
     private SessionController sessionController;
@@ -129,6 +133,13 @@ public class InwardFormController implements Serializable {
             cc.setDesignComponent(field);
             cc.setComponentPresentationType(field.getComponentPresentationType());
             cc.setComponentDataType(field.getComponentDataType());
+            cc.setPlaceholder(field.getPlaceholder());
+            cc.setMinValue(field.getMinValue());
+            cc.setMaxValue(field.getMaxValue());
+            cc.setStepSize(field.getStepSize());
+            cc.setMaxRating(field.getMaxRating());
+            cc.setOnLabel(field.getOnLabel());
+            cc.setOffLabel(field.getOffLabel());
             currentCaptureComponents.add(cc);
         }
     }
@@ -230,6 +241,21 @@ public class InwardFormController implements Serializable {
         currentCaptureComponents = null;
         selectedTemplate = null;
     }
+
+    public List<DesignComponentChoice> getChoicesFor(CaptureComponent cc) {
+        if (cc == null || cc.getDesignComponent() == null) {
+            return new ArrayList<>();
+        }
+        String jpql = "select c from DesignComponentChoice c"
+                + " where c.designComponent=:dc"
+                + " and c.retired=:ret"
+                + " order by c.orderNo";
+        Map<String, Object> m = new HashMap<>();
+        m.put("dc", cc.getDesignComponent());
+        m.put("ret", false);
+        return designComponentChoiceFacade.findByJpql(jpql, m);
+    }
+
 
     public String navigateBackToAdmissionProfile() {
         return "/inward/admission_profile?faces-redirect=true";

@@ -19,20 +19,22 @@
                                      class="form-control w-100" />
                     </div>
                     <div class="col-12 col-md-6 mb-2">
-                        <p:outputLabel value="Description" class="form-label" />
-                        <p:inputTextarea value="#{designComponentController.currentDataEntryForm.description}"
-                                         class="form-control w-100" rows="2" />
+                        <p:outputLabel value="Description" for="txtDescription" class="form-label" />
+                        <p:inputTextarea id="txtDescription"
+                                         value="#{designComponentController.currentDataEntryForm.description}"
+                                         class="form-control w-100" rows="1" />
                     </div>
                 </div>
 
                 <div class="d-flex gap-2 mt-2">
                     <p:commandButton ajax="false" value="Save" icon="fa fa-save"
+                                     styleClass="ui-button-success"
                                      action="#{designComponentController.saveCurrentDataEntryForm()}" />
                     <p:commandButton ajax="false" value="Add Field" icon="fa fa-plus"
                                      styleClass="ui-button-secondary"
                                      action="#{designComponentController.navigateToAddComponentsToDataEntryForm()}" />
                     <p:commandButton ajax="false" value="Back to Forms" icon="fa fa-arrow-left"
-                                     styleClass="ui-button-flat"
+                                     styleClass="ui-button-info ui-button-outlined"
                                      action="#{designComponentController.navigateToListDataEntryForms()}" />
                 </div>
             </p:panel>
@@ -58,7 +60,8 @@
                         <h:outputText value="#{fld.required ? 'Yes' : 'No'}" />
                     </p:column>
                     <p:column headerText="Actions" style="width:11rem;text-align:center">
-                        <p:commandButton ajax="false" value="Edit" icon="fa fa-pen" class="me-1"
+                        <p:commandButton ajax="false" value="Edit" icon="fa fa-pen"
+                                         styleClass="ui-button-warning me-1"
                                          action="#{designComponentController.navigateToEditDesignComponent()}">
                             <f:setPropertyActionListener value="#{fld}"
                                                          target="#{designComponentController.currentDataEntryItem}" />
