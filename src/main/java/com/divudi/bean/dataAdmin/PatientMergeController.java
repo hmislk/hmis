@@ -54,6 +54,7 @@ public class PatientMergeController implements Serializable {
     private Date historyFromDate;
     private Date historyToDate;
     private PatientMergeStatus historyStatus;
+    private String historyMergedByUsername;
     private List<PatientMergeRecord> historyResults = new ArrayList<>();
     private PatientMergeRecord selectedMergeRecord;
     // </editor-fold>
@@ -208,6 +209,10 @@ public class PatientMergeController implements Serializable {
             jpql += " and mr.status = :status";
             params.put("status", historyStatus);
         }
+        if (historyMergedByUsername != null && !historyMergedByUsername.trim().isEmpty()) {
+            jpql += " and lower(mr.mergedBy.username) like :mergedBy";
+            params.put("mergedBy", "%" + historyMergedByUsername.trim().toLowerCase() + "%");
+        }
         jpql += " order by mr.mergeDate desc";
         historyResults = patientMergeRecordFacade.findByJpql(jpql, params);
     }
@@ -294,6 +299,9 @@ public class PatientMergeController implements Serializable {
 
     public PatientMergeStatus getHistoryStatus() { return historyStatus; }
     public void setHistoryStatus(PatientMergeStatus historyStatus) { this.historyStatus = historyStatus; }
+
+    public String getHistoryMergedByUsername() { return historyMergedByUsername; }
+    public void setHistoryMergedByUsername(String historyMergedByUsername) { this.historyMergedByUsername = historyMergedByUsername; }
 
     public List<PatientMergeRecord> getHistoryResults() { return historyResults; }
 

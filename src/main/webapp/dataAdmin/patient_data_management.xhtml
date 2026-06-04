@@ -234,9 +234,16 @@
                                         </p:selectOneMenu>
                                     </div>
                                     <div class="col-md-2">
+                                        <p:outputLabel for="txtMergedBy" value="Merged By" />
+                                        <p:inputText id="txtMergedBy"
+                                                     value="#{patientMergeController.historyMergedByUsername}"
+                                                     placeholder="username"
+                                                     class="w-100" />
+                                    </div>
+                                    <div class="col-md-2">
                                         <p:commandButton value="Search" icon="fa fa-search"
                                                          class="w-100"
-                                                         process="dtHistFrom dtHistTo cmbHistStatus"
+                                                         process="dtHistFrom dtHistTo cmbHistStatus txtMergedBy"
                                                          update="tblHistory pdmGrowl"
                                                          action="#{patientMergeController.searchHistory()}" />
                                     </div>
