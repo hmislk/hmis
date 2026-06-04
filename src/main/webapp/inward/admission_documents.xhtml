@@ -43,17 +43,25 @@
                                                 class="w-100"
                                                 autoResize="true" />
                             </div>
-                            <div class="col-md-4 d-flex align-items-end">
+                            <div class="col-md-3 d-flex align-items-end">
                                 <p:fileUpload id="fuDocument"
+                                             value="#{inwardDocumentUploadController.file}"
                                              mode="simple"
                                              skinSimple="true"
                                              accept="image/*,application/pdf"
                                              sizeLimit="10240000"
-                                             listener="#{inwardDocumentUploadController.handleFileUpload}"
                                              label="Choose File"
-                                             uploadLabel="Upload"
-                                             class="w-100"
-                                             update="tblDocuments :formDocuments:fuDocument :formDocuments:cmbDocType :formDocuments:txtDocComments" />
+                                             class="w-100" />
+                            </div>
+                            <div class="col-md-1 d-flex align-items-end">
+                                <p:commandButton
+                                    id="btnUpload"
+                                    value="Upload"
+                                    icon="fa fa-upload"
+                                    action="#{inwardDocumentUploadController.uploadDocument()}"
+                                    process="fuDocument cmbDocType txtDocComments btnUpload"
+                                    update="tblDocuments fuDocument cmbDocType txtDocComments"
+                                    class="w-100" />
                             </div>
                         </div>
 
