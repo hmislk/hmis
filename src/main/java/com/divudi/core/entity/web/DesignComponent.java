@@ -52,7 +52,10 @@ public class DesignComponent implements Serializable {
     @Enumerated(EnumType.STRING)
     private ComponentMappingType componentMappingType;
 
+    private boolean retired;
 
+    private Integer orderNo;
+    private boolean required;
 
     public Long getId() {
         return id;
@@ -181,6 +184,30 @@ public class DesignComponent implements Serializable {
 
     public void setComponentMappingType(ComponentMappingType componentMappingType) {
         this.componentMappingType = componentMappingType;
+    }
+
+    public boolean isRetired() {
+        return retired;
+    }
+
+    public void setRetired(boolean retired) {
+        this.retired = retired;
+    }
+
+    public Integer getOrderNo() {
+        return orderNo;
+    }
+
+    public void setOrderNo(Integer orderNo) {
+        this.orderNo = orderNo;
+    }
+
+    public boolean isRequired() {
+        return required;
+    }
+
+    public void setRequired(boolean required) {
+        this.required = required;
     }
 
 }

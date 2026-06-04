@@ -78,6 +78,7 @@ public class DesignComponentController implements Serializable {
     public String navigateToAddNewDataEntryForm() {
         currentDataEntryForm = new DesignComponent();
         currentDataEntryForm.setComponentPresentationType(ComponentPresentationType.DataEntryForm);
+        listOfDataEntryItems = new ArrayList<>();
         return "/forms/data_entry_form?faces-redirect=true";
     }
 
@@ -162,6 +163,7 @@ public class DesignComponentController implements Serializable {
         if (currentDataEntryForm.getId() == null) {
             facade.create(currentDataEntryForm);
             getListOfDataEntryForms().add(currentDataEntryForm);
+            listOfDataEntryItems = new ArrayList<>();
         } else {
             facade.edit(currentDataEntryForm);
         }
@@ -213,9 +215,11 @@ public class DesignComponentController implements Serializable {
         List<DesignComponent> designComponents;
         String jpql = "select d "
                 + " from DesignComponent d"
-                + " where d.componentPresentationType=:pt";
+                + " where d.componentPresentationType=:pt"
+                + " and d.retired=:ret";
         Map m = new HashMap();
         m.put("pt", ComponentPresentationType.DataEntryForm);
+        m.put("ret", false);
         designComponents = facade.findByJpql(jpql, m);
 
         return designComponents;
@@ -225,12 +229,28 @@ public class DesignComponentController implements Serializable {
         List<DesignComponent> designComponents;
         String jpql = "select d "
                 + " from DesignComponent d"
-                + " where d.dataEntryForm=:def";
+                + " where d.dataEntryForm=:def"
+                + " and d.retired=:ret"
+                + " order by d.orderNo";
         Map m = new HashMap();
         m.put("def", dataEntryForm);
+        m.put("ret", false);
         designComponents = facade.findByJpql(jpql, m);
 
         return designComponents;
+    }
+
+    public void removeDataEntryItem(DesignComponent item) {
+        if (item == null || item.getId() == null) {
+            JsfUtil.addErrorMessage("Nothing selected");
+            return;
+        }
+        item.setRetired(true);
+        facade.edit(item);
+        if (currentDataEntryForm != null) {
+            listOfDataEntryItems = listItemsOfDataEntryForm(currentDataEntryForm);
+        }
+        JsfUtil.addSuccessMessage("Removed");
     }
 
     public List<DesignComponent> completeDesignComponents(String query) {
