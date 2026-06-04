@@ -102,12 +102,18 @@ public class InwardDocumentUploadController implements Serializable {
             InputStream in = file.getInputStream();
             byte[] fileContent = IOUtils.toByteArray(in);
 
+            String detectedContentType = detectContentType(fileContent, fileName);
+            if (detectedContentType == null) {
+                JsfUtil.addErrorMessage("Invalid file type. Only PDF, JPEG, JPG, and PNG are allowed.");
+                return;
+            }
+
             Upload upload = new Upload();
             upload.setUploadType(selectedUploadType);
             upload.setPatientEncounter(currentEncounter);
             upload.setBaImage(fileContent);
             upload.setFileName(fileName);
-            upload.setFileType(file.getContentType());
+            upload.setFileType(detectedContentType);
             upload.setComments(comments);
             upload.setCreatedAt(new Date());
             upload.setCreater(sessionController.getLoggedUser());
@@ -137,15 +143,38 @@ public class InwardDocumentUploadController implements Serializable {
     }
 
     public StreamedContent getDownloadStream(Upload u) {
-        if (u == null || u.getBaImage() == null) {
+        if (u == null || u.getId() == null) {
             return null;
         }
-        byte[] data = u.getBaImage();
+        Upload persisted = uploadFacade.find(u.getId());
+        if (persisted == null || persisted.isRetired() || persisted.getBaImage() == null) {
+            return null;
+        }
+        byte[] data = persisted.getBaImage();
         return DefaultStreamedContent.builder()
-                .name(u.getFileName())
-                .contentType(u.getFileType())
+                .name(persisted.getFileName())
+                .contentType(persisted.getFileType())
                 .stream(() -> new ByteArrayInputStream(data))
                 .build();
+    }
+
+    private String detectContentType(byte[] bytes, String fileName) {
+        if (bytes == null || bytes.length < 4) {
+            return null;
+        }
+        // PDF: %PDF
+        if (bytes[0] == 0x25 && bytes[1] == 0x50 && bytes[2] == 0x44 && bytes[3] == 0x46) {
+            return "application/pdf";
+        }
+        // JPEG: FF D8 FF
+        if ((bytes[0] & 0xFF) == 0xFF && (bytes[1] & 0xFF) == 0xD8 && (bytes[2] & 0xFF) == 0xFF) {
+            return "image/jpeg";
+        }
+        // PNG: 89 50 4E 47
+        if ((bytes[0] & 0xFF) == 0x89 && bytes[1] == 0x50 && bytes[2] == 0x4E && bytes[3] == 0x47) {
+            return "image/png";
+        }
+        return null;
     }
 
     public List<UploadType> getInwardUploadTypes() {

@@ -48,7 +48,7 @@
                                              value="#{inwardDocumentUploadController.file}"
                                              mode="simple"
                                              skinSimple="true"
-                                             accept="image/*,application/pdf"
+                                             accept=".pdf,.jpeg,.jpg,.png,application/pdf,image/jpeg,image/png"
                                              sizeLimit="10240000"
                                              label="Choose File"
                                              class="w-100" />
@@ -86,7 +86,8 @@
                             </p:column>
                             <p:column headerText="Uploaded At" width="160">
                                 <h:outputText value="#{doc.createdAt}">
-                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"
+                                                       timeZone="Asia/Colombo" />
                                 </h:outputText>
                             </p:column>
                             <p:column headerText="Uploaded By" width="160">
