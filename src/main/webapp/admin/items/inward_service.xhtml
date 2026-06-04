@@ -120,8 +120,11 @@
                                         <p:selectBooleanCheckbox   id="chkBilledAs" value="#{inwardServiceController.billedAs}" itemLabel="Billed as a separate investigation"  >
                                             <p:ajax event="change" process="@this" update="billedAsIx" />
                                         </p:selectBooleanCheckbox>
-                                        <p:autoComplete   disabled="#{!inwardServiceController.billedAs}" 
-                                                          widgetVar="aIx1" id="billedAsIx" forceSelection="true" 
+                                        <p:autoComplete   
+                                            disabled="#{!inwardServiceController.billedAs}" 
+                                                          widgetVar="aIx1" 
+                                                          id="billedAsIx" 
+                                                          forceSelection="true" 
                                                           value="#{inwardServiceController.current.billedAs}" completeMethod="#{inwardServiceController.completeItem}" var="ix1" itemLabel="#{ix1.name}" itemValue="#{ix1}" size="30">
                                         </p:autoComplete>
 

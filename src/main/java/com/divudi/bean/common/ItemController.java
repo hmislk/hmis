@@ -23,8 +23,6 @@ import com.divudi.core.entity.inward.TheatreService;
 import com.divudi.core.entity.lab.Investigation;
 import com.divudi.core.entity.lab.ItemForItem;
 import com.divudi.core.entity.lab.Machine;
-import com.divudi.core.entity.Speciality;
-import com.divudi.core.entity.Staff;
 import com.divudi.core.data.dto.AmpDto;
 import com.divudi.core.data.dto.search.ItemDTO;
 import com.divudi.core.entity.pharmacy.Amp;
@@ -38,7 +36,6 @@ import com.divudi.core.facade.ItemFacade;
 import com.divudi.core.facade.ItemFeeFacade;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.lab.InvestigationController;
-import com.divudi.bean.common.SpecialityController;
 import com.divudi.bean.hr.StaffController;
 import com.divudi.core.data.SessionNumberType;
 import com.divudi.core.data.Sex;
@@ -3967,7 +3964,7 @@ public class ItemController implements Serializable {
         if (itemInstitution == null && itemDepartment == null) {
             return "";
         }
-        
+
         StringBuilder code = new StringBuilder();
         String symbol = configOptionApplicationController.getShortTextValueByKey("Item Codes Generate - The symbol used between the department number and the item number when automatically generating item codes.", "-");
 
@@ -3989,7 +3986,7 @@ public class ItemController implements Serializable {
         String code = generateNextItemCode(getCurrent().getInstitution(), getCurrent().getDepartment());
         getCurrent().setCode(code);
     }
-    
+
     public void saveSelectedWithItemLight() {
         if (configOptionApplicationController.getBooleanValueByKey("Item Codes Generate - Automatically create Item Codes by Department.", false)) {
             if (getCurrent().getId() == null) {
@@ -3999,7 +3996,7 @@ public class ItemController implements Serializable {
                 }
             }
         }
-        
+
         if (isItemCodeDuplicate(getCurrent().getCode(), getCurrent().getId())) {
             JsfUtil.addErrorMessage("This Item Code is Already Used.");
             return;
@@ -4013,8 +4010,8 @@ public class ItemController implements Serializable {
 
     /**
      * Returns true when another (non-retired) item already uses the given code.
-     * Queries the base {@link Item} entity so duplicates are detected across all
-     * item subtypes (Service, Investigation, etc.). A blank code is never
+     * Queries the base {@link Item} entity so duplicates are detected across
+     * all item subtypes (Service, Investigation, etc.). A blank code is never
      * considered a duplicate. When {@code excludeId} is null (a new item) no
      * id-exclusion is applied — using {@code i.id != null} would wrongly filter
      * out every row and make the check always pass.
@@ -4666,11 +4663,13 @@ public class ItemController implements Serializable {
         String jpql = "select count(i) "
                 + "from Item i "
                 + "where i.department=:dept "
-                + "and (TYPE(i)=:ix or TYPE(i)=:sv)";
+                + "and (TYPE(i)=:ix or TYPE(i)=:sv or TYPE(i)=:inw or TYPE(i)=:the)";
         Map<String, Object> m = new HashMap<>();
         m.put("dept", department);
         m.put("ix", Investigation.class);
         m.put("sv", Service.class);
+        m.put("inw", InwardService.class);
+        m.put("the", TheatreService.class);
         return itemFacade.countByJpql(jpql, m);
     }
 
