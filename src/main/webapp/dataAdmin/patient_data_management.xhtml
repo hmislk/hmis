@@ -204,7 +204,95 @@
                             </p:panel>
                         </p:tab>
 
-                        <!-- ===== TAB 3: MERGE HISTORY ===== -->
+                        <!-- ===== TAB 3: PROBABILISTIC SCAN ===== -->
+                        <p:tab title="Probabilistic Scan"
+                               rendered="#{webUserController.hasPrivilege('MergePatients')}">
+                            <p:panel header="Fuzzy Duplicate Scan (Name, DOB, Phone)" class="m-1">
+                                <div class="row g-2 align-items-end mb-3">
+                                    <div class="col-md-2">
+                                        <p:outputLabel for="txtProbMax" value="Max pairs (1–1000)" />
+                                        <p:inputText id="txtProbMax"
+                                                     value="#{patientMergeController.probMaxPairs}"
+                                                     class="w-100" />
+                                    </div>
+                                    <div class="col-md-2">
+                                        <p:outputLabel for="txtProbThresh" value="Name threshold (0–1)" />
+                                        <p:inputText id="txtProbThresh"
+                                                     value="#{patientMergeController.probNameThreshold}"
+                                                     class="w-100" />
+                                    </div>
+                                    <div class="col-md-2">
+                                        <p:commandButton value="Run Scan" icon="fa fa-search"
+                                                         class="w-100 ui-button-info"
+                                                         process="txtProbMax txtProbThresh"
+                                                         update="tblProbResults pdmGrowl"
+                                                         action="#{patientMergeController.runProbabilisticScan()}" />
+                                    </div>
+                                </div>
+
+                                <p:dataTable id="tblProbResults"
+                                             value="#{patientMergeController.probabilisticResults}"
+                                             var="pair"
+                                             emptyMessage="No suggestions found."
+                                             paginator="true"
+                                             rows="10"
+                                             paginatorAlwaysVisible="false"
+                                             class="w-100">
+                                    <p:column headerText="Score" width="70">
+                                        <h:outputText value="#{pair.compositeScore}">
+                                            <f:convertNumber pattern="##0%" />
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Patient A">
+                                        <h:outputText value="#{pair.patientA.person.name}" /><br />
+                                        <small><h:outputText value="PHN: #{pair.patientA.phn}  DOB: " />
+                                            <h:outputText value="#{pair.patientA.person.dob}"><f:convertDateTime pattern="yyyy-MM-dd" /></h:outputText>
+                                        </small>
+                                    </p:column>
+                                    <p:column headerText="Patient B">
+                                        <h:outputText value="#{pair.patientB.person.name}" /><br />
+                                        <small><h:outputText value="PHN: #{pair.patientB.phn}  DOB: " />
+                                            <h:outputText value="#{pair.patientB.person.dob}"><f:convertDateTime pattern="yyyy-MM-dd" /></h:outputText>
+                                        </small>
+                                    </p:column>
+                                    <p:column headerText="Breakdown" width="160">
+                                        <small>
+                                            Name: <h:outputText value="#{pair.nameScore}"><f:convertNumber pattern="##0%" /></h:outputText><br />
+                                            DOB: <h:outputText value="#{pair.dobScore}"><f:convertNumber pattern="##0%" /></h:outputText><br />
+                                            Phone: <h:outputText value="#{pair.phoneScore}"><f:convertNumber pattern="##0%" /></h:outputText>
+                                        </small>
+                                    </p:column>
+                                    <p:column headerText="Primary" width="200">
+                                        <p:selectOneMenu value="#{pair.selectedPrimary}" class="w-100">
+                                            <f:selectItem itemLabel="#{pair.patientA.person.name} (A)" itemValue="#{pair.patientA}" />
+                                            <f:selectItem itemLabel="#{pair.patientB.person.name} (B)" itemValue="#{pair.patientB}" />
+                                        </p:selectOneMenu>
+                                    </p:column>
+                                    <p:column headerText="Actions" width="120">
+                                        <p:commandButton
+                                            value="Merge"
+                                            icon="fa fa-compress-arrows-alt"
+                                            class="ui-button-warning me-1"
+                                            process="tblProbResults"
+                                            update="tblProbResults pdmGrowl"
+                                            action="#{patientMergeController.mergeProbabilisticPair(pair)}">
+                                            <p:confirm header="Confirm Merge"
+                                                       message="Merge these two patients?"
+                                                       icon="pi pi-exclamation-triangle" />
+                                        </p:commandButton>
+                                        <p:commandButton
+                                            value="Dismiss"
+                                            icon="fa fa-times"
+                                            class="ui-button-secondary"
+                                            process="@this"
+                                            update="tblProbResults"
+                                            action="#{patientMergeController.dismissProbabilisticPair(pair)}" />
+                                    </p:column>
+                                </p:dataTable>
+                            </p:panel>
+                        </p:tab>
+
+                        <!-- ===== TAB 4: MERGE HISTORY ===== -->
                         <p:tab title="Merge History"
                                rendered="#{webUserController.hasPrivilege('MergePatients')}">
                             <p:panel header="Merge History" class="m-1">
@@ -309,7 +397,7 @@
                             </p:panel>
                         </p:tab>
 
-                        <!-- ===== TAB 4: INACTIVE PATIENTS ===== -->
+                        <!-- ===== TAB 5: INACTIVE PATIENTS ===== -->
                         <p:tab title="Inactive Patients">
                             <p:panel header="Inactive Patients" class="m-1">
                                 <p:commandButton
