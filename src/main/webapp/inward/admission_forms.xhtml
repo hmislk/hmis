@@ -1,0 +1,121 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                template="/resources/template/template.xhtml">
+
+    <ui:define name="content">
+        <h:form id="formInwardForms">
+            <p:growl id="growl" showDetail="true" />
+
+            <p:panel header="Inpatient Forms">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h:outputText styleClass="fw-bold"
+                                  value="#{inwardFormController.patientEncounter.patient.person.nameWithTitle}" />
+                    <p:commandButton value="Back to Dashboard" icon="fa fa-arrow-left" ajax="false"
+                                     styleClass="ui-button-flat"
+                                     action="#{inwardFormController.navigateBackToAdmissionProfile()}" />
+                </div>
+
+                <p:dataTable id="entriesTable"
+                             value="#{inwardFormController.formEntries}" var="entry"
+                             emptyMessage="No forms filled yet">
+                    <p:column headerText="Form">
+                        <h:outputText value="#{entry.designComponent.name}" />
+                    </p:column>
+                    <p:column headerText="Filled At">
+                        <h:outputText value="#{entry.createdAt}">
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                        </h:outputText>
+                    </p:column>
+                    <p:column headerText="Filled By">
+                        <h:outputText value="#{entry.creater.webUserPerson.name}" />
+                    </p:column>
+                    <p:column headerText="Comments">
+                        <h:outputText value="#{entry.comments}" />
+                    </p:column>
+                    <p:column headerText="Actions" style="width:12rem;text-align:center">
+                        <p:commandButton value="Edit" icon="fa fa-pen" class="me-1"
+                                         process="@this" update="@form"
+                                         action="#{inwardFormController.editForm(entry)}" />
+                        <p:commandButton value="Delete" icon="fa fa-trash"
+                                         styleClass="ui-button-danger"
+                                         process="@this" update="@form"
+                                         action="#{inwardFormController.deleteForm(entry)}">
+                            <p:confirm header="Confirm" message="Delete this form?"
+                                       icon="pi pi-exclamation-triangle" />
+                        </p:commandButton>
+                    </p:column>
+                </p:dataTable>
+            </p:panel>
+
+            <p:panel header="Fill a Form" class="mt-2">
+                <div class="d-flex gap-2 align-items-end mb-3">
+                    <div>
+                        <p:outputLabel value="Select Form" class="form-label d-block" />
+                        <p:selectOneMenu value="#{inwardFormController.selectedTemplate}"
+                                         filter="true" filterMatchMode="contains" style="min-width:18rem">
+                            <f:selectItem itemLabel="-- Select Form --" itemValue="#{null}" noSelectionOption="true" />
+                            <f:selectItems value="#{inwardFormController.availableTemplates}"
+                                           var="tpl" itemLabel="#{tpl.name}" itemValue="#{tpl}" />
+                        </p:selectOneMenu>
+                    </div>
+                    <p:commandButton value="Load Form" icon="fa fa-download"
+                                     process="@this @parent" update="@form"
+                                     action="#{inwardFormController.startNewForm()}" />
+                </div>
+
+                <h:panelGroup layout="block" styleClass="row"
+                              rendered="#{inwardFormController.currentCaptureComponents != null}">
+                    <ui:repeat value="#{inwardFormController.currentCaptureComponents}" var="cc">
+                        <h:panelGroup layout="block" styleClass="col-12 col-md-6 mb-2">
+                            <p:outputLabel value="#{cc.name}" styleClass="form-label d-block" />
+                            <p:inputText value="#{cc.shortTextValue}" styleClass="w-100"
+                                         rendered="#{cc.componentPresentationType eq 'Input_text'}" />
+                            <p:inputTextarea value="#{cc.longTextValue}" rows="2" styleClass="w-100"
+                                             rendered="#{cc.componentPresentationType eq 'Input_text_Area'}" />
+                            <p:inputNumber value="#{cc.doubleValue}" styleClass="w-100"
+                                           rendered="#{cc.componentPresentationType eq 'Input_Number'}" />
+                            <p:selectBooleanCheckbox value="#{cc.booleanValue}"
+                                                     rendered="#{cc.componentPresentationType eq 'SelectBooleanCheckBox'}" />
+                            <p:calendar value="#{cc.dateValue}" pattern="dd MMM yyyy" showButtonPanel="true"
+                                        rendered="#{cc.componentPresentationType eq 'Calendar'}" />
+                            <h:outputText styleClass="text-muted" value="Unsupported field type"
+                                          rendered="#{cc.componentPresentationType ne 'Input_text'
+                                                      and cc.componentPresentationType ne 'Input_text_Area'
+                                                      and cc.componentPresentationType ne 'Input_Number'
+                                                      and cc.componentPresentationType ne 'SelectBooleanCheckBox'
+                                                      and cc.componentPresentationType ne 'Calendar'}" />
+                        </h:panelGroup>
+                    </ui:repeat>
+                </h:panelGroup>
+
+                <h:panelGroup layout="block" styleClass="mt-2"
+                              rendered="#{inwardFormController.currentEntry != null}">
+                    <p:outputLabel value="Comments" styleClass="form-label d-block" />
+                    <p:inputTextarea value="#{inwardFormController.currentEntry.comments}"
+                                     rows="2" styleClass="w-100" />
+                    <div class="d-flex gap-2 mt-2">
+                        <p:commandButton value="Save" icon="fa fa-save"
+                                         process="@form" update="@form"
+                                         action="#{inwardFormController.saveForm()}" />
+                        <p:commandButton value="Cancel" icon="fa fa-times"
+                                         styleClass="ui-button-flat"
+                                         process="@this" update="@form"
+                                         action="#{inwardFormController.cancelForm()}" />
+                    </div>
+                </h:panelGroup>
+            </p:panel>
+
+            <p:confirmDialog global="true">
+                <p:commandButton value="Yes" type="button"
+                                 styleClass="ui-confirmdialog-yes ui-button-danger" icon="pi pi-check" />
+                <p:commandButton value="No" type="button"
+                                 styleClass="ui-confirmdialog-no ui-button-flat" icon="pi pi-times" />
+            </p:confirmDialog>
+        </h:form>
+    </ui:define>
+</ui:composition>
