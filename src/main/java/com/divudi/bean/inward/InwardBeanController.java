@@ -2406,10 +2406,12 @@ public class InwardBeanController implements Serializable {
         if (billFee == null || item.isMarginNotAllowed()
                 || billFee.getFee() == null
                 || Boolean.FALSE.equals(billFee.getFee().getMarginAllowed())) {
-            // Fix C: clear stale discount so early exit doesn't leave old values in place
+            // Fix C: clear stale discount and recompute net so calTotals() sees correct feeValue
             if (billFee != null) {
                 billFee.setFeeDiscount(0.0);
                 billFee.setFeeUnitDiscount(0.0);
+                double gross = billFee.getFeeGrossValue() != null ? billFee.getFeeGrossValue() : 0.0;
+                billFee.setFeeValue(gross);
             }
             return;
         }
@@ -2433,17 +2435,27 @@ public class InwardBeanController implements Serializable {
         if (billFee == null || item.isMarginNotAllowed()
                 || billFee.getFee() == null
                 || Boolean.FALSE.equals(billFee.getFee().getMarginAllowed())) {
-            // Fix C: clear stale discount so early exit doesn't leave old values in place
+            // Fix C: clear stale discount and recompute net so calTotals() sees correct feeValue
             if (billFee != null) {
                 billFee.setFeeDiscount(0.0);
                 billFee.setFeeUnitDiscount(0.0);
+                double gross = billFee.getFeeGrossValue() != null ? billFee.getFeeGrossValue() : 0.0;
+                double uQty = (billFee.getBillItem() != null && billFee.getBillItem().getQty() != null && billFee.getBillItem().getQty() > 0)
+                        ? billFee.getBillItem().getQty() : 1.0;
+                billFee.setFeeUnitValue(gross / uQty);
+                billFee.setFeeValue(gross);
             }
             return;
         }
         if (patientEncounter == null || patientEncounter.getAdmissionType() == null) {
-            // Fix C: clear stale discount so early exit doesn't leave old values in place
+            // Fix C: clear stale discount and recompute net so calTotals() sees correct feeValue
             billFee.setFeeDiscount(0.0);
             billFee.setFeeUnitDiscount(0.0);
+            double gross = billFee.getFeeGrossValue() != null ? billFee.getFeeGrossValue() : 0.0;
+            double uQty = (billFee.getBillItem() != null && billFee.getBillItem().getQty() != null && billFee.getBillItem().getQty() > 0)
+                    ? billFee.getBillItem().getQty() : 1.0;
+            billFee.setFeeUnitValue(gross / uQty);
+            billFee.setFeeValue(gross);
             return;
         }
 
