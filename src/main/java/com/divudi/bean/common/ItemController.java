@@ -3991,6 +3991,11 @@ public class ItemController implements Serializable {
         if (configOptionApplicationController.getBooleanValueByKey("Item Codes Generate - Automatically create Item Codes by Department.", false)) {
             if (getCurrent().getId() == null) {
                 if (getCurrent().getCode() == null || getCurrent().getCode().trim().isEmpty()) {
+                    if (getCurrent().getDepartment() == null) {
+                        JsfUtil.addErrorMessage("Please select Department before generating code");
+                        return;
+                    }
+
                     String code = generateNextItemCode(getCurrent().getInstitution(), getCurrent().getDepartment());
                     getCurrent().setCode(code);
                 }
