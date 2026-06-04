@@ -383,10 +383,13 @@ public class CaptureComponent implements Serializable {
         this.offLabel = offLabel;
     }
 
+    private static final String MULTI_SELECT_DELIMITER = "|";
+    private static final String MULTI_SELECT_DELIMITER_REGEX = "\\|";
+
     public List<String> getSelectedValues() {
         if (selectedValues == null) {
             if (longTextValue != null && !longTextValue.trim().isEmpty()) {
-                selectedValues = new ArrayList<>(Arrays.asList(longTextValue.split(",")));
+                selectedValues = new ArrayList<>(Arrays.asList(longTextValue.split(MULTI_SELECT_DELIMITER_REGEX)));
             } else {
                 selectedValues = new ArrayList<>();
             }
@@ -399,7 +402,7 @@ public class CaptureComponent implements Serializable {
         if (selectedValues == null || selectedValues.isEmpty()) {
             this.longTextValue = null;
         } else {
-            this.longTextValue = selectedValues.stream().collect(Collectors.joining(","));
+            this.longTextValue = selectedValues.stream().collect(Collectors.joining(MULTI_SELECT_DELIMITER));
         }
     }
 

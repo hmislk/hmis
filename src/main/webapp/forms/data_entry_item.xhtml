@@ -134,17 +134,20 @@
                         <div class="row mt-2">
                             <div class="col-5">
                                 <p:outputLabel value="Label" class="form-label" />
-                                <p:inputText value="#{designComponentController.currentChoice.label}"
+                                <p:inputText id="txtChoiceLabel"
+                                             value="#{designComponentController.currentChoice.label}"
                                              class="w-100" />
                             </div>
                             <div class="col-5">
                                 <p:outputLabel value="Value (blank = same as label)" class="form-label" />
-                                <p:inputText value="#{designComponentController.currentChoice.value}"
+                                <p:inputText id="txtChoiceValue"
+                                             value="#{designComponentController.currentChoice.value}"
                                              class="w-100" />
                             </div>
                             <div class="col-2 d-flex align-items-end">
                                 <p:commandButton value="Add" icon="fa fa-plus"
-                                                 process="@form" update="panelChoices"
+                                                 process="@this txtChoiceLabel txtChoiceValue"
+                                                 update="panelChoices"
                                                  action="#{designComponentController.addChoice()}" />
                             </div>
                         </div>

@@ -79,6 +79,7 @@ public class DesignComponentController implements Serializable {
     private DesignComponent currentDataEntryItem;
     private List<DesignComponent> listOfDataEntryItems;
     private List<DesignComponentChoice> currentItemChoices;
+    private List<DesignComponentChoice> choicesToRetire;
     private DesignComponentChoice currentChoice;
 
     public List<ComponentPresentationType> getComponentPresentationTypes() {
@@ -169,6 +170,7 @@ public class DesignComponentController implements Serializable {
         currentDataEntryItem = new DesignComponent();
         currentDataEntryItem.setDataEntryForm(currentDataEntryForm);
         currentItemChoices = new ArrayList<>();
+        choicesToRetire = new ArrayList<>();
         currentChoice = new DesignComponentChoice();
         return "/forms/data_entry_item?faces-redirect=true";
     }
@@ -255,6 +257,7 @@ public class DesignComponentController implements Serializable {
         saveCurrentChoices();
         currentDataEntryItem = new DesignComponent();
         currentItemChoices = new ArrayList<>();
+        choicesToRetire = new ArrayList<>();
         currentChoice = new DesignComponentChoice();
         return navigateToListComponentsOfDataEntryForm();
     }
@@ -396,10 +399,23 @@ public class DesignComponentController implements Serializable {
     }
 
     public void removeChoice(DesignComponentChoice choice) {
+        if (choice == null) {
+            return;
+        }
         currentItemChoices.remove(choice);
         if (choice.getId() != null) {
             choice.setRetired(true);
-            choiceFacade.edit(choice);
+            if (choicesToRetire == null) {
+                choicesToRetire = new ArrayList<>();
+            }
+            choicesToRetire.add(choice);
+        }
+        resequenceChoiceOrderNos();
+    }
+
+    private void resequenceChoiceOrderNos() {
+        for (int i = 0; i < currentItemChoices.size(); i++) {
+            currentItemChoices.get(i).setOrderNo(i + 1);
         }
     }
 
@@ -407,7 +423,15 @@ public class DesignComponentController implements Serializable {
         if (currentDataEntryItem == null || currentDataEntryItem.getId() == null) {
             return;
         }
-        for (DesignComponentChoice choice : currentItemChoices) {
+        if (choicesToRetire != null) {
+            for (DesignComponentChoice retired : choicesToRetire) {
+                choiceFacade.edit(retired);
+            }
+            choicesToRetire.clear();
+        }
+        for (int i = 0; i < currentItemChoices.size(); i++) {
+            DesignComponentChoice choice = currentItemChoices.get(i);
+            choice.setOrderNo(i + 1);
             choice.setDesignComponent(currentDataEntryItem);
             if (choice.getId() == null) {
                 choiceFacade.create(choice);
