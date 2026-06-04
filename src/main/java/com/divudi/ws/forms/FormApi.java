@@ -99,11 +99,11 @@ public class FormApi {
             Map body = parseBody(requestBody);
             if (body == null) return errorResponse("Request body is required", 400);
             FormTemplateDto dto = formApiService.createFormTemplate(
-                    (String) body.get("name"),
-                    (String) body.get("description"),
-                    (String) body.get("formCssClass"),
+                    safeGetString(body, "name"),
+                    safeGetString(body, "description"),
+                    safeGetString(body, "formCssClass"),
                     user);
-            return Response.status(201).entity(gson.toJson(successData(dto))).build();
+            return createdResponse(dto);
         } catch (IllegalArgumentException e) {
             return errorResponse(e.getMessage(), 400);
         } catch (Exception e) {
@@ -128,9 +128,9 @@ public class FormApi {
             if (body == null) return errorResponse("Request body is required", 400);
             FormTemplateDto dto = formApiService.updateFormTemplate(
                     id,
-                    (String) body.get("name"),
-                    (String) body.get("description"),
-                    (String) body.get("formCssClass"),
+                    safeGetString(body, "name"),
+                    safeGetString(body, "description"),
+                    safeGetString(body, "formCssClass"),
                     user);
             return successResponse(dto);
         } catch (IllegalArgumentException e) {
@@ -202,7 +202,7 @@ public class FormApi {
             Map body = parseBody(requestBody);
             if (body == null) return errorResponse("Request body is required", 400);
             FormFieldDto dto = formApiService.addFormField(id, body, user);
-            return Response.status(201).entity(gson.toJson(successData(dto))).build();
+            return createdResponse(dto);
         } catch (IllegalArgumentException e) {
             return errorResponse(e.getMessage(), e.getMessage().contains("not found") ? 404 : 400);
         } catch (Exception e) {
@@ -298,11 +298,11 @@ public class FormApi {
             Integer orderNo = body.get("orderNo") != null ? (int) Double.parseDouble(body.get("orderNo").toString()) : null;
             FormChoiceDto dto = formApiService.addChoice(
                     id,
-                    (String) body.get("label"),
-                    (String) body.get("value"),
+                    safeGetString(body, "label"),
+                    safeGetString(body, "value"),
                     orderNo,
                     user);
-            return Response.status(201).entity(gson.toJson(successData(dto))).build();
+            return createdResponse(dto);
         } catch (IllegalArgumentException e) {
             return errorResponse(e.getMessage(), e.getMessage().contains("not found") ? 404 : 400);
         } catch (Exception e) {
@@ -328,8 +328,8 @@ public class FormApi {
             Integer orderNo = body.get("orderNo") != null ? (int) Double.parseDouble(body.get("orderNo").toString()) : null;
             FormChoiceDto dto = formApiService.updateChoice(
                     id,
-                    (String) body.get("label"),
-                    (String) body.get("value"),
+                    safeGetString(body, "label"),
+                    safeGetString(body, "value"),
                     orderNo,
                     user);
             return successResponse(dto);
@@ -424,6 +424,11 @@ public class FormApi {
         return user;
     }
 
+    private String safeGetString(Map body, String key) {
+        Object val = body.get(key);
+        return val != null ? val.toString() : null;
+    }
+
     @SuppressWarnings("unchecked")
     private Map parseBody(String body) {
         if (body == null || body.trim().isEmpty()) return null;
@@ -448,13 +453,17 @@ public class FormApi {
     }
 
     private Response successResponse(Object data) {
-        return Response.status(200).entity(gson.toJson(successData(data))).build();
+        return Response.status(200).entity(gson.toJson(successData(data, 200))).build();
     }
 
-    private Map<String, Object> successData(Object data) {
+    private Response createdResponse(Object data) {
+        return Response.status(201).entity(gson.toJson(successData(data, 201))).build();
+    }
+
+    private Map<String, Object> successData(Object data, int code) {
         Map<String, Object> response = new HashMap<>();
         response.put("status", "success");
-        response.put("code", 200);
+        response.put("code", code);
         response.put("data", data);
         return response;
     }

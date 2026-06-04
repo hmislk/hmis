@@ -60,7 +60,7 @@ public class FormApiService {
 
     public FormTemplateDto getFormTemplateWithFields(Long id) {
         DesignComponent dc = designComponentFacade.find(id);
-        if (dc == null || dc.isRetired()) {
+        if (dc == null || dc.isRetired() || dc.getComponentPresentationType() != ComponentPresentationType.DataEntryForm) {
             throw new IllegalArgumentException("Form template not found: " + id);
         }
         FormTemplateDto dto = toTemplateDto(dc, countFields(dc));
@@ -84,7 +84,7 @@ public class FormApiService {
 
     public FormTemplateDto updateFormTemplate(Long id, String name, String description, String formCssClass, WebUser user) {
         DesignComponent dc = designComponentFacade.find(id);
-        if (dc == null || dc.isRetired()) {
+        if (dc == null || dc.isRetired() || dc.getComponentPresentationType() != ComponentPresentationType.DataEntryForm) {
             throw new IllegalArgumentException("Form template not found: " + id);
         }
         if (name != null && !name.trim().isEmpty()) {
@@ -102,7 +102,7 @@ public class FormApiService {
 
     public void retireFormTemplate(Long id, String retireComments, WebUser user) {
         DesignComponent dc = designComponentFacade.find(id);
-        if (dc == null || dc.isRetired()) {
+        if (dc == null || dc.isRetired() || dc.getComponentPresentationType() != ComponentPresentationType.DataEntryForm) {
             throw new IllegalArgumentException("Form template not found: " + id);
         }
         dc.setRetired(true);
@@ -183,11 +183,15 @@ public class FormApiService {
 
     public FormFieldDto updateFormField(Long fieldId, Map<String, Object> body, WebUser user) {
         DesignComponent field = designComponentFacade.find(fieldId);
-        if (field == null || field.isRetired()) {
+        if (field == null || field.isRetired() || field.getDataEntryForm() == null) {
             throw new IllegalArgumentException("Field not found: " + fieldId);
         }
         if (body.containsKey("name") && body.get("name") != null) {
-            field.setName(body.get("name").toString().trim());
+            String updatedName = body.get("name").toString().trim();
+            if (updatedName.isEmpty()) {
+                throw new IllegalArgumentException("name is required");
+            }
+            field.setName(updatedName);
         }
         if (body.containsKey("code")) {
             field.setCode((String) body.get("code"));
@@ -248,7 +252,7 @@ public class FormApiService {
 
     public void retireFormField(Long fieldId, WebUser user) {
         DesignComponent field = designComponentFacade.find(fieldId);
-        if (field == null || field.isRetired()) {
+        if (field == null || field.isRetired() || field.getDataEntryForm() == null) {
             throw new IllegalArgumentException("Field not found: " + fieldId);
         }
         field.setRetired(true);

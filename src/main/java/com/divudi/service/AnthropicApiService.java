@@ -2209,6 +2209,13 @@ public class AnthropicApiService implements Serializable {
         }
     }
 
+    private String requireNumericId(String value, String fieldName) {
+        if (value == null || !value.trim().matches("\\d+")) {
+            throw new IllegalArgumentException("Error: " + fieldName + " must be a numeric id.");
+        }
+        return value.trim();
+    }
+
     private String callFormsApi(
             String resourceType, String method, String id, String formId, String fieldId,
             String admissionId, String entryId, String name, String description, String formCssClass,
@@ -2235,7 +2242,7 @@ public class AnthropicApiService implements Serializable {
                 case "TEMPLATE":
                     switch (method.toUpperCase()) {
                         case "LIST": url = base + "/templates"; httpMethod = "GET"; break;
-                        case "GET":  url = base + "/templates/" + id; httpMethod = "GET"; break;
+                        case "GET":  url = base + "/templates/" + requireNumericId(id, "id"); httpMethod = "GET"; break;
                         case "POST": {
                             url = base + "/templates"; httpMethod = "POST";
                             Map<String, Object> body = new HashMap<>();
@@ -2246,7 +2253,7 @@ public class AnthropicApiService implements Serializable {
                             break;
                         }
                         case "PUT": {
-                            url = base + "/templates/" + id; httpMethod = "PUT";
+                            url = base + "/templates/" + requireNumericId(id, "id"); httpMethod = "PUT";
                             Map<String, Object> body = new HashMap<>();
                             if (name != null) body.put("name", name);
                             if (description != null) body.put("description", description);
@@ -2254,16 +2261,16 @@ public class AnthropicApiService implements Serializable {
                             requestBody = new com.google.gson.Gson().toJson(body);
                             break;
                         }
-                        case "DELETE": url = base + "/templates/" + id; httpMethod = "DELETE"; break;
+                        case "DELETE": url = base + "/templates/" + requireNumericId(id, "id"); httpMethod = "DELETE"; break;
                         default: return "Unknown method: " + method;
                     }
                     break;
 
                 case "FIELD":
                     switch (method.toUpperCase()) {
-                        case "LIST": url = base + "/templates/" + formId + "/fields"; httpMethod = "GET"; break;
+                        case "LIST": url = base + "/templates/" + requireNumericId(formId, "form_id") + "/fields"; httpMethod = "GET"; break;
                         case "POST": {
-                            url = base + "/templates/" + formId + "/fields"; httpMethod = "POST";
+                            url = base + "/templates/" + requireNumericId(formId, "form_id") + "/fields"; httpMethod = "POST";
                             Map<String, Object> body = new HashMap<>();
                             if (name != null)        body.put("name", name);
                             if (description != null) body.put("description", description);
@@ -2284,7 +2291,7 @@ public class AnthropicApiService implements Serializable {
                             break;
                         }
                         case "PUT": {
-                            url = base + "/fields/" + id; httpMethod = "PUT";
+                            url = base + "/fields/" + requireNumericId(id, "id"); httpMethod = "PUT";
                             Map<String, Object> body = new HashMap<>();
                             if (name != null)        body.put("name", name);
                             if (description != null) body.put("description", description);
@@ -2304,16 +2311,16 @@ public class AnthropicApiService implements Serializable {
                             requestBody = new com.google.gson.Gson().toJson(body);
                             break;
                         }
-                        case "DELETE": url = base + "/fields/" + id; httpMethod = "DELETE"; break;
+                        case "DELETE": url = base + "/fields/" + requireNumericId(id, "id"); httpMethod = "DELETE"; break;
                         default: return "Unknown method: " + method;
                     }
                     break;
 
                 case "CHOICE":
                     switch (method.toUpperCase()) {
-                        case "LIST": url = base + "/fields/" + fieldId + "/choices"; httpMethod = "GET"; break;
+                        case "LIST": url = base + "/fields/" + requireNumericId(fieldId, "field_id") + "/choices"; httpMethod = "GET"; break;
                         case "POST": {
-                            url = base + "/fields/" + fieldId + "/choices"; httpMethod = "POST";
+                            url = base + "/fields/" + requireNumericId(fieldId, "field_id") + "/choices"; httpMethod = "POST";
                             Map<String, Object> body = new HashMap<>();
                             if (label != null)   body.put("label", label);
                             if (value != null)   body.put("value", value);
@@ -2322,7 +2329,7 @@ public class AnthropicApiService implements Serializable {
                             break;
                         }
                         case "PUT": {
-                            url = base + "/choices/" + id; httpMethod = "PUT";
+                            url = base + "/choices/" + requireNumericId(id, "id"); httpMethod = "PUT";
                             Map<String, Object> body = new HashMap<>();
                             if (label != null)   body.put("label", label);
                             if (value != null)   body.put("value", value);
@@ -2330,16 +2337,18 @@ public class AnthropicApiService implements Serializable {
                             requestBody = new com.google.gson.Gson().toJson(body);
                             break;
                         }
-                        case "DELETE": url = base + "/choices/" + id; httpMethod = "DELETE"; break;
+                        case "DELETE": url = base + "/choices/" + requireNumericId(id, "id"); httpMethod = "DELETE"; break;
                         default: return "Unknown method: " + method;
                     }
                     break;
 
                 case "ENTRY":
-                    url = base + "/entries/" + admissionId; httpMethod = "GET"; break;
+                    if (!"LIST".equalsIgnoreCase(method)) return "Unknown method: " + method + " for ENTRY";
+                    url = base + "/entries/" + requireNumericId(admissionId, "admission_id"); httpMethod = "GET"; break;
 
                 case "VALUE":
-                    url = base + "/entries/" + entryId + "/values"; httpMethod = "GET"; break;
+                    if (!"LIST".equalsIgnoreCase(method)) return "Unknown method: " + method + " for VALUE";
+                    url = base + "/entries/" + requireNumericId(entryId, "entry_id") + "/values"; httpMethod = "GET"; break;
 
                 default:
                     return "Unknown resource_type: " + resourceType;
