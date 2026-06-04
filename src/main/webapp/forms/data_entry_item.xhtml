@@ -154,8 +154,34 @@
                     </p:panel>
                 </h:panelGroup>
 
+                <p:panel header="Custom Layout HTML (C3 Pattern)" class="mt-2">
+                    <p class="text-muted small mb-2">
+                        Tokens: <code>{{LABEL}}</code> — field label,
+                        <code>{{INPUT}}</code> — the input widget (edit mode),
+                        <code>{{VALUE}}</code> — the formatted stored value (view mode).
+                        Leave blank to use the default Bootstrap col-md-6 wrapper.
+                    </p>
+                    <div class="row">
+                        <div class="col-12 col-md-6 mb-2">
+                            <p:outputLabel value="Edit Wrapper HTML" for="txtEditHtml" class="form-label" />
+                            <p:inputTextarea id="txtEditHtml"
+                                             value="#{designComponentController.currentDataEntryItem.editHtml}"
+                                             rows="5" class="w-100 font-monospace"
+                                             placeholder="&lt;div class=&quot;col-12 col-md-6 mb-3&quot;&gt;&#10;  &lt;label&gt;{{LABEL}}&lt;/label&gt;&#10;  {{INPUT}}&#10;&lt;/div&gt;" />
+                        </div>
+                        <div class="col-12 col-md-6 mb-2">
+                            <p:outputLabel value="View Wrapper HTML" for="txtViewHtml" class="form-label" />
+                            <p:inputTextarea id="txtViewHtml"
+                                             value="#{designComponentController.currentDataEntryItem.viewHtml}"
+                                             rows="5" class="w-100 font-monospace"
+                                             placeholder="&lt;div class=&quot;col-12 col-md-6 mb-3&quot;&gt;&#10;  &lt;div class=&quot;text-muted small&quot;&gt;{{LABEL}}&lt;/div&gt;&#10;  &lt;div class=&quot;fw-semibold&quot;&gt;{{VALUE}}&lt;/div&gt;&#10;&lt;/div&gt;" />
+                        </div>
+                    </div>
+                </p:panel>
+
                 <div class="d-flex gap-2 mt-2">
                     <p:commandButton ajax="false" value="Save" icon="fa fa-save"
+                                     styleClass="ui-button-success"
                                      action="#{designComponentController.saveDataEntryComponentOfForm()}" />
                     <p:commandButton ajax="false" value="Cancel" icon="fa fa-arrow-left"
                                      styleClass="ui-button-flat"

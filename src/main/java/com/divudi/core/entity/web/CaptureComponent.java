@@ -81,6 +81,10 @@ public class CaptureComponent implements Serializable {
     private Integer maxRating;
     private String onLabel;
     private String offLabel;
+    @Lob
+    private String editHtml;
+    @Lob
+    private String viewHtml;
 
     @Transient
     private List<String> selectedValues;
@@ -381,6 +385,22 @@ public class CaptureComponent implements Serializable {
 
     public void setOffLabel(String offLabel) {
         this.offLabel = offLabel;
+    }
+
+    public String getEditHtml() {
+        return editHtml;
+    }
+
+    public void setEditHtml(String editHtml) {
+        this.editHtml = editHtml;
+    }
+
+    public String getViewHtml() {
+        return viewHtml;
+    }
+
+    public void setViewHtml(String viewHtml) {
+        this.viewHtml = viewHtml;
     }
 
     private static final String MULTI_SELECT_DELIMITER = "|";

@@ -24,6 +24,13 @@
                                          value="#{designComponentController.currentDataEntryForm.description}"
                                          class="form-control w-100" rows="1" />
                     </div>
+                    <div class="col-12 col-md-6 mb-2">
+                        <p:outputLabel value="Form CSS Class (optional)" for="txtFormCssClass" class="form-label" />
+                        <p:inputText id="txtFormCssClass"
+                                     value="#{designComponentController.currentDataEntryForm.formCssClass}"
+                                     placeholder="e.g. row row-cols-3 g-3"
+                                     class="form-control w-100" />
+                    </div>
                 </div>
 
                 <div class="d-flex gap-2 mt-2">
