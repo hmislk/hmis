@@ -52,7 +52,7 @@ public class DesignComponent implements Serializable {
     @Enumerated(EnumType.STRING)
     private ComponentMappingType componentMappingType;
 
-
+    private boolean retired;
 
     public Long getId() {
         return id;
@@ -181,6 +181,14 @@ public class DesignComponent implements Serializable {
 
     public void setComponentMappingType(ComponentMappingType componentMappingType) {
         this.componentMappingType = componentMappingType;
+    }
+
+    public boolean isRetired() {
+        return retired;
+    }
+
+    public void setRetired(boolean retired) {
+        this.retired = retired;
     }
 
 }
