@@ -7,7 +7,6 @@ import com.divudi.core.data.dto.forms.FormTemplateDto;
 import com.divudi.core.data.dto.forms.FormValueDto;
 import com.divudi.core.data.web.ComponentDataType;
 import com.divudi.core.data.web.ComponentPresentationType;
-import com.divudi.core.data.web.TemplateComponentType;
 import com.divudi.core.entity.WebUser;
 import com.divudi.core.entity.inward.PatientFormEntry;
 import com.divudi.core.entity.web.CaptureComponent;
@@ -47,9 +46,9 @@ public class FormApiService {
     // -------------------------------------------------------------------------
 
     public List<FormTemplateDto> listFormTemplates() {
-        String jpql = "SELECT d FROM DesignComponent d WHERE d.retired = false AND d.type = :type ORDER BY d.name";
+        String jpql = "SELECT d FROM DesignComponent d WHERE d.retired = false AND d.componentPresentationType = :cpt AND d.dataEntryForm IS NULL ORDER BY d.name";
         Map<String, Object> params = new HashMap<>();
-        params.put("type", TemplateComponentType.DataEntryForm);
+        params.put("cpt", ComponentPresentationType.DataEntryForm);
         List<DesignComponent> forms = designComponentFacade.findByJpql(jpql, params);
         List<FormTemplateDto> result = new ArrayList<>();
         for (DesignComponent dc : forms) {
@@ -76,7 +75,7 @@ public class FormApiService {
         dc.setName(name.trim());
         dc.setDescription(description);
         dc.setFormCssClass(formCssClass);
-        dc.setType(TemplateComponentType.DataEntryForm);
+        dc.setComponentPresentationType(ComponentPresentationType.DataEntryForm);
         dc.setRetired(false);
         designComponentFacade.create(dc);
         return toTemplateDto(dc, 0);
@@ -143,7 +142,6 @@ public class FormApiService {
         field.setCode((String) body.get("code"));
         field.setDescription((String) body.get("description"));
         field.setDataEntryForm(form);
-        field.setType(TemplateComponentType.DataEntryFormField);
         field.setRetired(false);
 
         String cpt = (String) body.get("componentPresentationType");
