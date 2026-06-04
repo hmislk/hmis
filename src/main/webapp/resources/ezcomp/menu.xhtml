@@ -2113,13 +2113,6 @@
                         icon="fa fa-database"
                         rendered="#{webUserController.hasPrivilege('AdminItems')}" >
                     </p:menuitem>
-                    <p:menuitem
-                        ajax="false"
-                        action="#{patientController.navigateToInactivePatients()}"
-                        value="Inactive Patients"
-                        icon="fa fa-user-slash"
-                        rendered="#{webUserController.hasPrivilege('AdminInactivePatients')}" >
-                    </p:menuitem>
 
                 </p:submenu>
 

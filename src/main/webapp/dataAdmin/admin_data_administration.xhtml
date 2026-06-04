@@ -325,6 +325,26 @@
                                     </p:tab>
 
 
+                                    <p:tab title="Patient Data Management"
+                                           rendered="#{webUserController.hasPrivilege('MergePatients') or webUserController.hasPrivilege('AdminInactivePatients')}">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton
+                                                class="w-100"
+                                                ajax="false"
+                                                value="Patient Data Management"
+                                                action="#{patientMergeController.navigateToPatientDataManagement()}"
+                                                icon="fa fa-users-cog"
+                                                rendered="#{webUserController.hasPrivilege('MergePatients')}" />
+                                            <p:commandButton
+                                                class="w-100"
+                                                ajax="false"
+                                                value="Inactive Patients"
+                                                action="#{patientController.navigateToInactivePatients()}"
+                                                icon="fa fa-user-slash"
+                                                rendered="#{webUserController.hasPrivilege('AdminInactivePatients')}" />
+                                        </div>
+                                    </p:tab>
+
                                 </p:accordionPanel>
 
                             </h:form>
