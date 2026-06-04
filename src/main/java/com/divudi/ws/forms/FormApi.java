@@ -58,6 +58,11 @@ public class FormApi {
             List<FormTemplateDto> list = formApiService.listFormTemplates();
             return successResponse(list);
         } catch (Exception e) {
+            Throwable root = rootCause(e);
+            if (root instanceof IllegalArgumentException) {
+                String msg = root.getMessage() != null ? root.getMessage() : e.getMessage();
+                return errorResponse(msg, msg != null && msg.contains("not found") ? 404 : 400);
+            }
             return errorResponse("An error occurred: " + e.getMessage(), 500);
         }
     }
@@ -74,6 +79,11 @@ public class FormApi {
         } catch (IllegalArgumentException e) {
             return errorResponse(e.getMessage(), 404);
         } catch (Exception e) {
+            Throwable root = rootCause(e);
+            if (root instanceof IllegalArgumentException) {
+                String msg = root.getMessage() != null ? root.getMessage() : e.getMessage();
+                return errorResponse(msg, msg != null && msg.contains("not found") ? 404 : 400);
+            }
             return errorResponse("An error occurred: " + e.getMessage(), 500);
         }
     }
@@ -97,6 +107,11 @@ public class FormApi {
         } catch (IllegalArgumentException e) {
             return errorResponse(e.getMessage(), 400);
         } catch (Exception e) {
+            Throwable root = rootCause(e);
+            if (root instanceof IllegalArgumentException) {
+                String msg = root.getMessage() != null ? root.getMessage() : e.getMessage();
+                return errorResponse(msg, msg != null && msg.contains("not found") ? 404 : 400);
+            }
             return errorResponse("An error occurred: " + e.getMessage(), 500);
         }
     }
@@ -121,6 +136,11 @@ public class FormApi {
         } catch (IllegalArgumentException e) {
             return errorResponse(e.getMessage(), e.getMessage().contains("not found") ? 404 : 400);
         } catch (Exception e) {
+            Throwable root = rootCause(e);
+            if (root instanceof IllegalArgumentException) {
+                String msg = root.getMessage() != null ? root.getMessage() : e.getMessage();
+                return errorResponse(msg, msg != null && msg.contains("not found") ? 404 : 400);
+            }
             return errorResponse("An error occurred: " + e.getMessage(), 500);
         }
     }
@@ -137,6 +157,11 @@ public class FormApi {
         } catch (IllegalArgumentException e) {
             return errorResponse(e.getMessage(), 404);
         } catch (Exception e) {
+            Throwable root = rootCause(e);
+            if (root instanceof IllegalArgumentException) {
+                String msg = root.getMessage() != null ? root.getMessage() : e.getMessage();
+                return errorResponse(msg, msg != null && msg.contains("not found") ? 404 : 400);
+            }
             return errorResponse("An error occurred: " + e.getMessage(), 500);
         }
     }
@@ -157,6 +182,11 @@ public class FormApi {
         } catch (IllegalArgumentException e) {
             return errorResponse(e.getMessage(), 404);
         } catch (Exception e) {
+            Throwable root = rootCause(e);
+            if (root instanceof IllegalArgumentException) {
+                String msg = root.getMessage() != null ? root.getMessage() : e.getMessage();
+                return errorResponse(msg, msg != null && msg.contains("not found") ? 404 : 400);
+            }
             return errorResponse("An error occurred: " + e.getMessage(), 500);
         }
     }
@@ -176,6 +206,11 @@ public class FormApi {
         } catch (IllegalArgumentException e) {
             return errorResponse(e.getMessage(), e.getMessage().contains("not found") ? 404 : 400);
         } catch (Exception e) {
+            Throwable root = rootCause(e);
+            if (root instanceof IllegalArgumentException) {
+                String msg = root.getMessage() != null ? root.getMessage() : e.getMessage();
+                return errorResponse(msg, msg != null && msg.contains("not found") ? 404 : 400);
+            }
             return errorResponse("An error occurred: " + e.getMessage(), 500);
         }
     }
@@ -195,6 +230,11 @@ public class FormApi {
         } catch (IllegalArgumentException e) {
             return errorResponse(e.getMessage(), e.getMessage().contains("not found") ? 404 : 400);
         } catch (Exception e) {
+            Throwable root = rootCause(e);
+            if (root instanceof IllegalArgumentException) {
+                String msg = root.getMessage() != null ? root.getMessage() : e.getMessage();
+                return errorResponse(msg, msg != null && msg.contains("not found") ? 404 : 400);
+            }
             return errorResponse("An error occurred: " + e.getMessage(), 500);
         }
     }
@@ -211,6 +251,11 @@ public class FormApi {
         } catch (IllegalArgumentException e) {
             return errorResponse(e.getMessage(), 404);
         } catch (Exception e) {
+            Throwable root = rootCause(e);
+            if (root instanceof IllegalArgumentException) {
+                String msg = root.getMessage() != null ? root.getMessage() : e.getMessage();
+                return errorResponse(msg, msg != null && msg.contains("not found") ? 404 : 400);
+            }
             return errorResponse("An error occurred: " + e.getMessage(), 500);
         }
     }
@@ -231,6 +276,11 @@ public class FormApi {
         } catch (IllegalArgumentException e) {
             return errorResponse(e.getMessage(), 404);
         } catch (Exception e) {
+            Throwable root = rootCause(e);
+            if (root instanceof IllegalArgumentException) {
+                String msg = root.getMessage() != null ? root.getMessage() : e.getMessage();
+                return errorResponse(msg, msg != null && msg.contains("not found") ? 404 : 400);
+            }
             return errorResponse("An error occurred: " + e.getMessage(), 500);
         }
     }
@@ -256,6 +306,11 @@ public class FormApi {
         } catch (IllegalArgumentException e) {
             return errorResponse(e.getMessage(), e.getMessage().contains("not found") ? 404 : 400);
         } catch (Exception e) {
+            Throwable root = rootCause(e);
+            if (root instanceof IllegalArgumentException) {
+                String msg = root.getMessage() != null ? root.getMessage() : e.getMessage();
+                return errorResponse(msg, msg != null && msg.contains("not found") ? 404 : 400);
+            }
             return errorResponse("An error occurred: " + e.getMessage(), 500);
         }
     }
@@ -281,6 +336,11 @@ public class FormApi {
         } catch (IllegalArgumentException e) {
             return errorResponse(e.getMessage(), e.getMessage().contains("not found") ? 404 : 400);
         } catch (Exception e) {
+            Throwable root = rootCause(e);
+            if (root instanceof IllegalArgumentException) {
+                String msg = root.getMessage() != null ? root.getMessage() : e.getMessage();
+                return errorResponse(msg, msg != null && msg.contains("not found") ? 404 : 400);
+            }
             return errorResponse("An error occurred: " + e.getMessage(), 500);
         }
     }
@@ -297,6 +357,11 @@ public class FormApi {
         } catch (IllegalArgumentException e) {
             return errorResponse(e.getMessage(), 404);
         } catch (Exception e) {
+            Throwable root = rootCause(e);
+            if (root instanceof IllegalArgumentException) {
+                String msg = root.getMessage() != null ? root.getMessage() : e.getMessage();
+                return errorResponse(msg, msg != null && msg.contains("not found") ? 404 : 400);
+            }
             return errorResponse("An error occurred: " + e.getMessage(), 500);
         }
     }
@@ -315,6 +380,11 @@ public class FormApi {
             List<FormEntryDto> list = formApiService.listEntriesForAdmission(admissionId);
             return successResponse(list);
         } catch (Exception e) {
+            Throwable root = rootCause(e);
+            if (root instanceof IllegalArgumentException) {
+                String msg = root.getMessage() != null ? root.getMessage() : e.getMessage();
+                return errorResponse(msg, msg != null && msg.contains("not found") ? 404 : 400);
+            }
             return errorResponse("An error occurred: " + e.getMessage(), 500);
         }
     }
@@ -331,6 +401,11 @@ public class FormApi {
         } catch (IllegalArgumentException e) {
             return errorResponse(e.getMessage(), 404);
         } catch (Exception e) {
+            Throwable root = rootCause(e);
+            if (root instanceof IllegalArgumentException) {
+                String msg = root.getMessage() != null ? root.getMessage() : e.getMessage();
+                return errorResponse(msg, msg != null && msg.contains("not found") ? 404 : 400);
+            }
             return errorResponse("An error occurred: " + e.getMessage(), 500);
         }
     }
@@ -357,6 +432,11 @@ public class FormApi {
         } catch (JsonSyntaxException e) {
             return null;
         }
+    }
+
+    private static Throwable rootCause(Throwable t) {
+        Throwable cause = t.getCause();
+        return (cause != null && cause != t) ? rootCause(cause) : t;
     }
 
     private Response errorResponse(String message, int code) {

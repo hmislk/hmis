@@ -147,11 +147,19 @@ public class FormApiService {
 
         String cpt = (String) body.get("componentPresentationType");
         if (cpt != null && !cpt.trim().isEmpty()) {
-            field.setComponentPresentationType(ComponentPresentationType.valueOf(cpt.trim()));
+            try {
+                field.setComponentPresentationType(ComponentPresentationType.valueOf(cpt.trim()));
+            } catch (IllegalArgumentException ex) {
+                throw new IllegalArgumentException("Invalid componentPresentationType: " + cpt.trim());
+            }
         }
         String cdt = (String) body.get("componentDataType");
         if (cdt != null && !cdt.trim().isEmpty()) {
-            field.setComponentDataType(ComponentDataType.valueOf(cdt.trim()));
+            try {
+                field.setComponentDataType(ComponentDataType.valueOf(cdt.trim()));
+            } catch (IllegalArgumentException ex) {
+                throw new IllegalArgumentException("Invalid componentDataType: " + cdt.trim());
+            }
         }
         if (body.get("orderNo") != null) {
             field.setOrderNo(toInteger(body.get("orderNo")));
@@ -188,10 +196,18 @@ public class FormApiService {
             field.setDescription((String) body.get("description"));
         }
         if (body.containsKey("componentPresentationType") && body.get("componentPresentationType") != null) {
-            field.setComponentPresentationType(ComponentPresentationType.valueOf(body.get("componentPresentationType").toString().trim()));
+            try {
+                field.setComponentPresentationType(ComponentPresentationType.valueOf(body.get("componentPresentationType").toString().trim()));
+            } catch (IllegalArgumentException ex) {
+                throw new IllegalArgumentException("Invalid componentPresentationType: " + body.get("componentPresentationType"));
+            }
         }
         if (body.containsKey("componentDataType") && body.get("componentDataType") != null) {
-            field.setComponentDataType(ComponentDataType.valueOf(body.get("componentDataType").toString().trim()));
+            try {
+                field.setComponentDataType(ComponentDataType.valueOf(body.get("componentDataType").toString().trim()));
+            } catch (IllegalArgumentException ex) {
+                throw new IllegalArgumentException("Invalid componentDataType: " + body.get("componentDataType"));
+            }
         }
         if (body.containsKey("orderNo")) {
             field.setOrderNo(toInteger(body.get("orderNo")));
