@@ -210,35 +210,41 @@ public class PatientMergeController implements Serializable {
     // <editor-fold defaultstate="collapsed" desc="Probabilistic Scan">
     public void runProbabilisticScan() {
         int cap = Math.min(Math.max(probMaxPairs, 1), 1000);
-        // Blocking: same birth year + same first letter of name
+        // Blocking: (same birth year + same first name letter) OR (shared phone/mobile tail)
         String jpql = "select p1, p2 from Patient p1, Patient p2 "
                 + "where p1.id < p2.id "
                 + "and p1.retired = false and p2.retired = false "
-                + "and p1.person.dob is not null and p2.person.dob is not null "
-                + "and year(p1.person.dob) = year(p2.person.dob) "
-                + "and p1.person.name is not null and p2.person.name is not null "
-                + "and substring(upper(p1.person.name),1,1) = substring(upper(p2.person.name),1,1)";
+                + "and ("
+                + "  (p1.person.dob is not null and p2.person.dob is not null "
+                + "   and year(p1.person.dob) = year(p2.person.dob) "
+                + "   and p1.person.name is not null and p2.person.name is not null "
+                + "   and substring(upper(p1.person.name),1,1) = substring(upper(p2.person.name),1,1))"
+                + "  or (p1.person.phone is not null and p2.person.phone is not null "
+                + "   and length(p1.person.phone) >= 7 and length(p2.person.phone) >= 7 "
+                + "   and substring(p1.person.phone, length(p1.person.phone)-6) = substring(p2.person.phone, length(p2.person.phone)-6))"
+                + "  or (p1.person.mobile is not null and p2.person.mobile is not null "
+                + "   and length(p1.person.mobile) >= 7 and length(p2.person.mobile) >= 7 "
+                + "   and substring(p1.person.mobile, length(p1.person.mobile)-6) = substring(p2.person.mobile, length(p2.person.mobile)-6))"
+                + ")";
         List<Object[]> rows = patientFacade.findObjectsArrayByJpql(jpql, new HashMap<>(), javax.persistence.TemporalType.DATE);
 
         // Collect already-merged pair IDs to exclude
         java.util.Set<String> alreadyMerged = loadAlreadyMergedPairKeys();
 
+        // Score all candidates, then cap after sorting so top matches always surface
         List<ScoredPatientPair> results = new ArrayList<>();
-        int checked = 0;
         for (Object[] row : rows) {
-            if (checked >= cap) break;
             Patient a = (Patient) row[0];
             Patient b = (Patient) row[1];
             String key = Math.min(a.getId(), b.getId()) + "_" + Math.max(a.getId(), b.getId());
             if (alreadyMerged.contains(key)) continue;
-            checked++;
             ScoredPatientPair scored = score(a, b);
             if (scored != null) {
                 results.add(scored);
             }
         }
         results.sort((x, y) -> Double.compare(y.getCompositeScore(), x.getCompositeScore()));
-        probabilisticResults = results;
+        probabilisticResults = results.size() > cap ? results.subList(0, cap) : results;
     }
 
     private java.util.Set<String> loadAlreadyMergedPairKeys() {
@@ -280,20 +286,28 @@ public class PatientMergeController implements Serializable {
     }
 
     private double scorePhone(Patient a, Patient b) {
-        String pA = bestPhone(a);
-        String pB = bestPhone(b);
-        if (pA.isEmpty() || pB.isEmpty()) return 0.0;
-        int len = Math.min(pA.length(), 9);
-        String tailA = pA.substring(Math.max(0, pA.length() - len));
-        String tailB = pB.substring(Math.max(0, pB.length() - len));
-        return tailA.equals(tailB) ? 1.0 : 0.0;
+        List<String> numbersA = allPhones(a);
+        List<String> numbersB = allPhones(b);
+        for (String pA : numbersA) {
+            for (String pB : numbersB) {
+                int len = Math.min(Math.min(pA.length(), pB.length()), 9);
+                if (len < 7) continue;
+                String tailA = pA.substring(pA.length() - len);
+                String tailB = pB.substring(pB.length() - len);
+                if (tailA.equals(tailB)) return 1.0;
+            }
+        }
+        return 0.0;
     }
 
-    private String bestPhone(Patient p) {
-        if (p.getPerson() == null) return "";
+    private List<String> allPhones(Patient p) {
+        List<String> numbers = new ArrayList<>();
+        if (p.getPerson() == null) return numbers;
         String phone = p.getPerson().getPhone() != null ? p.getPerson().getPhone().replaceAll("[^0-9]", "") : "";
         String mobile = p.getPerson().getMobile() != null ? p.getPerson().getMobile().replaceAll("[^0-9]", "") : "";
-        return phone.length() >= mobile.length() ? phone : mobile;
+        if (!phone.isEmpty()) numbers.add(phone);
+        if (!mobile.isEmpty() && !mobile.equals(phone)) numbers.add(mobile);
+        return numbers;
     }
 
     public void mergeProbabilisticPair(ScoredPatientPair pair) {
