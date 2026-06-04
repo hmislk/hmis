@@ -271,34 +271,33 @@
                                             <p:outputLabel value="Summary" class="mx-2"/>
                                         </f:facet>
 
-                                        <h:panelGroup id="crd" layout="block" class="w-100"
-                                                      rendered="#{bhtSummeryController.patientEncounter.paymentMethod eq 'Credit'}">
-                                            <credit:creditCompanyListView controller="#{bhtSummeryController}"/>
+                                        <h:panelGroup id="crd" layout="block" class="w-100" rendered="#{bhtSummeryController.patientEncounter.paymentMethod eq 'Credit'}">
+                                            <credit:creditCompanyListViewOnly controller="#{bhtSummeryController}"/>
                                         </h:panelGroup>
 
 
-                                        <h:panelGrid columns="3" class="text-end">
-                                            <h:outputLabel  value="Total Charges"/>
-                                            <h:outputLabel value=":" class="mx-2"/>
-                                            <h:outputLabel value="#{bhtSummeryController.grantTotal}" style="font-weight: bold">
-                                                <f:convertNumber pattern="#,##0.00"/>
-                                            </h:outputLabel>
-                                            <h:outputLabel value="Paid By Patient   " />
-                                            <h:outputLabel value=":" class="mx-2"/>
-                                            <h:outputLabel value="#{bhtSummeryController.paid}" style="font-weight: bold">
-                                                <f:convertNumber pattern="#,##0.00"/>
-                                            </h:outputLabel>
+                                        <div class="card p-4">
+                                            <h:panelGrid columns="3" style="font-weight: bold; font-size: 22px;">
+                                                <h:outputLabel  value="Total Charges"/>
+                                                <h:outputLabel value=":" class="mx-2"/>
+                                                <h:outputLabel value="#{bhtSummeryController.grantTotal}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputLabel>
+                                                
+                                                <h:outputLabel value="Paid By Patient   " />
+                                                <h:outputLabel value=":" class="mx-2"/>
+                                                <h:outputLabel value="#{bhtSummeryController.paid}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputLabel>
 
-                                            <h:outputLabel value="Due  "
-                                                           rendered="#{bhtSummeryController.patientEncounter.paymentMethod ne 'Credit'
-                                                                       and bhtSummeryController.due > 0 }" />
-                                            <h:outputLabel value=":" class="mx-2"/>
-                                            <h:outputLabel  value="#{bhtSummeryController.due}"
-                                                            rendered="#{bhtSummeryController.patientEncounter.paymentMethod ne 'Credit'
-                                                                        and bhtSummeryController.due > 0 }" style="font-weight: bold">
-                                                <f:convertNumber pattern="#,##0.00"/>
-                                            </h:outputLabel>
-                                        </h:panelGrid>
+                                                <h:outputLabel value="Due" rendered="#{bhtSummeryController.patientEncounter.paymentMethod ne 'Credit' and bhtSummeryController.due > 0 }" />
+                                                <h:outputLabel value=":" class="mx-2" rendered="#{bhtSummeryController.patientEncounter.paymentMethod ne 'Credit' and bhtSummeryController.due > 0 }"/>
+                                                <h:outputLabel value="#{bhtSummeryController.due}" rendered="#{bhtSummeryController.patientEncounter.paymentMethod ne 'Credit' and bhtSummeryController.due > 0 }">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputLabel>
+                                            </h:panelGrid>
+                                        </div>
+
                                     </p:panel>
                                     <p:panel id="dis" class="mt-2 ">
                                         <f:facet name="header">
@@ -359,7 +358,7 @@
                                         <p:outputLabel value="Charges" class="mx-2"/>
                                     </f:facet>
 
-                                        <p:dataTable 
+                                    <p:dataTable 
                                         id="sum"
                                         value="#{bhtSummeryController.chargeItemTotals}"
                                         var="c"
@@ -422,14 +421,14 @@
                                             <p:column headerText="Admission" style="min-width:10em;" styleClass="text-start">
                                                 <h:outputText value="#{rm.admittedAt}">
                                                     <f:convertDateTime timeZone="Asia/Colombo"
-                                                        pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
+                                                                       pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
                                                 </h:outputText>
                                             </p:column>
                                             <p:column headerText="Discharge" style="min-width:10em;" styleClass="text-start">
                                                 <h:panelGroup rendered="#{rm.dischargedAt ne null}">
                                                     <h:outputText value="#{rm.dischargedAt}">
                                                         <f:convertDateTime timeZone="Asia/Colombo"
-                                                            pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
+                                                                           pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
                                                     </h:outputText>
                                                 </h:panelGroup>
                                                 <h:panelGroup rendered="#{rm.dischargedAt eq null}">
@@ -486,7 +485,7 @@
                                 </p:tab>
 
                                 <p:tab id="tabTimed" title="Timed Service Details"  >
-                                        <p:dataTable  value="#{bhtSummeryController.patientItems}" var="pt">
+                                    <p:dataTable  value="#{bhtSummeryController.patientItems}" var="pt">
                                         <p:column headerText="Service Name" styleClass="text-start">
                                             <h:outputLabel value="#{pt.item.name}"/>
                                         </p:column>

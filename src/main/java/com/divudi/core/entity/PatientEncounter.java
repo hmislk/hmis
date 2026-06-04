@@ -7,6 +7,7 @@ package com.divudi.core.entity;
 import com.divudi.core.data.EncounterType;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.SymanticType;
+import com.divudi.core.data.inward.EncounterRegistrationFlag;
 import com.divudi.core.data.inward.PatientEncounterType;
 import com.divudi.core.entity.clinical.ClinicalEntity;
 import com.divudi.core.entity.clinical.ClinicalFindingValue;
@@ -29,6 +30,8 @@ import javax.persistence.Inheritance;
 import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.PrePersist;
+import javax.persistence.PreUpdate;
 import javax.persistence.Temporal;
 import javax.persistence.Transient;
 
@@ -122,6 +125,15 @@ public class PatientEncounter implements Serializable, RetirableEntity {
     private double creditPaidAmount;
     @Enumerated(EnumType.STRING)
     PatientEncounterType patientEncounterType;
+
+    /**
+     * Operational / clinical flag for this encounter, set at registration time.
+     * Defaults to {@link EncounterRegistrationFlag#STANDARD} so existing and
+     * normal admissions need no badge. Used to mark special scenarios such as
+     * On Admission Death. (Issue #21182)
+     */
+    @Enumerated(EnumType.STRING)
+    private EncounterRegistrationFlag encounterRegistrationFlag = EncounterRegistrationFlag.STANDARD;
     @OneToMany(mappedBy = "parentEncounter")
     List<PatientEncounter> childEncounters;
     @OneToMany(mappedBy = "encounter", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
@@ -499,6 +511,34 @@ public class PatientEncounter implements Serializable, RetirableEntity {
 
     public void setPatientEncounterType(PatientEncounterType patientEncounterType) {
         this.patientEncounterType = patientEncounterType;
+    }
+
+    public EncounterRegistrationFlag getEncounterRegistrationFlag() {
+        // Legacy rows created before this feature load with a NULL column. There is
+        // no meaningful "unknown" flag state — such an encounter simply was a
+        // standard admission — so normalise NULL to STANDARD on read. (Issue #21182)
+        return encounterRegistrationFlag == null
+                ? EncounterRegistrationFlag.STANDARD
+                : encounterRegistrationFlag;
+    }
+
+    public void setEncounterRegistrationFlag(EncounterRegistrationFlag encounterRegistrationFlag) {
+        this.encounterRegistrationFlag = encounterRegistrationFlag;
+    }
+
+    /**
+     * Guarantees the encounter flag is never persisted as NULL. New entities
+     * already carry the STANDARD field default; this hook additionally back-fills
+     * STANDARD on the next write of any legacy row whose column is still NULL, so
+     * persisted rows progressively converge on a non-null value alongside the
+     * one-time DB migration (v2.1.20). (Issue #21182)
+     */
+    @PrePersist
+    @PreUpdate
+    private void defaultEncounterRegistrationFlag() {
+        if (encounterRegistrationFlag == null) {
+            encounterRegistrationFlag = EncounterRegistrationFlag.STANDARD;
+        }
     }
 
     public Institution getCreditCompany() {

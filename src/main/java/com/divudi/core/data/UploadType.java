@@ -34,7 +34,11 @@ public enum UploadType {
     Web_Image("Web Image"),
     Report_background_image("Report Background Image"),
     Background_Image("Background Image"),
-    Diagnosis_Card_Template("Diagnosis Card Template");
+    Diagnosis_Card_Template("Diagnosis Card Template"),
+    Inward_Consent_Form("Consent Form"),
+    Inward_Insurance_Document("Insurance Document"),
+    Inward_Referral_Letter("Referral Letter"),
+    Inward_Other("Other Document");
 
     private final String label;
 
