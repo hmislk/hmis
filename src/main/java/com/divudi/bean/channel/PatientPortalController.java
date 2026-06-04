@@ -234,7 +234,6 @@ public class PatientPortalController implements Serializable {
         patient.setPatientMobileNumber(phoneAsLong);
         patient.getPerson().setPhone(patientphoneNumber);
         patient.getPerson().setMobile(patientphoneNumber);
-        patient.setSelfRegistered(true);
         patient.setRegistrationSource(PatientRegistrationSource.ONLINE_SELF);
         patientController.save(patient);
         addNewPatient = false;

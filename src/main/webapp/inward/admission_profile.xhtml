@@ -626,6 +626,16 @@
                                         class="w-100">
                                     </p:commandButton>
                                 </div>
+                                <div class="col-6">
+                                    <p:commandButton
+                                        value="Documents"
+                                        ajax="false"
+                                        rendered="#{webUserController.hasPrivilege('InwardDocumentUpload')}"
+                                        action="#{admissionController.navigateToInpatientDocuments()}"
+                                        icon="fa fa-file-alt"
+                                        class="w-100">
+                                    </p:commandButton>
+                                </div>
                             </div>
                         </p:panel>
                     </div>

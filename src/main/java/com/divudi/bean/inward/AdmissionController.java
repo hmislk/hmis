@@ -114,6 +114,8 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     @Inject
     InpatientClinicalDataController inpatientClinicalDataController;
     @Inject
+    InwardDocumentUploadController inwardDocumentUploadController;
+    @Inject
     PharmacyRequestForBhtController pharmacyRequestForBhtController;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
@@ -423,6 +425,10 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     public String navigateToInpatientImages() {
         inpatientClinicalDataController.setCurrent(current);
         return inpatientClinicalDataController.navigateToImages();
+    }
+
+    public String navigateToInpatientDocuments() {
+        return inwardDocumentUploadController.navigateToDocumentsFromAdmissionProfile(current);
     }
 
     public String navigateToInpatientDiagnosisCard() {

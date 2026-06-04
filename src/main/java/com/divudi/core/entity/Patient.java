@@ -147,16 +147,6 @@ public class Patient implements Serializable, RetirableEntity {
     private String specificStatusComment;
     
     /**
-     * @deprecated Superseded by {@link #registrationSource}. Kept for backward
-     * compatibility and existing portal logic. New code should read/write
-     * {@code registrationSource} instead; {@code selfRegistered == true} maps to
-     * {@link PatientRegistrationSource#ONLINE_SELF}. Physical removal is deferred
-     * until the data migration has run on all deployments. (Issue #21181)
-     */
-    @Deprecated
-    private Boolean selfRegistered = false;
-
-    /**
      * How this patient was first registered. Set once at creation and never
      * changed. Null for patients created before this feature. (Issue #21181)
      *
@@ -815,25 +805,6 @@ public class Patient implements Serializable, RetirableEntity {
 
     public void setSpecificStatusComment(String specificStatusComment) {
         this.specificStatusComment = specificStatusComment;
-    }
-
-    /**
-     * @deprecated Use {@link #getRegistrationSource()} instead. (Issue #21181)
-     */
-    @Deprecated
-    public Boolean getSelfRegistered() {
-        if(selfRegistered == null){
-            return false;
-        }
-        return selfRegistered;
-    }
-
-    /**
-     * @deprecated Use {@link #setRegistrationSource(PatientRegistrationSource)} instead. (Issue #21181)
-     */
-    @Deprecated
-    public void setSelfRegistered(Boolean selfRegistered) {
-        this.selfRegistered = selfRegistered;
     }
 
     public PatientRegistrationSource getRegistrationSource() {
