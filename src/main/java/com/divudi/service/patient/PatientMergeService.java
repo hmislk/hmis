@@ -109,12 +109,20 @@ public class PatientMergeService {
             throw new IllegalStateException("Merge #" + mergeRecord.getId() + " is already reversed.");
         }
 
+        Patient primary = mergeRecord.getPrimaryPatient();
         Patient secondary = mergeRecord.getSecondaryPatient();
 
         // Restore affected records
         List<PatientMergeAffectedRecord> affected = loadAffectedRecords(mergeRecord);
         for (PatientMergeAffectedRecord ar : affected) {
             restorePatientReference(ar);
+        }
+
+        // Restore primary demographics from snapshot (undo any null-fill that was applied)
+        restorePatientFromSnapshot(primary, mergeRecord.getPrimarySnapshotJson());
+        patientFacade.edit(primary);
+        if (primary.getPerson() != null) {
+            personFacade.edit(primary.getPerson());
         }
 
         // Restore secondary demographics from snapshot
@@ -161,7 +169,7 @@ public class PatientMergeService {
             params.put("pri", primary);
             params.put("sec", secondary);
             patientEncounterFacade.updateByJpql(
-                    "update PatientEncounter pe set pe.patient = :pri where pe.patient = :sec", params);
+                    "update PatientEncounter pe set pe.patient = :pri where pe.patient = :sec and pe.retired = false", params);
         }
         return buildAffectedRows("PatientEncounter", ids, secondary.getId(), primary.getId());
     }
@@ -178,7 +186,7 @@ public class PatientMergeService {
             params.put("pri", primary);
             params.put("sec", secondary);
             patientInvestigationFacade.updateByJpql(
-                    "update PatientInvestigation pi set pi.patient = :pri where pi.patient = :sec", params);
+                    "update PatientInvestigation pi set pi.patient = :pri where pi.patient = :sec and pi.retired = false", params);
         }
         return buildAffectedRows("PatientInvestigation", ids, secondary.getId(), primary.getId());
     }
@@ -195,7 +203,7 @@ public class PatientMergeService {
             params.put("pri", primary);
             params.put("sec", secondary);
             patientReportFacade.updateByJpql(
-                    "update PatientReport pr set pr.patient = :pri where pr.patient = :sec", params);
+                    "update PatientReport pr set pr.patient = :pri where pr.patient = :sec and pr.retired = false", params);
         }
         return buildAffectedRows("PatientReport", ids, secondary.getId(), primary.getId());
     }
@@ -216,7 +224,7 @@ public class PatientMergeService {
         Map<String, Object> params = new HashMap<>();
         params.put("pri", primary);
         params.put("sec", secondary);
-        String jpql = "update " + entityName + " e set e.patient = :pri where e.patient = :sec";
+        String jpql = "update " + entityName + " e set e.patient = :pri where e.patient = :sec and e.retired = false";
         switch (entityName) {
             case "Bill":
                 billFacade.updateByJpql(jpql, params);

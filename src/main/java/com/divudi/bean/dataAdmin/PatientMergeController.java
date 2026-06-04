@@ -165,10 +165,8 @@ public class PatientMergeController implements Serializable {
                     + "and p1.person." + field + " is not null and p1.person." + field + " <> '' "
                     + "and p1.person." + field + " = p2.person." + field;
         }
-        List<Object[]> allRows = patientFacade.findObjectsArrayByJpql(jpql, new HashMap<>(), javax.persistence.TemporalType.DATE);
+        List<Object[]> rows = patientFacade.findPatientPairsByJpql(jpql, new HashMap<>(), cap);
         List<PatientPair> pairs = new ArrayList<>();
-        int limit = Math.min(allRows.size(), cap);
-        List<Object[]> rows = allRows.subList(0, limit);
         for (Object[] row : rows) {
             PatientPair pair = new PatientPair((Patient) row[0], (Patient) row[1], matchReason);
             pairs.add(pair);
