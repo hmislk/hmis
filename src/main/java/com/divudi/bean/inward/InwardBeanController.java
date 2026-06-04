@@ -2406,6 +2406,11 @@ public class InwardBeanController implements Serializable {
         if (billFee == null || item.isMarginNotAllowed()
                 || billFee.getFee() == null
                 || Boolean.FALSE.equals(billFee.getFee().getMarginAllowed())) {
+            // Fix C: clear stale discount so early exit doesn't leave old values in place
+            if (billFee != null) {
+                billFee.setFeeDiscount(0.0);
+                billFee.setFeeUnitDiscount(0.0);
+            }
             return;
         }
 
@@ -2414,6 +2419,10 @@ public class InwardBeanController implements Serializable {
             billFee.setFeeMargin(margin);
             billFeeFacade.edit(billFee);
         }
+
+        // Fix A: reset discount before recalculating so stale values don't survive
+        billFee.setFeeDiscount(0.0);
+        billFee.setFeeUnitDiscount(0.0);
 
         double net = (billFee.getFeeGrossValue() + margin) - billFee.getFeeDiscount();
 
@@ -2424,9 +2433,17 @@ public class InwardBeanController implements Serializable {
         if (billFee == null || item.isMarginNotAllowed()
                 || billFee.getFee() == null
                 || Boolean.FALSE.equals(billFee.getFee().getMarginAllowed())) {
+            // Fix C: clear stale discount so early exit doesn't leave old values in place
+            if (billFee != null) {
+                billFee.setFeeDiscount(0.0);
+                billFee.setFeeUnitDiscount(0.0);
+            }
             return;
         }
         if (patientEncounter == null || patientEncounter.getAdmissionType() == null) {
+            // Fix C: clear stale discount so early exit doesn't leave old values in place
+            billFee.setFeeDiscount(0.0);
+            billFee.setFeeUnitDiscount(0.0);
             return;
         }
 
@@ -2445,6 +2462,11 @@ public class InwardBeanController implements Serializable {
                 billFeeFacade.edit(billFee);
             }
         }
+
+        // Fix A: reset discount before applyInwardDiscountToBillFee so stale values
+        // don't survive if that method exits early without setting a new discount
+        billFee.setFeeUnitDiscount(0.0);
+        billFee.setFeeDiscount(0.0);
 
         applyInwardDiscountToBillFee(billFee, item, patientEncounter);
 
