@@ -3956,6 +3956,24 @@ public class ItemController implements Serializable {
     }
 
     public void saveSelectedWithItemLight() {
+        if (configOptionApplicationController.getBooleanValueByKey("Automatically create Item Codes by Department.", false)) {
+            if (getCurrent().getId() == null) {
+                System.out.println("New Item Found --> Start Generate Item Code ");
+                if (getCurrent().getCode() == null || getCurrent().getCode().trim().isEmpty()) {
+                    StringBuilder code = new StringBuilder();
+                    if (getCurrent().getDepartment().getCode() != null && !getCurrent().getDepartment().getCode().isEmpty()) {
+                        code.append(getCurrent().getDepartment().getCode());
+                        code.append(configOptionApplicationController.getShortTextValueByKey("The symbol used between the department number and the item number when automatically generating item codes.", "-"));
+                        code.append(getItemCountByDepartment(getCurrent().getDepartment()));
+                    }
+                    System.out.println("Created NEw Iten Code for " + getCurrent().getName() + " = " + code);
+                    getCurrent().setCode(code.toString());
+                }
+            }else{
+                System.out.println("Old Item Found --> Skip Generate Item Code ");
+            }
+        }
+
         saveSelected(getCurrent());
         JsfUtil.addSuccessMessage("Saved");
         recreateModel();
@@ -4584,6 +4602,21 @@ public class ItemController implements Serializable {
 
     public Department getSelectedDepartment() {
         return selectedDepartment;
+    }
+
+    public Long getItemCountByDepartment(Department department) {
+        if (department == null) {
+            return 0L;
+        }
+        String jpql = "select count(i) "
+                + "from Item i "
+                + "where i.department=:dept "
+                + "and (TYPE(i)=:ix or TYPE(i)=:sv)";
+        Map<String, Object> m = new HashMap<>();
+        m.put("dept", department);
+        m.put("ix", Investigation.class);
+        m.put("sv", Service.class);
+        return itemFacade.countByJpql(jpql, m);
     }
 
     public void setSelectedDepartment(Department selectedDepartment) {
