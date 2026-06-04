@@ -71,7 +71,7 @@
 
                 <h:panelGroup layout="block" styleClass="row"
                               rendered="#{inwardFormController.currentCaptureComponents != null}">
-                    <c:forEach items="#{inwardFormController.currentCaptureComponents}" var="cc">
+                    <c:forEach items="#{inwardFormController.currentCaptureComponents}" var="cc" varStatus="st">
                         <h:panelGroup layout="block" styleClass="col-12 col-md-6 mb-2">
                             <p:outputLabel value="#{cc.name}" styleClass="form-label d-block" />
 
@@ -96,8 +96,8 @@
                                        rendered="#{cc.componentPresentationType eq 'Spinner'}" />
 
                             <h:panelGroup rendered="#{cc.componentPresentationType eq 'Slider'}">
-                                <p:inputText id="sliIn" value="#{cc.doubleValue}" styleClass="w-100" />
-                                <p:slider for="sliIn"
+                                <p:inputText id="sliIn#{st.index}" value="#{cc.doubleValue}" styleClass="w-100" />
+                                <p:slider for="sliIn#{st.index}"
                                           minValue="#{cc.minValue != null ? cc.minValue : 0}"
                                           maxValue="#{cc.maxValue != null ? cc.maxValue : 100}"
                                           step="#{cc.stepSize != null ? cc.stepSize : 1}" />

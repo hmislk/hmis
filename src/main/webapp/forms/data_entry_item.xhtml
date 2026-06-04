@@ -111,9 +111,9 @@
                     </div>
                 </h:panelGroup>
 
-                <h:panelGroup id="panelChoices" layout="block"
-                              rendered="#{designComponentController.choiceType}">
-                    <p:panel header="Choice Options" class="mt-2">
+                <h:panelGroup id="panelChoices" layout="block">
+                    <p:panel header="Choice Options" class="mt-2"
+                             rendered="#{designComponentController.choiceType}">
                         <p:dataTable value="#{designComponentController.currentItemChoices}" var="ch"
                                      emptyMessage="No choices added yet">
                             <p:column headerText="Order" style="width:5rem">
