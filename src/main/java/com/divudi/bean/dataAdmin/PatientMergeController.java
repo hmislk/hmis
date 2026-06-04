@@ -20,6 +20,7 @@ import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import org.apache.commons.text.similarity.JaroWinklerSimilarity;
 
 @Named
 @SessionScoped
@@ -48,6 +49,13 @@ public class PatientMergeController implements Serializable {
     // <editor-fold defaultstate="collapsed" desc="Deterministic scan state">
     private int detMaxResults = 50;
     private List<PatientPair> deterministicResults = new ArrayList<>();
+    // </editor-fold>
+
+    // <editor-fold defaultstate="collapsed" desc="Probabilistic scan state">
+    private int probMaxPairs = 100;
+    private double probNameThreshold = 0.92;
+    private List<ScoredPatientPair> probabilisticResults = new ArrayList<>();
+    private static final JaroWinklerSimilarity JARO_WINKLER = new JaroWinklerSimilarity();
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="History state">
@@ -199,6 +207,123 @@ public class PatientMergeController implements Serializable {
     }
     // </editor-fold>
 
+    // <editor-fold defaultstate="collapsed" desc="Probabilistic Scan">
+    public void runProbabilisticScan() {
+        int cap = Math.min(Math.max(probMaxPairs, 1), 1000);
+        // Blocking: same birth year + same first letter of name
+        String jpql = "select p1, p2 from Patient p1, Patient p2 "
+                + "where p1.id < p2.id "
+                + "and p1.retired = false and p2.retired = false "
+                + "and p1.person.dob is not null and p2.person.dob is not null "
+                + "and year(p1.person.dob) = year(p2.person.dob) "
+                + "and p1.person.name is not null and p2.person.name is not null "
+                + "and substring(upper(p1.person.name),1,1) = substring(upper(p2.person.name),1,1)";
+        List<Object[]> rows = patientFacade.findObjectsArrayByJpql(jpql, new HashMap<>(), javax.persistence.TemporalType.DATE);
+
+        // Collect already-merged pair IDs to exclude
+        java.util.Set<String> alreadyMerged = loadAlreadyMergedPairKeys();
+
+        List<ScoredPatientPair> results = new ArrayList<>();
+        int checked = 0;
+        for (Object[] row : rows) {
+            if (checked >= cap) break;
+            Patient a = (Patient) row[0];
+            Patient b = (Patient) row[1];
+            String key = Math.min(a.getId(), b.getId()) + "_" + Math.max(a.getId(), b.getId());
+            if (alreadyMerged.contains(key)) continue;
+            checked++;
+            ScoredPatientPair scored = score(a, b);
+            if (scored != null) {
+                results.add(scored);
+            }
+        }
+        results.sort((x, y) -> Double.compare(y.getCompositeScore(), x.getCompositeScore()));
+        probabilisticResults = results;
+    }
+
+    private java.util.Set<String> loadAlreadyMergedPairKeys() {
+        String jpql = "select mr.primaryPatient.id, mr.secondaryPatient.id from PatientMergeRecord mr";
+        List<Object[]> rows = patientMergeRecordFacade.findObjectsArrayByJpql(jpql, new HashMap<>(), javax.persistence.TemporalType.DATE);
+        java.util.Set<String> keys = new java.util.HashSet<>();
+        for (Object[] row : rows) {
+            Long idA = (Long) row[0];
+            Long idB = (Long) row[1];
+            keys.add(Math.min(idA, idB) + "_" + Math.max(idA, idB));
+        }
+        return keys;
+    }
+
+    private ScoredPatientPair score(Patient a, Patient b) {
+        String nameA = a.getPerson() != null && a.getPerson().getName() != null ? a.getPerson().getName().toLowerCase() : "";
+        String nameB = b.getPerson() != null && b.getPerson().getName() != null ? b.getPerson().getName().toLowerCase() : "";
+        double nameSim = nameA.isEmpty() || nameB.isEmpty() ? 0.0 : JARO_WINKLER.apply(nameA, nameB);
+        if (nameSim < probNameThreshold) return null;
+
+        double dobScore = scoreDob(a, b);
+        double phoneScore = scorePhone(a, b);
+        double composite = nameSim * 0.40 + dobScore * 0.35 + phoneScore * 0.25;
+        if (composite < 0.80) return null;
+
+        return new ScoredPatientPair(a, b, nameSim, dobScore, phoneScore, composite);
+    }
+
+    private double scoreDob(Patient a, Patient b) {
+        if (a.getPerson() == null || b.getPerson() == null) return 0.0;
+        Date da = a.getPerson().getDob();
+        Date db = b.getPerson().getDob();
+        if (da == null || db == null) return 0.0;
+        long diffDays = Math.abs(da.getTime() - db.getTime()) / (1000L * 60 * 60 * 24);
+        if (diffDays == 0) return 1.0;
+        if (diffDays <= 1) return 0.8;
+        if (diffDays <= 3) return 0.5;
+        return 0.0;
+    }
+
+    private double scorePhone(Patient a, Patient b) {
+        String pA = bestPhone(a);
+        String pB = bestPhone(b);
+        if (pA.isEmpty() || pB.isEmpty()) return 0.0;
+        int len = Math.min(pA.length(), 9);
+        String tailA = pA.substring(Math.max(0, pA.length() - len));
+        String tailB = pB.substring(Math.max(0, pB.length() - len));
+        return tailA.equals(tailB) ? 1.0 : 0.0;
+    }
+
+    private String bestPhone(Patient p) {
+        if (p.getPerson() == null) return "";
+        String phone = p.getPerson().getPhone() != null ? p.getPerson().getPhone().replaceAll("[^0-9]", "") : "";
+        String mobile = p.getPerson().getMobile() != null ? p.getPerson().getMobile().replaceAll("[^0-9]", "") : "";
+        return phone.length() >= mobile.length() ? phone : mobile;
+    }
+
+    public void mergeProbabilisticPair(ScoredPatientPair pair) {
+        if (pair.getSelectedPrimary() == null) {
+            JsfUtil.addErrorMessage("Please select the primary patient.");
+            return;
+        }
+        Patient pri = pair.getSelectedPrimary();
+        Patient sec = pri.getId().equals(pair.getPatientA().getId())
+                ? pair.getPatientB() : pair.getPatientA();
+        try {
+            patientMergeService.merge(pri, sec, PatientMergeType.PROBABILISTIC,
+                    String.format("Probabilistic scan — score %.0f%% (name %.0f%%, DOB %.0f%%, phone %.0f%%)",
+                            pair.getCompositeScore() * 100,
+                            pair.getNameScore() * 100,
+                            pair.getDobScore() * 100,
+                            pair.getPhoneScore() * 100),
+                    sessionController.getLoggedUser());
+            probabilisticResults.remove(pair);
+            JsfUtil.addSuccessMessage("Patients merged.");
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Merge failed: " + e.getMessage());
+        }
+    }
+
+    public void dismissProbabilisticPair(ScoredPatientPair pair) {
+        probabilisticResults.remove(pair);
+    }
+    // </editor-fold>
+
     // <editor-fold defaultstate="collapsed" desc="History & Unmerge">
     public void searchHistory() {
         String jpql = "select mr from PatientMergeRecord mr where mr.mergeDate >= :from and mr.mergeDate <= :to";
@@ -251,6 +376,38 @@ public class PatientMergeController implements Serializable {
         Map<String, Object> p = new HashMap<>();
         p.put("mr", mr);
         return (int) patientMergeRecordFacade.findLongByJpql(jpql, p);
+    }
+    // </editor-fold>
+
+    // <editor-fold defaultstate="collapsed" desc="Inner class — ScoredPatientPair">
+    public static class ScoredPatientPair implements Serializable {
+        private Patient patientA;
+        private Patient patientB;
+        private double nameScore;
+        private double dobScore;
+        private double phoneScore;
+        private double compositeScore;
+        private Patient selectedPrimary;
+
+        public ScoredPatientPair(Patient a, Patient b, double nameScore, double dobScore,
+                double phoneScore, double compositeScore) {
+            this.patientA = a;
+            this.patientB = b;
+            this.nameScore = nameScore;
+            this.dobScore = dobScore;
+            this.phoneScore = phoneScore;
+            this.compositeScore = compositeScore;
+            this.selectedPrimary = a;
+        }
+
+        public Patient getPatientA() { return patientA; }
+        public Patient getPatientB() { return patientB; }
+        public double getNameScore() { return nameScore; }
+        public double getDobScore() { return dobScore; }
+        public double getPhoneScore() { return phoneScore; }
+        public double getCompositeScore() { return compositeScore; }
+        public Patient getSelectedPrimary() { return selectedPrimary; }
+        public void setSelectedPrimary(Patient selectedPrimary) { this.selectedPrimary = selectedPrimary; }
     }
     // </editor-fold>
 
@@ -309,5 +466,13 @@ public class PatientMergeController implements Serializable {
     public void setSelectedMergeRecord(PatientMergeRecord selectedMergeRecord) { this.selectedMergeRecord = selectedMergeRecord; }
 
     public PatientMergeStatus[] getMergeStatusValues() { return PatientMergeStatus.values(); }
+
+    public int getProbMaxPairs() { return probMaxPairs; }
+    public void setProbMaxPairs(int probMaxPairs) { this.probMaxPairs = probMaxPairs; }
+
+    public double getProbNameThreshold() { return probNameThreshold; }
+    public void setProbNameThreshold(double probNameThreshold) { this.probNameThreshold = probNameThreshold; }
+
+    public List<ScoredPatientPair> getProbabilisticResults() { return probabilisticResults; }
     // </editor-fold>
 }
