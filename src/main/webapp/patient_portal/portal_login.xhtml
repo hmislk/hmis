@@ -1875,7 +1875,7 @@
                                             </span>
                                         </div>
                                         
-                                        <h:panelGroup rendered="#{patientPortalController.patient.selfRegistered}" layout="block">
+                                        <h:panelGroup rendered="#{patientPortalController.patient.registrationSource eq 'ONLINE_SELF'}" layout="block">
                                             <span class="badge-self-registered">
                                                 <i class="fas fa-user-pen"/>
                                                 Self Registered

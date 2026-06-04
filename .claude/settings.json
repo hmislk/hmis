@@ -4,7 +4,13 @@
       "C:\\Development\\hmis.wiki"
     ],
     "allow": [
-      "Bash(mysql *)"
+      "Bash(mysql *)",
+      "Bash(curl -s *)",
+      "Bash(curl -sS *)",
+      "Bash(ping -c *)",
+      "Bash(ss -tnlp*)",
+      "Bash(/home/buddhika/payara/bin/asadmin list*)",
+      "Bash(/home/buddhika/payara/bin/asadmin ping-connection-pool*)"
     ]
   }
 }

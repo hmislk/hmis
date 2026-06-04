@@ -1,0 +1,130 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+
+                <h:form id="formDocuments" enctype="multipart/form-data">
+
+                    <p:panel header="Admission Documents" class="m-1">
+                        <f:facet name="actions">
+                            <p:commandButton
+                                value="Back"
+                                ajax="false"
+                                action="#{bhtSummeryController.navigateToInpatientProfile()}"
+                                icon="fa fa-arrow-left"
+                                class="ui-button-secondary" />
+                        </f:facet>
+
+                        <!-- Upload section -->
+                        <div class="row g-2 mb-3">
+                            <div class="col-md-3">
+                                <p:outputLabel for="cmbDocType" value="Document Type" />
+                                <p:selectOneMenu id="cmbDocType"
+                                                value="#{inwardDocumentUploadController.selectedUploadType}"
+                                                class="w-100">
+                                    <f:selectItem itemLabel="-- Select Type --" itemValue="#{null}" />
+                                    <f:selectItems value="#{inwardDocumentUploadController.inwardUploadTypes}"
+                                                   var="t"
+                                                   itemLabel="#{t.label}"
+                                                   itemValue="#{t}" />
+                                </p:selectOneMenu>
+                            </div>
+                            <div class="col-md-5">
+                                <p:outputLabel for="txtDocComments" value="Comments" />
+                                <p:inputTextarea id="txtDocComments"
+                                                value="#{inwardDocumentUploadController.comments}"
+                                                rows="2"
+                                                class="w-100"
+                                                autoResize="true" />
+                            </div>
+                            <div class="col-md-3 d-flex align-items-end">
+                                <p:fileUpload id="fuDocument"
+                                             value="#{inwardDocumentUploadController.file}"
+                                             mode="simple"
+                                             skinSimple="true"
+                                             accept=".pdf,.jpeg,.jpg,.png,application/pdf,image/jpeg,image/png"
+                                             sizeLimit="10240000"
+                                             label="Choose File"
+                                             class="w-100" />
+                            </div>
+                            <div class="col-md-1 d-flex align-items-end">
+                                <p:commandButton
+                                    id="btnUpload"
+                                    value="Upload"
+                                    icon="fa fa-upload"
+                                    action="#{inwardDocumentUploadController.uploadDocument()}"
+                                    process="fuDocument cmbDocType txtDocComments btnUpload"
+                                    update="tblDocuments fuDocument cmbDocType txtDocComments"
+                                    class="w-100" />
+                            </div>
+                        </div>
+
+                        <!-- Documents list -->
+                        <p:dataTable id="tblDocuments"
+                                    value="#{inwardDocumentUploadController.documents}"
+                                    var="doc"
+                                    emptyMessage="No documents uploaded."
+                                    paginator="true"
+                                    rows="10"
+                                    paginatorAlwaysVisible="false"
+                                    paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                    class="w-100">
+                            <p:column headerText="Type" width="160">
+                                <h:outputText value="#{doc.uploadType.label}" />
+                            </p:column>
+                            <p:column headerText="File Name">
+                                <h:outputText value="#{doc.fileName}" />
+                            </p:column>
+                            <p:column headerText="Comments">
+                                <h:outputText value="#{doc.comments}" />
+                            </p:column>
+                            <p:column headerText="Uploaded At" width="160">
+                                <h:outputText value="#{doc.createdAt}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"
+                                                       timeZone="Asia/Colombo" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Uploaded By" width="160">
+                                <h:outputText value="#{doc.creater.person.name}" />
+                            </p:column>
+                            <p:column headerText="Actions" width="110">
+                                <p:commandButton
+                                    icon="fa fa-download"
+                                    title="Download"
+                                    ajax="false"
+                                    class="ui-button-info me-1">
+                                    <p:fileDownload value="#{inwardDocumentUploadController.getDownloadStream(doc)}" />
+                                </p:commandButton>
+                                <p:commandButton
+                                    id="btnRemove"
+                                    icon="fa fa-trash"
+                                    title="Remove"
+                                    class="ui-button-danger"
+                                    process="@this"
+                                    update="tblDocuments"
+                                    action="#{inwardDocumentUploadController.removeDocument(doc)}">
+                                    <p:confirm header="Confirm Remove"
+                                               message="Remove this document?"
+                                               icon="pi pi-exclamation-triangle" />
+                                </p:commandButton>
+                            </p:column>
+                        </p:dataTable>
+                    </p:panel>
+
+                    <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
+                        <p:commandButton value="Yes" type="button" styleClass="ui-confirmdialog-yes ui-button-danger" icon="pi pi-check" />
+                        <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no ui-button-secondary" icon="pi pi-times" />
+                    </p:confirmDialog>
+
+                </h:form>
+
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

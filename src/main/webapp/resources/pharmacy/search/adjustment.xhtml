@@ -22,103 +22,107 @@
         cancellation metadata without N+1 lazy loads.
     -->
     <cc:implementation>
-
-        <p:commandButton ajax="false" value="Download" icon="fa fa-download"
-                         styleClass="ui-button-success mb-2">
-            <p:dataExporter target="tblPharmacyAdjustment" type="xlsx" fileName="pharmacy_adjustment_bill_list"/>
-        </p:commandButton>
-
-        <p:dataTable rowIndexVar="i"
-                     id="tblPharmacyAdjustment"
-                     widgetVar="tblPharmacyAdjustment"
-                     value="#{pharmacyBillSearch.adjustmentSearchDtos}"
-                     var="dto"
-                     paginator="true"
-                     rows="10"
-                     paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                     rowsPerPageTemplate="10,20,50,100"
-                     emptyMessage="No Pharmacy Adjustment Bills Found">
-
+        <p:panel>
             <f:facet name="header">
-                <h:outputLabel value="PHARMACY ADJUSTMENT"/>
+                <div style="display:flex;justify-content:space-between;align-items:center;width:100%;">
+                    <span>PHARMACY ADJUSTMENT</span>
+                    <p:commandButton ajax="false" value="Download" icon="fa fa-download"
+                                     styleClass="ui-button-success ui-button-sm">
+                        <p:dataExporter target="tblPharmacyAdjustment" type="xlsx" fileName="pharmacy_adjustment_bill_list"/>
+                    </p:commandButton>
+                </div>
             </f:facet>
 
-            <!-- Actions (not exported) -->
-            <p:column headerText="Actions" exportable="false" style="white-space:nowrap;">
-                <p:commandButton
-                    ajax="false"
-                    icon="fa fa-eye"
-                    styleClass="ui-button-info ui-button-sm"
-                    title="View Bill"
-                    action="#{billSearch.navigateToViewBillByAtomicBillTypeByBillId(dto.id)}"/>
-            </p:column>
+            <div class="pharma-search-wrapper">
+                <p:dataTable rowIndexVar="i"
+                             id="tblPharmacyAdjustment"
+                             widgetVar="tblPharmacyAdjustment"
+                             value="#{pharmacyBillSearch.adjustmentSearchDtos}"
+                             var="dto"
+                             paginator="true"
+                             rows="10"
+                             paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                             rowsPerPageTemplate="10,20,50,100"
+                             emptyMessage="No Pharmacy Adjustment Bills Found">
 
-            <p:column headerText="Type"
-                      sortBy="#{dto.billTypeAtomic.label}"
-                      filterBy="#{dto.billTypeAtomic.label}"
-                      filterMatchMode="contains">
-                <h:outputLabel value="#{dto.billTypeAtomic.label}"/>
-            </p:column>
+                    <p:column headerText="Type"
+                              sortBy="#{dto.billTypeAtomic.label}"
+                              filterBy="#{dto.billTypeAtomic.label}"
+                              filterMatchMode="contains">
+                        <h:outputLabel value="#{dto.billTypeAtomic.label}"/>
+                    </p:column>
 
-            <p:column headerText="Bill No"
-                      sortBy="#{dto.deptId}"
-                      filterBy="#{dto.deptId}"
-                      filterMatchMode="contains">
-                <h:outputLabel value="#{dto.deptId}"/>
-            </p:column>
+                    <p:column headerText="Bill No"
+                              sortBy="#{dto.deptId}"
+                              filterBy="#{dto.deptId}"
+                              filterMatchMode="contains">
+                        <h:outputLabel value="#{dto.deptId}"/>
+                    </p:column>
 
-            <p:column headerText="Department"
-                      sortBy="#{dto.departmentName}"
-                      filterBy="#{dto.departmentName}"
-                      filterMatchMode="contains">
-                <h:outputLabel value="#{dto.departmentName}"/>
-            </p:column>
+                    <p:column headerText="Department"
+                              sortBy="#{dto.departmentName}"
+                              filterBy="#{dto.departmentName}"
+                              filterMatchMode="contains">
+                        <h:outputLabel value="#{dto.departmentName}"/>
+                    </p:column>
 
-            <p:column headerText="Billed At" sortBy="#{dto.createdAt}">
-                <h:outputLabel value="#{dto.createdAt}">
-                    <f:convertDateTime timeZone="Asia/Colombo"
-                                       pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
-                </h:outputLabel>
-            </p:column>
+                    <p:column headerText="Billed At" sortBy="#{dto.createdAt}">
+                        <h:outputLabel value="#{dto.createdAt}">
+                            <f:convertDateTime timeZone="Asia/Colombo"
+                                               pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
+                        </h:outputLabel>
+                    </p:column>
 
-            <p:column headerText="Billed By"
-                      sortBy="#{dto.creatorName}"
-                      filterBy="#{dto.creatorName}"
-                      filterMatchMode="contains">
-                <h:outputLabel value="#{dto.creatorName}"/>
-            </p:column>
+                    <p:column headerText="Billed By"
+                              sortBy="#{dto.creatorName}"
+                              filterBy="#{dto.creatorName}"
+                              filterMatchMode="contains">
+                        <h:outputLabel value="#{dto.creatorName}"/>
+                    </p:column>
 
-            <p:column headerText="Comments"
-                      sortBy="#{dto.comments}"
-                      filterBy="#{dto.comments}"
-                      filterMatchMode="contains">
-                <h:outputLabel value="#{dto.comments}"/>
-            </p:column>
+                    <p:column headerText="Comments"
+                              sortBy="#{dto.comments}"
+                              filterBy="#{dto.comments}"
+                              filterMatchMode="contains">
+                        <h:outputLabel value="#{dto.comments}"/>
+                    </p:column>
 
-            <p:column headerText="Net Value" sortBy="#{dto.netTotal}" style="text-align:right;">
-                <h:outputLabel value="#{dto.netTotal}">
-                    <f:convertNumber pattern="#,##0.00"/>
-                </h:outputLabel>
-            </p:column>
+                    <p:column headerText="Net Value" sortBy="#{dto.netTotal}" style="text-align:right;">
+                        <h:outputLabel value="#{dto.netTotal}">
+                            <f:convertNumber pattern="#,##0.00"/>
+                        </h:outputLabel>
+                    </p:column>
 
-            <p:column headerText="Status">
-                <h:outputText value="Cancelled" rendered="#{dto.cancelled}" style="display:none;"/>
-                <p:badge value="Cancelled" severity="danger" rendered="#{dto.cancelled}"/>
-            </p:column>
+                    <p:column headerText="Status">
+                        <h:outputText value="Cancelled" rendered="#{dto.cancelled}" style="display:none;"/>
+                        <p:badge value="Cancelled" severity="danger" rendered="#{dto.cancelled}"/>
+                    </p:column>
 
-            <p:column headerText="Cancellation Details">
-                <h:panelGroup rendered="#{dto.cancelled}">
-                    <h:outputText style="color:red;" value="Cancelled At: "/>
-                    <h:outputText style="color:red;" value="#{dto.cancelledAt}">
-                        <f:convertDateTime timeZone="Asia/Colombo"
-                                           pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
-                    </h:outputText>
-                    <h:outputText style="color:red;" value=" By: #{dto.cancelledBy}"/>
-                    <h:outputText rendered="#{not empty dto.cancelComments}"
-                                  style="color:red;" value=" | #{dto.cancelComments}"/>
-                </h:panelGroup>
-            </p:column>
+                    <p:column headerText="Cancellation Details" style="white-space:normal;">
+                        <h:panelGroup rendered="#{dto.cancelled}">
+                            <h:outputText style="color:red;" value="Cancelled At: "/>
+                            <h:outputText style="color:red;" value="#{dto.cancelledAt}">
+                                <f:convertDateTime timeZone="Asia/Colombo"
+                                                   pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
+                            </h:outputText>
+                            <h:outputText style="color:red;" value=" By: #{dto.cancelledBy}"/>
+                            <h:outputText rendered="#{not empty dto.cancelComments}"
+                                          style="color:red;" value=" | #{dto.cancelComments}"/>
+                        </h:panelGroup>
+                    </p:column>
 
-        </p:dataTable>
+                    <!-- Actions (last column, not exported) -->
+                    <p:column headerText="Actions" exportable="false" style="white-space:nowrap;">
+                        <p:commandButton
+                            ajax="false"
+                            icon="fa fa-eye"
+                            styleClass="ui-button-info ui-button-sm"
+                            title="View Bill"
+                            action="#{billSearch.navigateToViewBillByAtomicBillTypeByBillId(dto.id)}"/>
+                    </p:column>
+
+                </p:dataTable>
+            </div>
+        </p:panel>
     </cc:implementation>
 </html>
