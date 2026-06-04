@@ -6356,7 +6356,8 @@ public class PharmacyReportController implements Serializable {
     }
 
     private static double stockConsumptionQtySign(BillTypeAtomic bta) {
-        if (bta == BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_RETURN) {
+        if (bta == BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_RETURN
+                || bta == BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_CANCELLED) {
             return -1.0;
         }
         return 1.0;
