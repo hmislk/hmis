@@ -66,6 +66,7 @@ public class DesignComponent implements Serializable {
     private Integer maxRating;
     private String onLabel;
     private String offLabel;
+    private String formCssClass;
 
     public Long getId() {
         return id;
@@ -274,6 +275,14 @@ public class DesignComponent implements Serializable {
 
     public void setOffLabel(String offLabel) {
         this.offLabel = offLabel;
+    }
+
+    public String getFormCssClass() {
+        return formCssClass;
+    }
+
+    public void setFormCssClass(String formCssClass) {
+        this.formCssClass = formCssClass;
     }
 
 }
