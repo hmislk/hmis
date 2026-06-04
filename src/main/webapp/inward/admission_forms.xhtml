@@ -91,7 +91,8 @@
                 </h:panelGroup>
 
                 <!-- EDIT MODE: render PrimeFaces components inside editHtml outer wrapper -->
-                <h:panelGroup layout="block" styleClass="row"
+                <h:panelGroup layout="block"
+                              styleClass="#{inwardFormController.selectedTemplate != null and inwardFormController.selectedTemplate.formCssClass != null and inwardFormController.selectedTemplate.formCssClass != '' ? inwardFormController.selectedTemplate.formCssClass : 'row'}"
                               rendered="#{inwardFormController.currentCaptureComponents != null and not inwardFormController.viewMode}">
                     <c:forEach items="#{inwardFormController.currentCaptureComponents}" var="cc" varStatus="st">
 
