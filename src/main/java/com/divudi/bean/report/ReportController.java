@@ -4530,6 +4530,10 @@ public class ReportController implements Serializable, ControllerWithReportFilte
     public String navigateToCostOfGoodSoldReports() {
         pharmacyReportController.setBillItems(new ArrayList<>());
         pharmacyReportController.setNetTotal(0.0);
+        pharmacyReportController.setStockConsumptionItemDtos(new ArrayList<>());
+        pharmacyReportController.setDtoStockConsumptionPurchaseTotal(0.0);
+        pharmacyReportController.setDtoStockConsumptionCostTotal(0.0);
+        pharmacyReportController.setDtoStockConsumptionRetailTotal(0.0);
 
         if (reportTemplateFileIndexName == null) {
             return "";
@@ -4547,7 +4551,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
             case "Drug Return Op":
                 return "/reports/inventoryReports/op_drug_return?faces-redirect=true";
             case "Stock Consumption":
-                return "/reports/inventoryReports/stock_consumption?faces-redirect=true";
+                return "/reports/inventoryReports/stock_consumption_dto?faces-redirect=true";
             case "Purchase Return":
                 return "/reports/inventoryReports/purchase_return?faces-redirect=true";
             case "Stock Adjustment Receive":
