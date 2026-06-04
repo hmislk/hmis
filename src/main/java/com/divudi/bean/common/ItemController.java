@@ -1873,7 +1873,7 @@ public class ItemController implements Serializable {
         }
         for (Item i : selectedList) {
             Item item = itemFacade.findWithoutCache(i.getId());
-                
+
             item.setAllowedForBillingPriority(true);
             itemFacade.editAndCommit(item);
         }
@@ -1888,7 +1888,7 @@ public class ItemController implements Serializable {
         }
         for (Item i : selectedList) {
             Item item = itemFacade.findWithoutCache(i.getId());
-                
+
             item.setAllowedForBillingPriority(false);
             itemFacade.editAndCommit(item);
         }
@@ -1906,7 +1906,7 @@ public class ItemController implements Serializable {
         for (Item i : selectedList) {
             if (i instanceof Investigation) {
                 Item item = itemFacade.findWithoutCache(i.getId());
-                
+
                 item.setAllowToSendSMS(true);
                 itemFacade.editAndCommit(item);
                 updatedCount++;
@@ -1930,7 +1930,7 @@ public class ItemController implements Serializable {
         for (Item i : selectedList) {
             if (i instanceof Investigation) {
                 Item item = itemFacade.findWithoutCache(i.getId());
-                
+
                 item.setAllowToSendSMS(false);
                 itemFacade.editAndCommit(item);
                 updatedCount++;
@@ -1943,7 +1943,7 @@ public class ItemController implements Serializable {
             JsfUtil.addSuccessMessage(updatedCount + " item(s) unmarked for report SMS.");
         }
     }
-    
+
     public void markSelectedItemsToAllowCalculatedRequerd() {
         if (selectedList == null || selectedList.isEmpty()) {
             JsfUtil.addErrorMessage("Nothing is selected");
@@ -1954,7 +1954,7 @@ public class ItemController implements Serializable {
         for (Item i : selectedList) {
             if (i instanceof Investigation) {
                 Item item = itemFacade.findWithoutCache(i.getId());
-                
+
                 item.setCalculatedRequerd(true);
                 itemFacade.editAndCommit(item);
                 updatedCount++;
@@ -1978,7 +1978,7 @@ public class ItemController implements Serializable {
         for (Item i : selectedList) {
             if (i instanceof Investigation) {
                 Item item = itemFacade.findWithoutCache(i.getId());
-                
+
                 item.setCalculatedRequerd(false);
                 itemFacade.editAndCommit(item);
                 updatedCount++;
@@ -2420,10 +2420,18 @@ public class ItemController implements Serializable {
     public List<Item> completeMedicineByTypeWithFilter(String query, boolean includeVtm, boolean includeAtm, boolean includeVmp, boolean includeAmp) {
         DepartmentType[] dts = new DepartmentType[]{DepartmentType.Pharmacy, null};
         List<Class> classList = new ArrayList<>();
-        if (includeVtm) classList.add(Vtm.class);
-        if (includeAtm) classList.add(Atm.class);
-        if (includeVmp) classList.add(Vmp.class);
-        if (includeAmp) classList.add(Amp.class);
+        if (includeVtm) {
+            classList.add(Vtm.class);
+        }
+        if (includeAtm) {
+            classList.add(Atm.class);
+        }
+        if (includeVmp) {
+            classList.add(Vmp.class);
+        }
+        if (includeAmp) {
+            classList.add(Amp.class);
+        }
         if (classList.isEmpty()) {
             return new ArrayList<>();
         }
@@ -3018,12 +3026,11 @@ public class ItemController implements Serializable {
 
     /**
      * DTO-based autocomplete for transfer request item entry. Runs four
-     * lightweight constructor queries (one per subtype) instead of loading
-     * full Item entities. Returns at most {@code maxResults} entries sorted by
-     * name.
+     * lightweight constructor queries (one per subtype) instead of loading full
+     * Item entities. Returns at most {@code maxResults} entries sorted by name.
      *
-     * @param query      text typed by the user
-     * @param dept       toDepartment used to resolve allowed department types
+     * @param query text typed by the user
+     * @param dept toDepartment used to resolve allowed department types
      * @param typeFilter when non-null, restrict results to this department type
      */
     public List<ItemDTO> completeAmpAmppVmpVmppItemDtosForRequestingDepartment(
@@ -3074,15 +3081,15 @@ public class ItemController implements Serializable {
 
         String dtoClass = "com.divudi.core.data.dto.search.ItemDTO";
 
-        String ampJpql  = "SELECT new " + dtoClass + "(i.id, i.name, COALESCE(i.code,''), i.dblValue, 'Amp',  i.id)     FROM Amp  i " + where;
+        String ampJpql = "SELECT new " + dtoClass + "(i.id, i.name, COALESCE(i.code,''), i.dblValue, 'Amp',  i.id)     FROM Amp  i " + where;
         String amppJpql = "SELECT new " + dtoClass + "(i.id, i.name, COALESCE(i.code,''), i.dblValue, 'Ampp', i.amp.id) FROM Ampp i " + where;
-        String vmpJpql  = "SELECT new " + dtoClass + "(i.id, i.name, COALESCE(i.code,''), i.dblValue, 'Vmp',  i.id)     FROM Vmp  i " + where;
+        String vmpJpql = "SELECT new " + dtoClass + "(i.id, i.name, COALESCE(i.code,''), i.dblValue, 'Vmp',  i.id)     FROM Vmp  i " + where;
         String vmppJpql = "SELECT new " + dtoClass + "(i.id, i.name, COALESCE(i.code,''), i.dblValue, 'Vmpp', i.vmp.id) FROM Vmpp i " + where;
 
         List<ItemDTO> results = new ArrayList<>();
-        results.addAll((List<ItemDTO>) getFacade().findLightsByJpql(ampJpql,  params, TemporalType.TIMESTAMP, maxResults));
+        results.addAll((List<ItemDTO>) getFacade().findLightsByJpql(ampJpql, params, TemporalType.TIMESTAMP, maxResults));
         results.addAll((List<ItemDTO>) getFacade().findLightsByJpql(amppJpql, params, TemporalType.TIMESTAMP, maxResults));
-        results.addAll((List<ItemDTO>) getFacade().findLightsByJpql(vmpJpql,  params, TemporalType.TIMESTAMP, maxResults));
+        results.addAll((List<ItemDTO>) getFacade().findLightsByJpql(vmpJpql, params, TemporalType.TIMESTAMP, maxResults));
         results.addAll((List<ItemDTO>) getFacade().findLightsByJpql(vmppJpql, params, TemporalType.TIMESTAMP, maxResults));
 
         results.sort(java.util.Comparator.comparing(dto -> dto.getName() != null ? dto.getName() : ""));
@@ -3955,22 +3962,41 @@ public class ItemController implements Serializable {
         getCurrent();
     }
 
+    public String generateNextItemCode(Institution itemInstitution, Department itemDepartment) {
+
+        if (itemInstitution == null && itemDepartment == null) {
+            return "";
+        }
+        
+        StringBuilder code = new StringBuilder();
+        String symbol = configOptionApplicationController.getShortTextValueByKey("Item Codes Generate - The symbol used between the department number and the item number when automatically generating item codes.", "-");
+
+        if (configOptionApplicationController.getBooleanValueByKey("Item Codes Generate - Use Item Institution Code", false)) {
+            if (itemInstitution != null && itemInstitution.getCode() != null && !itemInstitution.getCode().isEmpty()) {
+                code.append(itemInstitution.getCode());
+                code.append(symbol);
+            }
+        }
+        if (itemDepartment != null && itemDepartment.getCode() != null && !itemDepartment.getCode().isEmpty()) {
+            code.append(itemDepartment.getCode());
+            code.append(symbol);
+        }
+        code.append(String.format("%06d", getItemCountByDepartment(itemDepartment) + 1));
+        return code.toString();
+    }
+
+    public void generateCode() {
+        String code = generateNextItemCode(getCurrent().getInstitution(), getCurrent().getDepartment());
+        getCurrent().setCode(code);
+    }
+
     public void saveSelectedWithItemLight() {
-        if (configOptionApplicationController.getBooleanValueByKey("Automatically create Item Codes by Department.", false)) {
+        if (configOptionApplicationController.getBooleanValueByKey("Item Codes Generate - Automatically create Item Codes by Department.", false)) {
             if (getCurrent().getId() == null) {
-                System.out.println("New Item Found --> Start Generate Item Code ");
                 if (getCurrent().getCode() == null || getCurrent().getCode().trim().isEmpty()) {
-                    StringBuilder code = new StringBuilder();
-                    if (getCurrent().getDepartment().getCode() != null && !getCurrent().getDepartment().getCode().isEmpty()) {
-                        code.append(getCurrent().getDepartment().getCode());
-                        code.append(configOptionApplicationController.getShortTextValueByKey("The symbol used between the department number and the item number when automatically generating item codes.", "-"));
-                        code.append(getItemCountByDepartment(getCurrent().getDepartment()));
-                    }
-                    System.out.println("Created NEw Iten Code for " + getCurrent().getName() + " = " + code);
-                    getCurrent().setCode(code.toString());
+                    String code = generateNextItemCode(getCurrent().getInstitution(), getCurrent().getDepartment());
+                    getCurrent().setCode(code);
                 }
-            }else{
-                System.out.println("Old Item Found --> Skip Generate Item Code ");
             }
         }
 
