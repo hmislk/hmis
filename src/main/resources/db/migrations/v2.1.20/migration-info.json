@@ -1,0 +1,36 @@
+{
+    "version": "v2.1.20",
+    "description": "Add ENCOUNTERREGISTRATIONFLAG column to PATIENTENCOUNTER and back-fill legacy rows to STANDARD",
+    "author": "Dr M H B Ariyaratne",
+    "estimatedDurationMinutes": 1,
+    "requiresDowntime": false,
+    "affectedTables": ["patientencounter"],
+    "affectedModules": ["Inward"],
+    "preRequisites": [
+        "Database backup completed",
+        "PATIENTENCOUNTER table must exist"
+    ],
+    "migrationSteps": [
+        {
+            "description": "Detect actual table name case for PATIENTENCOUNTER"
+        },
+        {
+            "description": "Add ENCOUNTERREGISTRATIONFLAG VARCHAR(255) DEFAULT 'STANDARD' column (STRING enum) if it does not exist"
+        },
+        {
+            "description": "Back-fill ENCOUNTERREGISTRATIONFLAG = 'STANDARD' for every row where it IS NULL"
+        },
+        {
+            "description": "Verify column presence and report distribution of encounter flags"
+        }
+    ],
+    "expectedOutcome": {
+        "primaryFix": "PATIENTENCOUNTER.ENCOUNTERREGISTRATIONFLAG available to flag encounters (STANDARD, ON_ADMISSION_DEATH, RAPID_TEMP_AE); covers Admission and all PatientEncounter subclasses via single-table inheritance.",
+        "impact": "Adds one column defaulting to 'STANDARD'. All existing encounters are normalised to STANDARD so no legacy row loads as NULL.",
+        "columnsAdded": 1
+    },
+    "rollbackNotes": [
+        "Rollback DROPs the ENCOUNTERREGISTRATIONFLAG column. Any flag data (e.g. On Admission Death markers) captured after the feature shipped will be lost."
+    ],
+    "relatedIssue": "#21182 - Add On Admission Death flag to PatientEncounter/Admission"
+}
