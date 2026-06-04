@@ -3989,7 +3989,7 @@ public class ItemController implements Serializable {
         String code = generateNextItemCode(getCurrent().getInstitution(), getCurrent().getDepartment());
         getCurrent().setCode(code);
     }
-
+    
     public void saveSelectedWithItemLight() {
         if (configOptionApplicationController.getBooleanValueByKey("Item Codes Generate - Automatically create Item Codes by Department.", false)) {
             if (getCurrent().getId() == null) {
@@ -3999,11 +3999,40 @@ public class ItemController implements Serializable {
                 }
             }
         }
+        
+        if (isItemCodeDuplicate(getCurrent().getCode(), getCurrent().getId())) {
+            JsfUtil.addErrorMessage("This Item Code is Already Used.");
+            return;
+        }
 
         saveSelected(getCurrent());
         JsfUtil.addSuccessMessage("Saved");
         recreateModel();
         getAllItems();
+    }
+
+    /**
+     * Returns true when another (non-retired) item already uses the given code.
+     * Queries the base {@link Item} entity so duplicates are detected across all
+     * item subtypes (Service, Investigation, etc.). A blank code is never
+     * considered a duplicate. When {@code excludeId} is null (a new item) no
+     * id-exclusion is applied — using {@code i.id != null} would wrongly filter
+     * out every row and make the check always pass.
+     */
+    public boolean isItemCodeDuplicate(String code, Long excludeId) {
+        if (code == null || code.trim().isEmpty()) {
+            return false;
+        }
+        Map<String, Object> m = new HashMap<>();
+        StringBuilder jpql = new StringBuilder(
+                "select i from Item i where i.retired = false and i.code = :code ");
+        m.put("code", code.trim());
+        if (excludeId != null) {
+            jpql.append("and i.id != :id ");
+            m.put("id", excludeId);
+        }
+        Item existing = getFacade().findFirstByJpql(jpql.toString(), m);
+        return existing != null;
     }
 
     public void saveSelected(Item item) {
