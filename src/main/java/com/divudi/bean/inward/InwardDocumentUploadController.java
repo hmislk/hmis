@@ -1,0 +1,191 @@
+package com.divudi.bean.inward;
+
+import com.divudi.bean.common.SessionController;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.UploadType;
+import com.divudi.core.entity.PatientEncounter;
+import com.divudi.core.entity.Upload;
+import com.divudi.core.facade.UploadFacade;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import javax.ejb.EJB;
+import javax.enterprise.context.SessionScoped;
+import javax.inject.Named;
+import javax.inject.Inject;
+import org.apache.commons.io.IOUtils;
+import org.primefaces.event.FileUploadEvent;
+import org.primefaces.model.DefaultStreamedContent;
+import org.primefaces.model.StreamedContent;
+
+@Named
+@SessionScoped
+public class InwardDocumentUploadController implements Serializable {
+
+    // <editor-fold defaultstate="collapsed" desc="EJBs">
+    @EJB
+    private UploadFacade uploadFacade;
+    // </editor-fold>
+
+    // <editor-fold defaultstate="collapsed" desc="Controllers">
+    @Inject
+    private SessionController sessionController;
+    // </editor-fold>
+
+    // <editor-fold defaultstate="collapsed" desc="Variables">
+    private PatientEncounter currentEncounter;
+    private List<Upload> documents;
+    private UploadType selectedUploadType;
+    private String comments;
+
+    private static final long SIZE_LIMIT = 10240000;
+    private static final String ALLOWED_FILE_TYPES_REGEX = "(?i)\\.(pdf|jpeg|jpg|png)$";
+    // </editor-fold>
+
+    // <editor-fold defaultstate="collapsed" desc="Navigation">
+    public String navigateToDocumentsFromAdmissionProfile(PatientEncounter pe) {
+        currentEncounter = pe;
+        loadDocuments();
+        selectedUploadType = null;
+        comments = null;
+        return "/inward/admission_documents?faces-redirect=true";
+    }
+    // </editor-fold>
+
+    // <editor-fold defaultstate="collapsed" desc="Functional Methods">
+    public void loadDocuments() {
+        if (currentEncounter == null) {
+            documents = new ArrayList<>();
+            return;
+        }
+        String jpql = "select u from Upload u "
+                + "where u.retired = :ret "
+                + "and u.patientEncounter = :pe "
+                + "order by u.createdAt desc";
+        Map<String, Object> params = new HashMap<>();
+        params.put("ret", false);
+        params.put("pe", currentEncounter);
+        documents = uploadFacade.findByJpql(jpql, params);
+    }
+
+    public void handleFileUpload(FileUploadEvent event) {
+        if (event == null || event.getFile() == null || event.getFile().getSize() == 0) {
+            JsfUtil.addErrorMessage("Please select a file.");
+            return;
+        }
+        if (event.getFile().getSize() > SIZE_LIMIT) {
+            JsfUtil.addErrorMessage("File size exceeds the maximum limit of 10 MB.");
+            return;
+        }
+        String fileName = event.getFile().getFileName();
+        if (!fileName.matches(".*" + ALLOWED_FILE_TYPES_REGEX)) {
+            JsfUtil.addErrorMessage("Invalid file type. Only PDF, JPEG, JPG, and PNG are allowed.");
+            return;
+        }
+        if (selectedUploadType == null) {
+            JsfUtil.addErrorMessage("Please select a document type.");
+            return;
+        }
+        if (currentEncounter == null) {
+            JsfUtil.addErrorMessage("No admission selected.");
+            return;
+        }
+        try {
+            InputStream in = event.getFile().getInputStream();
+            byte[] fileContent = IOUtils.toByteArray(in);
+
+            Upload upload = new Upload();
+            upload.setUploadType(selectedUploadType);
+            upload.setPatientEncounter(currentEncounter);
+            upload.setBaImage(fileContent);
+            upload.setFileName(fileName);
+            upload.setFileType(event.getFile().getContentType());
+            upload.setComments(comments);
+            upload.setCreatedAt(new Date());
+            upload.setCreater(sessionController.getLoggedUser());
+            upload.setRetired(false);
+            uploadFacade.create(upload);
+
+            JsfUtil.addSuccessMessage("Document uploaded successfully.");
+            selectedUploadType = null;
+            comments = null;
+            loadDocuments();
+        } catch (IOException e) {
+            JsfUtil.addErrorMessage("Error uploading file: " + e.getMessage());
+        }
+    }
+
+    public void removeDocument(Upload u) {
+        if (u == null) {
+            return;
+        }
+        u.setRetired(true);
+        u.setRetirer(sessionController.getLoggedUser());
+        u.setRetiredAt(new Date());
+        uploadFacade.edit(u);
+        loadDocuments();
+        JsfUtil.addSuccessMessage("Document removed.");
+    }
+
+    public StreamedContent getDownloadStream(Upload u) {
+        if (u == null || u.getBaImage() == null) {
+            return null;
+        }
+        byte[] data = u.getBaImage();
+        return DefaultStreamedContent.builder()
+                .name(u.getFileName())
+                .contentType(u.getFileType())
+                .stream(() -> new ByteArrayInputStream(data))
+                .build();
+    }
+
+    public List<UploadType> getInwardUploadTypes() {
+        List<UploadType> types = new ArrayList<>();
+        types.add(UploadType.Inward_Consent_Form);
+        types.add(UploadType.Inward_Insurance_Document);
+        types.add(UploadType.Inward_Referral_Letter);
+        types.add(UploadType.Inward_Other);
+        return types;
+    }
+    // </editor-fold>
+
+    // <editor-fold defaultstate="collapsed" desc="Getters and Setters">
+    public PatientEncounter getCurrentEncounter() {
+        return currentEncounter;
+    }
+
+    public void setCurrentEncounter(PatientEncounter currentEncounter) {
+        this.currentEncounter = currentEncounter;
+    }
+
+    public List<Upload> getDocuments() {
+        return documents;
+    }
+
+    public void setDocuments(List<Upload> documents) {
+        this.documents = documents;
+    }
+
+    public UploadType getSelectedUploadType() {
+        return selectedUploadType;
+    }
+
+    public void setSelectedUploadType(UploadType selectedUploadType) {
+        this.selectedUploadType = selectedUploadType;
+    }
+
+    public String getComments() {
+        return comments;
+    }
+
+    public void setComments(String comments) {
+        this.comments = comments;
+    }
+    // </editor-fold>
+}

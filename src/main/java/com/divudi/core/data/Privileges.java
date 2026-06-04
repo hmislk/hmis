@@ -120,6 +120,7 @@ public enum Privileges {
     TheaterIssueBHT("Theater Issue BHT"),
     InpatientClinicalAssessment("Inpatient Clinical Assessment"),
     InpatientClinicalDischarge("Inpatient Clinical Discharge"),
+    InwardDocumentUpload("Inward Document Upload"),
     //</editor-fold>
     
     //<editor-fold defaultstate="collapsed" desc="Nurse">
@@ -1057,6 +1058,7 @@ public enum Privileges {
             case InwardAppointmentCancel:
             case InpatientClinicalAssessment:
             case InpatientClinicalDischarge:
+            case InwardDocumentUpload:
                 return "Inward";
 
             case AdminInactivePatients:
