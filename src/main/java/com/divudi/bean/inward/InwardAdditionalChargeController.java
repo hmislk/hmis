@@ -148,7 +148,7 @@ public class InwardAdditionalChargeController implements Serializable {
             return true;
         }
 
-        if (getCurrent().getTotal() == null || getCurrent().getTotal() < 1) {
+        if (getCurrent().getTotal() < 1) {
             JsfUtil.addErrorMessage("Enter Added Charge Correctly");
             return true;
         }
@@ -174,7 +174,6 @@ public class InwardAdditionalChargeController implements Serializable {
         selectedItem = null;
         inwardChargeType = null;
         getCurrent().setTotal(null);
-        getCurrent().setComments(null);
 
         JsfUtil.addSuccessMessage("Charge Added");
     }
@@ -287,13 +286,15 @@ public class InwardAdditionalChargeController implements Serializable {
     }
 
     public List<Item> completeItem(String qry) {
-        String upper = qry.toUpperCase();
+        java.util.Map<String, Object> params = new java.util.HashMap<>();
+        params.put("name", "%" + qry.toUpperCase() + "%");
         return itemFacade.findByJpql(
                 "select i from Item i where i.retired=false "
                 + "and (type(i) = com.divudi.core.entity.inward.InwardService "
                 + "  or type(i) = com.divudi.core.entity.Service) "
-                + "and upper(i.name) like '%" + upper + "%' "
-                + "order by i.name");
+                + "and upper(i.name) like :name "
+                + "order by i.name",
+                params);
     }
 
     public void onItemSelect() {
