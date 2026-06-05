@@ -200,9 +200,60 @@ public class PatientEncounter implements Serializable, RetirableEntity {
     private ClinicalEntity primaryReason;
     private String referringMethod;
     private boolean roomAdmitted;
-    
+
     @ManyToOne
     private Reservation encounterReservation;
+
+    @Lob
+    String comments;
+    @Lob
+    private String planOfAction;
+
+    // Clinical discharge content fields — used on the child ClinicalDischarge record
+    @ManyToOne
+    private ClinicalEntity dischargeCondition;
+    @Lob
+    private String followUpPlan;
+    @Lob
+    private String activityInstructions;
+    @Lob
+    private String dietInstructions;
+    @Transient
+    List<ClinicalFindingValue> diagnosis;
+    @ManyToOne
+    Department department;
+    @ManyToOne
+    private Institution institution;
+
+    @Transient
+    List<ClinicalFindingValue> investigations;
+
+    @Transient
+    List<ClinicalFindingValue> symptoms;
+
+    @Transient
+    List<ClinicalFindingValue> signs;
+
+    @Transient
+    List<ClinicalFindingValue> procedures;
+
+    @Transient
+    List<ClinicalFindingValue> plans;
+
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date printingAdmissionTime;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date printingDischargeTime;
+
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date lastProcessAt;
+    @ManyToOne
+    private WebUser lastProcessBy;
+    private double totalAtFinalProcessing;
+    private double discountAvailableAtFinalProcessing;
+    private double totalPatientPaidAtFinalProcessing;
+    private double totalCompanyPaidAtFinalProcessing;
+    private double amountDueAtFinalProcessing;
 
     // Transient method for BP
     public String getBp() {
@@ -330,46 +381,6 @@ public class PatientEncounter implements Serializable, RetirableEntity {
     public void setClaimable(boolean claimable) {
         this.claimable = claimable;
     }
-    @Lob
-    String comments;
-    @Lob
-    private String planOfAction;
-
-    // Clinical discharge content fields — used on the child ClinicalDischarge record
-    @ManyToOne
-    private ClinicalEntity dischargeCondition;
-    @Lob
-    private String followUpPlan;
-    @Lob
-    private String activityInstructions;
-    @Lob
-    private String dietInstructions;
-    @Transient
-    List<ClinicalFindingValue> diagnosis;
-    @ManyToOne
-    Department department;
-    @ManyToOne
-    private Institution institution;
-
-    @Transient
-    List<ClinicalFindingValue> investigations;
-
-    @Transient
-    List<ClinicalFindingValue> symptoms;
-
-    @Transient
-    List<ClinicalFindingValue> signs;
-
-    @Transient
-    List<ClinicalFindingValue> procedures;
-
-    @Transient
-    List<ClinicalFindingValue> plans;
-
-    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
-    private Date printingAdmissionTime;
-    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
-    private Date printingDischargeTime;
 
     public List<ClinicalFindingValue> getDiagnosis() {
         if (diagnosis == null) {
@@ -528,10 +539,10 @@ public class PatientEncounter implements Serializable, RetirableEntity {
 
     /**
      * Guarantees the encounter flag is never persisted as NULL. New entities
-     * already carry the STANDARD field default; this hook additionally back-fills
-     * STANDARD on the next write of any legacy row whose column is still NULL, so
-     * persisted rows progressively converge on a non-null value alongside the
-     * one-time DB migration (v2.1.20). (Issue #21182)
+     * already carry the STANDARD field default; this hook additionally
+     * back-fills STANDARD on the next write of any legacy row whose column is
+     * still NULL, so persisted rows progressively converge on a non-null value
+     * alongside the one-time DB migration (v2.1.20). (Issue #21182)
      */
     @PrePersist
     @PreUpdate
@@ -1274,5 +1285,61 @@ public class PatientEncounter implements Serializable, RetirableEntity {
 
     public void setEncounterReservation(Reservation encounterReservation) {
         this.encounterReservation = encounterReservation;
+    }
+
+    public Date getLastProcessAt() {
+        return lastProcessAt;
+    }
+
+    public void setLastProcessAt(Date lastProcessAt) {
+        this.lastProcessAt = lastProcessAt;
+    }
+
+    public WebUser getLastProcessBy() {
+        return lastProcessBy;
+    }
+
+    public void setLastProcessBy(WebUser lastProcessBy) {
+        this.lastProcessBy = lastProcessBy;
+    }
+
+    public double getTotalAtFinalProcessing() {
+        return totalAtFinalProcessing;
+    }
+
+    public void setTotalAtFinalProcessing(double totalAtFinalProcessing) {
+        this.totalAtFinalProcessing = totalAtFinalProcessing;
+    }
+
+    public double getTotalPatientPaidAtFinalProcessing() {
+        return totalPatientPaidAtFinalProcessing;
+    }
+
+    public void setTotalPatientPaidAtFinalProcessing(double totalPatientPaidAtFinalProcessing) {
+        this.totalPatientPaidAtFinalProcessing = totalPatientPaidAtFinalProcessing;
+    }
+
+    public double getTotalCompanyPaidAtFinalProcessing() {
+        return totalCompanyPaidAtFinalProcessing;
+    }
+
+    public void setTotalCompanyPaidAtFinalProcessing(double totalCompanyPaidAtFinalProcessing) {
+        this.totalCompanyPaidAtFinalProcessing = totalCompanyPaidAtFinalProcessing;
+    }
+
+    public double getAmountDueAtFinalProcessing() {
+        return amountDueAtFinalProcessing;
+    }
+
+    public void setAmountDueAtFinalProcessing(double amountDueAtFinalProcessing) {
+        this.amountDueAtFinalProcessing = amountDueAtFinalProcessing;
+    }
+
+    public double getDiscountAvailableAtFinalProcessing() {
+        return discountAvailableAtFinalProcessing;
+    }
+
+    public void setDiscountAvailableAtFinalProcessing(double discountAvailableAtFinalProcessing) {
+        this.discountAvailableAtFinalProcessing = discountAvailableAtFinalProcessing;
     }
 }
