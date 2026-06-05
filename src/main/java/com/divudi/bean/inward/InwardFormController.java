@@ -18,11 +18,13 @@ import com.divudi.core.facade.web.DesignComponentChoiceFacade;
 import com.divudi.core.facade.web.DesignComponentFacade;
 import com.divudi.core.util.JsfUtil;
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -58,6 +60,7 @@ public class InwardFormController implements Serializable {
     private List<CaptureComponent> currentCaptureComponents;
     private List<DesignComponent> availableTemplates;
     private DesignComponent selectedTemplate;
+    private boolean viewMode = false;
 
     public String navigateToInwardFormsFromAdmissionProfile(PatientEncounter pe) {
         if (pe == null) {
@@ -70,6 +73,7 @@ public class InwardFormController implements Serializable {
         currentEntry = null;
         currentCaptureComponents = null;
         selectedTemplate = null;
+        viewMode = false;
         return "/inward/admission_forms?faces-redirect=true";
     }
 
@@ -140,6 +144,8 @@ public class InwardFormController implements Serializable {
             cc.setMaxRating(field.getMaxRating());
             cc.setOnLabel(field.getOnLabel());
             cc.setOffLabel(field.getOffLabel());
+            cc.setEditHtml(field.getEditHtml());
+            cc.setViewHtml(field.getViewHtml());
             currentCaptureComponents.add(cc);
         }
     }
@@ -183,6 +189,7 @@ public class InwardFormController implements Serializable {
         currentEntry = null;
         currentCaptureComponents = null;
         selectedTemplate = null;
+        viewMode = false;
     }
 
     public void editForm(PatientFormEntry entry) {
@@ -240,6 +247,129 @@ public class InwardFormController implements Serializable {
         currentEntry = null;
         currentCaptureComponents = null;
         selectedTemplate = null;
+        viewMode = false;
+    }
+
+    public void toggleViewMode() {
+        viewMode = !viewMode;
+    }
+
+    /**
+     * Returns a display string for the stored value of a CaptureComponent,
+     * used as the {{VALUE}} substitution in viewHtml wrappers.
+     */
+    public String resolveViewValue(CaptureComponent cc) {
+        if (cc == null || cc.getComponentPresentationType() == null) {
+            return "";
+        }
+        switch (cc.getComponentPresentationType()) {
+            case Calendar:
+                if (cc.getDateValue() == null) return "";
+                return new SimpleDateFormat("dd MMM yyyy").format(cc.getDateValue());
+            case SelectBooleanCheckBox:
+            case SelectBooleanButton:
+            case ToggleSwitch:
+            case TriStateCheckBox:
+                if (cc.getBooleanValue() == null) return "";
+                return Boolean.TRUE.equals(cc.getBooleanValue()) ? "Yes" : "No";
+            case SelectCheckBoxMenu:
+            case SelectManyButton:
+            case MultiSelectListBox: {
+                List<String> vals = cc.getSelectedValues();
+                if (vals == null || vals.isEmpty()) return "";
+                List<DesignComponentChoice> choices = getChoicesFor(cc);
+                return vals.stream()
+                        .map(v -> choices.stream()
+                                .filter(ch -> v.equals(ch.getValue()))
+                                .map(DesignComponentChoice::getLabel)
+                                .findFirst().orElse(v))
+                        .collect(Collectors.joining(", "));
+            }
+            case Input_Number:
+            case Spinner:
+            case Slider:
+                if (cc.getDoubleValue() != null) return String.valueOf(cc.getDoubleValue());
+                if (cc.getIntValue() != null) return String.valueOf(cc.getIntValue());
+                return "";
+            case Rating:
+                return cc.getRatingIntValue() != null ? String.valueOf(cc.getRatingIntValue()) : "";
+            case Input_text:
+            case SelectOneMenu:
+            case SelectOneRadio:
+            case SelectOneListBox:
+            case AutoComplete:
+                return cc.getShortTextValue() != null ? cc.getShortTextValue() : "";
+            case Input_text_Area:
+            case TextEditor:
+                return cc.getLongTextValue() != null ? cc.getLongTextValue() : "";
+            case Signature:
+                return cc.getLongTextValue() != null && !cc.getLongTextValue().isEmpty()
+                        ? "[Signature captured]" : "";
+            default:
+                return "";
+        }
+    }
+
+    /**
+     * Returns the HTML fragment that goes BEFORE the JSF input component in edit mode.
+     * Splits editHtml at the {{INPUT}} marker; if no marker or no editHtml, returns the
+     * default opening div + label.
+     */
+    public String resolveEditWrapperOpen(CaptureComponent cc) {
+        String label = cc.getName() != null ? cc.getName() : "";
+        String html = cc.getEditHtml();
+        if (html == null || html.trim().isEmpty()) {
+            return "<div class=\"col-12 col-md-6 mb-2\">"
+                    + "<label class=\"form-label d-block\">" + escapeHtml(label) + "</label>";
+        }
+        String resolved = html.replace("{{LABEL}}", escapeHtml(label));
+        int idx = resolved.indexOf("{{INPUT}}");
+        if (idx < 0) {
+            return resolved;
+        }
+        return resolved.substring(0, idx);
+    }
+
+    /**
+     * Returns the HTML fragment that goes AFTER the JSF input component in edit mode.
+     * Splits editHtml at the {{INPUT}} marker; if no marker or no editHtml, returns
+     * the default closing div.
+     */
+    public String resolveEditWrapperClose(CaptureComponent cc) {
+        String html = cc.getEditHtml();
+        if (html == null || html.trim().isEmpty()) {
+            return "</div>";
+        }
+        String label = cc.getName() != null ? cc.getName() : "";
+        String resolved = html.replace("{{LABEL}}", escapeHtml(label));
+        int idx = resolved.indexOf("{{INPUT}}");
+        if (idx < 0) {
+            return "";
+        }
+        return resolved.substring(idx + "{{INPUT}}".length());
+    }
+
+    /**
+     * Substitutes {{LABEL}} and {{VALUE}} into viewHtml.
+     * Falls back to a simple label + value display when viewHtml is blank.
+     */
+    public String resolveViewWrapper(CaptureComponent cc) {
+        String label = cc.getName() != null ? cc.getName() : "";
+        String value = resolveViewValue(cc);
+        String html = cc.getViewHtml();
+        if (html == null || html.trim().isEmpty()) {
+            return "<div class=\"col-12 col-md-6 mb-2\">"
+                    + "<div class=\"text-muted small\">" + escapeHtml(label) + "</div>"
+                    + "<div class=\"fw-semibold\">" + escapeHtml(value) + "</div>"
+                    + "</div>";
+        }
+        return html.replace("{{LABEL}}", escapeHtml(label)).replace("{{VALUE}}", escapeHtml(value));
+    }
+
+    private static String escapeHtml(String s) {
+        if (s == null) return "";
+        return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+                .replace("\"", "&quot;").replace("'", "&#39;");
     }
 
     public List<DesignComponentChoice> getChoicesFor(CaptureComponent cc) {
@@ -313,5 +443,13 @@ public class InwardFormController implements Serializable {
 
     public void setSelectedTemplate(DesignComponent selectedTemplate) {
         this.selectedTemplate = selectedTemplate;
+    }
+
+    public boolean isViewMode() {
+        return viewMode;
+    }
+
+    public void setViewMode(boolean viewMode) {
+        this.viewMode = viewMode;
     }
 }

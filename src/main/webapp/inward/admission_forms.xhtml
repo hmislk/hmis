@@ -69,117 +69,146 @@
                                      action="#{inwardFormController.startNewForm()}" />
                 </div>
 
-                <h:panelGroup layout="block" styleClass="row"
+                <!-- View/Edit toggle — only shown when a form is loaded -->
+                <h:panelGroup layout="block" styleClass="mb-2"
                               rendered="#{inwardFormController.currentCaptureComponents != null}">
+                    <p:commandButton
+                        value="#{inwardFormController.viewMode ? 'Switch to Edit Mode' : 'Switch to View Mode'}"
+                        icon="#{inwardFormController.viewMode ? 'fa fa-pen' : 'fa fa-eye'}"
+                        styleClass="#{inwardFormController.viewMode ? 'ui-button-secondary' : 'ui-button-info'}"
+                        process="@this" update="@form"
+                        action="#{inwardFormController.toggleViewMode()}" />
+                </h:panelGroup>
+
+                <!-- VIEW MODE: render each field's viewHtml wrapper (or default) with resolved value -->
+                <h:panelGroup layout="block"
+                              rendered="#{inwardFormController.currentCaptureComponents != null and inwardFormController.viewMode}">
+                    <div class="#{inwardFormController.selectedTemplate != null and inwardFormController.selectedTemplate.formCssClass != null and inwardFormController.selectedTemplate.formCssClass != '' ? inwardFormController.selectedTemplate.formCssClass : 'row'}">
+                        <c:forEach items="#{inwardFormController.currentCaptureComponents}" var="cc">
+                            <h:outputText value="#{inwardFormController.resolveViewWrapper(cc)}" escape="false" />
+                        </c:forEach>
+                    </div>
+                </h:panelGroup>
+
+                <!-- EDIT MODE: render PrimeFaces components inside editHtml outer wrapper -->
+                <h:panelGroup layout="block"
+                              styleClass="#{inwardFormController.selectedTemplate != null and inwardFormController.selectedTemplate.formCssClass != null and inwardFormController.selectedTemplate.formCssClass != '' ? inwardFormController.selectedTemplate.formCssClass : 'row'}"
+                              rendered="#{inwardFormController.currentCaptureComponents != null and not inwardFormController.viewMode}">
                     <c:forEach items="#{inwardFormController.currentCaptureComponents}" var="cc" varStatus="st">
-                        <h:panelGroup layout="block" styleClass="col-12 col-md-6 mb-2">
-                            <p:outputLabel value="#{cc.name}" styleClass="form-label d-block" />
 
-                            <p:inputText value="#{cc.shortTextValue}" styleClass="w-100"
+                        <!-- Open the field wrapper: editHtml up to {{INPUT}}, or default col div -->
+                        <h:outputText escape="false"
+                                      value="#{inwardFormController.resolveEditWrapperOpen(cc)}" />
+
+                        <!-- PrimeFaces input component — selected by componentPresentationType -->
+                        <p:inputText value="#{cc.shortTextValue}" styleClass="w-100"
+                                     placeholder="#{cc.placeholder}"
+                                     rendered="#{cc.componentPresentationType eq 'Input_text'}" />
+
+                        <p:inputTextarea value="#{cc.longTextValue}" rows="3" styleClass="w-100"
                                          placeholder="#{cc.placeholder}"
-                                         rendered="#{cc.componentPresentationType eq 'Input_text'}" />
+                                         rendered="#{cc.componentPresentationType eq 'Input_text_Area'}" />
 
-                            <p:inputTextarea value="#{cc.longTextValue}" rows="3" styleClass="w-100"
-                                             placeholder="#{cc.placeholder}"
-                                             rendered="#{cc.componentPresentationType eq 'Input_text_Area'}" />
+                        <p:textEditor value="#{cc.longTextValue}"
+                                      rendered="#{cc.componentPresentationType eq 'TextEditor'}" />
 
-                            <p:textEditor value="#{cc.longTextValue}"
-                                          rendered="#{cc.componentPresentationType eq 'TextEditor'}" />
+                        <p:inputNumber value="#{cc.doubleValue}" styleClass="w-100"
+                                       rendered="#{cc.componentPresentationType eq 'Input_Number'}" />
 
-                            <p:inputNumber value="#{cc.doubleValue}" styleClass="w-100"
-                                           rendered="#{cc.componentPresentationType eq 'Input_Number'}" />
+                        <p:spinner value="#{cc.intValue}" styleClass="w-100"
+                                   min="#{cc.minValue != null ? cc.minValue : 0}"
+                                   max="#{cc.maxValue != null ? cc.maxValue : 999999}"
+                                   stepFactor="#{cc.stepSize != null ? cc.stepSize : 1}"
+                                   rendered="#{cc.componentPresentationType eq 'Spinner'}" />
 
-                            <p:spinner value="#{cc.intValue}" styleClass="w-100"
-                                       min="#{cc.minValue != null ? cc.minValue : 0}"
-                                       max="#{cc.maxValue != null ? cc.maxValue : 999999}"
-                                       stepFactor="#{cc.stepSize != null ? cc.stepSize : 1}"
-                                       rendered="#{cc.componentPresentationType eq 'Spinner'}" />
-
-                            <h:panelGroup rendered="#{cc.componentPresentationType eq 'Slider'}">
-                                <p:inputText id="sliIn#{st.index}" value="#{cc.doubleValue}" styleClass="w-100" />
-                                <p:slider for="sliIn#{st.index}"
-                                          minValue="#{cc.minValue != null ? cc.minValue : 0}"
-                                          maxValue="#{cc.maxValue != null ? cc.maxValue : 100}"
-                                          step="#{cc.stepSize != null ? cc.stepSize : 1}" />
-                            </h:panelGroup>
-
-                            <p:rating value="#{cc.ratingIntValue}"
-                                      stars="#{cc.maxRating != null ? cc.maxRating : 5}"
-                                      rendered="#{cc.componentPresentationType eq 'Rating'}" />
-
-                            <p:calendar value="#{cc.dateValue}"
-                                        pattern="dd MMM yyyy" showButtonPanel="true" styleClass="w-100"
-                                        rendered="#{cc.componentPresentationType eq 'Calendar'}" />
-
-                            <p:selectBooleanCheckbox value="#{cc.booleanValue}"
-                                                     rendered="#{cc.componentPresentationType eq 'SelectBooleanCheckBox'}" />
-
-                            <p:selectBooleanButton value="#{cc.booleanValue}"
-                                                   onLabel="#{cc.onLabel != null and cc.onLabel != '' ? cc.onLabel : 'Yes'}"
-                                                   offLabel="#{cc.offLabel != null and cc.offLabel != '' ? cc.offLabel : 'No'}"
-                                                   rendered="#{cc.componentPresentationType eq 'SelectBooleanButton'}" />
-
-                            <p:toggleSwitch value="#{cc.booleanValue}"
-                                            rendered="#{cc.componentPresentationType eq 'ToggleSwitch'}" />
-
-                            <p:triStateCheckbox value="#{cc.booleanValue}"
-                                                rendered="#{cc.componentPresentationType eq 'TriStateCheckBox'}" />
-
-                            <p:selectOneMenu value="#{cc.shortTextValue}" styleClass="w-100"
-                                             rendered="#{cc.componentPresentationType eq 'SelectOneMenu'}">
-                                <f:selectItem itemLabel="-- Select --" itemValue="" noSelectionOption="true" />
-                                <f:selectItems value="#{inwardFormController.getChoicesFor(cc)}"
-                                               var="ch" itemLabel="#{ch.label}" itemValue="#{ch.value}" />
-                            </p:selectOneMenu>
-
-                            <p:selectOneRadio value="#{cc.shortTextValue}" layout="grid" columns="2"
-                                              rendered="#{cc.componentPresentationType eq 'SelectOneRadio'}">
-                                <f:selectItems value="#{inwardFormController.getChoicesFor(cc)}"
-                                               var="ch" itemLabel="#{ch.label}" itemValue="#{ch.value}" />
-                            </p:selectOneRadio>
-
-                            <p:selectOneListbox value="#{cc.shortTextValue}" styleClass="w-100"
-                                                rendered="#{cc.componentPresentationType eq 'SelectOneListBox'}">
-                                <f:selectItems value="#{inwardFormController.getChoicesFor(cc)}"
-                                               var="ch" itemLabel="#{ch.label}" itemValue="#{ch.value}" />
-                            </p:selectOneListbox>
-
-                            <p:selectCheckboxMenu value="#{cc.selectedValues}" styleClass="w-100"
-                                                  label="Select..."
-                                                  rendered="#{cc.componentPresentationType eq 'SelectCheckBoxMenu'}">
-                                <f:selectItems value="#{inwardFormController.getChoicesFor(cc)}"
-                                               var="ch" itemLabel="#{ch.label}" itemValue="#{ch.value}" />
-                            </p:selectCheckboxMenu>
-
-                            <p:selectManyButton value="#{cc.selectedValues}"
-                                                rendered="#{cc.componentPresentationType eq 'SelectManyButton'}">
-                                <f:selectItems value="#{inwardFormController.getChoicesFor(cc)}"
-                                               var="ch" itemLabel="#{ch.label}" itemValue="#{ch.value}" />
-                            </p:selectManyButton>
-
-                            <p:selectManyMenu value="#{cc.selectedValues}" styleClass="w-100"
-                                              rendered="#{cc.componentPresentationType eq 'MultiSelectListBox'}">
-                                <f:selectItems value="#{inwardFormController.getChoicesFor(cc)}"
-                                               var="ch" itemLabel="#{ch.label}" itemValue="#{ch.value}" />
-                            </p:selectManyMenu>
-
-                            <p:selectOneMenu value="#{cc.shortTextValue}" styleClass="w-100"
-                                             filter="true" filterMatchMode="contains"
-                                             rendered="#{cc.componentPresentationType eq 'AutoComplete'}">
-                                <f:selectItem itemLabel="-- Select --" itemValue="" noSelectionOption="true" />
-                                <f:selectItems value="#{inwardFormController.getChoicesFor(cc)}"
-                                               var="ch" itemLabel="#{ch.label}" itemValue="#{ch.value}" />
-                            </p:selectOneMenu>
-
-                            <p:signature value="#{cc.longTextValue}" style="width:100%;height:150px"
-                                         rendered="#{cc.componentPresentationType eq 'Signature'}" />
-
+                        <h:panelGroup rendered="#{cc.componentPresentationType eq 'Slider'}">
+                            <p:inputText id="sliIn#{st.index}" value="#{cc.doubleValue}" styleClass="w-100" />
+                            <p:slider for="sliIn#{st.index}"
+                                      minValue="#{cc.minValue != null ? cc.minValue : 0}"
+                                      maxValue="#{cc.maxValue != null ? cc.maxValue : 100}"
+                                      step="#{cc.stepSize != null ? cc.stepSize : 1}" />
                         </h:panelGroup>
+
+                        <p:rating value="#{cc.ratingIntValue}"
+                                  stars="#{cc.maxRating != null ? cc.maxRating : 5}"
+                                  rendered="#{cc.componentPresentationType eq 'Rating'}" />
+
+                        <p:calendar value="#{cc.dateValue}"
+                                    pattern="dd MMM yyyy" showButtonPanel="true" styleClass="w-100"
+                                    rendered="#{cc.componentPresentationType eq 'Calendar'}" />
+
+                        <p:selectBooleanCheckbox value="#{cc.booleanValue}"
+                                                 rendered="#{cc.componentPresentationType eq 'SelectBooleanCheckBox'}" />
+
+                        <p:selectBooleanButton value="#{cc.booleanValue}"
+                                               onLabel="#{cc.onLabel != null and cc.onLabel != '' ? cc.onLabel : 'Yes'}"
+                                               offLabel="#{cc.offLabel != null and cc.offLabel != '' ? cc.offLabel : 'No'}"
+                                               rendered="#{cc.componentPresentationType eq 'SelectBooleanButton'}" />
+
+                        <p:toggleSwitch value="#{cc.booleanValue}"
+                                        rendered="#{cc.componentPresentationType eq 'ToggleSwitch'}" />
+
+                        <p:triStateCheckbox value="#{cc.booleanValue}"
+                                            rendered="#{cc.componentPresentationType eq 'TriStateCheckBox'}" />
+
+                        <p:selectOneMenu value="#{cc.shortTextValue}" styleClass="w-100"
+                                         rendered="#{cc.componentPresentationType eq 'SelectOneMenu'}">
+                            <f:selectItem itemLabel="-- Select --" itemValue="" noSelectionOption="true" />
+                            <f:selectItems value="#{inwardFormController.getChoicesFor(cc)}"
+                                           var="ch" itemLabel="#{ch.label}" itemValue="#{ch.value}" />
+                        </p:selectOneMenu>
+
+                        <p:selectOneRadio value="#{cc.shortTextValue}" layout="grid" columns="2"
+                                          rendered="#{cc.componentPresentationType eq 'SelectOneRadio'}">
+                            <f:selectItems value="#{inwardFormController.getChoicesFor(cc)}"
+                                           var="ch" itemLabel="#{ch.label}" itemValue="#{ch.value}" />
+                        </p:selectOneRadio>
+
+                        <p:selectOneListbox value="#{cc.shortTextValue}" styleClass="w-100"
+                                            rendered="#{cc.componentPresentationType eq 'SelectOneListBox'}">
+                            <f:selectItems value="#{inwardFormController.getChoicesFor(cc)}"
+                                           var="ch" itemLabel="#{ch.label}" itemValue="#{ch.value}" />
+                        </p:selectOneListbox>
+
+                        <p:selectCheckboxMenu value="#{cc.selectedValues}" styleClass="w-100"
+                                              label="Select..."
+                                              rendered="#{cc.componentPresentationType eq 'SelectCheckBoxMenu'}">
+                            <f:selectItems value="#{inwardFormController.getChoicesFor(cc)}"
+                                           var="ch" itemLabel="#{ch.label}" itemValue="#{ch.value}" />
+                        </p:selectCheckboxMenu>
+
+                        <p:selectManyButton value="#{cc.selectedValues}"
+                                            rendered="#{cc.componentPresentationType eq 'SelectManyButton'}">
+                            <f:selectItems value="#{inwardFormController.getChoicesFor(cc)}"
+                                           var="ch" itemLabel="#{ch.label}" itemValue="#{ch.value}" />
+                        </p:selectManyButton>
+
+                        <p:selectManyMenu value="#{cc.selectedValues}" styleClass="w-100"
+                                          rendered="#{cc.componentPresentationType eq 'MultiSelectListBox'}">
+                            <f:selectItems value="#{inwardFormController.getChoicesFor(cc)}"
+                                           var="ch" itemLabel="#{ch.label}" itemValue="#{ch.value}" />
+                        </p:selectManyMenu>
+
+                        <p:selectOneMenu value="#{cc.shortTextValue}" styleClass="w-100"
+                                         filter="true" filterMatchMode="contains"
+                                         rendered="#{cc.componentPresentationType eq 'AutoComplete'}">
+                            <f:selectItem itemLabel="-- Select --" itemValue="" noSelectionOption="true" />
+                            <f:selectItems value="#{inwardFormController.getChoicesFor(cc)}"
+                                           var="ch" itemLabel="#{ch.label}" itemValue="#{ch.value}" />
+                        </p:selectOneMenu>
+
+                        <p:signature value="#{cc.longTextValue}" style="width:100%;height:150px"
+                                     rendered="#{cc.componentPresentationType eq 'Signature'}" />
+
+                        <!-- Close the field wrapper -->
+                        <h:outputText escape="false"
+                                      value="#{inwardFormController.resolveEditWrapperClose(cc)}" />
+
                     </c:forEach>
                 </h:panelGroup>
 
                 <h:panelGroup layout="block" styleClass="mt-2"
-                              rendered="#{inwardFormController.currentEntry != null}">
+                              rendered="#{inwardFormController.currentEntry != null and not inwardFormController.viewMode}">
                     <p:outputLabel value="Comments" styleClass="form-label d-block" />
                     <p:inputTextarea value="#{inwardFormController.currentEntry.comments}"
                                      rows="2" styleClass="w-100" />
