@@ -189,14 +189,45 @@
                     </p:panel>
                 </h:panelGroup>
 
-                <h:panelGrid rendered="#{inwardAdditionalChargeController.current.patientEncounter ne null}">
+                <h:panelGroup layout="block" style="width:100%" rendered="#{inwardAdditionalChargeController.current.patientEncounter ne null}">
                     <p:panel>
                         <f:facet name="header">
-                            <div class="d-flex justify-content-between">
-                                <div>
-                                    <h:outputText styleClass="fa-solid fa-address-card fa-lg"/> 
+                            <div class="d-flex justify-content-between align-items-center w-100">
+                                <!-- Left: title -->
+                                <div class="d-flex align-items-center">
+                                    <h:outputText styleClass="fa-solid fa-address-card fa-lg"/>
                                     <p:outputLabel value="Add Outside Charges" class="m-2"/>
                                 </div>
+
+                                <!-- Centre: print actions (print preview only) -->
+                                <div class="d-flex gap-2 align-items-center">
+                                    <h:panelGroup rendered="#{inwardAdditionalChargeController.printPreview}">
+                                        <div class="d-flex gap-2">
+                                            <p:commandButton
+                                                value="Print"
+                                                class="ui-button-info"
+                                                icon="fa-solid fa-print"
+                                                ajax="false">
+                                                <p:printer target="gpOutsideBillPreview" />
+                                            </p:commandButton>
+                                            <p:commandButton
+                                                rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
+                                                value="Print Configuration"
+                                                icon="fas fa-cog"
+                                                class="ui-button-secondary"
+                                                type="button"
+                                                onclick="PF('outsideChargeConfigDialog').show();" />
+                                            <p:commandButton
+                                                value="New Bill"
+                                                class="ui-button-success"
+                                                icon="fa fa-plus"
+                                                ajax="false"
+                                                action="#{inwardAdditionalChargeController.makeNull()}" />
+                                        </div>
+                                    </h:panelGroup>
+                                </div>
+
+                                <!-- Right: navigation buttons -->
                                 <div class="d-flex gap-2">
 
                                     <p:commandButton
@@ -227,6 +258,7 @@
                                         icon="fa fa-plus"
                                         value="New Bill"
                                         ajax="false"
+                                        rendered="#{!inwardAdditionalChargeController.printPreview}"
                                         action="#{inwardAdditionalChargeController.makeNull()}">
                                     </p:commandButton>
 
@@ -239,11 +271,11 @@
                                         action="#{inwardAdditionalChargeController.reset()}" >
                                     </p:commandButton>
 
-                                    <p:commandButton 
-                                        class="ui-button-warning " 
-                                        value="To Add Services" 
+                                    <p:commandButton
+                                        class="ui-button-warning "
+                                        value="To Add Services"
                                         icon ="fa fa-wrench"
-                                        ajax="false" 
+                                        ajax="false"
                                         action="/inward/inward_bill_service?faces-redirect=true" >
                                     </p:commandButton>
 
@@ -305,30 +337,45 @@
                                         <h:outputLabel value="Select Outside Institution"/>
                                     </div>
                                     <div class="col-8">
-                                        <p:selectOneMenu id="insFromMenu" autoWidth="false" class="w-100"
-                                                         value="#{inwardAdditionalChargeController.current.fromInstitution}"
-                                                         filter="true" filterMatchMode="contains">
-                                            <f:selectItem itemLabel="Select Institution"/>
-                                            <f:selectItems value="#{institutionController.items}" var="i" itemLabel="#{i.name}" itemValue="#{i}"/>
-                                        </p:selectOneMenu>
+                                        <p:autoComplete id="acFromIns"
+                                                        style="width:100%"
+                                                        inputStyle="width:100%"
+                                                        value="#{inwardAdditionalChargeController.current.fromInstitution}"
+                                                        completeMethod="#{institutionController.completeIns}"
+                                                        var="ins"
+                                                        itemValue="#{ins}"
+                                                        itemLabel="#{ins.name}"
+                                                        forceSelection="true"
+                                                        minQueryLength="2"
+                                                        placeholder="Type institution name...">
+                                            <p:column>#{ins.name}</p:column>
+                                        </p:autoComplete>
                                     </div>
                                 </div>
                             </p:panel>
                         </h:panelGroup>
 
-                        <!-- Bill-level: Institution confirmed banner (shown after selection) -->
+                        <!-- Bill-level: Institution confirmed + Bill Note (shown after institution selected) -->
                         <h:panelGroup layout="block" rendered="#{inwardAdditionalChargeController.current.fromInstitution ne null}" class="col-12 mb-2">
-                            <div class="alert alert-info d-flex align-items-center justify-content-between py-2 px-3">
-                                <div>
-                                    <i class="fa fa-hospital me-2"/>
-                                    <strong>Outside Institution: </strong>
-                                    <h:outputText value="#{inwardAdditionalChargeController.current.fromInstitution.name}"/>
+                            <p:panel>
+                                <f:facet name="header">
+                                    <h:outputText styleClass="fa fa-hospital" />
+                                    <h:outputText value=" #{inwardAdditionalChargeController.current.fromInstitution.name}" class="mx-2 fw-bold"/>
+                                    <p:commandButton value="Change" icon="fa fa-pencil"
+                                                     class="ui-button-secondary ui-button-sm ms-3"
+                                                     ajax="false"
+                                                     action="#{inwardAdditionalChargeController.clearFromInstitution}"/>
+                                </f:facet>
+                                <div class="row m-1">
+                                    <div class="col-3 d-flex align-items-center">
+                                        <p:outputLabel value="Bill Note"/>
+                                        <small class="text-muted ms-1">(whole bill)</small>
+                                    </div>
+                                    <div class="col-9">
+                                        <p:inputTextarea value="#{inwardAdditionalChargeController.current.comments}" class="w-100" rows="2"/>
+                                    </div>
                                 </div>
-                                <p:commandButton value="Change" icon="fa fa-pencil"
-                                                 class="ui-button-secondary ui-button-sm"
-                                                 ajax="false"
-                                                 action="#{inwardAdditionalChargeController.clearFromInstitution}"/>
-                            </div>
+                            </p:panel>
                         </h:panelGroup>
 
                         <div class="col-12">
@@ -361,7 +408,8 @@
                                                         </div>
                                                         <div class="col-8">
                                                             <p:autoComplete id="acItem"
-                                                                            class="w-100"
+                                                                            style="width:100%"
+                                                                            inputStyle="width:100%"
                                                                             value="#{inwardAdditionalChargeController.selectedItem}"
                                                                             completeMethod="#{inwardAdditionalChargeController.completeItem}"
                                                                             var="itm"
@@ -386,13 +434,15 @@
                                                     </div>
 
                                                     <div class="row m-1">
-                                                        <div class="col-4">
-                                                            <p:outputLabel value="Description"/>
+                                                        <div class="col-4 d-flex align-items-center">
+                                                            <p:outputLabel value="Item Note"/>
+                                                            <small class="text-muted ms-1">(per row)</small>
                                                         </div>
                                                         <div class="col-8">
-                                                            <p:inputTextarea value="#{inwardAdditionalChargeController.current.comments}" class="w-100"/>
+                                                            <p:inputTextarea id="txtItemComment" value="#{inwardAdditionalChargeController.itemComment}" class="w-100" rows="2"/>
                                                         </div>
                                                     </div>
+
                                                 </div>
                                                 <p:commandButton
                                                     class="m-1 ui-button-success"
@@ -423,8 +473,14 @@
                                             </h:panelGroup>
                                         </f:facet>
 
-                                        <p:dataTable rowIndexVar="rowIndex" id="bFee" value="#{inwardAdditionalChargeController.billItemList}" var="bif" >
+                                        <p:dataTable rowIndexVar="rowIndex" id="bFee"
+                                                     value="#{inwardAdditionalChargeController.billItemList}"
+                                                     var="bif"
+                                                     rowKey="#{bif.id}">
 
+                                            <p:column style="width:2.5rem">
+                                                <p:rowToggler/>
+                                            </p:column>
                                             <p:column>
                                                 <f:facet name="header">No</f:facet>
                                                 <h:outputLabel value="#{rowIndex+1}"/>
@@ -434,13 +490,35 @@
                                                 <h:outputLabel value="#{bif.item.name}"/>
                                             </p:column>
                                             <p:column>
-                                                <f:facet name="header">Total</f:facet>
+                                                <f:facet name="header">Amount</f:facet>
                                                 <h:outputLabel value="#{bif.netValue}"/>
                                             </p:column>
                                             <p:column>
-                                                <f:facet name="header">Description</f:facet>
-                                                <h:outputLabel value="#{bif.bill.comments}"/>
+                                                <f:facet name="header">Note</f:facet>
+                                                <h:outputLabel value="#{bif.descreption}"/>
                                             </p:column>
+
+                                            <p:rowExpansion>
+                                                <div class="p-3 ms-4 border-start border-primary" style="background-color:#f8f9fa;">
+                                                    <h6 class="mb-2 text-primary">
+                                                        <i class="fa fa-list me-1"/>Fee Breakdown
+                                                    </h6>
+                                                    <p:dataTable value="#{bif.billFees}" var="bf"
+                                                                 styleClass="table table-sm"
+                                                                 emptyMessage="No fees recorded">
+                                                        <p:column headerText="Fee">
+                                                            <h:outputText value="#{bf.fee.name}"/>
+                                                        </p:column>
+                                                        <p:column headerText="Fee Type">
+                                                            <h:outputText value="#{bf.fee.feeType}"/>
+                                                        </p:column>
+                                                        <p:column headerText="Amount">
+                                                            <h:outputText value="#{bf.feeValue}"/>
+                                                        </p:column>
+                                                    </p:dataTable>
+                                                </div>
+                                            </p:rowExpansion>
+
                                         </p:dataTable>
                                     </p:panel>
                                 </h:panelGroup>
@@ -452,25 +530,9 @@
 
                         <!-- ============================= PRINT PREVIEW ============================= -->
                         <h:panelGroup rendered="#{inwardAdditionalChargeController.printPreview}">
-                            <div class="d-flex justify-content-end gap-2 mb-3">
-                                <p:commandButton
-                                    value="Print"
-                                    class="ui-button-info"
-                                    ajax="false"
-                                    icon="fa-solid fa-print">
-                                    <p:printer target="gpOutsideBillPreview" />
-                                </p:commandButton>
-                                <p:commandButton
-                                    rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
-                                    value="Print Configuration"
-                                    icon="fas fa-cog"
-                                    class="ui-button-secondary"
-                                    type="button"
-                                    onclick="PF('outsideChargeConfigDialog').show();" />
-                            </div>
 
                             <div class="row justify-content-center">
-                                <div class="col-12 col-lg-8">
+                                <div class="col-12 col-md-10 col-lg-7 col-xl-6">
                                     <p:panel>
                                         <f:facet name="header">
                                             <h:outputText styleClass="fa-solid fa-receipt" />
@@ -497,7 +559,7 @@
                         </h:panelGroup>
 
                     </p:panel>
-                </h:panelGrid>
+                </h:panelGroup>
 
             </h:form>
 

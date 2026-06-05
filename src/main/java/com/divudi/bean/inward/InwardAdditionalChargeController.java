@@ -7,10 +7,12 @@
  * (94) 71 5812399
  */
 package com.divudi.bean.inward;
+import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.ConfigOptionController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Item;
+import com.divudi.core.entity.ItemFee;
 import com.divudi.core.entity.inward.Admission;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillClassType;
@@ -71,10 +73,13 @@ public class InwardAdditionalChargeController implements Serializable {
     private AdmissionController admissionController;
     @Inject
     private ConfigOptionController configOptionController;
+    @Inject
+    private BillBeanController billBeanController;
     //////////////
     private BilledBill current;
     private Institution institution;
     private Item selectedItem;
+    private String itemComment;
     private List<BillItem> billItemList;
     private boolean printPreview;
     // Print configuration (paper format) — persisted via department-scoped config options
@@ -153,11 +158,6 @@ public class InwardAdditionalChargeController implements Serializable {
             return true;
         }
 
-        if (getCurrent().getComments() == null || getCurrent().getComments().isEmpty()) {
-            JsfUtil.addErrorMessage("Enter Description");
-            return true;
-        }
-
         return false;
     }
 
@@ -173,7 +173,8 @@ public class InwardAdditionalChargeController implements Serializable {
 
         selectedItem = null;
         inwardChargeType = null;
-        getCurrent().setTotal(null);
+        itemComment = null;
+        getCurrent().setTotal(0.0);
 
         JsfUtil.addSuccessMessage("Charge Added");
     }
@@ -183,6 +184,7 @@ public class InwardAdditionalChargeController implements Serializable {
         billItemList = null;
         inwardChargeType = null;
         selectedItem = null;
+        itemComment = null;
         printPreview = false;
         institution = sessionController.getInstitution();
     }
@@ -196,6 +198,7 @@ public class InwardAdditionalChargeController implements Serializable {
         billItemList = null;
         inwardChargeType = null;
         selectedItem = null;
+        itemComment = null;
         printPreview = false;
     }
 
@@ -215,6 +218,7 @@ public class InwardAdditionalChargeController implements Serializable {
         getCurrent().setPatientEncounter(p);
         inwardChargeType = null;
         selectedItem = null;
+        itemComment = null;
         JsfUtil.addSuccessMessage("Cleared Successfully");
     }
 
@@ -225,7 +229,8 @@ public class InwardAdditionalChargeController implements Serializable {
     public void makeChargesNull() {
         inwardChargeType = null;
         selectedItem = null;
-        current.setTotal(null);
+        itemComment = null;
+        current.setTotal(0.0);
         current.setComments(null);
     }
 
@@ -258,6 +263,7 @@ public class InwardAdditionalChargeController implements Serializable {
         if (selectedItem != null) {
             temBi.setInwardChargeType(selectedItem.getInwardChargeType());
         }
+        temBi.setDescreption(itemComment);
         temBi.setGrossValue(getCurrent().getTotal());
         temBi.setNetValue(getCurrent().getTotal());
         temBi.setCreatedAt(new Date());
@@ -272,21 +278,52 @@ public class InwardAdditionalChargeController implements Serializable {
     }
 
     private void saveBillFee(BillItem bt) {
-        BillFee bf = new BillFee();
-        Fee additional = getInwardBean().createAdditionalFee();
+        List<ItemFee> itemFees = (selectedItem != null) ? billBeanController.fillFees(selectedItem) : new ArrayList<>();
 
-        bf.setPatienEncounter(getCurrent().getPatientEncounter());
-        bf.setBill(getCurrent());
-        bf.setFee(additional);
-        bf.setBillItem(bt);
-        bf.setCreatedAt(new Date());
-        bf.setCreater(getSessionController().getLoggedUser());
-        bf.setFeeGrossValue(getCurrent().getTotal());
-        bf.setFeeValue(getCurrent().getTotal());
-
-        if (bf.getId() == null) {
+        if (!itemFees.isEmpty()) {
+            List<BillFee> created = new ArrayList<>();
+            for (ItemFee f : itemFees) {
+                BillFee bf = new BillFee();
+                bf.setBill(getCurrent());
+                bf.setBillItem(bt);
+                bf.setFee(f);
+                bf.setFeeAt(new Date());
+                bf.setCreatedAt(new Date());
+                bf.setCreater(getSessionController().getLoggedUser());
+                bf.setPatienEncounter(getCurrent().getPatientEncounter());
+                bf.setPatient(getCurrent().getPatient());
+                bf.setFeeValue(f.getFee());
+                bf.setFeeGrossValue(f.getFee());
+                bf.setFeeDiscount(0.0);
+                getBillFeeFacade().create(bf);
+                created.add(bf);
+            }
+            bt.setBillFees(created);
+        } else {
+            // Fallback: item has no ItemFee records — create a single generic fee
+            BillFee bf = new BillFee();
+            Fee additional = getInwardBean().createAdditionalFee();
+            bf.setPatienEncounter(getCurrent().getPatientEncounter());
+            bf.setPatient(getCurrent().getPatient());
+            bf.setBill(getCurrent());
+            bf.setFee(additional);
+            bf.setBillItem(bt);
+            bf.setCreatedAt(new Date());
+            bf.setCreater(getSessionController().getLoggedUser());
+            bf.setFeeGrossValue(getCurrent().getTotal());
+            bf.setFeeValue(getCurrent().getTotal());
             getBillFeeFacade().create(bf);
+            bt.setBillFees(new ArrayList<>());
+            bt.getBillFees().add(bf);
         }
+    }
+
+    public String getItemComment() {
+        return itemComment;
+    }
+
+    public void setItemComment(String itemComment) {
+        this.itemComment = itemComment;
     }
 
     public List<Item> completeItem(String qry) {
