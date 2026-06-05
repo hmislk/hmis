@@ -7,6 +7,7 @@
  * (94) 71 5812399
  */
 package com.divudi.bean.inward;
+import com.divudi.bean.common.ConfigOptionController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.inward.Admission;
@@ -64,10 +65,17 @@ public class InwardAdditionalChargeController implements Serializable {
     private SessionController sessionController;
     @Inject
     private AdmissionController admissionController;
+    @Inject
+    private ConfigOptionController configOptionController;
     //////////////
     private BilledBill current;
     private Institution institution;
     private List<BillItem> billItemList;
+    private boolean printPreview;
+    // Print configuration (paper format) — persisted via department-scoped config options
+    private boolean posPaper;
+    private boolean fiveFivePaper;
+    private boolean a4Paper;
 
     public InwardBeanController getInwardBean() {
         return inwardBean;
@@ -83,8 +91,30 @@ public class InwardAdditionalChargeController implements Serializable {
     }
 
     public String navigateToAddOutsideChargeFromInpatientProfile() {
+        // The caller passes the patient via f:setPropertyActionListener, which
+        // fires before this action. Reset all state (including printPreview) but
+        // keep the encounter that was just selected.
+        PatientEncounter pe = getCurrent().getPatientEncounter();
+        makeNull();
+        getCurrent().setPatientEncounter(pe);
         institution = sessionController.getInstitution();
         return "/inward/inward_bill_outside_charge?faces-redirect=true";
+    }
+
+    /**
+     * Finalize the current outside-charge bill and switch the page to the print
+     * preview. The charges have already been persisted by {@link #addCharge()};
+     * this exposes the accumulated bill items to the print composites and flips
+     * the {@code printPreview} flag.
+     */
+    public void settle() {
+        if (getBillItemList().isEmpty()) {
+            JsfUtil.addErrorMessage("Add at least one charge before settling");
+            return;
+        }
+        current.setBillItems(getBillItemList());
+        printPreview = true;
+        JsfUtil.addSuccessMessage("Bill Settled");
     }
 
     private boolean errorCheck() {
@@ -134,6 +164,7 @@ public class InwardAdditionalChargeController implements Serializable {
         current = null;
         billItemList = null;
         inwardChargeType = null;
+        printPreview = false;
         institution = sessionController.getInstitution();
     }
 
@@ -145,6 +176,7 @@ public class InwardAdditionalChargeController implements Serializable {
         current = null;
         billItemList = null;
         inwardChargeType = null;
+        printPreview = false;
     }
 
     public Institution getInstitution() {
@@ -159,6 +191,7 @@ public class InwardAdditionalChargeController implements Serializable {
         PatientEncounter p = current.getPatientEncounter();
         current = null;
         billItemList = null;
+        printPreview = false;
         getCurrent().setPatientEncounter(p);
         inwardChargeType = null;
         JsfUtil.addSuccessMessage("Cleared Successfully");
@@ -307,5 +340,61 @@ public class InwardAdditionalChargeController implements Serializable {
 
     public void setBillItemList(List<BillItem> billItemList) {
         this.billItemList = billItemList;
+    }
+
+    public boolean isPrintPreview() {
+        return printPreview;
+    }
+
+    public void setPrintPreview(boolean printPreview) {
+        this.printPreview = printPreview;
+    }
+
+    // ------------------------------------------------------------------
+    // Print (paper format) configuration — opened from the preview dialog
+    // ------------------------------------------------------------------
+    public void loadPrintConfig() {
+        posPaper = configOptionController.getBooleanValueByKey("Inward Outside Charge Bill is POS Paper", false);
+        fiveFivePaper = configOptionController.getBooleanValueByKey("Inward Outside Charge Bill is 5x5 Paper", true);
+        a4Paper = configOptionController.getBooleanValueByKey("Inward Outside Charge Bill is A4 Paper", false);
+    }
+
+    public void savePrintConfig() {
+        configOptionController.setBooleanValueByKey("Inward Outside Charge Bill is POS Paper", posPaper);
+        configOptionController.setBooleanValueByKey("Inward Outside Charge Bill is 5x5 Paper", fiveFivePaper);
+        configOptionController.setBooleanValueByKey("Inward Outside Charge Bill is A4 Paper", a4Paper);
+        JsfUtil.addSuccessMessage("Print configuration saved");
+    }
+
+    public boolean isPosPaper() {
+        return posPaper;
+    }
+
+    public void setPosPaper(boolean posPaper) {
+        this.posPaper = posPaper;
+    }
+
+    public boolean isFiveFivePaper() {
+        return fiveFivePaper;
+    }
+
+    public void setFiveFivePaper(boolean fiveFivePaper) {
+        this.fiveFivePaper = fiveFivePaper;
+    }
+
+    public boolean isA4Paper() {
+        return a4Paper;
+    }
+
+    public void setA4Paper(boolean a4Paper) {
+        this.a4Paper = a4Paper;
+    }
+
+    public ConfigOptionController getConfigOptionController() {
+        return configOptionController;
+    }
+
+    public void setConfigOptionController(ConfigOptionController configOptionController) {
+        this.configOptionController = configOptionController;
     }
 }
