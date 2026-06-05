@@ -1706,8 +1706,10 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             }
         }
 
-        // Rapid / Temp A&E admissions skip room and referring consultant requirements;
-        // both can be completed once the patient is stabilised. (Issue #21183)
+        // Rapid / Temp A&E admissions skip the "room is required" check and the
+        // MO-charge validation, but room occupancy is always enforced when a room
+        // is voluntarily provided — an occupied room must never be double-assigned
+        // regardless of admission type. (Issue #21183)
         if (!isRapidTempAe()) {
             if (getCurrent().getAdmissionType().isRoomChargesAllowed()) {
                 if (getPatientRoom().getRoomFacilityCharge() == null) {
@@ -1729,19 +1731,17 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
                     return true;
                 }
             }
+        }
 
-            if (getCurrent().getAdmissionType().isRoomChargesAllowed()) {
-                if (getPatientRoom() != null) {
-                    if (getInwardBean().isRoomFilled(getPatientRoom().getRoomFacilityCharge().getRoom())) {
-                        JsfUtil.addErrorMessage("Select Empty Room");
-                        return true;
-                    }
-                } else {
-                    JsfUtil.addErrorMessage("Room is Empty");
-                    return true;
-                }
-            }
+        // Occupancy check applies to every admission whenever a room is provided,
+        // including Provisional Emergency admissions where room selection is optional.
+        if (getPatientRoom().getRoomFacilityCharge() != null
+                && getInwardBean().isRoomFilled(getPatientRoom().getRoomFacilityCharge().getRoom())) {
+            JsfUtil.addErrorMessage("Select Empty Room");
+            return true;
+        }
 
+        if (!isRapidTempAe()) {
             if (getCurrent().getReferringConsultant() == null) {
                 JsfUtil.addErrorMessage("Please Select Referring Doctor");
                 return true;

@@ -241,9 +241,10 @@ public class AdmissionPatientChangeController implements Serializable, Controlle
                 "BHT: " + current.getBhtNo() +
                 " is now assigned to " + newPatient.getPerson().getName());
 
-            // Navigate to the admission profile (admissionController.current still
-            // holds the updated admission; navigateToAdmissionProfilePage sets up
-            // bhtSummeryController and other state needed by the profile page).
+            // Explicitly sync admissionController before navigating — when this
+            // flow is launched from the search page (not the profile), current may
+            // differ from admissionController.current. (Issue #21275)
+            admissionController.setCurrent(current);
             String destination = admissionController.navigateToAdmissionProfilePage();
             prepareForNew();
             return destination;

@@ -91,7 +91,7 @@ Example:
 
 When a panel header contains both navigation and actions, divide it into three zones using a full-width flex row. This layout is aligned with enterprise UI standards (SAP Fiori shell bar, IBM Carbon top navigation).
 
-```
+```text
 [title + config]          [navigation buttons]          [secondary actions → primary]
 LEFT                       CENTER                         RIGHT
 ```
