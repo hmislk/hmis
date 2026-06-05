@@ -218,6 +218,10 @@ public class InwardAdditionalChargeController implements Serializable {
         JsfUtil.addSuccessMessage("Cleared Successfully");
     }
 
+    public void clearFromInstitution() {
+        getCurrent().setFromInstitution(null);
+    }
+
     public void makeChargesNull() {
         inwardChargeType = null;
         selectedItem = null;
@@ -290,8 +294,7 @@ public class InwardAdditionalChargeController implements Serializable {
         params.put("name", "%" + qry.toUpperCase() + "%");
         return itemFacade.findByJpql(
                 "select i from Item i where i.retired=false "
-                + "and (type(i) = com.divudi.core.entity.inward.InwardService "
-                + "  or type(i) = com.divudi.core.entity.Service) "
+                + "and (type(i) = InwardService or type(i) = Service) "
                 + "and upper(i.name) like :name "
                 + "order by i.name",
                 params);

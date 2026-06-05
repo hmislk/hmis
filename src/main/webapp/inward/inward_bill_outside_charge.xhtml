@@ -293,6 +293,44 @@
 
                         <h:panelGroup rendered="#{!inwardAdditionalChargeController.printPreview}">
 
+                        <!-- Bill-level: Outside Institution selection (shown until selected) -->
+                        <h:panelGroup layout="block" rendered="#{inwardAdditionalChargeController.current.fromInstitution eq null}" class="col-12 mb-2">
+                            <p:panel>
+                                <f:facet name="header">
+                                    <h:outputText styleClass="fa fa-hospital" />
+                                    <h:outputText value="Outside Institution" class="mx-3"/>
+                                </f:facet>
+                                <div class="row m-1">
+                                    <div class="col-4 d-flex align-items-center">
+                                        <h:outputLabel value="Select Outside Institution"/>
+                                    </div>
+                                    <div class="col-8">
+                                        <p:selectOneMenu id="insFromMenu" autoWidth="false" class="w-100"
+                                                         value="#{inwardAdditionalChargeController.current.fromInstitution}"
+                                                         filter="true" filterMatchMode="contains">
+                                            <f:selectItem itemLabel="Select Institution"/>
+                                            <f:selectItems value="#{institutionController.items}" var="i" itemLabel="#{i.name}" itemValue="#{i}"/>
+                                        </p:selectOneMenu>
+                                    </div>
+                                </div>
+                            </p:panel>
+                        </h:panelGroup>
+
+                        <!-- Bill-level: Institution confirmed banner (shown after selection) -->
+                        <h:panelGroup layout="block" rendered="#{inwardAdditionalChargeController.current.fromInstitution ne null}" class="col-12 mb-2">
+                            <div class="alert alert-info d-flex align-items-center justify-content-between py-2 px-3">
+                                <div>
+                                    <i class="fa fa-hospital me-2"/>
+                                    <strong>Outside Institution: </strong>
+                                    <h:outputText value="#{inwardAdditionalChargeController.current.fromInstitution.name}"/>
+                                </div>
+                                <p:commandButton value="Change" icon="fa fa-pencil"
+                                                 class="ui-button-secondary ui-button-sm"
+                                                 ajax="false"
+                                                 action="#{inwardAdditionalChargeController.clearFromInstitution}"/>
+                            </div>
+                        </h:panelGroup>
+
                         <div class="col-12">
                             <h:panelGroup rendered="true" styleClass="opdPanel">
                                 <p:panel >
@@ -317,17 +355,6 @@
                                                     <h:outputText value="Charge Details" class="mx-3"></h:outputText>
                                                 </f:facet>
                                                 <div class="row">
-                                                    <div class="row m-1">
-                                                        <div class="col-4 d-flex align-items-center">
-                                                            <h:outputLabel value="Outside Institution"/>
-                                                        </div>
-                                                        <div class="col-8">
-                                                            <p:selectOneMenu autoWidth="false" class="w-100" value="#{inwardAdditionalChargeController.current.fromInstitution}" filter="true" filterMatchMode="contains">
-                                                                <f:selectItem itemLabel="Select Institution"/>
-                                                                <f:selectItems value="#{institutionController.items}" var="i" itemLabel="#{i.name}" itemValue="#{i}"/>
-                                                            </p:selectOneMenu>
-                                                        </div>
-                                                    </div>
                                                     <div class="row m-1">
                                                         <div class="col-4 d-flex align-items-center">
                                                             <h:outputLabel value="Item"/>
