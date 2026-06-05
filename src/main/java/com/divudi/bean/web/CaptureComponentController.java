@@ -99,6 +99,11 @@ public class CaptureComponentController implements Serializable {
         // Reset or initialize the list of dynamic form components
         formComponents = new ArrayList<>();
 
+        if (selectedDataEntryForm == null || selectedDataEntryForm.getEditHtml() == null) {
+            JsfUtil.addErrorMessage("This form has no edit-mode HTML template configured");
+            return "";
+        }
+
         // Retrieve the HTML template with placeholders
         String htmlTemplateWithPlaceholders = selectedDataEntryForm.getEditHtml();
 

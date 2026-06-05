@@ -619,6 +619,16 @@
                                 </div>
                                 <div class="col-6">
                                     <p:commandButton
+                                        value="Forms"
+                                        ajax="false"
+                                        rendered="#{webUserController.hasPrivilege('InwardFormFill')}"
+                                        action="#{inwardFormController.navigateToInwardFormsFromAdmissionProfile(admissionController.current)}"
+                                        icon="fa fa-wpforms"
+                                        class="w-100">
+                                    </p:commandButton>
+                                </div>
+                                <div class="col-6">
+                                    <p:commandButton
                                         value="Diagnosis Card"
                                         ajax="false"
                                         action="#{admissionController.navigateToInpatientDiagnosisCard()}"

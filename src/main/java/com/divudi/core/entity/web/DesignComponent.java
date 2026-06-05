@@ -54,6 +54,20 @@ public class DesignComponent implements Serializable {
 
     private boolean retired;
 
+    private Integer orderNo;
+    private boolean required;
+
+    private String placeholder;
+    @javax.persistence.Column(name = "min_value")
+    private Double minValue;
+    @javax.persistence.Column(name = "max_value")
+    private Double maxValue;
+    private Double stepSize;
+    private Integer maxRating;
+    private String onLabel;
+    private String offLabel;
+    private String formCssClass;
+
     public Long getId() {
         return id;
     }
@@ -189,6 +203,86 @@ public class DesignComponent implements Serializable {
 
     public void setRetired(boolean retired) {
         this.retired = retired;
+    }
+
+    public Integer getOrderNo() {
+        return orderNo;
+    }
+
+    public void setOrderNo(Integer orderNo) {
+        this.orderNo = orderNo;
+    }
+
+    public boolean isRequired() {
+        return required;
+    }
+
+    public void setRequired(boolean required) {
+        this.required = required;
+    }
+
+    public String getPlaceholder() {
+        return placeholder;
+    }
+
+    public void setPlaceholder(String placeholder) {
+        this.placeholder = placeholder;
+    }
+
+    public Double getMinValue() {
+        return minValue;
+    }
+
+    public void setMinValue(Double minValue) {
+        this.minValue = minValue;
+    }
+
+    public Double getMaxValue() {
+        return maxValue;
+    }
+
+    public void setMaxValue(Double maxValue) {
+        this.maxValue = maxValue;
+    }
+
+    public Double getStepSize() {
+        return stepSize;
+    }
+
+    public void setStepSize(Double stepSize) {
+        this.stepSize = stepSize;
+    }
+
+    public Integer getMaxRating() {
+        return maxRating;
+    }
+
+    public void setMaxRating(Integer maxRating) {
+        this.maxRating = maxRating;
+    }
+
+    public String getOnLabel() {
+        return onLabel;
+    }
+
+    public void setOnLabel(String onLabel) {
+        this.onLabel = onLabel;
+    }
+
+    public String getOffLabel() {
+        return offLabel;
+    }
+
+    public void setOffLabel(String offLabel) {
+        this.offLabel = offLabel;
+    }
+
+    public String getFormCssClass() {
+        return formCssClass;
+    }
+
+    public void setFormCssClass(String formCssClass) {
+        this.formCssClass = formCssClass;
     }
 
 }
