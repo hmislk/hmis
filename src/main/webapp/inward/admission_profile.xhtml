@@ -278,6 +278,101 @@
                         </p:panel>
 
                         <p:panel header="Billing" class="m-1" rendered="#{admissionController.current.parentEncounter == null}">
+                            <h:panelGroup layout="block" rendered="#{webUserController.hasPrivilege('Developers')}">
+                                <div class="border border-warning rounded p-2 mb-2 shadow-sm" style="background-color:#fffdf5;">
+                                    <div class="d-flex justify-content-between align-items-center mb-2 pb-1 border-bottom">
+                                        <span class="fw-bold text-uppercase small text-warning">
+                                            <i class="fa fa-receipt me-1"/> Last Processing Summary
+                                        </span>
+                                        <span class="d-inline-flex align-items-center gap-1">
+                                            <h:panelGroup rendered="#{admissionController.current.lastProcessAt != null}">
+                                                <p:tag value="Snapshot - Not Live" icon="fa fa-clock-rotate-left" severity="warning" class="small"/>
+                                            </h:panelGroup>
+                                            <p:tag value="Developer" icon="fa fa-code" severity="info" class="small"/>
+                                        </span>
+                                    </div>
+
+                                    <h:panelGroup layout="block" rendered="#{admissionController.current.lastProcessAt != null}">
+                                        <div class="d-flex align-items-center py-2 px-3 mb-2 rounded shadow-sm"
+                                             role="alert"
+                                             style="border-left:8px solid #dc3545; background-color:#fdecea; color:#842029;">
+                                            <i class="fa fa-triangle-exclamation fa-lg me-2 text-danger"/>
+                                            <span class="fw-semibold">
+                                                Totals are <span class="fw-bold text-danger text-decoration-underline">NOT current</span> &#8212; snapshot only. Re-process for live values.
+                                            </span>
+                                        </div>
+                                    </h:panelGroup>
+
+                                    <h:panelGroup layout="block" rendered="#{admissionController.current.lastProcessAt == null}">
+                                        <div class="text-center text-muted small py-2">
+                                            <i class="fa fa-circle-info me-1"/> Not processed yet
+                                        </div>
+                                    </h:panelGroup>
+
+                                    <h:panelGroup layout="block" rendered="#{admissionController.current.lastProcessAt != null}">
+                                        <div class="d-flex flex-wrap justify-content-between align-items-center small mb-2 p-2 rounded border border-warning" style="background-color:#fff3cd;">
+                                            <span class="text-muted">
+                                                <i class="fa fa-user me-1"/>
+                                                By <span class="fw-semibold text-dark">#{admissionController.current.lastProcessBy.webUserPerson.nameWithTitle}</span>
+                                            </span>
+                                            <span class="d-inline-flex align-items-center fw-bold px-2 py-1 rounded text-white" style="background-color:#fd7e14;">
+                                                <i class="fa fa-clock-rotate-left me-2"/>
+                                                Last Processed:&nbsp;
+                                                <h:outputText value="#{admissionController.current.lastProcessAt}">
+                                                    <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                                </h:outputText>
+                                            </span>
+                                        </div>
+
+                                        <div class="fst-italic" style="opacity:0.85;">
+                                            <div class="d-flex justify-content-between border-bottom py-1">
+                                                <span class="text-muted">Total</span>
+                                                <span class="fw-semibold">
+                                                    <h:outputText value="#{admissionController.current.totalAtFinalProcessing}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </span>
+                                            </div>
+                                            <div class="d-flex justify-content-between border-bottom py-1">
+                                                <span class="text-muted">Discount</span>
+                                                <span class="fw-semibold text-success">
+                                                    <h:outputText value="#{admissionController.current.discountAvailableAtFinalProcessing}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </span>
+                                            </div>
+                                            <div class="d-flex justify-content-between border-bottom py-1">
+                                                <span class="text-muted">Patient Paid</span>
+                                                <span class="fw-semibold">
+                                                    <h:outputText value="#{admissionController.current.totalPatientPaidAtFinalProcessing}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </span>
+                                            </div>
+                                            <div class="d-flex justify-content-between border-bottom py-1">
+                                                <span class="text-muted">Credit Company Paid</span>
+                                                <span class="fw-semibold">
+                                                    <h:outputText value="#{admissionController.current.totalCompanyPaidAtFinalProcessing}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        <div class="d-flex justify-content-between align-items-center mt-2 p-2 rounded border #{admissionController.current.amountDueAtFinalProcessing gt 0 ? 'border-danger bg-danger-subtle' : 'border-success bg-success-subtle'}">
+                                            <span class="fw-bold text-uppercase">
+                                                <i class="fa fa-money-bill-wave me-1"/> Due Amount
+                                            </span>
+                                            <span class="fw-bold fs-5 #{admissionController.current.amountDueAtFinalProcessing gt 0 ? 'text-danger' : 'text-success'}">
+                                                <h:outputText value="#{admissionController.current.amountDueAtFinalProcessing}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </span>
+                                        </div>
+                                    </h:panelGroup>
+                                </div>
+                            </h:panelGroup>
+
                             <div class="row g-2">
                                 <div class="col-12">
                                     <p:commandButton
