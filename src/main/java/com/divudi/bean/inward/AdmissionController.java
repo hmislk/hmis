@@ -517,6 +517,12 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
                 current.setClaimable(true);
             }
         }
+        if (configOptionApplicationController.getBooleanValueByKey("Inward Admission - Show Claimable Field", true)
+                && configOptionApplicationController.getBooleanValueByKey("Inward Admission - Enforce Claimable for Credit", false)) {
+            if (current.getPaymentMethod() == PaymentMethod.Credit) {
+                current.setClaimable(true);
+            }
+        }
         if (current.getPaymentMethod() == PaymentMethod.Credit && current.getPatient() != null) {
             // Prefer PatientInsurance profiles over last-admission lookup
             List<PatientInsurance> profiles = patientInsuranceController.findActiveProfiles(current.getPatient());
@@ -1477,6 +1483,13 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         if (!configOptionApplicationController.getBooleanValueByKey("Inward Admission - Show Claimable Field", true)) {
             return false;
         }
+        PaymentMethod pm = getCurrent() != null ? getCurrent().getPaymentMethod() : null;
+        if (configOptionApplicationController.getBooleanValueByKey("Inward Admission - Enforce Claimable for Credit", false)) {
+            // Credit is always locked at true; all other payment methods fall through to normal logic
+            if (pm == PaymentMethod.Credit) {
+                return false;
+            }
+        }
         if (configOptionApplicationController.getBooleanValueByKey("Inward Admission - Auto Mark Claimable for Credit Admissions", false)) {
             return true;
         }
@@ -1485,7 +1498,6 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         if ("None".equalsIgnoreCase(claimableRequiredFor)) {
             return false;
         }
-        PaymentMethod pm = getCurrent() != null ? getCurrent().getPaymentMethod() : null;
         if ("All".equalsIgnoreCase(claimableRequiredFor)) {
             return true;
         } else if ("Credit".equalsIgnoreCase(claimableRequiredFor)) {
@@ -1655,15 +1667,21 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         boolean showClaimable = configOptionApplicationController.getBooleanValueByKey(
                 "Inward Admission - Show Claimable Field", true);
         if (showClaimable) {
+            boolean enforceForCredit = configOptionApplicationController.getBooleanValueByKey(
+                    "Inward Admission - Enforce Claimable for Credit", false);
+            if (enforceForCredit && getCurrent().getPaymentMethod() == PaymentMethod.Credit) {
+                getCurrent().setClaimable(true);
+            }
             boolean autoMarkCredit = configOptionApplicationController.getBooleanValueByKey(
                     "Inward Admission - Auto Mark Claimable for Credit Admissions", false);
             boolean claimableAllowed = isClaimableAllowed();
-            if (!autoMarkCredit && !claimableAllowed && getCurrent().isClaimable()) {
+            boolean creditEnforced = enforceForCredit && getCurrent().getPaymentMethod() == PaymentMethod.Credit;
+            if (!autoMarkCredit && !creditEnforced && !claimableAllowed && getCurrent().isClaimable()) {
                 getCurrent().setClaimable(false);
                 JsfUtil.addErrorMessage("Claimable is not applicable for the selected payment method");
                 return true;
             }
-            if (!autoMarkCredit && claimableAllowed && !getCurrent().isClaimable()) {
+            if (!autoMarkCredit && !creditEnforced && claimableAllowed && !getCurrent().isClaimable()) {
                 JsfUtil.addErrorMessage("Please mark the admission as Claimable");
                 return true;
             }
