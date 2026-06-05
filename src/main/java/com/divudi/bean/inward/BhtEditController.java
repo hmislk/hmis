@@ -497,9 +497,14 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
             return;
         }
 
-        if (getCurrent().getPaymentMethod() == PaymentMethod.Credit) {
-            if (!getCurrent().isClaimable()) {
-                JsfUtil.addErrorMessage("Please mark as Claimable");
+        boolean showClaimable = configOptionApplicationController.getBooleanValueByKey(
+                "Inward Admission - Show Claimable Field", true);
+        if (showClaimable) {
+            boolean enforceForCredit = configOptionApplicationController.getBooleanValueByKey(
+                    "Inward Admission - Enforce Claimable for Credit", false);
+            if (enforceForCredit && getCurrent().getPaymentMethod() == PaymentMethod.Credit
+                    && !getCurrent().isClaimable()) {
+                JsfUtil.addErrorMessage("Credit admissions must be marked as Claimable");
                 return;
             }
         }
