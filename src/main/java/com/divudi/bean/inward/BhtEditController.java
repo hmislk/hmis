@@ -500,12 +500,25 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
         boolean showClaimable = configOptionApplicationController.getBooleanValueByKey(
                 "Inward Admission - Show Claimable Field", true);
         if (showClaimable) {
+            PaymentMethod pm = getCurrent().getPaymentMethod();
             boolean enforceForCredit = configOptionApplicationController.getBooleanValueByKey(
                     "Inward Admission - Enforce Claimable for Credit", false);
-            if (enforceForCredit && getCurrent().getPaymentMethod() == PaymentMethod.Credit
-                    && !getCurrent().isClaimable()) {
+            if (enforceForCredit && pm == PaymentMethod.Credit && !getCurrent().isClaimable()) {
                 JsfUtil.addErrorMessage("Credit admissions must be marked as Claimable");
                 return;
+            }
+            boolean autoMarkCredit = configOptionApplicationController.getBooleanValueByKey(
+                    "Inward Admission - Auto Mark Claimable for Credit Admissions", false);
+            if (!enforceForCredit && !autoMarkCredit) {
+                String claimableRequiredFor = configOptionApplicationController.getShortTextValueByKey(
+                        "Inward Admission - Claimable Required For", "Credit");
+                boolean required = "All".equalsIgnoreCase(claimableRequiredFor)
+                        || ("Credit".equalsIgnoreCase(claimableRequiredFor) && pm == PaymentMethod.Credit)
+                        || ("Cash".equalsIgnoreCase(claimableRequiredFor) && pm == PaymentMethod.Cash);
+                if (required && !getCurrent().isClaimable()) {
+                    JsfUtil.addErrorMessage("Please mark the admission as Claimable");
+                    return;
+                }
             }
         }
         // Apply patient name capitalization based on configuration settings
