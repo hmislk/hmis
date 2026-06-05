@@ -217,10 +217,7 @@
                                         value="Settle"
                                         ajax="false"
                                         rendered="#{!inwardAdditionalChargeController.printPreview}"
-                                        onclick="if (!confirm('Are you sure you want to settle this bill?')) {
-                                                    return false;
-                                                }
-                                                this.disabled=true;"
+                                        onclick="return confirm('Are you sure you want to settle this bill?');"
                                         action="#{inwardAdditionalChargeController.settle()}">
                                     </p:commandButton>
 
@@ -304,7 +301,7 @@
                                         <div class="col-5 ">
                                             <p:panel>
                                                 <f:facet name="header" >
-                                                    <h:outputText styleClass="fa fa-user-circle" /> 
+                                                    <h:outputText styleClass="fa fa-user-circle" />
                                                     <h:outputText value="Patient Details" class="mx-3"></h:outputText>
                                                 </f:facet>
                                                 <h:panelGroup id="panSearch2">
@@ -316,47 +313,39 @@
                                         <div class="col-7" >
                                             <p:panel>
                                                 <f:facet name="header" >
-                                                    <h:outputText styleClass="fa fa-money-bill-wave" /> 
+                                                    <h:outputText styleClass="fa fa-money-bill-wave" />
                                                     <h:outputText value="Charge Details" class="mx-3"></h:outputText>
                                                 </f:facet>
                                                 <div class="row">
                                                     <div class="row m-1">
                                                         <div class="col-4 d-flex align-items-center">
-                                                            <h:outputLabel value="Inward Charge Type"/>
-
+                                                            <h:outputLabel value="Outside Institution"/>
                                                         </div>
                                                         <div class="col-8">
-                                                            <div>
-                                                                <p:selectOneMenu class="w-100" value="#{inwardAdditionalChargeController.inwardChargeType}" filter="true" >
-                                                                    <f:selectItem itemLabel="Please select Charge"/>
-                                                                    <f:selectItems value="#{enumController.inwardChargeTypesForSetting}" var="i" itemLabel="#{i.label}" itemValue="#{i}"/>
-                                                                </p:selectOneMenu>
-                                                            </div>
+                                                            <p:selectOneMenu autoWidth="false" class="w-100" value="#{inwardAdditionalChargeController.current.fromInstitution}" filter="true" filterMatchMode="contains">
+                                                                <f:selectItem itemLabel="Select Institution"/>
+                                                                <f:selectItems value="#{institutionController.items}" var="i" itemLabel="#{i.name}" itemValue="#{i}"/>
+                                                            </p:selectOneMenu>
                                                         </div>
                                                     </div>
                                                     <div class="row m-1">
                                                         <div class="col-4 d-flex align-items-center">
-                                                            <h:outputLabel value="From Institution"/>
+                                                            <h:outputLabel value="Item"/>
                                                         </div>
-                                                        <div class="col-8 ">
-<!--                                                            <p:autoComplete size="61" forceSelection="true" value="#{inwardAdditionalChargeController.current.fromInstitution}"
-                                                                            completeMethod="#{institutionController.completeIns}"
-                                                                            disabled="#{not empty inwardAdditionalChargeController.current.fromInstitution}"
-                                                                            var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" >
-                                                                <p:column>
-                                                            #{ix.name}
-                                                        </p:column>
-                                                        <p:column>
-                                                            #{ix.institutionCode}
-                                                        </p:column>
-                                                    </p:autoComplete>-->
-
-                                                            <div>
-                                                                <p:selectOneMenu autoWidth="false" class="w-100" value="#{inwardAdditionalChargeController.current.fromInstitution}" filter="true" filterMatchMode="contains">
-                                                                    <f:selectItem itemLabel="Select Institution"/>
-                                                                    <f:selectItems value="#{institutionController.items}" var="i" itemLabel="#{i.name}" itemValue="#{i}"/>
-                                                                </p:selectOneMenu>
-                                                            </div>
+                                                        <div class="col-8">
+                                                            <p:autoComplete id="acItem"
+                                                                            class="w-100"
+                                                                            value="#{inwardAdditionalChargeController.selectedItem}"
+                                                                            completeMethod="#{inwardAdditionalChargeController.completeItem}"
+                                                                            var="itm"
+                                                                            itemValue="#{itm}"
+                                                                            itemLabel="#{itm.name}"
+                                                                            forceSelection="true"
+                                                                            minQueryLength="2"
+                                                                            placeholder="Type item name...">
+                                                                <p:ajax event="itemSelect" listener="#{inwardAdditionalChargeController.onItemSelect}" update="txtAmount" />
+                                                                <p:column>#{itm.name}</p:column>
+                                                            </p:autoComplete>
                                                         </div>
                                                     </div>
 
@@ -365,7 +354,7 @@
                                                             <p:outputLabel value="Amount"/>
                                                         </div>
                                                         <div class="col-8">
-                                                            <p:inputText class="w-100" autocomplete="off" value="#{inwardAdditionalChargeController.current.total}"/>
+                                                            <p:inputText id="txtAmount" class="w-100" autocomplete="off" value="#{inwardAdditionalChargeController.current.total}"/>
                                                         </div>
                                                     </div>
 
@@ -374,23 +363,23 @@
                                                             <p:outputLabel value="Description"/>
                                                         </div>
                                                         <div class="col-8">
-                                                            <p:inputTextarea value="#{inwardAdditionalChargeController.current.comments}" class="w-100" disabled="#{not empty inwardAdditionalChargeController.current.comments}"/>
+                                                            <p:inputTextarea value="#{inwardAdditionalChargeController.current.comments}" class="w-100"/>
                                                         </div>
                                                     </div>
                                                 </div>
-                                                <p:commandButton 
-                                                    class="m-1 ui-button-success" 
+                                                <p:commandButton
+                                                    class="m-1 ui-button-success"
                                                     id="btnAdd"
                                                     icon="fa fa-plus"
-                                                    value="Add"  
-                                                    ajax="false" 
+                                                    value="Add"
+                                                    ajax="false"
                                                     action="#{inwardAdditionalChargeController.addCharge}"/>
                                             </p:panel>
                                         </div>
                                     </div>
 
                                 </p:panel>
-                            </h:panelGroup>        
+                            </h:panelGroup>
                         </div>
 
                         <div class="row mt-2">
@@ -399,7 +388,12 @@
                                     <p:panel>
                                         <f:facet name="header">
                                             <h:outputText styleClass="fas fa-user-tie" />
-                                            <h:outputLabel class="mx-4" value="Inward OutSide Charges"/>
+                                            <h:outputLabel class="mx-4" value="Outside Charges"/>
+                                            <h:panelGroup rendered="#{inwardAdditionalChargeController.current.fromInstitution ne null}">
+                                                <span class="badge bg-secondary ms-2">
+                                                    <h:outputText value="#{inwardAdditionalChargeController.current.fromInstitution.name}" />
+                                                </span>
+                                            </h:panelGroup>
                                         </f:facet>
 
                                         <p:dataTable rowIndexVar="rowIndex" id="bFee" value="#{inwardAdditionalChargeController.billItemList}" var="bif" >
@@ -409,18 +403,15 @@
                                                 <h:outputLabel value="#{rowIndex+1}"/>
                                             </p:column>
                                             <p:column>
-                                                <f:facet name="header">Fee</f:facet>
-                                                <h:outputLabel  value="#{bif.inwardChargeType}">
-
-                                                </h:outputLabel>
+                                                <f:facet name="header">Item</f:facet>
+                                                <h:outputLabel value="#{bif.item.name}"/>
                                             </p:column>
-
                                             <p:column>
                                                 <f:facet name="header">Total</f:facet>
                                                 <h:outputLabel value="#{bif.netValue}"/>
                                             </p:column>
                                             <p:column>
-                                                <f:facet name="header">Comments</f:facet>
+                                                <f:facet name="header">Description</f:facet>
                                                 <h:outputLabel value="#{bif.bill.comments}"/>
                                             </p:column>
                                         </p:dataTable>

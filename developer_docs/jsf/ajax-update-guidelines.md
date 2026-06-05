@@ -181,6 +181,41 @@ update="lstItems focusForList actions growl"
 update="growl :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId}"
 ```
 
+---
+
+## Critical Rule: Never Use `this.disabled=true` on Submit Buttons
+
+### The Problem
+
+When a `p:commandButton` (or any submit button) has `ajax="false"`, the browser submits the form synchronously. If `onclick` calls `this.disabled=true`, the button is disabled **before** the POST is sent. Disabled form fields are excluded from the request payload by the browser — JSF never sees which button was clicked, so no action fires.
+
+### ❌ WRONG — disabling the button before submit
+
+```xhtml
+<p:commandButton
+    value="Settle"
+    ajax="false"
+    onclick="if (!confirm('Are you sure?')) { return false; }
+             this.disabled=true;"
+    action="#{bean.settle()}" />
+```
+
+### ✅ CORRECT — only return false to cancel; never disable
+
+```xhtml
+<p:commandButton
+    value="Settle"
+    ajax="false"
+    onclick="return confirm('Are you sure?');"
+    action="#{bean.settle()}" />
+```
+
+**Why it matters**: `this.disabled=true` is a common copy-paste pattern meant to prevent double-clicks, but it silently breaks JSF action dispatch. The confirmation dialog alone is sufficient to prevent accidental double-submission.
+
+**Root cause of issue #20731**: The Settle button on `inward_bill_outside_charge.xhtml` used this pattern, causing the `settle()` action to never fire.
+
+---
+
 ## Related JSF Concepts
 
 - **Component Tree**: Only JSF components are part of the component tree

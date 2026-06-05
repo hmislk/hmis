@@ -10,6 +10,7 @@ package com.divudi.bean.inward;
 import com.divudi.bean.common.ConfigOptionController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Item;
 import com.divudi.core.entity.inward.Admission;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillClassType;
@@ -27,6 +28,7 @@ import com.divudi.core.facade.BillFeeFacade;
 import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.BilledBillFacade;
 import com.divudi.core.facade.FeeFacade;
+import com.divudi.core.facade.ItemFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -58,6 +60,8 @@ public class InwardAdditionalChargeController implements Serializable {
     private BillItemFacade billItemFacade;
     @EJB
     private BillFeeFacade billFeeFacade;
+    @EJB
+    private ItemFacade itemFacade;
     @Inject
     InwardBeanController inwardBean;
     //////////////
@@ -70,6 +74,7 @@ public class InwardAdditionalChargeController implements Serializable {
     //////////////
     private BilledBill current;
     private Institution institution;
+    private Item selectedItem;
     private List<BillItem> billItemList;
     private boolean printPreview;
     // Print configuration (paper format) — persisted via department-scoped config options
@@ -134,26 +139,26 @@ public class InwardAdditionalChargeController implements Serializable {
         }
 
         if (getCurrent().getFromInstitution() == null) {
-            JsfUtil.addErrorMessage("Select Where Item From");
+            JsfUtil.addErrorMessage("Select Outside Institution");
             return true;
         }
 
-        if (getInwardChargeType() == null) {
+        if (selectedItem == null) {
+            JsfUtil.addErrorMessage("Select an Item");
             return true;
         }
 
-        if (getCurrent().getTotal() < 1) {
+        if (getCurrent().getTotal() == null || getCurrent().getTotal() < 1) {
             JsfUtil.addErrorMessage("Enter Added Charge Correctly");
             return true;
         }
 
-        if (getCurrent().getComments().isEmpty()) {
-            JsfUtil.addErrorMessage("Enter Discription");
+        if (getCurrent().getComments() == null || getCurrent().getComments().isEmpty()) {
+            JsfUtil.addErrorMessage("Enter Description");
             return true;
         }
 
         return false;
-
     }
 
     public void addCharge() {
@@ -166,14 +171,19 @@ public class InwardAdditionalChargeController implements Serializable {
         getCurrent().setSingleBillItem(b);
         getBilledBillFacade().edit(current);
 
-        JsfUtil.addSuccessMessage("Additional Charges Added");
+        selectedItem = null;
+        inwardChargeType = null;
+        getCurrent().setTotal(null);
+        getCurrent().setComments(null);
 
+        JsfUtil.addSuccessMessage("Charge Added");
     }
 
     public void makeNull() {
         current = null;
         billItemList = null;
         inwardChargeType = null;
+        selectedItem = null;
         printPreview = false;
         institution = sessionController.getInstitution();
     }
@@ -186,6 +196,7 @@ public class InwardAdditionalChargeController implements Serializable {
         current = null;
         billItemList = null;
         inwardChargeType = null;
+        selectedItem = null;
         printPreview = false;
     }
 
@@ -204,12 +215,13 @@ public class InwardAdditionalChargeController implements Serializable {
         printPreview = false;
         getCurrent().setPatientEncounter(p);
         inwardChargeType = null;
+        selectedItem = null;
         JsfUtil.addSuccessMessage("Cleared Successfully");
     }
 
     public void makeChargesNull() {
         inwardChargeType = null;
-        current.setFromInstitution(null);
+        selectedItem = null;
         current.setTotal(null);
         current.setComments(null);
     }
@@ -239,7 +251,10 @@ public class InwardAdditionalChargeController implements Serializable {
     private BillItem saveBillItem() {
         BillItem temBi = new BillItem();
         temBi.setBill(getCurrent());
-        temBi.setInwardChargeType(inwardChargeType);
+        temBi.setItem(selectedItem);
+        if (selectedItem != null) {
+            temBi.setInwardChargeType(selectedItem.getInwardChargeType());
+        }
         temBi.setGrossValue(getCurrent().getTotal());
         temBi.setNetValue(getCurrent().getTotal());
         temBi.setCreatedAt(new Date());
@@ -251,7 +266,6 @@ public class InwardAdditionalChargeController implements Serializable {
         saveBillFee(temBi);
 
         return temBi;
-
     }
 
     private void saveBillFee(BillItem bt) {
@@ -270,6 +284,41 @@ public class InwardAdditionalChargeController implements Serializable {
         if (bf.getId() == null) {
             getBillFeeFacade().create(bf);
         }
+    }
+
+    public List<Item> completeItem(String qry) {
+        String upper = qry.toUpperCase();
+        return itemFacade.findByJpql(
+                "select i from Item i where i.retired=false "
+                + "and (type(i) = com.divudi.core.entity.inward.InwardService "
+                + "  or type(i) = com.divudi.core.entity.Service) "
+                + "and upper(i.name) like '%" + upper + "%' "
+                + "order by i.name");
+    }
+
+    public void onItemSelect() {
+        if (selectedItem != null && selectedItem.getTotal() != null && selectedItem.getTotal() > 0) {
+            getCurrent().setTotal(selectedItem.getTotal());
+        }
+        if (selectedItem != null) {
+            inwardChargeType = selectedItem.getInwardChargeType();
+        }
+    }
+
+    public Item getSelectedItem() {
+        return selectedItem;
+    }
+
+    public void setSelectedItem(Item selectedItem) {
+        this.selectedItem = selectedItem;
+    }
+
+    public ItemFacade getItemFacade() {
+        return itemFacade;
+    }
+
+    public void setItemFacade(ItemFacade itemFacade) {
+        this.itemFacade = itemFacade;
     }
 
     public BilledBillFacade getBilledBillFacade() {
