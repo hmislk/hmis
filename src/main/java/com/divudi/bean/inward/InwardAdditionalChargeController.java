@@ -112,6 +112,16 @@ public class InwardAdditionalChargeController implements Serializable {
             JsfUtil.addErrorMessage("Add at least one charge before settling");
             return;
         }
+        // saveBill() overwrites total/netTotal with the last single entry on every
+        // Add, so recompute the settled amount from all accumulated charges before
+        // showing the preview (otherwise a multi-charge bill prints only the last value).
+        double settledTotal = 0.0;
+        for (BillItem bi : getBillItemList()) {
+            settledTotal += bi.getNetValue();
+        }
+        current.setTotal(settledTotal);
+        current.setNetTotal(settledTotal);
+        getBilledBillFacade().edit(current);
         current.setBillItems(getBillItemList());
         printPreview = true;
         JsfUtil.addSuccessMessage("Bill Settled");

@@ -87,7 +87,14 @@
                     <td><h:outputLabel value="#{cc.attrs.bill.patientEncounter.bhtNo}" /></td>
                     <td>Room</td>
                     <td>:</td>
-                    <td><h:outputLabel value="#{cc.attrs.bill.patientEncounter.currentPatientRoom.roomFacilityCharge.name}" /></td>
+                    <td>
+                        <h:panelGroup rendered="#{cc.attrs.bill.patientEncounter.currentPatientRoom ne null}">
+                            <h:outputLabel value="#{cc.attrs.bill.patientEncounter.currentPatientRoom.roomFacilityCharge.name}" />
+                        </h:panelGroup>
+                        <h:panelGroup rendered="#{cc.attrs.bill.patientEncounter.currentPatientRoom eq null}">
+                            <h:outputLabel value="Not assigned" />
+                        </h:panelGroup>
+                    </td>
                 </tr>
                 <h:panelGroup rendered="#{cc.attrs.bill.fromInstitution ne null}">
                     <tr>

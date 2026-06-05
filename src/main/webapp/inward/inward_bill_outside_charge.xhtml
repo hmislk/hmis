@@ -217,8 +217,10 @@
                                         value="Settle"
                                         ajax="false"
                                         rendered="#{!inwardAdditionalChargeController.printPreview}"
-                                        onclick="if (!confirm('Are you sure you want to settle this bill?'))
-                                                    return false;"
+                                        onclick="if (!confirm('Are you sure you want to settle this bill?')) {
+                                                    return false;
+                                                }
+                                                this.disabled=true;"
                                         action="#{inwardAdditionalChargeController.settle()}">
                                     </p:commandButton>
 
