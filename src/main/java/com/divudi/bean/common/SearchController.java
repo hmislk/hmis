@@ -20420,7 +20420,9 @@ public class SearchController implements Serializable {
             // Get specific inward deposit bill types only
             List<BillTypeAtomic> inwardDepositBillTypes = Arrays.asList(
                     BillTypeAtomic.INWARD_DEPOSIT,
+                    BillTypeAtomic.INWARD_APPOINTMENT_BILL,
                     BillTypeAtomic.INWARD_DEPOSIT_CANCELLATION,
+                    BillTypeAtomic.INWARD_APPOINTMENT_CANCEL_BILL,
                     BillTypeAtomic.INWARD_DEPOSIT_REFUND,
                     BillTypeAtomic.INWARD_DEPOSIT_REFUND_CANCELLATION
             );
