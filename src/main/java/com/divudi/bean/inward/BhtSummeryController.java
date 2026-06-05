@@ -3050,6 +3050,11 @@ public class BhtSummeryController implements Serializable {
         }
         
         //Update Last Processing Details
+        persistLastProcessingSnapshot();
+        
+    }
+    
+    private void persistLastProcessingSnapshot() {
         patientEncounter.setLastProcessBy(sessionController.getLoggedUser());
         patientEncounter.setLastProcessAt(new Date());
         patientEncounter.setTotalAtFinalProcessing(grantTotal);
@@ -3059,7 +3064,6 @@ public class BhtSummeryController implements Serializable {
         patientEncounter.setAmountDueAtFinalProcessing(due);
         patientEncounterFacade.edit(patientEncounter);
         System.out.println("Update Last Processing Details of " + patientEncounter.getBhtNo()); 
-        
     }
 
     public void changeIsMade() {
