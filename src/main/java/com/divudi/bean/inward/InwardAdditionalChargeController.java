@@ -7,9 +7,12 @@
  * (94) 71 5812399
  */
 package com.divudi.bean.inward;
+import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.ConfigOptionController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.ItemFee;
 import com.divudi.core.entity.inward.Admission;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillClassType;
@@ -27,6 +30,7 @@ import com.divudi.core.facade.BillFeeFacade;
 import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.BilledBillFacade;
 import com.divudi.core.facade.FeeFacade;
+import com.divudi.core.facade.ItemFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -58,6 +62,8 @@ public class InwardAdditionalChargeController implements Serializable {
     private BillItemFacade billItemFacade;
     @EJB
     private BillFeeFacade billFeeFacade;
+    @EJB
+    private ItemFacade itemFacade;
     @Inject
     InwardBeanController inwardBean;
     //////////////
@@ -67,9 +73,13 @@ public class InwardAdditionalChargeController implements Serializable {
     private AdmissionController admissionController;
     @Inject
     private ConfigOptionController configOptionController;
+    @Inject
+    private BillBeanController billBeanController;
     //////////////
     private BilledBill current;
     private Institution institution;
+    private Item selectedItem;
+    private String itemComment;
     private List<BillItem> billItemList;
     private boolean printPreview;
     // Print configuration (paper format) — persisted via department-scoped config options
@@ -134,11 +144,12 @@ public class InwardAdditionalChargeController implements Serializable {
         }
 
         if (getCurrent().getFromInstitution() == null) {
-            JsfUtil.addErrorMessage("Select Where Item From");
+            JsfUtil.addErrorMessage("Select Outside Institution");
             return true;
         }
 
-        if (getInwardChargeType() == null) {
+        if (selectedItem == null) {
+            JsfUtil.addErrorMessage("Select an Item");
             return true;
         }
 
@@ -147,13 +158,7 @@ public class InwardAdditionalChargeController implements Serializable {
             return true;
         }
 
-        if (getCurrent().getComments().isEmpty()) {
-            JsfUtil.addErrorMessage("Enter Discription");
-            return true;
-        }
-
         return false;
-
     }
 
     public void addCharge() {
@@ -166,14 +171,20 @@ public class InwardAdditionalChargeController implements Serializable {
         getCurrent().setSingleBillItem(b);
         getBilledBillFacade().edit(current);
 
-        JsfUtil.addSuccessMessage("Additional Charges Added");
+        selectedItem = null;
+        inwardChargeType = null;
+        itemComment = null;
+        getCurrent().setTotal(0.0);
 
+        JsfUtil.addSuccessMessage("Charge Added");
     }
 
     public void makeNull() {
         current = null;
         billItemList = null;
         inwardChargeType = null;
+        selectedItem = null;
+        itemComment = null;
         printPreview = false;
         institution = sessionController.getInstitution();
     }
@@ -186,6 +197,8 @@ public class InwardAdditionalChargeController implements Serializable {
         current = null;
         billItemList = null;
         inwardChargeType = null;
+        selectedItem = null;
+        itemComment = null;
         printPreview = false;
     }
 
@@ -204,13 +217,20 @@ public class InwardAdditionalChargeController implements Serializable {
         printPreview = false;
         getCurrent().setPatientEncounter(p);
         inwardChargeType = null;
+        selectedItem = null;
+        itemComment = null;
         JsfUtil.addSuccessMessage("Cleared Successfully");
+    }
+
+    public void clearFromInstitution() {
+        getCurrent().setFromInstitution(null);
     }
 
     public void makeChargesNull() {
         inwardChargeType = null;
-        current.setFromInstitution(null);
-        current.setTotal(null);
+        selectedItem = null;
+        itemComment = null;
+        current.setTotal(0.0);
         current.setComments(null);
     }
 
@@ -239,7 +259,11 @@ public class InwardAdditionalChargeController implements Serializable {
     private BillItem saveBillItem() {
         BillItem temBi = new BillItem();
         temBi.setBill(getCurrent());
-        temBi.setInwardChargeType(inwardChargeType);
+        temBi.setItem(selectedItem);
+        if (selectedItem != null) {
+            temBi.setInwardChargeType(selectedItem.getInwardChargeType());
+        }
+        temBi.setDescreption(itemComment);
         temBi.setGrossValue(getCurrent().getTotal());
         temBi.setNetValue(getCurrent().getTotal());
         temBi.setCreatedAt(new Date());
@@ -251,25 +275,91 @@ public class InwardAdditionalChargeController implements Serializable {
         saveBillFee(temBi);
 
         return temBi;
-
     }
 
     private void saveBillFee(BillItem bt) {
-        BillFee bf = new BillFee();
-        Fee additional = getInwardBean().createAdditionalFee();
+        List<ItemFee> itemFees = (selectedItem != null) ? billBeanController.fillFees(selectedItem) : new ArrayList<>();
 
-        bf.setPatienEncounter(getCurrent().getPatientEncounter());
-        bf.setBill(getCurrent());
-        bf.setFee(additional);
-        bf.setBillItem(bt);
-        bf.setCreatedAt(new Date());
-        bf.setCreater(getSessionController().getLoggedUser());
-        bf.setFeeGrossValue(getCurrent().getTotal());
-        bf.setFeeValue(getCurrent().getTotal());
-
-        if (bf.getId() == null) {
+        if (!itemFees.isEmpty()) {
+            List<BillFee> created = new ArrayList<>();
+            for (ItemFee f : itemFees) {
+                BillFee bf = new BillFee();
+                bf.setBill(getCurrent());
+                bf.setBillItem(bt);
+                bf.setFee(f);
+                bf.setFeeAt(new Date());
+                bf.setCreatedAt(new Date());
+                bf.setCreater(getSessionController().getLoggedUser());
+                bf.setPatienEncounter(getCurrent().getPatientEncounter());
+                bf.setPatient(getCurrent().getPatient());
+                bf.setFeeValue(f.getFee());
+                bf.setFeeGrossValue(f.getFee());
+                bf.setFeeDiscount(0.0);
+                getBillFeeFacade().create(bf);
+                created.add(bf);
+            }
+            bt.setBillFees(created);
+        } else {
+            // Fallback: item has no ItemFee records — create a single generic fee
+            BillFee bf = new BillFee();
+            Fee additional = getInwardBean().createAdditionalFee();
+            bf.setPatienEncounter(getCurrent().getPatientEncounter());
+            bf.setPatient(getCurrent().getPatient());
+            bf.setBill(getCurrent());
+            bf.setFee(additional);
+            bf.setBillItem(bt);
+            bf.setCreatedAt(new Date());
+            bf.setCreater(getSessionController().getLoggedUser());
+            bf.setFeeGrossValue(getCurrent().getTotal());
+            bf.setFeeValue(getCurrent().getTotal());
             getBillFeeFacade().create(bf);
+            bt.setBillFees(new ArrayList<>());
+            bt.getBillFees().add(bf);
         }
+    }
+
+    public String getItemComment() {
+        return itemComment;
+    }
+
+    public void setItemComment(String itemComment) {
+        this.itemComment = itemComment;
+    }
+
+    public List<Item> completeItem(String qry) {
+        java.util.Map<String, Object> params = new java.util.HashMap<>();
+        params.put("name", "%" + qry.toUpperCase() + "%");
+        return itemFacade.findByJpql(
+                "select i from Item i where i.retired=false "
+                + "and (type(i) = InwardService or type(i) = Service) "
+                + "and upper(i.name) like :name "
+                + "order by i.name",
+                params);
+    }
+
+    public void onItemSelect() {
+        if (selectedItem != null && selectedItem.getTotal() != null && selectedItem.getTotal() > 0) {
+            getCurrent().setTotal(selectedItem.getTotal());
+        }
+        if (selectedItem != null) {
+            inwardChargeType = selectedItem.getInwardChargeType();
+        }
+    }
+
+    public Item getSelectedItem() {
+        return selectedItem;
+    }
+
+    public void setSelectedItem(Item selectedItem) {
+        this.selectedItem = selectedItem;
+    }
+
+    public ItemFacade getItemFacade() {
+        return itemFacade;
+    }
+
+    public void setItemFacade(ItemFacade itemFacade) {
+        this.itemFacade = itemFacade;
     }
 
     public BilledBillFacade getBilledBillFacade() {
