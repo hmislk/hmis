@@ -6,7 +6,8 @@
                 xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:in="http://xmlns.jcp.org/jsf/composite/inward">
+                xmlns:in="http://xmlns.jcp.org/jsf/composite/inward"
+                xmlns:print="http://xmlns.jcp.org/jsf/composite/ezcomp/prints">
 
 
     <ui:define name="content">
@@ -210,19 +211,34 @@
                                     </p:commandButton>
 
                                     <p:commandButton
+                                        class="ui-button-info"
+                                        id="btnSettle"
+                                        icon="fa fa-check"
+                                        value="Settle"
+                                        ajax="false"
+                                        rendered="#{!inwardAdditionalChargeController.printPreview}"
+                                        onclick="if (!confirm('Are you sure you want to settle this bill?')) {
+                                                    return false;
+                                                }
+                                                this.disabled=true;"
+                                        action="#{inwardAdditionalChargeController.settle()}">
+                                    </p:commandButton>
+
+                                    <p:commandButton
                                         class="ui-button-success"
                                         id="btnNew"
                                         icon="fa fa-plus"
-                                        value="New Bill"  
-                                        ajax="false" 
+                                        value="New Bill"
+                                        ajax="false"
                                         action="#{inwardAdditionalChargeController.makeNull()}">
                                     </p:commandButton>
 
-                                    <p:commandButton 
-                                        class="ui-button-danger" 
+                                    <p:commandButton
+                                        class="ui-button-danger"
                                         value="Clear"
                                         icon="fa fa-ban"
-                                        ajax="false" 
+                                        ajax="false"
+                                        rendered="#{!inwardAdditionalChargeController.printPreview}"
                                         action="#{inwardAdditionalChargeController.reset()}" >
                                     </p:commandButton>
 
@@ -277,6 +293,8 @@
                                 </div>
                             </div>
                         </f:facet>
+
+                        <h:panelGroup rendered="#{!inwardAdditionalChargeController.printPreview}">
 
                         <div class="col-12">
                             <h:panelGroup rendered="true" styleClass="opdPanel">
@@ -411,10 +429,115 @@
                             </div>
 
                         </div>
+
+                        </h:panelGroup>
+
+                        <!-- ============================= PRINT PREVIEW ============================= -->
+                        <h:panelGroup rendered="#{inwardAdditionalChargeController.printPreview}">
+                            <div class="d-flex justify-content-end gap-2 mb-3">
+                                <p:commandButton
+                                    value="Print"
+                                    class="ui-button-info"
+                                    ajax="false"
+                                    icon="fa-solid fa-print">
+                                    <p:printer target="gpOutsideBillPreview" />
+                                </p:commandButton>
+                                <p:commandButton
+                                    rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
+                                    value="Print Configuration"
+                                    icon="fas fa-cog"
+                                    class="ui-button-secondary"
+                                    type="button"
+                                    onclick="PF('outsideChargeConfigDialog').show();" />
+                            </div>
+
+                            <div class="row justify-content-center">
+                                <div class="col-12 col-lg-8">
+                                    <p:panel>
+                                        <f:facet name="header">
+                                            <h:outputText styleClass="fa-solid fa-receipt" />
+                                            <h:outputLabel value="Bill Preview" class="mx-2" />
+                                        </f:facet>
+                                        <h:panelGroup id="gpOutsideBillPreview" layout="block">
+
+                                            <h:panelGroup rendered="#{inwardAdditionalChargeController.configOptionController.getBooleanValueByKey('Inward Outside Charge Bill is POS Paper', false)}">
+                                                <print:posBill_inward_outside bill="#{inwardAdditionalChargeController.current}" />
+                                            </h:panelGroup>
+
+                                            <h:panelGroup rendered="#{inwardAdditionalChargeController.configOptionController.getBooleanValueByKey('Inward Outside Charge Bill is 5x5 Paper', true)}">
+                                                <print:five_five_inward_outside bill="#{inwardAdditionalChargeController.current}" />
+                                            </h:panelGroup>
+
+                                            <h:panelGroup rendered="#{inwardAdditionalChargeController.configOptionController.getBooleanValueByKey('Inward Outside Charge Bill is A4 Paper', false)}">
+                                                <print:A4_inward_outside bill="#{inwardAdditionalChargeController.current}" />
+                                            </h:panelGroup>
+
+                                        </h:panelGroup>
+                                    </p:panel>
+                                </div>
+                            </div>
+                        </h:panelGroup>
+
                     </p:panel>
                 </h:panelGrid>
 
             </h:form>
+
+            <!-- ===================== PRINT (PAPER FORMAT) CONFIGURATION ===================== -->
+            <p:dialog id="outsideChargeConfigDialog"
+                      header="Outside Charge Bill — Print Configuration"
+                      widgetVar="outsideChargeConfigDialog"
+                      modal="true"
+                      width="520"
+                      resizable="false"
+                      closeOnEscape="true">
+
+                <p:ajax event="open" listener="#{inwardAdditionalChargeController.loadPrintConfig}" update="outsideChargeConfigForm" />
+
+                <h:form id="outsideChargeConfigForm">
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="m-0"><i class="fas fa-file-alt"></i> Paper Format</h6>
+                        </div>
+                        <div class="card-body">
+                            <p class="text-muted small">Select the paper format used to print outside charge bills for this department.</p>
+
+                            <div class="mb-3">
+                                <h:selectBooleanCheckbox id="cfgPos" value="#{inwardAdditionalChargeController.posPaper}" />
+                                <h:outputLabel for="cfgPos" value="POS Paper" class="ms-2 fw-bold" />
+                                <small class="form-text text-muted d-block">Thermal POS receipt format.</small>
+                            </div>
+
+                            <div class="mb-3">
+                                <h:selectBooleanCheckbox id="cfgFiveFive" value="#{inwardAdditionalChargeController.fiveFivePaper}" />
+                                <h:outputLabel for="cfgFiveFive" value="5 x 5 inch Paper (Impact / Epson)" class="ms-2 fw-bold" />
+                                <small class="form-text text-muted d-block">5 inch x 5 inch format tuned for impact / dot-matrix printers.</small>
+                            </div>
+
+                            <div class="mb-3">
+                                <h:selectBooleanCheckbox id="cfgA4" value="#{inwardAdditionalChargeController.a4Paper}" />
+                                <h:outputLabel for="cfgA4" value="A4 Paper" class="ms-2 fw-bold" />
+                                <small class="form-text text-muted d-block">Full-page A4 invoice format.</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2 mt-3">
+                        <p:commandButton
+                            value="Apply &amp; Close"
+                            icon="fas fa-save"
+                            class="ui-button-success"
+                            ajax="false"
+                            action="#{inwardAdditionalChargeController.savePrintConfig}" />
+                        <p:commandButton
+                            value="Cancel"
+                            icon="fas fa-times"
+                            class="ui-button-secondary"
+                            type="button"
+                            onclick="PF('outsideChargeConfigDialog').hide(); return false;" />
+                    </div>
+                </h:form>
+            </p:dialog>
 
         </h:panelGroup>
 
