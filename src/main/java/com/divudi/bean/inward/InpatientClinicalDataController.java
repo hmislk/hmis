@@ -151,6 +151,8 @@ public class InpatientClinicalDataController implements Serializable {
     SearchController searchController;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    com.divudi.bean.pharmacy.PharmacyRequestForBhtController pharmacyRequestForBhtController;
 
     /**
      * Properties
@@ -224,6 +226,7 @@ public class InpatientClinicalDataController implements Serializable {
     private List<ClinicalFindingValue> pastWardMedicines;
     private ClinicalFindingValue selectedWardMedicineToOmit;
     private String omissionReason;
+    private ClinicalFindingValue[] selectedWardMedicinesToRequest;
     private ClinicalFindingValue selectedWardMedicineToChange;
     private Double newDose;
     private MeasurementUnit newDoseUnit;
@@ -2193,6 +2196,62 @@ public class InpatientClinicalDataController implements Serializable {
         JsfUtil.addSuccessMessage("Medicine Omitted");
     }
 
+    /**
+     * Pre-fills a BHT pharmacy request from the active ward medications the user
+     * ticked, then navigates to the BHT request page. The user still picks (or
+     * confirms the defaulted) requesting pharmacy there before settling.
+     */
+    public String requestSelectedWardMedicinesFromPharmacy() {
+        if (parentAdmission == null || parentAdmission.getId() == null) {
+            JsfUtil.addErrorMessage("No admission selected.");
+            return "";
+        }
+        if (selectedWardMedicinesToRequest == null || selectedWardMedicinesToRequest.length == 0) {
+            JsfUtil.addErrorMessage("Select at least one medicine to request.");
+            return "";
+        }
+        if (parentAdmission.isDischarged()) {
+            JsfUtil.addErrorMessage("Sorry, patient is discharged.");
+            return "";
+        }
+
+        pharmacyRequestForBhtController.resetAll();
+        pharmacyRequestForBhtController.setPatientEncounter(parentAdmission);
+
+        int added = 0;
+        for (ClinicalFindingValue cfv : selectedWardMedicinesToRequest) {
+            if (cfv == null || cfv.getPrescription() == null) {
+                continue;
+            }
+            if (pharmacyRequestForBhtController.addBillItemFromPrescription(cfv.getPrescription())) {
+                added++;
+            }
+        }
+
+        if (added == 0) {
+            JsfUtil.addErrorMessage("Could not add any of the selected medicines to the request.");
+            return "";
+        }
+
+        // Pre-select the ward's last-requested pharmacy as the default; the user
+        // can change it (or pick a recent one) on the request page.
+        Department defaultPharmacy = pharmacyRequestForBhtController.getDefaultRequestedPharmacy();
+        if (defaultPharmacy != null) {
+            pharmacyRequestForBhtController.setDepartment(defaultPharmacy);
+        }
+
+        selectedWardMedicinesToRequest = null;
+        return "/ward/ward_pharmacy_bht_issue_request_bill?faces-redirect=true";
+    }
+
+    public ClinicalFindingValue[] getSelectedWardMedicinesToRequest() {
+        return selectedWardMedicinesToRequest;
+    }
+
+    public void setSelectedWardMedicinesToRequest(ClinicalFindingValue[] selectedWardMedicinesToRequest) {
+        this.selectedWardMedicinesToRequest = selectedWardMedicinesToRequest;
+    }
+
     public String navigateToWardMedicinesTimeline(PatientEncounter admission) {
         if (admission == null) {
             JsfUtil.addErrorMessage("No admission selected.");
@@ -2472,18 +2531,6 @@ public class InpatientClinicalDataController implements Serializable {
         return "/inward/clinical_data_diagnosis_card?faces-redirect=true";
     }
 
-    public String navigateToDrugChart() {
-        if (current == null) {
-            JsfUtil.addErrorMessage("Nothing Selected");
-            return "";
-        }
-        setStartedEncounter(current);
-        fillCurrentPatientLists(current.getPatient());
-        fillCurrentEncounterLists(current);
-        generateDocumentsFromDocumentTemplates(current);
-        return "/inward/clinical_data_drug_chart?faces-redirect=true";
-    }
-
     public String navigateToImages() {
         if (current == null) {
             JsfUtil.addErrorMessage("Nothing Selected");
@@ -2509,7 +2556,6 @@ public class InpatientClinicalDataController implements Serializable {
     }
     //clinical_data_investigations
     //clinical_data_images
-    //clinical_data_drug_chart
     //clinical_data_diagnosis_card
 
     public void fillCurrentPatientLists(Patient patient) {

@@ -24,6 +24,7 @@ import com.divudi.core.data.Sex;
 import com.divudi.core.data.StockQty;
 import com.divudi.core.data.Title;
 import com.divudi.core.data.inward.InwardChargeType;
+import com.divudi.core.facade.DepartmentFacade;
 import com.divudi.core.data.inward.SurgeryBillType;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.PharmacyBean;
@@ -96,6 +97,8 @@ public class PharmacyRequestForBhtController implements Serializable {
     private BillItemFacade billItemFacade;
     @EJB
     ItemFacade itemFacade;
+    @EJB
+    private DepartmentFacade departmentFacade;
     @EJB
     StockFacade stockFacade;
     @EJB
@@ -986,6 +989,7 @@ public class PharmacyRequestForBhtController implements Serializable {
                 billItemFacade.edit(savingBillItem);
             }
         }
+        rememberRequestedPharmacyForWard(fromDept, department);
         setPrintBill(billService.reloadBill(getPreBill()));
         notificationController.createNotification(getPrintBill());
         clearBill();
@@ -1340,6 +1344,205 @@ public class PharmacyRequestForBhtController implements Serializable {
         errorMessage = "";
         replaceableStocks = new ArrayList<>();
         itemsWithoutStocks = new ArrayList<>();
+    }
+
+    /**
+     * Adds a single request bill item to the in-memory pre-bill from an
+     * existing (ward) prescription. Resolves the dispensable item and quantity
+     * via {@link PrescriptionToItemService} and carries the prescription
+     * details (dose, frequency, duration, comment) onto a detached in-memory
+     * prescription, mirroring {@link #addBillItem()}. Used when pre-filling the
+     * BHT request from selected active ward medications.
+     *
+     * @param sourcePrescription the ward medicine prescription to request
+     * @return true if an item was added, false otherwise
+     */
+    public boolean addBillItemFromPrescription(Prescription sourcePrescription) {
+        if (sourcePrescription == null || sourcePrescription.getItem() == null) {
+            return false;
+        }
+        if (patientEncounter == null) {
+            JsfUtil.addErrorMessage("No patient Selected.");
+            return false;
+        }
+
+        Item dispensableItem = sourcePrescription.getItem();
+        Double calculatedQty = null;
+        try {
+            com.divudi.ejb.PrescriptionToItemService.PrescriptionToItemResult result
+                    = prescriptionToItemService.calculateItemAndQuantity(sourcePrescription);
+            if (result != null && result.isSuccess()) {
+                if (result.getItem() != null) {
+                    dispensableItem = result.getItem();
+                }
+                if (result.getQuantity() != null) {
+                    calculatedQty = result.getQuantity();
+                }
+            }
+        } catch (Exception e) {
+            // Fall back to the prescription item with qty 1 below.
+        }
+        if (calculatedQty == null || calculatedQty <= 0) {
+            calculatedQty = 1.0;
+        }
+
+        BillItem newBillItem = new BillItem();
+        newBillItem.setItem(dispensableItem);
+        newBillItem.setQty(calculatedQty);
+        newBillItem.setInwardChargeType(InwardChargeType.Medicine);
+        newBillItem.setBill(getPreBill());
+
+        Prescription inMemoryPrescription = new Prescription();
+        inMemoryPrescription.setItem(dispensableItem);
+        inMemoryPrescription.setDose(sourcePrescription.getDose());
+        inMemoryPrescription.setDoseUnit(sourcePrescription.getDoseUnit());
+        inMemoryPrescription.setFrequencyUnit(sourcePrescription.getFrequencyUnit());
+        inMemoryPrescription.setDuration(sourcePrescription.getDuration());
+        inMemoryPrescription.setDurationUnit(sourcePrescription.getDurationUnit());
+        inMemoryPrescription.setPrescribedFrom(sourcePrescription.getPrescribedFrom());
+        inMemoryPrescription.setPrescribedTo(sourcePrescription.getPrescribedTo());
+        inMemoryPrescription.setComment(sourcePrescription.getComment());
+        inMemoryPrescription.setPatient(getPatientEncounter().getPatient());
+        inMemoryPrescription.setEncounter(getPatientEncounter());
+        inMemoryPrescription.setIndoor(true);
+        newBillItem.setPrescription(inMemoryPrescription);
+
+        String prescriptionText = inMemoryPrescription.getFormattedPrescriptionWithoutIndoorOutdoor();
+        if (inMemoryPrescription.getComment() != null && !inMemoryPrescription.getComment().trim().isEmpty()) {
+            prescriptionText += " - " + inMemoryPrescription.getComment();
+        }
+        newBillItem.setDescreption(prescriptionText);
+
+        PharmaceuticalBillItem pharmaceuticalBillItem = new PharmaceuticalBillItem();
+        pharmaceuticalBillItem.setQty(-calculatedQty); // Negative quantity for requests
+        pharmaceuticalBillItem.setBillItem(newBillItem);
+        newBillItem.setPharmaceuticalBillItem(pharmaceuticalBillItem);
+
+        newBillItem.setSearialNo(getPreBill().getBillItems().size() + 1);
+        getPreBill().getBillItems().add(newBillItem);
+        return true;
+    }
+
+    // ===================================================================
+    // Default / recent requested-pharmacy memory (scoped per ward dept)
+    // ===================================================================
+    private static final int MAX_RECENT_PHARMACIES = 5;
+
+    private String lastPharmacyKey(Department wardDept) {
+        Long id = wardDept != null ? wardDept.getId() : null;
+        return "Last Requested Pharmacy For Ward " + id;
+    }
+
+    private String recentPharmaciesKey(Department wardDept) {
+        Long id = wardDept != null ? wardDept.getId() : null;
+        return "Recent Requested Pharmacies For Ward " + id;
+    }
+
+    /**
+     * Resolve the ward department for the current patient encounter (the
+     * patient's current room department), falling back to the logged-in
+     * department.
+     */
+    public Department resolveWardDepartment() {
+        if (patientEncounter != null
+                && patientEncounter.getCurrentPatientRoom() != null
+                && patientEncounter.getCurrentPatientRoom().getRoomFacilityCharge() != null
+                && patientEncounter.getCurrentPatientRoom().getRoomFacilityCharge().getDepartment() != null) {
+            return patientEncounter.getCurrentPatientRoom().getRoomFacilityCharge().getDepartment();
+        }
+        return sessionController.getDepartment();
+    }
+
+    /**
+     * Records the pharmacy a ward last requested from, and maintains a deduped,
+     * most-recent-first list (max {@value #MAX_RECENT_PHARMACIES}). Scoped per
+     * ward department via the config key suffix.
+     */
+    public void rememberRequestedPharmacyForWard(Department wardDept, Department pharmacy) {
+        if (wardDept == null || wardDept.getId() == null || pharmacy == null || pharmacy.getId() == null) {
+            return;
+        }
+        String pharmacyId = String.valueOf(pharmacy.getId());
+        configOptionApplicationController.saveShortTextOption(lastPharmacyKey(wardDept), pharmacyId);
+
+        List<String> ids = new ArrayList<>();
+        ids.add(pharmacyId);
+        String existing = configOptionApplicationController.getLongTextValueByKey(recentPharmaciesKey(wardDept), "");
+        if (existing != null && !existing.trim().isEmpty()) {
+            for (String token : existing.split(",")) {
+                String t = token.trim();
+                if (!t.isEmpty() && !ids.contains(t)) {
+                    ids.add(t);
+                }
+                if (ids.size() >= MAX_RECENT_PHARMACIES) {
+                    break;
+                }
+            }
+        }
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < ids.size(); i++) {
+            if (i > 0) {
+                sb.append(",");
+            }
+            sb.append(ids.get(i));
+        }
+        configOptionApplicationController.setLongTextValueByKey(recentPharmaciesKey(wardDept), sb.toString());
+    }
+
+    /**
+     * The default pharmacy to request from for the current ward, or null.
+     */
+    public Department getDefaultRequestedPharmacy() {
+        Department wardDept = resolveWardDepartment();
+        if (wardDept == null || wardDept.getId() == null) {
+            return null;
+        }
+        String id = configOptionApplicationController.getShortTextValueByKey(lastPharmacyKey(wardDept), "");
+        return findDepartmentById(id);
+    }
+
+    /**
+     * Up to {@value #MAX_RECENT_PHARMACIES} recently-requested pharmacies for
+     * the current ward, most-recent-first, for the quick-pick chips.
+     */
+    public List<Department> getRecentRequestedPharmacies() {
+        List<Department> result = new ArrayList<>();
+        Department wardDept = resolveWardDepartment();
+        if (wardDept == null || wardDept.getId() == null) {
+            return result;
+        }
+        String csv = configOptionApplicationController.getLongTextValueByKey(recentPharmaciesKey(wardDept), "");
+        if (csv == null || csv.trim().isEmpty()) {
+            return result;
+        }
+        for (String token : csv.split(",")) {
+            Department d = findDepartmentById(token.trim());
+            if (d != null && !result.contains(d)) {
+                result.add(d);
+            }
+            if (result.size() >= MAX_RECENT_PHARMACIES) {
+                break;
+            }
+        }
+        return result;
+    }
+
+    private Department findDepartmentById(String id) {
+        if (id == null || id.trim().isEmpty()) {
+            return null;
+        }
+        try {
+            return departmentFacade.find(Long.valueOf(id.trim()));
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    /**
+     * Quick-pick handler: sets the requesting pharmacy from a recent chip.
+     */
+    public void selectRequestedPharmacy(Department pharmacy) {
+        this.department = pharmacy;
     }
 
     private void calTotal() {

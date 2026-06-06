@@ -98,9 +98,17 @@
                                                                  icon="fa fa-plus"
                                                                  styleClass="ui-button-success w-100"
                                                                  disabled="#{inpatientClinicalDataController.parentAdmission == null or inpatientClinicalDataController.parentAdmission.id == null}"
-                                                                 process="btnAddRx acMedicine txtDose cmbDose cmbFrequency txtDuration cmbDuration"
+                                                                 process="btnAddRx acMedicine txtDose cmbDose cmbFrequency txtDuration cmbDuration txtComment"
                                                                  update="growlWardMedicines panelAddMedicine panelActiveMedicines panelPastMedicines"
                                                                  action="#{inpatientClinicalDataController.addAdmissionWardMedicine()}" />
+                                            </div>
+                                            <div class="col-12 d-flex flex-column">
+                                                <p:outputLabel for="txtComment" styleClass="fw-semibold mb-1" value="Comment:" />
+                                                <p:inputTextarea id="txtComment"
+                                                                 styleClass="w-100"
+                                                                 rows="2"
+                                                                 value="#{inpatientClinicalDataController.admissionWardMedicine.prescription.comment}"
+                                                                 placeholder="Optional comment / special instructions" />
                                             </div>
                                         </div>
                                     </div>
@@ -112,17 +120,31 @@
                             <div class="col-12">
                                 <p:panel id="panelActiveMedicines" class="w-100 m-1 p-0">
                                     <f:facet name="header">
-                                        <p:outputLabel value="Active Ward Medications"
-                                                       styleClass="d-flex align-items-center w-100 fw-bold"
-                                                       style="background-color:#198754; color:#ffffff; margin:-0.75rem -1rem; padding:0.6rem 1rem; border-top-left-radius:0.25rem; border-top-right-radius:0.25rem;" />
+                                        <div class="d-flex align-items-center justify-content-between w-100 fw-bold"
+                                             style="background-color:#198754; color:#ffffff; margin:-0.75rem -1rem; padding:0.4rem 1rem; border-top-left-radius:0.25rem; border-top-right-radius:0.25rem;">
+                                            <p:outputLabel value="Active Ward Medications" />
+                                            <p:commandButton id="btnRequestFromPharmacy"
+                                                             value="Request Selected from Pharmacy"
+                                                             icon="fa fa-paper-plane"
+                                                             ajax="false"
+                                                             title="Request the ticked medicines from a pharmacy"
+                                                             styleClass="ui-button-warning ui-button-sm"
+                                                             process="@form"
+                                                             action="#{inpatientClinicalDataController.requestSelectedWardMedicinesFromPharmacy()}" />
+                                        </div>
                                     </f:facet>
                                     <p:dataTable id="tblActiveMedicines"
                                                  value="#{inpatientClinicalDataController.activeWardMedicines}"
                                                  var="rx"
+                                                 rowKey="#{rx.id}"
+                                                 selection="#{inpatientClinicalDataController.selectedWardMedicinesToRequest}"
+                                                 selectionMode="multiple"
+                                                 selectionPageOnly="false"
                                                  styleClass="w-100"
                                                  stripedRows="true"
                                                  size="small"
                                                  emptyMessage="No active ward medications">
+                                        <p:column selectionBox="true" style="width:3rem; text-align:center;" />
                                         <p:column headerText="Medicine">
                                             <h:outputText value="#{rx.prescription.formattedPrescription}" />
                                         </p:column>
@@ -138,6 +160,9 @@
                                             <h:outputText value="Changed from: #{rx.prescription.parent.formattedPrescription}"
                                                           rendered="#{rx.prescription.parent != null}"
                                                           styleClass="text-muted" />
+                                        </p:column>
+                                        <p:column headerText="Comment">
+                                            <h:outputText value="#{rx.prescription.comment}" />
                                         </p:column>
                                         <p:column headerText="Action" style="width: 220px;">
                                             <p:commandButton id="btnChangeDose"
@@ -213,6 +238,9 @@
                                                     <h:outputText value=" See active list for updated prescription" />
                                                 </small>
                                             </h:panelGroup>
+                                        </p:column>
+                                        <p:column headerText="Comment">
+                                            <h:outputText value="#{rx.prescription.comment}" />
                                         </p:column>
                                     </p:dataTable>
                                 </p:panel>
