@@ -2166,6 +2166,22 @@ public class BillService {
             List<BillTypeAtomic> billTypeAtomics,
             AdmissionType admissionType,
             PaymentScheme paymentScheme) {
+        return fetchOpdIncomeReportDTOs(fromDate, toDate, institution, site, department,
+                webUser, billTypeAtomics, admissionType, paymentScheme, null, null, null);
+    }
+
+    public List<OpdIncomeReportDTO> fetchOpdIncomeReportDTOs(Date fromDate,
+            Date toDate,
+            Institution institution,
+            Institution site,
+            Department department,
+            WebUser webUser,
+            List<BillTypeAtomic> billTypeAtomics,
+            AdmissionType admissionType,
+            PaymentScheme paymentScheme,
+            Institution toInstitution,
+            Institution toSite,
+            Department toDepartment) {
 
         if (fromDate == null || toDate == null) {
             throw new IllegalArgumentException("fromDate and toDate cannot be null");
@@ -2216,6 +2232,18 @@ public class BillService {
         if (paymentScheme != null) {
             jpql += " and b.paymentScheme=:paymentScheme";
             params.put("paymentScheme", paymentScheme);
+        }
+        if (toInstitution != null) {
+            jpql += " and b.toInstitution=:toIns";
+            params.put("toIns", toInstitution);
+        }
+        if (toSite != null && toDepartment == null) {
+            jpql += " and b.toDepartment.site=:toSite";
+            params.put("toSite", toSite);
+        }
+        if (toDepartment != null) {
+            jpql += " and b.toDepartment=:toDep";
+            params.put("toDep", toDepartment);
         }
 
         jpql += " order by b.createdAt desc";
