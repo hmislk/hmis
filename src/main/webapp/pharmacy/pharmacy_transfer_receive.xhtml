@@ -28,14 +28,15 @@
                 <p:panel>
                     <f:facet name="header" >                                  
 
-                        <p:commandButton  
+                        <p:commandButton
                             id="btnSettleReceive"
-                            value="Receive" 
+                            value="Receive"
                             icon="fas fa-check"
                             style="float: right;"
                             class="ui-button-success mx-2"
-                            action="#{transferReceiveController.settle}" 
-                            ajax="false" >
+                            action="#{transferReceiveController.settle}"
+                            ajax="false"
+                            onclick="return confirm('Are you sure you want to receive this transfer?');" >
                         </p:commandButton>
                         <h:panelGroup rendered="#{transferReceiveController.issuedBill.comments ne null and not empty transferReceiveController.issuedBill.comments}">
                             <p:outputLabel class="mx-4 text-break" value="Note :  #{transferReceiveController.issuedBill.comments}" />
@@ -61,6 +62,7 @@
                                             icon="pi pi-search"
                                             id="btnViewSelectedItemDetails"
                                             title="View Item Details"
+                                            ariaLabel="View Item Details"
                                             action="#{transferReceiveController.displayItemDetails(ph)}"
                                             update=":#{p:resolveFirstComponentWithId('tab',view).clientId}"
                                             process="@this"
@@ -69,6 +71,7 @@
                                             icon="pi pi-info-circle"
                                             id="btnViewBatchDetails"
                                             title="View Batch Details"
+                                            ariaLabel="View Batch Details"
                                             actionListener="#{transferReceiveController.prepareBatchDetails(ph)}"
                                             update=":#{p:resolveFirstComponentWithId('batchDetailsForm',view).clientId}"
                                             oncomplete="PF('batchDetailsDialog').show();"
@@ -308,7 +311,7 @@
                                 </div>
                                 <div class="card-body">
                                     <div class="mb-3">
-                                        <p:selectBooleanCheckbox
+                                        <h:selectBooleanCheckbox
                                             id="transferReceiveA4"
                                             value="#{pharmacyConfigController.transferReceiveA4}" />
                                         <p:outputLabel for="transferReceiveA4" value="A4 Receipt Format" class="ms-2" />
@@ -316,15 +319,15 @@
                                     </div>
 
                                     <div class="mb-3">
-                                        <p:selectBooleanCheckbox
+                                        <h:selectBooleanCheckbox
                                             id="transferReceiveTemplate"
                                             value="#{pharmacyConfigController.transferReceiveTemplate}" />
                                         <p:outputLabel for="transferReceiveTemplate" value="Template Bill Format" class="ms-2" />
                                         <small class="form-text text-muted d-block">Template-based receipt format for transfer receive bills</small>
                                     </div>
-                                    
+
                                     <div class="mb-3">
-                                        <p:selectBooleanCheckbox
+                                        <h:selectBooleanCheckbox
                                             id="transferReceiveCustom1"
                                             value="#{pharmacyConfigController.transferReceiveCustom1}" />
                                         <p:outputLabel for="transferReceiveCustom1" value="Letter Paper Format Custom 1" class="ms-2" />
@@ -332,7 +335,7 @@
                                     </div>
 
                                     <div class="mb-3">
-                                        <p:selectBooleanCheckbox
+                                        <h:selectBooleanCheckbox
                                             id="transferReceiveA4Detailed"
                                             value="#{pharmacyConfigController.transferReceiveA4Detailed}" />
                                         <p:outputLabel for="transferReceiveA4Detailed" value="A4 Detailed Receipt" class="ms-2" />
@@ -340,7 +343,7 @@
                                     </div>
 
                                     <div class="mb-3">
-                                        <p:selectBooleanCheckbox
+                                        <h:selectBooleanCheckbox
                                             id="transferReceiveA4Custom1"
                                             value="#{pharmacyConfigController.transferReceiveA4Custom1}" />
                                         <p:outputLabel for="transferReceiveA4Custom1" value="A4 Custom Format 1" class="ms-2" />
@@ -348,7 +351,7 @@
                                     </div>
 
                                     <div class="mb-3">
-                                        <p:selectBooleanCheckbox
+                                        <h:selectBooleanCheckbox
                                             id="transferReceiveA4Custom2"
                                             value="#{pharmacyConfigController.transferReceiveA4Custom2}" />
                                         <p:outputLabel for="transferReceiveA4Custom2" value="A4 Custom Format 2" class="ms-2" />
