@@ -318,6 +318,51 @@ We drive Chrome via the Playwright MCP server for end-to-end verification. Playw
 
 When you finish a UI change, mentally check: "If I asked Playwright to click the Fast Receive button on row PHPHTI/2878, can it identify that row uniquely from the accessibility snapshot?" If not, add titles until it can.
 
+### Data-entry components — make them automatable and robust (required)
+
+These patterns came out of end-to-end transfer testing. Apply them **while
+writing the page** so both real users and the Playwright MCP server can drive
+the form reliably. The runtime counterpart is
+[Playwright E2E Testing Workflow](../testing/playwright-e2e-workflow.md).
+
+- **Give every actionable button a stable `id`.** Add/Save/Settle/Issue/Receive
+  buttons must have an explicit `id` (e.g. `id="btnAddItem"`,
+  `id="btnSettleReceive"`). Reference one button from another component's
+  JavaScript via `#{p:resolveFirstComponentWithId('btnAddItem',view).clientId}`.
+  Do **not** use the `p:component(...)` EL function — it is not registered in
+  this project and throws a 500 (`Function 'p:component' not found`).
+
+- **Limit autocomplete result counts.** Add `maxResults="10"` (or a config-driven
+  cap) to every `p:autoComplete`. Unbounded result lists are slow and unusable.
+  For large master lists (staff, items), also set `minQueryLength="3"` and
+  `queryDelay="600"` so the server query fires once the user pauses, not on every
+  keystroke.
+
+- **Never let Enter clear or wrongly submit the form.** A JSF form with no
+  default command submits on Enter via the first command button, which on an
+  item-entry page silently wipes the in-progress bill. Guard it:
+  - On the item autocomplete, `onkeydown`: when the suggestion panel is open, let
+    Enter select the highlighted item; otherwise `event.preventDefault()` so
+    Enter does not submit.
+  - On the quantity field, `onkeydown`: `preventDefault()` on Enter to stop the
+    submit; `onkeyup`: on Enter, after a short `setTimeout` (≈350 ms, to let the
+    keyup-AJAX commit the bound quantity first) click the Add button by its
+    resolved client id. The delay matters — without it the quantity arrives empty.
+
+- **Multi-word search must match in any order.** When a `completeMethod` backs a
+  full-name search (staff, patients), split the query on whitespace and AND each
+  token across the relevant fields (name/code) server-side. A naïve single-`LIKE`
+  query fails the moment the user types `First Last`. (See
+  `StaffController.completeStaffWithoutDoctors`.)
+
+- **Protect settle/issue/receive against double submission.** Use a JS
+  `confirm()` guard in `onclick`
+  (`onclick="if (!confirm('Are you sure …?')) return false;"`) **and** a
+  server-side re-entrancy guard (a `synchronized` settle method and/or a boolean
+  `settling` flag) so a rapid double-click cannot create duplicate bills/items.
+  Do **not** rely on `this.disabled=true` in `onclick` — disabled fields are
+  excluded from the POST, so the values they hold never reach the server.
+
 ---
 
 ## Troubleshooting Checklist
