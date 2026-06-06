@@ -101,8 +101,10 @@ public class InwardDocumentUploadController implements Serializable {
             return;
         }
         try {
-            InputStream in = file.getInputStream();
-            byte[] fileContent = IOUtils.toByteArray(in);
+            byte[] fileContent;
+            try (InputStream in = file.getInputStream()) {
+                fileContent = IOUtils.toByteArray(in);
+            }
             String detectedContentType = detectContentType(fileContent, fileName);
             if (detectedContentType == null) {
                 JsfUtil.addErrorMessage("Invalid file type. Only PDF, JPEG, JPG, and PNG are allowed.");
@@ -153,8 +155,10 @@ public class InwardDocumentUploadController implements Serializable {
             return;
         }
         try {
-            InputStream in = uploadedFile.getInputStream();
-            byte[] fileContent = IOUtils.toByteArray(in);
+            byte[] fileContent;
+            try (InputStream in = uploadedFile.getInputStream()) {
+                fileContent = IOUtils.toByteArray(in);
+            }
             String detectedContentType = detectContentType(fileContent, fileName);
             if (detectedContentType == null) {
                 JsfUtil.addErrorMessage("Invalid file type. Only PDF, JPEG, JPG, and PNG are allowed.");
