@@ -2199,6 +2199,7 @@ public class BillService {
                 + " left join b.patient pat "
                 + " left join pat.person pers "
                 + " left join b.patientEncounter pe "
+                + " left join b.toDepartment toDept "
                 + " where b.retired=:ret "
                 + " and b.billTypeAtomic in :billTypesAtomics "
                 + " and b.createdAt between :fromDate and :toDate";
@@ -2238,11 +2239,11 @@ public class BillService {
             params.put("toIns", toInstitution);
         }
         if (toSite != null && toDepartment == null) {
-            jpql += " and b.toDepartment.site=:toSite";
+            jpql += " and toDept.site=:toSite";
             params.put("toSite", toSite);
         }
         if (toDepartment != null) {
-            jpql += " and b.toDepartment=:toDep";
+            jpql += " and toDept=:toDep";
             params.put("toDep", toDepartment);
         }
 
