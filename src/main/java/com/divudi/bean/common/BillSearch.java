@@ -1031,6 +1031,7 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
         bts.add(BillType.PharmacySale);
         bts.add(BillType.PharmacyWholeSale);
         bts.add(BillType.InwardPaymentBill);
+        bts.add(BillType.InwardAppointmentBill);
         bts.add(BillType.CollectingCentrePaymentReceiveBill);
         bts.add(BillType.PaymentBill);
         bts.add(BillType.PatientPaymentReceiveBill);
@@ -1086,6 +1087,7 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
         bts.add(BillType.PharmacySale);
         bts.add(BillType.PharmacyWholeSale);
         bts.add(BillType.InwardPaymentBill);
+        bts.add(BillType.InwardAppointmentBill);
         bts.add(BillType.CollectingCentrePaymentReceiveBill);
         bts.add(BillType.PaymentBill);
         bts.add(BillType.PatientPaymentReceiveBill);

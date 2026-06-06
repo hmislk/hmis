@@ -17713,6 +17713,7 @@ public class SearchController implements Serializable {
 // Generate Inward Payments and add to the main bundle
             List<BillTypeAtomic> inwardPayments = new ArrayList<>();
             inwardPayments.add(BillTypeAtomic.INWARD_DEPOSIT);
+            inwardPayments.add(BillTypeAtomic.INWARD_APPOINTMENT_BILL);
             ReportTemplateRowBundle inwardPaymentsBundle = generatePaymentMethodColumnsByBills(inwardPayments);
             inwardPaymentsBundle.setBundleType("InwardPayments");
             inwardPaymentsBundle.setName("Inward Payments");
@@ -17722,6 +17723,7 @@ public class SearchController implements Serializable {
 // Generate Inward Payments Cancel and add to the main bundle
             List<BillTypeAtomic> inwardPaymentsCancel = new ArrayList<>();
             inwardPaymentsCancel.add(BillTypeAtomic.INWARD_DEPOSIT_CANCELLATION);
+            inwardPaymentsCancel.add(BillTypeAtomic.INWARD_APPOINTMENT_CANCEL_BILL);
             ReportTemplateRowBundle inwardPaymentsCancelBundle = generatePaymentMethodColumnsByBills(inwardPaymentsCancel);
             inwardPaymentsCancelBundle.setBundleType("InwardPaymentsCancel");
             inwardPaymentsCancelBundle.setName("Inward Payment Cancellations");
@@ -18167,6 +18169,7 @@ public class SearchController implements Serializable {
 // Generate Inward Payments and add to the main bundle
             List<BillTypeAtomic> inwardPayments = new ArrayList<>();
             inwardPayments.add(BillTypeAtomic.INWARD_DEPOSIT);
+            inwardPayments.add(BillTypeAtomic.INWARD_APPOINTMENT_BILL);
             ReportTemplateRowBundle inwardPaymentsBundle = generatePaymentMethodColumnsByBills(inwardPayments);
             inwardPaymentsBundle.setBundleType("InwardPayments");
             inwardPaymentsBundle.setName("Inward Payments");
@@ -18176,6 +18179,7 @@ public class SearchController implements Serializable {
 // Generate Inward Payments Cancel and add to the main bundle
             List<BillTypeAtomic> inwardPaymentsCancel = new ArrayList<>();
             inwardPaymentsCancel.add(BillTypeAtomic.INWARD_DEPOSIT_CANCELLATION);
+            inwardPaymentsCancel.add(BillTypeAtomic.INWARD_APPOINTMENT_CANCEL_BILL);
             ReportTemplateRowBundle inwardPaymentsCancelBundle = generatePaymentMethodColumnsByBills(inwardPaymentsCancel);
             inwardPaymentsCancelBundle.setBundleType("InwardPaymentsCancel");
             inwardPaymentsCancelBundle.setName("Inward Payment Cancellations");
@@ -19791,7 +19795,9 @@ public class SearchController implements Serializable {
         // Query bills for inward deposit receipts
         List<BillTypeAtomic> inwardDepositBillTypes = new ArrayList<>();
         inwardDepositBillTypes.add(BillTypeAtomic.INWARD_DEPOSIT);
+        inwardDepositBillTypes.add(BillTypeAtomic.INWARD_APPOINTMENT_BILL);
         inwardDepositBillTypes.add(BillTypeAtomic.INWARD_DEPOSIT_CANCELLATION);
+        inwardDepositBillTypes.add(BillTypeAtomic.INWARD_APPOINTMENT_CANCEL_BILL);
         inwardDepositBillTypes.add(BillTypeAtomic.INWARD_DEPOSIT_REFUND);
         inwardDepositBillTypes.add(BillTypeAtomic.INWARD_DEPOSIT_REFUND_CANCELLATION);
 
@@ -20414,7 +20420,9 @@ public class SearchController implements Serializable {
             // Get specific inward deposit bill types only
             List<BillTypeAtomic> inwardDepositBillTypes = Arrays.asList(
                     BillTypeAtomic.INWARD_DEPOSIT,
+                    BillTypeAtomic.INWARD_APPOINTMENT_BILL,
                     BillTypeAtomic.INWARD_DEPOSIT_CANCELLATION,
+                    BillTypeAtomic.INWARD_APPOINTMENT_CANCEL_BILL,
                     BillTypeAtomic.INWARD_DEPOSIT_REFUND,
                     BillTypeAtomic.INWARD_DEPOSIT_REFUND_CANCELLATION
             );
