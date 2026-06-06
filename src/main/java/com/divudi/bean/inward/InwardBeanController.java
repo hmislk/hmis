@@ -2019,10 +2019,11 @@ public class InwardBeanController implements Serializable {
         HashMap hm = new HashMap();
         String sql = "SELECT  sum(b.netTotal) FROM Bill b "
                 + " WHERE b.retired=false "
-                + "  and b.billType=:btp "
+                + " and b.billType=:btp "
                 + " and b.patientEncounter=:pe ";
         hm.put("btp", BillType.InwardPaymentBill);
         hm.put("pe", patientEncounter);
+       
         double dbl = getBillFacade().findDoubleByJpql(sql, hm, TemporalType.TIMESTAMP);
 
         return dbl;
@@ -2034,12 +2035,13 @@ public class InwardBeanController implements Serializable {
         HashMap hm = new HashMap();
         String sql = "SELECT  sum(b.netTotal) FROM Bill b "
                 + " WHERE b.retired=false "
-                + "  and b.billType=:btp "
+                + " and b.billType=:btp "
                 + " and b.paymentMethod !=:pm "
                 + " and b.patientEncounter=:pe ";
         hm.put("btp", BillType.InwardPaymentBill);
         hm.put("pm", PaymentMethod.Credit);
         hm.put("pe", patientEncounter);
+
         double dbl = getBillFacade().findDoubleByJpql(sql, hm, TemporalType.TIMESTAMP);
 
         return dbl;
@@ -2051,12 +2053,13 @@ public class InwardBeanController implements Serializable {
         HashMap hm = new HashMap();
         String sql = "SELECT  sum(b.netTotal) FROM Bill b "
                 + " WHERE b.retired=false "
-                + "  and b.billTypeAtomic in :bts "
+                + " and b.billTypeAtomic in :bts "
                 + " and b.patientEncounter=:pe ";
         List<BillTypeAtomic> bts = new ArrayList<>();
         bts.add(BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED);
         hm.put("bts", bts);
         hm.put("pe", patientEncounter);
+
         double dbl = getBillFacade().findDoubleByJpql(sql, hm, TemporalType.TIMESTAMP);
 
         return dbl;
@@ -2406,6 +2409,13 @@ public class InwardBeanController implements Serializable {
         if (billFee == null || item.isMarginNotAllowed()
                 || billFee.getFee() == null
                 || Boolean.FALSE.equals(billFee.getFee().getMarginAllowed())) {
+            // Fix C: clear stale discount and recompute net so calTotals() sees correct feeValue
+            if (billFee != null) {
+                billFee.setFeeDiscount(0.0);
+                billFee.setFeeUnitDiscount(0.0);
+                double gross = billFee.getFeeGrossValue() != null ? billFee.getFeeGrossValue() : 0.0;
+                billFee.setFeeValue(gross);
+            }
             return;
         }
 
@@ -2414,6 +2424,10 @@ public class InwardBeanController implements Serializable {
             billFee.setFeeMargin(margin);
             billFeeFacade.edit(billFee);
         }
+
+        // Fix A: reset discount before recalculating so stale values don't survive
+        billFee.setFeeDiscount(0.0);
+        billFee.setFeeUnitDiscount(0.0);
 
         double net = (billFee.getFeeGrossValue() + margin) - billFee.getFeeDiscount();
 
@@ -2424,9 +2438,27 @@ public class InwardBeanController implements Serializable {
         if (billFee == null || item.isMarginNotAllowed()
                 || billFee.getFee() == null
                 || Boolean.FALSE.equals(billFee.getFee().getMarginAllowed())) {
+            // Fix C: clear stale discount and recompute net so calTotals() sees correct feeValue
+            if (billFee != null) {
+                billFee.setFeeDiscount(0.0);
+                billFee.setFeeUnitDiscount(0.0);
+                double gross = billFee.getFeeGrossValue() != null ? billFee.getFeeGrossValue() : 0.0;
+                double uQty = (billFee.getBillItem() != null && billFee.getBillItem().getQty() != null && billFee.getBillItem().getQty() > 0)
+                        ? billFee.getBillItem().getQty() : 1.0;
+                billFee.setFeeUnitValue(gross / uQty);
+                billFee.setFeeValue(gross);
+            }
             return;
         }
         if (patientEncounter == null || patientEncounter.getAdmissionType() == null) {
+            // Fix C: clear stale discount and recompute net so calTotals() sees correct feeValue
+            billFee.setFeeDiscount(0.0);
+            billFee.setFeeUnitDiscount(0.0);
+            double gross = billFee.getFeeGrossValue() != null ? billFee.getFeeGrossValue() : 0.0;
+            double uQty = (billFee.getBillItem() != null && billFee.getBillItem().getQty() != null && billFee.getBillItem().getQty() > 0)
+                    ? billFee.getBillItem().getQty() : 1.0;
+            billFee.setFeeUnitValue(gross / uQty);
+            billFee.setFeeValue(gross);
             return;
         }
 
@@ -2445,6 +2477,11 @@ public class InwardBeanController implements Serializable {
                 billFeeFacade.edit(billFee);
             }
         }
+
+        // Fix A: reset discount before applyInwardDiscountToBillFee so stale values
+        // don't survive if that method exits early without setting a new discount
+        billFee.setFeeUnitDiscount(0.0);
+        billFee.setFeeDiscount(0.0);
 
         applyInwardDiscountToBillFee(billFee, item, patientEncounter);
 

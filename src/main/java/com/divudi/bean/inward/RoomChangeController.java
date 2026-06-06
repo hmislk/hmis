@@ -355,7 +355,18 @@ public class RoomChangeController implements Serializable {
         pR.setDischarged(false);
         pR.setDischargedBy(null);
         getPatientRoomFacade().edit(pR);
+    }
 
+    public void removeRoom(PatientRoom pR) {
+        if (pR == null) {
+            JsfUtil.addErrorMessage("No Patient Room Detected");
+            return;
+        }
+        pR.setRetired(true);
+        pR.setRetiredAt(new Date());
+        pR.setRetirer(sessionController.getWebUser());
+        getPatientRoomFacade().edit(pR);
+        bhtSummeryController.setPatientRooms(null);
     }
 
     public void removeGuardianRoom(PatientRoom pR) {

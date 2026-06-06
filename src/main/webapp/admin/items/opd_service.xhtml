@@ -140,8 +140,20 @@
                                                     <f:selectItems value="#{enumController.inwardChargeTypes}" var="i" itemLabel="#{i.label}" itemValue="#{i}"/>
                                                 </p:selectOneMenu>
 
-                                                <p:outputLabel value="Item Code"/>
-                                                <p:inputText id="ServiceCode" value="#{serviceController.current.code}" class="form-control mx-2"/>
+                                                <p:outputLabel value="Item Code" />
+                                                <h:panelGroup class="d-flex gap-2">
+                                                    <p:inputText id="ServiceCode" value="#{serviceController.current.code}" class="form-control mx-2"/>
+                                                    <p:commandButton
+                                                        class="ui-button-warning"
+                                                        update="ServiceCode"
+                                                        process="@this btnGenCode cmbIns cmbDep"
+                                                        icon="fa fa-cog"
+                                                        title="Auto Generate Code"
+                                                        disabled="#{serviceController.current.id ne null}"
+                                                        id="btnGenCode"
+                                                        action="#{serviceController.generateCode()}">
+                                                    </p:commandButton>
+                                                </h:panelGroup>
                                                 <h:outputText></h:outputText>
                                             </h:panelGrid>
                                         </p:tab>
@@ -221,27 +233,11 @@
                                     </p:tabView>
                                 </h:panelGrid>
 
-                                <div class="d-flex justify-content-end align-items-center">
-                                    <p:commandButton 
-                                        class="ui-button-warning my-2 mx-2"
-                                        id="btnGenarate" 
-                                        icon="fas fa-redo-alt"
-                                        update="gpDetail"
-                                        process="btnGenarate gpDetail" 
-                                        value="Genarate Item Code"          
-                                        action="#{serviceController.setServiceCode}">
-                                    </p:commandButton> 
-                                </div>
                             </p:panel>
                         </div>
                     </div>
                 </p:panel>
-
-                <!--                <p:panel >
-                                    <p:media value="http://www.youtube.com/v/KZnUr8lcqjo" width="420" height="315" player="flash"/>
                 
-                                </p:panel>-->
-
             </h:form>
         </h:panelGroup>
         <h:form>

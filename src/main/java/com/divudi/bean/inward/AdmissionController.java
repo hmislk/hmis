@@ -517,6 +517,12 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
                 current.setClaimable(true);
             }
         }
+        if (configOptionApplicationController.getBooleanValueByKey("Inward Admission - Show Claimable Field", true)
+                && configOptionApplicationController.getBooleanValueByKey("Inward Admission - Enforce Claimable for Credit", false)) {
+            if (current.getPaymentMethod() == PaymentMethod.Credit) {
+                current.setClaimable(true);
+            }
+        }
         if (current.getPaymentMethod() == PaymentMethod.Credit && current.getPatient() != null) {
             // Prefer PatientInsurance profiles over last-admission lookup
             List<PatientInsurance> profiles = patientInsuranceController.findActiveProfiles(current.getPatient());
@@ -1477,6 +1483,13 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         if (!configOptionApplicationController.getBooleanValueByKey("Inward Admission - Show Claimable Field", true)) {
             return false;
         }
+        PaymentMethod pm = getCurrent() != null ? getCurrent().getPaymentMethod() : null;
+        if (configOptionApplicationController.getBooleanValueByKey("Inward Admission - Enforce Claimable for Credit", false)) {
+            // Credit is always locked at true; all other payment methods fall through to normal logic
+            if (pm == PaymentMethod.Credit) {
+                return false;
+            }
+        }
         if (configOptionApplicationController.getBooleanValueByKey("Inward Admission - Auto Mark Claimable for Credit Admissions", false)) {
             return true;
         }
@@ -1485,7 +1498,6 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         if ("None".equalsIgnoreCase(claimableRequiredFor)) {
             return false;
         }
-        PaymentMethod pm = getCurrent() != null ? getCurrent().getPaymentMethod() : null;
         if ("All".equalsIgnoreCase(claimableRequiredFor)) {
             return true;
         } else if ("Credit".equalsIgnoreCase(claimableRequiredFor)) {
@@ -1613,6 +1625,9 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
     private void saveGuardian() {
         Person temG = getCurrent().getGuardian();
+        if (temG == null) {
+            return;
+        }
         temG.setCreatedAt(Calendar.getInstance().getTime());
         temG.setCreater(getSessionController().getLoggedUser());
 
@@ -1642,7 +1657,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             JsfUtil.addErrorMessage("Please select Admission Type");
             return true;
         }
-        if (getCurrent().getParentEncounter() == null && getCurrent().getPaymentMethod() == null) {
+        if (!isRapidTempAe() && getCurrent().getParentEncounter() == null && getCurrent().getPaymentMethod() == null) {
             JsfUtil.addErrorMessage("Select Paymentmethod");
             return true;
         }
@@ -1655,15 +1670,21 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         boolean showClaimable = configOptionApplicationController.getBooleanValueByKey(
                 "Inward Admission - Show Claimable Field", true);
         if (showClaimable) {
+            boolean enforceForCredit = configOptionApplicationController.getBooleanValueByKey(
+                    "Inward Admission - Enforce Claimable for Credit", false);
+            if (enforceForCredit && getCurrent().getPaymentMethod() == PaymentMethod.Credit) {
+                getCurrent().setClaimable(true);
+            }
             boolean autoMarkCredit = configOptionApplicationController.getBooleanValueByKey(
                     "Inward Admission - Auto Mark Claimable for Credit Admissions", false);
             boolean claimableAllowed = isClaimableAllowed();
-            if (!autoMarkCredit && !claimableAllowed && getCurrent().isClaimable()) {
+            boolean creditEnforced = enforceForCredit && getCurrent().getPaymentMethod() == PaymentMethod.Credit;
+            if (!autoMarkCredit && !creditEnforced && !claimableAllowed && getCurrent().isClaimable()) {
                 getCurrent().setClaimable(false);
                 JsfUtil.addErrorMessage("Claimable is not applicable for the selected payment method");
                 return true;
             }
-            if (!autoMarkCredit && claimableAllowed && !getCurrent().isClaimable()) {
+            if (!autoMarkCredit && !creditEnforced && claimableAllowed && !getCurrent().isClaimable()) {
                 JsfUtil.addErrorMessage("Please mark the admission as Claimable");
                 return true;
             }
@@ -1703,42 +1724,51 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             }
         }
 
-        if (getCurrent().getAdmissionType().isRoomChargesAllowed()) {
-            if (getPatientRoom().getRoomFacilityCharge() == null) {
-                JsfUtil.addErrorMessage("Select Room ");
-                return true;
-            }
-        }
-        if (sessionController.getApplicationPreference().isInwardMoChargeCalculateInitialTime()) {
-            if (getPatientRoom().getRoomFacilityCharge().getTimedItemFee().getDurationDaysForMoCharge() == 0.0) {
-                JsfUtil.addErrorMessage("Plase Add Duration Days For Mo Charge");
-                return true;
-            }
-            if (getPatientRoom().getRoomFacilityCharge().getMoChargeForAfterDuration() == null) {
-                JsfUtil.addErrorMessage("Plase Add Charge for After Duration Days");
-                return true;
-            }
-            if (getPatientRoom().getRoomFacilityCharge().getMoChargeForAfterDuration().equals("") || getPatientRoom().getRoomFacilityCharge().getMoChargeForAfterDuration().equals(0.0)) {
-                JsfUtil.addErrorMessage("Plase Add Charge for After Duration Days");
-                return true;
-            }
-        }
-
-        if (getCurrent().getAdmissionType().isRoomChargesAllowed()) {
-            if (getPatientRoom() != null) {
-                if (getInwardBean().isRoomFilled(getPatientRoom().getRoomFacilityCharge().getRoom())) {
-                    JsfUtil.addErrorMessage("Select Empty Room");
+        // Rapid / Temp A&E admissions skip the "room is required" check and the
+        // MO-charge validation, but room occupancy is always enforced when a room
+        // is voluntarily provided — an occupied room must never be double-assigned
+        // regardless of admission type. (Issue #21183)
+        if (!isRapidTempAe()) {
+            if (getCurrent().getAdmissionType().isRoomChargesAllowed()) {
+                if (getPatientRoom().getRoomFacilityCharge() == null) {
+                    JsfUtil.addErrorMessage("Select Room ");
                     return true;
                 }
-            } else {
-                JsfUtil.addErrorMessage("Room is Empty");
-                return true;
+            }
+            if (sessionController.getApplicationPreference().isInwardMoChargeCalculateInitialTime()) {
+                if (getPatientRoom().getRoomFacilityCharge().getTimedItemFee().getDurationDaysForMoCharge() == 0.0) {
+                    JsfUtil.addErrorMessage("Plase Add Duration Days For Mo Charge");
+                    return true;
+                }
+                if (getPatientRoom().getRoomFacilityCharge().getMoChargeForAfterDuration() == null) {
+                    JsfUtil.addErrorMessage("Plase Add Charge for After Duration Days");
+                    return true;
+                }
+                if (getPatientRoom().getRoomFacilityCharge().getMoChargeForAfterDuration().equals("") || getPatientRoom().getRoomFacilityCharge().getMoChargeForAfterDuration().equals(0.0)) {
+                    JsfUtil.addErrorMessage("Plase Add Charge for After Duration Days");
+                    return true;
+                }
             }
         }
 
-        if (getCurrent().getReferringConsultant() == null) {
-            JsfUtil.addErrorMessage("Please Select Referring Doctor");
+        // Occupancy check applies to every admission whenever a room is provided,
+        // including Provisional Emergency admissions where room selection is optional.
+        if (getPatientRoom().getRoomFacilityCharge() != null
+                && getInwardBean().isRoomFilled(getPatientRoom().getRoomFacilityCharge().getRoom())) {
+            JsfUtil.addErrorMessage("Select Empty Room");
             return true;
+        }
+
+        if (!isRapidTempAe()) {
+            if (getCurrent().getReferringConsultant() == null) {
+                JsfUtil.addErrorMessage("Please Select Referring Doctor");
+                return true;
+            }
+
+            if (getCurrent().getOpdDoctor() == null) {
+                JsfUtil.addErrorMessage("Please Select Medical Officer");
+                return true;
+            }
         }
 
         if (getCurrent().getPatient() == null) {
@@ -1832,19 +1862,19 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
                     return true;
                 }
             }
-            if (configOptionApplicationController.getBooleanValueByKey("Inward Admission - Referring Doctor Required", false)) {
+            if (!isRapidTempAe() && configOptionApplicationController.getBooleanValueByKey("Inward Admission - Referring Doctor Required", false)) {
                 if (getCurrent().getReferringDoctor() == null) {
                     JsfUtil.addErrorMessage("Doctor who referred the patient is Required");
                     return true;
                 }
             }
-            if (configOptionApplicationController.getBooleanValueByKey("Inward Admission - Referring Staff Required", false)) {
+            if (!isRapidTempAe() && configOptionApplicationController.getBooleanValueByKey("Inward Admission - Referring Staff Required", false)) {
                 if (getCurrent().getReferringStaff() == null) {
                     JsfUtil.addErrorMessage("Staff who referred the patient is Required");
                     return true;
                 }
             }
-            if (configOptionApplicationController.getBooleanValueByKey("Inward Admission - Referral Institution Required", false)) {
+            if (!isRapidTempAe() && configOptionApplicationController.getBooleanValueByKey("Inward Admission - Referral Institution Required", false)) {
                 if (getCurrent().getReferredByInstitution() == null) {
                     JsfUtil.addErrorMessage("Referral Institution is Required");
                     return true;
@@ -1856,13 +1886,13 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
                     return true;
                 }
             }
-            if (configOptionApplicationController.getBooleanValueByKey("Inward Admission - Referral Number Required", false)) {
+            if (!isRapidTempAe() && configOptionApplicationController.getBooleanValueByKey("Inward Admission - Referral Number Required", false)) {
                 if (getCurrent().getReferralId() == null || getCurrent().getReferralId().trim().isEmpty()) {
                     JsfUtil.addErrorMessage("Referral Number is Required");
                     return true;
                 }
             }
-            if (configOptionApplicationController.getBooleanValueByKey("Patient Admit - Require Referred From in Patient Admission", false)) {
+            if (!isRapidTempAe() && configOptionApplicationController.getBooleanValueByKey("Patient Admit - Require Referred From in Patient Admission", false)) {
                 if (getCurrent().getReferringMethod() == null || getCurrent().getReferringMethod().trim().isEmpty()) {
                     JsfUtil.addErrorMessage("Referred From is Required");
                     return true;
@@ -2204,7 +2234,10 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             JsfUtil.addSuccessMessage("Patient admitted successfully with BHT No: " + getCurrent().getBhtNo());
         }
 
-        if (getCurrent().getAdmissionType().isRoomChargesAllowed() || getPatientRoom().getRoomFacilityCharge() != null) {
+        // Only create a PatientRoom record when a facility charge is actually selected.
+        // For Rapid / Temp A&E admissions the room validation is skipped, so
+        // getRoomFacilityCharge() may be null; attempting to save it would NPE. (Issue #21183)
+        if (getPatientRoom().getRoomFacilityCharge() != null) {
             PatientRoom currentPatientRoom = new PatientRoom();
             if (configOptionApplicationController.getBooleanValueByKey("Patient admission and room assignment are simultaneous processes.", true)) {
                 currentPatientRoom = getInwardBean().savePatientRoom(getPatientRoom(), null, getPatientRoom().getRoomFacilityCharge(), getCurrent(), getCurrent().getDateOfAdmission(), getSessionController().getLoggedUser());

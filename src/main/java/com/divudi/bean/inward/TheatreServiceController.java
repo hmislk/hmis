@@ -8,7 +8,8 @@
  */
 package com.divudi.bean.inward;
 import com.divudi.bean.common.BillBeanController;
-import com.divudi.bean.common.ServiceController;
+import com.divudi.bean.common.ConfigOptionApplicationController;
+import com.divudi.bean.common.ItemController;
 import com.divudi.bean.common.ServiceSubCategoryController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.core.util.JsfUtil;
@@ -56,6 +57,10 @@ public class TheatreServiceController implements Serializable {
     SessionController sessionController;
     @Inject
     private ServiceSubCategoryController serviceSubCategoryController;
+    @Inject
+    private ItemController itemController;
+    @Inject
+    private ConfigOptionApplicationController configOptionApplicationController;
     @EJB
     TheatreServiceFacade theatreServiceFacade;
     @EJB
@@ -208,6 +213,11 @@ public class TheatreServiceController implements Serializable {
         return false;
     }
 
+    public void generateCode() {
+        String code = itemController.generateNextItemCode(getCurrent().getInstitution(), getCurrent().getDepartment());
+        getCurrent().setCode(code);
+    }
+
     public void saveSelected() {
 
         if (getCurrent().getDepartment() == null) {
@@ -216,6 +226,20 @@ public class TheatreServiceController implements Serializable {
         }
         if (getCurrent().getInwardChargeType() == null) {
             JsfUtil.addErrorMessage("Please Select Inward Charge type");
+            return;
+        }
+
+        if (configOptionApplicationController.getBooleanValueByKey("Item Codes Generate - Automatically create Item Codes by Department.", false)) {
+            if (getCurrent().getId() == null) {
+                if (getCurrent().getCode() == null || getCurrent().getCode().trim().isEmpty()) {
+                    String code = itemController.generateNextItemCode(getCurrent().getInstitution(), getCurrent().getDepartment());
+                    getCurrent().setCode(code);
+                }
+            }
+        }
+
+        if (itemController.isItemCodeDuplicate(getCurrent().getCode(), getCurrent().getId())) {
+            JsfUtil.addErrorMessage("Item code is already used");
             return;
         }
 
@@ -550,9 +574,9 @@ public class TheatreServiceController implements Serializable {
             if (value == null || value.length() == 0) {
                 return null;
             }
-            ServiceController controller = (ServiceController) facesContext.getApplication().getELResolver().
+            TheatreServiceController controller = (TheatreServiceController) facesContext.getApplication().getELResolver().
                     getValue(facesContext.getELContext(), null, "theatreServiceController");
-            return controller.getEjbFacade().find(getKey(value));
+            return controller.getTheatreServiceFacade().find(getKey(value));
         }
 
         java.lang.Long getKey(String value) {
