@@ -566,7 +566,6 @@ public class TransferReceiveController implements Serializable {
         getIssuedBill().getForwardReferenceBills().add(getReceivedBill());
         fillData(getReceivedBill());
         getBillFacade().edit(getIssuedBill());
-        getBillFacade().edit(getReceivedBill());
         
         // Check if Transfer Issue is fully received and update fullyIssued status
         if (getIssuedBill() != null && !getIssuedBill().isFullyIssued()) {
@@ -979,7 +978,12 @@ public class TransferReceiveController implements Serializable {
         if (getReceivedBill().getId() == null) {
             getReceivedBill().setCreatedAt(new Date());
             getReceivedBill().setCreater(sessionController.getLoggedUser());
+            // Detach billItems before create() to prevent CascadeType.ALL from inserting
+            // them here — settle() creates each BillItem explicitly after stock validation.
+            List<BillItem> items = getReceivedBill().getBillItems();
+            getReceivedBill().setBillItems(new ArrayList<>());
             getBillFacade().create(getReceivedBill());
+            getReceivedBill().setBillItems(items);
         } else {
             getBillFacade().edit(getReceivedBill());
         }
