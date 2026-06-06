@@ -102,13 +102,9 @@
                                             value="Merge"
                                             icon="fa fa-compress-arrows-alt"
                                             class="w-100 ui-button-warning"
-                                            process="acPrimary acSecondary txtMergeReason btnMerge"
-                                            update="pdmGrowl panelPreview acPrimary acSecondary txtMergeReason"
-                                            action="#{patientMergeController.executeMerge()}">
-                                            <p:confirm header="Confirm Merge"
-                                                       message="This will permanently merge the secondary patient into the primary and deactivate the secondary. Continue?"
-                                                       icon="pi pi-exclamation-triangle" />
-                                        </p:commandButton>
+                                            ajax="false"
+                                            onclick="return confirm('This will permanently merge the secondary patient into the primary and deactivate the secondary. Continue?')"
+                                            action="#{patientMergeController.executeMerge()}" />
                                     </div>
                                 </div>
                             </p:panel>
@@ -128,29 +124,25 @@
                                     <div class="col-md-2">
                                         <p:commandButton value="Scan by NIC" icon="fa fa-id-card"
                                                          class="w-100"
-                                                         process="txtDetMax"
-                                                         update="tblDetResults pdmGrowl"
+                                                         ajax="false"
                                                          action="#{patientMergeController.scanByNic()}" />
                                     </div>
                                     <div class="col-md-2">
                                         <p:commandButton value="Scan by PHN" icon="fa fa-id-badge"
                                                          class="w-100"
-                                                         process="txtDetMax"
-                                                         update="tblDetResults pdmGrowl"
+                                                         ajax="false"
                                                          action="#{patientMergeController.scanByPhn()}" />
                                     </div>
                                     <div class="col-md-2">
                                         <p:commandButton value="Scan by MRN" icon="fa fa-barcode"
                                                          class="w-100"
-                                                         process="txtDetMax"
-                                                         update="tblDetResults pdmGrowl"
+                                                         ajax="false"
                                                          action="#{patientMergeController.scanByMrn()}" />
                                     </div>
                                     <div class="col-md-2">
                                         <p:commandButton value="Scan All" icon="fa fa-search"
                                                          class="w-100 ui-button-info"
-                                                         process="txtDetMax"
-                                                         update="tblDetResults pdmGrowl"
+                                                         ajax="false"
                                                          action="#{patientMergeController.scanAll()}" />
                                     </div>
                                 </div>
@@ -180,24 +172,19 @@
                                             <f:selectItem itemLabel="#{pair.patientB.person.name} (B)" itemValue="#{pair.patientB}" />
                                         </p:selectOneMenu>
                                     </p:column>
-                                    <p:column headerText="Actions" width="120">
+                                    <p:column headerText="Actions" width="140">
                                         <p:commandButton
                                             value="Merge"
                                             icon="fa fa-compress-arrows-alt"
                                             class="ui-button-warning me-1"
-                                            process="tblDetResults"
-                                            update="tblDetResults pdmGrowl"
-                                            action="#{patientMergeController.mergeDeterministicPair(pair)}">
-                                            <p:confirm header="Confirm Merge"
-                                                       message="Merge these two patients?"
-                                                       icon="pi pi-exclamation-triangle" />
-                                        </p:commandButton>
+                                            ajax="false"
+                                            onclick="return confirm('Merge these two patients?')"
+                                            action="#{patientMergeController.mergeDeterministicPair(pair)}" />
                                         <p:commandButton
                                             value="Dismiss"
                                             icon="fa fa-times"
                                             class="ui-button-secondary"
-                                            process="@this"
-                                            update="tblDetResults"
+                                            ajax="false"
                                             action="#{patientMergeController.dismissDeterministicPair(pair)}" />
                                     </p:column>
                                 </p:dataTable>
@@ -224,8 +211,7 @@
                                     <div class="col-md-2">
                                         <p:commandButton value="Run Scan" icon="fa fa-search"
                                                          class="w-100 ui-button-info"
-                                                         process="txtProbMax txtProbThresh"
-                                                         update="tblProbResults pdmGrowl"
+                                                         ajax="false"
                                                          action="#{patientMergeController.runProbabilisticScan()}" />
                                     </div>
                                 </div>
@@ -268,24 +254,19 @@
                                             <f:selectItem itemLabel="#{pair.patientB.person.name} (B)" itemValue="#{pair.patientB}" />
                                         </p:selectOneMenu>
                                     </p:column>
-                                    <p:column headerText="Actions" width="120">
+                                    <p:column headerText="Actions" width="140">
                                         <p:commandButton
                                             value="Merge"
                                             icon="fa fa-compress-arrows-alt"
                                             class="ui-button-warning me-1"
-                                            process="tblProbResults"
-                                            update="tblProbResults pdmGrowl"
-                                            action="#{patientMergeController.mergeProbabilisticPair(pair)}">
-                                            <p:confirm header="Confirm Merge"
-                                                       message="Merge these two patients?"
-                                                       icon="pi pi-exclamation-triangle" />
-                                        </p:commandButton>
+                                            ajax="false"
+                                            onclick="return confirm('Merge these two patients?')"
+                                            action="#{patientMergeController.mergeProbabilisticPair(pair)}" />
                                         <p:commandButton
                                             value="Dismiss"
                                             icon="fa fa-times"
                                             class="ui-button-secondary"
-                                            process="@this"
-                                            update="tblProbResults"
+                                            ajax="false"
                                             action="#{patientMergeController.dismissProbabilisticPair(pair)}" />
                                     </p:column>
                                 </p:dataTable>
@@ -331,8 +312,7 @@
                                     <div class="col-md-2">
                                         <p:commandButton value="Search" icon="fa fa-search"
                                                          class="w-100"
-                                                         process="dtHistFrom dtHistTo cmbHistStatus txtMergedBy"
-                                                         update="tblHistory pdmGrowl"
+                                                         ajax="false"
                                                          action="#{patientMergeController.searchHistory()}" />
                                     </div>
                                 </div>
@@ -351,7 +331,7 @@
                                         </h:outputText>
                                     </p:column>
                                     <p:column headerText="Merged By" width="120">
-                                        <h:outputText value="#{mr.mergedBy.username}" />
+                                        <h:outputText value="#{mr.mergedBy.name}" />
                                     </p:column>
                                     <p:column headerText="Primary Patient">
                                         <h:outputText value="#{mr.primaryPatient.person.name}" /><br />
@@ -382,15 +362,12 @@
                                             icon="fa fa-undo"
                                             class="ui-button-danger"
                                             rendered="#{mr.status.name() eq 'ACTIVE'}"
-                                            process="@this"
-                                            update="tblHistory pdmGrowl"
+                                            ajax="false"
+                                            onclick="return confirm('Reverse this merge? Affected records will be re-pointed back to the secondary patient.')"
                                             action="#{patientMergeController.executeUnmerge()}">
                                             <f:setPropertyActionListener
                                                 value="#{mr}"
                                                 target="#{patientMergeController.selectedMergeRecord}" />
-                                            <p:confirm header="Confirm Unmerge"
-                                                       message="Reverse this merge? Affected records will be re-pointed back to the secondary patient."
-                                                       icon="pi pi-exclamation-triangle" />
                                         </p:commandButton>
                                     </p:column>
                                 </p:dataTable>
@@ -411,15 +388,6 @@
                         </p:tab>
 
                     </p:tabView>
-
-                    <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
-                        <p:commandButton value="Yes" type="button"
-                                         styleClass="ui-confirmdialog-yes ui-button-danger"
-                                         icon="pi pi-check" />
-                        <p:commandButton value="No" type="button"
-                                         styleClass="ui-confirmdialog-no ui-button-secondary"
-                                         icon="pi pi-times" />
-                    </p:confirmDialog>
 
                 </h:form>
             </ui:define>
