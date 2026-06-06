@@ -3046,8 +3046,13 @@ public class LaborataryReportController implements Serializable {
     }
 
     public void downloadInvestigationPriceListExcel() {
-        if (investigationPriceList == null || investigationPriceList.isEmpty()) {
-            JsfUtil.addErrorMessage("No data to export. Click Generate first.");
+        if (department == null) {
+            JsfUtil.addErrorMessage("Please select a department.");
+            return;
+        }
+        List<ItemLight> exportList = itemFeeManager.fillItemLightsForDepartment(department);
+        if (exportList == null || exportList.isEmpty()) {
+            JsfUtil.addErrorMessage("No data to export for the selected department.");
             return;
         }
 
@@ -3122,7 +3127,7 @@ public class LaborataryReportController implements Serializable {
             }
 
             int serial = 1;
-            for (ItemLight il : investigationPriceList) {
+            for (ItemLight il : exportList) {
                 Row row = sheet.createRow(rowIndex++);
                 Cell c0 = row.createCell(0);
                 c0.setCellValue(serial++);

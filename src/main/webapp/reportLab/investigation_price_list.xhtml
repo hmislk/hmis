@@ -62,9 +62,9 @@
                 <h:panelGroup rendered="#{not empty laborataryReportController.investigationPriceList}" layout="block">
 
                     <div class="text-center mb-2 printOnly">
-                        <h4>#{sessionController.institution.name}</h4>
-                        <h5>Investigation &amp; Service Price List</h5>
-                        <p>Department: #{laborataryReportController.department.name}</p>
+                        <h4><h:outputText value="#{sessionController.institution.name}"/></h4>
+                        <h5><h:outputText value="Investigation &amp; Service Price List"/></h5>
+                        <p><h:outputText value="Department: #{laborataryReportController.department.name}"/></p>
                     </div>
 
                     <p:dataTable id="tblPriceList"

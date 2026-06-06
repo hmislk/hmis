@@ -8,7 +8,7 @@ Users select a lab department and the system returns all investigations and serv
 
 ## Navigation Path
 
-```
+```text
 Top navbar → Lab (flask icon, fa-flask)
  └─ Lab Analytics
      └─ Left sidebar → "Reference" accordion tab (last tab)
