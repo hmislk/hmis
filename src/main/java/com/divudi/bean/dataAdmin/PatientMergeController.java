@@ -30,6 +30,8 @@ public class PatientMergeController implements Serializable {
 
     @PostConstruct
     public void init() {
+        initHistoryDates();
+        searchHistory();
     }
 
     // <editor-fold defaultstate="collapsed" desc="EJBs">
@@ -80,7 +82,7 @@ public class PatientMergeController implements Serializable {
         secondaryPatient = null;
         mergeReason = null;
         deterministicResults = new ArrayList<>();
-        historyResults = new ArrayList<>();
+        searchHistory();
         return "/dataAdmin/patient_data_management?faces-redirect=true";
     }
     // </editor-fold>
