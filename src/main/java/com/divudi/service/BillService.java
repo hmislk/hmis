@@ -2165,6 +2165,19 @@ public class BillService {
             WebUser webUser,
             List<BillTypeAtomic> billTypeAtomics,
             AdmissionType admissionType,
+            PaymentScheme paymentScheme) {
+        return fetchOpdIncomeReportDTOs(fromDate, toDate, institution, site, department,
+                webUser, billTypeAtomics, admissionType, paymentScheme, null, null, null);
+    }
+
+    public List<OpdIncomeReportDTO> fetchOpdIncomeReportDTOs(Date fromDate,
+            Date toDate,
+            Institution institution,
+            Institution site,
+            Department department,
+            WebUser webUser,
+            List<BillTypeAtomic> billTypeAtomics,
+            AdmissionType admissionType,
             PaymentScheme paymentScheme,
             Institution toInstitution,
             Institution toSite,
@@ -2224,7 +2237,7 @@ public class BillService {
             jpql += " and b.toInstitution=:toIns";
             params.put("toIns", toInstitution);
         }
-        if (toSite != null) {
+        if (toSite != null && toDepartment == null) {
             jpql += " and b.toDepartment.site=:toSite";
             params.put("toSite", toSite);
         }
