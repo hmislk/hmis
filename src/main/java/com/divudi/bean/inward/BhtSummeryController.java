@@ -3115,6 +3115,9 @@ public class BhtSummeryController implements Serializable {
         btas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD);
         btas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN);
         btas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION);
+        btas.add(BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE);
+        btas.add(BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_RETURN);
+        btas.add(BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_CANCELLATION);
 
         for (ChargeItemTotal i : chargeItemTotals) {
             switch (i.getInwardChargeType()) {
