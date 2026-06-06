@@ -3,7 +3,6 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:h="http://xmlns.jcp.org/jsf/html">
     <h:body>
         <ui:composition template="/pharmacy/admin/index.xhtml">
@@ -60,7 +59,7 @@
                             <p:outputPanel rendered="#{duplicatePharmaceuticalItemController.totalDuplicateGroups > 0}">
 
                                 <h:outputText styleClass="fw-bold"
-                                              value="#{duplicatePharmaceuticalItemController.totalDuplicateGroups} possible duplicate group(s) found. Review each group and clean up via the AMP / AMPP / VMP / VMPP screens." />
+                                              value="#{duplicatePharmaceuticalItemController.totalDuplicateGroups} possible duplicate group(s) found. Review each group and clean up via the AMP screens." />
 
                                 <p:dataTable value="#{duplicatePharmaceuticalItemController.duplicateGroups}"
                                              var="grp"
@@ -88,20 +87,11 @@
                                             <p:column headerText="Name">
                                                 <h:outputText value="#{it.name}" />
                                             </p:column>
-                                            <p:column headerText="Type" width="5em">
-                                                <h:outputText value="#{it.type}" />
-                                            </p:column>
                                             <p:column headerText="Code" width="8em">
                                                 <h:outputText value="#{it.code}" />
                                             </p:column>
                                             <p:column headerText="Barcode" width="10em">
                                                 <h:outputText value="#{it.barcode}" />
-                                            </p:column>
-                                            <p:column headerText="Total Stock" width="7em"
-                                                      styleClass="text-end">
-                                                <h:outputText value="#{it.totalStock}">
-                                                    <f:convertNumber maxFractionDigits="2" />
-                                                </h:outputText>
                                             </p:column>
                                         </p:dataTable>
                                     </p:column>

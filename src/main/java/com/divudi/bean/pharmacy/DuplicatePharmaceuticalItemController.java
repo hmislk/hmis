@@ -3,10 +3,8 @@ package com.divudi.bean.pharmacy;
 import com.divudi.core.data.dto.DuplicateItemDto;
 import com.divudi.core.data.dto.DuplicateItemGroup;
 import com.divudi.core.facade.ItemFacade;
-import com.divudi.core.facade.StockFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,16 +16,20 @@ import javax.faces.view.ViewScoped;
  * Detects and lists <b>possible duplicate pharmaceutical items</b> for review
  * under Administration &gt; Pharmaceutical Management &gt; Check Entered Data.
  *
- * <p>Duplicate item masters (e.g. two AMPs sharing the same item code but a
- * stray difference in name) silently split stock across two item ids. That
+ * <p>Duplicate <b>AMP</b> masters (e.g. two AMPs sharing the same item code but
+ * a stray difference in name) silently split stock across two item ids. That
  * causes confusing situations such as a transfer issue page showing a blank
  * stock/expiry/quantity row, because the requested item id has no stock in the
- * issuing department even though the "same" product (a different item id) does
+ * issuing department even though the "same" product (a different AMP id) does
  * (see issue #21313).</p>
  *
- * <p>This is a <b>read-only</b> report: it groups items that look like
- * duplicates so an administrator can recognise and clean them up via the
- * existing AMP/AMPP/VMP/VMPP screens. It does not retire or merge anything.</p>
+ * <p>The report deliberately compares <b>AMPs only</b>: AMPs are the items that
+ * actually hold stock, so AMP-level duplication is what produces the symptom in
+ * #21313. AMPPs/VMPs/VMPPs do not hold stock directly and are out of scope.</p>
+ *
+ * <p>This is a <b>read-only</b> report: it groups AMPs that look like duplicates
+ * so an administrator can recognise and clean them up via the existing AMP
+ * screens. It does not retire or merge anything.</p>
  *
  * <p>Four detection strategies are offered, each independently toggleable:</p>
  * <ul>
@@ -48,8 +50,6 @@ public class DuplicatePharmaceuticalItemController implements Serializable {
 
     @EJB
     private ItemFacade itemFacade;
-    @EJB
-    private StockFacade stockFacade;
 
     // Detection strategy toggles (all on by default)
     private boolean detectByCode = true;
@@ -84,8 +84,6 @@ public class DuplicatePharmaceuticalItemController implements Serializable {
             return;
         }
 
-        populateStockTotals(items);
-
         if (detectByCode) {
             duplicateGroups.addAll(groupByKey(items, DuplicateItemGroup.MatchType.CODE));
         }
@@ -101,74 +99,19 @@ public class DuplicatePharmaceuticalItemController implements Serializable {
     }
 
     /**
-     * Loads all non-retired pharmaceutical item masters (Amp/Ampp/Vmp/Vmpp)
-     * with the few fields the report needs.
+     * Loads all non-retired <b>AMP</b> masters with the few fields the report
+     * needs. AMPs are the only item type compared, because they are the items
+     * that hold stock and therefore the ones whose duplication causes the
+     * symptom in #21313.
      */
     @SuppressWarnings("unchecked")
     private List<DuplicateItemDto> fetchCandidateItems() {
         String dto = "com.divudi.core.data.dto.DuplicateItemDto";
-        List<DuplicateItemDto> all = new ArrayList<>();
-
-        // For AMP/VMP, stock is keyed by the item itself, so stockItemId = i.id.
-        // For AMPP/VMPP, stock is keyed by the backing AMP/VMP, so we project
-        // that id as stockItemId (mirrors StockController.listStocksOfSelectedItem).
-        // type label, type entity, stock-item-id projection
-        String[][] typeQueries = {
-            {"AMP", "Amp", "i.id"},
-            {"AMPP", "Ampp", "i.amp.id"},
-            {"VMP", "Vmp", "i.id"},
-            {"VMPP", "Vmpp", "i.vmp.id"}
-        };
-
-        for (String[] tq : typeQueries) {
-            String jpql = "SELECT new " + dto + "("
-                    + "i.id, i.name, COALESCE(i.code,''), COALESCE(i.barcode,''), '" + tq[0] + "', "
-                    + "COALESCE(" + tq[2] + ", i.id)) "
-                    + "FROM " + tq[1] + " i "
-                    + "WHERE i.retired = false";
-            all.addAll((List<DuplicateItemDto>) itemFacade.findLightsByJpql(jpql));
-        }
-        return all;
-    }
-
-    /**
-     * Sums stock across all departments for each candidate item in a single
-     * query and writes it back onto the DTOs.
-     */
-    private void populateStockTotals(List<DuplicateItemDto> items) {
-        // Stock is keyed by the AMP/VMP. Several DTOs can map to the same stock
-        // item id (an AMP and each of its AMPPs), so index a list per stock id.
-        Map<Long, List<DuplicateItemDto>> byStockItemId = new HashMap<>();
-        for (DuplicateItemDto it : items) {
-            Long stockItemId = it.getStockItemId() != null ? it.getStockItemId() : it.getId();
-            byStockItemId.computeIfAbsent(stockItemId, k -> new ArrayList<>()).add(it);
-        }
-        if (byStockItemId.isEmpty()) {
-            return;
-        }
-
-        String jpql = "SELECT s.itemBatch.item.id, SUM(s.stock) "
-                + "FROM Stock s "
-                + "WHERE s.retired = false "
-                + "AND s.itemBatch.item.id IN :ids "
-                + "GROUP BY s.itemBatch.item.id";
-        Map<String, Object> params = new HashMap<>();
-        params.put("ids", new ArrayList<>(byStockItemId.keySet()));
-
-        List<Object[]> rows = stockFacade.findAggregates(jpql, params);
-        if (rows == null) {
-            return;
-        }
-        for (Object[] row : rows) {
-            Long itemId = (Long) row[0];
-            Double total = row[1] != null ? ((Number) row[1]).doubleValue() : 0.0;
-            List<DuplicateItemDto> dtos = byStockItemId.get(itemId);
-            if (dtos != null) {
-                for (DuplicateItemDto dto : dtos) {
-                    dto.setTotalStock(total);
-                }
-            }
-        }
+        String jpql = "SELECT new " + dto + "("
+                + "i.id, i.name, COALESCE(i.code,''), COALESCE(i.barcode,''), 'AMP') "
+                + "FROM Amp i "
+                + "WHERE i.retired = false";
+        return (List<DuplicateItemDto>) itemFacade.findLightsByJpql(jpql);
     }
 
     /**
