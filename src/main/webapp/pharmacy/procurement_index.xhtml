@@ -1,0 +1,169 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <ui:define name="content">
+
+        <div class="row">
+            <div class="col-12">
+                <p:messages id="messages" showDetail="true" closable="true" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-2">
+                <h:form>
+                    <p:accordionPanel activeIndex="0">
+                        <p:ajax event="tabChange" process="@this"/>
+
+                        <p:tab title="Purchase Orders">
+                            <p:panelGrid columns="1">
+                                <p:commandButton
+                                    value="Create PO"
+                                    ajax="false"
+                                    action="#{purchaseOrderRequestController.navigateToCreateNewPurchaseOrder()}"
+                                    class="ui-button-success w-100"
+                                    icon="fas fa-plus-circle"
+                                    rendered="#{webUserController.hasPrivilege('CreatePurchaseOrder')}" />
+                                <p:commandButton
+                                    value="Auto Ordering - P Model"
+                                    ajax="false"
+                                    action="#{reorderController.autoOrderByDistributor()}"
+                                    class="ui-button-info w-100"
+                                    icon="fas fa-sync-alt"
+                                    rendered="#{webUserController.hasPrivilege('AutoOrderPModel')}" />
+                                <p:commandButton
+                                    value="Auto Ordering - Q Model"
+                                    ajax="false"
+                                    action="#{reorderController.autoOrderByDistributor()}"
+                                    class="ui-button-info w-100"
+                                    icon="fas fa-retweet"
+                                    rendered="#{webUserController.hasPrivilege('AutoOrderQModal')}" />
+                                <p:commandButton
+                                    value="Finalize POs"
+                                    ajax="false"
+                                    action="#{searchController.navigateToPurchaseOrderFinalize}"
+                                    class="ui-button-warning w-100"
+                                    icon="fas fa-tasks"
+                                    rendered="#{webUserController.hasPrivilege('PurchaseOrdersApprovel') or webUserController.hasPrivilege('CreatePurchaseOrder')}" />
+                                <p:commandButton
+                                    value="PO Approval"
+                                    ajax="false"
+                                    action="#{searchController.navigateToPurchaseOrderApprove}"
+                                    class="ui-button-warning w-100"
+                                    icon="fas fa-clipboard-check"
+                                    rendered="#{webUserController.hasPrivilege('PurchaseOrdersApprovel')}" />
+                            </p:panelGrid>
+                        </p:tab>
+
+                        <p:tab title="Direct Purchase">
+                            <p:panelGrid columns="1">
+                                <p:commandButton
+                                    value="Direct Purchase"
+                                    ajax="false"
+                                    action="#{pharmacyDirectPurchaseController.navigateToStartNewDirectPurchaseBill}"
+                                    class="ui-button-success w-100"
+                                    icon="fas fa-hand-holding-usd"
+                                    rendered="#{webUserController.hasPrivilege('DirectPurchase') and configOptionApplicationController.getBooleanValueByKey('Manage Costing', true)}" />
+                                <p:commandButton
+                                    value="Direct Purchase"
+                                    ajax="false"
+                                    action="/pharmacy/pharmacy_purchase?faces-redirect=true"
+                                    actionListener="#{pharmacyPurchaseController.makeNull()}"
+                                    class="ui-button-success w-100"
+                                    icon="fas fa-hand-holding-usd"
+                                    rendered="#{webUserController.hasPrivilege('DirectPurchase') and !configOptionApplicationController.getBooleanValueByKey('Manage Costing', true)}" />
+                            </p:panelGrid>
+                        </p:tab>
+
+                        <p:tab title="GRN">
+                            <p:panelGrid columns="1">
+                                <p:commandButton
+                                    value="GRN"
+                                    ajax="false"
+                                    action="#{searchController.navigateToListPurchaseOrdersToReceive()}"
+                                    class="ui-button-success w-100"
+                                    icon="fas fa-dolly-flatbed"
+                                    rendered="#{webUserController.hasPrivilege('GoodsRecipt')}" />
+                                <p:commandButton
+                                    value="Approved POs to Create GRN"
+                                    ajax="false"
+                                    action="#{searchController.navigateToListPurchaseOrdersToReceiveDto()}"
+                                    class="ui-button-success w-100"
+                                    icon="fas fa-rocket"
+                                    rendered="#{webUserController.hasPrivilege('GoodsRecipt')}" />
+                                <p:commandButton
+                                    value="GRN Finalize"
+                                    ajax="false"
+                                    action="#{searchController.navigateToGrnListToFinalize()}"
+                                    class="ui-button-warning w-100"
+                                    icon="fas fa-clipboard-check"
+                                    rendered="#{webUserController.hasPrivilege('PharmacyGrnFinalize')}" />
+                                <p:commandButton
+                                    value="GRN Approval"
+                                    ajax="false"
+                                    action="#{searchController.navigateToGrnListToApprove()}"
+                                    class="ui-button-warning w-100"
+                                    icon="fas fa-check-circle"
+                                    rendered="#{webUserController.hasPrivilege('PharmacyGrnApprove')}" />
+                                <p:commandButton
+                                    value="Goods Receipt With Approval"
+                                    ajax="false"
+                                    action="/pharmacy/pharmacy_purchase_order_list_for_recieve_with_approval?faces-redirect=true"
+                                    actionListener="#{searchController.makeListNull()}"
+                                    class="ui-button-info w-100"
+                                    icon="fas fa-dolly-flatbed"
+                                    rendered="#{webUserController.hasPrivilege('GoodsRecipt') and configOptionApplicationController.getBooleanValueByKey('Pharmacy Good Recipt With Approval')}" />
+                            </p:panelGrid>
+                        </p:tab>
+
+                        <p:tab title="Donations">
+                            <p:panelGrid columns="1">
+                                <p:commandButton
+                                    value="Pharmacy Donations"
+                                    ajax="false"
+                                    action="#{pharmacyDonationController.navigateToStartNewDonationBill}"
+                                    class="ui-button-success w-100"
+                                    icon="fas fa-donate"
+                                    rendered="#{webUserController.hasPrivilege('PharmacyDonation')}" />
+                            </p:panelGrid>
+                        </p:tab>
+
+                    </p:accordionPanel>
+                </h:form>
+            </div>
+            <div class="col-10">
+                <ui:insert name="subcontent">
+                    <p:panel header="Procurement Management">
+                        <div class="text-center p-5">
+                            <h3>Welcome to Procurement Management</h3>
+                            <p class="mt-3">
+                                Please select a function from the left menu to get started.
+                            </p>
+                            <div class="mt-4">
+                                <p:panelGrid columns="2" styleClass="mx-auto" style="max-width: 600px;">
+                                    <h:outputText value="Purchase Orders" styleClass="font-weight-bold"/>
+                                    <h:outputText value="Create, finalize, and approve purchase orders"/>
+
+                                    <h:outputText value="Direct Purchase" styleClass="font-weight-bold"/>
+                                    <h:outputText value="Record direct purchases from suppliers"/>
+
+                                    <h:outputText value="GRN" styleClass="font-weight-bold"/>
+                                    <h:outputText value="Receive goods and manage GRN finalization and approval"/>
+
+                                    <h:outputText value="Donations" styleClass="font-weight-bold"/>
+                                    <h:outputText value="Record pharmacy donations"/>
+                                </p:panelGrid>
+                            </div>
+                        </div>
+                    </p:panel>
+                </ui:insert>
+            </div>
+        </div>
+
+    </ui:define>
+
+</ui:composition>
