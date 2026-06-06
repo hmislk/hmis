@@ -729,25 +729,36 @@ public class PatientInvestigationController implements Serializable {
             patientSampleFacade.edit(ps);
         }
 
-        //Update PatientInvestigation Data
-        patientInvestigation.setSampleCollected(true);
-        patientInvestigation.setSampleCollectedAt(new Date());
-        patientInvestigation.setSampleCollectedBy(sessionController.getLoggedUser());
+        //Update PatientInvestigation Data — collect all PIs linked to the processed samples
+        Map<Long, PatientInvestigation> allLinkedPIs = new HashMap<>();
+        for (PatientSample ps : canProcessSamples) {
+            for (PatientInvestigation pi : getPatientInvestigationsBySample(ps)) {
+                allLinkedPIs.putIfAbsent(pi.getId(), pi);
+            }
+        }
+        // Ensure the originally requested PI is always included (e.g. when no sample component exists yet)
+        allLinkedPIs.putIfAbsent(patientInvestigation.getId(), patientInvestigation);
 
-        patientInvestigation.setSampleSent(true);
-        patientInvestigation.setSampleTransportedToLabByStaff(sessionController.getLoggedUser().getStaff());
-        patientInvestigation.setSampleSentAt(new Date());
-        patientInvestigation.setSampleSentBy(sessionController.getLoggedUser());
+        for (PatientInvestigation pi : allLinkedPIs.values()) {
+            pi.setSampleCollected(true);
+            pi.setSampleCollectedAt(new Date());
+            pi.setSampleCollectedBy(sessionController.getLoggedUser());
 
-        patientInvestigation.setSampleAccepted(true);
-        patientInvestigation.setSampleAcceptedAt(new Date());
-        patientInvestigation.setSampleAcceptedBy(sessionController.getLoggedUser());
-        patientInvestigation.setReceived(true);
-        patientInvestigation.setReceivedAt(new Date());
-        patientInvestigation.setReceiveDepartment(sessionController.getDepartment());
-        patientInvestigation.setReceiveInstitution(sessionController.getInstitution());
-        patientInvestigation.setStatus(PatientInvestigationStatus.SAMPLE_ACCEPTED);
-        ejbFacade.edit(patientInvestigation);
+            pi.setSampleSent(true);
+            pi.setSampleTransportedToLabByStaff(sessionController.getLoggedUser().getStaff());
+            pi.setSampleSentAt(new Date());
+            pi.setSampleSentBy(sessionController.getLoggedUser());
+
+            pi.setSampleAccepted(true);
+            pi.setSampleAcceptedAt(new Date());
+            pi.setSampleAcceptedBy(sessionController.getLoggedUser());
+            pi.setReceived(true);
+            pi.setReceivedAt(new Date());
+            pi.setReceiveDepartment(sessionController.getDepartment());
+            pi.setReceiveInstitution(sessionController.getInstitution());
+            pi.setStatus(PatientInvestigationStatus.SAMPLE_ACCEPTED);
+            ejbFacade.edit(pi);
+        }
 
         //Update Bill Data
         bill.setStatus(PatientInvestigationStatus.SAMPLE_ACCEPTED);
