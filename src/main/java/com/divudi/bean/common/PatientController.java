@@ -3471,7 +3471,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         }
         try {
             javax.faces.context.ExternalContext ec = FacesContext.getCurrentInstance().getExternalContext();
-            ec.redirect(ec.getRequestContextPath() + "/faces/opd/patient");
+            ec.redirect(ec.getRequestContextPath() + "/faces/opd/patient.xhtml");
             FacesContext.getCurrentInstance().responseComplete();
         } catch (java.io.IOException e) {
             JsfUtil.addErrorMessage("Saved but could not redirect.");
