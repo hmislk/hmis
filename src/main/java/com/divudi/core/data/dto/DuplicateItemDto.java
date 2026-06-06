@@ -20,16 +20,28 @@ public class DuplicateItemDto implements Serializable {
     private String barcode;
     private String type;
     private Double totalStock;
+    /**
+     * Item id under which stock is actually held. Equals {@link #id} for AMP/VMP
+     * items, but for an AMPP/VMPP it is the backing AMP/VMP id, because stock is
+     * keyed by the AMP (see {@code StockController.listStocksOfSelectedItem}).
+     * Used only to sum the correct stock; the displayed identity stays {@link #id}.
+     */
+    private Long stockItemId;
 
     public DuplicateItemDto() {
     }
 
     public DuplicateItemDto(Long id, String name, String code, String barcode, String type) {
+        this(id, name, code, barcode, type, id);
+    }
+
+    public DuplicateItemDto(Long id, String name, String code, String barcode, String type, Long stockItemId) {
         this.id = id;
         this.name = name;
         this.code = code;
         this.barcode = barcode;
         this.type = type;
+        this.stockItemId = stockItemId != null ? stockItemId : id;
         this.totalStock = 0.0;
     }
 
@@ -79,5 +91,13 @@ public class DuplicateItemDto implements Serializable {
 
     public void setTotalStock(Double totalStock) {
         this.totalStock = totalStock;
+    }
+
+    public Long getStockItemId() {
+        return stockItemId;
+    }
+
+    public void setStockItemId(Long stockItemId) {
+        this.stockItemId = stockItemId;
     }
 }

@@ -125,7 +125,7 @@ credentials from `C:\Credentials\`). For pharmacy transfers the key checks are:
   receive, staff → 0 and requesting dept ↑ by the received qty, with no
   over-/under-movement.
 - Prefer **JPQL-shaped** reasoning, but ad-hoc read-only SQL is fine for
-  verification. Clean up any temp `.sql` files from `tmp/` afterwards.
+  verification. Clean up any temp `.sql` files from `tmp/` afterward.
 
 ---
 

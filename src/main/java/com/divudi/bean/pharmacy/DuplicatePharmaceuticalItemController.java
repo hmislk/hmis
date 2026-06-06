@@ -109,17 +109,22 @@ public class DuplicatePharmaceuticalItemController implements Serializable {
         String dto = "com.divudi.core.data.dto.DuplicateItemDto";
         List<DuplicateItemDto> all = new ArrayList<>();
 
+        // For AMP/VMP, stock is keyed by the item itself, so stockItemId = i.id.
+        // For AMPP/VMPP, stock is keyed by the backing AMP/VMP, so we project
+        // that id as stockItemId (mirrors StockController.listStocksOfSelectedItem).
+        // type label, type entity, stock-item-id projection
         String[][] typeQueries = {
-            {"Amp", "AMP"},
-            {"Ampp", "AMPP"},
-            {"Vmp", "VMP"},
-            {"Vmpp", "VMPP"}
+            {"AMP", "Amp", "i.id"},
+            {"AMPP", "Ampp", "i.amp.id"},
+            {"VMP", "Vmp", "i.id"},
+            {"VMPP", "Vmpp", "i.vmp.id"}
         };
 
         for (String[] tq : typeQueries) {
             String jpql = "SELECT new " + dto + "("
-                    + "i.id, i.name, COALESCE(i.code,''), COALESCE(i.barcode,''), '" + tq[1] + "') "
-                    + "FROM " + tq[0] + " i "
+                    + "i.id, i.name, COALESCE(i.code,''), COALESCE(i.barcode,''), '" + tq[0] + "', "
+                    + "COALESCE(" + tq[2] + ", i.id)) "
+                    + "FROM " + tq[1] + " i "
                     + "WHERE i.retired = false";
             all.addAll((List<DuplicateItemDto>) itemFacade.findLightsByJpql(jpql));
         }
@@ -131,13 +136,14 @@ public class DuplicatePharmaceuticalItemController implements Serializable {
      * query and writes it back onto the DTOs.
      */
     private void populateStockTotals(List<DuplicateItemDto> items) {
-        Map<Long, DuplicateItemDto> byId = new HashMap<>();
-        List<Long> ids = new ArrayList<>();
+        // Stock is keyed by the AMP/VMP. Several DTOs can map to the same stock
+        // item id (an AMP and each of its AMPPs), so index a list per stock id.
+        Map<Long, List<DuplicateItemDto>> byStockItemId = new HashMap<>();
         for (DuplicateItemDto it : items) {
-            byId.put(it.getId(), it);
-            ids.add(it.getId());
+            Long stockItemId = it.getStockItemId() != null ? it.getStockItemId() : it.getId();
+            byStockItemId.computeIfAbsent(stockItemId, k -> new ArrayList<>()).add(it);
         }
-        if (ids.isEmpty()) {
+        if (byStockItemId.isEmpty()) {
             return;
         }
 
@@ -147,7 +153,7 @@ public class DuplicatePharmaceuticalItemController implements Serializable {
                 + "AND s.itemBatch.item.id IN :ids "
                 + "GROUP BY s.itemBatch.item.id";
         Map<String, Object> params = new HashMap<>();
-        params.put("ids", ids);
+        params.put("ids", new ArrayList<>(byStockItemId.keySet()));
 
         List<Object[]> rows = stockFacade.findAggregates(jpql, params);
         if (rows == null) {
@@ -156,9 +162,11 @@ public class DuplicatePharmaceuticalItemController implements Serializable {
         for (Object[] row : rows) {
             Long itemId = (Long) row[0];
             Double total = row[1] != null ? ((Number) row[1]).doubleValue() : 0.0;
-            DuplicateItemDto dto = byId.get(itemId);
-            if (dto != null) {
-                dto.setTotalStock(total);
+            List<DuplicateItemDto> dtos = byStockItemId.get(itemId);
+            if (dtos != null) {
+                for (DuplicateItemDto dto : dtos) {
+                    dto.setTotalStock(total);
+                }
             }
         }
     }
@@ -213,8 +221,13 @@ public class DuplicatePharmaceuticalItemController implements Serializable {
     /**
      * Fuzzy pass: groups normalised names that are within {@link #fuzzyMaxDistance}
      * edit operations of each other but are NOT already identical (those are
-     * caught by the Same Name pass). A simple union over pairwise comparisons;
-     * intended for occasional administrative review, not high-volume use.
+     * caught by the Same Name pass).
+     *
+     * <p>Uses Union-Find over the similarity graph so transitive chains are
+     * captured: if A~B and B~C (but A is not directly close to C), all three
+     * still land in one group. Intended for occasional administrative review,
+     * not high-volume use (the pairwise comparison is O(n^2) over distinct
+     * normalised names).</p>
      */
     private List<DuplicateItemGroup> groupByFuzzyName(List<DuplicateItemDto> items) {
         // De-duplicate to one representative per exact normalised name first,
@@ -229,37 +242,63 @@ public class DuplicatePharmaceuticalItemController implements Serializable {
         }
 
         List<String> names = new ArrayList<>(byNormName.keySet());
-        boolean[] used = new boolean[names.size()];
-        List<DuplicateItemGroup> groups = new ArrayList<>();
+        int n = names.size();
 
-        for (int i = 0; i < names.size(); i++) {
-            if (used[i]) {
-                continue;
-            }
-            String base = names.get(i);
-            List<DuplicateItemDto> members = new ArrayList<>(byNormName.get(base));
-            boolean matchedAny = false;
+        // Union-Find: every name starts as its own component.
+        int[] parent = new int[n];
+        for (int i = 0; i < n; i++) {
+            parent[i] = i;
+        }
 
-            for (int j = i + 1; j < names.size(); j++) {
-                if (used[j]) {
-                    continue;
-                }
-                String other = names.get(j);
-                int distance = boundedLevenshtein(base, other, fuzzyMaxDistance);
+        // Add an undirected edge (union) for each pair within the fuzzy distance.
+        for (int i = 0; i < n; i++) {
+            for (int j = i + 1; j < n; j++) {
+                int distance = boundedLevenshtein(names.get(i), names.get(j), fuzzyMaxDistance);
                 if (distance >= 1 && distance <= fuzzyMaxDistance) {
-                    members.addAll(byNormName.get(other));
-                    used[j] = true;
-                    matchedAny = true;
+                    union(parent, i, j);
                 }
             }
+        }
 
-            if (matchedAny && members.size() > 1) {
-                used[i] = true;
+        // Collect members per connected component, preserving first-seen order.
+        Map<Integer, List<DuplicateItemDto>> components = new LinkedHashMap<>();
+        Map<Integer, String> componentKey = new LinkedHashMap<>();
+        Map<Integer, Integer> distinctNameCount = new LinkedHashMap<>();
+        for (int i = 0; i < n; i++) {
+            int root = find(parent, i);
+            components.computeIfAbsent(root, k -> new ArrayList<>()).addAll(byNormName.get(names.get(i)));
+            componentKey.putIfAbsent(root, names.get(i));
+            distinctNameCount.merge(root, 1, Integer::sum);
+        }
+
+        List<DuplicateItemGroup> groups = new ArrayList<>();
+        for (Map.Entry<Integer, List<DuplicateItemDto>> e : components.entrySet()) {
+            // Only report components that fuzzy-linked at least two DISTINCT
+            // normalised names. A component of a single name (even with several
+            // items) is an exact-name duplicate already covered by the Same Name
+            // pass, so we skip it here to avoid redundant groups.
+            if (distinctNameCount.getOrDefault(e.getKey(), 0) > 1) {
                 groups.add(new DuplicateItemGroup(
-                        DuplicateItemGroup.MatchType.FUZZY_NAME, base, members));
+                        DuplicateItemGroup.MatchType.FUZZY_NAME, componentKey.get(e.getKey()), e.getValue()));
             }
         }
         return groups;
+    }
+
+    private int find(int[] parent, int x) {
+        while (parent[x] != x) {
+            parent[x] = parent[parent[x]]; // path halving
+            x = parent[x];
+        }
+        return x;
+    }
+
+    private void union(int[] parent, int a, int b) {
+        int ra = find(parent, a);
+        int rb = find(parent, b);
+        if (ra != rb) {
+            parent[ra] = rb;
+        }
     }
 
     /**

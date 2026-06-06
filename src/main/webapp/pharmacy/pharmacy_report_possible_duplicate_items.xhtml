@@ -42,7 +42,7 @@
                                     <p:spinner id="fuzzyDist" style="width: 5rem;" min="1" max="5"
                                                value="#{duplicatePharmaceuticalItemController.fuzzyMaxDistance}" />
                                 </div>
-                                <p:commandButton value="Detect Duplicates"
+                                <p:commandButton id="btnDetectDuplicates" value="Detect Duplicates"
                                                  icon="fa fa-search"
                                                  actionListener="#{duplicatePharmaceuticalItemController.detectDuplicates()}"
                                                  update="dupForm" />
