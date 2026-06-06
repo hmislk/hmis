@@ -192,10 +192,22 @@
                                 <p:tab title="Clinical" >
                                     <h:form>
                                         <div class="d-grid gap-2">
-                                            <p:commandButton ajax="false" value="Test Results - Single" action="test_results_single?faces-redirect=true"/> 
-                                            <p:commandButton ajax="false" value="Test Results" action="/lab/clinical_result_values?faces-redirect=true"/> 
+                                            <p:commandButton ajax="false" value="Test Results - Single" action="test_results_single?faces-redirect=true"/>
+                                            <p:commandButton ajax="false" value="Test Results" action="/lab/clinical_result_values?faces-redirect=true"/>
 
                                         </div>>
+                                    </h:form>
+                                </p:tab>
+
+                                <p:tab title="Reference" >
+                                    <h:form>
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton
+                                                ajax="false"
+                                                value="Price List"
+                                                icon="fa fa-tags"
+                                                action="#{laborataryReportController.navigateToInvestigationPriceListFromLabAnalytics()}"/>
+                                        </div>
                                     </h:form>
                                 </p:tab>
 
