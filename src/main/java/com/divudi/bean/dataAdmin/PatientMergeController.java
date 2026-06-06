@@ -445,8 +445,8 @@ public class PatientMergeController implements Serializable {
     public void searchHistory() {
         String jpql = "select mr from PatientMergeRecord mr where mr.mergeDate >= :from and mr.mergeDate <= :to";
         Map<String, Object> params = new HashMap<>();
-        params.put("from", historyFromDate != null ? historyFromDate : defaultFrom());
-        params.put("to", historyToDate != null ? historyToDate : new Date());
+        params.put("from", startOfDay(historyFromDate != null ? historyFromDate : defaultFrom()));
+        params.put("to", endOfDay(historyToDate != null ? historyToDate : new Date()));
         if (historyStatus != null) {
             jpql += " and mr.status = :status";
             params.put("status", historyStatus);
@@ -456,7 +456,8 @@ public class PatientMergeController implements Serializable {
             params.put("mergedBy", "%" + historyMergedByUsername.trim().toLowerCase() + "%");
         }
         jpql += " order by mr.mergeDate desc";
-        historyResults = patientMergeRecordFacade.findByJpql(jpql, params);
+        historyResults = patientMergeRecordFacade.findByJpql(jpql, params,
+                javax.persistence.TemporalType.TIMESTAMP);
     }
 
     public void executeUnmerge() {
@@ -485,6 +486,26 @@ public class PatientMergeController implements Serializable {
     private Date defaultFrom() {
         Calendar cal = Calendar.getInstance();
         cal.add(Calendar.DAY_OF_YEAR, -30);
+        return cal.getTime();
+    }
+
+    private Date startOfDay(Date date) {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date);
+        cal.set(Calendar.HOUR_OF_DAY, 0);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+        return cal.getTime();
+    }
+
+    private Date endOfDay(Date date) {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date);
+        cal.set(Calendar.HOUR_OF_DAY, 23);
+        cal.set(Calendar.MINUTE, 59);
+        cal.set(Calendar.SECOND, 59);
+        cal.set(Calendar.MILLISECOND, 999);
         return cal.getTime();
     }
 
