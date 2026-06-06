@@ -9,9 +9,9 @@ Users select a lab department and the system returns all investigations and serv
 ## Navigation Path
 
 ```
-Home
- └─ Lab Analytics  (top menu or direct navigation)
-     └─ Left sidebar → "Reference" accordion tab
+Top navbar → Lab (flask icon, fa-flask)
+ └─ Lab Analytics
+     └─ Left sidebar → "Reference" accordion tab (last tab)
          └─ Price List button
              └─ Select Department → Generate
 ```

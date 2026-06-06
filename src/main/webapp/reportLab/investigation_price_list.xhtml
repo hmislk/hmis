@@ -70,6 +70,7 @@
                     <p:dataTable id="tblPriceList"
                                  value="#{laborataryReportController.investigationPriceList}"
                                  var="item"
+                                 rowIndexVar="rowIndex"
                                  paginator="true"
                                  rows="50"
                                  paginatorPosition="bottom"
@@ -79,7 +80,7 @@
                                  styleClass="w-100">
 
                         <p:column headerText="#" style="width:3rem; text-align:center;">
-                            <h:outputText value="#{tblPriceList.first + tblPriceList.rowIndex + 1}"/>
+                            <h:outputText value="#{rowIndex + 1}"/>
                         </p:column>
 
                         <p:column headerText="Name" sortBy="#{item.name}" filterBy="#{item.name}" filterMatchMode="contains">
