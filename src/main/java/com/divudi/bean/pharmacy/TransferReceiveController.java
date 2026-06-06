@@ -671,6 +671,11 @@ public class TransferReceiveController implements Serializable {
 
         getIssuedBill().getForwardReferenceBills().add(getReceivedBill());
         fillData(getReceivedBill());
+        // Persist the received bill again after fillData() recalculates its
+        // net/grand/total and BillFinanceDetails value fields. Safe here: the
+        // BillItems were already created (have IDs) in the settle() loop above,
+        // so this merge updates totals without re-inserting them.
+        getBillFacade().edit(getReceivedBill());
         getBillFacade().edit(getIssuedBill());
         
         // Check if Transfer Issue is fully received and update fullyIssued status
@@ -1099,8 +1104,13 @@ public class TransferReceiveController implements Serializable {
             // them here — settle() creates each BillItem explicitly after stock validation.
             List<BillItem> items = getReceivedBill().getBillItems();
             getReceivedBill().setBillItems(new ArrayList<>());
-            getBillFacade().create(getReceivedBill());
-            getReceivedBill().setBillItems(items);
+            try {
+                getBillFacade().create(getReceivedBill());
+            } finally {
+                // Always restore the in-memory items, even if create() throws,
+                // so the @SessionScoped bean does not lose the receive rows on retry.
+                getReceivedBill().setBillItems(items);
+            }
         } else {
             getBillFacade().edit(getReceivedBill());
         }
