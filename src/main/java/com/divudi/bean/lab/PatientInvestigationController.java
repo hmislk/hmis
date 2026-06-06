@@ -730,10 +730,29 @@ public class PatientInvestigationController implements Serializable {
         }
 
         //Update PatientInvestigation Data — collect all PIs linked to the processed samples
+        Set<Long> canProcessSampleIds = new HashSet<>();
+        for (PatientSample ps : canProcessSamples) {
+            canProcessSampleIds.add(ps.getId());
+        }
+
         Map<Long, PatientInvestigation> allLinkedPIs = new HashMap<>();
         for (PatientSample ps : canProcessSamples) {
             for (PatientInvestigation pi : getPatientInvestigationsBySample(ps)) {
-                allLinkedPIs.putIfAbsent(pi.getId(), pi);
+                if (pi.getId().equals(patientInvestigation.getId())) {
+                    // Always include the originally requested PI
+                    allLinkedPIs.putIfAbsent(pi.getId(), pi);
+                    continue;
+                }
+                // Only include a sibling PI if ALL of its samples are being processed now
+                // or are already at/beyond SAMPLE_ACCEPTED — prevents prematurely accepting
+                // a PI that has another pending sample not in this batch.
+                List<PatientSample> siblingAllSamples = getPatientSamplesByInvestigation(pi);
+                boolean allReady = siblingAllSamples.stream().allMatch(s
+                        -> canProcessSampleIds.contains(s.getId())
+                        || s.getStatus() != null && s.getStatus().ordinal() >= PatientInvestigationStatus.SAMPLE_ACCEPTED.ordinal());
+                if (allReady) {
+                    allLinkedPIs.putIfAbsent(pi.getId(), pi);
+                }
             }
         }
         // Ensure the originally requested PI is always included (e.g. when no sample component exists yet)
