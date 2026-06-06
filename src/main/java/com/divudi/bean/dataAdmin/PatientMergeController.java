@@ -354,8 +354,8 @@ public class PatientMergeController implements Serializable {
 
         List<ScoredPatientPair> results = new ArrayList<>();
         for (Object[] s : scoredResults) {
-            Patient a = patientFacade.find((Long) s[0]);
-            Patient b = patientFacade.find((Long) s[1]);
+            Patient a = patientFacade.find(((Number) s[0]).longValue());
+            Patient b = patientFacade.find(((Number) s[1]).longValue());
             if (a != null && b != null) {
                 results.add(new ScoredPatientPair(a, b, (double) s[2], (double) s[3], (double) s[4], (double) s[5]));
             }
@@ -436,8 +436,8 @@ public class PatientMergeController implements Serializable {
         List<Object[]> rows = patientMergeRecordFacade.findObjectsArrayByJpql(jpql, new HashMap<>(), javax.persistence.TemporalType.DATE);
         java.util.Set<String> keys = new java.util.HashSet<>();
         for (Object[] row : rows) {
-            Long idA = (Long) row[0];
-            Long idB = (Long) row[1];
+            long idA = ((Number) row[0]).longValue();
+            long idB = ((Number) row[1]).longValue();
             keys.add(Math.min(idA, idB) + "_" + Math.max(idA, idB));
         }
         return keys;
