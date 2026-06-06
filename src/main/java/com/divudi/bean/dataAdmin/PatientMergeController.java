@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
@@ -158,29 +159,69 @@ public class PatientMergeController implements Serializable {
         deterministicResults = deduped;
     }
 
+    /**
+     * Uses a correlated EXISTS subquery to find patients whose identifier
+     * appears on at least one other non-retired record, then pairs them in
+     * Java. This avoids an O(n²) Cartesian cross-join that times out on large
+     * patient databases.
+     */
     private List<PatientPair> runDeterministicScan(String field, String matchReason) {
         int cap = Math.min(Math.max(detMaxResults, 1), 500);
         String jpql;
-        if ("phn".equals(field) || "code".equals(field)) {
-            jpql = "select p1, p2 from Patient p1, Patient p2 "
-                    + "where p1.id < p2.id "
-                    + "and p1.retired = false and p2.retired = false "
-                    + "and p1." + field + " is not null and p1." + field + " <> '' "
-                    + "and p1." + field + " = p2." + field;
+        if ("phn".equals(field)) {
+            jpql = "select p from Patient p "
+                    + "where p.retired = false and p.phn is not null and p.phn <> '' "
+                    + "and exists (select p2 from Patient p2 where p2.retired = false "
+                    + "  and p2.phn = p.phn and p2.id <> p.id) "
+                    + "order by p.phn, p.id";
+        } else if ("code".equals(field)) {
+            jpql = "select p from Patient p "
+                    + "where p.retired = false and p.code is not null and p.code <> '' "
+                    + "and exists (select p2 from Patient p2 where p2.retired = false "
+                    + "  and p2.code = p.code and p2.id <> p.id) "
+                    + "order by p.code, p.id";
         } else {
-            jpql = "select p1, p2 from Patient p1, Patient p2 "
-                    + "where p1.id < p2.id "
-                    + "and p1.retired = false and p2.retired = false "
-                    + "and p1.person." + field + " is not null and p1.person." + field + " <> '' "
-                    + "and p1.person." + field + " = p2.person." + field;
+            jpql = "select p from Patient p "
+                    + "where p.retired = false and p.person.nic is not null and p.person.nic <> '' "
+                    + "and exists (select p2 from Patient p2 where p2.retired = false "
+                    + "  and p2.person.nic = p.person.nic and p2.id <> p.id) "
+                    + "order by p.person.nic, p.id";
         }
-        List<Object[]> rows = patientFacade.findPatientPairsByJpql(jpql, new HashMap<>(), cap);
+        // Fetch more patients than cap — one NIC value may appear many times
+        List<Patient> patients = patientFacade.findByJpql(jpql, new HashMap<>(),
+                javax.persistence.TemporalType.DATE, cap * 10);
+
+        // Group by the shared field value, then generate ordered pairs
+        LinkedHashMap<String, List<Patient>> groups = new LinkedHashMap<>();
+        for (Patient p : patients) {
+            String key = deterministicFieldValue(p, field);
+            if (key != null) {
+                groups.computeIfAbsent(key, k -> new ArrayList<>()).add(p);
+            }
+        }
         List<PatientPair> pairs = new ArrayList<>();
-        for (Object[] row : rows) {
-            PatientPair pair = new PatientPair((Patient) row[0], (Patient) row[1], matchReason);
-            pairs.add(pair);
+        outer:
+        for (List<Patient> group : groups.values()) {
+            for (int i = 0; i < group.size(); i++) {
+                for (int j = i + 1; j < group.size(); j++) {
+                    pairs.add(new PatientPair(group.get(i), group.get(j), matchReason));
+                    if (pairs.size() >= cap) {
+                        break outer;
+                    }
+                }
+            }
         }
         return pairs;
+    }
+
+    private String deterministicFieldValue(Patient p, String field) {
+        if ("phn".equals(field)) {
+            return p.getPhn();
+        }
+        if ("code".equals(field)) {
+            return p.getCode();
+        }
+        return p.getPerson() != null ? p.getPerson().getNic() : null;
     }
 
     public void mergeDeterministicPair(PatientPair pair) {
@@ -208,44 +249,175 @@ public class PatientMergeController implements Serializable {
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Probabilistic Scan">
+
+    /**
+     * Probabilistic duplicate detection using in-memory blocking.
+     *
+     * Instead of a Cartesian cross-join (O(n²) in SQL, unusable at 290 K+
+     * patients), this method:
+     * 1. Fetches lightweight (id, dob, name, phone, mobile) tuples via a
+     *    simple SELECT — no cross-join, bounded by a hard row cap.
+     * 2. Builds blocking groups in Java: patients sharing the same birth-year +
+     *    name-first-letter, or the same 7-digit phone tail.
+     * 3. Scores each candidate pair entirely in memory using Jaro-Winkler name
+     *    similarity, DOB proximity, and phone tail matching.
+     * 4. Loads full Patient entities only for the top-cap results, so database
+     *    round-trips are proportional to the result set, not the patient count.
+     */
     public void runProbabilisticScan() {
         int cap = Math.min(Math.max(probMaxPairs, 1), 1000);
-        // Blocking: (same birth year + same first name letter) OR (shared phone/mobile tail)
-        String jpql = "select p1, p2 from Patient p1, Patient p2 "
-                + "where p1.id < p2.id "
-                + "and p1.retired = false and p2.retired = false "
-                + "and ("
-                + "  (p1.person.dob is not null and p2.person.dob is not null "
-                + "   and year(p1.person.dob) = year(p2.person.dob) "
-                + "   and p1.person.name is not null and p2.person.name is not null "
-                + "   and substring(upper(p1.person.name),1,1) = substring(upper(p2.person.name),1,1))"
-                + "  or (p1.person.phone is not null and p2.person.phone is not null "
-                + "   and length(p1.person.phone) >= 7 and length(p2.person.phone) >= 7 "
-                + "   and substring(p1.person.phone, length(p1.person.phone)-6) = substring(p2.person.phone, length(p2.person.phone)-6))"
-                + "  or (p1.person.mobile is not null and p2.person.mobile is not null "
-                + "   and length(p1.person.mobile) >= 7 and length(p2.person.mobile) >= 7 "
-                + "   and substring(p1.person.mobile, length(p1.person.mobile)-6) = substring(p2.person.mobile, length(p2.person.mobile)-6))"
-                + ")";
-        int blockingCap = Math.max(cap * 20, 2000);
-        List<Object[]> rows = patientFacade.findPatientPairsByJpql(jpql, new HashMap<>(), blockingCap);
-
-        // Collect already-merged pair IDs to exclude
         java.util.Set<String> alreadyMerged = loadAlreadyMergedPairKeys();
 
-        // Score all candidates, then cap after sorting so top matches always surface
-        List<ScoredPatientPair> results = new ArrayList<>();
+        // Step 1: fetch lightweight tuples — no cross-join, capped at 100 K rows
+        String jpql = "select p.id, p.person.dob, p.person.name, p.person.phone, p.person.mobile "
+                + "from Patient p where p.retired = false "
+                + "and (p.person.dob is not null "
+                + "  or p.person.phone is not null "
+                + "  or p.person.mobile is not null)";
+        List<Object[]> rows = patientFacade.findObjectsArrayByJpql(jpql, new HashMap<>(),
+                javax.persistence.TemporalType.DATE, 100000);
+
+        // Step 2: build blocking groups in Java
+        Map<String, List<Object[]>> groups = new HashMap<>();
         for (Object[] row : rows) {
-            Patient a = (Patient) row[0];
-            Patient b = (Patient) row[1];
-            String key = Math.min(a.getId(), b.getId()) + "_" + Math.max(a.getId(), b.getId());
-            if (alreadyMerged.contains(key)) continue;
-            ScoredPatientPair scored = score(a, b);
-            if (scored != null) {
-                results.add(scored);
+            Long id = ((Number) row[0]).longValue();
+            Date dob = (Date) row[1];
+            String name = row[2] != null ? row[2].toString() : null;
+            String phone = cleanPhone(row[3]);
+            String mobile = cleanPhone(row[4]);
+
+            // DOB-year + name-first-letter block
+            if (dob != null && name != null && !name.isEmpty()) {
+                Calendar cal = Calendar.getInstance();
+                cal.setTime(dob);
+                String key = "D" + cal.get(Calendar.YEAR) + "_" + Character.toUpperCase(name.charAt(0));
+                groups.computeIfAbsent(key, k -> new ArrayList<>()).add(row);
+            }
+            // Phone-tail blocks
+            for (String num : new String[]{phone, mobile}) {
+                if (num.length() >= 7) {
+                    String key = "P" + num.substring(num.length() - 7);
+                    groups.computeIfAbsent(key, k -> new ArrayList<>()).add(row);
+                }
             }
         }
-        results.sort((x, y) -> Double.compare(y.getCompositeScore(), x.getCompositeScore()));
-        probabilisticResults = results.size() > cap ? results.subList(0, cap) : results;
+
+        // Step 3: score candidate pairs in memory
+        java.util.Set<String> seenPairs = new java.util.HashSet<>();
+        // Each entry: [idA (Long), idB (Long), nameSim, dobScore, phoneScore, composite]
+        List<Object[]> scoredResults = new ArrayList<>();
+
+        for (List<Object[]> group : groups.values()) {
+            // Skip degenerate groups: too small or far too large to contain real duplicates
+            if (group.size() < 2 || group.size() > 100) {
+                continue;
+            }
+            for (int i = 0; i < group.size(); i++) {
+                for (int j = i + 1; j < group.size(); j++) {
+                    long rawA = ((Number) group.get(i)[0]).longValue();
+                    long rawB = ((Number) group.get(j)[0]).longValue();
+                    if (rawA == rawB) {
+                        continue;
+                    }
+                    long idA = Math.min(rawA, rawB);
+                    long idB = Math.max(rawA, rawB);
+                    String pairKey = idA + "_" + idB;
+                    if (seenPairs.contains(pairKey) || alreadyMerged.contains(pairKey)) {
+                        continue;
+                    }
+                    seenPairs.add(pairKey);
+
+                    double[] scores = scoreTuples(group.get(i), group.get(j));
+                    if (scores != null) {
+                        scoredResults.add(new Object[]{idA, idB, scores[0], scores[1], scores[2], scores[3]});
+                    }
+                }
+            }
+        }
+
+        // Step 4: sort and cap, then load full Patient entities for display
+        scoredResults.sort((x, y) -> Double.compare((double) y[5], (double) x[5]));
+        if (scoredResults.size() > cap) {
+            scoredResults = scoredResults.subList(0, cap);
+        }
+
+        List<ScoredPatientPair> results = new ArrayList<>();
+        for (Object[] s : scoredResults) {
+            Patient a = patientFacade.find((Long) s[0]);
+            Patient b = patientFacade.find((Long) s[1]);
+            if (a != null && b != null) {
+                results.add(new ScoredPatientPair(a, b, (double) s[2], (double) s[3], (double) s[4], (double) s[5]));
+            }
+        }
+        probabilisticResults = results;
+    }
+
+    private String cleanPhone(Object raw) {
+        return raw != null ? raw.toString().replaceAll("[^0-9]", "") : "";
+    }
+
+    /**
+     * Scores a pair of lightweight patient tuples entirely in memory.
+     * Returns null if the pair does not meet the minimum thresholds.
+     * Each tuple: [id, dob, name, phone, mobile]
+     */
+    private double[] scoreTuples(Object[] rowA, Object[] rowB) {
+        String nameA = rowA[2] != null ? rowA[2].toString().toLowerCase() : "";
+        String nameB = rowB[2] != null ? rowB[2].toString().toLowerCase() : "";
+        double nameSim = nameA.isEmpty() || nameB.isEmpty() ? 0.0 : JARO_WINKLER.apply(nameA, nameB);
+        if (nameSim < probNameThreshold) {
+            return null;
+        }
+
+        double dobScore = scoreDobDates((Date) rowA[1], (Date) rowB[1]);
+
+        String[] phonesA = {cleanPhone(rowA[3]), cleanPhone(rowA[4])};
+        String[] phonesB = {cleanPhone(rowB[3]), cleanPhone(rowB[4])};
+        double phoneScore = scorePhoneArrays(phonesA, phonesB);
+
+        double composite = nameSim * 0.40 + dobScore * 0.35 + phoneScore * 0.25;
+        if (composite < 0.70) {
+            return null;
+        }
+        return new double[]{nameSim, dobScore, phoneScore, composite};
+    }
+
+    private double scoreDobDates(Date da, Date db) {
+        if (da == null || db == null) {
+            return 0.0;
+        }
+        long diffDays = Math.abs(da.getTime() - db.getTime()) / (1000L * 60 * 60 * 24);
+        if (diffDays == 0) {
+            return 1.0;
+        }
+        if (diffDays <= 1) {
+            return 0.8;
+        }
+        if (diffDays <= 3) {
+            return 0.5;
+        }
+        return 0.0;
+    }
+
+    private double scorePhoneArrays(String[] numsA, String[] numsB) {
+        for (String pA : numsA) {
+            if (pA.isEmpty()) {
+                continue;
+            }
+            for (String pB : numsB) {
+                if (pB.isEmpty()) {
+                    continue;
+                }
+                int len = Math.min(Math.min(pA.length(), pB.length()), 9);
+                if (len < 7) {
+                    continue;
+                }
+                if (pA.substring(pA.length() - len).equals(pB.substring(pB.length() - len))) {
+                    return 1.0;
+                }
+            }
+        }
+        return 0.0;
     }
 
     private java.util.Set<String> loadAlreadyMergedPairKeys() {
@@ -258,57 +430,6 @@ public class PatientMergeController implements Serializable {
             keys.add(Math.min(idA, idB) + "_" + Math.max(idA, idB));
         }
         return keys;
-    }
-
-    private ScoredPatientPair score(Patient a, Patient b) {
-        String nameA = a.getPerson() != null && a.getPerson().getName() != null ? a.getPerson().getName().toLowerCase() : "";
-        String nameB = b.getPerson() != null && b.getPerson().getName() != null ? b.getPerson().getName().toLowerCase() : "";
-        double nameSim = nameA.isEmpty() || nameB.isEmpty() ? 0.0 : JARO_WINKLER.apply(nameA, nameB);
-        if (nameSim < probNameThreshold) return null;
-
-        double dobScore = scoreDob(a, b);
-        double phoneScore = scorePhone(a, b);
-        double composite = nameSim * 0.40 + dobScore * 0.35 + phoneScore * 0.25;
-        if (composite < 0.70) return null;
-
-        return new ScoredPatientPair(a, b, nameSim, dobScore, phoneScore, composite);
-    }
-
-    private double scoreDob(Patient a, Patient b) {
-        if (a.getPerson() == null || b.getPerson() == null) return 0.0;
-        Date da = a.getPerson().getDob();
-        Date db = b.getPerson().getDob();
-        if (da == null || db == null) return 0.0;
-        long diffDays = Math.abs(da.getTime() - db.getTime()) / (1000L * 60 * 60 * 24);
-        if (diffDays == 0) return 1.0;
-        if (diffDays <= 1) return 0.8;
-        if (diffDays <= 3) return 0.5;
-        return 0.0;
-    }
-
-    private double scorePhone(Patient a, Patient b) {
-        List<String> numbersA = allPhones(a);
-        List<String> numbersB = allPhones(b);
-        for (String pA : numbersA) {
-            for (String pB : numbersB) {
-                int len = Math.min(Math.min(pA.length(), pB.length()), 9);
-                if (len < 7) continue;
-                String tailA = pA.substring(pA.length() - len);
-                String tailB = pB.substring(pB.length() - len);
-                if (tailA.equals(tailB)) return 1.0;
-            }
-        }
-        return 0.0;
-    }
-
-    private List<String> allPhones(Patient p) {
-        List<String> numbers = new ArrayList<>();
-        if (p.getPerson() == null) return numbers;
-        String phone = p.getPerson().getPhone() != null ? p.getPerson().getPhone().replaceAll("[^0-9]", "") : "";
-        String mobile = p.getPerson().getMobile() != null ? p.getPerson().getMobile().replaceAll("[^0-9]", "") : "";
-        if (!phone.isEmpty()) numbers.add(phone);
-        if (!mobile.isEmpty() && !mobile.equals(phone)) numbers.add(mobile);
-        return numbers;
     }
 
     public void mergeProbabilisticPair(ScoredPatientPair pair) {
