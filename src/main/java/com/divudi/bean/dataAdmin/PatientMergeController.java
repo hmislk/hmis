@@ -268,14 +268,16 @@ public class PatientMergeController implements Serializable {
         int cap = Math.min(Math.max(probMaxPairs, 1), 1000);
         java.util.Set<String> alreadyMerged = loadAlreadyMergedPairKeys();
 
-        // Step 1: fetch lightweight tuples — no cross-join, capped at 100 K rows
+        // Step 1: fetch lightweight tuples — no cross-join, no row cap.
+        // The WHERE clause already limits the universe to patients with DOB or phone data;
+        // all of them must be examined to avoid missing duplicates at high patient IDs.
         String jpql = "select p.id, p.person.dob, p.person.name, p.person.phone, p.person.mobile "
                 + "from Patient p where p.retired = false "
                 + "and (p.person.dob is not null "
                 + "  or p.person.phone is not null "
                 + "  or p.person.mobile is not null)";
         List<Object[]> rows = patientFacade.findObjectsArrayByJpql(jpql, new HashMap<>(),
-                javax.persistence.TemporalType.DATE, 100000);
+                javax.persistence.TemporalType.DATE);
 
         // Step 2: build blocking groups in Java
         Map<String, List<Object[]>> groups = new HashMap<>();
@@ -308,12 +310,21 @@ public class PatientMergeController implements Serializable {
         List<Object[]> scoredResults = new ArrayList<>();
 
         for (List<Object[]> group : groups.values()) {
-            // Skip degenerate groups: too small or far too large to contain real duplicates
-            if (group.size() < 2 || group.size() > 100) {
+            if (group.size() < 2) {
                 continue;
             }
+            // Sort by name so near-duplicates are adjacent, then use a sliding window
+            // to bound pair generation to O(n * window) instead of O(n²) for large groups.
+            group.sort((a, b) -> {
+                String na = a[2] != null ? a[2].toString() : "";
+                String nb = b[2] != null ? b[2].toString() : "";
+                return na.compareToIgnoreCase(nb);
+            });
+            // For small groups check all pairs; for large groups limit neighbours per patient
+            int window = Math.min(group.size(), 50);
             for (int i = 0; i < group.size(); i++) {
-                for (int j = i + 1; j < group.size(); j++) {
+                int limit = Math.min(i + window, group.size());
+                for (int j = i + 1; j < limit; j++) {
                     long rawA = ((Number) group.get(i)[0]).longValue();
                     long rawB = ((Number) group.get(j)[0]).longValue();
                     if (rawA == rawB) {
