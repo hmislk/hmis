@@ -1730,18 +1730,10 @@ public class BhtSummeryController implements Serializable {
         getDischargeController().setCurrent((Admission) getPatientEncounter());
         getDischargeController().discharge();
 
-        if (getPatientEncounter().isDischarged()) {
-            if (getPatientEncounter().getAdmissionType().isRoomChargesAllowed() && getPatientEncounter().getDateOfDischarge() != null) {
-                getPatientEncounter().getCurrentPatientRoom().setDischargedAt(getPatientEncounter().getDateOfDischarge());
-                roomChangeController.discharge(getPatientEncounter().getCurrentPatientRoom());
-            }
-        }
-
-        if (getPatientEncounter().getCurrentPatientRoom() != null && getPatientEncounter().getCurrentPatientRoom().getDischargedAt() == null) {
-            if (getPatientEncounter().getAdmissionType().isRoomChargesAllowed() || getPatientEncounter().getDateOfDischarge() != null) {
-                getPatientEncounter().getCurrentPatientRoom().setDischargedAt(getPatientEncounter().getDateOfDischarge());
-                getPatientRoomFacade().edit(getPatientEncounter().getCurrentPatientRoom());
-            }
+        if (getPatientEncounter().getCurrentPatientRoom() != null
+                && getPatientEncounter().getCurrentPatientRoom().getDischargedAt() == null) {
+            JsfUtil.addWarningMessage("Warning: Patient has not been discharged from the room. "
+                    + "Room discharge time must be set separately for accurate billing.");
         }
 
         JsfUtil.addSuccessMessage("Patient  Discharged");
