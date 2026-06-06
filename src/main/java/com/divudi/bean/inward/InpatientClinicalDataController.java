@@ -2747,9 +2747,17 @@ public class InpatientClinicalDataController implements Serializable {
         dischargeMedicines = fillDischargeMedicines(current);
 
         setDischargeMedicine(null);
-        saveSelected();
 
-        JsfUtil.addSuccessMessage("Added");
+        // Persist the assessment quietly. saveSelected() emits its own generic
+        // messages ("Updated Successfully." + "Saved"), which together with the
+        // line below produced three confusing messages for a single add.
+        current.setDepartment(sessionController.getDepartment());
+        if (current.getEncounterDate() == null) {
+            current.setEncounterDate(new Date());
+        }
+        getFacade().edit(current);
+
+        JsfUtil.addSuccessMessage("Discharge medicine added");
     }
 
     public List<Bill> fillPatientBills(Patient patient) {
