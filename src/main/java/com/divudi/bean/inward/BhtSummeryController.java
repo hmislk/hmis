@@ -1726,23 +1726,16 @@ public class BhtSummeryController implements Serializable {
             JsfUtil.addErrorMessage("Warning: Clinical discharge has not been confirmed for this patient.");
         }
 
+        if (getPatientEncounter().getCurrentPatientRoom() != null
+                && getPatientEncounter().getCurrentPatientRoom().getDischargedAt() == null) {
+            JsfUtil.addErrorMessage("Cannot discharge patient: the current room has not been discharged. "
+                    + "Please discharge the room first to record an accurate billing end time.");
+            return;
+        }
+
         getPatientEncounter().setDateOfDischarge(date);
         getDischargeController().setCurrent((Admission) getPatientEncounter());
         getDischargeController().discharge();
-
-        if (getPatientEncounter().isDischarged()) {
-            if (getPatientEncounter().getAdmissionType().isRoomChargesAllowed() && getPatientEncounter().getDateOfDischarge() != null) {
-                getPatientEncounter().getCurrentPatientRoom().setDischargedAt(getPatientEncounter().getDateOfDischarge());
-                roomChangeController.discharge(getPatientEncounter().getCurrentPatientRoom());
-            }
-        }
-
-        if (getPatientEncounter().getCurrentPatientRoom() != null && getPatientEncounter().getCurrentPatientRoom().getDischargedAt() == null) {
-            if (getPatientEncounter().getAdmissionType().isRoomChargesAllowed() || getPatientEncounter().getDateOfDischarge() != null) {
-                getPatientEncounter().getCurrentPatientRoom().setDischargedAt(getPatientEncounter().getDateOfDischarge());
-                getPatientRoomFacade().edit(getPatientEncounter().getCurrentPatientRoom());
-            }
-        }
 
         JsfUtil.addSuccessMessage("Patient  Discharged");
 

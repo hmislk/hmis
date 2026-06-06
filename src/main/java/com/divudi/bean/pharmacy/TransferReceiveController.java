@@ -112,6 +112,9 @@ public class TransferReceiveController implements Serializable {
     private List<Bill> bills;
     private SearchKeyword searchKeyword;
     private BillItem selectedBillItem;
+    // Re-entrancy guard: blocks a second settle() (e.g. rapid double-click on the
+    // non-AJAX Receive button) from processing the same transfer twice.
+    private boolean settling;
 
     public static class ConfigOptionInfo {
 
@@ -441,6 +444,20 @@ public class TransferReceiveController implements Serializable {
     }
 
     public void settle() {
+        // Re-entrancy guard: a second near-simultaneous submit (rapid double-click
+        // on the non-AJAX Receive button) is ignored until the first completes.
+        if (settling) {
+            return;
+        }
+        settling = true;
+        try {
+            doSettle();
+        } finally {
+            settling = false;
+        }
+    }
+
+    private void doSettle() {
         if (getReceivedBill().getBillItems() == null || getReceivedBill().getBillItems().isEmpty()) {
             JsfUtil.addErrorMessage("Nothing to Recive, Please check Recieved Quantity");
             return;
@@ -565,8 +582,12 @@ public class TransferReceiveController implements Serializable {
 
         getIssuedBill().getForwardReferenceBills().add(getReceivedBill());
         fillData(getReceivedBill());
-        getBillFacade().edit(getIssuedBill());
+        // Persist the received bill again after fillData() recalculates its
+        // net/grand/total and BillFinanceDetails value fields. Safe here: the
+        // BillItems were already created (have IDs) in the settle() loop above,
+        // so this merge updates totals without re-inserting them.
         getBillFacade().edit(getReceivedBill());
+        getBillFacade().edit(getIssuedBill());
         
         // Check if Transfer Issue is fully received and update fullyIssued status
         if (getIssuedBill() != null && !getIssuedBill().isFullyIssued()) {
@@ -979,7 +1000,17 @@ public class TransferReceiveController implements Serializable {
         if (getReceivedBill().getId() == null) {
             getReceivedBill().setCreatedAt(new Date());
             getReceivedBill().setCreater(sessionController.getLoggedUser());
-            getBillFacade().create(getReceivedBill());
+            // Detach billItems before create() to prevent CascadeType.ALL from inserting
+            // them here — settle() creates each BillItem explicitly after stock validation.
+            List<BillItem> items = getReceivedBill().getBillItems();
+            getReceivedBill().setBillItems(new ArrayList<>());
+            try {
+                getBillFacade().create(getReceivedBill());
+            } finally {
+                // Always restore the in-memory items, even if create() throws,
+                // so the @SessionScoped bean does not lose the receive rows on retry.
+                getReceivedBill().setBillItems(items);
+            }
         } else {
             getBillFacade().edit(getReceivedBill());
         }
@@ -1482,6 +1513,10 @@ public class TransferReceiveController implements Serializable {
 
     public void setSelectedBillItem(BillItem selectedBillItem) {
         this.selectedBillItem = selectedBillItem;
+    }
+
+    public boolean isSettling() {
+        return settling;
     }
 
     @Deprecated
