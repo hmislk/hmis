@@ -20,6 +20,7 @@ import javax.enterprise.context.SessionScoped;
 import javax.inject.Named;
 import javax.inject.Inject;
 import org.apache.commons.io.IOUtils;
+import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
 import org.primefaces.model.file.UploadedFile;
@@ -44,6 +45,7 @@ public class InwardDocumentUploadController implements Serializable {
     private UploadType selectedUploadType;
     private String comments;
     private UploadedFile file;
+    private Upload selectedDocument;
 
     private static final long SIZE_LIMIT = 10240000;
     private static final String ALLOWED_FILE_TYPES_REGEX = "(?i)\\.(pdf|jpeg|jpg|png)$";
@@ -81,15 +83,6 @@ public class InwardDocumentUploadController implements Serializable {
             JsfUtil.addErrorMessage("Please select a file.");
             return;
         }
-        if (file.getSize() > SIZE_LIMIT) {
-            JsfUtil.addErrorMessage("File size exceeds the maximum limit of 10 MB.");
-            return;
-        }
-        String fileName = file.getFileName();
-        if (!fileName.matches(".*" + ALLOWED_FILE_TYPES_REGEX)) {
-            JsfUtil.addErrorMessage("Invalid file type. Only PDF, JPEG, JPG, and PNG are allowed.");
-            return;
-        }
         if (selectedUploadType == null) {
             JsfUtil.addErrorMessage("Please select a document type.");
             return;
@@ -98,16 +91,23 @@ public class InwardDocumentUploadController implements Serializable {
             JsfUtil.addErrorMessage("No admission selected.");
             return;
         }
+        String fileName = file.getFileName();
+        if (!fileName.matches(".*" + ALLOWED_FILE_TYPES_REGEX)) {
+            JsfUtil.addErrorMessage("Invalid file type. Only PDF, JPEG, JPG, and PNG are allowed.");
+            return;
+        }
+        if (file.getSize() > SIZE_LIMIT) {
+            JsfUtil.addErrorMessage("File size exceeds the maximum limit of 10 MB.");
+            return;
+        }
         try {
             InputStream in = file.getInputStream();
             byte[] fileContent = IOUtils.toByteArray(in);
-
             String detectedContentType = detectContentType(fileContent, fileName);
             if (detectedContentType == null) {
                 JsfUtil.addErrorMessage("Invalid file type. Only PDF, JPEG, JPG, and PNG are allowed.");
                 return;
             }
-
             Upload upload = new Upload();
             upload.setUploadType(selectedUploadType);
             upload.setPatientEncounter(currentEncounter);
@@ -119,7 +119,6 @@ public class InwardDocumentUploadController implements Serializable {
             upload.setCreater(sessionController.getLoggedUser());
             upload.setRetired(false);
             uploadFacade.create(upload);
-
             JsfUtil.addSuccessMessage("Document uploaded successfully.");
             file = null;
             selectedUploadType = null;
@@ -128,6 +127,61 @@ public class InwardDocumentUploadController implements Serializable {
         } catch (IOException e) {
             JsfUtil.addErrorMessage("Error uploading file: " + e.getMessage());
         }
+    }
+
+    public void handleFileUpload(FileUploadEvent event) {
+        UploadedFile uploadedFile = event.getFile();
+        if (uploadedFile == null || uploadedFile.getSize() == 0) {
+            JsfUtil.addErrorMessage("Please select a file.");
+            return;
+        }
+        if (uploadedFile.getSize() > SIZE_LIMIT) {
+            JsfUtil.addErrorMessage("File size exceeds the maximum limit of 10 MB.");
+            return;
+        }
+        if (selectedUploadType == null) {
+            JsfUtil.addErrorMessage("Please select a document type.");
+            return;
+        }
+        if (currentEncounter == null) {
+            JsfUtil.addErrorMessage("No admission selected.");
+            return;
+        }
+        String fileName = uploadedFile.getFileName();
+        if (!fileName.matches(".*" + ALLOWED_FILE_TYPES_REGEX)) {
+            JsfUtil.addErrorMessage("Invalid file type. Only PDF, JPEG, JPG, and PNG are allowed.");
+            return;
+        }
+        try {
+            InputStream in = uploadedFile.getInputStream();
+            byte[] fileContent = IOUtils.toByteArray(in);
+            String detectedContentType = detectContentType(fileContent, fileName);
+            if (detectedContentType == null) {
+                JsfUtil.addErrorMessage("Invalid file type. Only PDF, JPEG, JPG, and PNG are allowed.");
+                return;
+            }
+            Upload upload = new Upload();
+            upload.setUploadType(selectedUploadType);
+            upload.setPatientEncounter(currentEncounter);
+            upload.setBaImage(fileContent);
+            upload.setFileName(fileName);
+            upload.setFileType(detectedContentType);
+            upload.setComments(comments);
+            upload.setCreatedAt(new Date());
+            upload.setCreater(sessionController.getLoggedUser());
+            upload.setRetired(false);
+            uploadFacade.create(upload);
+            JsfUtil.addSuccessMessage("Document uploaded successfully.");
+            selectedUploadType = null;
+            comments = null;
+            loadDocuments();
+        } catch (IOException e) {
+            JsfUtil.addErrorMessage("Error uploading file: " + e.getMessage());
+        }
+    }
+
+    public void viewDocument(Upload doc) {
+        selectedDocument = doc;
     }
 
     public void removeDocument(Upload u) {
@@ -220,6 +274,14 @@ public class InwardDocumentUploadController implements Serializable {
         this.comments = comments;
     }
 
+    public Upload getSelectedDocument() {
+        return selectedDocument;
+    }
+
+    public void setSelectedDocument(Upload selectedDocument) {
+        this.selectedDocument = selectedDocument;
+    }
+
     public UploadedFile getFile() {
         return file;
     }
@@ -227,5 +289,6 @@ public class InwardDocumentUploadController implements Serializable {
     public void setFile(UploadedFile file) {
         this.file = file;
     }
+
     // </editor-fold>
 }
