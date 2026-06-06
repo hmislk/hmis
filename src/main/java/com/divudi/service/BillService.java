@@ -2165,7 +2165,10 @@ public class BillService {
             WebUser webUser,
             List<BillTypeAtomic> billTypeAtomics,
             AdmissionType admissionType,
-            PaymentScheme paymentScheme) {
+            PaymentScheme paymentScheme,
+            Institution toInstitution,
+            Institution toSite,
+            Department toDepartment) {
 
         if (fromDate == null || toDate == null) {
             throw new IllegalArgumentException("fromDate and toDate cannot be null");
@@ -2216,6 +2219,18 @@ public class BillService {
         if (paymentScheme != null) {
             jpql += " and b.paymentScheme=:paymentScheme";
             params.put("paymentScheme", paymentScheme);
+        }
+        if (toInstitution != null) {
+            jpql += " and b.toInstitution=:toIns";
+            params.put("toIns", toInstitution);
+        }
+        if (toSite != null) {
+            jpql += " and b.toDepartment.site=:toSite";
+            params.put("toSite", toSite);
+        }
+        if (toDepartment != null) {
+            jpql += " and b.toDepartment=:toDep";
+            params.put("toDep", toDepartment);
         }
 
         jpql += " order by b.createdAt desc";
