@@ -226,7 +226,8 @@ public class PatientMergeController implements Serializable {
                 + "   and length(p1.person.mobile) >= 7 and length(p2.person.mobile) >= 7 "
                 + "   and substring(p1.person.mobile, length(p1.person.mobile)-6) = substring(p2.person.mobile, length(p2.person.mobile)-6))"
                 + ")";
-        List<Object[]> rows = patientFacade.findObjectsArrayByJpql(jpql, new HashMap<>(), javax.persistence.TemporalType.DATE);
+        int blockingCap = Math.max(cap * 20, 2000);
+        List<Object[]> rows = patientFacade.findPatientPairsByJpql(jpql, new HashMap<>(), blockingCap);
 
         // Collect already-merged pair IDs to exclude
         java.util.Set<String> alreadyMerged = loadAlreadyMergedPairKeys();
@@ -268,7 +269,7 @@ public class PatientMergeController implements Serializable {
         double dobScore = scoreDob(a, b);
         double phoneScore = scorePhone(a, b);
         double composite = nameSim * 0.40 + dobScore * 0.35 + phoneScore * 0.25;
-        if (composite < 0.80) return null;
+        if (composite < 0.70) return null;
 
         return new ScoredPatientPair(a, b, nameSim, dobScore, phoneScore, composite);
     }
