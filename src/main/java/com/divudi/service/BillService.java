@@ -2192,9 +2192,9 @@ public class BillService {
 
         String jpql = "select new com.divudi.core.data.dto.OpdIncomeReportDTO("
                 + " b.id, b.deptId, coalesce(pers.name,'N/A'), b.billTypeAtomic, b.createdAt, "
-                + " b.netTotal, b.paymentMethod, b.total, "
-                + " pe, b.discount, b.margin, "
-                + " b.serviceCharge, ps ) "
+                + " coalesce(b.netTotal,0.0), b.paymentMethod, coalesce(b.total,0.0), "
+                + " pe, coalesce(b.discount,0.0), coalesce(b.margin,0.0), "
+                + " coalesce(b.serviceCharge,0.0), ps ) "
                 + " from Bill b "
                 + " left join b.patient pat "
                 + " left join pat.person pers "
