@@ -320,10 +320,11 @@ public class PatientMergeController implements Serializable {
                 String nb = b[2] != null ? b[2].toString() : "";
                 return na.compareToIgnoreCase(nb);
             });
-            // For small groups check all pairs; for large groups limit neighbours per patient
-            int window = Math.min(group.size(), 50);
+            // For small groups check all pairs; for large groups limit neighbours per patient.
+            // neighborWindow = max neighbours to compare per patient (inclusive distance).
+            int neighborWindow = Math.min(group.size() - 1, 50);
             for (int i = 0; i < group.size(); i++) {
-                int limit = Math.min(i + window, group.size());
+                int limit = Math.min(i + neighborWindow + 1, group.size());
                 for (int j = i + 1; j < limit; j++) {
                     long rawA = ((Number) group.get(i)[0]).longValue();
                     long rawB = ((Number) group.get(j)[0]).longValue();
