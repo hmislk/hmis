@@ -199,12 +199,15 @@
 
 
                                 <h:outputLabel value="Select Staff Name" />
-                                <p:autoComplete 
+                                <p:autoComplete
                                     class="w-100"
                                     inputStyleClass="w-100"
                                     completeMethod="#{staffController.completeStaffWithoutDoctors}"
                                     forceSelection="true"
-                                    var="w" itemLabel="#{w.person.name}" 
+                                    minQueryLength="3"
+                                    queryDelay="600"
+                                    maxResults="10"
+                                    var="w" itemLabel="#{w.person.name}"
                                     itemValue="#{w}"
                                     value="#{transferIssueForRequestsController.issuedBill.toStaff}" >
                                     <p:column headerText="Name">
