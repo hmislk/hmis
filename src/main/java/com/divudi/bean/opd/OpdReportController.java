@@ -592,7 +592,8 @@ public class OpdReportController implements Serializable {
 
             opdIncomeReportDtos = billService.fetchOpdIncomeReportDTOs(
                     fromDate, toDate, institution, site, department, webUser,
-                    billTypeAtomics, admissionType, paymentScheme);
+                    billTypeAtomics, admissionType, paymentScheme,
+                    toInstitution, toSite, toDepartment);
 
             System.out.println("Results returned: " + (opdIncomeReportDtos != null ? opdIncomeReportDtos.size() : 0));
 
