@@ -167,6 +167,7 @@ public class PatientMergeController implements Serializable {
      */
     private List<PatientPair> runDeterministicScan(String field, String matchReason) {
         int cap = Math.min(Math.max(detMaxResults, 1), 500);
+        System.out.println("[DET-SCAN] field=" + field + " cap=" + cap);
         String jpql;
         if ("phn".equals(field)) {
             jpql = "select p from Patient p "
@@ -187,9 +188,11 @@ public class PatientMergeController implements Serializable {
                     + "  and p2.person.nic = p.person.nic and p2.id <> p.id) "
                     + "order by p.person.nic, p.id";
         }
+        System.out.println("[DET-SCAN] JPQL: " + jpql);
         // Fetch more patients than cap — one NIC value may appear many times
         List<Patient> patients = patientFacade.findByJpql(jpql, new HashMap<>(),
                 javax.persistence.TemporalType.DATE, cap * 10);
+        System.out.println("[DET-SCAN] JPQL returned " + patients.size() + " patient(s)");
 
         // Group by the shared field value, then generate ordered pairs
         LinkedHashMap<String, List<Patient>> groups = new LinkedHashMap<>();
@@ -199,6 +202,8 @@ public class PatientMergeController implements Serializable {
                 groups.computeIfAbsent(key, k -> new ArrayList<>()).add(p);
             }
         }
+        System.out.println("[DET-SCAN] groups=" + groups.size()
+                + " keys=" + groups.keySet().stream().limit(10).collect(java.util.stream.Collectors.joining(",")));
         List<PatientPair> pairs = new ArrayList<>();
         outer:
         for (List<Patient> group : groups.values()) {
@@ -211,6 +216,7 @@ public class PatientMergeController implements Serializable {
                 }
             }
         }
+        System.out.println("[DET-SCAN] returning " + pairs.size() + " pair(s)");
         return pairs;
     }
 
@@ -266,11 +272,11 @@ public class PatientMergeController implements Serializable {
      */
     public void runProbabilisticScan() {
         int cap = Math.min(Math.max(probMaxPairs, 1), 1000);
+        System.out.println("[PROB-SCAN] START cap=" + cap + " nameThreshold=" + probNameThreshold);
         java.util.Set<String> alreadyMerged = loadAlreadyMergedPairKeys();
+        System.out.println("[PROB-SCAN] alreadyMerged pairs excluded=" + alreadyMerged.size());
 
         // Step 1: fetch lightweight tuples — no cross-join, no row cap.
-        // The WHERE clause already limits the universe to patients with DOB or phone data;
-        // all of them must be examined to avoid missing duplicates at high patient IDs.
         String jpql = "select p.id, p.person.dob, p.person.name, p.person.phone, p.person.mobile "
                 + "from Patient p where p.retired = false "
                 + "and (p.person.dob is not null "
@@ -278,6 +284,7 @@ public class PatientMergeController implements Serializable {
                 + "  or p.person.mobile is not null)";
         List<Object[]> rows = patientFacade.findObjectsArrayByJpql(jpql, new HashMap<>(),
                 javax.persistence.TemporalType.DATE);
+        System.out.println("[PROB-SCAN] Step1: tuple rows fetched=" + rows.size());
 
         // Step 2: build blocking groups in Java
         Map<String, List<Object[]>> groups = new HashMap<>();
@@ -303,25 +310,26 @@ public class PatientMergeController implements Serializable {
                 }
             }
         }
+        long groupsWithPairs = groups.values().stream().filter(g -> g.size() >= 2).count();
+        System.out.println("[PROB-SCAN] Step2: total blocking groups=" + groups.size()
+                + " groups with >=2 members=" + groupsWithPairs);
 
         // Step 3: score candidate pairs in memory
         java.util.Set<String> seenPairs = new java.util.HashSet<>();
-        // Each entry: [idA (Long), idB (Long), nameSim, dobScore, phoneScore, composite]
         List<Object[]> scoredResults = new ArrayList<>();
+        int pairsChecked = 0;
+        int pairsRejectedByName = 0;
+        int pairsRejectedByComposite = 0;
 
         for (List<Object[]> group : groups.values()) {
             if (group.size() < 2) {
                 continue;
             }
-            // Sort by name so near-duplicates are adjacent, then use a sliding window
-            // to bound pair generation to O(n * window) instead of O(n²) for large groups.
             group.sort((a, b) -> {
                 String na = a[2] != null ? a[2].toString() : "";
                 String nb = b[2] != null ? b[2].toString() : "";
                 return na.compareToIgnoreCase(nb);
             });
-            // For small groups check all pairs; for large groups limit neighbours per patient.
-            // neighborWindow = max neighbours to compare per patient (inclusive distance).
             int neighborWindow = Math.min(group.size() - 1, 50);
             for (int i = 0; i < group.size(); i++) {
                 int limit = Math.min(i + neighborWindow + 1, group.size());
@@ -338,14 +346,41 @@ public class PatientMergeController implements Serializable {
                         continue;
                     }
                     seenPairs.add(pairKey);
+                    pairsChecked++;
+
+                    // Log first 5 pairs checked so we can see what's being compared
+                    if (pairsChecked <= 5) {
+                        String nA = group.get(i)[2] != null ? group.get(i)[2].toString() : "null";
+                        String nB = group.get(j)[2] != null ? group.get(j)[2].toString() : "null";
+                        double sim = nA.isEmpty() || nB.isEmpty() ? 0.0
+                                : JARO_WINKLER.apply(nA.toLowerCase(), nB.toLowerCase());
+                        System.out.println("[PROB-SCAN] sample pair #" + pairsChecked
+                                + " ids=" + idA + "/" + idB
+                                + " names=[" + nA + "]/[" + nB + "]"
+                                + " nameSim=" + String.format("%.3f", sim));
+                    }
 
                     double[] scores = scoreTuples(group.get(i), group.get(j));
-                    if (scores != null) {
+                    if (scores == null) {
+                        // Determine rejection reason for stats
+                        String nA = group.get(i)[2] != null ? group.get(i)[2].toString().toLowerCase() : "";
+                        String nB = group.get(j)[2] != null ? group.get(j)[2].toString().toLowerCase() : "";
+                        double sim = nA.isEmpty() || nB.isEmpty() ? 0.0 : JARO_WINKLER.apply(nA, nB);
+                        if (sim < probNameThreshold) {
+                            pairsRejectedByName++;
+                        } else {
+                            pairsRejectedByComposite++;
+                        }
+                    } else {
                         scoredResults.add(new Object[]{idA, idB, scores[0], scores[1], scores[2], scores[3]});
                     }
                 }
             }
         }
+        System.out.println("[PROB-SCAN] Step3: pairsChecked=" + pairsChecked
+                + " rejectedByName=" + pairsRejectedByName
+                + " rejectedByComposite=" + pairsRejectedByComposite
+                + " passed=" + scoredResults.size());
 
         // Step 4: sort and cap, then load full Patient entities for display
         scoredResults.sort((x, y) -> Double.compare((double) y[5], (double) x[5]));
@@ -361,6 +396,7 @@ public class PatientMergeController implements Serializable {
                 results.add(new ScoredPatientPair(a, b, (double) s[2], (double) s[3], (double) s[4], (double) s[5]));
             }
         }
+        System.out.println("[PROB-SCAN] DONE: results=" + results.size());
         probabilisticResults = results;
     }
 
@@ -389,6 +425,11 @@ public class PatientMergeController implements Serializable {
 
         double composite = nameSim * 0.40 + dobScore * 0.35 + phoneScore * 0.25;
         if (composite < 0.70) {
+            System.out.println("[PROB-SCAN] REJECTED composite=" + String.format("%.3f", composite)
+                    + " nameSim=" + String.format("%.3f", nameSim)
+                    + " dob=" + String.format("%.2f", dobScore)
+                    + " phone=" + String.format("%.2f", phoneScore)
+                    + " names=[" + nameA + "]/[" + nameB + "]");
             return null;
         }
         return new double[]{nameSim, dobScore, phoneScore, composite};
