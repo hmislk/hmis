@@ -26,6 +26,16 @@
                             value="Back to Receive List">
                         </p:commandButton>
                         <p:commandButton
+                            value="Cancel"
+                            action="#{transferReceiveNativeSqlController.cancelPendingReceive(transferReceiveNativeSqlController.receivedBillId)}"
+                            class="ui-button-danger mx-1"
+                            icon="fas fa-times"
+                            ajax="false"
+                            style="float: right;"
+                            rendered="#{transferReceiveNativeSqlController.receivedBillId != null}"
+                            onclick="if(!confirm('Cancel this pending receive? This cannot be undone.')) return false;">
+                        </p:commandButton>
+                        <p:commandButton
                             value="Finalize"
                             action="#{transferReceiveNativeSqlController.finalizeRequest()}"
                             class="ui-button-warning mx-1"
