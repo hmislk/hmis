@@ -105,6 +105,7 @@
                                     class="ui-button-success mx-1"
                                     actionListener="#{pharmacyController.clearItemHistory()}"
                                     action="#{transferIssueForRequestsController.navigateToPharmacyIssueForRequestsById}"
+                                    onclick="if(#{configOptionApplicationController.getBooleanValueByKey('Use Save Finalize Approve Workflow for Issue for Requests', false)} &amp;&amp; !confirm('Start issuing for this request? A pending draft will block this if one already exists.')) return false;"
                                     disabled="#{p.cancelled eq true or p.fullyIssued eq true}">
                                     <f:setPropertyActionListener target="#{transferIssueForRequestsController.requestedBillId}" value="#{p.billId}"/>
                                 </p:commandButton>

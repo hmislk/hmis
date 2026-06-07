@@ -503,6 +503,9 @@ public enum Privileges {
     PharmacyDisbursementRecieve("Pharmacy Disbursement Receive"),
     PharmacyDisbursementReports("Pharmacy Disbursement Reports"),
     PharmacyDisbursementRequestApproval("Pharmacy Disbursement Request Approval"),
+    PharmacyIssueForRequestSave("Pharmacy Issue For Request Save"),
+    PharmacyIssueForRequestFinalize("Pharmacy Issue For Request Finalize"),
+    PharmacyIssueForRequestApprove("Pharmacy Issue For Request Approve"),
     // Pharmacy Inpatient medication management
     InpatientMedicationManagementMenue("Inpatient Medication Management Menu"),
     PharmacyDirectIssueToBht("Pharmacy Direct Issue to BHT"),
@@ -935,6 +938,9 @@ public enum Privileges {
             case PharmacyDisbursementDirectIssue:
             case PharmacyDisbursementRecieve:
             case PharmacyDisbursementReports:
+            case PharmacyIssueForRequestSave:
+            case PharmacyIssueForRequestFinalize:
+            case PharmacyIssueForRequestApprove:
 
             // Retail Transactions
             case PharmacyRetailTransaction:

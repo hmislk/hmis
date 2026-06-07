@@ -7202,6 +7202,46 @@ public class SearchController implements Serializable {
         bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP, 50);
     }
 
+    public void createIssueForRequestTableToFinalize() {
+        bills = null;
+        String jpql = "Select b From Bill b "
+                + " where b.retired=false "
+                + " and b.billTypeAtomic = :bTp "
+                + " and b.completed = :completed "
+                + " and b.department = :dept "
+                + " and b.createdAt between :fromDate and :toDate "
+                + " order by b.createdAt desc";
+        HashMap params = new HashMap();
+        params.put("bTp", BillTypeAtomic.PHARMACY_ISSUE_PRE);
+        params.put("completed", false);
+        params.put("dept", sessionController.getDepartment());
+        params.put("fromDate", getFromDate());
+        params.put("toDate", getToDate());
+        bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP, 50);
+    }
+
+    public void createIssueForRequestTableToApprove() {
+        bills = null;
+        String jpql = "Select b From Bill b "
+                + " where b.retired=false "
+                + " and b.billTypeAtomic = :bTp "
+                + " and b.institution = :ins "
+                + " and b.department = :dept "
+                + " and b.completed = :completed "
+                + " and b.checked = :checked "
+                + " and b.createdAt between :fromDate and :toDate "
+                + " order by b.createdAt desc";
+        HashMap params = new HashMap();
+        params.put("bTp", BillTypeAtomic.PHARMACY_ISSUE_PRE);
+        params.put("ins", getSessionController().getInstitution());
+        params.put("dept", sessionController.getDepartment());
+        params.put("completed", true);
+        params.put("checked", false);
+        params.put("fromDate", getFromDate());
+        params.put("toDate", getToDate());
+        bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP, 50);
+    }
+
     private List<Bill> getReturnBill(Bill b, BillType bt) {
         String sql = "Select b From Bill b where b.retired=false and b.creater is not null"
                 + " and  b.billType=:btp and "
@@ -16709,6 +16749,16 @@ public class SearchController implements Serializable {
     public String navigateToDirectPurchaseListToApprove() {
         makeListNull();
         return "/pharmacy/pharmacy_direct_purchase_list_to_approve?faces-redirect=true";
+    }
+
+    public String navigateToIssueForRequestListToFinalize() {
+        makeListNull();
+        return "/pharmacy/pharmacy_issue_for_request_list_to_finalize?faces-redirect=true";
+    }
+
+    public String navigateToIssueForRequestListToApprove() {
+        makeListNull();
+        return "/pharmacy/pharmacy_issue_for_request_list_to_approve?faces-redirect=true";
     }
 
     public String navigateToPurchaseOrderApprove() {
