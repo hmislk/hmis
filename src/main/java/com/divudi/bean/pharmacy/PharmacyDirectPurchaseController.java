@@ -1342,6 +1342,28 @@ public class PharmacyDirectPurchaseController implements Serializable {
             getBillFacade().edit(getBill());
         }
 
+        // Retire any previously persisted items that were removed from the session list
+        if (getBill().getId() != null) {
+            java.util.Map<String, Object> retireParams = new java.util.HashMap<>();
+            retireParams.put("billId", getBill().getId());
+            List<BillItem> persistedItems = getBillItemFacade().findByJpql(
+                "SELECT bi FROM BillItem bi WHERE bi.bill.id = :billId AND bi.retired = false",
+                retireParams);
+            java.util.Set<Long> sessionIds = new java.util.HashSet<>();
+            for (BillItem bi : getBillItems()) {
+                if (bi.getId() != null) {
+                    sessionIds.add(bi.getId());
+                }
+            }
+            for (BillItem persisted : persistedItems) {
+                if (!sessionIds.contains(persisted.getId())) {
+                    persisted.setRetired(true);
+                    persisted.setRetireComments("Removed during draft edit");
+                    getBillItemFacade().edit(persisted);
+                }
+            }
+        }
+
         // Save each bill item (PharmaceuticalBillItem cascades automatically)
         int serial = 0;
         for (BillItem bi : getBillItems()) {
@@ -1445,6 +1467,11 @@ public class PharmacyDirectPurchaseController implements Serializable {
         getBill().setDeptId(deptId);
         getBill().setInsId(insId);
         getBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE);
+        // Mark checked=true BEFORE the stock loop so a concurrent approve request
+        // that reloads the bill will see it already approved and abort
+        getBill().setChecked(true);
+        getBill().setCheckeAt(new Date());
+        getBill().setCheckedBy(getSessionController().getLoggedUser());
         getBillFacade().edit(getBill());
 
         // Reload bill items from DB to ensure we have the persisted state

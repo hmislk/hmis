@@ -45,7 +45,7 @@
                                     styleClass="ui-button-info"
                                     ajax="false"
                                     icon="pi pi-save"
-                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Use Save Finalize Approve Workflow for Direct Purchase', false) and !pharmacyDirectPurchaseController.bill.completed}"
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Use Save Finalize Approve Workflow for Direct Purchase', false) and !pharmacyDirectPurchaseController.bill.completed and webUserController.hasPrivilege('PharmacyDirectPurchaseSave')}"
                                     style="margin-right: 8px;">
                                 </p:commandButton>
 
