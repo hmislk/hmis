@@ -1371,18 +1371,42 @@ public class PharmacyRequestForBhtController implements Serializable {
         try {
             com.divudi.ejb.PrescriptionToItemService.PrescriptionToItemResult result
                     = prescriptionToItemService.calculateItemAndQuantity(sourcePrescription);
-            if (result != null && result.isSuccess()) {
+            if (result == null) {
+                JsfUtil.addErrorMessage("Could not resolve a dispensable item for "
+                        + dispensableItem.getName() + ". Skipped.");
+                return false;
+            }
+            if (result.isSuccess()) {
                 if (result.getItem() != null) {
                     dispensableItem = result.getItem();
                 }
                 if (result.getQuantity() != null) {
                     calculatedQty = result.getQuantity();
                 }
+            } else {
+                // The conversion did not succeed. When it failed only because the
+                // prescription is incomplete (no dose/frequency/duration) we still
+                // let the user request the prescribed item and edit the quantity on
+                // the request page. Any other failure (e.g. no suitable AMP for a
+                // VTM/ATM) is surfaced and the item is skipped rather than guessing.
+                if (!prescriptionToItemService.isCalculationPossible(sourcePrescription)) {
+                    JsfUtil.addWarningMessage(dispensableItem.getName()
+                            + ": quantity could not be calculated (incomplete prescription). Please set the quantity on the request.");
+                } else {
+                    JsfUtil.addErrorMessage(dispensableItem.getName() + ": "
+                            + (result.getErrorMessage() != null ? result.getErrorMessage()
+                            : "could not be converted to a request item") + ". Skipped.");
+                    return false;
+                }
             }
         } catch (Exception e) {
-            // Fall back to the prescription item with qty 1 below.
+            JsfUtil.addErrorMessage("Error preparing request for " + dispensableItem.getName()
+                    + ": " + e.getMessage() + ". Skipped.");
+            return false;
         }
         if (calculatedQty == null || calculatedQty <= 0) {
+            // Incomplete-prescription path only — the user must review/adjust on
+            // the request page before settling.
             calculatedQty = 1.0;
         }
 

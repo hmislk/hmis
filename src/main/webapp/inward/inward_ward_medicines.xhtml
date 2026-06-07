@@ -274,6 +274,7 @@
                                                      onclick="PF('dlgOmit').hide()"
                                                      class="ui-button-secondary m-1" />
                                     <p:commandButton value="Omit"
+                                                     id="btnConfirmOmitWardMedicine"
                                                      action="#{inpatientClinicalDataController.omitAdmissionWardMedicine()}"
                                                      process="@this txtOmitReason"
                                                      update=":formWardMedicines:growlWardMedicines :formWardMedicines:panelActiveMedicines :formWardMedicines:panelPastMedicines"
@@ -332,6 +333,7 @@
                                                      onclick="PF('dlgChangeDose').hide()"
                                                      class="ui-button-secondary m-1" />
                                     <p:commandButton value="Apply Change"
+                                                     id="btnApplyChangeWardMedicine"
                                                      action="#{inpatientClinicalDataController.changeDoseFrequencyWardMedicine()}"
                                                      process="@this txtNewDose cmbNewDoseUnit cmbNewFrequency"
                                                      update=":formWardMedicines:growlWardMedicines :formWardMedicines:panelActiveMedicines :formWardMedicines:panelPastMedicines"

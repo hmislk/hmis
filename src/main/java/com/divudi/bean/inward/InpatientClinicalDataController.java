@@ -2090,6 +2090,7 @@ public class InpatientClinicalDataController implements Serializable {
         this.admissionWardMedicine = null;
         this.selectedWardMedicineToOmit = null;
         this.omissionReason = null;
+        this.selectedWardMedicinesToRequest = null;
         this.selectedWardMedicineToChange = null;
         this.newDose = null;
         this.newDoseUnit = null;
@@ -2218,9 +2219,23 @@ public class InpatientClinicalDataController implements Serializable {
         pharmacyRequestForBhtController.resetAll();
         pharmacyRequestForBhtController.setPatientEncounter(parentAdmission);
 
+        Long admissionId = parentAdmission.getId();
         int added = 0;
+        int skippedOtherAdmission = 0;
         for (ClinicalFindingValue cfv : selectedWardMedicinesToRequest) {
-            if (cfv == null || cfv.getPrescription() == null) {
+            if (cfv == null || cfv.getPrescription() == null || cfv.getEncounter() == null) {
+                continue;
+            }
+            // Guard against a stale (session-scoped) selection carried over from
+            // a previously-viewed admission: only request medicines that belong
+            // to the current admission. Mirrors the fillAdmissionWardMedicines
+            // query (encounter == admission OR encounter.parentEncounter == admission).
+            Long encounterId = cfv.getEncounter().getId();
+            Long parentEncounterId = cfv.getEncounter().getParentEncounter() != null
+                    ? cfv.getEncounter().getParentEncounter().getId()
+                    : null;
+            if (!admissionId.equals(encounterId) && !admissionId.equals(parentEncounterId)) {
+                skippedOtherAdmission++;
                 continue;
             }
             if (pharmacyRequestForBhtController.addBillItemFromPrescription(cfv.getPrescription())) {
@@ -2229,7 +2244,12 @@ public class InpatientClinicalDataController implements Serializable {
         }
 
         if (added == 0) {
-            JsfUtil.addErrorMessage("Could not add any of the selected medicines to the request.");
+            selectedWardMedicinesToRequest = null;
+            if (skippedOtherAdmission > 0) {
+                JsfUtil.addErrorMessage("The selected medicines do not belong to this admission. Please re-select.");
+            } else {
+                JsfUtil.addErrorMessage("Could not add any of the selected medicines to the request.");
+            }
             return "";
         }
 

@@ -9,7 +9,7 @@
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
-                <h:form id="formDischargeMedicines">
+                <h:form id="formDischargeMedicines" onkeypress="if(event.keyCode == 13 &amp;&amp; event.target.type != 'textarea') { return false; }">
                     <p:growl id="growlDischargeMedicines" showDetail="true" life="4000" />
                     <div class="row">
                         <div class="col-12 px-4">
