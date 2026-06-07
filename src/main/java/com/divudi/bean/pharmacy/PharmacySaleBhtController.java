@@ -761,9 +761,14 @@ public class PharmacySaleBhtController implements Serializable {
         }
 
         if (added == 0) {
-            JsfUtil.addErrorMessage("None of the selected medicines could be issued from "
-                    + dispensingDepartment.getName() + ". See the conversion report and add them manually.");
-            return "";
+            // Still navigate to the issue page so the conversion report (which the
+            // message tells the pharmacist to review) is visible — every selected
+            // medicine failed (no stock or conversion failure), so nothing is on
+            // the bill, but the per-medicine outcomes must not be hidden.
+            JsfUtil.addWarningMessage("None of the selected medicines could be issued from "
+                    + dispensingDepartment.getName() + ". Review the conversion report and add them manually if needed.");
+            calTotal();
+            return "/inward/pharmacy_discharge_medicine_issue?faces-redirect=true";
         }
         if (notAvailable > 0) {
             JsfUtil.addWarningMessage(notAvailable + " medicine(s) could not be issued from "
