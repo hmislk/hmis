@@ -503,9 +503,13 @@ public enum Privileges {
     PharmacyDisbursementRecieve("Pharmacy Disbursement Receive"),
     PharmacyDisbursementReports("Pharmacy Disbursement Reports"),
     PharmacyDisbursementRequestApproval("Pharmacy Disbursement Request Approval"),
+    PharmacyIssueForRequestSave("Pharmacy Issue For Request Save"),
+    PharmacyIssueForRequestFinalize("Pharmacy Issue For Request Finalize"),
+    PharmacyIssueForRequestApprove("Pharmacy Issue For Request Approve"),
     // Pharmacy Inpatient medication management
     InpatientMedicationManagementMenue("Inpatient Medication Management Menu"),
     PharmacyDirectIssueToBht("Pharmacy Direct Issue to BHT"),
+    PharmacyDischargeMedicineIssue("Pharmacy Discharge Medicine Issue"),
     PharmacyDirectIssueToTheaterCases("Pharmacy Direct Issue to Theater Cases"),
     PharmacyBhtIssueRequest("Pharmacy BHT Issue Request"),
     PharmacySearchInpatientDirectIssuesbyBill("Pharmacy Search Inpatient Direct Issues by Bill"),
@@ -602,6 +606,9 @@ public enum Privileges {
     AutoOrderPModel("Auto Order P Model"),
     AutoOrderQModal("Auto Order Q Model"),
     DirectPurchase("Direct Purchase"),
+    PharmacyDirectPurchaseSave("Pharmacy Direct Purchase Save"),
+    PharmacyDirectPurchaseFinalize("Pharmacy Direct Purchase Finalize"),
+    PharmacyDirectPurchaseApprove("Pharmacy Direct Purchase Approve"),
     PurchaseOrdersApprovel("Purchase Orders Approval"),
     TransferReciveApproval("Transfer Receive Approval"),
     GoodsRecipt("Goods Receipt"),
@@ -895,6 +902,7 @@ public enum Privileges {
             // Inpatient medication management
             case InpatientMedicationManagementMenue:
             case PharmacyDirectIssueToBht:
+            case PharmacyDischargeMedicineIssue:
             case PharmacyDirectIssueToTheaterCases:
             case PharmacyBhtIssueRequest:
             case PharmacySearchInpatientDirectIssuesbyBill:
@@ -907,6 +915,9 @@ public enum Privileges {
             case AutoOrderPModel:
             case AutoOrderQModal:
             case DirectPurchase:
+            case PharmacyDirectPurchaseSave:
+            case PharmacyDirectPurchaseFinalize:
+            case PharmacyDirectPurchaseApprove:
             case PurchaseOrdersApprovel:
             case GoodsRecipt:
             case ReturnReceviedGoods:
@@ -929,6 +940,9 @@ public enum Privileges {
             case PharmacyDisbursementDirectIssue:
             case PharmacyDisbursementRecieve:
             case PharmacyDisbursementReports:
+            case PharmacyIssueForRequestSave:
+            case PharmacyIssueForRequestFinalize:
+            case PharmacyIssueForRequestApprove:
 
             // Retail Transactions
             case PharmacyRetailTransaction:

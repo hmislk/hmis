@@ -73,7 +73,7 @@ public class StreamedContentController {
             Map m = new HashMap();
             m.put("id", l);
             Upload temImg = getUploadFacade().findFirstByJpql(j, m);
-            if (temImg != null) {
+            if (temImg != null && !temImg.isRetired()) {
                 byte[] imgArr = null;
                 try {
                     imgArr = temImg.getBaImage();

@@ -323,6 +323,7 @@ public class BillAnalyticsService {
     public void fillBundleForInpatientPharmacyCounts(ReportTemplateRowBundle inputBundle, Date fromDate, Date toDate) {
         List<BillTypeAtomic> billedTypes = new ArrayList<>(Arrays.asList(
                 BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE,
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE,
                 BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE,
                 BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD,
                 BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_THEATRE,
@@ -332,6 +333,7 @@ public class BillAnalyticsService {
 
         List<BillTypeAtomic> cancelledTypes = new ArrayList<>(Arrays.asList(
                 BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION,
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION,
                 BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_CANCELLATION,
                 BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION,
                 BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_THEATRE_CANCELLATION
@@ -339,6 +341,7 @@ public class BillAnalyticsService {
 
         List<BillTypeAtomic> returnedTypes = new ArrayList<>(Arrays.asList(
                 BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN,
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN,
                 BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_RETURN,
                 BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN,
                 BillTypeAtomic.RETURN_MEDICINE_INWARD,

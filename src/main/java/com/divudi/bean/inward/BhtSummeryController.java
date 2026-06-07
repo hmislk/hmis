@@ -1726,23 +1726,16 @@ public class BhtSummeryController implements Serializable {
             JsfUtil.addErrorMessage("Warning: Clinical discharge has not been confirmed for this patient.");
         }
 
+        if (getPatientEncounter().getCurrentPatientRoom() != null
+                && getPatientEncounter().getCurrentPatientRoom().getDischargedAt() == null) {
+            JsfUtil.addErrorMessage("Cannot discharge patient: the current room has not been discharged. "
+                    + "Please discharge the room first to record an accurate billing end time.");
+            return;
+        }
+
         getPatientEncounter().setDateOfDischarge(date);
         getDischargeController().setCurrent((Admission) getPatientEncounter());
         getDischargeController().discharge();
-
-        if (getPatientEncounter().isDischarged()) {
-            if (getPatientEncounter().getAdmissionType().isRoomChargesAllowed() && getPatientEncounter().getDateOfDischarge() != null) {
-                getPatientEncounter().getCurrentPatientRoom().setDischargedAt(getPatientEncounter().getDateOfDischarge());
-                roomChangeController.discharge(getPatientEncounter().getCurrentPatientRoom());
-            }
-        }
-
-        if (getPatientEncounter().getCurrentPatientRoom() != null && getPatientEncounter().getCurrentPatientRoom().getDischargedAt() == null) {
-            if (getPatientEncounter().getAdmissionType().isRoomChargesAllowed() || getPatientEncounter().getDateOfDischarge() != null) {
-                getPatientEncounter().getCurrentPatientRoom().setDischargedAt(getPatientEncounter().getDateOfDischarge());
-                getPatientRoomFacade().edit(getPatientEncounter().getCurrentPatientRoom());
-            }
-        }
 
         JsfUtil.addSuccessMessage("Patient  Discharged");
 
@@ -3037,20 +3030,33 @@ public class BhtSummeryController implements Serializable {
             grantTotal = adjustedTotal;
         }
 
-        paid = getInwardBean().getPaidValue(getPatientEncounter());
         paidByPatient = getInwardBean().getPaidByPatientValue(getPatientEncounter());
         paidByCompany = getInwardBean().getPaidByCompanyValue(getPatientEncounter());
+        paid = paidByPatient + paidByCompany;
 
         due = (grantTotal - discount) - paid;
 
-//        if (getPatientEncounter().getCreditLimit() != 0) {
-//            due -= getPatientEncounter().getCreditLimit();
-//        }
         changed = false;
 
         if (getPatientEncounter() != null && getPatientEncounter().getPaymentMethod() == PaymentMethod.Credit) {
             populateCreditCompanyAllocations();
         }
+        
+        //Update Last Processing Details
+        persistLastProcessingSnapshot();
+        
+    }
+    
+    private void persistLastProcessingSnapshot() {
+        patientEncounter.setLastProcessBy(sessionController.getLoggedUser());
+        patientEncounter.setLastProcessAt(new Date());
+        patientEncounter.setTotalAtFinalProcessing(grantTotal);
+        patientEncounter.setTotalPatientPaidAtFinalProcessing(paidByPatient);
+        patientEncounter.setTotalCompanyPaidAtFinalProcessing(paidByCompany);
+        patientEncounter.setDiscountAvailableAtFinalProcessing(discount);
+        patientEncounter.setAmountDueAtFinalProcessing(due);
+        patientEncounterFacade.edit(patientEncounter);
+        System.out.println("Update Last Processing Details of " + patientEncounter.getBhtNo()); 
     }
 
     public void changeIsMade() {
@@ -3106,9 +3112,15 @@ public class BhtSummeryController implements Serializable {
         btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE);
         btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN);
         btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION);
+        btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE);
+        btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN);
+        btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION);
         btas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD);
         btas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN);
         btas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION);
+        btas.add(BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE);
+        btas.add(BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_RETURN);
+        btas.add(BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_CANCELLATION);
 
         for (ChargeItemTotal i : chargeItemTotals) {
             switch (i.getInwardChargeType()) {

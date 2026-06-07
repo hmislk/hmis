@@ -5,6 +5,8 @@
  */
 package com.divudi.service.pharmacy;
 
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.dto.StockAggregateResult;
 import com.divudi.core.data.dto.TransferIssueItemPrintDto;
 import com.divudi.core.data.dto.TransferIssueItemRowDto;
@@ -407,9 +409,18 @@ public class TransferIssueNativeSqlService {
             throw new RuntimeException("Nothing to issue — all quantities are zero or no stock allocated.");
         }
 
-        // Step 1: Persist bill header via JPA
+        // Step 1: Persist or upgrade bill header via JPA.
+        // For new bills (id==null): em.persist creates the row.
+        // For existing draft bills (id!=null, PHARMACY_ISSUE_PRE): upgrade type and merge.
         bill.setBillItems(null);
-        em.persist(bill);
+        boolean isExistingDraft = (bill.getId() != null);
+        if (!isExistingDraft) {
+            em.persist(bill);
+        } else {
+            bill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_ISSUE);
+            bill.setBillType(BillType.PharmacyTransferIssue);
+            bill = em.merge(bill);
+        }
         em.flush();
         long billId = bill.getId();
 

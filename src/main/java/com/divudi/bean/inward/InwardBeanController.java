@@ -2019,10 +2019,11 @@ public class InwardBeanController implements Serializable {
         HashMap hm = new HashMap();
         String sql = "SELECT  sum(b.netTotal) FROM Bill b "
                 + " WHERE b.retired=false "
-                + "  and b.billType=:btp "
+                + " and b.billType=:btp "
                 + " and b.patientEncounter=:pe ";
         hm.put("btp", BillType.InwardPaymentBill);
         hm.put("pe", patientEncounter);
+       
         double dbl = getBillFacade().findDoubleByJpql(sql, hm, TemporalType.TIMESTAMP);
 
         return dbl;
@@ -2034,12 +2035,13 @@ public class InwardBeanController implements Serializable {
         HashMap hm = new HashMap();
         String sql = "SELECT  sum(b.netTotal) FROM Bill b "
                 + " WHERE b.retired=false "
-                + "  and b.billType=:btp "
+                + " and b.billType=:btp "
                 + " and b.paymentMethod !=:pm "
                 + " and b.patientEncounter=:pe ";
         hm.put("btp", BillType.InwardPaymentBill);
         hm.put("pm", PaymentMethod.Credit);
         hm.put("pe", patientEncounter);
+
         double dbl = getBillFacade().findDoubleByJpql(sql, hm, TemporalType.TIMESTAMP);
 
         return dbl;
@@ -2051,12 +2053,13 @@ public class InwardBeanController implements Serializable {
         HashMap hm = new HashMap();
         String sql = "SELECT  sum(b.netTotal) FROM Bill b "
                 + " WHERE b.retired=false "
-                + "  and b.billTypeAtomic in :bts "
+                + " and b.billTypeAtomic in :bts "
                 + " and b.patientEncounter=:pe ";
         List<BillTypeAtomic> bts = new ArrayList<>();
         bts.add(BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED);
         hm.put("bts", bts);
         hm.put("pe", patientEncounter);
+
         double dbl = getBillFacade().findDoubleByJpql(sql, hm, TemporalType.TIMESTAMP);
 
         return dbl;
@@ -2724,6 +2727,9 @@ public class InwardBeanController implements Serializable {
         BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE,
         BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN,
         BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION,
+        BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE,
+        BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN,
+        BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION,
         BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD,
         BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN,
         BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION
