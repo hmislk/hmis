@@ -682,26 +682,6 @@
                                 </div>
                                 <div class="col-6">
                                     <p:commandButton
-                                        value="Clinical Discharge"
-                                        ajax="false"
-                                        action="#{inpatientClinicalDataController.navigateToClinicalDischargeFromAdmission(admissionController.current)}"
-                                        icon="fa fa-sign-out-alt"
-                                        title="Navigate to Clinical Discharge"
-                                        rendered="#{webUserController.hasPrivilege('InpatientClinicalDischarge')}"
-                                        styleClass="w-100 #{admissionController.current.clinicallyDischarged ? 'ui-button-success' : 'ui-button-warning'}">
-                                    </p:commandButton>
-                                </div>
-                                <div class="col-6">
-                                    <p:commandButton
-                                        value="Drug Chart"
-                                        ajax="false"
-                                        action="#{admissionController.navigateToInpatientDrugChart()}"
-                                        icon="fa fa-prescription-bottle-alt"
-                                        class="w-100">
-                                    </p:commandButton>
-                                </div>
-                                <div class="col-6">
-                                    <p:commandButton
                                         value="Investigations"
                                         ajax="false"
                                         action="#{admissionController.navigateToInpatientInvestigations()}"
@@ -747,6 +727,17 @@
                                         class="w-100">
                                     </p:commandButton>
                                 </div>
+                                <div class="col-12">
+                                    <p:commandButton
+                                        value="Clinical Discharge"
+                                        ajax="false"
+                                        action="#{inpatientClinicalDataController.navigateToClinicalDischargeFromAdmission(admissionController.current)}"
+                                        icon="fa fa-sign-out-alt"
+                                        title="Navigate to Clinical Discharge"
+                                        rendered="#{webUserController.hasPrivilege('InpatientClinicalDischarge')}"
+                                        styleClass="w-100 #{admissionController.current.clinicallyDischarged ? 'ui-button-success' : 'ui-button-warning'}">
+                                    </p:commandButton>
+                                </div>
                             </div>
                         </p:panel>
                     </div>
@@ -757,7 +748,7 @@
                             <div class="row g-2">
                                 <div class="col-6">
                                     <p:commandButton
-                                        value="Pharmacy BHT Request"
+                                        value="Request from Pharmacy"
                                         ajax="false"
                                         action="#{admissionController.navigateToPharmacyBhtRequest}"
                                         icon="fa fa-prescription-bottle-alt"

@@ -9,6 +9,7 @@
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
                 <h:form id="formWardMedicines">
+                    <p:growl id="growlWardMedicines" showDetail="true" life="4000" />
                     <div class="row">
                         <div class="col-12 px-4">
                             <p:commandButton
@@ -29,12 +30,14 @@
                             <div class="col-12">
                                 <p:panel id="panelAddMedicine" class="w-100 m-1 p-0">
                                     <f:facet name="header">
-                                        <p:outputLabel value="Add Ward Medication" />
+                                        <p:outputLabel value="Add Ward Medication"
+                                                       styleClass="d-flex align-items-center w-100 fw-bold"
+                                                       style="background-color:#0d6efd; color:#ffffff; margin:-0.75rem -1rem; padding:0.6rem 1rem; border-top-left-radius:0.25rem; border-top-right-radius:0.25rem;" />
                                     </f:facet>
-                                    <div class="container-fluid m-0 p-0 w-100">
-                                        <div class="d-flex flex-wrap w-100">
-                                            <div class="m-1">
-                                                <p:outputLabel for="acMedicine" styleClass="w-100" value="Medicine:" />
+                                    <div class="container-fluid m-0 p-2 w-100">
+                                        <div class="row g-3 align-items-end">
+                                            <div class="col-12 col-lg-4 d-flex flex-column">
+                                                <p:outputLabel for="acMedicine" styleClass="w-100 fw-semibold mb-1" value="Medicine:" />
                                                 <p:autoComplete id="acMedicine"
                                                                 completeMethod="#{pharmaceuticalItemController.completeItem}"
                                                                 value="#{inpatientClinicalDataController.admissionWardMedicine.prescription.item}"
@@ -49,10 +52,10 @@
                                                     <p:ajax event="itemSelect" update="cmbDose" />
                                                 </p:autoComplete>
                                             </div>
-                                            <div class="m-1 d-flex flex-column">
-                                                <p:outputLabel for="txtDose" value="Dose:" />
+                                            <div class="col-12 col-sm-6 col-lg-2 d-flex flex-column">
+                                                <p:outputLabel for="txtDose" styleClass="fw-semibold mb-1" value="Dose:" />
                                                 <div class="d-flex">
-                                                    <p:inputText style="width: 6em;" id="txtDose"
+                                                    <p:inputText styleClass="flex-grow-1" style="min-width:0;" id="txtDose"
                                                                  value="#{inpatientClinicalDataController.admissionWardMedicine.prescription.dose}"
                                                                  placeholder="Dose"/>
                                                     <p:outputLabel for="cmbDose" value="Dose unit:" styleClass="sr-only" />
@@ -64,19 +67,20 @@
                                                     </p:selectOneMenu>
                                                 </div>
                                             </div>
-                                            <div class="m-1 d-flex flex-column">
-                                                <p:outputLabel for="cmbFrequency" value="Frequency:" />
+                                            <div class="col-12 col-sm-6 col-lg-2 d-flex flex-column">
+                                                <p:outputLabel for="cmbFrequency" styleClass="fw-semibold mb-1" value="Frequency:" />
                                                 <p:selectOneMenu id="cmbFrequency"
+                                                                 styleClass="w-100"
                                                                  value="#{inpatientClinicalDataController.admissionWardMedicine.prescription.frequencyUnit}">
                                                     <f:selectItem itemLabel="Select" />
                                                     <f:selectItems value="#{measurementUnitController.frequencyUnits}"
                                                                    var="du" itemLabel="#{du.name}" itemValue="#{du}" />
                                                 </p:selectOneMenu>
                                             </div>
-                                            <div class="m-1 d-flex flex-column">
-                                                <p:outputLabel for="txtDuration" value="Duration:" />
+                                            <div class="col-12 col-sm-6 col-lg-2 d-flex flex-column">
+                                                <p:outputLabel for="txtDuration" styleClass="fw-semibold mb-1" value="Duration:" />
                                                 <div class="d-flex">
-                                                    <p:inputText style="width: 6em;" id="txtDuration"
+                                                    <p:inputText styleClass="flex-grow-1" style="min-width:0;" id="txtDuration"
                                                                  value="#{inpatientClinicalDataController.admissionWardMedicine.prescription.duration}"
                                                                  placeholder="Duration"/>
                                                     <p:outputLabel for="cmbDuration" value="Duration unit:" styleClass="sr-only" />
@@ -88,14 +92,23 @@
                                                     </p:selectOneMenu>
                                                 </div>
                                             </div>
-                                            <div>
-                                                <p:outputLabel value="&#160;" styleClass="w-100" />
+                                            <div class="col-12 col-sm-6 col-lg-2 d-flex flex-column">
                                                 <p:commandButton value="Add"
                                                                  id="btnAddRx"
+                                                                 icon="fa fa-plus"
+                                                                 styleClass="ui-button-success w-100"
                                                                  disabled="#{inpatientClinicalDataController.parentAdmission == null or inpatientClinicalDataController.parentAdmission.id == null}"
-                                                                 process="btnAddRx acMedicine txtDose cmbDose cmbFrequency txtDuration cmbDuration"
-                                                                 update="panelAddMedicine panelActiveMedicines panelPastMedicines"
+                                                                 process="btnAddRx acMedicine txtDose cmbDose cmbFrequency txtDuration cmbDuration txtComment"
+                                                                 update="growlWardMedicines panelAddMedicine panelActiveMedicines panelPastMedicines"
                                                                  action="#{inpatientClinicalDataController.addAdmissionWardMedicine()}" />
+                                            </div>
+                                            <div class="col-12 d-flex flex-column">
+                                                <p:outputLabel for="txtComment" styleClass="fw-semibold mb-1" value="Comment:" />
+                                                <p:inputTextarea id="txtComment"
+                                                                 styleClass="w-100"
+                                                                 rows="2"
+                                                                 value="#{inpatientClinicalDataController.admissionWardMedicine.prescription.comment}"
+                                                                 placeholder="Optional comment / special instructions" />
                                             </div>
                                         </div>
                                     </div>
@@ -107,12 +120,31 @@
                             <div class="col-12">
                                 <p:panel id="panelActiveMedicines" class="w-100 m-1 p-0">
                                     <f:facet name="header">
-                                        <p:outputLabel value="Active Ward Medications" />
+                                        <div class="d-flex align-items-center justify-content-between w-100 fw-bold"
+                                             style="background-color:#198754; color:#ffffff; margin:-0.75rem -1rem; padding:0.4rem 1rem; border-top-left-radius:0.25rem; border-top-right-radius:0.25rem;">
+                                            <p:outputLabel value="Active Ward Medications" />
+                                            <p:commandButton id="btnRequestFromPharmacy"
+                                                             value="Request Selected from Pharmacy"
+                                                             icon="fa fa-paper-plane"
+                                                             ajax="false"
+                                                             title="Request the ticked medicines from a pharmacy"
+                                                             styleClass="ui-button-warning ui-button-sm"
+                                                             process="@form"
+                                                             action="#{inpatientClinicalDataController.requestSelectedWardMedicinesFromPharmacy()}" />
+                                        </div>
                                     </f:facet>
                                     <p:dataTable id="tblActiveMedicines"
                                                  value="#{inpatientClinicalDataController.activeWardMedicines}"
                                                  var="rx"
+                                                 rowKey="#{rx.id}"
+                                                 selection="#{inpatientClinicalDataController.selectedWardMedicinesToRequest}"
+                                                 selectionMode="multiple"
+                                                 selectionPageOnly="false"
+                                                 styleClass="w-100"
+                                                 stripedRows="true"
+                                                 size="small"
                                                  emptyMessage="No active ward medications">
+                                        <p:column selectionBox="true" style="width:3rem; text-align:center;" />
                                         <p:column headerText="Medicine">
                                             <h:outputText value="#{rx.prescription.formattedPrescription}" />
                                         </p:column>
@@ -129,20 +161,27 @@
                                                           rendered="#{rx.prescription.parent != null}"
                                                           styleClass="text-muted" />
                                         </p:column>
-                                        <p:column headerText="Action" style="width: 130px;">
-                                            <p:commandButton icon="fa fa-edit"
+                                        <p:column headerText="Comment">
+                                            <h:outputText value="#{rx.prescription.comment}" />
+                                        </p:column>
+                                        <p:column headerText="Action" style="width: 220px;">
+                                            <p:commandButton id="btnChangeDose"
+                                                             icon="fa fa-edit"
+                                                             value="Change"
                                                              title="Change Dose/Frequency"
                                                              class="ui-button-warning ui-button-sm m-1"
                                                              oncomplete="PF('dlgChangeDose').show()"
                                                              process="@this"
-                                                             update="panelChangeDoseDialog"
+                                                             update=":formWardMedicines:panelChangeDoseDialog"
                                                              action="#{inpatientClinicalDataController.prepareChangeDoseFrequency(rx)}" />
-                                            <p:commandButton icon="fa fa-times"
-                                                             title="Omit"
+                                            <p:commandButton id="btnOmit"
+                                                             icon="fa fa-ban"
+                                                             value="Omit"
+                                                             title="Omit (move to Past Ward Medications)"
                                                              class="ui-button-danger ui-button-sm m-1"
                                                              oncomplete="PF('dlgOmit').show()"
                                                              process="@this"
-                                                             update="panelOmitDialog">
+                                                             update=":formWardMedicines:panelOmitDialog">
                                                 <f:setPropertyActionListener
                                                     value=""
                                                     target="#{inpatientClinicalDataController.omissionReason}" />
@@ -158,13 +197,18 @@
 
                         <div class="row px-4 py-2">
                             <div class="col-12">
-                                <p:panel id="panelPastMedicines" class="w-100 m-1 p-0" toggleable="true" collapsed="true">
+                                <p:panel id="panelPastMedicines" class="w-100 m-1 p-0" toggleable="true" collapsed="false">
                                     <f:facet name="header">
-                                        <p:outputLabel value="Past Ward Medications" />
+                                        <p:outputLabel styleClass="fw-bold px-2 py-1 rounded text-white"
+                                                       style="background-color:#6c757d;"
+                                                       value="Past Ward Medications (Omitted / Completed) - #{inpatientClinicalDataController.pastWardMedicines.size()}" />
                                     </f:facet>
                                     <p:dataTable id="tblPastMedicines"
                                                  value="#{inpatientClinicalDataController.pastWardMedicines}"
                                                  var="rx"
+                                                 styleClass="w-100"
+                                                 stripedRows="true"
+                                                 size="small"
                                                  emptyMessage="No past ward medications">
                                         <p:column headerText="Medicine">
                                             <h:outputText value="#{rx.prescription.formattedPrescription}" />
@@ -194,6 +238,9 @@
                                                     <h:outputText value=" See active list for updated prescription" />
                                                 </small>
                                             </h:panelGroup>
+                                        </p:column>
+                                        <p:column headerText="Comment">
+                                            <h:outputText value="#{rx.prescription.comment}" />
                                         </p:column>
                                     </p:dataTable>
                                 </p:panel>
@@ -227,9 +274,10 @@
                                                      onclick="PF('dlgOmit').hide()"
                                                      class="ui-button-secondary m-1" />
                                     <p:commandButton value="Omit"
+                                                     id="btnConfirmOmitWardMedicine"
                                                      action="#{inpatientClinicalDataController.omitAdmissionWardMedicine()}"
-                                                     process="panelOmitDialog"
-                                                     update="panelActiveMedicines panelPastMedicines"
+                                                     process="@this txtOmitReason"
+                                                     update=":formWardMedicines:growlWardMedicines :formWardMedicines:panelActiveMedicines :formWardMedicines:panelPastMedicines"
                                                      oncomplete="PF('dlgOmit').hide()"
                                                      class="ui-button-danger m-1" />
                                 </div>
@@ -285,9 +333,10 @@
                                                      onclick="PF('dlgChangeDose').hide()"
                                                      class="ui-button-secondary m-1" />
                                     <p:commandButton value="Apply Change"
+                                                     id="btnApplyChangeWardMedicine"
                                                      action="#{inpatientClinicalDataController.changeDoseFrequencyWardMedicine()}"
-                                                     process="panelChangeDoseDialog"
-                                                     update="panelActiveMedicines panelPastMedicines"
+                                                     process="@this txtNewDose cmbNewDoseUnit cmbNewFrequency"
+                                                     update=":formWardMedicines:growlWardMedicines :formWardMedicines:panelActiveMedicines :formWardMedicines:panelPastMedicines"
                                                      oncomplete="PF('dlgChangeDose').hide()"
                                                      class="ui-button-warning m-1" />
                                 </div>

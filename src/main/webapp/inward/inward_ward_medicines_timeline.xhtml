@@ -58,6 +58,7 @@
                                     <h:panelGroup layout="block" rendered="#{inpatientClinicalDataController.hasWardMedicineTimelineEvents}">
                                         <p:timeline id="wardTimeline"
                                                     value="#{inpatientClinicalDataController.wardMedicineTimelineModel}"
+                                                    var="cfv"
                                                     zoomable="true"
                                                     moveable="true"
                                                     stackEvents="true"
@@ -67,6 +68,7 @@
                                                     listener="#{inpatientClinicalDataController.onTimelineSelect}"
                                                     update="panelMedicineDetail"
                                                     oncomplete="PF('dlgMedicineDetail').show()" />
+                                            <h:outputText value="#{cfv.prescription.formattedPrescriptionWithoutIndoorOutdoor}" />
                                         </p:timeline>
                                     </h:panelGroup>
 
