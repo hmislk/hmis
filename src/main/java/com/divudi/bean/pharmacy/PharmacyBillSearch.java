@@ -3119,10 +3119,7 @@ public class PharmacyBillSearch implements Serializable {
 
             Bill cb = getPharmacyBean().reAddToStock(getBill(), getSessionController().getLoggedUser(), getSessionController().getDepartment(), billNumberSuffix);
             cb.setForwardReferenceBill(getBill().getForwardReferenceBill());
-            // Discharge medicine issues cancel to the discharge cancellation atomic.
-            cb.setBillTypeAtomic(getBill().getBillTypeAtomic() == BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE
-                    ? BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION
-                    : BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION);
+            cb.setBillTypeAtomic(resolveDirectIssueCancellationAtomic(getBill().getBillTypeAtomic()));
             getBillFacade().edit(cb);
 
             //   cancelPreBillFees(cb.getBillItems());
@@ -3140,6 +3137,28 @@ public class PharmacyBillSearch implements Serializable {
 
         } else {
             JsfUtil.addErrorMessage("No Bill to cancel");
+        }
+    }
+
+    /**
+     * Resolves the cancellation atomic for a direct-issue-to-BHT cancellation
+     * based on the source bill's atomic. cancelDirectIssueToBht() is shared by
+     * pharmacy direct issues, discharge medicine issues and store direct issues,
+     * so each must cancel to its own matching atomic rather than always to the
+     * pharmacy medicine cancellation. Unknown sources fall back to the pharmacy
+     * medicine cancellation to preserve prior behaviour.
+     */
+    private BillTypeAtomic resolveDirectIssueCancellationAtomic(BillTypeAtomic sourceAtomic) {
+        if (sourceAtomic == null) {
+            return BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION;
+        }
+        switch (sourceAtomic) {
+            case DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE:
+                return BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION;
+            case DIRECT_ISSUE_STORE_INWARD:
+                return BillTypeAtomic.DIRECT_ISSUE_STORE_INWARD_CANCELLATION;
+            default:
+                return BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION;
         }
     }
 

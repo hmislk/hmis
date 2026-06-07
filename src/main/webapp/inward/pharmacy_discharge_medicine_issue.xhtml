@@ -30,8 +30,8 @@
                                 <div class="d-flex align-items-center">
                                     <i class="fa-solid fa-user-injured fa-lg text-primary me-3"></i>
                                     <div>
-                                        <h4 class="mb-1 text-primary">Patient Selection</h4>
-                                        <p class="mb-0 text-muted small">Search and select an inpatient to issue discharge medicines</p>
+                                        <h:outputText styleClass="d-block mb-1 text-primary h4" value="Patient Selection" />
+                                        <h:outputText styleClass="d-block mb-0 text-muted small" value="Search and select an inpatient to issue discharge medicines" />
                                     </div>
                                 </div>
                                 <div>
@@ -54,16 +54,16 @@
                                     <div class="card-body p-4">
                                         <div class="text-center mb-4">
                                             <i class="fa-solid fa-search fa-3x text-info mb-3"></i>
-                                            <h5 class="text-dark mb-2">Find Inpatient</h5>
-                                            <p class="text-muted">Search by patient name, BHT number, or PHN to continue with discharge medicine issuing</p>
+                                            <h:outputText styleClass="d-block text-dark mb-2 h5" value="Find Inpatient" />
+                                            <h:outputText styleClass="d-block text-muted" value="Search by patient name, BHT number, or PHN to continue with discharge medicine issuing" />
                                         </div>
 
                                         <div class="row align-items-end">
                                             <div class="col-12 col-md-9 mb-3 mb-md-0">
-                                                <label class="form-label fw-bold text-dark mb-2">
+                                                <h:outputLabel for="acPt2" styleClass="form-label fw-bold text-dark mb-2">
                                                     <i class="fa-solid fa-user me-2 text-primary"></i>
-                                                    Patient Search
-                                                </label>
+                                                    <h:outputText value="Patient Search" />
+                                                </h:outputLabel>
                                                 <p:autoComplete
                                                     widgetVar="aPt2"
                                                     id="acPt2"
@@ -75,6 +75,8 @@
                                                     itemValue="#{apt2}"
                                                     placeholder="Type patient name, BHT number, or PHN..."
                                                     minQueryLength="2"
+                                                    maxResults="25"
+                                                    scrollHeight="250"
                                                     style="width: 100%;"
                                                     inputStyleClass="form-control form-control-lg">
                                                     <p:column headerText="PHN" style="padding: 8px; min-width: 100px;">
@@ -132,7 +134,7 @@
                                                     <div class="d-flex align-items-start">
                                                         <i class="fa-solid fa-info-circle me-3 mt-1 text-info"></i>
                                                         <div>
-                                                            <h6 class="alert-heading mb-2">Discharge Medicines:</h6>
+                                                            <h:outputText styleClass="d-block alert-heading mb-2 h6" value="Discharge Medicines:" />
                                                             <ul class="mb-0 ps-3">
                                                                 <li>Medicines are issued at the retail rate with <strong>no inward service charge</strong></li>
                                                                 <li>Start typing at least 2 characters to search for patients</li>
@@ -315,7 +317,7 @@
                                                     class="w-100"
                                                     styleClass="text-end #{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'ui-messages-warn':''}">
                                                     <h:outputLabel value="#{i.dateOfExpire}" style="width: 100px!important;" >
-                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
+                                                        <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
                                                     </h:outputLabel>
                                                 </p:column>
                                             </p:autoComplete>
