@@ -2033,30 +2033,30 @@
                                              ajax="false"
                                              action="#{financialTransactionController.refreshCashNetTotalForMenu()}" />
                         </h:panelGroup>
-                        <!-- User Notifications UI disabled: caused TransactionRolledback errors during render.
-                             Once the JPQL/transaction issues are fixed, remove the comment markers below
-                             to re-enable the bell badge, polling, and refresh actions. -->
-                        <!--
+                        <f:websocket channel="notifications"
+                                     user="#{sessionController.loggedUser.id}"
+                                     onmessage="onNotificationPush"
+                                     connected="#{sessionController.loggedUser != null}" />
+                        <p:remoteCommand name="refreshNotifications"
+                                         update="notCount"
+                                         action="#{userNotificationController.fillLoggedUserNotifications}" />
+                        <script type="text/javascript">
+                            function onNotificationPush(message) {
+                                refreshNotifications();
+                            }
+                        </script>
                         <div class="mx-4">
-                            <h:panelGroup>
-                                <p:poll
-                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Auto-refresh Menu Notifications', false)}"
-                                    interval="#{configOptionApplicationController.getLongValueByKey('Auto-refresh Menu Notification Duration', 1800)}"
-                                    listener="#{userNotificationController.fillLoggedUserNotifications()}"
-                                    update="notCount" />
-                                <h:panelGroup id="notCount">
-                                    <p:badge id="bdgeNotiCount" severity="danger" value="#{webUserController.userNotificationCount}">
-                                        <p:commandButton id="btnNot" ajax="false" icon="pi pi-bell" action="#{userNotificationController.navigateToRecivedNotification()}" />
-                                    </p:badge>
-                                </h:panelGroup>
-                                <p:commandButton 
-                                    icon="pi pi-refresh" 
-                                    rendered="#{not configOptionApplicationController.getBooleanValueByKey('Auto-refresh Menu Notifications', false)}"
-                                    action="#{userNotificationController.fillLoggedUserNotifications()}"
-                                    title="Refresh Notifications" style="margin-left: 10px;"/>
+                            <h:panelGroup id="notCount">
+                                <p:badge id="bdgeNotiCount"
+                                         severity="danger"
+                                         value="#{userNotificationController.items != null ? userNotificationController.items.size() : 0}">
+                                    <p:commandButton id="btnNot"
+                                                     ajax="false"
+                                                     icon="pi pi-bell"
+                                                     action="#{userNotificationController.navigateToRecivedNotification()}" />
+                                </p:badge>
                             </h:panelGroup>
                         </div>
-                        -->
 
 
                         <p:commandButton id="btnLogout" ajax="false" icon="pi pi-sign-out" action="#{sessionController.logout}" />
