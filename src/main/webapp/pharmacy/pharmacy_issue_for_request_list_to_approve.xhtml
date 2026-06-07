@@ -13,16 +13,17 @@
                     <f:facet name="header">
                         <div class="d-flex align-items-center">
                             <i class="fas fa-check-circle text-success me-2"></i>
-                            <h4 class="mb-0 text-success">Issue for Requests — List to Approve</h4>
+                            <h:outputText value="Issue for Requests — List to Approve" styleClass="mb-0 text-success" style="font-size: 1.5rem; font-weight: 600;"/>
                         </div>
                     </f:facet>
                     <div class="row g-3">
                         <div class="col-lg-3 col-md-4">
                             <p:panel header="Search Filters" styleClass="h-100 shadow-sm">
                                 <div class="mb-3">
-                                    <label class="form-label fw-bold text-secondary">
-                                        <i class="fas fa-calendar-alt me-1"></i>From Date
-                                    </label>
+                                    <h:panelGroup styleClass="form-label fw-bold text-secondary d-block">
+                                        <i class="fas fa-calendar-alt me-1"></i>
+                                        <h:outputText value="From Date"/>
+                                    </h:panelGroup>
                                     <p:calendar
                                         id="fromDate"
                                         class="w-100"
@@ -32,9 +33,10 @@
                                         pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                                 </div>
                                 <div class="mb-3">
-                                    <label class="form-label fw-bold text-secondary">
-                                        <i class="fas fa-calendar-alt me-1"></i>To Date
-                                    </label>
+                                    <h:panelGroup styleClass="form-label fw-bold text-secondary d-block">
+                                        <i class="fas fa-calendar-alt me-1"></i>
+                                        <h:outputText value="To Date"/>
+                                    </h:panelGroup>
                                     <p:calendar
                                         id="toDate"
                                         class="w-100"

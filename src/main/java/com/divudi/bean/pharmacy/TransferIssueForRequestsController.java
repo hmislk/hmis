@@ -460,6 +460,10 @@ public class TransferIssueForRequestsController implements Serializable {
             JsfUtil.addErrorMessage("Please select a department to issue to");
             return;
         }
+        if (getIssuedBill().getToStaff() == null) {
+            JsfUtil.addErrorMessage("Please select a staff to issue to");
+            return;
+        }
         if (getBillItems() == null || getBillItems().isEmpty()) {
             JsfUtil.addErrorMessage("No items to save");
             return;
@@ -533,6 +537,7 @@ public class TransferIssueForRequestsController implements Serializable {
             getBillItemFacade().edit(bi);
         }
 
+        getIssuedBill().setBillItems(getBillItems());
         calculateBillTotalsForTransferIssue(getIssuedBill());
         getIssuedBill().setNetTotal(calculateBillNetTotal());
         getBillFacade().edit(getIssuedBill());
@@ -583,6 +588,10 @@ public class TransferIssueForRequestsController implements Serializable {
         Bill fresh = getBillFacade().findWithoutCache(getIssuedBill().getId());
         if (fresh == null || fresh.isRetired()) {
             JsfUtil.addErrorMessage("Draft bill not found.");
+            return;
+        }
+        if (!fresh.isCompleted()) {
+            JsfUtil.addErrorMessage("This draft must be finalized before it can be approved.");
             return;
         }
         if (fresh.isChecked()) {

@@ -21,9 +21,10 @@
                     <div class="col-lg-3 col-md-4">
                         <p:panel header="Search Filters" styleClass="h-100 shadow-sm">
                             <div class="mb-3">
-                                <label class="form-label fw-bold text-secondary">
-                                    <i class="fas fa-calendar-alt me-1"></i>From Date
-                                </label>
+                                <h:panelGroup styleClass="form-label fw-bold text-secondary d-block">
+                                    <i class="fas fa-calendar-alt me-1"></i>
+                                    <h:outputText value="From Date"/>
+                                </h:panelGroup>
                                 <p:calendar
                                     id="fromDate"
                                     class="w-100"
@@ -33,9 +34,10 @@
                                     pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                             </div>
                             <div class="mb-3">
-                                <label class="form-label fw-bold text-secondary">
-                                    <i class="fas fa-calendar-alt me-1"></i>To Date
-                                </label>
+                                <h:panelGroup styleClass="form-label fw-bold text-secondary d-block">
+                                    <i class="fas fa-calendar-alt me-1"></i>
+                                    <h:outputText value="To Date"/>
+                                </h:panelGroup>
                                 <p:calendar
                                     id="toDate"
                                     class="w-100"

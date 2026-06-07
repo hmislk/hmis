@@ -266,6 +266,10 @@ public class TransferIssueNativeSqlController implements Serializable {
             JsfUtil.addErrorMessage("Draft bill not found or retired.");
             return null;
         }
+        if (!fresh.isCompleted()) {
+            JsfUtil.addErrorMessage("This fast issue must be finalized before it can be approved.");
+            return null;
+        }
         if (fresh.isChecked()) {
             JsfUtil.addErrorMessage("This fast issue has already been approved.");
             makeNull();
@@ -290,7 +294,11 @@ public class TransferIssueNativeSqlController implements Serializable {
                     sessionController.getInstitution().getId(),
                     staffId);
         } catch (RuntimeException ex) {
-            JsfUtil.addErrorMessage("Approval failed: " + ex.getMessage());
+            fresh.setChecked(false);
+            fresh.setCheckeAt(null);
+            fresh.setApproveUser(null);
+            billFacade.edit(fresh);
+            JsfUtil.addErrorMessage("Approval failed: " + ex.getMessage() + ". The draft has been reset — please try again.");
             return null;
         }
         enrichPrintDto(printDto, fresh);
