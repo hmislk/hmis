@@ -117,6 +117,7 @@
                                     icon="fas fa-bolt"
                                     class="ui-button-warning mx-1"
                                     action="#{transferIssueNativeSqlController.navigateToIssueRequestNative()}"
+                                    onclick="if(#{configOptionApplicationController.getBooleanValueByKey('Use Save Finalize Approve Workflow for Issue for Requests', false)} &amp;&amp; !confirm('Start issuing for this request? A pending draft will block this if one already exists.')) return false;"
                                     disabled="#{p.cancelled eq true or p.fullyIssued eq true}">
                                     <f:setPropertyActionListener target="#{transferIssueNativeSqlController.requestedBillId}" value="#{p.billId}"/>
                                 </p:commandButton>
