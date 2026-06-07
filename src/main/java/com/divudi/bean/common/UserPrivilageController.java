@@ -727,8 +727,13 @@ public class UserPrivilageController implements Serializable {
         TreeNode disbursementFinalizeRequest = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyDisbursementFinalizeRequest, "Finalize Transfer Request"), disbursementNode);
         TreeNode PharmacyDisbursementApproval = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyDisbursementRequestApproval, "Pharmacy Disbursement Request Approval"), disbursementNode);
         TreeNode disbursementIssueForRequest = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyDisbursementIssurForRequest, "Issue for Request"), disbursementNode);
+        TreeNode issueForRequestSave = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyIssueForRequestSave, "Issue for Request Save"), disbursementNode);
+        TreeNode issueForRequestFinalize = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyIssueForRequestFinalize, "Issue for Request Finalize"), disbursementNode);
+        TreeNode issueForRequestApprove = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyIssueForRequestApprove, "Issue for Request Approve"), disbursementNode);
         TreeNode disbursementDirectIssue = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyDisbursementDirectIssue, "Direct Issue"), disbursementNode);
         TreeNode disbursementRecieve = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyDisbursementRecieve, "Recieve"), disbursementNode);
+        TreeNode receiveFinalize = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyReceiveFinalize, "Receive Finalize"), disbursementNode);
+        TreeNode receiveApprove = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyReceiveApprove, "Receive Approve"), disbursementNode);
         TreeNode TransferReciveApproval = new DefaultTreeNode(new PrivilegeHolder(Privileges.TransferReciveApproval, "Recieve Approval"), disbursementNode);
         TreeNode PharmacyDisbursementReports = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyDisbursementReports, "Pharmacy Disbursement Reports"), disbursementNode);
         TreeNode PharmacyTransferViewRates = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyTransferViewRates, "Pharmacy Transfer View Rates"), disbursementNode);
@@ -740,6 +745,7 @@ public class UserPrivilageController implements Serializable {
         TreeNode InpatientMedicationManagementNode = new DefaultTreeNode("Inpatient medication Management", pharmacyNode);
         TreeNode InpatientMedicationManagementMenue = new DefaultTreeNode(new PrivilegeHolder(Privileges.InpatientMedicationManagementMenue, "Procurement Menu"), InpatientMedicationManagementNode);
         TreeNode PharmacyDirectIssueToBht = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyDirectIssueToBht, "Pharmacy Direct Issue To Bht"), InpatientMedicationManagementNode);
+        TreeNode PharmacyDischargeMedicineIssue = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyDischargeMedicineIssue, "Pharmacy Discharge Medicine Issue"), InpatientMedicationManagementNode);
         TreeNode PharmacyDirectIssueToTheaterCases = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyDirectIssueToTheaterCases, "Pharmacy Direct Issue To Theater Cases"), InpatientMedicationManagementNode);
         TreeNode PharmacyBhtIssueRequest = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyBhtIssueRequest, "Pharmacy Bht Issue Request"), InpatientMedicationManagementNode);
         TreeNode PharmacySearchInpatientDirectIssuesbyBill = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacySearchInpatientDirectIssuesbyBill, "Pharmacy Search Inpatient Direct Issues by Bill"), InpatientMedicationManagementNode);
@@ -755,6 +761,9 @@ public class UserPrivilageController implements Serializable {
         TreeNode pharmacyAutoOrderPModel = new DefaultTreeNode(new PrivilegeHolder(Privileges.AutoOrderPModel, "Auto Order (P Model)"), ProcumentNode);
         TreeNode pharmacyAutoOrderQModel = new DefaultTreeNode(new PrivilegeHolder(Privileges.AutoOrderQModal, "Auto Order (Q Model)"), ProcumentNode);
         TreeNode pharmacyDirectPurchase = new DefaultTreeNode(new PrivilegeHolder(Privileges.DirectPurchase, "Direct Purchase"), ProcumentNode);
+        TreeNode pharmacyDirectPurchaseSave = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyDirectPurchaseSave, "Pharmacy Direct Purchase Save"), ProcumentNode);
+        TreeNode pharmacyDirectPurchaseFinalize = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyDirectPurchaseFinalize, "Pharmacy Direct Purchase Finalize"), ProcumentNode);
+        TreeNode pharmacyDirectPurchaseApprove = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyDirectPurchaseApprove, "Pharmacy Direct Purchase Approve"), ProcumentNode);
         TreeNode pharmacyPurchaseOrderApprovel = new DefaultTreeNode(new PrivilegeHolder(Privileges.PurchaseOrdersApprovel, "Purchase Orders Approvel"), ProcumentNode);
         TreeNode pharmacyGoodRecipt = new DefaultTreeNode(new PrivilegeHolder(Privileges.GoodsRecipt, "Pharmacy Good Recipt"), ProcumentNode);
         TreeNode pharmacyGrnSave = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyGrnSave, "Pharmacy GRN Save"), ProcumentNode);

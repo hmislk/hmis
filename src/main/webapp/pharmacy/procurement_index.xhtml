@@ -76,6 +76,20 @@
                                     class="ui-button-success w-100"
                                     icon="fas fa-hand-holding-usd"
                                     rendered="#{webUserController.hasPrivilege('DirectPurchase') and !configOptionApplicationController.getBooleanValueByKey('Manage Costing', true)}" />
+                                <p:commandButton
+                                    value="Finalize Direct Purchase"
+                                    ajax="false"
+                                    action="#{searchController.navigateToDirectPurchaseListToFinalize()}"
+                                    class="ui-button-warning w-100"
+                                    icon="fas fa-clipboard-check"
+                                    rendered="#{webUserController.hasPrivilege('PharmacyDirectPurchaseFinalize')}" />
+                                <p:commandButton
+                                    value="Approve Direct Purchase"
+                                    ajax="false"
+                                    action="#{searchController.navigateToDirectPurchaseListToApprove()}"
+                                    class="ui-button-warning w-100"
+                                    icon="fas fa-check-circle"
+                                    rendered="#{webUserController.hasPrivilege('PharmacyDirectPurchaseApprove')}" />
                             </p:panelGrid>
                         </p:tab>
 

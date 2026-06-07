@@ -1104,6 +1104,10 @@
                                     value="Direct Issue to BHTs (Native SQL)" icon="fa fa-bolt"
                                     rendered="#{webUserController.hasPrivilege('PharmacyDirectIssueToBht')}"
                                     actionListener="#{inpatientDirectIssueNativeSqlController.resetAll()}"/>
+                        <p:menuitem ajax="false" action="/inward/pharmacy_discharge_medicine_issue?faces-redirect=true"
+                                    value="Issue Discharge Medicines" icon="fas fa-prescription-bottle-alt"
+                                    rendered="#{webUserController.hasPrivilege('PharmacyDischargeMedicineIssue')}"
+                                    actionListener="#{pharmacySaleBhtController.resetAllForDischargeIssue()}"/>
                         <p:menuitem  ajax="false"  action="/theater/inward_bill_surgery_issue?faces-redirect=true"
                                      value="Direct Issue to Theatre Cases" icon="fas fa-cut"
                                      actionListener="#{pharmacySaleBhtController.resetAll()}"
@@ -1135,26 +1139,12 @@
                         value="Procurement"
                         rendered="#{webUserController.hasPrivilege('PharmacyProcurementMenu')}"
                         icon="fas fa-shopping-cart" />
-                    <p:submenu label="Disposal" icon="fas fa-trash-alt" rendered="#{webUserController.hasPrivilege('PharmacyDisposalMenue')}">
-                        <p:menuitem
-                            ajax="false"
-                            action="/pharmacy/pharmacy_issue?faces-redirect=true"
-                            value="Issue" icon="fas fa-trash"
-                            actionListener="#{pharmacyIssueController.resetAll()}"
-                            rendered="#{webUserController.hasPrivilege('PharmacyDisposalIssue')}" ></p:menuitem>
-                        <p:menuitem
-                            ajax="false"
-                            action="/pharmacy/pharmacy_search_issue_bill?faces-redirect=true"
-                            actionListener="#{searchController.makeListNull}"
-                            value="Search Issue Bill" icon="fas fa-search"
-                            rendered="#{webUserController.hasPrivilege('PharmacyDisposalSearchIssueBill')}" ></p:menuitem>
-                        <p:menuitem  ajax="false" action="/pharmacy/pharmacy_search_issue_bill_item?faces-redirect=true" actionListener="#{searchController.makeListNull}"
-                                     value="Search Issue Bill Items" icon="fas fa-list" rendered="#{webUserController.hasPrivilege('PharmacyDisposalSearchIssueBillItems')}" ></p:menuitem>
-                        <p:menuitem  ajax="false" action="/pharmacy/pharmacy_search_issue_bill_return?faces-redirect=true" actionListener="#{searchController.makeListNull}"
-                                     value="Search Issue Return Bill" icon="fas fa-undo" rendered="#{webUserController.hasPrivilege('PharmacyDisposalSearchIssueReturnBill')}" ></p:menuitem>
-                        <p:menuitem  ajax="false" action="/store/issue_rate_margin_manager?faces-redirect=true"
-                                     value="Unit Issue Margin" icon="fas fa-percentage" rendered="#{webUserController.hasPrivilege('PharmacyDisposalUnitIssueMargin')}" />
-                    </p:submenu>
+                    <p:menuitem
+                        ajax="false"
+                        action="/pharmacy/disposal_index?faces-redirect=true"
+                        value="Disposal"
+                        rendered="#{webUserController.hasPrivilege('PharmacyDisposalMenue')}"
+                        icon="fas fa-trash-alt" />
 
                     <p:menuitem
                         ajax="false"

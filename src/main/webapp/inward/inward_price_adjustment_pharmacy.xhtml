@@ -132,10 +132,32 @@
                                         <h:outputLabel value="Margin" class="mt-2"></h:outputLabel>
                                     </div>
                                     <div class="col-4">
-                                        <p:inputText 
+                                        <p:inputText
                                             class="w-100"
-                                            autocomplete="off" 
+                                            autocomplete="off"
                                             value="#{inwardPriceAdjustmntController.margin}" />
+                                    </div>
+                                </div>
+
+                                <div class="row mt-1">
+                                    <div class="col-2">
+                                        <h:outputLabel value="Credit Company" class="mt-2"/>
+                                    </div>
+                                    <div class="col-10">
+                                        <p:autoComplete
+                                            value="#{inwardPriceAdjustmntController.creditCompany}"
+                                            forceSelection="true"
+                                            completeMethod="#{institutionController.completeIns}"
+                                            var="cc"
+                                            inputStyleClass="form-control"
+                                            class="w-100"
+                                            itemLabel="#{cc.name}"
+                                            itemValue="#{cc}"
+                                            placeholder="Leave blank to apply to all companies"
+                                            maxResults="20"
+                                            onkeydown="if (event.key === 'Enter') { event.preventDefault(); return false; }">
+                                            <p:column headerText="Name">#{cc.name}</p:column>
+                                        </p:autoComplete>
                                     </div>
                                 </div>
                             </div>
@@ -260,6 +282,13 @@
                                     <h:inputText autocomplete="off" value="#{a.margin}" style="width: 5em;">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:inputText>
+                                </p:column>
+
+                                <p:column
+                                    headerText="Credit Company"
+                                    filterBy="#{empty a.creditCompany ? '' : a.creditCompany.name}"
+                                    filterMatchMode="contains">
+                                    <h:outputText value="#{empty a.creditCompany ? 'All Companies' : a.creditCompany.name}"/>
                                 </p:column>
 
                                 <p:column headerText="Action" width="11%">

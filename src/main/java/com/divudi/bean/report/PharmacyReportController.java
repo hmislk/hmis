@@ -4224,6 +4224,8 @@ public class PharmacyReportController implements Serializable {
         List<BillTypeAtomic> billTypes = Arrays.asList(
                 BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION,
                 BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN,
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION,
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN,
                 BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_CANCELLATION,
                 BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN,
                 BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION,
@@ -8439,7 +8441,8 @@ public class PharmacyReportController implements Serializable {
     public void processBhtIssue() {
         List<BillTypeAtomic> billTypes = Arrays.asList(
                 BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD,
-                BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE,
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE
         );
         retrieveBillItems("b.billTypeAtomic", billTypes);
     }
@@ -12897,6 +12900,8 @@ public class PharmacyReportController implements Serializable {
             List<BillTypeAtomic> billTypes = Arrays.asList(
                     BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION,
                     BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN,
+                    BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION,
+                    BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN,
                     BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_CANCELLATION,
                     BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN,
                     BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION,
@@ -13654,7 +13659,8 @@ public class PharmacyReportController implements Serializable {
         try {
             List<BillTypeAtomic> billTypes = Arrays.asList(
                     BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD,
-                    BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE
+                    BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE,
+                    BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE
             );
 
             Map<String, Double> bhtIssues = retrievePurchaseAndCostValues(" bi.bill.billTypeAtomic ", billTypes);
