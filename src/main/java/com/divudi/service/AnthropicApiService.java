@@ -413,13 +413,16 @@ public class AnthropicApiService implements Serializable {
         JsonObject inwardDiscountMatrixTool = Json.createObjectBuilder()
                 .add("name", "manage_inward_discount_matrix")
                 .add("description",
-                        "Manage Inward Discount Matrix entries (backs the two UI pages "
-                        + "inward_discount_matrix_service_investigation.xhtml and inward_discount_matrix_pharmacy.xhtml). "
+                        "Manage Inward Discount Matrix entries (backs the three UI pages "
+                        + "inward_discount_matrix_service_investigation.xhtml, inward_discount_matrix_pharmacy.xhtml, "
+                        + "and inward_discount_matrix_room_charges.xhtml). "
                         + "Methods: LIST (filter+list), GET (one), POST (create — rejects duplicates), "
                         + "PUT (update), DELETE (soft-retire). "
+                        + "Optional creditCompanyId sets a credit-company-specific discount row; rows without creditCompanyId "
+                        + "are the generic fallback used when no CC-specific row matches. "
                         + "Lookup helpers: LOOKUP_DEPARTMENTS, LOOKUP_SERVICE_CATEGORIES, "
                         + "LOOKUP_PHARMACEUTICAL_ITEM_CATEGORIES, LOOKUP_ADMISSION_TYPES, "
-                        + "LOOKUP_PAYMENT_SCHEMES, LIST_PAYMENT_METHODS. "
+                        + "LOOKUP_PAYMENT_SCHEMES, LIST_PAYMENT_METHODS, LOOKUP_CREDIT_COMPANIES. "
                         + "Always resolve names to IDs via the lookups before POST/PUT.")
                 .add("input_schema", Json.createObjectBuilder()
                         .add("type", "object")
@@ -433,7 +436,8 @@ public class AnthropicApiService implements Serializable {
                                                 .add("LOOKUP_PHARMACEUTICAL_ITEM_CATEGORIES")
                                                 .add("LOOKUP_ADMISSION_TYPES")
                                                 .add("LOOKUP_PAYMENT_SCHEMES")
-                                                .add("LIST_PAYMENT_METHODS"))
+                                                .add("LIST_PAYMENT_METHODS")
+                                                .add("LOOKUP_CREDIT_COMPANIES"))
                                         .add("description", "Operation to perform."))
                                 .add("scope", Json.createObjectBuilder()
                                         .add("type", "string")
@@ -466,6 +470,9 @@ public class AnthropicApiService implements Serializable {
                                 .add("limit", Json.createObjectBuilder()
                                         .add("type", "string")
                                         .add("description", "Max results (1–200). Optional."))
+                                .add("creditCompanyId", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Institution id of the credit company. Optional. When set, this row applies only when the admission has exactly that one credit company."))
                                 .add("retireComments", Json.createObjectBuilder()
                                         .add("type", "string")
                                         .add("description", "Reason for retirement. Optional for DELETE.")))
@@ -930,12 +937,13 @@ public class AnthropicApiService implements Serializable {
                     String paymentSchemeId   = toolInput.containsKey("paymentSchemeId")  ? toolInput.getString("paymentSchemeId", "")  : "";
                     String paymentMethodStr  = toolInput.containsKey("paymentMethod")    ? toolInput.getString("paymentMethod", "")    : "";
                     String discountPercent   = toolInput.containsKey("discountPercent")  ? toolInput.getString("discountPercent", "")  : "";
+                    String creditCompanyId   = toolInput.containsKey("creditCompanyId")  ? toolInput.getString("creditCompanyId", "")  : "";
                     String query             = toolInput.containsKey("query")            ? toolInput.getString("query", "")            : "";
                     String limit             = toolInput.containsKey("limit")            ? toolInput.getString("limit", "")            : "";
                     String retireComments    = toolInput.containsKey("retireComments")   ? toolInput.getString("retireComments", "")   : "";
                     return callInwardDiscountMatrixApi(method, scope, id, departmentId, categoryId,
                             admissionTypeId, paymentSchemeId, paymentMethodStr, discountPercent,
-                            query, limit, retireComments, hmisBaseUrl, hmisApiKey);
+                            creditCompanyId, query, limit, retireComments, hmisBaseUrl, hmisApiKey);
                 }
                 case "manage_investigations": {
                     String method = toolInput.getString("method", "GET");
@@ -1461,8 +1469,8 @@ public class AnthropicApiService implements Serializable {
     private String callInwardDiscountMatrixApi(
             String method, String scope, String id, String departmentId, String categoryId,
             String admissionTypeId, String paymentSchemeId, String paymentMethod,
-            String discountPercent, String query, String limit, String retireComments,
-            String hmisBaseUrl, String hmisApiKey) {
+            String discountPercent, String creditCompanyId, String query, String limit,
+            String retireComments, String hmisBaseUrl, String hmisApiKey) {
 
         if (hmisBaseUrl == null || hmisBaseUrl.trim().isEmpty()) {
             return "Error: HMIS base URL is not configured.";
@@ -1512,6 +1520,10 @@ public class AnthropicApiService implements Serializable {
                                 .append(URLEncoder.encode(paymentMethod, StandardCharsets.UTF_8));
                         first = false;
                     }
+                    if (creditCompanyId != null && !creditCompanyId.isEmpty()) {
+                        urlBuilder.append(first ? "?" : "&").append("creditCompanyId=").append(creditCompanyId);
+                        first = false;
+                    }
                     if (limit != null && !limit.isEmpty()) {
                         urlBuilder.append(first ? "?" : "&").append("limit=").append(limit);
                         first = false;
@@ -1537,6 +1549,7 @@ public class AnthropicApiService implements Serializable {
                     if (paymentSchemeId != null && !paymentSchemeId.trim().isEmpty()) bodyBuilder.add("paymentSchemeId", Long.parseLong(paymentSchemeId.trim()));
                     if (paymentMethod != null && !paymentMethod.isEmpty()) bodyBuilder.add("paymentMethod", paymentMethod);
                     if (discountPercent != null && !discountPercent.trim().isEmpty()) bodyBuilder.add("discountPercent", Double.parseDouble(discountPercent.trim()));
+                    if (creditCompanyId != null && !creditCompanyId.trim().isEmpty()) bodyBuilder.add("creditCompanyId", Long.parseLong(creditCompanyId.trim()));
                     requestBody = bodyBuilder.build().toString();
                     break;
                 }
@@ -1552,6 +1565,7 @@ public class AnthropicApiService implements Serializable {
                     if (paymentSchemeId != null && !paymentSchemeId.trim().isEmpty()) bodyBuilder.add("paymentSchemeId", Long.parseLong(paymentSchemeId.trim()));
                     if (paymentMethod != null && !paymentMethod.isEmpty()) bodyBuilder.add("paymentMethod", paymentMethod);
                     if (discountPercent != null && !discountPercent.trim().isEmpty()) bodyBuilder.add("discountPercent", Double.parseDouble(discountPercent.trim()));
+                    if (creditCompanyId != null && !creditCompanyId.trim().isEmpty()) bodyBuilder.add("creditCompanyId", Long.parseLong(creditCompanyId.trim()));
                     requestBody = bodyBuilder.build().toString();
                     break;
                 }
@@ -1607,6 +1621,11 @@ public class AnthropicApiService implements Serializable {
                 }
                 case "LIST_PAYMENT_METHODS": {
                     url = base + "/payment-methods";
+                    httpMethod = "GET";
+                    break;
+                }
+                case "LOOKUP_CREDIT_COMPANIES": {
+                    url = lookupUrl(base + "/credit-companies/search", query, limit);
                     httpMethod = "GET";
                     break;
                 }
@@ -2430,13 +2449,24 @@ public class AnthropicApiService implements Serializable {
         sb.append("### manage_collecting_centre_fees\n");
         sb.append("List, create, update, retire, or recalculate item fees for a collecting centre.\n\n");
         sb.append("### manage_inward_discount_matrix\n");
-        sb.append("Manage Inward Discount Matrix entries for services/investigations and pharmacy. ")
+        sb.append("Manage Inward Discount Matrix entries for services/investigations, pharmacy, and room charges. ")
           .append("Use scope='service' or scope='pharmacy' to pick the correct category universe. ")
+          .append("Optional creditCompanyId links a row to a specific credit company; rows without creditCompanyId are the generic fallback. ")
+          .append("The system tries credit-company-specific rows first, then falls back to generic rows. ")
           .append("Resolve names to IDs first using the lookup methods (LOOKUP_DEPARTMENTS, LOOKUP_SERVICE_CATEGORIES, ")
-          .append("LOOKUP_PHARMACEUTICAL_ITEM_CATEGORIES, LOOKUP_ADMISSION_TYPES, LOOKUP_PAYMENT_SCHEMES, LIST_PAYMENT_METHODS), ")
+          .append("LOOKUP_PHARMACEUTICAL_ITEM_CATEGORIES, LOOKUP_ADMISSION_TYPES, LOOKUP_PAYMENT_SCHEMES, ")
+          .append("LIST_PAYMENT_METHODS, LOOKUP_CREDIT_COMPANIES), ")
           .append("then POST to create, PUT to update, or DELETE to retire. ")
           .append("Always confirm with the user before POST, PUT, or DELETE — these changes affect live inward billing discounts. ")
           .append("POST returns 'already_exists' with the existing id when a duplicate combination already exists.\n\n");
+        sb.append("### manage_inward_price_adjustment\n");
+        sb.append("Manage Inward Price Adjustment (margin) Matrix entries for services/investigations and pharmacy. ")
+          .append("Each row defines a gross-value price range (fromPrice, toPrice) and a margin percentage to apply. ")
+          .append("Optional creditCompanyId links the row to a specific credit company (0 margin for a CC means no markup). ")
+          .append("The system tries credit-company-specific rows first, then falls back to generic rows. ")
+          .append("Use scope='service' or scope='pharmacy'. Lookup helpers: LOOKUP_DEPARTMENTS, ")
+          .append("LOOKUP_CATEGORIES (/categories/search?scope=service|pharmacy), LIST_PAYMENT_METHODS, LOOKUP_CREDIT_COMPANIES. ")
+          .append("Always confirm with the user before POST, PUT, or DELETE.\n\n");
         sb.append("### manage_investigations\n");
         sb.append("Search, retrieve, create, update, activate, or deactivate investigation master records ")
           .append("(lab/diagnostic tests such as CBC, PCR, blood gas, X-ray managed as investigations). ")
