@@ -1104,6 +1104,10 @@
                                     value="Direct Issue to BHTs (Native SQL)" icon="fa fa-bolt"
                                     rendered="#{webUserController.hasPrivilege('PharmacyDirectIssueToBht')}"
                                     actionListener="#{inpatientDirectIssueNativeSqlController.resetAll()}"/>
+                        <p:menuitem ajax="false" action="/inward/pharmacy_discharge_medicine_issue?faces-redirect=true"
+                                    value="Issue Discharge Medicines" icon="fas fa-prescription-bottle-alt"
+                                    rendered="#{webUserController.hasPrivilege('PharmacyDischargeMedicineIssue')}"
+                                    actionListener="#{pharmacySaleBhtController.resetAllForDischargeIssue()}"/>
                         <p:menuitem  ajax="false"  action="/theater/inward_bill_surgery_issue?faces-redirect=true"
                                      value="Direct Issue to Theatre Cases" icon="fas fa-cut"
                                      actionListener="#{pharmacySaleBhtController.resetAll()}"

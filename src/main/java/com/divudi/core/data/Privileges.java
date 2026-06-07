@@ -506,6 +506,7 @@ public enum Privileges {
     // Pharmacy Inpatient medication management
     InpatientMedicationManagementMenue("Inpatient Medication Management Menu"),
     PharmacyDirectIssueToBht("Pharmacy Direct Issue to BHT"),
+    PharmacyDischargeMedicineIssue("Pharmacy Discharge Medicine Issue"),
     PharmacyDirectIssueToTheaterCases("Pharmacy Direct Issue to Theater Cases"),
     PharmacyBhtIssueRequest("Pharmacy BHT Issue Request"),
     PharmacySearchInpatientDirectIssuesbyBill("Pharmacy Search Inpatient Direct Issues by Bill"),
@@ -898,6 +899,7 @@ public enum Privileges {
             // Inpatient medication management
             case InpatientMedicationManagementMenue:
             case PharmacyDirectIssueToBht:
+            case PharmacyDischargeMedicineIssue:
             case PharmacyDirectIssueToTheaterCases:
             case PharmacyBhtIssueRequest:
             case PharmacySearchInpatientDirectIssuesbyBill:

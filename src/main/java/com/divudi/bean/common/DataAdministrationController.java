@@ -4483,6 +4483,7 @@ public class DataAdministrationController implements Serializable {
         // Target bill types for inpatient direct issues
         List<BillTypeAtomic> targetTypes = Arrays.asList(
                 BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE,
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE,
                 BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE,
                 BillTypeAtomic.DIRECT_ISSUE_STORE_INWARD,
                 BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD
