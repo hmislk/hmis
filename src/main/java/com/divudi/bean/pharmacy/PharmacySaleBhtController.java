@@ -762,12 +762,12 @@ public class PharmacySaleBhtController implements Serializable {
 
         if (added == 0) {
             JsfUtil.addErrorMessage("None of the selected medicines could be issued from "
-                    + dispensingDepartment.getName() + " (no available stock). Please add them manually.");
+                    + dispensingDepartment.getName() + ". See the conversion report and add them manually.");
             return "";
         }
         if (notAvailable > 0) {
-            JsfUtil.addWarningMessage(notAvailable + " medicine(s) had no available stock in "
-                    + dispensingDepartment.getName() + ". See the conversion report and add them manually if needed.");
+            JsfUtil.addWarningMessage(notAvailable + " medicine(s) could not be issued from "
+                    + dispensingDepartment.getName() + " (no stock or conversion failed). See the conversion report and add them manually if needed.");
         }
 
         calTotal();
@@ -789,15 +789,25 @@ public class PharmacySaleBhtController implements Serializable {
      */
     private DischargeConversionRow addDischargeBillItemFromPrescription(
             com.divudi.core.entity.clinical.Prescription sourcePrescription, Department dispensingDepartment) {
-        if (sourcePrescription == null || sourcePrescription.getItem() == null) {
-            return null;
-        }
-
+        // Never silently drop a selected prescription: a prescription with no
+        // medicine still gets a visible report row so the omission is surfaced.
         DischargeConversionRow row = new DischargeConversionRow();
+        if (sourcePrescription == null || sourcePrescription.getItem() == null) {
+            row.setPrescribedText(sourcePrescription != null
+                    ? sourcePrescription.getFormattedPrescription() : "Unknown prescription");
+            row.setResolvedItemName("");
+            row.setRequiredQty(0.0);
+            row.setIssuedQty(0.0);
+            row.setStatus(DischargeConversionRow.Status.NOT_AVAILABLE);
+            row.setMessage("Prescription has no medicine selected. Review and add manually.");
+            return row;
+        }
         row.setPrescribedText(sourcePrescription.getFormattedPrescription());
 
         Item dispensableItem = sourcePrescription.getItem();
         Double calculatedQty = null;
+        boolean conversionFailed = false;
+        String conversionError = null;
         try {
             com.divudi.ejb.PrescriptionToItemService.PrescriptionToItemResult result
                     = prescriptionToItemService.calculateItemAndQuantity(sourcePrescription);
@@ -808,10 +818,35 @@ public class PharmacySaleBhtController implements Serializable {
                 if (result.getQuantity() != null) {
                     calculatedQty = result.getQuantity();
                 }
+            } else {
+                // The conversion did NOT succeed. Distinguish a genuine failure
+                // (e.g. no suitable AMP for a VTM/VMP, unit-conversion error) from
+                // a merely incomplete prescription. Only incomplete prescriptions
+                // get the qty=1 fallback; a real failure is flagged and skipped so
+                // the bill is never settled with an arbitrary under-dose.
+                if (prescriptionToItemService.isCalculationPossible(sourcePrescription)) {
+                    conversionFailed = true;
+                    conversionError = (result != null && result.getErrorMessage() != null)
+                            ? result.getErrorMessage()
+                            : "could not be converted to a dispensable item";
+                }
             }
         } catch (Exception e) {
+            conversionFailed = true;
+            conversionError = e.getMessage();
             LOGGER.log(Level.FINE, "Discharge prescription conversion failed for {0}: {1}",
                     new Object[]{dispensableItem.getName(), e.getMessage()});
+        }
+
+        row.setResolvedItemName(dispensableItem.getName());
+
+        if (conversionFailed) {
+            row.setRequiredQty(0.0);
+            row.setIssuedQty(0.0);
+            row.setStatus(DischargeConversionRow.Status.NOT_AVAILABLE);
+            row.setMessage(dispensableItem.getName() + ": " + conversionError
+                    + ". Not added — please add manually or omit.");
+            return row;
         }
 
         boolean qtyDefaulted = false;
@@ -824,7 +859,6 @@ public class PharmacySaleBhtController implements Serializable {
 
         // Round up to whole units so we never request a fractional dispense.
         double requiredQty = Math.ceil(calculatedQty);
-        row.setResolvedItemName(dispensableItem.getName());
         row.setRequiredQty(requiredQty);
 
         // FEFO via a lightweight DTO projection (NO entity graph loading — avoids

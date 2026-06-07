@@ -2299,10 +2299,19 @@ public class InpatientClinicalDataController implements Serializable {
         }
 
         Long admissionId = admission.getId();
+        List<ClinicalFindingValue> currentDischargeMedicines = getDischargeMedicines();
         List<com.divudi.core.entity.clinical.Prescription> prescriptions = new ArrayList<>();
         int skippedOtherAdmission = 0;
+        int skippedStale = 0;
         for (ClinicalFindingValue cfv : selectedDischargeMedicinesToIssue) {
             if (cfv == null || cfv.getPrescription() == null || cfv.getEncounter() == null) {
+                continue;
+            }
+            // Selection is session-scoped: reject any row that was deleted/retired
+            // (removed from the current discharge list) since it was selected, so a
+            // stale tick can never be converted into an issue line.
+            if (cfv.isRetired() || !currentDischargeMedicines.contains(cfv)) {
+                skippedStale++;
                 continue;
             }
             // Guard against a stale (session-scoped) selection carried over from a
@@ -2317,6 +2326,10 @@ public class InpatientClinicalDataController implements Serializable {
                 continue;
             }
             prescriptions.add(cfv.getPrescription());
+        }
+        if (skippedStale > 0) {
+            JsfUtil.addWarningMessage(skippedStale
+                    + " selected medicine(s) were removed from the list and were skipped.");
         }
 
         if (prescriptions.isEmpty()) {

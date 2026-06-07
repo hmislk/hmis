@@ -57,11 +57,11 @@
                                             <p:commandButton id="btnCreateDischargeIssueBill"
                                                              value="Create Discharge Issue Bill"
                                                              icon="fa fa-prescription-bottle-alt"
-                                                             ajax="false"
+                                                             ajax="true"
                                                              rendered="#{webUserController.hasPrivilege('PharmacyDischargeMedicineIssue')}"
                                                              title="Issue the ticked discharge medicines from your pharmacy (no service charge)"
                                                              styleClass="ui-button-warning ui-button-sm"
-                                                             process="@form"
+                                                             process="@this :formDischargeMedicines:tblDischargeRxx"
                                                              action="#{inpatientClinicalDataController.createDischargeIssueBillFromSelected()}" />
                                         </div>
                                     </f:facet>
@@ -160,6 +160,7 @@
                                         </p:column>
                                         <p:column headerText="" style="width:4rem; text-align:center;">
                                             <p:commandButton icon="pi pi-times"
+                                                             id="btnRemoveDischargeRx"
                                                              styleClass="ui-button-danger ui-button-sm"
                                                              title="Remove this discharge medicine"
                                                              process="@this"
