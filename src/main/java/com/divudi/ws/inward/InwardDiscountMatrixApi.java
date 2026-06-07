@@ -19,6 +19,7 @@ import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.entity.inward.InwardDiscountMatrix;
 import com.divudi.core.entity.lab.InvestigationCategory;
 import com.divudi.core.entity.pharmacy.PharmaceuticalItemCategory;
+import com.divudi.core.data.InstitutionType;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.facade.CategoryFacade;
 import com.divudi.core.facade.DepartmentFacade;
@@ -758,8 +759,10 @@ public class InwardDiscountMatrixApi {
             String query = param("query");
             int limit = intParam("limit", 30, 1, 200);
             StringBuilder jpql = new StringBuilder(
-                    "select i from Institution i where i.retired = false");
+                    "select i from Institution i where i.retired = false"
+                    + " and i.institutionType = :type");
             Map<String, Object> params = new HashMap<>();
+            params.put("type", InstitutionType.CreditCompany);
             if (query != null && !query.trim().isEmpty()) {
                 jpql.append(" and upper(i.name) like :q");
                 params.put("q", "%" + query.trim().toUpperCase() + "%");

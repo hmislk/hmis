@@ -133,7 +133,9 @@
                                             class="w-100"
                                             itemLabel="#{cc.name}"
                                             itemValue="#{cc}"
-                                            placeholder="Leave blank to apply to all companies">
+                                            placeholder="Leave blank to apply to all companies"
+                                            maxResults="20"
+                                            onkeydown="if (event.key === 'Enter') { event.preventDefault(); return false; }">
                                             <p:column headerText="Name">#{cc.name}</p:column>
                                         </p:autoComplete>
                                     </div>
@@ -229,9 +231,9 @@
 
                                 <p:column
                                     headerText="Credit Company"
-                                    filterBy="#{a.creditCompany.name}"
+                                    filterBy="#{empty a.creditCompany ? '' : a.creditCompany.name}"
                                     filterMatchMode="contains">
-                                    <h:outputText value="#{a.creditCompany.name}"/>
+                                    <h:outputText value="#{empty a.creditCompany ? 'All Companies' : a.creditCompany.name}"/>
                                 </p:column>
 
                                 <p:column headerText="Discount %" style="width: 8em;">

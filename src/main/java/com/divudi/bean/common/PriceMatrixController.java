@@ -184,7 +184,8 @@ public class PriceMatrixController implements Serializable {
                 + " where a.retired=false"
                 + " and a.category=:cat "
                 + " and  a.department=:dep"
-                + " and (a.fromPrice< :frPrice and a.toPrice >:tPrice)";
+                + " and (a.fromPrice< :frPrice and a.toPrice >:tPrice)"
+                + " and a.creditCompany is null";
         HashMap hm = new HashMap();
         hm.put("dep", department);
         hm.put("frPrice", dbl);
@@ -200,7 +201,8 @@ public class PriceMatrixController implements Serializable {
                 + " and a.category=:cat "
                 + " and  a.department=:dep"
                 + " and (a.fromPrice< :frPrice and a.toPrice >:tPrice)"
-                + " and a.paymentMethod=:pm";
+                + " and a.paymentMethod=:pm"
+                + " and a.creditCompany is null";
 
         HashMap hm = new HashMap();
 

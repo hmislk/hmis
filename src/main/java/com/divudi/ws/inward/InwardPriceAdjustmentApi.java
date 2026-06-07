@@ -6,6 +6,7 @@
 package com.divudi.ws.inward;
 
 import com.divudi.bean.common.ApiKeyController;
+import com.divudi.core.data.InstitutionType;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.entity.ApiKey;
 import com.divudi.core.entity.Category;
@@ -241,6 +242,11 @@ public class InwardPriceAdjustmentApi {
             if (fromPrice == null || toPrice == null || margin == null) {
                 return errorResponse("fromPrice, toPrice, and margin are required", 400);
             }
+            if (fromPrice.isNaN() || fromPrice.isInfinite()
+                    || toPrice.isNaN() || toPrice.isInfinite()
+                    || margin.isNaN() || margin.isInfinite()) {
+                return errorResponse("fromPrice, toPrice, and margin must be finite numbers", 400);
+            }
             if (fromPrice >= toPrice) {
                 return errorResponse("fromPrice must be less than toPrice", 400);
             }
@@ -382,6 +388,9 @@ public class InwardPriceAdjustmentApi {
                         return errorResponse("scope is required when categoryId is supplied", 400);
                     }
                     scope = scope.trim().toLowerCase();
+                    if (!"service".equals(scope) && !"pharmacy".equals(scope)) {
+                        return errorResponse("Invalid scope. Use 'service' or 'pharmacy'.", 400);
+                    }
                     String mismatch = validateCategoryForScope(c, scope);
                     if (mismatch != null) {
                         return errorResponse(mismatch, 400);
@@ -406,11 +415,13 @@ public class InwardPriceAdjustmentApi {
             if (body.containsKey("fromPrice")) {
                 Double fp = asDouble(body.get("fromPrice"));
                 if (fp == null) return errorResponse("fromPrice cannot be null", 400);
+                if (fp.isNaN() || fp.isInfinite()) return errorResponse("fromPrice must be a finite number", 400);
                 entry.setFromPrice(fp);
             }
             if (body.containsKey("toPrice")) {
                 Double tp = asDouble(body.get("toPrice"));
                 if (tp == null) return errorResponse("toPrice cannot be null", 400);
+                if (tp.isNaN() || tp.isInfinite()) return errorResponse("toPrice must be a finite number", 400);
                 entry.setToPrice(tp);
             }
             if (entry.getFromPrice() != null && entry.getToPrice() != null
@@ -421,6 +432,7 @@ public class InwardPriceAdjustmentApi {
             if (body.containsKey("margin")) {
                 Double m = asDouble(body.get("margin"));
                 if (m == null) return errorResponse("margin cannot be null", 400);
+                if (m.isNaN() || m.isInfinite()) return errorResponse("margin must be a finite number", 400);
                 entry.setMargin(m);
             }
 
@@ -649,8 +661,10 @@ public class InwardPriceAdjustmentApi {
             String query = param("query");
             int limit = intParam("limit", 30, 1, 200);
             StringBuilder jpql = new StringBuilder(
-                    "select i from Institution i where i.retired = false");
+                    "select i from Institution i where i.retired = false"
+                    + " and i.institutionType = :type");
             Map<String, Object> params = new HashMap<>();
+            params.put("type", InstitutionType.CreditCompany);
             if (query != null && !query.trim().isEmpty()) {
                 jpql.append(" and upper(i.name) like :q");
                 params.put("q", "%" + query.trim().toUpperCase() + "%");
