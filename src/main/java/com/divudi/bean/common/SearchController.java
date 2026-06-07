@@ -16821,12 +16821,13 @@ public class SearchController implements Serializable {
         bills = null;
         String jpql = "Select b From Bill b "
                 + " where b.retired=false "
+                + " and b.cancelled=false "
                 + " and b.billTypeAtomic = :bTp "
                 + " and b.department = :dept "
                 + " and b.checkedBy is null "
                 + " and b.createdAt between :fromDate and :toDate "
                 + " order by b.createdAt desc";
-        HashMap params = new HashMap();
+        Map<String, Object> params = new HashMap<>();
         params.put("bTp", BillTypeAtomic.PHARMACY_RECEIVE_PRE);
         params.put("dept", sessionController.getDepartment());
         params.put("fromDate", getFromDate());
@@ -16838,12 +16839,13 @@ public class SearchController implements Serializable {
         bills = null;
         String jpql = "Select b From Bill b "
                 + " where b.retired=false "
+                + " and b.cancelled=false "
                 + " and b.billTypeAtomic = :bTp "
                 + " and b.department = :dept "
                 + " and b.checkedBy is not null "
                 + " and b.createdAt between :fromDate and :toDate "
                 + " order by b.createdAt desc";
-        HashMap params = new HashMap();
+        Map<String, Object> params = new HashMap<>();
         params.put("bTp", BillTypeAtomic.PHARMACY_RECEIVE_PRE);
         params.put("dept", sessionController.getDepartment());
         params.put("fromDate", getFromDate());

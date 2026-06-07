@@ -8,7 +8,7 @@
     <ui:define name="subcontent">
         <h:panelGroup rendered="#{!webUserController.hasPrivilege('PharmacyReceiveApprove')}">You are NOT authorized</h:panelGroup>
         <h:panelGroup id="gpReceiveApprove" rendered="#{webUserController.hasPrivilege('PharmacyReceiveApprove')}">
-            <h:form>
+            <h:form onkeypress="if (event.key === 'Enter' || event.keyCode === 13) { return false; }">
                 <p:panel styleClass="shadow-sm border-0">
                     <f:facet name="header">
                         <div class="d-flex align-items-center">

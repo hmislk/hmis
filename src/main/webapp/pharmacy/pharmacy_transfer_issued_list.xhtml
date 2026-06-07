@@ -149,7 +149,7 @@
                                     </p:commandButton>
                                 </h:panelGroup>
                                 <!-- PRE exists, not finalized: Finalize + Cancel -->
-                                <h:panelGroup rendered="#{p.pendingReceiveBillId != null and !p.pendingReceiveIsFinalized}">
+                                <h:panelGroup rendered="#{p.pendingReceiveBillId != null and !p.pendingReceiveIsFinalized and !p.cancelled and !p.fullyIssued and webUserController.hasPrivilege('PharmacyReceiveFinalize')}">
                                     <p:commandButton
                                         id="btnToFinalizeReceive"
                                         ajax="false"
@@ -169,7 +169,7 @@
                                         action="#{transferReceiveNativeSqlController.cancelPendingReceive(p.pendingReceiveBillId)}"/>
                                 </h:panelGroup>
                                 <!-- PRE finalized, awaiting approval: Approve + Cancel -->
-                                <h:panelGroup rendered="#{p.pendingReceiveBillId != null and p.pendingReceiveIsFinalized}">
+                                <h:panelGroup rendered="#{p.pendingReceiveBillId != null and p.pendingReceiveIsFinalized and !p.cancelled and !p.fullyIssued and webUserController.hasPrivilege('PharmacyReceiveApprove')}">
                                     <p:commandButton
                                         id="btnToApproveReceive"
                                         ajax="false"

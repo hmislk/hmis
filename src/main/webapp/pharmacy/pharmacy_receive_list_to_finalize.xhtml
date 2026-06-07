@@ -16,7 +16,7 @@
                     <h:outputText value="Transfer Receives — List to Finalize" styleClass="mb-0 text-warning"/>
                 </div>
             </f:facet>
-            <h:form>
+            <h:form onkeypress="if (event.key === 'Enter' || event.keyCode === 13) { return false; }">
                 <div class="row g-3">
                     <div class="col-lg-3 col-md-4">
                         <p:panel header="Search Filters" styleClass="h-100 shadow-sm">

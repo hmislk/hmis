@@ -92,7 +92,7 @@
                                     <p:ajax
                                         event="keyup"
                                         process="@this"
-                                        update="value :#{p:resolveFirstComponentWithId('txtReceivingNetTotal',view).clientId}"
+                                        update="value :#{p:resolveFirstComponentWithId('gpReceivingNetTotal',view).clientId}"
                                         listener="#{transferReceiveNativeSqlController.onQuantityChangeForTransferReceive(item)}"/>
                                 </p:inputText>
                             </p:column>
@@ -119,9 +119,11 @@
                         </h:outputLabel>
 
                         <h:outputLabel value="Receiving Value" rendered="#{webUserController.hasPrivilege('PharmacyTransferViewRates')}" />
-                        <h:outputLabel id="txtReceivingNetTotal" value="#{transferReceiveNativeSqlController.displayReceivedNetTotal}" rendered="#{webUserController.hasPrivilege('PharmacyTransferViewRates')}">
-                            <f:convertNumber pattern="#,##0.00"/>
-                        </h:outputLabel>
+                        <h:panelGroup id="gpReceivingNetTotal">
+                            <h:outputLabel id="txtReceivingNetTotal" value="#{transferReceiveNativeSqlController.displayReceivedNetTotal}" rendered="#{webUserController.hasPrivilege('PharmacyTransferViewRates')}">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputLabel>
+                        </h:panelGroup>
 
                         <h:outputLabel value="Comments" />
                         <p:inputTextarea class="w-100" rows="3" value="#{transferReceiveNativeSqlController.comments}" />
