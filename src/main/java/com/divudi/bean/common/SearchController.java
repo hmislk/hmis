@@ -694,6 +694,9 @@ public class SearchController implements Serializable {
         billTypeAtomic.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE);
 //        billTypeAtomic.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION);
         billTypeAtomic.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN);
+        billTypeAtomic.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE);
+//        billTypeAtomic.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION);
+        billTypeAtomic.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN);
 
         //Pharmacy Types
         billTypeAtomic.add(BillTypeAtomic.INWARD_FINAL_BILL);
@@ -846,6 +849,9 @@ public class SearchController implements Serializable {
         billTypeAtomic.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE);
 //        billTypeAtomic.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION);
         billTypeAtomic.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN);
+        billTypeAtomic.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE);
+//        billTypeAtomic.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION);
+        billTypeAtomic.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN);
 
         //Pharmacy Types
         billTypeAtomic.add(BillTypeAtomic.INWARD_FINAL_BILL);

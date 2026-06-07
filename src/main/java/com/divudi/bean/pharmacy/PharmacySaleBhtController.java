@@ -259,6 +259,9 @@ public class PharmacySaleBhtController implements Serializable {
     private PatientEncounter patientEncounter;
     int activeIndex;
     boolean billPreview = false;
+    // When true, medicines are issued at retail rate with NO inward price-matrix
+    // service charge (used by the Issue Discharge Medicines page).
+    boolean dischargeIssueMode = false;
     Department department;
     String errorMessage = "";
     /////////////////
@@ -684,6 +687,17 @@ public class PharmacySaleBhtController implements Serializable {
         itemsWithoutStocks = new ArrayList<>();
         errorMessage = "";
         cachedMatrixByAdmissionDepartment = null;
+        dischargeIssueMode = false;
+    }
+
+    /**
+     * Reset for the Issue Discharge Medicines page. Same as resetAll() but turns
+     * on discharge mode so medicines are issued at retail rate with no inward
+     * price-matrix service charge.
+     */
+    public void resetAllForDischargeIssue() {
+        resetAll();
+        dischargeIssueMode = true;
     }
 
     public void selectReplaceableStocksNew() {
@@ -1090,6 +1104,33 @@ public class PharmacySaleBhtController implements Serializable {
 
         settleBhtIssue(bt, bta, matrixDept);
 
+    }
+
+    /**
+     * Settle an Issue Discharge Medicines bill. Identical to settlePharmacyBhtIssue()
+     * except it uses the DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE atomic. The inward
+     * price-matrix service charge is already suppressed at add-item time because
+     * dischargeIssueMode is on (see calculateRates), so each item is issued at
+     * retail rate with zero margin. The bill is still counted as an inward medicine
+     * issue in all reports (the new atomic is listed alongside DIRECT_ISSUE_INWARD_MEDICINE).
+     */
+    public void settlePharmacyDischargeIssue() {
+        if (getPreBill().getBillItems().isEmpty()) {
+            JsfUtil.addErrorMessage("Please add items to the bill.");
+            return;
+        }
+        if (errorCheck()) {
+            return;
+        }
+        if (hasAllergyConflicts(getPreBill().getBillItems())) {
+            return;
+        }
+        BillTypeAtomic bta = BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE;
+        BillType bt = BillType.PharmacyBhtPre;
+        // Matrix department is irrelevant for margin here (no matrix is applied),
+        // but settleBhtIssue requires a non-null department for bill metadata.
+        Department matrixDept = determineMatrixDepartment();
+        settleBhtIssue(bt, bta, matrixDept);
     }
 
     private Department determineMatrixDepartment() {
@@ -2059,7 +2100,8 @@ public class PharmacySaleBhtController implements Serializable {
         }
 
         PriceMatrix priceMatrix = null;
-        if (bi.getItem() != null) {
+        // Discharge medicines are issued without the inward price matrix (no service charge).
+        if (!dischargeIssueMode && bi.getItem() != null) {
             priceMatrix = getPriceMatrixController().fetchInwardMargin(
                     bi,
                     estimatedValueBeforeAddingMarginToCalculateMatrix,
@@ -2108,7 +2150,8 @@ public class PharmacySaleBhtController implements Serializable {
         PaymentMethod paymentMethod = getPatientEncounter() != null ? getPatientEncounter().getPaymentMethod() : null;
 
         PriceMatrix priceMatrix = null;
-        if (bi.getItem() != null) {
+        // Discharge medicines are issued without the inward price matrix (no service charge).
+        if (!dischargeIssueMode && bi.getItem() != null) {
             priceMatrix = getPriceMatrixController().fetchInwardMargin(bi, estimatedValue, matrixDept, paymentMethod);
         }
 
@@ -2523,6 +2566,14 @@ public class PharmacySaleBhtController implements Serializable {
 
     public void setBillPreview(boolean billPreview) {
         this.billPreview = billPreview;
+    }
+
+    public boolean isDischargeIssueMode() {
+        return dischargeIssueMode;
+    }
+
+    public void setDischargeIssueMode(boolean dischargeIssueMode) {
+        this.dischargeIssueMode = dischargeIssueMode;
     }
 
     public Bill getBill() {

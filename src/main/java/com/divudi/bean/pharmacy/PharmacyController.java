@@ -9519,7 +9519,7 @@ public class PharmacyController implements Serializable {
             List<DepartmentSale> list = new ArrayList<>();
             double totalValue = 0;
             double totalQty = 0;
-            List<Object[]> objs = calDepartmentBhtIssue(ins, Arrays.asList(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE, BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD));
+            List<Object[]> objs = calDepartmentBhtIssue(ins, Arrays.asList(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE, BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE, BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD));
 
             for (Object[] obj : objs) {
                 DepartmentSale r = new DepartmentSale();
