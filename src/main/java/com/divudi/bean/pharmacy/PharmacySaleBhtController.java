@@ -1079,6 +1079,14 @@ public class PharmacySaleBhtController implements Serializable {
         if (hasAllergyConflicts(getPreBill().getBillItems())) {
             return;
         }
+        // Guarantee the inward price matrix IS applied even if a previous discharge
+        // bill left dischargeIssueMode on in this @SessionScoped controller. Force
+        // matrix mode and re-price every line before saving. (PR #21330 review)
+        dischargeIssueMode = false;
+        for (BillItem bi : getPreBill().getBillItems()) {
+            calculateRates(bi);
+        }
+        calTotal();
         BillTypeAtomic bta = BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE;
         BillType bt = BillType.PharmacyBhtPre;
         Department matrixDept = null;
@@ -1125,6 +1133,14 @@ public class PharmacySaleBhtController implements Serializable {
         if (hasAllergyConflicts(getPreBill().getBillItems())) {
             return;
         }
+        // Guarantee no inward service charge regardless of how the page was reached
+        // (e.g. opened/bookmarked directly without resetAllForDischargeIssue()).
+        // Force discharge mode on and re-price every line at bare retail before saving.
+        dischargeIssueMode = true;
+        for (BillItem bi : getPreBill().getBillItems()) {
+            calculateRates(bi);
+        }
+        calTotal();
         BillTypeAtomic bta = BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE;
         BillType bt = BillType.PharmacyBhtPre;
         // Matrix department is irrelevant for margin here (no matrix is applied),
@@ -2240,6 +2256,11 @@ public class PharmacySaleBhtController implements Serializable {
     }
 
     public void generateIssueBillComponentsForBhtRequest(Bill b) {
+        // This is a normal (matrix-priced) inward issue flow. Clear any sticky
+        // discharge-issue mode left over from a previous discharge bill in the
+        // same @SessionScoped controller so items are priced with the inward
+        // price matrix, not at bare retail. (PR #21330 review)
+        dischargeIssueMode = false;
         if (b == null) {
             JsfUtil.addErrorMessage("No bill");
             return;
