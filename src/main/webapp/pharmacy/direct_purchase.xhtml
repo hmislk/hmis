@@ -24,17 +24,57 @@
                             </div>
                             <div>
 
+                                <!-- Single-step Settle: shown when draft workflow is NOT active -->
                                 <p:commandButton
                                     id="btnSettle"
                                     value="Settle"
-                                    onclick="if (!confirm('Are you sure?'))
-                                                return false"
+                                    onclick="if (!confirm('Are you sure?')) return false"
                                     action="#{pharmacyDirectPurchaseController.settleDirectPurchaseBillFinally}"
                                     styleClass="ui-button-success"
                                     ajax="false"
                                     icon="pi pi-check-circle"
+                                    rendered="#{!pharmacyDirectPurchaseController.draftMode and !configOptionApplicationController.getBooleanValueByKey('Use Save Finalize Approve Workflow for Direct Purchase', false)}"
                                     style="margin-right: 8px;">
                                 </p:commandButton>
+
+                                <!-- Save Draft: shown in draft workflow mode -->
+                                <p:commandButton
+                                    id="btnSaveDraft"
+                                    value="Save Draft"
+                                    action="#{pharmacyDirectPurchaseController.saveDraftDirectPurchase}"
+                                    styleClass="ui-button-info"
+                                    ajax="false"
+                                    icon="pi pi-save"
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Use Save Finalize Approve Workflow for Direct Purchase', false) and !pharmacyDirectPurchaseController.bill.completed and webUserController.hasPrivilege('PharmacyDirectPurchaseSave')}"
+                                    style="margin-right: 8px;">
+                                </p:commandButton>
+
+                                <!-- Finalize: shown when draft is saved but not yet finalized -->
+                                <p:commandButton
+                                    id="btnFinalize"
+                                    value="Finalize"
+                                    onclick="if (!confirm('Finalize this Direct Purchase?')) return false"
+                                    action="#{pharmacyDirectPurchaseController.finalizeDraftDirectPurchase}"
+                                    styleClass="ui-button-warning"
+                                    ajax="false"
+                                    icon="pi pi-check"
+                                    rendered="#{pharmacyDirectPurchaseController.draftMode and pharmacyDirectPurchaseController.bill.id ne null and !pharmacyDirectPurchaseController.bill.completed and webUserController.hasPrivilege('PharmacyDirectPurchaseFinalize')}"
+                                    style="margin-right: 8px;">
+                                </p:commandButton>
+
+                                <!-- Approve: shown when draft is finalized but not yet approved -->
+                                <p:commandButton
+                                    id="btnApprove"
+                                    value="Approve"
+                                    onclick="if (!confirm('Approve this Direct Purchase? Stock will be updated.')) return false"
+                                    action="#{pharmacyDirectPurchaseController.approveDirectPurchaseDraft}"
+                                    styleClass="ui-button-success"
+                                    ajax="false"
+                                    icon="pi pi-check-circle"
+                                    rendered="#{pharmacyDirectPurchaseController.draftMode and pharmacyDirectPurchaseController.bill.completed and !pharmacyDirectPurchaseController.bill.checked and webUserController.hasPrivilege('PharmacyDirectPurchaseApprove')}"
+                                    style="margin-right: 8px;">
+                                </p:commandButton>
+
                                 <p:commandButton
                                     value="New Direct Purchase Bill"
                                     ajax="false"

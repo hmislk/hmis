@@ -602,6 +602,9 @@ public enum Privileges {
     AutoOrderPModel("Auto Order P Model"),
     AutoOrderQModal("Auto Order Q Model"),
     DirectPurchase("Direct Purchase"),
+    PharmacyDirectPurchaseSave("Pharmacy Direct Purchase Save"),
+    PharmacyDirectPurchaseFinalize("Pharmacy Direct Purchase Finalize"),
+    PharmacyDirectPurchaseApprove("Pharmacy Direct Purchase Approve"),
     PurchaseOrdersApprovel("Purchase Orders Approval"),
     TransferReciveApproval("Transfer Receive Approval"),
     GoodsRecipt("Goods Receipt"),
@@ -907,6 +910,9 @@ public enum Privileges {
             case AutoOrderPModel:
             case AutoOrderQModal:
             case DirectPurchase:
+            case PharmacyDirectPurchaseSave:
+            case PharmacyDirectPurchaseFinalize:
+            case PharmacyDirectPurchaseApprove:
             case PurchaseOrdersApprovel:
             case GoodsRecipt:
             case ReturnReceviedGoods:
