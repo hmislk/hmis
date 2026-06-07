@@ -4,8 +4,7 @@
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
-      xmlns:f="http://xmlns.jcp.org/jsf/core"
-      xmlns:emr="http://xmlns.jcp.org/jsf/composite/ezcomp/emr">
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
@@ -52,9 +51,19 @@
                             <div class="col-12">
                                 <p:panel id="panelDischargeMedicines" class="w-100 m-1 p-0">
                                     <f:facet name="header">
-                                        <p:outputLabel value="Discharge Medications"
-                                                       styleClass="d-flex align-items-center w-100 fw-bold"
-                                                       style="background-color:#0d6efd; color:#ffffff; margin:-0.75rem -1rem; padding:0.6rem 1rem; border-top-left-radius:0.25rem; border-top-right-radius:0.25rem;" />
+                                        <div class="d-flex align-items-center justify-content-between w-100 fw-bold"
+                                             style="background-color:#0d6efd; color:#ffffff; margin:-0.75rem -1rem; padding:0.6rem 1rem; border-top-left-radius:0.25rem; border-top-right-radius:0.25rem;">
+                                            <p:outputLabel value="Discharge Medications" />
+                                            <p:commandButton id="btnCreateDischargeIssueBill"
+                                                             value="Create Discharge Issue Bill"
+                                                             icon="fa fa-prescription-bottle-alt"
+                                                             ajax="false"
+                                                             rendered="#{webUserController.hasPrivilege('PharmacyDischargeMedicineIssue')}"
+                                                             title="Issue the ticked discharge medicines from your pharmacy (no service charge)"
+                                                             styleClass="ui-button-warning ui-button-sm"
+                                                             process="@form"
+                                                             action="#{inpatientClinicalDataController.createDischargeIssueBillFromSelected()}" />
+                                        </div>
                                     </f:facet>
                                     <div class="container-fluid m-0 p-2 w-100">
                                         <div class="row g-3 align-items-end">
@@ -122,11 +131,43 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <emr:patient_medicines
-                                        id="tblDischargeRxx"
-                                        editable="true"
-                                        medicines="#{inpatientClinicalDataController.dischargeMedicines}">
-                                    </emr:patient_medicines>
+                                    <p:dataTable id="tblDischargeRxx"
+                                                 value="#{inpatientClinicalDataController.dischargeMedicines}"
+                                                 var="drx"
+                                                 rowKey="#{drx.id}"
+                                                 selection="#{inpatientClinicalDataController.selectedDischargeMedicinesToIssue}"
+                                                 selectionMode="multiple"
+                                                 selectionPageOnly="false"
+                                                 styleClass="w-100"
+                                                 stripedRows="true"
+                                                 size="small"
+                                                 emptyMessage="No discharge medicines prescribed">
+                                        <p:column selectionBox="true" style="width:3rem; text-align:center;"
+                                                  rendered="#{webUserController.hasPrivilege('PharmacyDischargeMedicineIssue')}" />
+                                        <p:column headerText="Medications">
+                                            <h:outputText value="#{drx.prescription.formattedPrescription}" />
+                                        </p:column>
+                                        <p:column headerText="Prescribed By" style="width: 160px;">
+                                            <h:outputText value="#{drx.prescription.prescribedBy.name}" />
+                                        </p:column>
+                                        <p:column headerText="Prescribed At" style="width: 150px;">
+                                            <h:outputText value="#{drx.prescription.prescribedAt}">
+                                                <f:convertDateTime pattern="yyyy-MM-dd HH:mm" timeZone="Asia/Colombo" />
+                                            </h:outputText>
+                                        </p:column>
+                                        <p:column headerText="Comment">
+                                            <h:outputText value="#{drx.prescription.comment}" />
+                                        </p:column>
+                                        <p:column headerText="" style="width:4rem; text-align:center;">
+                                            <p:commandButton icon="pi pi-times"
+                                                             styleClass="ui-button-danger ui-button-sm"
+                                                             title="Remove this discharge medicine"
+                                                             process="@this"
+                                                             update=":formDischargeMedicines:growlDischargeMedicines :formDischargeMedicines:panelDischargeMedicines"
+                                                             onclick="if (!confirm('Are you sure you want to delete this prescription?')) return false;"
+                                                             action="#{inpatientClinicalDataController.removeClinicalFindingValueForComposite(inpatientClinicalDataController.dischargeMedicines, drx)}" />
+                                        </p:column>
+                                    </p:dataTable>
                                 </p:panel>
                             </div>
                         </div>

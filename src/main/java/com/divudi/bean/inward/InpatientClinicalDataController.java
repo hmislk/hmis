@@ -153,6 +153,8 @@ public class InpatientClinicalDataController implements Serializable {
     ConfigOptionApplicationController configOptionApplicationController;
     @Inject
     com.divudi.bean.pharmacy.PharmacyRequestForBhtController pharmacyRequestForBhtController;
+    @Inject
+    com.divudi.bean.pharmacy.PharmacySaleBhtController pharmacySaleBhtController;
 
     /**
      * Properties
@@ -227,6 +229,7 @@ public class InpatientClinicalDataController implements Serializable {
     private ClinicalFindingValue selectedWardMedicineToOmit;
     private String omissionReason;
     private ClinicalFindingValue[] selectedWardMedicinesToRequest;
+    private ClinicalFindingValue[] selectedDischargeMedicinesToIssue;
     private ClinicalFindingValue selectedWardMedicineToChange;
     private Double newDose;
     private MeasurementUnit newDoseUnit;
@@ -2270,6 +2273,73 @@ public class InpatientClinicalDataController implements Serializable {
 
     public void setSelectedWardMedicinesToRequest(ClinicalFindingValue[] selectedWardMedicinesToRequest) {
         this.selectedWardMedicinesToRequest = selectedWardMedicinesToRequest;
+    }
+
+    /**
+     * Converts the discharge-medicine prescriptions the user ticked into a
+     * discharge issue bill (no inward service charge) dispensed from the
+     * logged-in pharmacy, then navigates to the discharge issue page where the
+     * pharmacist reviews batch/quantity and settles. Mirrors
+     * {@link #requestSelectedWardMedicinesFromPharmacy()} for the discharge flow.
+     * Issue #21334.
+     */
+    public String createDischargeIssueBillFromSelected() {
+        // The discharge issue bill must be attributed to the admission. When the
+        // page is reached from the assessment list, current is the assessment
+        // encounter and parentAdmission holds the admission; from the dashboard
+        // both are the admission. Prefer parentAdmission, fall back to current.
+        PatientEncounter admission = parentAdmission != null ? parentAdmission : current;
+        if (admission == null || admission.getId() == null) {
+            JsfUtil.addErrorMessage("No admission selected.");
+            return "";
+        }
+        if (selectedDischargeMedicinesToIssue == null || selectedDischargeMedicinesToIssue.length == 0) {
+            JsfUtil.addErrorMessage("Select at least one discharge medicine to issue.");
+            return "";
+        }
+
+        Long admissionId = admission.getId();
+        List<com.divudi.core.entity.clinical.Prescription> prescriptions = new ArrayList<>();
+        int skippedOtherAdmission = 0;
+        for (ClinicalFindingValue cfv : selectedDischargeMedicinesToIssue) {
+            if (cfv == null || cfv.getPrescription() == null || cfv.getEncounter() == null) {
+                continue;
+            }
+            // Guard against a stale (session-scoped) selection carried over from a
+            // previously-viewed admission: only issue medicines that belong to the
+            // current admission.
+            Long encounterId = cfv.getEncounter().getId();
+            Long parentEncounterId = cfv.getEncounter().getParentEncounter() != null
+                    ? cfv.getEncounter().getParentEncounter().getId()
+                    : null;
+            if (!admissionId.equals(encounterId) && !admissionId.equals(parentEncounterId)) {
+                skippedOtherAdmission++;
+                continue;
+            }
+            prescriptions.add(cfv.getPrescription());
+        }
+
+        if (prescriptions.isEmpty()) {
+            selectedDischargeMedicinesToIssue = null;
+            if (skippedOtherAdmission > 0) {
+                JsfUtil.addErrorMessage("The selected medicines do not belong to this admission. Please re-select.");
+            } else {
+                JsfUtil.addErrorMessage("Could not add any of the selected discharge medicines.");
+            }
+            return "";
+        }
+
+        String outcome = pharmacySaleBhtController.prepareDischargeIssueFromPrescriptions(admission, prescriptions);
+        selectedDischargeMedicinesToIssue = null;
+        return outcome;
+    }
+
+    public ClinicalFindingValue[] getSelectedDischargeMedicinesToIssue() {
+        return selectedDischargeMedicinesToIssue;
+    }
+
+    public void setSelectedDischargeMedicinesToIssue(ClinicalFindingValue[] selectedDischargeMedicinesToIssue) {
+        this.selectedDischargeMedicinesToIssue = selectedDischargeMedicinesToIssue;
     }
 
     public String navigateToWardMedicinesTimeline(PatientEncounter admission) {
