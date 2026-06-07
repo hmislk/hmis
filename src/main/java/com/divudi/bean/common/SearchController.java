@@ -4255,6 +4255,44 @@ public class SearchController implements Serializable {
                 dto.setReceivedBills(byIssued.getOrDefault(dto.getBillId(), new ArrayList<>()));
             }
         }
+        populatePendingReceivePre(transferIssuedListDtos);
+    }
+
+    private void populatePendingReceivePre(List<PharmacyTransferIssuedListDTO> dtos) {
+        if (dtos == null || dtos.isEmpty()) {
+            return;
+        }
+        List<Long> issuedBillIds = dtos.stream()
+                .map(PharmacyTransferIssuedListDTO::getBillId)
+                .collect(Collectors.toList());
+        String jpql = "SELECT b FROM Bill b "
+                + "WHERE b.retired = false "
+                + "AND b.cancelled = false "
+                + "AND b.billTypeAtomic = :btp "
+                + "AND b.backwardReferenceBill.id IN :issuedIds";
+        Map<String, Object> params = new HashMap<>();
+        params.put("btp", BillTypeAtomic.PHARMACY_RECEIVE_PRE);
+        params.put("issuedIds", issuedBillIds);
+        List<Bill> preBills = getBillFacade().findByJpql(jpql, params);
+        if (preBills == null || preBills.isEmpty()) {
+            return;
+        }
+        Map<Long, Long[]> preByIssued = new HashMap<>();
+        for (Bill preBill : preBills) {
+            if (preBill.getBackwardReferenceBill() == null) {
+                continue;
+            }
+            Long issuedId = preBill.getBackwardReferenceBill().getId();
+            boolean isFinalized = preBill.getCheckedBy() != null;
+            preByIssued.put(issuedId, new Long[]{preBill.getId(), isFinalized ? 1L : 0L});
+        }
+        for (PharmacyTransferIssuedListDTO dto : dtos) {
+            Long[] preInfo = preByIssued.get(dto.getBillId());
+            if (preInfo != null) {
+                dto.setPendingReceiveBillId(preInfo[0]);
+                dto.setPendingReceiveIsFinalized(preInfo[1] == 1L);
+            }
+        }
     }
 
     private List<PharmacyTransferReceivedListDTO> fetchReceivedBillsForIssuedIds(List<Long> issuedBillIds) {
@@ -16767,6 +16805,50 @@ public class SearchController implements Serializable {
     public String navigateToIssueForRequestListToApprove() {
         makeListNull();
         return "/pharmacy/pharmacy_issue_for_request_list_to_approve?faces-redirect=true";
+    }
+
+    public String navigateToReceiveListToFinalize() {
+        makeListNull();
+        return "/pharmacy/pharmacy_receive_list_to_finalize?faces-redirect=true";
+    }
+
+    public String navigateToReceiveListToApprove() {
+        makeListNull();
+        return "/pharmacy/pharmacy_receive_list_to_approve?faces-redirect=true";
+    }
+
+    public void createReceiveTableToFinalize() {
+        bills = null;
+        String jpql = "Select b From Bill b "
+                + " where b.retired=false "
+                + " and b.billTypeAtomic = :bTp "
+                + " and b.department = :dept "
+                + " and b.checkedBy is null "
+                + " and b.createdAt between :fromDate and :toDate "
+                + " order by b.createdAt desc";
+        HashMap params = new HashMap();
+        params.put("bTp", BillTypeAtomic.PHARMACY_RECEIVE_PRE);
+        params.put("dept", sessionController.getDepartment());
+        params.put("fromDate", getFromDate());
+        params.put("toDate", getToDate());
+        bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP, 50);
+    }
+
+    public void createReceiveTableToApprove() {
+        bills = null;
+        String jpql = "Select b From Bill b "
+                + " where b.retired=false "
+                + " and b.billTypeAtomic = :bTp "
+                + " and b.department = :dept "
+                + " and b.checkedBy is not null "
+                + " and b.createdAt between :fromDate and :toDate "
+                + " order by b.createdAt desc";
+        HashMap params = new HashMap();
+        params.put("bTp", BillTypeAtomic.PHARMACY_RECEIVE_PRE);
+        params.put("dept", sessionController.getDepartment());
+        params.put("fromDate", getFromDate());
+        params.put("toDate", getToDate());
+        bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP, 50);
     }
 
     public String navigateToPurchaseOrderApprove() {

@@ -128,6 +128,15 @@ public class TransferReceiveNativeSqlController implements Serializable {
             return null;
         }
 
+        // When Save→Finalize→Approve is enabled, block if a PRE is already in progress
+        if (configOptionApplicationController.getBooleanValueByKey(
+                "Use Save Finalize Approve Workflow for Transfer Receive", false)) {
+            if (findActivePre(issuedBill.getId()) != null) {
+                JsfUtil.addErrorMessage("A receive is already in progress. Please finalize or cancel it from the list.");
+                return null;
+            }
+        }
+
         printPreview = false;
         printDto = null;
         comments = null;
@@ -147,6 +156,10 @@ public class TransferReceiveNativeSqlController implements Serializable {
 
         resolveAmpItemIds(itemRowList);
 
+        if (configOptionApplicationController.getBooleanValueByKey(
+                "Use Save Finalize Approve Workflow for Transfer Receive", false)) {
+            return "/pharmacy/pharmacy_transfer_receive_native_with_approval?faces-redirect=true";
+        }
         return "/pharmacy/pharmacy_transfer_receive_native?faces-redirect=true";
     }
 
@@ -164,6 +177,109 @@ public class TransferReceiveNativeSqlController implements Serializable {
 
     public String navigateToApproveReceiveIssue() {
         return "/pharmacy/pharmacy_transfer_receive_native_approval?faces-redirect=true";
+    }
+
+    public String loadPendingReceiveForFinalize(Long preBillId) {
+        if (preBillId == null) {
+            JsfUtil.addErrorMessage("No pending receive selected.");
+            return null;
+        }
+        Bill preBill = billFacade.find(preBillId);
+        if (preBill == null || preBill.isRetired()) {
+            JsfUtil.addErrorMessage("Pending receive not found.");
+            return null;
+        }
+        if (preBill.getBackwardReferenceBill() == null) {
+            JsfUtil.addErrorMessage("Cannot find the associated issued bill.");
+            return null;
+        }
+        issuedBill = billFacade.find(preBill.getBackwardReferenceBill().getId());
+        if (issuedBill == null) {
+            JsfUtil.addErrorMessage("Issued bill not found.");
+            return null;
+        }
+        receivedBillId = preBillId;
+        printPreview = false;
+        printDto = null;
+        comments = null;
+        boolean byPurchaseRate = configOptionApplicationController.getBooleanValueByKey(
+                "Pharmacy Transfer is by Purchase Rate", false);
+        boolean byCostRate = configOptionApplicationController.getBooleanValueByKey(
+                "Pharmacy Transfer is by Cost Rate", false);
+        itemRowList = transferReceiveNativeSqlService.loadIssuedItemsForReceive(
+                issuedBill.getId(), byPurchaseRate, byCostRate);
+        resolveAmpItemIds(itemRowList);
+        return "/pharmacy/pharmacy_transfer_receive_native_with_approval?faces-redirect=true";
+    }
+
+    public String loadPendingReceiveForApprove(Long preBillId) {
+        if (preBillId == null) {
+            JsfUtil.addErrorMessage("No pending receive selected.");
+            return null;
+        }
+        Bill preBill = billFacade.find(preBillId);
+        if (preBill == null || preBill.isRetired()) {
+            JsfUtil.addErrorMessage("Pending receive not found.");
+            return null;
+        }
+        if (preBill.getBackwardReferenceBill() == null) {
+            JsfUtil.addErrorMessage("Cannot find the associated issued bill.");
+            return null;
+        }
+        issuedBill = billFacade.find(preBill.getBackwardReferenceBill().getId());
+        if (issuedBill == null) {
+            JsfUtil.addErrorMessage("Issued bill not found.");
+            return null;
+        }
+        receivedBillId = preBillId;
+        printPreview = false;
+        printDto = null;
+        comments = null;
+        boolean byPurchaseRate = configOptionApplicationController.getBooleanValueByKey(
+                "Pharmacy Transfer is by Purchase Rate", false);
+        boolean byCostRate = configOptionApplicationController.getBooleanValueByKey(
+                "Pharmacy Transfer is by Cost Rate", false);
+        itemRowList = transferReceiveNativeSqlService.loadIssuedItemsForReceive(
+                issuedBill.getId(), byPurchaseRate, byCostRate);
+        resolveAmpItemIds(itemRowList);
+        return "/pharmacy/pharmacy_transfer_receive_native_approval?faces-redirect=true";
+    }
+
+    public String cancelPendingReceive(Long preBillId) {
+        if (preBillId == null) {
+            JsfUtil.addErrorMessage("No pending receive selected.");
+            return null;
+        }
+        Bill preBill = billFacade.find(preBillId);
+        if (preBill == null || preBill.isRetired()) {
+            JsfUtil.addErrorMessage("Pending receive not found.");
+            return null;
+        }
+        preBill.setRetired(true);
+        preBill.setRetireComments("Pending receive cancelled by " + sessionController.getLoggedUser().getWebUserPerson().getName());
+        billFacade.edit(preBill);
+        if (preBill.getBackwardReferenceBill() != null) {
+            Bill issued = billFacade.find(preBill.getBackwardReferenceBill().getId());
+            if (issued != null) {
+                issued.getForwardReferenceBills().remove(preBill);
+                billFacade.edit(issued);
+            }
+        }
+        JsfUtil.addSuccessMessage("Pending receive cancelled.");
+        return "/pharmacy/pharmacy_transfer_issued_list?faces-redirect=true";
+    }
+
+    private Bill findActivePre(long issuedBillId) {
+        String jpql = "SELECT b FROM Bill b "
+                + "WHERE b.retired = false "
+                + "AND b.cancelled = false "
+                + "AND b.billTypeAtomic = :btp "
+                + "AND b.backwardReferenceBill.id = :issueId";
+        Map<String, Object> params = new HashMap<>();
+        params.put("btp", BillTypeAtomic.PHARMACY_RECEIVE_PRE);
+        params.put("issueId", issuedBillId);
+        List<Bill> results = billFacade.findByJpql(jpql, params);
+        return results != null && !results.isEmpty() ? results.get(0) : null;
     }
 
     public String viewByBillId(Long billId) {

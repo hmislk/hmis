@@ -1,0 +1,119 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/pharmacy/disbursement_index.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <ui:define name="subcontent">
+        <h:panelGroup rendered="#{!webUserController.hasPrivilege('PharmacyReceiveApprove')}">You are NOT authorized</h:panelGroup>
+        <h:panelGroup id="gpReceiveApprove" rendered="#{webUserController.hasPrivilege('PharmacyReceiveApprove')}">
+            <h:form>
+                <p:panel styleClass="shadow-sm border-0">
+                    <f:facet name="header">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            <h:outputText value="Transfer Receives — List to Approve" styleClass="mb-0 text-success" style="font-size: 1.5rem; font-weight: 600;"/>
+                        </div>
+                    </f:facet>
+                    <div class="row g-3">
+                        <div class="col-lg-3 col-md-4">
+                            <p:panel header="Search Filters" styleClass="h-100 shadow-sm">
+                                <div class="mb-3">
+                                    <h:panelGroup styleClass="form-label fw-bold text-secondary d-block">
+                                        <i class="fas fa-calendar-alt me-1"></i>
+                                        <h:outputText value="From Date"/>
+                                    </h:panelGroup>
+                                    <p:calendar
+                                        id="fromDate"
+                                        class="w-100"
+                                        inputStyleClass="form-control"
+                                        value="#{searchController.fromDate}"
+                                        navigator="false"
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                </div>
+                                <div class="mb-3">
+                                    <h:panelGroup styleClass="form-label fw-bold text-secondary d-block">
+                                        <i class="fas fa-calendar-alt me-1"></i>
+                                        <h:outputText value="To Date"/>
+                                    </h:panelGroup>
+                                    <p:calendar
+                                        id="toDate"
+                                        class="w-100"
+                                        inputStyleClass="form-control"
+                                        value="#{searchController.toDate}"
+                                        navigator="false"
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                </div>
+                                <p:commandButton
+                                    id="btnSearch"
+                                    class="ui-button-success w-100"
+                                    icon="fas fa-search"
+                                    ajax="false"
+                                    value="Search Receives to Approve"
+                                    action="#{searchController.createReceiveTableToApprove}"
+                                    style="min-height: 45px;"/>
+                            </p:panel>
+                        </div>
+                        <div class="col-lg-9 col-md-8">
+                            <p:panel header="Receives Pending Approval" styleClass="shadow-sm">
+                                <p:dataTable
+                                    id="tblReceiveApprove"
+                                    value="#{searchController.bills}"
+                                    var="g"
+                                    paginator="true"
+                                    rows="10"
+                                    paginatorPosition="bottom"
+                                    paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                    rowsPerPageTemplate="5,10,15,25"
+                                    emptyMessage="No finalized receives found matching your criteria"
+                                    sortMode="multiple"
+                                    resizableColumns="true"
+                                    reflow="true">
+                                    <p:column headerText="Created" width="8em">
+                                        <h:outputLabel value="#{g.createdAt}">
+                                            <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
+                                        </h:outputLabel>
+                                    </p:column>
+                                    <p:column headerText="Department" width="8em">
+                                        <h:outputLabel value="#{g.department.name}"/>
+                                    </p:column>
+                                    <p:column headerText="From Dept" width="8em">
+                                        <h:outputLabel value="#{g.fromDepartment.name}"/>
+                                    </p:column>
+                                    <p:column headerText="Created By" width="8em">
+                                        <h:outputLabel value="#{g.creater.webUserPerson.name}"/>
+                                    </p:column>
+                                    <p:column headerText="Finalized By" width="8em">
+                                        <h:outputLabel value="#{g.checkedBy.webUserPerson.name}"/>
+                                    </p:column>
+                                    <p:column headerText="Actions" styleClass="text-center" exportable="false" width="120">
+                                        <p:commandButton
+                                            id="btnApprove"
+                                            class="ui-button-success"
+                                            icon="fas fa-check"
+                                            value="Approve"
+                                            title="Open and Approve Receive #{g.id}"
+                                            ajax="false"
+                                            action="#{transferReceiveNativeSqlController.loadPendingReceiveForApprove(g.id)}"
+                                            style="min-width: 80px;"/>
+                                        <p:commandButton
+                                            id="btnCancel"
+                                            styleClass="ui-button ui-button-danger ms-1"
+                                            icon="fas fa-times"
+                                            value="Cancel"
+                                            title="Cancel this finalized receive"
+                                            ajax="false"
+                                            onclick="if(!confirm('Cancel this finalized receive? This cannot be undone.')) return false;"
+                                            action="#{transferReceiveNativeSqlController.cancelPendingReceive(g.id)}"
+                                            style="min-width: 80px;"/>
+                                    </p:column>
+                                </p:dataTable>
+                            </p:panel>
+                        </div>
+                    </div>
+                </p:panel>
+            </h:form>
+        </h:panelGroup>
+    </ui:define>
+</ui:composition>
