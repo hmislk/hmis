@@ -70,11 +70,13 @@ public class InwardPriceAdjustmntController implements Serializable {
     double toPrice;
     double margin;
     private Category roomLocation;
+    private Institution creditCompany;
 
     private void recreateModel() {
         fromPrice = toPrice + 1;
         toPrice = 0.0;
         margin = 0;
+        creditCompany = null;
         items = null;
     }
 
@@ -82,6 +84,7 @@ public class InwardPriceAdjustmntController implements Serializable {
         fromPrice = toPrice + 1;
         toPrice = 0.0;
         margin = 0;
+        creditCompany = null;
         items = null;
     }
 
@@ -148,6 +151,7 @@ public class InwardPriceAdjustmntController implements Serializable {
         a.setInstitution(department.getInstitution());
         a.setPaymentMethod(paymentMethod);
         a.setMargin(margin);
+        a.setCreditCompany(creditCompany);
         a.setCreatedAt(new Date());
         a.setCreater(getSessionController().getLoggedUser());
         if (a.getId() == null) {
@@ -184,6 +188,7 @@ public class InwardPriceAdjustmntController implements Serializable {
             a.setInstitution(department.getInstitution());
             a.setPaymentMethod(paymentMethod);
             a.setMargin(margin);
+            a.setCreditCompany(creditCompany);
             a.setCreatedAt(new Date());
             a.setCreater(getSessionController().getLoggedUser());
             if (a.getId() == null) {
@@ -441,6 +446,14 @@ public class InwardPriceAdjustmntController implements Serializable {
 
     public void setFilterItems(List<PriceMatrix> filterItems) {
         this.filterItems = filterItems;
+    }
+
+    public Institution getCreditCompany() {
+        return creditCompany;
+    }
+
+    public void setCreditCompany(Institution creditCompany) {
+        this.creditCompany = creditCompany;
     }
 
     /**

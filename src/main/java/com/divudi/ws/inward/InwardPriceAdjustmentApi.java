@@ -6,25 +6,22 @@
 package com.divudi.ws.inward;
 
 import com.divudi.bean.common.ApiKeyController;
+import com.divudi.core.data.InstitutionType;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.entity.ApiKey;
 import com.divudi.core.entity.Category;
 import com.divudi.core.entity.Department;
-import com.divudi.core.entity.PaymentScheme;
+import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.PriceMatrix;
 import com.divudi.core.entity.ServiceCategory;
 import com.divudi.core.entity.ServiceSubCategory;
 import com.divudi.core.entity.WebUser;
-import com.divudi.core.entity.inward.AdmissionType;
-import com.divudi.core.entity.inward.InwardDiscountMatrix;
+import com.divudi.core.entity.inward.InwardPriceAdjustment;
 import com.divudi.core.entity.lab.InvestigationCategory;
 import com.divudi.core.entity.pharmacy.PharmaceuticalItemCategory;
-import com.divudi.core.data.InstitutionType;
-import com.divudi.core.entity.Institution;
 import com.divudi.core.facade.CategoryFacade;
 import com.divudi.core.facade.DepartmentFacade;
 import com.divudi.core.facade.InstitutionFacade;
-import com.divudi.core.facade.PaymentSchemeFacade;
 import com.divudi.core.facade.PriceMatrixFacade;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -47,7 +44,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -55,19 +51,20 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * REST API for Inward Discount Matrix management.
- * Backs the two UI pages
- *   /inward/inward_discount_matrix_service_investigation.xhtml
- *   /inward/inward_discount_matrix_pharmacy.xhtml
+ * REST API for Inward Price Adjustment (margin) Matrix management.
+ * Backs the UI pages:
+ *   /inward/inward_price_adjustment_service.xhtml
+ *   /inward/inward_price_adjustment_investigation.xhtml
+ *   /inward/inward_price_adjustment_pharmacy.xhtml
  *
- * Single endpoint, scope-scoped (service|pharmacy) — scope controls which
- * category types are allowed.
+ * Scope controls which category types are permitted (service|pharmacy).
+ * Optional creditCompanyId creates a credit-company-specific margin override row.
  *
  * @author Dr M H B Ariyaratne
  */
-@Path("inward-discount-matrix")
+@Path("inward-price-adjustment")
 @RequestScoped
-public class InwardDiscountMatrixApi {
+public class InwardPriceAdjustmentApi {
 
     @Context
     private HttpServletRequest requestContext;
@@ -88,8 +85,6 @@ public class InwardDiscountMatrixApi {
     private CategoryFacade categoryFacade;
 
     @EJB
-    private PaymentSchemeFacade paymentSchemeFacade;
-    @EJB
     private InstitutionFacade institutionFacade;
 
     private static final Gson gson = new GsonBuilder()
@@ -97,13 +92,12 @@ public class InwardDiscountMatrixApi {
             .create();
 
     // =========================================================================
-    // Discount matrix CRUD
+    // CRUD
     // =========================================================================
 
     /**
-     * List discount matrix entries with optional filters.
-     *
-     * GET /api/inward-discount-matrix?scope=service|pharmacy&...
+     * List price adjustment entries with optional filters.
+     * GET /api/inward-price-adjustment?scope=service|pharmacy&...
      */
     @GET
     @Produces(MediaType.APPLICATION_JSON)
@@ -117,11 +111,9 @@ public class InwardDiscountMatrixApi {
             String scope = param("scope");
             if (scope != null) scope = scope.trim().toLowerCase();
 
-            Long departmentId     = longParam("departmentId");
-            Long categoryId       = longParam("categoryId");
-            Long admissionTypeId  = longParam("admissionTypeId");
-            Long paymentSchemeId  = longParam("paymentSchemeId");
-            Long creditCompanyId  = longParam("creditCompanyId");
+            Long departmentId    = longParam("departmentId");
+            Long categoryId      = longParam("categoryId");
+            Long creditCompanyId = longParam("creditCompanyId");
             String paymentMethodStr = param("paymentMethod");
             int limit = intParam("limit", 200, 1, 1000);
 
@@ -135,7 +127,7 @@ public class InwardDiscountMatrixApi {
             }
 
             StringBuilder jpql = new StringBuilder(
-                    "select a from InwardDiscountMatrix a where a.retired = false");
+                    "select a from InwardPriceAdjustment a where a.retired = false");
             Map<String, Object> params = new HashMap<>();
 
             if ("service".equals(scope)) {
@@ -161,14 +153,6 @@ public class InwardDiscountMatrixApi {
                 jpql.append(" and a.category.id = :cid");
                 params.put("cid", categoryId);
             }
-            if (admissionTypeId != null) {
-                jpql.append(" and a.admissionType.id = :aid");
-                params.put("aid", admissionTypeId);
-            }
-            if (paymentSchemeId != null) {
-                jpql.append(" and a.paymentScheme.id = :psid");
-                params.put("psid", paymentSchemeId);
-            }
             if (paymentMethod != null) {
                 jpql.append(" and a.paymentMethod = :pm");
                 params.put("pm", paymentMethod);
@@ -178,7 +162,7 @@ public class InwardDiscountMatrixApi {
                 params.put("ccid", creditCompanyId);
             }
 
-            jpql.append(" order by a.paymentScheme.name, a.department.name, a.category.name");
+            jpql.append(" order by a.department.name, a.category.name, a.fromPrice");
 
             List<PriceMatrix> rows = priceMatrixFacade.findByJpql(jpql.toString(), params, limit);
             List<Map<String, Object>> payload = new ArrayList<>();
@@ -198,7 +182,7 @@ public class InwardDiscountMatrixApi {
 
     /**
      * Fetch one entry by id.
-     * GET /api/inward-discount-matrix/{id}
+     * GET /api/inward-price-adjustment/{id}
      */
     @GET
     @Path("/{id}")
@@ -210,8 +194,8 @@ public class InwardDiscountMatrixApi {
                 return errorResponse("Not a valid key", 401);
             }
             PriceMatrix pm = priceMatrixFacade.find(id);
-            if (pm == null || pm.isRetired() || !(pm instanceof InwardDiscountMatrix)) {
-                return errorResponse("Discount matrix entry not found: " + id, 404);
+            if (pm == null || pm.isRetired() || !(pm instanceof InwardPriceAdjustment)) {
+                return errorResponse("Price adjustment entry not found: " + id, 404);
             }
             return successResponse(toDto(pm));
         } catch (Exception e) {
@@ -221,7 +205,7 @@ public class InwardDiscountMatrixApi {
 
     /**
      * Create a new entry. Rejects duplicates with 409 + existing id.
-     * POST /api/inward-discount-matrix
+     * POST /api/inward-price-adjustment
      */
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
@@ -252,22 +236,19 @@ public class InwardDiscountMatrixApi {
                 return errorResponse("Invalid scope. Use 'service' or 'pharmacy'.", 400);
             }
 
-            PaymentScheme paymentScheme = null;
-            Long paymentSchemeId = asLong(body.get("paymentSchemeId"));
-            if (paymentSchemeId != null) {
-                paymentScheme = paymentSchemeFacade.find(paymentSchemeId);
-                if (paymentScheme == null || paymentScheme.isRetired()) {
-                    return errorResponse("PaymentScheme not found: " + paymentSchemeId, 400);
-                }
+            Double fromPrice = asDouble(body.get("fromPrice"));
+            Double toPrice   = asDouble(body.get("toPrice"));
+            Double margin    = asDouble(body.get("margin"));
+            if (fromPrice == null || toPrice == null || margin == null) {
+                return errorResponse("fromPrice, toPrice, and margin are required", 400);
             }
-
-            Double discountPercent = asDouble(body.get("discountPercent"));
-            if (discountPercent == null) {
-                return errorResponse("discountPercent is required", 400);
+            if (fromPrice.isNaN() || fromPrice.isInfinite()
+                    || toPrice.isNaN() || toPrice.isInfinite()
+                    || margin.isNaN() || margin.isInfinite()) {
+                return errorResponse("fromPrice, toPrice, and margin must be finite numbers", 400);
             }
-            if (discountPercent.isNaN() || discountPercent.isInfinite()
-                    || discountPercent < 0.0 || discountPercent > 100.0) {
-                return errorResponse("discountPercent must be a finite number between 0 and 100", 400);
+            if (fromPrice >= toPrice) {
+                return errorResponse("fromPrice must be less than toPrice", 400);
             }
 
             Department department = null;
@@ -292,16 +273,6 @@ public class InwardDiscountMatrixApi {
                 }
             }
 
-            AdmissionType admissionType = null;
-            Long admissionTypeId = asLong(body.get("admissionTypeId"));
-            if (admissionTypeId != null) {
-                Category c = categoryFacade.find(admissionTypeId);
-                if (c == null || c.isRetired() || !(c instanceof AdmissionType)) {
-                    return errorResponse("AdmissionType not found: " + admissionTypeId, 400);
-                }
-                admissionType = (AdmissionType) c;
-            }
-
             PaymentMethod paymentMethod = null;
             String paymentMethodStr = asString(body.get("paymentMethod"));
             if (paymentMethodStr != null && !paymentMethodStr.trim().isEmpty()) {
@@ -321,25 +292,25 @@ public class InwardDiscountMatrixApi {
                 }
             }
 
-            InwardDiscountMatrix existing = findDuplicate(
-                    department, category, admissionType, paymentMethod, paymentScheme, creditCompany);
+            InwardPriceAdjustment existing = findDuplicate(
+                    department, category, paymentMethod, fromPrice, toPrice, creditCompany);
             if (existing != null) {
                 Map<String, Object> payload = new LinkedHashMap<>();
                 payload.put("status", "already_exists");
                 payload.put("code", 409);
                 payload.put("message",
-                        "An active discount matrix entry with the same combination already exists.");
+                        "An active price adjustment entry with the same combination already exists.");
                 payload.put("id", existing.getId());
                 return Response.status(409).entity(gson.toJson(payload)).build();
             }
 
-            InwardDiscountMatrix entry = new InwardDiscountMatrix();
+            InwardPriceAdjustment entry = new InwardPriceAdjustment();
             entry.setDepartment(department);
             entry.setCategory(category);
-            entry.setAdmissionType(admissionType);
             entry.setPaymentMethod(paymentMethod);
-            entry.setPaymentScheme(paymentScheme);
-            entry.setDiscountPercent(discountPercent);
+            entry.setFromPrice(fromPrice);
+            entry.setToPrice(toPrice);
+            entry.setMargin(margin);
             entry.setCreditCompany(creditCompany);
             if (department != null) {
                 entry.setInstitution(department.getInstitution());
@@ -358,8 +329,8 @@ public class InwardDiscountMatrixApi {
     }
 
     /**
-     * Update an entry. All fields optional; scope is required when categoryId is supplied.
-     * PUT /api/inward-discount-matrix/{id}
+     * Update an entry.
+     * PUT /api/inward-price-adjustment/{id}
      */
     @PUT
     @Path("/{id}")
@@ -373,10 +344,10 @@ public class InwardDiscountMatrixApi {
             }
 
             PriceMatrix pm = priceMatrixFacade.find(id);
-            if (pm == null || pm.isRetired() || !(pm instanceof InwardDiscountMatrix)) {
-                return errorResponse("Discount matrix entry not found: " + id, 404);
+            if (pm == null || pm.isRetired() || !(pm instanceof InwardPriceAdjustment)) {
+                return errorResponse("Price adjustment entry not found: " + id, 404);
             }
-            InwardDiscountMatrix entry = (InwardDiscountMatrix) pm;
+            InwardPriceAdjustment entry = (InwardPriceAdjustment) pm;
 
             Map<?, ?> body;
             try {
@@ -428,54 +399,41 @@ public class InwardDiscountMatrixApi {
                 }
             }
 
-            if (body.containsKey("admissionTypeId")) {
-                Long admissionTypeId = asLong(body.get("admissionTypeId"));
-                if (admissionTypeId == null) {
-                    entry.setAdmissionType(null);
-                } else {
-                    Category c = categoryFacade.find(admissionTypeId);
-                    if (c == null || c.isRetired() || !(c instanceof AdmissionType)) {
-                        return errorResponse("AdmissionType not found: " + admissionTypeId, 400);
-                    }
-                    entry.setAdmissionType((AdmissionType) c);
-                }
-            }
-
-            if (body.containsKey("paymentSchemeId")) {
-                Long paymentSchemeId = asLong(body.get("paymentSchemeId"));
-                if (paymentSchemeId == null) {
-                    entry.setPaymentScheme(null);
-                } else {
-                    PaymentScheme ps = paymentSchemeFacade.find(paymentSchemeId);
-                    if (ps == null || ps.isRetired()) {
-                        return errorResponse("PaymentScheme not found: " + paymentSchemeId, 400);
-                    }
-                    entry.setPaymentScheme(ps);
-                }
-            }
-
             if (body.containsKey("paymentMethod")) {
-                String pm2 = asString(body.get("paymentMethod"));
-                if (pm2 == null || pm2.trim().isEmpty()) {
+                String pmStr = asString(body.get("paymentMethod"));
+                if (pmStr == null || pmStr.trim().isEmpty()) {
                     entry.setPaymentMethod(null);
                 } else {
                     try {
-                        entry.setPaymentMethod(PaymentMethod.valueOf(pm2.trim()));
+                        entry.setPaymentMethod(PaymentMethod.valueOf(pmStr.trim()));
                     } catch (IllegalArgumentException e) {
-                        return errorResponse("Invalid paymentMethod: " + pm2, 400);
+                        return errorResponse("Invalid paymentMethod: " + pmStr, 400);
                     }
                 }
             }
 
-            if (body.containsKey("discountPercent")) {
-                Double dp = asDouble(body.get("discountPercent"));
-                if (dp == null) {
-                    return errorResponse("discountPercent cannot be null", 400);
-                }
-                if (dp.isNaN() || dp.isInfinite() || dp < 0.0 || dp > 100.0) {
-                    return errorResponse("discountPercent must be a finite number between 0 and 100", 400);
-                }
-                entry.setDiscountPercent(dp);
+            if (body.containsKey("fromPrice")) {
+                Double fp = asDouble(body.get("fromPrice"));
+                if (fp == null) return errorResponse("fromPrice cannot be null", 400);
+                if (fp.isNaN() || fp.isInfinite()) return errorResponse("fromPrice must be a finite number", 400);
+                entry.setFromPrice(fp);
+            }
+            if (body.containsKey("toPrice")) {
+                Double tp = asDouble(body.get("toPrice"));
+                if (tp == null) return errorResponse("toPrice cannot be null", 400);
+                if (tp.isNaN() || tp.isInfinite()) return errorResponse("toPrice must be a finite number", 400);
+                entry.setToPrice(tp);
+            }
+            if (entry.getFromPrice() != null && entry.getToPrice() != null
+                    && entry.getFromPrice() >= entry.getToPrice()) {
+                return errorResponse("fromPrice must be less than toPrice", 400);
+            }
+
+            if (body.containsKey("margin")) {
+                Double m = asDouble(body.get("margin"));
+                if (m == null) return errorResponse("margin cannot be null", 400);
+                if (m.isNaN() || m.isInfinite()) return errorResponse("margin must be a finite number", 400);
+                entry.setMargin(m);
             }
 
             if (body.containsKey("creditCompanyId")) {
@@ -491,15 +449,15 @@ public class InwardDiscountMatrixApi {
                 }
             }
 
-            InwardDiscountMatrix dup = findDuplicate(
-                    entry.getDepartment(), entry.getCategory(), entry.getAdmissionType(),
-                    entry.getPaymentMethod(), entry.getPaymentScheme(), entry.getCreditCompany());
+            InwardPriceAdjustment dup = findDuplicate(
+                    entry.getDepartment(), entry.getCategory(), entry.getPaymentMethod(),
+                    entry.getFromPrice(), entry.getToPrice(), entry.getCreditCompany());
             if (dup != null && !dup.getId().equals(entry.getId())) {
                 Map<String, Object> payload = new LinkedHashMap<>();
                 payload.put("status", "already_exists");
                 payload.put("code", 409);
                 payload.put("message",
-                        "Another active discount matrix entry with the same combination already exists.");
+                        "Another active price adjustment entry with the same combination already exists.");
                 payload.put("id", dup.getId());
                 return Response.status(409).entity(gson.toJson(payload)).build();
             }
@@ -516,7 +474,7 @@ public class InwardDiscountMatrixApi {
 
     /**
      * Soft-retire an entry.
-     * DELETE /api/inward-discount-matrix/{id}?retireComments=reason
+     * DELETE /api/inward-price-adjustment/{id}
      */
     @DELETE
     @Path("/{id}")
@@ -528,8 +486,8 @@ public class InwardDiscountMatrixApi {
                 return errorResponse("Not a valid key", 401);
             }
             PriceMatrix pm = priceMatrixFacade.find(id);
-            if (pm == null || !(pm instanceof InwardDiscountMatrix)) {
-                return errorResponse("Discount matrix entry not found: " + id, 404);
+            if (pm == null || !(pm instanceof InwardPriceAdjustment)) {
+                return errorResponse("Price adjustment entry not found: " + id, 404);
             }
             if (pm.isRetired()) {
                 return errorResponse("Entry is already retired: " + id, 400);
@@ -554,45 +512,44 @@ public class InwardDiscountMatrixApi {
     }
 
     // =========================================================================
-    // Lookup endpoints (for name → id resolution)
+    // Lookup endpoints
     // =========================================================================
 
     /**
-     * Search AdmissionType by name.
-     * GET /api/inward-discount-matrix/admission-types/search?query=&limit=
+     * Search categories by scope.
+     * GET /api/inward-price-adjustment/categories/search?scope=service|pharmacy&query=&limit=
      */
     @GET
-    @Path("/admission-types/search")
+    @Path("/categories/search")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response searchAdmissionTypes() {
-        return searchCategoryByType(AdmissionType.class, "at");
-    }
-
-    /**
-     * Search PharmaceuticalItemCategory by name.
-     * GET /api/inward-discount-matrix/pharmaceutical-item-categories/search?query=&limit=
-     */
-    @GET
-    @Path("/pharmaceutical-item-categories/search")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response searchPharmaceuticalItemCategories() {
-        return searchCategoryByType(PharmaceuticalItemCategory.class, "pic");
-    }
-
-    private Response searchCategoryByType(Class<? extends Category> type, String paramKey) {
+    public Response searchCategories() {
         try {
             WebUser user = validateApiKey(requestContext.getHeader("Finance"));
             if (user == null) {
                 return errorResponse("Not a valid key", 401);
             }
+            String scope = param("scope");
+            if (scope == null) scope = "service";
+            scope = scope.trim().toLowerCase();
+
             String query = param("query");
             int limit = intParam("limit", 30, 1, 200);
 
-            StringBuilder jpql = new StringBuilder(
-                    "select c from Category c where c.retired = false and type(c) = :")
-                    .append(paramKey);
+            StringBuilder jpql = new StringBuilder("select c from Category c where c.retired = false");
             Map<String, Object> params = new HashMap<>();
-            params.put(paramKey, type);
+
+            if ("service".equals(scope)) {
+                jpql.append(" and (type(c) = :svc or type(c) = :sub or type(c) = :inv)");
+                params.put("svc", ServiceCategory.class);
+                params.put("sub", ServiceSubCategory.class);
+                params.put("inv", InvestigationCategory.class);
+            } else if ("pharmacy".equals(scope)) {
+                jpql.append(" and type(c) = :pharm");
+                params.put("pharm", PharmaceuticalItemCategory.class);
+            } else {
+                return errorResponse("Invalid scope. Use 'service' or 'pharmacy'.", 400);
+            }
+
             if (query != null && !query.trim().isEmpty()) {
                 jpql.append(" and upper(c.name) like :q");
                 params.put("q", "%" + query.trim().toUpperCase() + "%");
@@ -606,6 +563,7 @@ public class InwardDiscountMatrixApi {
                     Map<String, Object> row = new LinkedHashMap<>();
                     row.put("id", c.getId());
                     row.put("name", c.getName());
+                    row.put("type", c.getClass().getSimpleName());
                     payload.add(row);
                 }
             }
@@ -617,13 +575,13 @@ public class InwardDiscountMatrixApi {
     }
 
     /**
-     * Search PaymentScheme by name.
-     * GET /api/inward-discount-matrix/payment-schemes/search?query=&limit=
+     * Search departments by name.
+     * GET /api/inward-price-adjustment/departments/search?query=&limit=
      */
     @GET
-    @Path("/payment-schemes/search")
+    @Path("/departments/search")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response searchPaymentSchemes() {
+    public Response searchDepartments() {
         try {
             WebUser user = validateApiKey(requestContext.getHeader("Finance"));
             if (user == null) {
@@ -632,23 +590,25 @@ public class InwardDiscountMatrixApi {
             String query = param("query");
             int limit = intParam("limit", 30, 1, 200);
 
-            StringBuilder jpql = new StringBuilder(
-                    "select p from PaymentScheme p where p.retired = false");
+            StringBuilder jpql = new StringBuilder("select d from Department d where d.retired = false");
             Map<String, Object> params = new HashMap<>();
             if (query != null && !query.trim().isEmpty()) {
-                jpql.append(" and upper(p.name) like :q");
+                jpql.append(" and upper(d.name) like :q");
                 params.put("q", "%" + query.trim().toUpperCase() + "%");
             }
-            jpql.append(" order by p.name");
+            jpql.append(" order by d.name");
 
-            List<PaymentScheme> results = paymentSchemeFacade.findByJpql(
-                    jpql.toString(), params, limit);
+            List<Department> results = departmentFacade.findByJpql(jpql.toString(), params, limit);
             List<Map<String, Object>> payload = new ArrayList<>();
             if (results != null) {
-                for (PaymentScheme p : results) {
+                for (Department d : results) {
                     Map<String, Object> row = new LinkedHashMap<>();
-                    row.put("id", p.getId());
-                    row.put("name", p.getName());
+                    row.put("id", d.getId());
+                    row.put("name", d.getName());
+                    if (d.getInstitution() != null) {
+                        row.put("institutionId", d.getInstitution().getId());
+                        row.put("institutionName", d.getInstitution().getName());
+                    }
                     payload.add(row);
                 }
             }
@@ -660,8 +620,8 @@ public class InwardDiscountMatrixApi {
     }
 
     /**
-     * List all PaymentMethod enum values (no search — small set).
-     * GET /api/inward-discount-matrix/payment-methods
+     * List all PaymentMethod enum values.
+     * GET /api/inward-price-adjustment/payment-methods
      */
     @GET
     @Path("/payment-methods")
@@ -685,67 +645,9 @@ public class InwardDiscountMatrixApi {
         }
     }
 
-    // =========================================================================
-    // Helpers
-    // =========================================================================
-
-    private InwardDiscountMatrix findDuplicate(Department department, Category category,
-            AdmissionType admissionType, PaymentMethod paymentMethod, PaymentScheme paymentScheme,
-            Institution creditCompany) {
-
-        StringBuilder jpql = new StringBuilder(
-                "select a from InwardDiscountMatrix a where a.retired = false");
-        Map<String, Object> params = new HashMap<>();
-
-        if (department == null) {
-            jpql.append(" and a.department is null");
-        } else {
-            jpql.append(" and a.department = :dep");
-            params.put("dep", department);
-        }
-        if (category == null) {
-            jpql.append(" and a.category is null");
-        } else {
-            jpql.append(" and a.category = :cat");
-            params.put("cat", category);
-        }
-        if (admissionType == null) {
-            jpql.append(" and a.admissionType is null");
-        } else {
-            jpql.append(" and a.admissionType = :at");
-            params.put("at", admissionType);
-        }
-        if (paymentMethod == null) {
-            jpql.append(" and a.paymentMethod is null");
-        } else {
-            jpql.append(" and a.paymentMethod = :pm");
-            params.put("pm", paymentMethod);
-        }
-        if (paymentScheme == null) {
-            jpql.append(" and a.paymentScheme is null");
-        } else {
-            jpql.append(" and a.paymentScheme = :ps");
-            params.put("ps", paymentScheme);
-        }
-        if (creditCompany == null) {
-            jpql.append(" and a.creditCompany is null");
-        } else {
-            jpql.append(" and a.creditCompany = :cc");
-            params.put("cc", creditCompany);
-        }
-
-        @SuppressWarnings("unchecked")
-        List<InwardDiscountMatrix> list = (List<InwardDiscountMatrix>) (List<?>)
-                priceMatrixFacade.findByJpql(jpql.toString(), params, 1);
-        if (list == null || list.isEmpty()) {
-            return null;
-        }
-        return list.get(0);
-    }
-
     /**
      * Search credit companies (institutions) by name.
-     * GET /api/inward-discount-matrix/credit-companies/search?query=&limit=
+     * GET /api/inward-price-adjustment/credit-companies/search?query=&limit=
      */
     @GET
     @Path("/credit-companies/search")
@@ -784,6 +686,59 @@ public class InwardDiscountMatrixApi {
         }
     }
 
+    // =========================================================================
+    // Helpers
+    // =========================================================================
+
+    private InwardPriceAdjustment findDuplicate(Department department, Category category,
+            PaymentMethod paymentMethod, Double fromPrice, Double toPrice, Institution creditCompany) {
+
+        StringBuilder jpql = new StringBuilder(
+                "select a from InwardPriceAdjustment a where a.retired = false");
+        Map<String, Object> params = new HashMap<>();
+
+        if (department == null) {
+            jpql.append(" and a.department is null");
+        } else {
+            jpql.append(" and a.department = :dep");
+            params.put("dep", department);
+        }
+        if (category == null) {
+            jpql.append(" and a.category is null");
+        } else {
+            jpql.append(" and a.category = :cat");
+            params.put("cat", category);
+        }
+        if (paymentMethod == null) {
+            jpql.append(" and a.paymentMethod is null");
+        } else {
+            jpql.append(" and a.paymentMethod = :pm");
+            params.put("pm", paymentMethod);
+        }
+        if (fromPrice != null) {
+            jpql.append(" and a.fromPrice = :fp");
+            params.put("fp", fromPrice);
+        }
+        if (toPrice != null) {
+            jpql.append(" and a.toPrice = :tp");
+            params.put("tp", toPrice);
+        }
+        if (creditCompany == null) {
+            jpql.append(" and a.creditCompany is null");
+        } else {
+            jpql.append(" and a.creditCompany = :cc");
+            params.put("cc", creditCompany);
+        }
+
+        @SuppressWarnings("unchecked")
+        List<InwardPriceAdjustment> list = (List<InwardPriceAdjustment>) (List<?>)
+                priceMatrixFacade.findByJpql(jpql.toString(), params, 1);
+        if (list == null || list.isEmpty()) {
+            return null;
+        }
+        return list.get(0);
+    }
+
     private String validateCategoryForScope(Category category, String scope) {
         if ("service".equals(scope)) {
             if (!(category instanceof ServiceCategory
@@ -804,16 +759,9 @@ public class InwardDiscountMatrixApi {
     private Map<String, Object> toDto(PriceMatrix pm) {
         Map<String, Object> row = new LinkedHashMap<>();
         row.put("id", pm.getId());
-        row.put("discountPercent", pm.getDiscountPercent());
-
-        if (pm.getPaymentScheme() != null) {
-            Map<String, Object> ps = new LinkedHashMap<>();
-            ps.put("id", pm.getPaymentScheme().getId());
-            ps.put("name", pm.getPaymentScheme().getName());
-            row.put("paymentScheme", ps);
-        } else {
-            row.put("paymentScheme", null);
-        }
+        row.put("fromPrice", pm.getFromPrice());
+        row.put("toPrice", pm.getToPrice());
+        row.put("margin", pm.getMargin());
 
         if (pm.getDepartment() != null) {
             Map<String, Object> d = new LinkedHashMap<>();
@@ -838,16 +786,8 @@ public class InwardDiscountMatrixApi {
             row.put("category", null);
         }
 
-        if (pm.getAdmissionType() != null) {
-            Map<String, Object> at = new LinkedHashMap<>();
-            at.put("id", pm.getAdmissionType().getId());
-            at.put("name", pm.getAdmissionType().getName());
-            row.put("admissionType", at);
-        } else {
-            row.put("admissionType", null);
-        }
-
         row.put("paymentMethod", pm.getPaymentMethod() != null ? pm.getPaymentMethod().name() : null);
+
         if (pm.getCreditCompany() != null) {
             Map<String, Object> cc = new LinkedHashMap<>();
             cc.put("id", pm.getCreditCompany().getId());
@@ -856,6 +796,7 @@ public class InwardDiscountMatrixApi {
         } else {
             row.put("creditCompany", null);
         }
+
         row.put("retired", pm.isRetired());
         return row;
     }
@@ -947,11 +888,5 @@ public class InwardDiscountMatrixApi {
         response.put("code", 200);
         response.put("data", data);
         return response;
-    }
-
-    // Unused helper kept in case future scopes add more types
-    @SuppressWarnings("unused")
-    private static List<String> scopeTypes() {
-        return new ArrayList<>(Arrays.asList("service", "pharmacy"));
     }
 }
