@@ -472,6 +472,12 @@ public class TransferReceiveNativeSqlController implements Serializable {
         savedBill.setCheckedBy(sessionController.getLoggedUser());
         billFacade.edit(savedBill);
 
+        printDto = transferReceiveNativeSqlService.loadPrintDtoByBillId(receivedBillId);
+        if (printDto != null) {
+            enrichPrintDto(printDto, savedBill);
+        }
+        printPreview = true;
+
         JsfUtil.addSuccessMessage("Request Finalized Successfully");
     }
 
