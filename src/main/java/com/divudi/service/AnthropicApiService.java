@@ -3164,22 +3164,42 @@ public class AnthropicApiService implements Serializable {
 
         // ── Inward Discount Matrix ────────────────────────────────────────────
         appendModule(sb, "Inward Discount Matrix", "/inward-discount-matrix",
-                "Manage inward discount matrix entries (backs the two UI pages "
-                + "inward_discount_matrix_service_investigation.xhtml and inward_discount_matrix_pharmacy.xhtml). "
+                "Manage inward discount matrix entries (backs three UI pages for service/investigation, pharmacy, and room charges). "
                 + "Use scope=service or scope=pharmacy to choose the category universe. "
+                + "Optional creditCompanyId creates a CC-specific row; generic (no-CC) rows are the fallback. "
                 + "POST rejects duplicates with 409 + existing id. "
                 + "Lookup sub-paths resolve names to IDs.",
                 null,
                 new String[][]{
-                    {"GET",    "/inward-discount-matrix?scope=X",                               "List entries. Filters: scope, departmentId, categoryId, admissionTypeId, paymentSchemeId, paymentMethod, limit"},
+                    {"GET",    "/inward-discount-matrix?scope=X",                               "List entries. Filters: scope, departmentId, categoryId, admissionTypeId, paymentSchemeId, paymentMethod, creditCompanyId, limit"},
                     {"GET",    "/inward-discount-matrix/{id}",                                   "Fetch one entry"},
-                    {"POST",   "/inward-discount-matrix",                                         "Create. Body: scope (required), paymentSchemeId (required), discountPercent (required), departmentId, categoryId, admissionTypeId, paymentMethod"},
+                    {"POST",   "/inward-discount-matrix",                                         "Create. Body: scope (required), discountPercent (required), paymentSchemeId, departmentId, categoryId, admissionTypeId, paymentMethod, creditCompanyId"},
                     {"PUT",    "/inward-discount-matrix/{id}",                                   "Update. Body fields all optional; send null to clear a field"},
                     {"DELETE", "/inward-discount-matrix/{id}",                                   "Soft-retire entry. Optional: retireComments"},
                     {"GET",    "/inward-discount-matrix/admission-types/search?query=",          "AdmissionType name → id lookup"},
                     {"GET",    "/inward-discount-matrix/payment-schemes/search?query=",           "PaymentScheme name → id lookup"},
                     {"GET",    "/inward-discount-matrix/pharmaceutical-item-categories/search?query=", "PharmaceuticalItemCategory name → id lookup"},
-                    {"GET",    "/inward-discount-matrix/payment-methods",                         "List PaymentMethod enum values (Cash, Credit, Card, ...)"}
+                    {"GET",    "/inward-discount-matrix/payment-methods",                         "List PaymentMethod enum values"},
+                    {"GET",    "/inward-discount-matrix/credit-companies/search?query=",          "Credit company (Institution) name → id lookup"}
+                });
+
+        // ── Inward Price Adjustment (Margin) Matrix ───────────────────────────
+        appendModule(sb, "Inward Price Adjustment", "/inward-price-adjustment",
+                "Manage inward price adjustment (margin/service charge) matrix entries for service, investigation, and pharmacy. "
+                + "Each row maps a gross-value price range (fromPrice, toPrice) to a margin %. "
+                + "Optional creditCompanyId creates a CC-specific row; generic (no-CC) rows are the fallback. "
+                + "POST rejects duplicates with 409 + existing id.",
+                null,
+                new String[][]{
+                    {"GET",    "/inward-price-adjustment?scope=X",                               "List entries. Filters: scope, departmentId, categoryId, paymentMethod, creditCompanyId, limit"},
+                    {"GET",    "/inward-price-adjustment/{id}",                                   "Fetch one entry"},
+                    {"POST",   "/inward-price-adjustment",                                         "Create. Body: scope (required), fromPrice (required), toPrice (required), margin (required), departmentId, categoryId, paymentMethod, creditCompanyId"},
+                    {"PUT",    "/inward-price-adjustment/{id}",                                   "Update. Body fields all optional"},
+                    {"DELETE", "/inward-price-adjustment/{id}",                                   "Soft-retire entry. Optional: retireComments"},
+                    {"GET",    "/inward-price-adjustment/categories/search?scope=X&query=",       "Category name → id lookup (requires scope)"},
+                    {"GET",    "/inward-price-adjustment/departments/search?query=",              "Department name → id lookup"},
+                    {"GET",    "/inward-price-adjustment/payment-methods",                         "List PaymentMethod enum values"},
+                    {"GET",    "/inward-price-adjustment/credit-companies/search?query=",          "Credit company name → id lookup"}
                 });
 
         appendModule(sb, "Inward Room Management", "/inward/room-categories, /inward/rooms, /inward/room-facility-charges",
