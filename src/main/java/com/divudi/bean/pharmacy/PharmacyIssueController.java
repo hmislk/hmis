@@ -1073,6 +1073,7 @@ public class PharmacyIssueController implements Serializable {
         }
 
         JsfUtil.addSuccessMessage("Disposal Issue Draft Saved Successfully");
+        userStockController.retiredAllUserStockContainer(sessionController.getLoggedUser());
         clearBill();
         clearBillItem();
         billPreview = false;
@@ -1087,6 +1088,14 @@ public class PharmacyIssueController implements Serializable {
         Bill draft = getBillFacade().find(billId);
         if (draft == null || draft.isRetired()) {
             JsfUtil.addErrorMessage("Draft not found.");
+            return null;
+        }
+        if (!BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_PRE.equals(draft.getBillTypeAtomic())) {
+            JsfUtil.addErrorMessage("Invalid bill type for disposal issue finalization.");
+            return null;
+        }
+        if (!sessionController.getDepartment().equals(draft.getDepartment())) {
+            JsfUtil.addErrorMessage("This disposal issue does not belong to your department.");
             return null;
         }
         if (draft.getCheckedBy() != null) {
@@ -1110,6 +1119,14 @@ public class PharmacyIssueController implements Serializable {
         Bill draft = getBillFacade().find(billId);
         if (draft == null || draft.isRetired()) {
             JsfUtil.addErrorMessage("Draft not found.");
+            return null;
+        }
+        if (!BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_PRE.equals(draft.getBillTypeAtomic())) {
+            JsfUtil.addErrorMessage("Invalid bill type for disposal issue approval.");
+            return null;
+        }
+        if (!sessionController.getDepartment().equals(draft.getDepartment())) {
+            JsfUtil.addErrorMessage("This disposal issue does not belong to your department.");
             return null;
         }
         if (draft.getCheckedBy() == null) {
@@ -1200,6 +1217,7 @@ public class PharmacyIssueController implements Serializable {
         Map<String, Object> params = new HashMap<>();
         params.put("billId", billId);
         List<BillItem> items = getBillItemFacade().findByJpql(jpql, params);
+        boolean anyDeductionFailed = false;
         for (BillItem tbi : items) {
             if (tbi.getPharmaceuticalBillItem() == null || tbi.getPharmaceuticalBillItem().getStock() == null) {
                 continue;
@@ -1211,6 +1229,7 @@ public class PharmacyIssueController implements Serializable {
                     tbi.getPharmaceuticalBillItem(),
                     draft.getDepartment());
             if (!success) {
+                anyDeductionFailed = true;
                 tbi.setTmpQty(0);
                 getPharmaceuticalBillItemFacade().edit(tbi.getPharmaceuticalBillItem());
                 getBillItemFacade().edit(tbi);
@@ -1219,6 +1238,9 @@ public class PharmacyIssueController implements Serializable {
 
         setPrintBill(getBillFacade().find(billId));
         billPreview = true;
+        if (anyDeductionFailed) {
+            JsfUtil.addErrorMessage("Warning: Insufficient stock for one or more items. Those items were recorded with zero quantity.");
+        }
         JsfUtil.addSuccessMessage("Disposal Issue Approved Successfully");
         return "/pharmacy/pharmacy_issue?faces-redirect=true";
     }
