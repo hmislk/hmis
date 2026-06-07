@@ -1001,6 +1001,262 @@ public class PharmacyIssueController implements Serializable {
 
     }
 
+    // ──────────────────────────────────────────────────────────────────────────
+    // Save → Finalize → Approve workflow for Disposal Issue
+    // ──────────────────────────────────────────────────────────────────────────
+
+    public String saveDisposalIssueDraft() {
+        editingQty = null;
+        errorMessage = null;
+        if (toDepartment == null) {
+            JsfUtil.addErrorMessage("Please select a Department");
+            return null;
+        }
+        boolean canIssueToSameDept = configOptionApplicationController
+                .getBooleanValueByKey("Disposal Issue can be done for the same department", false);
+        if (!canIssueToSameDept) {
+            if (Objects.equals(toDepartment, sessionController.getLoggedUser().getDepartment())) {
+                JsfUtil.addErrorMessage("Cannot Issue to the Same Department");
+                return null;
+            }
+        }
+        if (getPreBill().getDepartmentType() != null && !getPreBill().getBillItems().isEmpty()) {
+            for (BillItem bi : getPreBill().getBillItems()) {
+                if (bi.getItem() != null && bi.getItem().getDepartmentType() != null) {
+                    if (!bi.getItem().getDepartmentType().equals(getPreBill().getDepartmentType())) {
+                        JsfUtil.addErrorMessage("Inconsistent department types detected. All items must belong to the same department type.");
+                        return null;
+                    }
+                }
+            }
+        }
+        if (checkAllBillItem()) {
+            return null;
+        }
+        if (errorCheckForSaleBill()) {
+            return null;
+        }
+
+        getPreBill().setDepartment(sessionController.getLoggedUser().getDepartment());
+        getPreBill().setInstitution(sessionController.getLoggedUser().getDepartment().getInstitution());
+        getPreBill().setCreatedAt(new Date());
+        getPreBill().setCreater(sessionController.getLoggedUser());
+        getPreBill().setToDepartment(toDepartment);
+        getPreBill().setFromDepartment(sessionController.getLoggedUser().getDepartment());
+        getPreBill().setFromInstitution(sessionController.getLoggedUser().getDepartment().getInstitution());
+        getPreBill().setBillType(BillType.PharmacyDisposalIssue);
+        getPreBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_PRE);
+        getPreBill().setBillDate(new Date());
+        getPreBill().setBillTime(new Date());
+        // completed/checkedBy intentionally left null — set at finalize/approve steps
+
+        List<BillItem> tmpBillItems = getPreBill().getBillItems();
+        getPreBill().setBillItems(null);
+
+        if (getPreBill().getId() == null) {
+            getBillFacade().createAndFlush(getPreBill());
+        } else {
+            getBillFacade().editAndFlush(getPreBill());
+        }
+
+        // Persist items — NO stock deduction at this stage
+        for (BillItem tbi : tmpBillItems) {
+            tbi.setInwardChargeType(InwardChargeType.Medicine);
+            tbi.setBill(getPreBill());
+            if (tbi.getId() == null) {
+                tbi.setCreatedAt(new Date());
+                tbi.setCreater(sessionController.getLoggedUser());
+                getBillItemFacade().createAndFlush(tbi);
+            } else {
+                getBillItemFacade().editAndFlush(tbi);
+            }
+        }
+
+        JsfUtil.addSuccessMessage("Disposal Issue Draft Saved Successfully");
+        clearBill();
+        clearBillItem();
+        billPreview = false;
+        return "/pharmacy/pharmacy_disposal_issue_list_to_finalize?faces-redirect=true";
+    }
+
+    public String finalizeDisposalIssue(Long billId) {
+        if (billId == null) {
+            JsfUtil.addErrorMessage("No draft selected.");
+            return null;
+        }
+        Bill draft = getBillFacade().find(billId);
+        if (draft == null || draft.isRetired()) {
+            JsfUtil.addErrorMessage("Draft not found.");
+            return null;
+        }
+        if (draft.getCheckedBy() != null) {
+            JsfUtil.addErrorMessage("Already finalized.");
+            return null;
+        }
+        draft.setCheckedBy(sessionController.getLoggedUser());
+        draft.setCheckeAt(new Date());
+        draft.setEditor(sessionController.getLoggedUser());
+        draft.setEditedAt(new Date());
+        getBillFacade().edit(draft);
+        JsfUtil.addSuccessMessage("Disposal Issue Finalized Successfully");
+        return "/pharmacy/pharmacy_disposal_issue_list_to_approve?faces-redirect=true";
+    }
+
+    public String approveDisposalIssue(Long billId) {
+        if (billId == null) {
+            JsfUtil.addErrorMessage("No draft selected.");
+            return null;
+        }
+        Bill draft = getBillFacade().find(billId);
+        if (draft == null || draft.isRetired()) {
+            JsfUtil.addErrorMessage("Draft not found.");
+            return null;
+        }
+        if (draft.getCheckedBy() == null) {
+            JsfUtil.addErrorMessage("Bill must be finalized before approval.");
+            return null;
+        }
+        if (draft.isCompleted()) {
+            JsfUtil.addErrorMessage("Already approved.");
+            return null;
+        }
+        // Concurrency guard — persist completed=true BEFORE stock deduction loop
+        draft.setCompleted(true);
+        draft.setCompletedAt(new Date());
+        draft.setCompletedBy(sessionController.getLoggedUser());
+        draft.setEditor(sessionController.getLoggedUser());
+        draft.setEditedAt(new Date());
+        getBillFacade().editAndFlush(draft);
+
+        // Temporarily populate preBill so the existing private bill-number
+        // generation methods (which reference preBill.from/toDepartment) work correctly
+        preBill = new PreBill();
+        preBill.setFromDepartment(draft.getFromDepartment());
+        preBill.setToDepartment(draft.getToDepartment());
+
+        String deptId;
+        if (configOptionApplicationController.getBooleanValueByKey(
+                "Bill Number Generation Strategy for Pharmacy Disposal Issue - Prefix + Department Code + Institution Code + Year + Yearly Number", false)) {
+            deptId = getBillNumberBean().departmentBillNumberGeneratorYearlyWithPrefixDeptInsYearCount(
+                    sessionController.getDepartment(), BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE);
+        } else if (configOptionApplicationController.getBooleanValueByKey(
+                "Bill Number Generation Strategy for Pharmacy Disposal Issue - Prefix + Institution Code + Department Code + Year + Yearly Number", false)) {
+            deptId = getBillNumberBean().departmentBillNumberGeneratorYearlyWithPrefixInsDeptYearCount(
+                    sessionController.getDepartment(), BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE);
+        } else if (configOptionApplicationController.getBooleanValueByKey(
+                "Bill Number Generation Strategy for Pharmacy Disposal Issue - Prefix + Institution Code + Year + Yearly Number", false)) {
+            deptId = getBillNumberBean().departmentBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
+                    sessionController.getDepartment(), BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE);
+        } else {
+            boolean strategyFromDept = configOptionApplicationController.getBooleanValueByKey(
+                    "Bill Number Generation Strategy for Disposal Issue - Separate Bill Numbers for Logged Department", false);
+            boolean strategyToDept = configOptionApplicationController.getBooleanValueByKey(
+                    "Bill Number Generation Strategy for Disposal Issue - Separate Bill Numbers for Issuing Department", false);
+            boolean strategyFromAndToDepts = configOptionApplicationController.getBooleanValueByKey(
+                    "Bill Number Generation Strategy for Disposal Issue - Separate Bill Numbers for Logged and Issuing Department Combination", false);
+            if (strategyFromDept) {
+                deptId = generateBillNumberForFromDepartment();
+            } else if (strategyToDept) {
+                deptId = generateBillNumberForToDepartment();
+            } else if (strategyFromAndToDepts) {
+                deptId = generateBillNumberForFromAndToDepartmentsCorrected();
+            } else {
+                deptId = getBillNumberBean().departmentBillNumberGeneratorYearly(
+                        sessionController.getDepartment(), BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE);
+            }
+        }
+
+        String insId;
+        if (configOptionApplicationController.getBooleanValueByKey(
+                "Bill Number Generation Strategy for Pharmacy Disposal Issue - Prefix + Institution Code + Year + Yearly Number", false)) {
+            insId = getBillNumberBean().institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
+                    sessionController.getDepartment(), BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE);
+        } else if (configOptionApplicationController.getBooleanValueByKey(
+                "Bill Number Generation Strategy for Pharmacy Disposal Issue - Prefix + Department Code + Institution Code + Year + Yearly Number", false)) {
+            insId = deptId;
+        } else {
+            boolean strategyFromDept = configOptionApplicationController.getBooleanValueByKey(
+                    "Bill Number Generation Strategy for Disposal Issue - Separate Bill Numbers for Logged Department", false);
+            boolean strategyToDept = configOptionApplicationController.getBooleanValueByKey(
+                    "Bill Number Generation Strategy for Disposal Issue - Separate Bill Numbers for Issuing Department", false);
+            boolean strategyFromAndToDepts = configOptionApplicationController.getBooleanValueByKey(
+                    "Bill Number Generation Strategy for Disposal Issue - Separate Bill Numbers for Logged and Issuing Department Combination", false);
+            if (strategyFromDept || strategyToDept || strategyFromAndToDepts) {
+                insId = deptId;
+            } else {
+                insId = generateInstitutionBillNumberForInstitution();
+            }
+        }
+
+        preBill = null; // clean up temporary state
+
+        draft.setDeptId(deptId);
+        draft.setInsId(insId);
+        draft.setBillTypeAtomic(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE);
+        getBillFacade().edit(draft);
+
+        // Deduct stock for each saved item
+        String jpql = "SELECT bi FROM BillItem bi WHERE bi.retired = false AND bi.bill.id = :billId";
+        Map<String, Object> params = new HashMap<>();
+        params.put("billId", billId);
+        List<BillItem> items = getBillItemFacade().findByJpql(jpql, params);
+        for (BillItem tbi : items) {
+            if (tbi.getPharmaceuticalBillItem() == null || tbi.getPharmaceuticalBillItem().getStock() == null) {
+                continue;
+            }
+            double qtyL = tbi.getPharmaceuticalBillItem().getQty() + tbi.getPharmaceuticalBillItem().getFreeQty();
+            boolean success = getPharmacyBean().deductFromStock(
+                    tbi.getPharmaceuticalBillItem().getStock(),
+                    Math.abs(qtyL),
+                    tbi.getPharmaceuticalBillItem(),
+                    draft.getDepartment());
+            if (!success) {
+                tbi.setTmpQty(0);
+                getPharmaceuticalBillItemFacade().edit(tbi.getPharmaceuticalBillItem());
+                getBillItemFacade().edit(tbi);
+            }
+        }
+
+        setPrintBill(getBillFacade().find(billId));
+        billPreview = true;
+        JsfUtil.addSuccessMessage("Disposal Issue Approved Successfully");
+        return "/pharmacy/pharmacy_issue?faces-redirect=true";
+    }
+
+    public String cancelPendingDisposalIssue(Long billId) {
+        if (billId == null) {
+            JsfUtil.addErrorMessage("No draft selected.");
+            return null;
+        }
+        Bill draft = getBillFacade().find(billId);
+        if (draft == null || draft.isRetired()) {
+            JsfUtil.addErrorMessage("Draft not found.");
+            return null;
+        }
+        draft.setRetired(true);
+        draft.setRetireComments("Cancelled by " + sessionController.getLoggedUser().getWebUserPerson().getName());
+        getBillFacade().edit(draft);
+        JsfUtil.addSuccessMessage("Disposal Issue Cancelled");
+        return "/pharmacy/pharmacy_disposal_issue_list_to_finalize?faces-redirect=true";
+    }
+
+    public String cancelFinalizedDisposalIssue(Long billId) {
+        if (billId == null) {
+            JsfUtil.addErrorMessage("No draft selected.");
+            return null;
+        }
+        Bill draft = getBillFacade().find(billId);
+        if (draft == null || draft.isRetired()) {
+            JsfUtil.addErrorMessage("Draft not found.");
+            return null;
+        }
+        draft.setRetired(true);
+        draft.setRetireComments("Cancelled by " + sessionController.getLoggedUser().getWebUserPerson().getName());
+        getBillFacade().edit(draft);
+        JsfUtil.addSuccessMessage("Disposal Issue Cancelled");
+        return "/pharmacy/pharmacy_disposal_issue_list_to_approve?faces-redirect=true";
+    }
+
     private boolean checkItemBatch() {
         if (getBillItem() == null || getBillItem().getPharmaceuticalBillItem() == null ||
             getBillItem().getPharmaceuticalBillItem().getStock() == null) {

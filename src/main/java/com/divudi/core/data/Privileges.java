@@ -548,6 +548,8 @@ public enum Privileges {
     // Pharmacy Disposal
     PharmacyDisposalMenue("Pharmacy Disposal Menu"),
     PharmacyDisposalIssue("Pharmacy Disposal Issue"),
+    PharmacyDisposalIssueFinalize("Pharmacy Disposal Issue Finalize"),
+    PharmacyDisposalIssueApprove("Pharmacy Disposal Issue Approve"),
     PharmacyDisposalSearchIssueBill("Pharmacy Disposal Search Issue Bill"),
     PharmacyDisposalSearchIssueBillItems("Pharmacy Disposal Search Issue Bill Items"),
     PharmacyDisposalSearchIssueReturnBill("Pharmacy Disposal Search Issue Return Bill"),
@@ -977,6 +979,8 @@ public enum Privileges {
 
             // Disposal
             case PharmacyDisposalIssue:
+            case PharmacyDisposalIssueFinalize:
+            case PharmacyDisposalIssueApprove:
             case PharmacyDisposalSearchIssueBill:
             case PharmacyDisposalSearchIssueBillItems:
             case PharmacyDisposalSearchIssueReturnBill:
