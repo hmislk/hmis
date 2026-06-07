@@ -1503,7 +1503,9 @@ public class PharmacyRequestForBhtController implements Serializable {
 
     /**
      * Up to {@value #MAX_RECENT_PHARMACIES} recently-requested pharmacies for
-     * the current ward, most-recent-first, for the quick-pick chips.
+     * the current ward, most-recent-first, for the quick-pick chips. The ward's
+     * default (last-requested) pharmacy is guaranteed to appear first so the
+     * user can apply it in one click.
      */
     public List<Department> getRecentRequestedPharmacies() {
         List<Department> result = new ArrayList<>();
@@ -1511,20 +1513,38 @@ public class PharmacyRequestForBhtController implements Serializable {
         if (wardDept == null || wardDept.getId() == null) {
             return result;
         }
-        String csv = configOptionApplicationController.getLongTextValueByKey(recentPharmaciesKey(wardDept), "");
-        if (csv == null || csv.trim().isEmpty()) {
-            return result;
+
+        // Default first, if any.
+        Department defaultPharmacy = getDefaultRequestedPharmacy();
+        if (defaultPharmacy != null) {
+            result.add(defaultPharmacy);
         }
-        for (String token : csv.split(",")) {
-            Department d = findDepartmentById(token.trim());
-            if (d != null && !result.contains(d)) {
-                result.add(d);
-            }
-            if (result.size() >= MAX_RECENT_PHARMACIES) {
-                break;
+
+        String csv = configOptionApplicationController.getLongTextValueByKey(recentPharmaciesKey(wardDept), "");
+        if (csv != null && !csv.trim().isEmpty()) {
+            for (String token : csv.split(",")) {
+                Department d = findDepartmentById(token.trim());
+                if (d != null && !result.contains(d)) {
+                    result.add(d);
+                }
+                if (result.size() >= MAX_RECENT_PHARMACIES) {
+                    break;
+                }
             }
         }
         return result;
+    }
+
+    /**
+     * True if the given pharmacy is the ward's default (last-requested) one;
+     * used to visually mark the default chip.
+     */
+    public boolean isDefaultRequestedPharmacy(Department pharmacy) {
+        if (pharmacy == null) {
+            return false;
+        }
+        Department defaultPharmacy = getDefaultRequestedPharmacy();
+        return defaultPharmacy != null && defaultPharmacy.equals(pharmacy);
     }
 
     private Department findDepartmentById(String id) {

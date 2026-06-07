@@ -70,9 +70,10 @@
                                                   styleClass="d-flex flex-wrap gap-2 mb-2 mx-2">
                                         <p:outputLabel value="Recent:" styleClass="text-muted me-1 align-self-center" />
                                         <ui:repeat value="#{pharmacyRequestForBhtController.recentRequestedPharmacies}" var="recentPh">
-                                            <p:commandButton value="#{recentPh.name}"
-                                                             icon="fa fa-clock-o"
-                                                             styleClass="ui-button-info ui-button-outlined ui-button-sm"
+                                            <p:commandButton value="#{recentPh.name}#{pharmacyRequestForBhtController.isDefaultRequestedPharmacy(recentPh) ? ' (Default)' : ''}"
+                                                             icon="#{pharmacyRequestForBhtController.isDefaultRequestedPharmacy(recentPh) ? 'fa fa-star' : 'fa fa-clock-o'}"
+                                                             title="#{pharmacyRequestForBhtController.isDefaultRequestedPharmacy(recentPh) ? 'Default pharmacy for this ward' : 'Recently requested pharmacy'}"
+                                                             styleClass="#{pharmacyRequestForBhtController.isDefaultRequestedPharmacy(recentPh) ? 'ui-button-info ui-button-sm' : 'ui-button-info ui-button-outlined ui-button-sm'}"
                                                              disabled="#{pharmacyRequestForBhtController.department ne null}"
                                                              process="@this"
                                                              update="departmentId acPt2 recentPharmacies"

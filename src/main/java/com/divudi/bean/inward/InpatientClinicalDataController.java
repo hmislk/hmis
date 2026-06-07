@@ -2233,13 +2233,13 @@ public class InpatientClinicalDataController implements Serializable {
             return "";
         }
 
-        // Pre-select the ward's last-requested pharmacy as the default; the user
-        // can change it (or pick a recent one) on the request page.
-        Department defaultPharmacy = pharmacyRequestForBhtController.getDefaultRequestedPharmacy();
-        if (defaultPharmacy != null) {
-            pharmacyRequestForBhtController.setDepartment(defaultPharmacy);
-        }
-
+        // Intentionally do NOT pre-set the requesting pharmacy here. Setting
+        // it would hide the department-pick panel on the request page (which
+        // renders only while department is null) and lock the pharmacy
+        // autocomplete, so the user could not change it without starting a
+        // new bill and losing these prefilled medicines. Instead the request
+        // page surfaces the ward's default + recent pharmacies as one-click
+        // chips (default first), leaving the choice explicit and changeable.
         selectedWardMedicinesToRequest = null;
         return "/ward/ward_pharmacy_bht_issue_request_bill?faces-redirect=true";
     }
