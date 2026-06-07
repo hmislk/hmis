@@ -122,10 +122,14 @@
                             </p:column>
 
                             <p:column headerText="Action">
-                                <!-- No pending PRE: show Receive / Fast Receive -->
+                                <!-- No pending PRE: show Receive button (native SQL path) -->
                                 <h:panelGroup rendered="#{p.pendingReceiveBillId == null and !p.cancelled and !p.fullyIssued}">
+                                    <!--
+                                    DEPRECATED: old normal-path Receive button (TransferReceiveController).
+                                    Replaced by the native SQL path below. Remove once TransferReceiveController
+                                    is fully retired.
                                     <p:commandButton
-                                        id="btnToReceive"
+                                        id="btnToReceiveOld"
                                         ajax="false"
                                         value="Receive"
                                         title="Receive items from #{p.deptId}"
@@ -133,11 +137,12 @@
                                         action="#{transferReceiveController.navigateToRecieveRequest()}">
                                         <f:setPropertyActionListener target="#{transferReceiveController.issuedBillId}" value="#{p.billId}"/>
                                     </p:commandButton>
+                                    -->
                                     <p:commandButton
-                                        id="btnToReceiveFast"
+                                        id="btnToReceive"
                                         ajax="false"
-                                        value="Fast Receive"
-                                        title="Fast receive items from #{p.deptId}"
+                                        value="Receive"
+                                        title="Receive items from #{p.deptId}"
                                         class="ui-button-success mx-1"
                                         action="#{transferReceiveNativeSqlController.navigateToReceiveRequestNative()}">
                                         <f:setPropertyActionListener target="#{transferReceiveNativeSqlController.issuedBillId}" value="#{p.billId}"/>
