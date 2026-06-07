@@ -239,6 +239,64 @@
                         </div>
                     </div>
 
+                    <h:panelGroup layout="block" styleClass="row mb-3"
+                                  rendered="#{not empty pharmacySaleBhtController.dischargeConversionReport}">
+                        <div class="col-12">
+                            <p:panel id="panelDischargeConversionReport" class="w-100"
+                                     toggleable="true"
+                                     collapsed="#{not pharmacySaleBhtController.dischargeConversionHasAttentionItems}">
+                                <f:facet name="header">
+                                    <div class="d-flex align-items-center w-100">
+                                        <h:outputText styleClass="fas fa-exchange-alt me-2" />
+                                        <p:outputLabel value="Prescription → Dispensing Report" styleClass="fw-bold" />
+                                        <p:tag styleClass="ms-3"
+                                               value="Review — not all issued in full"
+                                               severity="warning"
+                                               rendered="#{pharmacySaleBhtController.dischargeConversionHasAttentionItems}" />
+                                        <p:tag styleClass="ms-3"
+                                               value="All issued in full"
+                                               severity="success"
+                                               rendered="#{not pharmacySaleBhtController.dischargeConversionHasAttentionItems}" />
+                                    </div>
+                                </f:facet>
+                                <p:dataTable id="tblDischargeConversionReport"
+                                             value="#{pharmacySaleBhtController.dischargeConversionReport}"
+                                             var="cr"
+                                             styleClass="w-100"
+                                             stripedRows="true"
+                                             size="small">
+                                    <p:column headerText="Prescribed">
+                                        <h:outputText value="#{cr.prescribedText}" />
+                                    </p:column>
+                                    <p:column headerText="Dispensing as" style="min-width:14em;">
+                                        <h:outputText value="#{cr.resolvedItemName}" />
+                                    </p:column>
+                                    <p:column headerText="Required" style="width:7em;" styleClass="text-end">
+                                        <h:outputText value="#{cr.requiredQty}">
+                                            <f:convertNumber pattern="#,##0.##" />
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Issued" style="width:7em;" styleClass="text-end">
+                                        <h:outputText value="#{cr.issuedQty}">
+                                            <f:convertNumber pattern="#,##0.##" />
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Status" style="width:12em;">
+                                        <p:tag value="#{cr.statusLabel}" severity="#{cr.severity}" />
+                                    </p:column>
+                                    <p:column headerText="Note">
+                                        <h:outputText value="#{cr.message}" styleClass="text-muted" />
+                                    </p:column>
+                                </p:dataTable>
+                                <h:panelGroup layout="block" styleClass="alert alert-warning m-2"
+                                              rendered="#{pharmacySaleBhtController.dischargeConversionHasAttentionItems}">
+                                    <i class="fa fa-exclamation-triangle me-2"></i>
+                                    <h:outputText value="One or more prescribed medicines were not issued in full (low or no stock, or a defaulted quantity). Add them manually or confirm the omission before settling — do not settle assuming everything was dispensed." />
+                                </h:panelGroup>
+                            </p:panel>
+                        </div>
+                    </h:panelGroup>
+
                     <div class="row">
 
                         <div class="col-12 col-md-3" id="gpDetail">
