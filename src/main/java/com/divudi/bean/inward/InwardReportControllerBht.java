@@ -39,6 +39,7 @@ import com.divudi.core.facade.PatientRoomFacade;
 import com.divudi.service.BillService;
 import com.divudi.core.data.dto.InpatientPharmacyIssueDTO;
 import com.divudi.core.data.dto.InpatientServiceIssueDTO;
+import com.divudi.core.data.dto.BillListReportDTO;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -80,6 +81,8 @@ public class InwardReportControllerBht implements Serializable {
     ConfigOptionApplicationController configOptionApplicationController;
     @Inject
     AdmissionController admissionController;
+    @Inject
+    InwardSearch inwardSearch;
 
     PatientEncounter patientEncounter;
     Bill bill;
@@ -103,6 +106,9 @@ public class InwardReportControllerBht implements Serializable {
 
     private List<InpatientServiceIssueDTO> serviceIssueDtosToPatientEncounter;
     private double serviceIssueDtosToPatientEncounterNetTotal;
+
+    private List<BillListReportDTO> serviceBillDtosToPatientEncounter;
+    private double serviceBillDtosToPatientEncounterNetTotal;
 
     private List<BillItem> labBillItemsToPatientEncounter;
     private double labBillItemsToPatientEncounterNetTotal;
@@ -390,6 +396,111 @@ public class InwardReportControllerBht implements Serializable {
 
         List<InpatientServiceIssueDTO> result = (List<InpatientServiceIssueDTO>) billItemFacade.findLightsByJpql(jpql, params);
         return result != null ? result : new ArrayList<>();
+    }
+
+    // Issue #21247 - Encounter-scoped list of inward service bills with a View
+    // button that navigates to the existing reprint page (no whole-batch
+    // cancellation needed; partial return is done from the reprint page).
+    public String navigateToInpatientServiceBillListDto() {
+        if (patientEncounter == null) {
+            JsfUtil.addErrorMessage("No encounter");
+            return null;
+        }
+        serviceBillDtosToPatientEncounter = new ArrayList<>();
+        serviceBillDtosToPatientEncounterNetTotal = 0.0;
+        try {
+            List<BillTypeAtomic> serviceTypes = new ArrayList<>();
+            serviceTypes.add(BillTypeAtomic.INWARD_SERVICE_BILL);
+            serviceTypes.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
+            serviceTypes.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+            serviceTypes.add(BillTypeAtomic.INWARD_OUTSIDE_CHARGES_BILL);
+            serviceTypes.add(BillTypeAtomic.INWARD_OUTSIDE_CHARGES_BILL_CANCELLATION);
+
+            serviceBillDtosToPatientEncounter = fetchServiceBillDtos(serviceTypes);
+
+            for (BillListReportDTO dto : serviceBillDtosToPatientEncounter) {
+                double netValue = dto.getNetTotal() != null ? dto.getNetTotal().doubleValue() : 0.0;
+                serviceBillDtosToPatientEncounterNetTotal += netValue;
+            }
+        } catch (Exception e) {
+            Logger.getLogger(InwardReportControllerBht.class.getName()).log(Level.SEVERE, "Error loading service bill DTOs", e);
+            JsfUtil.addErrorMessage("Error loading service bill data");
+            return null;
+        }
+        return "/inward/reports/inpatient_service_bill_list_dto?faces-redirect=true";
+    }
+
+    private List<BillListReportDTO> fetchServiceBillDtos(List<BillTypeAtomic> billTypes) {
+        String jpql = "SELECT new com.divudi.core.data.dto.BillListReportDTO("
+                + "b.id, "
+                + "COALESCE(b.deptId, ''), "
+                + "b.billTypeAtomic, "
+                + "b.paymentMethod, "
+                + "COALESCE(b.patientEncounter.patient.person.name, ''), "
+                + "b.createdAt, "
+                + "COALESCE(b.creater.name, ''), "
+                + "COALESCE(b.retired, false), "
+                + "COALESCE(b.cancelled, false), "
+                + "COALESCE(b.refunded, false), "
+                + "COALESCE(b.total, 0.0), "
+                + "COALESCE(b.discount, 0.0), "
+                + "COALESCE(b.netTotal, 0.0), "
+                + "COALESCE(b.patientEncounter.bhtNo, ''), "
+                + "COALESCE(b.deptId, ''), "
+                + "COALESCE(b.margin, 0.0)) "
+                + "FROM Bill b "
+                + "WHERE b.patientEncounter = :patientEncounter "
+                + "AND b.billTypeAtomic IN :billTypeAtomics "
+                + "AND b.retired = FALSE ";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("billTypeAtomics", billTypes);
+        params.put("patientEncounter", patientEncounter);
+
+        if (department != null) {
+            jpql += "AND b.department = :department ";
+            params.put("department", department);
+        }
+
+        jpql += "ORDER BY b.createdAt, b.id";
+
+        System.out.println("DEBUG ServiceBill: encounter=" + (patientEncounter != null ? patientEncounter.getId() : "NULL")
+                + " class=" + (patientEncounter != null ? patientEncounter.getClass().getName() : "NULL")
+                + " types=" + billTypes);
+        System.out.println("DEBUG ServiceBill JPQL: " + jpql);
+
+        // Diagnostic: simple count without DTO projection
+        try {
+            Map<String, Object> countParams = new HashMap<>();
+            countParams.put("patientEncounter", patientEncounter);
+            countParams.put("billTypeAtomics", billTypes);
+            String countJpql = "SELECT COUNT(b) FROM Bill b WHERE b.patientEncounter = :patientEncounter "
+                    + "AND b.billTypeAtomic IN :billTypeAtomics AND b.retired = FALSE";
+            Long cnt = billFacade.findLongByJpql(countJpql, countParams);
+            System.out.println("DEBUG ServiceBill: plain count = " + cnt);
+        } catch (Exception ex) {
+            System.out.println("DEBUG ServiceBill count EXCEPTION: " + ex.getMessage());
+        }
+
+        List<BillListReportDTO> result = (List<BillListReportDTO>) billFacade.findLightsByJpqlWithoutCache(jpql, params, javax.persistence.TemporalType.TIMESTAMP);
+        System.out.println("DEBUG ServiceBill: DTO result size = " + (result != null ? result.size() : "NULL"));
+        return result != null ? result : new ArrayList<>();
+    }
+
+    // View button on the list row: load the bill into InwardSearch and open the
+    // existing reprint page (same destination as the interim-bill View Bill flow).
+    public String navigateToReprintServiceBill(Long billId) {
+        if (billId == null) {
+            JsfUtil.addErrorMessage("No bill");
+            return null;
+        }
+        Bill b = billFacade.find(billId);
+        if (b == null) {
+            JsfUtil.addErrorMessage("Bill not found");
+            return null;
+        }
+        inwardSearch.setBill(b);
+        return "/inward/inward_reprint_bill_service?faces-redirect=true";
     }
 
     public String navigateToAdmissionProfile() {
@@ -1957,5 +2068,21 @@ public class InwardReportControllerBht implements Serializable {
 
     public void setServiceIssueDtosToPatientEncounterNetTotal(double serviceIssueDtosToPatientEncounterNetTotal) {
         this.serviceIssueDtosToPatientEncounterNetTotal = serviceIssueDtosToPatientEncounterNetTotal;
+    }
+
+    public List<BillListReportDTO> getServiceBillDtosToPatientEncounter() {
+        return serviceBillDtosToPatientEncounter;
+    }
+
+    public void setServiceBillDtosToPatientEncounter(List<BillListReportDTO> serviceBillDtosToPatientEncounter) {
+        this.serviceBillDtosToPatientEncounter = serviceBillDtosToPatientEncounter;
+    }
+
+    public double getServiceBillDtosToPatientEncounterNetTotal() {
+        return serviceBillDtosToPatientEncounterNetTotal;
+    }
+
+    public void setServiceBillDtosToPatientEncounterNetTotal(double serviceBillDtosToPatientEncounterNetTotal) {
+        this.serviceBillDtosToPatientEncounterNetTotal = serviceBillDtosToPatientEncounterNetTotal;
     }
 }
