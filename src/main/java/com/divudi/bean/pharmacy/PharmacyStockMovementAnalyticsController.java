@@ -227,6 +227,11 @@ public class PharmacyStockMovementAnalyticsController implements Serializable {
                 .append("left join bi.billItemFinanceDetails bifd ")
                 .append("where s.retired=false ")
                 .append("and s.item=:i ")
+                // Only transaction rows carry a PharmaceuticalBillItem. Excluding
+                // snapshot rows (no pbItem) keeps this a true transaction timeline
+                // and guards the primitive pbi.qty/freeQty constructor args against
+                // nulls from the left join.
+                .append("and s.pbItem is not null ")
                 .append("and s.createdAt between :fd and :td ");
 
         if (staffScope) {
@@ -255,34 +260,31 @@ public class PharmacyStockMovementAnalyticsController implements Serializable {
         LineChartModel model = new LineChartModel();
         ChartData data = new ChartData();
 
-        // Build the shared, ordered set of timestamp labels.
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+        // One chart point per transaction row (rows are already ordered by
+        // createdAt). Each row gets its own index so multiple movements within
+        // the same minute/second are never collapsed into a single point.
+        // Seconds are included in the label so distinct same-minute movements
+        // remain visually distinguishable.
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        List<StockMovementTimelineDTO> plottedRows = new ArrayList<>();
         List<String> labels = new ArrayList<>();
-        // Map each timestamp label to its index for sparse batch series.
-        Map<String, Integer> labelIndex = new LinkedHashMap<>();
         for (StockMovementTimelineDTO r : rows) {
             if (r.getMovementAt() == null) {
                 continue;
             }
-            String lbl = sdf.format(r.getMovementAt());
-            if (!labelIndex.containsKey(lbl)) {
-                labelIndex.put(lbl, labels.size());
-                labels.add(lbl);
-            }
+            plottedRows.add(r);
+            labels.add(sdf.format(r.getMovementAt()));
         }
         data.setLabels(labels);
 
-        int pointCount = labels.size();
+        int pointCount = plottedRows.size();
 
         // One dataset per batch (batch-level stock), plus the item total line.
         Map<String, List<Object>> batchSeries = new LinkedHashMap<>();
         List<Object> totalSeries = newNullList(pointCount);
 
-        for (StockMovementTimelineDTO r : rows) {
-            if (r.getMovementAt() == null) {
-                continue;
-            }
-            int idx = labelIndex.get(sdf.format(r.getMovementAt()));
+        for (int idx = 0; idx < plottedRows.size(); idx++) {
+            StockMovementTimelineDTO r = plottedRows.get(idx);
 
             String batchKey = batchLabel(r);
             List<Object> series = batchSeries.get(batchKey);

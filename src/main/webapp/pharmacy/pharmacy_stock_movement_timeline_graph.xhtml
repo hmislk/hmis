@@ -34,7 +34,7 @@
 
             <p:column headerText="Date/Time">
                 <h:outputText value="#{m.movementAt}">
-                    <f:convertDateTime pattern="yyyy-MM-dd HH:mm"/>
+                    <f:convertDateTime pattern="yyyy-MM-dd HH:mm" timeZone="Asia/Colombo"/>
                 </h:outputText>
             </p:column>
             <p:column headerText="Bill No">
