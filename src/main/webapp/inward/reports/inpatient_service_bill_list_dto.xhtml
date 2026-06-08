@@ -90,26 +90,7 @@
                     <div class="col-9">
                         <p:panel>
                             <f:facet name="header">
-
-                                <p:outputLabel value="Service Department" style="font-weight: bold"></p:outputLabel>
-
-                                <p:selectOneMenu class="mx-4 w-50" value="#{inwardReportControllerBht.department}" filter="true">
-                                    <f:selectItem itemLabel="All Departments"></f:selectItem>
-                                    <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(sessionController.loggedUser.institution)}" var="d" itemLabel="#{d.name}" itemValue="#{d}"></f:selectItems>
-                                </p:selectOneMenu>
-
-                                <p:commandButton
-                                    id="btnProcess"
-                                    value="Process"
-                                    action="#{inwardReportControllerBht.navigateToInpatientServiceBillListDto}"
-                                    icon="fa fa-file-invoice"
-                                    ajax="false"
-                                    class="ui-button-success">
-                                    <f:setPropertyActionListener
-                                        value="#{admissionController.current}"
-                                        target="#{inwardReportControllerBht.patientEncounter}" />
-                                </p:commandButton>
-
+                                <p:outputLabel value="Inward Service Bills" style="font-weight: bold"></p:outputLabel>
                             </f:facet>
 
                             <p:dataTable
@@ -211,6 +192,15 @@
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                     </f:facet>
+                                </p:column>
+
+                                <p:column width="10em" style="padding: 2px" styleClass="#{dto.cancelled ? 'ui-messages-fatal' : ''}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Type" />
+                                    </f:facet>
+                                    <h:outputLabel value="Cancellation" style="color: red;" rendered="#{not empty dto.billTypeAtomic and dto.billTypeAtomic.contains('CANCELLATION')}" />
+                                    <h:outputLabel value="Refund / Return" style="color: red;" rendered="#{not empty dto.billTypeAtomic and dto.billTypeAtomic.contains('REFUND')}" />
+                                    <h:outputLabel value="Service Bill" rendered="#{empty dto.billTypeAtomic or (not dto.billTypeAtomic.contains('CANCELLATION') and not dto.billTypeAtomic.contains('REFUND'))}" />
                                 </p:column>
 
                                 <p:column width="8em" style="padding: 2px">

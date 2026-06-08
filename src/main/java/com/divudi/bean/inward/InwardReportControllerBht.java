@@ -413,6 +413,8 @@ public class InwardReportControllerBht implements Serializable {
             serviceTypes.add(BillTypeAtomic.INWARD_SERVICE_BILL);
             serviceTypes.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
             serviceTypes.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+            serviceTypes.add(BillTypeAtomic.INWARD_SERVICE_BILL_REFUND);
+            serviceTypes.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL_REFUND); // deprecated, for old refund bills
             serviceTypes.add(BillTypeAtomic.INWARD_OUTSIDE_CHARGES_BILL);
             serviceTypes.add(BillTypeAtomic.INWARD_OUTSIDE_CHARGES_BILL_CANCELLATION);
 
@@ -431,6 +433,12 @@ public class InwardReportControllerBht implements Serializable {
     }
 
     private List<BillListReportDTO> fetchServiceBillDtos(List<BillTypeAtomic> billTypes) {
+        // Bill.retired/cancelled/refunded are primitive boolean and
+        // total/discount/netTotal/margin are primitive double, so they are
+        // never null - wrapping them in COALESCE makes EclipseLink return a
+        // mismatched type (e.g. Integer for a boolean) that breaks the
+        // reflective DTO-constructor binding. Project them directly; keep
+        // COALESCE only for the nullable String/relationship fields.
         String jpql = "SELECT new com.divudi.core.data.dto.BillListReportDTO("
                 + "b.id, "
                 + "COALESCE(b.deptId, ''), "
@@ -439,51 +447,27 @@ public class InwardReportControllerBht implements Serializable {
                 + "COALESCE(b.patientEncounter.patient.person.name, ''), "
                 + "b.createdAt, "
                 + "COALESCE(b.creater.name, ''), "
-                + "COALESCE(b.retired, false), "
-                + "COALESCE(b.cancelled, false), "
-                + "COALESCE(b.refunded, false), "
-                + "COALESCE(b.total, 0.0), "
-                + "COALESCE(b.discount, 0.0), "
-                + "COALESCE(b.netTotal, 0.0), "
+                + "b.retired, "
+                + "b.cancelled, "
+                + "b.refunded, "
+                + "b.total, "
+                + "b.discount, "
+                + "b.netTotal, "
                 + "COALESCE(b.patientEncounter.bhtNo, ''), "
                 + "COALESCE(b.deptId, ''), "
-                + "COALESCE(b.margin, 0.0)) "
+                + "b.margin) "
                 + "FROM Bill b "
                 + "WHERE b.patientEncounter = :patientEncounter "
                 + "AND b.billTypeAtomic IN :billTypeAtomics "
                 + "AND b.retired = FALSE ";
 
+        jpql += "ORDER BY b.createdAt, b.id";
+
         Map<String, Object> params = new HashMap<>();
         params.put("billTypeAtomics", billTypes);
         params.put("patientEncounter", patientEncounter);
 
-        if (department != null) {
-            jpql += "AND b.department = :department ";
-            params.put("department", department);
-        }
-
-        jpql += "ORDER BY b.createdAt, b.id";
-
-        System.out.println("DEBUG ServiceBill: encounter=" + (patientEncounter != null ? patientEncounter.getId() : "NULL")
-                + " class=" + (patientEncounter != null ? patientEncounter.getClass().getName() : "NULL")
-                + " types=" + billTypes);
-        System.out.println("DEBUG ServiceBill JPQL: " + jpql);
-
-        // Diagnostic: simple count without DTO projection
-        try {
-            Map<String, Object> countParams = new HashMap<>();
-            countParams.put("patientEncounter", patientEncounter);
-            countParams.put("billTypeAtomics", billTypes);
-            String countJpql = "SELECT COUNT(b) FROM Bill b WHERE b.patientEncounter = :patientEncounter "
-                    + "AND b.billTypeAtomic IN :billTypeAtomics AND b.retired = FALSE";
-            Long cnt = billFacade.findLongByJpql(countJpql, countParams);
-            System.out.println("DEBUG ServiceBill: plain count = " + cnt);
-        } catch (Exception ex) {
-            System.out.println("DEBUG ServiceBill count EXCEPTION: " + ex.getMessage());
-        }
-
         List<BillListReportDTO> result = (List<BillListReportDTO>) billFacade.findLightsByJpqlWithoutCache(jpql, params, javax.persistence.TemporalType.TIMESTAMP);
-        System.out.println("DEBUG ServiceBill: DTO result size = " + (result != null ? result.size() : "NULL"));
         return result != null ? result : new ArrayList<>();
     }
 
