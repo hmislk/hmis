@@ -335,6 +335,9 @@ public class TriggerSubscriptionController implements Serializable {
 
     public void setApplicationWide(boolean applicationWide) {
         this.applicationWide = applicationWide;
+        if (applicationWide) {
+            department = null;
+        }
     }
 
     public List<Department> getDepartments() {

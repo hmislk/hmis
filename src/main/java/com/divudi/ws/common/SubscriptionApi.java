@@ -109,7 +109,7 @@ public class SubscriptionApi {
 
             Map<String, Object> params = new HashMap<>();
             StringBuilder jpql = new StringBuilder(
-                    "select i from TriggerSubscription i where i.retired=false");
+                    "select i from TriggerSubscription i where i.retired=false and i.webUser is not null");
 
             String triggerTypeStr = param("triggerType");
             if (triggerTypeStr != null && !triggerTypeStr.trim().isEmpty()) {
@@ -241,13 +241,16 @@ public class SubscriptionApi {
             TriggerSubscription existing = triggerSubscriptionFacade.findFirstByJpql(dupJpql, dupParams);
             if (existing != null) {
                 Map<String, Object> found = new LinkedHashMap<>();
-                found.put("status", "already_exists");
                 found.put("id", existing.getId());
                 found.put("triggerType", existing.getTriggerType() != null ? existing.getTriggerType().name() : null);
                 found.put("userId", existing.getWebUser() != null ? existing.getWebUser().getId() : null);
                 found.put("departmentId", existing.getDepartment() != null ? existing.getDepartment().getId() : null);
                 found.put("applicationWide", existing.getDepartment() == null);
-                return Response.ok(gson.toJson(found)).build();
+                Map<String, Object> alreadyExists = new LinkedHashMap<>();
+                alreadyExists.put("status", "already_exists");
+                alreadyExists.put("code", 200);
+                alreadyExists.put("data", found);
+                return Response.ok(gson.toJson(alreadyExists)).build();
             }
 
             // Next order number for this user within the same department scope.
@@ -290,6 +293,9 @@ public class SubscriptionApi {
             if (ts == null || ts.isRetired()) {
                 return errorResponse("Subscription not found with id: " + id, 404);
             }
+            if (ts.getWebUser() == null) {
+                return errorResponse("Subscription " + id + " is a role-based subscription and cannot be managed through this API", 400);
+            }
             ts.setRetired(true);
             ts.setRetiredAt(new Date());
             ts.setRetirer(apiUser.getId() != null ? apiUser : null);
@@ -317,7 +323,13 @@ public class SubscriptionApi {
             params.put("dep", department);
         }
         List<TriggerSubscription> existing = triggerSubscriptionFacade.findByJpql(jpql, params);
-        return existing == null ? 1.0 : existing.size() + 1.0;
+        double maxOrder = 0.0;
+        if (existing != null) {
+            for (TriggerSubscription subscription : existing) {
+                maxOrder = Math.max(maxOrder, subscription.getOrderNumber());
+            }
+        }
+        return maxOrder + 1.0;
     }
 
     private TriggerType resolveTriggerType(String name) {
@@ -358,9 +370,14 @@ public class SubscriptionApi {
     }
 
     // Gson parses JSON numbers as Double; accept Number or numeric string.
+    // Reject fractional values (e.g. 12.9) instead of silently truncating to 12.
     private Long asLong(Object value) {
         if (value == null) return null;
         if (value instanceof Number) {
+            double d = ((Number) value).doubleValue();
+            if (Double.isNaN(d) || Double.isInfinite(d) || d % 1 != 0) {
+                return null;
+            }
             return ((Number) value).longValue();
         }
         return parseLong(value.toString());

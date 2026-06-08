@@ -1507,8 +1507,12 @@ public class AnthropicApiService implements Serializable {
                         urlBuilder.append(first ? "?" : "&").append("departmentId=").append(URLEncoder.encode(departmentId, StandardCharsets.UTF_8));
                         first = false;
                     }
-                    if ("true".equalsIgnoreCase(applicationWide)) {
-                        urlBuilder.append(first ? "?" : "&").append("applicationWide=true");
+                    if (applicationWide != null && !applicationWide.trim().isEmpty()) {
+                        String normalizedAw = applicationWide.trim().toLowerCase();
+                        if (!"true".equals(normalizedAw) && !"false".equals(normalizedAw)) {
+                            return "Error: applicationWide must be 'true' or 'false'.";
+                        }
+                        urlBuilder.append(first ? "?" : "&").append("applicationWide=").append(normalizedAw);
                         first = false;
                     }
                     url = urlBuilder.toString();
@@ -1518,6 +1522,14 @@ public class AnthropicApiService implements Serializable {
                 case "POST": {
                     url = base;
                     httpMethod = "POST";
+                    boolean hasDepartmentId = departmentId != null && !departmentId.trim().isEmpty();
+                    boolean isApplicationWide = "true".equalsIgnoreCase(applicationWide);
+                    if (hasDepartmentId && isApplicationWide) {
+                        return "Error: provide exactly one of departmentId or applicationWide=true, not both.";
+                    }
+                    if (!hasDepartmentId && !isApplicationWide) {
+                        return "Error: provide either departmentId or applicationWide=true.";
+                    }
                     javax.json.JsonObjectBuilder bodyBuilder = Json.createObjectBuilder();
                     if (triggerType != null && !triggerType.isEmpty()) bodyBuilder.add("triggerType", triggerType);
                     if (userId != null && !userId.isEmpty()) {
@@ -1527,9 +1539,9 @@ public class AnthropicApiService implements Serializable {
                             return "Error: userId must be numeric.";
                         }
                     }
-                    if ("true".equalsIgnoreCase(applicationWide)) {
+                    if (isApplicationWide) {
                         bodyBuilder.add("applicationWide", true);
-                    } else if (departmentId != null && !departmentId.isEmpty()) {
+                    } else {
                         try {
                             bodyBuilder.add("departmentId", Long.parseLong(departmentId.trim()));
                         } catch (NumberFormatException e) {
@@ -2834,7 +2846,7 @@ public class AnthropicApiService implements Serializable {
         }
 
         sb.append("## Tools Available to You\n");
-        sb.append("You have eleven tools to ground your answers in the actual codebase, live configuration, clinical master data, collecting-centre fees, inward discount matrix entries, investigation master records, investigation report formats, dynamic clinical form templates, and notification subscriptions:\n\n");
+        sb.append("You have twelve tools to ground your answers in the actual codebase, live configuration, clinical master data, collecting-centre fees, inward discount matrix entries, investigation master records, investigation report formats, dynamic clinical form templates, and notification subscriptions:\n\n");
         sb.append("### search_github_code\n");
         sb.append("Searches the hmislk/hmis repository source code for files matching keywords. ");
         sb.append("Use this first when a user asks about system behaviour, page logic, or wants to understand how something works.\n\n");
