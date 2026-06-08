@@ -41,9 +41,18 @@ public enum TriggerType {
     PURCHASE_ORDER_APPROVAL("Purchase Order Approval - System Notification", NotificationMedium.SYSTEM_NOTIFICATION, TriggerTypeParent.PURCHASE_ORDER_APPROVAL),
     PURCHASE_ORDER_APPROVAL_SMS("Purchase Order Approval - SMS", NotificationMedium.SMS, TriggerTypeParent.PURCHASE_ORDER_APPROVAL),
     PURCHASE_ORDER_APPROVAL_EMAIL("Purchase Order Approval - Email", NotificationMedium.EMAIL, TriggerTypeParent.PURCHASE_ORDER_APPROVAL),
-    INWARD_PATIENT_DISCHARGED("Inward Patient Discharaged - System Notification", NotificationMedium.SYSTEM_NOTIFICATION, TriggerTypeParent.INWARD_PATIENT_DISCHARGED),
-    INWARD_PATIENT_DISCHARGED_SMS("Inward Patient Discharaged - SMS", NotificationMedium.SYSTEM_NOTIFICATION, TriggerTypeParent.INWARD_PATIENT_DISCHARGED),
-    INWARD_PATIENT_DISCHARGED_EMAIL("Inward Patient Discharaged - Email", NotificationMedium.SYSTEM_NOTIFICATION, TriggerTypeParent.INWARD_PATIENT_DISCHARGED),
+    // Stage 1 — Clinical discharge (clinician declares the patient medically fit; typically notifies ward nursing)
+    INWARD_PATIENT_CLINICAL_DISCHARGED("Inward Patient Clinical Discharge - System Notification", NotificationMedium.SYSTEM_NOTIFICATION, TriggerTypeParent.INWARD_PATIENT_CLINICAL_DISCHARGED),
+    INWARD_PATIENT_CLINICAL_DISCHARGED_SMS("Inward Patient Clinical Discharge - SMS", NotificationMedium.SMS, TriggerTypeParent.INWARD_PATIENT_CLINICAL_DISCHARGED),
+    INWARD_PATIENT_CLINICAL_DISCHARGED_EMAIL("Inward Patient Clinical Discharge - Email", NotificationMedium.EMAIL, TriggerTypeParent.INWARD_PATIENT_CLINICAL_DISCHARGED),
+    // Stage 2 — Room/bed discharge (bed released; typically notifies billing)
+    INWARD_PATIENT_ROOM_DISCHARGED("Inward Patient Room Discharge - System Notification", NotificationMedium.SYSTEM_NOTIFICATION, TriggerTypeParent.INWARD_PATIENT_ROOM_DISCHARGED),
+    INWARD_PATIENT_ROOM_DISCHARGED_SMS("Inward Patient Room Discharge - SMS", NotificationMedium.SMS, TriggerTypeParent.INWARD_PATIENT_ROOM_DISCHARGED),
+    INWARD_PATIENT_ROOM_DISCHARGED_EMAIL("Inward Patient Room Discharge - Email", NotificationMedium.EMAIL, TriggerTypeParent.INWARD_PATIENT_ROOM_DISCHARGED),
+    // Stage 3 — Final/physical discharge (patient leaves the hospital; typically notifies Guest Relations Officer)
+    INWARD_PATIENT_DISCHARGED("Inward Patient Final Discharge - System Notification", NotificationMedium.SYSTEM_NOTIFICATION, TriggerTypeParent.INWARD_PATIENT_DISCHARGED),
+    INWARD_PATIENT_DISCHARGED_SMS("Inward Patient Final Discharge - SMS", NotificationMedium.SMS, TriggerTypeParent.INWARD_PATIENT_DISCHARGED),
+    INWARD_PATIENT_DISCHARGED_EMAIL("Inward Patient Final Discharge - Email", NotificationMedium.EMAIL, TriggerTypeParent.INWARD_PATIENT_DISCHARGED),
     OPD_BILL_CANCELLATION("Bill Cancellation - System Notification", NotificationMedium.SYSTEM_NOTIFICATION, TriggerTypeParent.OPD_BILL_CANCELLATION),
     OPD_BILL_CANCELLATION_SMS("Bill Cancellation - SMS", NotificationMedium.SMS, TriggerTypeParent.OPD_BILL_CANCELLATION),
     OPD_BILL_CANCELLATION_EMAIL("Bill Cancellation - Email", NotificationMedium.EMAIL, TriggerTypeParent.OPD_BILL_CANCELLATION),
