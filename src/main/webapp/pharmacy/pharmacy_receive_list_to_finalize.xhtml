@@ -1,0 +1,116 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/pharmacy/disbursement_index.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <ui:define name="subcontent">
+        <h:panelGroup rendered="#{!webUserController.hasPrivilege('PharmacyReceiveFinalize')}">You are NOT authorized</h:panelGroup>
+        <p:panel
+            id="gpReceiveFinalize"
+            rendered="#{webUserController.hasPrivilege('PharmacyReceiveFinalize')}">
+            <f:facet name="header">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-tasks text-warning me-2"></i>
+                    <h:outputText value="Transfer Receives — List to Finalize" styleClass="mb-0 text-warning"/>
+                </div>
+            </f:facet>
+            <h:form onkeypress="if (event.key === 'Enter' || event.keyCode === 13) { return false; }">
+                <div class="row g-3">
+                    <div class="col-lg-3 col-md-4">
+                        <p:panel header="Search Filters" styleClass="h-100 shadow-sm">
+                            <div class="mb-3">
+                                <h:panelGroup styleClass="form-label fw-bold text-secondary d-block">
+                                    <i class="fas fa-calendar-alt me-1"></i>
+                                    <h:outputText value="From Date"/>
+                                </h:panelGroup>
+                                <p:calendar
+                                    id="fromDate"
+                                    class="w-100"
+                                    inputStyleClass="form-control"
+                                    value="#{searchController.fromDate}"
+                                    navigator="false"
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                            </div>
+                            <div class="mb-3">
+                                <h:panelGroup styleClass="form-label fw-bold text-secondary d-block">
+                                    <i class="fas fa-calendar-alt me-1"></i>
+                                    <h:outputText value="To Date"/>
+                                </h:panelGroup>
+                                <p:calendar
+                                    id="toDate"
+                                    class="w-100"
+                                    inputStyleClass="form-control"
+                                    value="#{searchController.toDate}"
+                                    navigator="false"
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                            </div>
+                            <p:commandButton
+                                id="btnSearch"
+                                class="ui-button-warning w-100"
+                                icon="fas fa-search"
+                                ajax="false"
+                                value="Search"
+                                action="#{searchController.createReceiveTableToFinalize}"
+                                style="min-height: 45px;"/>
+                        </p:panel>
+                    </div>
+                    <div class="col-lg-9 col-md-8">
+                        <p:dataTable
+                            id="tblReceiveFinalize"
+                            value="#{searchController.bills}"
+                            var="g"
+                            paginator="true"
+                            rows="15"
+                            paginatorPosition="both"
+                            paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                            rowsPerPageTemplate="10,15,25,50"
+                            emptyMessage="No saved receives found matching your criteria"
+                            sortMode="multiple"
+                            resizableColumns="true"
+                            reflow="true"
+                            size="small"
+                            style="font-size: 0.9em;">
+                            <p:column headerText="Created" width="80px" sortBy="#{g.createdAt}" styleClass="text-center">
+                                <h:outputLabel value="#{g.createdAt}" styleClass="text-muted small">
+                                    <f:convertDateTime timeZone="Asia/Colombo" pattern="dd/MM/yy"/>
+                                </h:outputLabel>
+                            </p:column>
+                            <p:column headerText="Department" width="110px" sortBy="#{g.department.name}">
+                                <h:outputLabel value="#{g.department.name}" title="#{g.department.name}" styleClass="text-truncate d-block"/>
+                            </p:column>
+                            <p:column headerText="From Dept" width="110px" sortBy="#{g.fromDepartment.name}">
+                                <h:outputLabel value="#{g.fromDepartment.name}" title="#{g.fromDepartment.name}" styleClass="text-truncate d-block"/>
+                            </p:column>
+                            <p:column headerText="Created By" width="130px" sortBy="#{g.creater.webUserPerson.name}">
+                                <h:outputLabel value="#{g.creater.webUserPerson.name}" styleClass="text-truncate d-block small"/>
+                            </p:column>
+                            <p:column headerText="Action" styleClass="text-center" exportable="false" width="130px">
+                                <p:commandButton
+                                    id="btnFinalize"
+                                    styleClass="ui-button ui-button-warning ui-button-sm"
+                                    icon="fas fa-check-circle"
+                                    value="Finalize"
+                                    title="Open and Finalize Receive #{g.id}"
+                                    ajax="false"
+                                    action="#{transferReceiveNativeSqlController.loadPendingReceiveForFinalize(g.id)}"
+                                    style="font-size: 0.85em; padding: 0.375rem 0.75rem;"/>
+                                <p:commandButton
+                                    id="btnCancel"
+                                    styleClass="ui-button ui-button-danger ui-button-sm ms-1"
+                                    icon="fas fa-times"
+                                    value="Cancel"
+                                    title="Cancel this pending receive"
+                                    ajax="false"
+                                    onclick="if(!confirm('Cancel this pending receive? This cannot be undone.')) return false;"
+                                    action="#{transferReceiveNativeSqlController.cancelPendingReceive(g.id)}"
+                                    style="font-size: 0.85em; padding: 0.375rem 0.75rem;"/>
+                            </p:column>
+                        </p:dataTable>
+                    </div>
+                </div>
+            </h:form>
+        </p:panel>
+    </ui:define>
+</ui:composition>

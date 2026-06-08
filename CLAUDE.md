@@ -47,8 +47,11 @@
 - [Deployment Recovery Guide](developer_docs/deployment/deployment-recovery-guide.md) - How to recover when root-owned files break CI/CD deployment
 
 ### When Working on UI/XHTML
-- [UI Development Handbook](developer_docs/ui/comprehensive-ui-guidelines.md) - Complete UI reference
+- [UI Development Handbook](developer_docs/ui/comprehensive-ui-guidelines.md) - Complete UI reference. **Authoring data-entry pages**: every actionable button needs a stable `id`; cap `p:autoComplete` with `maxResults`; guard the Enter key so it never clears/submits the form; make settle/issue/receive double-click-safe (JS `confirm()` + server-side re-entrancy guard). See § Accessibility-first development and § Data-entry components.
 - [Icon Management](developer_docs/ui/icon-management.md) - Standard icons and sizing
+
+### When Testing with Playwright (E2E verification)
+- [Playwright E2E Testing Workflow](developer_docs/testing/playwright-e2e-workflow.md) - Login + department selection, committing PrimeFaces inputs with real key events (plain `fill()` does not commit), date-filtered lists need Search clicked, confirm-dialog & double-click handling, DB verification. **Accessibility-first**: if Playwright can't find a control, fix the page (stable id/title), not the test.
 
 ### When Working on JSF/AJAX
 - [JSF AJAX Update Guidelines](developer_docs/jsf/ajax-update-guidelines.md) - Critical AJAX rules

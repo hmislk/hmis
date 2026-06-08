@@ -145,6 +145,9 @@ public class InwardReportControllerBht implements Serializable {
             btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE);
             btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION);
             btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN);
+            btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE);
+            btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION);
+            btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN);
             btas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD);
             btas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN);
             btas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION);
@@ -156,12 +159,15 @@ public class InwardReportControllerBht implements Serializable {
                         case PHARMACY_DIRECT_ISSUE_CANCELLED:
                         case DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION:
                         case DIRECT_ISSUE_INWARD_MEDICINE_RETURN:
+                        case DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION:
+                        case DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN:
                         case ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION:
                         case ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN:
                             pharmacyIssueBillItemsToPatientEncounterNetTotal -= Math.abs(bi.getNetValue());
                             break;
                         case PHARMACY_DIRECT_ISSUE:
                         case DIRECT_ISSUE_INWARD_MEDICINE:
+                        case DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE:
                         case ISSUE_MEDICINE_ON_REQUEST_INWARD:
                             pharmacyIssueBillItemsToPatientEncounterNetTotal += Math.abs(bi.getNetValue());
                             break;
@@ -173,10 +179,12 @@ public class InwardReportControllerBht implements Serializable {
             List<BillTypeAtomic> btas = new ArrayList<>();
             btas.add(BillTypeAtomic.PHARMACY_DIRECT_ISSUE);
             btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE);
+            btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE);
             List<BillItem> pharmacyIssuedDrugs = billService.fetchBillItems(null, null, null, null, department, null, btas, patientEncounter);
 
             btas = new ArrayList<>();
             btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN);
+            btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN);
             List<BillItem> pharmacyIssuedReturnedDrugs = billService.fetchBillItems(null, null, null, null, department, null, btas, patientEncounter);
 
             List<BillItem> pharmacyIssuesWithoutCanceled = new ArrayList<>();
@@ -220,6 +228,8 @@ public class InwardReportControllerBht implements Serializable {
             pharmacyTypes.add(BillTypeAtomic.PHARMACY_DIRECT_ISSUE);
             pharmacyTypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE);
             pharmacyTypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN);
+            pharmacyTypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE);
+            pharmacyTypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN);
             pharmacyTypes.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD);
             pharmacyTypes.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN);
 
@@ -235,6 +245,7 @@ public class InwardReportControllerBht implements Serializable {
                 double netValue = dto.getNetValue() != null ? dto.getNetValue() : 0.0;
 
                 if (billType == BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN
+                        || billType == BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN
                         || billType == BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN) {
                     pharmacyIssueDtosToPatientEncounterNetTotal -= Math.abs(netValue);
                 } else {
@@ -299,6 +310,8 @@ public class InwardReportControllerBht implements Serializable {
             pharmacyTypes.add(BillTypeAtomic.PHARMACY_DIRECT_ISSUE);
             pharmacyTypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE);
             pharmacyTypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN);
+            pharmacyTypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE);
+            pharmacyTypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN);
             pharmacyTypes.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD);
             pharmacyTypes.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN);
             List<InpatientPharmacyIssueDTO> allDtos = fetchPharmacyIssueDtos(pharmacyTypes);
@@ -307,6 +320,7 @@ public class InwardReportControllerBht implements Serializable {
                 BillTypeAtomic billType = dto.getBillTypeAtomic();
                 double netValue = dto.getNetValue() != null ? dto.getNetValue() : 0.0;
                 if (billType == BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN
+                        || billType == BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN
                         || billType == BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN) {
                     pharmacyIssueDtosToPatientEncounterNetTotal -= Math.abs(netValue);
                 } else {
@@ -505,6 +519,9 @@ public class InwardReportControllerBht implements Serializable {
         btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE);
         btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION);
         btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN);
+        btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE);
+        btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION);
+        btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN);
         btas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD);
         btas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN);
         btas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION);
@@ -516,12 +533,15 @@ public class InwardReportControllerBht implements Serializable {
                     case PHARMACY_DIRECT_ISSUE_CANCELLED:
                     case DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION:
                     case DIRECT_ISSUE_INWARD_MEDICINE_RETURN:
+                    case DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION:
+                    case DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN:
                     case ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION:
                     case ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN:
                         pharmacyIssueBillItemsToPatientEncounterNetTotal -= Math.abs(bi.getNetValue());
                         break;
                     case PHARMACY_DIRECT_ISSUE:
                     case DIRECT_ISSUE_INWARD_MEDICINE:
+                    case DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE:
                     case ISSUE_MEDICINE_ON_REQUEST_INWARD:
                         pharmacyIssueBillItemsToPatientEncounterNetTotal += Math.abs(bi.getNetValue());
                         break;

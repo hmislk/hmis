@@ -65,6 +65,22 @@
                                     icon="fas fa-prescription-bottle-alt"
                                     rendered="#{webUserController.hasPrivilege('PharmacyDisbursementIssurForRequest')}" />
                                 <p:commandButton
+                                    value="Finalize Issues"
+                                    ajax="false"
+                                    action="#{searchController.navigateToIssueForRequestListToFinalize()}"
+                                    actionListener="#{searchController.makeListNull()}"
+                                    class="ui-button-warning w-100"
+                                    icon="fas fa-tasks"
+                                    rendered="#{webUserController.hasPrivilege('PharmacyIssueForRequestFinalize')}" />
+                                <p:commandButton
+                                    value="Approve Issues"
+                                    ajax="false"
+                                    action="#{searchController.navigateToIssueForRequestListToApprove()}"
+                                    actionListener="#{searchController.makeListNull()}"
+                                    class="ui-button-info w-100"
+                                    icon="fas fa-check-circle"
+                                    rendered="#{webUserController.hasPrivilege('PharmacyIssueForRequestApprove')}" />
+                                <p:commandButton
                                     value="Direct Issue"
                                     ajax="false"
                                     action="#{transferIssueDirectController.navigateToDirectPharmacyIssue}"
@@ -84,6 +100,22 @@
                                     class="ui-button-success w-100"
                                     icon="fas fa-truck-loading"
                                     rendered="#{webUserController.hasPrivilege('PharmacyDisbursementRecieve')}" />
+                                <p:commandButton
+                                    value="Finalize Receives"
+                                    ajax="false"
+                                    action="#{searchController.navigateToReceiveListToFinalize()}"
+                                    actionListener="#{searchController.makeListNull()}"
+                                    class="ui-button-warning w-100"
+                                    icon="fas fa-tasks"
+                                    rendered="#{webUserController.hasPrivilege('PharmacyReceiveFinalize')}" />
+                                <p:commandButton
+                                    value="Approve Receives"
+                                    ajax="false"
+                                    action="#{searchController.navigateToReceiveListToApprove()}"
+                                    actionListener="#{searchController.makeListNull()}"
+                                    class="ui-button-info w-100"
+                                    icon="fas fa-check-circle"
+                                    rendered="#{webUserController.hasPrivilege('PharmacyReceiveApprove')}" />
                             </p:panelGrid>
                         </p:tab>
                         <p:tab title="Reports" >

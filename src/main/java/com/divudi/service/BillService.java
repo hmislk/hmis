@@ -1857,6 +1857,9 @@ public class BillService {
                 BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE,
                 BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION,
                 BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN,
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE,
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION,
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN,
                 BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE,
                 BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_CANCELLATION,
                 BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_RETURN,
@@ -4416,6 +4419,7 @@ public class BillService {
         // Validate bill type
         BillTypeAtomic bta = bill.getBillTypeAtomic();
         if (bta != BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN
+                && bta != BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN
                 && bta != BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN) {
             return;
         }

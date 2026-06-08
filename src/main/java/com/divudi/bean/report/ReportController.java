@@ -4973,6 +4973,9 @@ public class ReportController implements Serializable, ControllerWithReportFilte
             billtypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE);
             billtypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION);
             billtypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN);
+            billtypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE);
+            billtypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION);
+            billtypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN);
             billtypes.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD);
             billtypes.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION);
             billtypes.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN);
@@ -4986,6 +4989,9 @@ public class ReportController implements Serializable, ControllerWithReportFilte
             billtypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE);
             billtypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION);
             billtypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN);
+            billtypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE);
+            billtypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION);
+            billtypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN);
             billtypes.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD);
             billtypes.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION);
             billtypes.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN);
@@ -5063,6 +5069,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
 
     private static final Set<BillTypeAtomic> RETURN_BILL_TYPES = new HashSet<>(Arrays.asList(
             BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN,
+            BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN,
             BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN
     ));
 
