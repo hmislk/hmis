@@ -28,6 +28,6 @@ public class NotificationPushService implements Serializable {
         if (userId == null) {
             return;
         }
-        notifications.send("new_notification", userId);
+        notifications.send("new_notification", String.valueOf(userId));
     }
 }

@@ -17,7 +17,7 @@
                             }
                         </script>
                         <f:websocket channel="notifications"
-                                     user="#{sessionController.loggedUser.id}"
+                                     user="#{sessionController.loggedUser.id.toString()}"
                                      onmessage="onNotificationPush"
                                      connected="#{sessionController.loggedUser != null}" />
                         <p:remoteCommand name="refreshNotifications"
