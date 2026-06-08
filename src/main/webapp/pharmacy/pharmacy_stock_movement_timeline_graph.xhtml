@@ -1,0 +1,78 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <!--
+        Reusable single-graph fragment for the stock movement timeline.
+        Parameters (via ui:param):
+          chartModel  - LineChartModel for this scope
+          markers     - List<BillMarker> of stock-changing transactions
+          scopeLabel  - human readable scope (Department: X / Staff: Y)
+          graphNo     - 1, 2 or 3 (used for unique ids)
+    -->
+    <p:panel header="Graph #{graphNo} — #{scopeLabel}" styleClass="mb-4">
+
+        <div style="width:100%; height:400px;">
+            <p:lineChart model="#{chartModel}"
+                         style="width:100%; height:400px;"
+                         widgetVar="stockMovementChart#{graphNo}"/>
+        </div>
+
+        <p:dataTable value="#{markers}" var="m"
+                     styleClass="ui-datatable-sm mt-3"
+                     paginator="true" rows="10"
+                     paginatorPosition="bottom"
+                     emptyMessage="No stock movements found for this scope in the selected period.">
+
+            <f:facet name="header">
+                Bills marked on the timeline
+            </f:facet>
+
+            <p:column headerText="Date/Time">
+                <h:outputText value="#{m.movementAt}">
+                    <f:convertDateTime pattern="yyyy-MM-dd HH:mm"/>
+                </h:outputText>
+            </p:column>
+            <p:column headerText="Bill No">
+                <h:outputText value="#{m.deptBillNo}"/>
+            </p:column>
+            <p:column headerText="Bill Type">
+                <h:outputText value="#{m.billType}"/>
+            </p:column>
+            <p:column headerText="Batch">
+                <h:outputText value="#{m.batchNo}"/>
+            </p:column>
+            <p:column headerText="Bill Qty (pbi)" styleClass="text-end">
+                <h:outputText value="#{m.pbiQty}">
+                    <f:convertNumber pattern="#,##0.##"/>
+                </h:outputText>
+            </p:column>
+            <p:column headerText="Free Qty" styleClass="text-end">
+                <h:outputText value="#{m.pbiFreeQty}">
+                    <f:convertNumber pattern="#,##0.##"/>
+                </h:outputText>
+            </p:column>
+            <p:column headerText="Qty (bifd)" styleClass="text-end">
+                <h:outputText value="#{m.bifdQty}">
+                    <f:convertNumber pattern="#,##0.##"/>
+                </h:outputText>
+            </p:column>
+            <p:column headerText="Batch Stock After" styleClass="text-end">
+                <h:outputText value="#{m.stockQty}">
+                    <f:convertNumber pattern="#,##0.##"/>
+                </h:outputText>
+            </p:column>
+            <p:column headerText="Item Stock After" styleClass="text-end">
+                <h:outputText value="#{m.itemStock}">
+                    <f:convertNumber pattern="#,##0.##"/>
+                </h:outputText>
+            </p:column>
+        </p:dataTable>
+
+    </p:panel>
+
+</ui:composition>
