@@ -9,6 +9,7 @@
 package com.divudi.bean.common;
 
 import com.divudi.core.util.JsfUtil;
+import com.divudi.bean.inward.AdmissionController;
 import com.divudi.bean.pharmacy.PharmacyBillSearch;
 import com.divudi.bean.pharmacy.PharmacySaleBhtController;
 import com.divudi.bean.pharmacy.PurchaseOrderController;
@@ -23,6 +24,8 @@ import com.divudi.core.entity.Notification;
 import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.entity.Sms;
 import com.divudi.core.entity.WebUser;
+import com.divudi.core.entity.inward.Admission;
+import com.divudi.core.facade.AdmissionFacade;
 import com.divudi.core.facade.NotificationFacade;
 import com.divudi.core.facade.SmsFacade;
 import com.divudi.core.facade.UserNotificationFacade;
@@ -72,6 +75,8 @@ public class UserNotificationController implements Serializable {
     @EJB
     NotificationFacade notificationFacade;
     @EJB
+    AdmissionFacade admissionFacade;
+    @EJB
     SmsFacade smsFacade;
     private UserNotification current;
     private List<UserNotification> items = null;
@@ -82,6 +87,8 @@ public class UserNotificationController implements Serializable {
     SmsManagerEjb smsManager;
     @Inject
     NotificationPushService notificationPushService;
+    @Inject
+    AdmissionController admissionController;
     private Date date;
     private boolean todayNotification;
     private boolean seenedNotifiaction;
@@ -90,11 +97,12 @@ public class UserNotificationController implements Serializable {
     private boolean canceldRequests;
 
     public String navigateToRecivedNotification() {
-        return "/Notification/user_notifications";
+        fillLoggedUserNotifications();
+        return "/Notification/user_notifications?faces-redirect=true";
     }
 
     public String navigateToSentNotification() {
-        return "/Notification/sent_notifications";
+        return "/Notification/sent_notifications?faces-redirect=true";
     }
 
     public void clearNotificationsByCriteria() {
@@ -239,7 +247,8 @@ public class UserNotificationController implements Serializable {
                     continue;
                 }
 
-                if (!notification.getNotification().getBill().isCancelled()) {
+                Bill bill = notification.getNotification().getBill();
+                if (bill == null || !bill.isCancelled()) {
                     iterator.remove();
                 }
             }
@@ -318,6 +327,12 @@ public class UserNotificationController implements Serializable {
             }
         } else if (n.getPatientRoom() != null) {
             todept = n.getPatientRoom().getRoomFacilityCharge().getDepartment();
+        } else if (n.getPatientEncounter() != null) {
+            // Discharge notification — no department check needed; retire directly
+            un.setRetired(true);
+            getFacade().edit(un);
+            fillLoggedUserNotifications();
+            return;
         } else {
             return;
         }
@@ -394,6 +409,14 @@ public class UserNotificationController implements Serializable {
         getFacade().edit(un);
 
         if (un.getNotification().getBill() == null) {
+            PatientEncounter pe = un.getNotification().getPatientEncounter();
+            if (pe != null) {
+                Admission admission = admissionFacade.find(pe.getId());
+                if (admission != null) {
+                    admissionController.setCurrent(admission);
+                    return admissionController.navigateToAdmissionProfilePage();
+                }
+            }
             return "";
         }
 

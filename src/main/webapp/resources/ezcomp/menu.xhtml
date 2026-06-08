@@ -11,6 +11,19 @@
     <!-- IMPLEMENTATION -->
     <cc:implementation>
         <h:form >
+                        <script type="text/javascript">
+                            function onNotificationPush(message) {
+                                refreshNotifications();
+                            }
+                        </script>
+                        <f:websocket channel="notifications"
+                                     user="#{sessionController.loggedUser.id}"
+                                     onmessage="onNotificationPush"
+                                     connected="#{sessionController.loggedUser != null}" />
+                        <p:remoteCommand name="refreshNotifications"
+                                         update="notCount notificationGrowl"
+                                         action="#{userNotificationController.onPushRefreshNotifications}" />
+                        <p:growl id="notificationGrowl" life="6000" showDetail="true" />
             <style>
                 .ui-menu .ui-icon, .ui-menu .fa, .ui-menu .pi {
                     font-size: 18px !important;
@@ -2019,19 +2032,6 @@
                                              ajax="false"
                                              action="#{financialTransactionController.refreshCashNetTotalForMenu()}" />
                         </h:panelGroup>
-                        <f:websocket channel="notifications"
-                                     user="#{sessionController.loggedUser.id}"
-                                     onmessage="onNotificationPush"
-                                     connected="#{sessionController.loggedUser != null}" />
-                        <p:remoteCommand name="refreshNotifications"
-                                         update="notCount notificationGrowl"
-                                         action="#{userNotificationController.onPushRefreshNotifications}" />
-                        <p:growl id="notificationGrowl" life="6000" showDetail="true" />
-                        <script type="text/javascript">
-                            function onNotificationPush(message) {
-                                refreshNotifications();
-                            }
-                        </script>
                         <div class="mx-4">
                             <h:panelGroup id="notCount">
                                 <p:badge id="bdgeNotiCount"
