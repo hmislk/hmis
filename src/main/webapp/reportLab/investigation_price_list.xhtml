@@ -1,0 +1,112 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/reportLab/lab_summeries_index.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui">
+
+    <ui:define name="subcontent">
+        <h:outputStylesheet library="css" name="printing.css"/>
+
+        <h:form id="frmPriceList">
+            <p:panel>
+                <f:facet name="header">
+                    <h:outputText styleClass="fa-solid fa-tags"/>
+                    <p:outputLabel value="Investigation &amp; Service Price List" styleClass="noPrintButton mx-2"/>
+                </f:facet>
+
+                <div class="row mb-3 noPrintButton">
+                    <div class="col-md-4">
+                        <p:outputLabel value="Department" for="slmDept" styleClass="form-label"/>
+                        <p:selectOneMenu id="slmDept"
+                                         class="w-100"
+                                         filter="true"
+                                         filterMatchMode="contains"
+                                         value="#{laborataryReportController.department}">
+                            <f:selectItem itemLabel="-- Select Department --"/>
+                            <f:selectItems value="#{departmentController.labs}"
+                                           var="dept"
+                                           itemLabel="#{dept.name}"
+                                           itemValue="#{dept}"/>
+                        </p:selectOneMenu>
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <p:commandButton id="btnGenerate"
+                                         value="Generate"
+                                         icon="fa fa-search"
+                                         class="w-100 ui-button-primary"
+                                         action="#{laborataryReportController.generateInvestigationPriceList()}"
+                                         update="frmPriceList"
+                                         process="frmPriceList"/>
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <p:commandButton id="btnExcel"
+                                         value="Excel"
+                                         icon="fa fa-file-excel"
+                                         class="w-100 ui-button-success noPrintButton"
+                                         ajax="false"
+                                         action="#{laborataryReportController.downloadInvestigationPriceListExcel()}"
+                                         rendered="#{not empty laborataryReportController.investigationPriceList}"/>
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <p:commandButton value="Print"
+                                         icon="fa fa-print"
+                                         class="w-100 ui-button-secondary noPrintButton"
+                                         onclick="window.print(); return false;"
+                                         rendered="#{not empty laborataryReportController.investigationPriceList}"/>
+                    </div>
+                </div>
+
+                <h:panelGroup rendered="#{not empty laborataryReportController.investigationPriceList}" layout="block">
+
+                    <div class="text-center mb-2 printOnly">
+                        <h4><h:outputText value="#{sessionController.institution.name}"/></h4>
+                        <h5><h:outputText value="Investigation &amp; Service Price List"/></h5>
+                        <p><h:outputText value="Department: #{laborataryReportController.department.name}"/></p>
+                    </div>
+
+                    <p:dataTable id="tblPriceList"
+                                 value="#{laborataryReportController.investigationPriceList}"
+                                 var="item"
+                                 rowIndexVar="rowIndex"
+                                 paginator="true"
+                                 rows="50"
+                                 paginatorPosition="bottom"
+                                 paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                 rowsPerPageTemplate="25,50,100,0"
+                                 currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords}"
+                                 styleClass="w-100">
+
+                        <p:column headerText="#" style="width:3rem; text-align:center;">
+                            <h:outputText value="#{rowIndex + 1}"/>
+                        </p:column>
+
+                        <p:column headerText="Name" sortBy="#{item.name}" filterBy="#{item.name}" filterMatchMode="contains">
+                            <h:outputText value="#{item.name}"/>
+                        </p:column>
+
+                        <p:column headerText="Code" sortBy="#{item.code}" filterBy="#{item.code}" filterMatchMode="contains" style="width:8rem;">
+                            <h:outputText value="#{item.code}"/>
+                        </p:column>
+
+                        <p:column headerText="Price" sortBy="#{item.total}" style="width:8rem; text-align:right;">
+                            <h:outputText value="#{item.total}">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputText>
+                        </p:column>
+
+                    </p:dataTable>
+
+                </h:panelGroup>
+
+                <h:panelGroup rendered="#{empty laborataryReportController.investigationPriceList and laborataryReportController.department ne null}" layout="block">
+                    <p:messages/>
+                </h:panelGroup>
+
+            </p:panel>
+        </h:form>
+    </ui:define>
+
+</ui:composition>

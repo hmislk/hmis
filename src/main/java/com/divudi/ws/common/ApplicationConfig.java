@@ -54,6 +54,7 @@ public class ApplicationConfig extends Application {
         resources.add(com.divudi.ws.finance.CostingData.class);
         resources.add(com.divudi.ws.finance.Finance.class);
         resources.add(com.divudi.ws.finance.Qb.class);
+        resources.add(com.divudi.ws.forms.FormApi.class);
         resources.add(com.divudi.ws.institution.DepartmentApi.class);
         resources.add(com.divudi.ws.institution.InstitutionApi.class);
         resources.add(com.divudi.ws.institution.SiteApi.class);
@@ -61,6 +62,7 @@ public class ApplicationConfig extends Application {
         resources.add(com.divudi.ws.investigation.InvestigationFormatApi.class);
         resources.add(com.divudi.ws.inward.ApiInward.class);
         resources.add(com.divudi.ws.inward.InwardDiscountMatrixApi.class);
+        resources.add(com.divudi.ws.inward.InwardPriceAdjustmentApi.class);
         resources.add(com.divudi.ws.inward.InwardRoomApi.class);
         resources.add(com.divudi.ws.inward.InwardRoomCategoryApi.class);
         resources.add(com.divudi.ws.inward.InwardRoomFacilityChargeApi.class);

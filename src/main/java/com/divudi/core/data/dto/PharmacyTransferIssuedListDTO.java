@@ -20,6 +20,8 @@ public class PharmacyTransferIssuedListDTO implements Serializable {
     private String cancelledByName;
     private Date cancelledAt;
     private List<PharmacyTransferReceivedListDTO> receivedBills = new ArrayList<>();
+    private Long pendingReceiveBillId;
+    private Boolean pendingReceiveIsFinalized;
 
     public PharmacyTransferIssuedListDTO() {
     }
@@ -139,5 +141,21 @@ public class PharmacyTransferIssuedListDTO implements Serializable {
 
     public void setReceivedBills(List<PharmacyTransferReceivedListDTO> receivedBills) {
         this.receivedBills = receivedBills;
+    }
+
+    public Long getPendingReceiveBillId() {
+        return pendingReceiveBillId;
+    }
+
+    public void setPendingReceiveBillId(Long pendingReceiveBillId) {
+        this.pendingReceiveBillId = pendingReceiveBillId;
+    }
+
+    public Boolean getPendingReceiveIsFinalized() {
+        return pendingReceiveIsFinalized != null && pendingReceiveIsFinalized;
+    }
+
+    public void setPendingReceiveIsFinalized(Boolean pendingReceiveIsFinalized) {
+        this.pendingReceiveIsFinalized = pendingReceiveIsFinalized;
     }
 }

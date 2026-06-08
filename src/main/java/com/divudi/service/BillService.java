@@ -1857,6 +1857,9 @@ public class BillService {
                 BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE,
                 BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION,
                 BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN,
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE,
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION,
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN,
                 BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE,
                 BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_CANCELLATION,
                 BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_RETURN,
@@ -2166,6 +2169,22 @@ public class BillService {
             List<BillTypeAtomic> billTypeAtomics,
             AdmissionType admissionType,
             PaymentScheme paymentScheme) {
+        return fetchOpdIncomeReportDTOs(fromDate, toDate, institution, site, department,
+                webUser, billTypeAtomics, admissionType, paymentScheme, null, null, null);
+    }
+
+    public List<OpdIncomeReportDTO> fetchOpdIncomeReportDTOs(Date fromDate,
+            Date toDate,
+            Institution institution,
+            Institution site,
+            Department department,
+            WebUser webUser,
+            List<BillTypeAtomic> billTypeAtomics,
+            AdmissionType admissionType,
+            PaymentScheme paymentScheme,
+            Institution toInstitution,
+            Institution toSite,
+            Department toDepartment) {
 
         if (fromDate == null || toDate == null) {
             throw new IllegalArgumentException("fromDate and toDate cannot be null");
@@ -2178,11 +2197,13 @@ public class BillService {
                 + " b.id, b.deptId, coalesce(pers.name,'N/A'), b.billTypeAtomic, b.createdAt, "
                 + " coalesce(b.netTotal,0.0), b.paymentMethod, coalesce(b.total,0.0), "
                 + " pe, coalesce(b.discount,0.0), coalesce(b.margin,0.0), "
-                + " coalesce(b.serviceCharge,0.0), b.paymentScheme ) "
+                + " coalesce(b.serviceCharge,0.0), ps ) "
                 + " from Bill b "
                 + " left join b.patient pat "
                 + " left join pat.person pers "
                 + " left join b.patientEncounter pe "
+                + " left join b.paymentScheme ps "
+                + " left join b.toDepartment toDept "
                 + " where b.retired=:ret "
                 + " and b.billTypeAtomic in :billTypesAtomics "
                 + " and b.createdAt between :fromDate and :toDate";
@@ -2216,6 +2237,18 @@ public class BillService {
         if (paymentScheme != null) {
             jpql += " and b.paymentScheme=:paymentScheme";
             params.put("paymentScheme", paymentScheme);
+        }
+        if (toInstitution != null) {
+            jpql += " and b.toInstitution=:toIns";
+            params.put("toIns", toInstitution);
+        }
+        if (toSite != null && toDepartment == null) {
+            jpql += " and toDept.site=:toSite";
+            params.put("toSite", toSite);
+        }
+        if (toDepartment != null) {
+            jpql += " and toDept=:toDep";
+            params.put("toDep", toDepartment);
         }
 
         jpql += " order by b.createdAt desc";
@@ -4386,6 +4419,7 @@ public class BillService {
         // Validate bill type
         BillTypeAtomic bta = bill.getBillTypeAtomic();
         if (bta != BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN
+                && bta != BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN
                 && bta != BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN) {
             return;
         }

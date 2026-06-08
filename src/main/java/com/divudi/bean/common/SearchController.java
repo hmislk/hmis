@@ -694,6 +694,9 @@ public class SearchController implements Serializable {
         billTypeAtomic.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE);
 //        billTypeAtomic.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION);
         billTypeAtomic.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN);
+        billTypeAtomic.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE);
+//        billTypeAtomic.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION);
+        billTypeAtomic.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN);
 
         //Pharmacy Types
         billTypeAtomic.add(BillTypeAtomic.INWARD_FINAL_BILL);
@@ -846,6 +849,9 @@ public class SearchController implements Serializable {
         billTypeAtomic.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE);
 //        billTypeAtomic.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION);
         billTypeAtomic.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN);
+        billTypeAtomic.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE);
+//        billTypeAtomic.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION);
+        billTypeAtomic.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN);
 
         //Pharmacy Types
         billTypeAtomic.add(BillTypeAtomic.INWARD_FINAL_BILL);
@@ -4249,6 +4255,44 @@ public class SearchController implements Serializable {
                 dto.setReceivedBills(byIssued.getOrDefault(dto.getBillId(), new ArrayList<>()));
             }
         }
+        populatePendingReceivePre(transferIssuedListDtos);
+    }
+
+    private void populatePendingReceivePre(List<PharmacyTransferIssuedListDTO> dtos) {
+        if (dtos == null || dtos.isEmpty()) {
+            return;
+        }
+        List<Long> issuedBillIds = dtos.stream()
+                .map(PharmacyTransferIssuedListDTO::getBillId)
+                .collect(Collectors.toList());
+        String jpql = "SELECT b FROM Bill b "
+                + "WHERE b.retired = false "
+                + "AND b.cancelled = false "
+                + "AND b.billTypeAtomic = :btp "
+                + "AND b.backwardReferenceBill.id IN :issuedIds";
+        Map<String, Object> params = new HashMap<>();
+        params.put("btp", BillTypeAtomic.PHARMACY_RECEIVE_PRE);
+        params.put("issuedIds", issuedBillIds);
+        List<Bill> preBills = getBillFacade().findByJpql(jpql, params);
+        if (preBills == null || preBills.isEmpty()) {
+            return;
+        }
+        Map<Long, Long[]> preByIssued = new HashMap<>();
+        for (Bill preBill : preBills) {
+            if (preBill.getBackwardReferenceBill() == null) {
+                continue;
+            }
+            Long issuedId = preBill.getBackwardReferenceBill().getId();
+            boolean isFinalized = preBill.getCheckedBy() != null;
+            preByIssued.put(issuedId, new Long[]{preBill.getId(), isFinalized ? 1L : 0L});
+        }
+        for (PharmacyTransferIssuedListDTO dto : dtos) {
+            Long[] preInfo = preByIssued.get(dto.getBillId());
+            if (preInfo != null) {
+                dto.setPendingReceiveBillId(preInfo[0]);
+                dto.setPendingReceiveIsFinalized(preInfo[1] == 1L);
+            }
+        }
     }
 
     private List<PharmacyTransferReceivedListDTO> fetchReceivedBillsForIssuedIds(List<Long> issuedBillIds) {
@@ -7156,6 +7200,92 @@ public class SearchController implements Serializable {
             params.put("item", sk.getItem());
             bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP, 50);
         }
+    }
+
+    public void createDirectPurchaseTableToFinalize() {
+        bills = null;
+        String jpql = "Select b From Bill b "
+                + " where b.retired=false "
+                + " and b.billTypeAtomic = :bTp "
+                + " and b.completed = :completed "
+                + " and b.department = :dept "
+                + " and b.createdAt between :fromDate and :toDate "
+                + " order by b.createdAt desc";
+
+        HashMap params = new HashMap();
+        params.put("bTp", BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_PRE);
+        params.put("completed", false);
+        params.put("dept", sessionController.getDepartment());
+        params.put("fromDate", getFromDate());
+        params.put("toDate", getToDate());
+
+        bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP, 50);
+    }
+
+    public void createDirectPurchaseTableToApprove() {
+        bills = null;
+        String jpql = "Select b From Bill b "
+                + " where b.retired=false "
+                + " and b.billTypeAtomic = :bTp "
+                + " and b.institution = :ins "
+                + " and b.department = :dept "
+                + " and b.completed = :completed "
+                + " and b.checked = :checked "
+                + " and b.createdAt between :fromDate and :toDate "
+                + " order by b.createdAt desc";
+
+        HashMap params = new HashMap();
+        params.put("bTp", BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_PRE);
+        params.put("ins", getSessionController().getInstitution());
+        params.put("dept", sessionController.getDepartment());
+        params.put("completed", true);
+        params.put("checked", false);
+        params.put("fromDate", getFromDate());
+        params.put("toDate", getToDate());
+
+        bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP, 50);
+    }
+
+    public void createIssueForRequestTableToFinalize() {
+        bills = null;
+        String jpql = "Select b From Bill b "
+                + " where b.retired=false "
+                + " and b.billTypeAtomic = :bTp "
+                + " and b.institution = :ins "
+                + " and b.department = :dept "
+                + " and b.completed = :completed "
+                + " and b.createdAt between :fromDate and :toDate "
+                + " order by b.createdAt desc";
+        HashMap params = new HashMap();
+        params.put("bTp", BillTypeAtomic.PHARMACY_ISSUE_PRE);
+        params.put("ins", getSessionController().getInstitution());
+        params.put("dept", sessionController.getDepartment());
+        params.put("completed", false);
+        params.put("fromDate", getFromDate());
+        params.put("toDate", getToDate());
+        bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP, 50);
+    }
+
+    public void createIssueForRequestTableToApprove() {
+        bills = null;
+        String jpql = "Select b From Bill b "
+                + " where b.retired=false "
+                + " and b.billTypeAtomic = :bTp "
+                + " and b.institution = :ins "
+                + " and b.department = :dept "
+                + " and b.completed = :completed "
+                + " and b.checked = :checked "
+                + " and b.createdAt between :fromDate and :toDate "
+                + " order by b.createdAt desc";
+        HashMap params = new HashMap();
+        params.put("bTp", BillTypeAtomic.PHARMACY_ISSUE_PRE);
+        params.put("ins", getSessionController().getInstitution());
+        params.put("dept", sessionController.getDepartment());
+        params.put("completed", true);
+        params.put("checked", false);
+        params.put("fromDate", getFromDate());
+        params.put("toDate", getToDate());
+        bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP, 50);
     }
 
     private List<Bill> getReturnBill(Bill b, BillType bt) {
@@ -16657,6 +16787,108 @@ public class SearchController implements Serializable {
         return "/pharmacy/pharmacy_grn_list_to_approve?faces-redirect=true";
     }
 
+    public String navigateToDirectPurchaseListToFinalize() {
+        makeListNull();
+        return "/pharmacy/pharmacy_direct_purchase_list_to_finalize?faces-redirect=true";
+    }
+
+    public String navigateToDirectPurchaseListToApprove() {
+        makeListNull();
+        return "/pharmacy/pharmacy_direct_purchase_list_to_approve?faces-redirect=true";
+    }
+
+    public String navigateToIssueForRequestListToFinalize() {
+        makeListNull();
+        return "/pharmacy/pharmacy_issue_for_request_list_to_finalize?faces-redirect=true";
+    }
+
+    public String navigateToIssueForRequestListToApprove() {
+        makeListNull();
+        return "/pharmacy/pharmacy_issue_for_request_list_to_approve?faces-redirect=true";
+    }
+
+    public String navigateToReceiveListToFinalize() {
+        makeListNull();
+        return "/pharmacy/pharmacy_receive_list_to_finalize?faces-redirect=true";
+    }
+
+    public String navigateToReceiveListToApprove() {
+        makeListNull();
+        return "/pharmacy/pharmacy_receive_list_to_approve?faces-redirect=true";
+    }
+
+    public void createReceiveTableToFinalize() {
+        bills = null;
+        String jpql = "Select b From Bill b "
+                + " where b.retired=false "
+                + " and b.cancelled=false "
+                + " and b.billTypeAtomic = :bTp "
+                + " and b.department = :dept "
+                + " and b.checkedBy is null "
+                + " and b.createdAt between :fromDate and :toDate "
+                + " order by b.createdAt desc";
+        Map<String, Object> params = new HashMap<>();
+        params.put("bTp", BillTypeAtomic.PHARMACY_RECEIVE_PRE);
+        params.put("dept", sessionController.getDepartment());
+        params.put("fromDate", getFromDate());
+        params.put("toDate", getToDate());
+        bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP, 50);
+    }
+
+    public void createReceiveTableToApprove() {
+        bills = null;
+        String jpql = "Select b From Bill b "
+                + " where b.retired=false "
+                + " and b.cancelled=false "
+                + " and b.billTypeAtomic = :bTp "
+                + " and b.department = :dept "
+                + " and b.checkedBy is not null "
+                + " and b.createdAt between :fromDate and :toDate "
+                + " order by b.createdAt desc";
+        Map<String, Object> params = new HashMap<>();
+        params.put("bTp", BillTypeAtomic.PHARMACY_RECEIVE_PRE);
+        params.put("dept", sessionController.getDepartment());
+        params.put("fromDate", getFromDate());
+        params.put("toDate", getToDate());
+        bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP, 50);
+    }
+
+    public void createDisposalIssueTableToFinalize() {
+        bills = null;
+        String jpql = "Select b From Bill b "
+                + " where b.retired=false "
+                + " and b.cancelled=false "
+                + " and b.billTypeAtomic = :bTp "
+                + " and b.department = :dept "
+                + " and b.checkedBy is null "
+                + " and b.createdAt between :fromDate and :toDate "
+                + " order by b.createdAt desc";
+        Map<String, Object> params = new HashMap<>();
+        params.put("bTp", BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_PRE);
+        params.put("dept", sessionController.getDepartment());
+        params.put("fromDate", getFromDate());
+        params.put("toDate", getToDate());
+        bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP, 50);
+    }
+
+    public void createDisposalIssueTableToApprove() {
+        bills = null;
+        String jpql = "Select b From Bill b "
+                + " where b.retired=false "
+                + " and b.cancelled=false "
+                + " and b.billTypeAtomic = :bTp "
+                + " and b.department = :dept "
+                + " and b.checkedBy is not null "
+                + " and b.createdAt between :fromDate and :toDate "
+                + " order by b.createdAt desc";
+        Map<String, Object> params = new HashMap<>();
+        params.put("bTp", BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_PRE);
+        params.put("dept", sessionController.getDepartment());
+        params.put("fromDate", getFromDate());
+        params.put("toDate", getToDate());
+        bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP, 50);
+    }
+
     public String navigateToPurchaseOrderApprove() {
         makeListNull();
         return "/pharmacy/pharmacy_purhcase_order_list_to_approve_dto?faces-redirect=true";
@@ -17713,6 +17945,7 @@ public class SearchController implements Serializable {
 // Generate Inward Payments and add to the main bundle
             List<BillTypeAtomic> inwardPayments = new ArrayList<>();
             inwardPayments.add(BillTypeAtomic.INWARD_DEPOSIT);
+            inwardPayments.add(BillTypeAtomic.INWARD_APPOINTMENT_BILL);
             ReportTemplateRowBundle inwardPaymentsBundle = generatePaymentMethodColumnsByBills(inwardPayments);
             inwardPaymentsBundle.setBundleType("InwardPayments");
             inwardPaymentsBundle.setName("Inward Payments");
@@ -17722,6 +17955,7 @@ public class SearchController implements Serializable {
 // Generate Inward Payments Cancel and add to the main bundle
             List<BillTypeAtomic> inwardPaymentsCancel = new ArrayList<>();
             inwardPaymentsCancel.add(BillTypeAtomic.INWARD_DEPOSIT_CANCELLATION);
+            inwardPaymentsCancel.add(BillTypeAtomic.INWARD_APPOINTMENT_CANCEL_BILL);
             ReportTemplateRowBundle inwardPaymentsCancelBundle = generatePaymentMethodColumnsByBills(inwardPaymentsCancel);
             inwardPaymentsCancelBundle.setBundleType("InwardPaymentsCancel");
             inwardPaymentsCancelBundle.setName("Inward Payment Cancellations");
@@ -18167,6 +18401,7 @@ public class SearchController implements Serializable {
 // Generate Inward Payments and add to the main bundle
             List<BillTypeAtomic> inwardPayments = new ArrayList<>();
             inwardPayments.add(BillTypeAtomic.INWARD_DEPOSIT);
+            inwardPayments.add(BillTypeAtomic.INWARD_APPOINTMENT_BILL);
             ReportTemplateRowBundle inwardPaymentsBundle = generatePaymentMethodColumnsByBills(inwardPayments);
             inwardPaymentsBundle.setBundleType("InwardPayments");
             inwardPaymentsBundle.setName("Inward Payments");
@@ -18176,6 +18411,7 @@ public class SearchController implements Serializable {
 // Generate Inward Payments Cancel and add to the main bundle
             List<BillTypeAtomic> inwardPaymentsCancel = new ArrayList<>();
             inwardPaymentsCancel.add(BillTypeAtomic.INWARD_DEPOSIT_CANCELLATION);
+            inwardPaymentsCancel.add(BillTypeAtomic.INWARD_APPOINTMENT_CANCEL_BILL);
             ReportTemplateRowBundle inwardPaymentsCancelBundle = generatePaymentMethodColumnsByBills(inwardPaymentsCancel);
             inwardPaymentsCancelBundle.setBundleType("InwardPaymentsCancel");
             inwardPaymentsCancelBundle.setName("Inward Payment Cancellations");
@@ -19791,7 +20027,9 @@ public class SearchController implements Serializable {
         // Query bills for inward deposit receipts
         List<BillTypeAtomic> inwardDepositBillTypes = new ArrayList<>();
         inwardDepositBillTypes.add(BillTypeAtomic.INWARD_DEPOSIT);
+        inwardDepositBillTypes.add(BillTypeAtomic.INWARD_APPOINTMENT_BILL);
         inwardDepositBillTypes.add(BillTypeAtomic.INWARD_DEPOSIT_CANCELLATION);
+        inwardDepositBillTypes.add(BillTypeAtomic.INWARD_APPOINTMENT_CANCEL_BILL);
         inwardDepositBillTypes.add(BillTypeAtomic.INWARD_DEPOSIT_REFUND);
         inwardDepositBillTypes.add(BillTypeAtomic.INWARD_DEPOSIT_REFUND_CANCELLATION);
 
@@ -20414,7 +20652,9 @@ public class SearchController implements Serializable {
             // Get specific inward deposit bill types only
             List<BillTypeAtomic> inwardDepositBillTypes = Arrays.asList(
                     BillTypeAtomic.INWARD_DEPOSIT,
+                    BillTypeAtomic.INWARD_APPOINTMENT_BILL,
                     BillTypeAtomic.INWARD_DEPOSIT_CANCELLATION,
+                    BillTypeAtomic.INWARD_APPOINTMENT_CANCEL_BILL,
                     BillTypeAtomic.INWARD_DEPOSIT_REFUND,
                     BillTypeAtomic.INWARD_DEPOSIT_REFUND_CANCELLATION
             );
