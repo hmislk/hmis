@@ -1773,13 +1773,12 @@ public class BhtSummeryController implements Serializable {
             tot2 += cit.getAdjustedTotal();
         }
 
-        //   System.err.println("Total " + tot);
-        //    System.err.println("Total 2 " + tot2);
         double different = Math.abs((tot - tot2));
 
         if (different > 0.1) {
-            if (!getWebUserController().hasPrivilege("InwardSettleFinalBillUnrestricted")) {
-                JsfUtil.addErrorMessage("Please Adjust category amount correctly");
+            if (configOptionApplicationController.getBooleanValueByKey("Block Inward Final Bill When Category Adjusted Total Differs From Actual Total", true)) {
+                JsfUtil.addErrorMessage("There is a difference between actual and adjusted values.");
+                JsfUtil.addErrorMessage("Please Adjust category amount correctly.");
                 return true;
             }
         }
@@ -3057,12 +3056,12 @@ public class BhtSummeryController implements Serializable {
         if (getPatientEncounter() != null && getPatientEncounter().getPaymentMethod() == PaymentMethod.Credit) {
             populateCreditCompanyAllocations();
         }
-        
+
         //Update Last Processing Details
         persistLastProcessingSnapshot();
-        
+
     }
-    
+
     private void persistLastProcessingSnapshot() {
         patientEncounter.setLastProcessBy(sessionController.getLoggedUser());
         patientEncounter.setLastProcessAt(new Date());
@@ -3072,7 +3071,7 @@ public class BhtSummeryController implements Serializable {
         patientEncounter.setDiscountAvailableAtFinalProcessing(discount);
         patientEncounter.setAmountDueAtFinalProcessing(due);
         patientEncounterFacade.edit(patientEncounter);
-        System.out.println("Update Last Processing Details of " + patientEncounter.getBhtNo()); 
+        System.out.println("Update Last Processing Details of " + patientEncounter.getBhtNo());
     }
 
     public void changeIsMade() {
@@ -3197,37 +3196,37 @@ public class BhtSummeryController implements Serializable {
                     case Etu:
                         ChargeItemTotal etuDrugTotal = new ChargeItemTotal();
                         etuDrugTotal.setInwardChargeType(InwardChargeType.Etu_Medicine);
-                        etuDrugTotal.setTotal(getInwardBean().calCostOfIssueByBill(getPatientEncounter(), btas, childPatientEncouters,DepartmentType.Etu));
+                        etuDrugTotal.setTotal(getInwardBean().calCostOfIssueByBill(getPatientEncounter(), btas, childPatientEncouters, DepartmentType.Etu));
                         chargeItemTotals.add(etuDrugTotal);
                         break;
                     case Pharmacy:
                         ChargeItemTotal pharmacyDrugTotal = new ChargeItemTotal();
                         pharmacyDrugTotal.setInwardChargeType(InwardChargeType.Pharmacy_Medicine);
-                        pharmacyDrugTotal.setTotal(getInwardBean().calCostOfIssueByBill(getPatientEncounter(), btas, childPatientEncouters,DepartmentType.Pharmacy));
+                        pharmacyDrugTotal.setTotal(getInwardBean().calCostOfIssueByBill(getPatientEncounter(), btas, childPatientEncouters, DepartmentType.Pharmacy));
                         chargeItemTotals.add(pharmacyDrugTotal);
                         break;
                     case Inward:
                         ChargeItemTotal inwardDrugTotal = new ChargeItemTotal();
                         inwardDrugTotal.setInwardChargeType(InwardChargeType.Inward_Medicine);
-                        inwardDrugTotal.setTotal(getInwardBean().calCostOfIssueByBill(getPatientEncounter(), btas, childPatientEncouters,DepartmentType.Inward));
+                        inwardDrugTotal.setTotal(getInwardBean().calCostOfIssueByBill(getPatientEncounter(), btas, childPatientEncouters, DepartmentType.Inward));
                         chargeItemTotals.add(inwardDrugTotal);
                         break;
                     case Theatre:
                         ChargeItemTotal theatreDrugTotal = new ChargeItemTotal();
                         theatreDrugTotal.setInwardChargeType(InwardChargeType.Theatre_Medicine);
-                        theatreDrugTotal.setTotal(getInwardBean().calCostOfIssueByBill(getPatientEncounter(), btas, childPatientEncouters,DepartmentType.Theatre));
+                        theatreDrugTotal.setTotal(getInwardBean().calCostOfIssueByBill(getPatientEncounter(), btas, childPatientEncouters, DepartmentType.Theatre));
                         chargeItemTotals.add(theatreDrugTotal);
                         break;
                     case Store:
                         ChargeItemTotal storeDrugTotal = new ChargeItemTotal();
                         storeDrugTotal.setInwardChargeType(InwardChargeType.Store_Medicine);
-                        storeDrugTotal.setTotal(getInwardBean().calCostOfIssueByBill(getPatientEncounter(), btas, childPatientEncouters,DepartmentType.Store));
+                        storeDrugTotal.setTotal(getInwardBean().calCostOfIssueByBill(getPatientEncounter(), btas, childPatientEncouters, DepartmentType.Store));
                         chargeItemTotals.add(storeDrugTotal);
                         break;
                     case Inventry:
                         ChargeItemTotal inventryDrugTotal = new ChargeItemTotal();
                         inventryDrugTotal.setInwardChargeType(InwardChargeType.Etu_Medicine);
-                        inventryDrugTotal.setTotal(getInwardBean().calCostOfIssueByBill(getPatientEncounter(), btas, childPatientEncouters,DepartmentType.Inventry));
+                        inventryDrugTotal.setTotal(getInwardBean().calCostOfIssueByBill(getPatientEncounter(), btas, childPatientEncouters, DepartmentType.Inventry));
                         chargeItemTotals.add(inventryDrugTotal);
                         break;
                     default:
