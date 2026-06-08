@@ -93,7 +93,12 @@ public class PharmacyAsyncReportService {
                     // Inpatient Issue Cancellation
                     BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION, //Quantities should be plus, values neutral
 
-                    // inpatient Sale in one background colour - ends here                    
+                    // Inpatient Discharge Medicine Issue (no service charge)
+                    BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE, //Quantities should be minus, values neutral
+                    BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN, //Quantities should be plus, values neutral
+                    BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION, //Quantities should be plus, values neutral
+
+                    // inpatient Sale in one background colour - ends here
                     // Goods purchase in one background colour - starts here                    
                     // GRN
                     BillTypeAtomic.PHARMACY_GRN, //Quantities should be plus, values should be minus (money going out)
@@ -184,7 +189,10 @@ public class PharmacyAsyncReportService {
                 CellStyle style;
                 if (bt == BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE
                         || bt == BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN
-                        || bt == BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION) {
+                        || bt == BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION
+                        || bt == BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE
+                        || bt == BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN
+                        || bt == BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION) {
                     style = inpatientStyle;
                 } else if (bt == BillTypeAtomic.PHARMACY_GRN
                         || bt == BillTypeAtomic.PHARMACY_GRN_CANCELLED

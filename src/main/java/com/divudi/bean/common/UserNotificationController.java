@@ -25,6 +25,7 @@ import com.divudi.core.entity.WebUser;
 import com.divudi.core.facade.NotificationFacade;
 import com.divudi.core.facade.SmsFacade;
 import com.divudi.core.facade.UserNotificationFacade;
+import com.divudi.service.NotificationPushService;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
@@ -78,6 +79,8 @@ public class UserNotificationController implements Serializable {
     PharmacySaleBhtController pharmacySaleBhtController;
     @Inject
     SmsManagerEjb smsManager;
+    @Inject
+    NotificationPushService notificationPushService;
     private Date date;
     private boolean todayNotification;
     private boolean seenedNotifiaction;
@@ -487,6 +490,7 @@ public class UserNotificationController implements Serializable {
                     nun.setNotification(n);
                     nun.setWebUser(u);
                     getFacade().create(nun);
+                    notificationPushService.pushToUser(u.getId());
                 }
                 break;
         }
@@ -580,6 +584,9 @@ public class UserNotificationController implements Serializable {
     }
 
     public List<UserNotification> getItems() {
+        if (items == null) {
+            fillLoggedUserNotifications();
+        }
         return items;
     }
 

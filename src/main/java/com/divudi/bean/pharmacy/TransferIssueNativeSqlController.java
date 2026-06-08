@@ -27,6 +27,7 @@ import com.divudi.service.pharmacy.TransferIssueNativeSqlService;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -61,6 +62,7 @@ public class TransferIssueNativeSqlController implements Serializable {
     private List<TransferIssueItemRowDto> issueItems;
     private TransferIssuePrintDto printDto;
     private boolean printPreview;
+    private boolean draftMode;
 
     // ---- Injected ----
     @Inject
@@ -110,8 +112,16 @@ public class TransferIssueNativeSqlController implements Serializable {
             return null;
         }
 
+        if (configOptionApplicationController.getBooleanValueByKey(
+                "Use Save Finalize Approve Workflow for Issue for Requests", false)
+                && hasPendingNativeIssueForDepartment()) {
+            JsfUtil.addErrorMessage("There is already a pending fast issue for this department. Please finalize or cancel it first.");
+            return null;
+        }
+
         printPreview = false;
         printDto = null;
+        draftMode = false;
         issuedBill = new BilledBill();
 
         boolean byPurchaseRate = configOptionApplicationController.getBooleanValueByKey(
@@ -134,6 +144,183 @@ public class TransferIssueNativeSqlController implements Serializable {
     }
 
     public String navigateBackToRequestList() {
+        return "/pharmacy/pharmacy_transfer_request_list?faces-redirect=true";
+    }
+
+    // -----------------------------------------------------------------------
+    // Save → Finalize → Approve draft workflow (native / fast issue)
+    // -----------------------------------------------------------------------
+
+    private boolean hasPendingNativeIssueForDepartment() {
+        String jpql = "Select count(b) From Bill b "
+                + " where b.retired=false "
+                + " and b.billTypeAtomic = :bTp "
+                + " and b.checked = :checked "
+                + " and b.department = :dept";
+        Map<String, Object> params = new HashMap<>();
+        params.put("bTp", BillTypeAtomic.PHARMACY_ISSUE_PRE);
+        params.put("checked", false);
+        params.put("dept", sessionController.getDepartment());
+        long count = billFacade.findLongByJpql(jpql, params);
+        return count > 0;
+    }
+
+    public void saveDraftNativeIssue() {
+        if (issueItems == null || issueItems.isEmpty()) {
+            JsfUtil.addErrorMessage("No items to save. Please check the request.");
+            return;
+        }
+        if (requestedBill == null) {
+            JsfUtil.addErrorMessage("No request bill selected.");
+            return;
+        }
+        BilledBill draft = new BilledBill();
+        draft.setBillType(BillType.PharmacyTransferIssue);
+        draft.setBillTypeAtomic(BillTypeAtomic.PHARMACY_ISSUE_PRE);
+        draft.setBackwardReferenceBill(requestedBill);
+        draft.setReferenceBill(requestedBill);
+        draft.setFromInstitution(sessionController.getInstitution());
+        draft.setFromDepartment(sessionController.getDepartment());
+        draft.setToInstitution(requestedBill.getFromInstitution() != null
+                ? requestedBill.getFromInstitution() : requestedBill.getInstitution());
+        draft.setToDepartment(requestedBill.getFromDepartment() != null
+                ? requestedBill.getFromDepartment() : requestedBill.getDepartment());
+        draft.setInstitution(sessionController.getInstitution());
+        draft.setDepartment(sessionController.getDepartment());
+        draft.setCreater(sessionController.getLoggedUser());
+        draft.setCreatedAt(new Date());
+        draft.setCompleted(false);
+        draft.setChecked(false);
+        if (issuedBill != null) {
+            draft.setToStaff(issuedBill.getToStaff());
+        }
+        billFacade.create(draft);
+        issuedBill = draft;
+        draftMode = true;
+        JsfUtil.addSuccessMessage("Draft fast issue saved. Please proceed to Finalize.");
+    }
+
+    public String loadDraftNativeIssueForEditing(Bill draft) {
+        makeNull();
+        if (draft == null || draft.getId() == null) {
+            JsfUtil.addErrorMessage("Invalid draft bill.");
+            return null;
+        }
+        issuedBill = billFacade.find(draft.getId());
+        if (issuedBill == null || issuedBill.isRetired()) {
+            JsfUtil.addErrorMessage("Draft bill not found or already retired.");
+            return null;
+        }
+        requestedBill = issuedBill.getReferenceBill();
+        if (requestedBill == null) {
+            JsfUtil.addErrorMessage("Request bill reference missing from draft.");
+            return null;
+        }
+        boolean byPurchaseRate = configOptionApplicationController.getBooleanValueByKey(
+                "Pharmacy Transfer is by Purchase Rate", false);
+        boolean byCostRate = configOptionApplicationController.getBooleanValueByKey(
+                "Pharmacy Transfer is by Cost Rate", false);
+        issueItems = transferIssueNativeSqlService.loadRequestedItemsForIssue(
+                requestedBill.getId(),
+                sessionController.getDepartment().getId(),
+                byPurchaseRate,
+                byCostRate);
+        draftMode = true;
+        printPreview = false;
+        return "/pharmacy/pharmacy_transfer_issue_native?faces-redirect=true";
+    }
+
+    public void finalizeDraftNativeIssue() {
+        if (issuedBill == null || issuedBill.getId() == null) {
+            JsfUtil.addErrorMessage("No draft to finalize.");
+            return;
+        }
+        Bill fresh = billFacade.find(issuedBill.getId());
+        if (fresh == null || fresh.isRetired()) {
+            JsfUtil.addErrorMessage("Draft not found.");
+            return;
+        }
+        if (fresh.isCompleted()) {
+            JsfUtil.addErrorMessage("Draft already finalized.");
+            return;
+        }
+        fresh.setCompleted(true);
+        fresh.setCompletedAt(new Date());
+        fresh.setCompletedBy(sessionController.getLoggedUser());
+        billFacade.edit(fresh);
+        issuedBill = fresh;
+        JsfUtil.addSuccessMessage("Fast issue finalized. It is now pending approval.");
+    }
+
+    public synchronized String approveDraftNativeIssue() {
+        if (issueItems == null || issueItems.isEmpty()) {
+            JsfUtil.addErrorMessage("No items to issue. Reload the draft and check quantities.");
+            return null;
+        }
+        if (issuedBill == null || issuedBill.getId() == null) {
+            JsfUtil.addErrorMessage("No draft bill to approve.");
+            return null;
+        }
+        Bill fresh = billFacade.findWithoutCache(issuedBill.getId());
+        if (fresh == null || fresh.isRetired()) {
+            JsfUtil.addErrorMessage("Draft bill not found or retired.");
+            return null;
+        }
+        if (!fresh.isCompleted()) {
+            JsfUtil.addErrorMessage("This fast issue must be finalized before it can be approved.");
+            return null;
+        }
+        if (fresh.isChecked()) {
+            JsfUtil.addErrorMessage("This fast issue has already been approved.");
+            makeNull();
+            return null;
+        }
+        fresh.setChecked(true);
+        fresh.setCheckeAt(new Date());
+        fresh.setApproveUser(sessionController.getLoggedUser());
+        billFacade.edit(fresh);
+
+        applyBillNumbers(fresh);
+
+        Long staffId = null;
+        if (fresh.getToStaff() != null) {
+            staffId = fresh.getToStaff().getId();
+        }
+        try {
+            printDto = transferIssueNativeSqlService.settle(
+                    fresh,
+                    issueItems,
+                    sessionController.getDepartment().getId(),
+                    sessionController.getInstitution().getId(),
+                    staffId);
+        } catch (RuntimeException ex) {
+            fresh.setChecked(false);
+            fresh.setCheckeAt(null);
+            fresh.setApproveUser(null);
+            billFacade.edit(fresh);
+            JsfUtil.addErrorMessage("Approval failed: " + ex.getMessage() + ". The draft has been reset — please try again.");
+            return null;
+        }
+        enrichPrintDto(printDto, fresh);
+        printPreview = true;
+        draftMode = false;
+        return null;
+    }
+
+    public String cancelPendingNativeIssue() {
+        if (issuedBill == null || issuedBill.getId() == null) {
+            JsfUtil.addErrorMessage("No draft to cancel.");
+            return null;
+        }
+        Bill fresh = billFacade.find(issuedBill.getId());
+        if (fresh != null && !fresh.isRetired()) {
+            fresh.setRetired(true);
+            fresh.setRetiredAt(new Date());
+            fresh.setRetirer(sessionController.getLoggedUser());
+            billFacade.edit(fresh);
+        }
+        makeNull();
+        JsfUtil.addSuccessMessage("Draft fast issue cancelled.");
         return "/pharmacy/pharmacy_transfer_request_list?faces-redirect=true";
     }
 
@@ -304,6 +491,7 @@ public class TransferIssueNativeSqlController implements Serializable {
         issueItems = null;
         printDto = null;
         printPreview = false;
+        draftMode = false;
     }
 
     /**
@@ -559,5 +747,13 @@ public class TransferIssueNativeSqlController implements Serializable {
 
     public void setPrintPreview(boolean printPreview) {
         this.printPreview = printPreview;
+    }
+
+    public boolean isDraftMode() {
+        return draftMode;
+    }
+
+    public void setDraftMode(boolean draftMode) {
+        this.draftMode = draftMode;
     }
 }

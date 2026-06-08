@@ -109,6 +109,8 @@ public class TransferReceiveController implements Serializable {
     private PageMetadataRegistry pageMetadataRegistry;
     @Inject
     private com.divudi.bean.common.SearchController searchController;
+    @Inject
+    private TransferReceiveNativeSqlController transferReceiveNativeSqlController;
     private List<Bill> bills;
     private SearchKeyword searchKeyword;
     private BillItem selectedBillItem;
@@ -143,6 +145,13 @@ public class TransferReceiveController implements Serializable {
         return "/pharmacy/pharmacy_transfer_issued_list?faces-redirect=true";
     }
 
+    /**
+     * @deprecated The issued-list now uses the native SQL path exclusively
+     * ({@link TransferReceiveNativeSqlController#navigateToReceiveRequestNative()}).
+     * This method is retained for backward-compatibility only and will be removed
+     * once TransferReceiveController is fully retired.
+     */
+    @Deprecated
     public String navigateToRecieveRequest() {
         if (issuedBill == null) {
             JsfUtil.addErrorMessage("Nothing to received");
@@ -153,15 +162,24 @@ public class TransferReceiveController implements Serializable {
             JsfUtil.addErrorMessage("Already Received!");
             return null;
         }
+        if (configOptionApplicationController.getBooleanValueByKey(
+                "Use Save Finalize Approve Workflow for Transfer Receive", false)) {
+            transferReceiveNativeSqlController.setIssuedBillId(issuedBill.getId());
+            return transferReceiveNativeSqlController.navigateToReceiveRequestNative();
+        }
         printPreview=false;
         generateBillComponent();
         return "/pharmacy/pharmacy_transfer_receive?faces-redirect=true";
     }
 
+    /** @deprecated Use {@link TransferReceiveNativeSqlController#navigateToEditReceiveIssue()} instead. */
+    @Deprecated
     public String navigateToEditRecieveIssue() {
         return "/pharmacy/pharmacy_transfer_receive_with_approval?faces-redirect=true";
     }
 
+    /** @deprecated Use {@link TransferReceiveNativeSqlController#navigateToApproveReceiveIssue()} instead. */
+    @Deprecated
     public String navigateToAproveRecieveIssue() {
         return "/pharmacy/pharmacy_transfer_receive_approval?faces-redirect=true";
     }

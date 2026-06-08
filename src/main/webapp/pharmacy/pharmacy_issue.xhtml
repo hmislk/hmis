@@ -106,12 +106,13 @@
                                         <p:commandButton
                                             id="btnIssue"
                                             accesskey="s"
-                                            value="Settle Issue"
-                                            icon="pi pi-check"
+                                            value="Save"
+                                            icon="fas fa-floppy-disk"
                                             class="ui-button-success m-1"
                                             ajax="false"
-                                            action="#{pharmacyIssueController.settleDisposalIssueBill()}"
-                                            onclick="return confirm('Are you sure you want to issue this disposal bill?');" />
+                                            action="#{pharmacyIssueController.saveDisposalIssueDraft()}"
+                                            onclick="return confirm('Save this disposal issue draft?');"
+                                            rendered="#{webUserController.hasPrivilege('PharmacyDisposalIssue')}" />
                                     </div>
                                 </div>
                             </f:facet>
