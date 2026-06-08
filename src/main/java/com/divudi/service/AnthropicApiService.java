@@ -912,6 +912,44 @@ public class AnthropicApiService implements Serializable {
                         .add("required", Json.createArrayBuilder().add("resource_type").add("method")))
                 .build();
 
+        JsonObject manageSubscriptionsTool = Json.createObjectBuilder()
+                .add("name", "manage_subscriptions")
+                .add("description",
+                        "Manage notification trigger subscriptions: who receives which notification, in which department. "
+                        + "A subscription links a user to a TriggerType for a department, or — when application-wide — for the whole "
+                        + "application (matches every department; useful for hospital-wide roles such as a Guest Relations Officer).\n\n"
+                        + "method: LIST | LIST_TRIGGER_TYPES | POST | DELETE\n\n"
+                        + "LIST_TRIGGER_TYPES: returns all available TriggerType values (name, label, medium, parent). "
+                        + "Call this first to discover valid triggerType names.\n"
+                        + "LIST: list subscriptions; optional filters triggerType, userId, departmentId, applicationWide.\n"
+                        + "POST: create a subscription. Requires userId, triggerType, and EITHER departmentId OR applicationWide=true. "
+                        + "Returns already_exists when an identical non-retired subscription exists.\n"
+                        + "DELETE: soft-retire the subscription with the given id.")
+                .add("input_schema", Json.createObjectBuilder()
+                        .add("type", "object")
+                        .add("properties", Json.createObjectBuilder()
+                                .add("method", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("enum", Json.createArrayBuilder().add("LIST").add("LIST_TRIGGER_TYPES").add("POST").add("DELETE"))
+                                        .add("description", "Operation to perform"))
+                                .add("id", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Subscription ID — required for DELETE"))
+                                .add("triggerType", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "TriggerType enum name (e.g. INWARD_PATIENT_DISCHARGED). Required for POST; optional filter for LIST"))
+                                .add("userId", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "WebUser ID. Required for POST; optional filter for LIST"))
+                                .add("departmentId", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Department ID. For POST, provide this OR applicationWide (not both)"))
+                                .add("applicationWide", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "'true' to make the subscription apply across every department (null department)")))
+                        .add("required", Json.createArrayBuilder().add("method")))
+                .build();
+
         return Json.createArrayBuilder()
                 .add(searchCodeTool)
                 .add(fetchFileTool)
@@ -924,6 +962,7 @@ public class AnthropicApiService implements Serializable {
                 .add(manageInvestigationsTool)
                 .add(manageInvestigationFormatTool)
                 .add(manageFormsTool)
+                .add(manageSubscriptionsTool)
                 .build();
     }
 
@@ -1151,6 +1190,16 @@ public class AnthropicApiService implements Serializable {
                             name, description, formCssClass, cpt, cdt, orderNo, required,
                             placeholder, minValue, maxValue, stepSize, maxRating,
                             onLabel, offLabel, editHtml, viewHtml, label, value,
+                            hmisBaseUrl, hmisApiKey);
+                }
+                case "manage_subscriptions": {
+                    String method          = toolInput.getString("method", "LIST");
+                    String id              = toolInput.containsKey("id")              ? toolInput.getString("id", "")              : "";
+                    String triggerType     = toolInput.containsKey("triggerType")     ? toolInput.getString("triggerType", "")     : "";
+                    String userId          = toolInput.containsKey("userId")          ? toolInput.getString("userId", "")          : "";
+                    String departmentId    = toolInput.containsKey("departmentId")    ? toolInput.getString("departmentId", "")    : "";
+                    String applicationWide = toolInput.containsKey("applicationWide") ? toolInput.getString("applicationWide", "") : "";
+                    return callSubscriptionApi(method, id, triggerType, userId, departmentId, applicationWide,
                             hmisBaseUrl, hmisApiKey);
                 }
                 default:
@@ -1415,6 +1464,113 @@ public class AnthropicApiService implements Serializable {
             return "Clinical metadata API call interrupted.";
         } catch (Exception e) {
             return "Clinical metadata API error: " + e.getMessage();
+        }
+    }
+
+    private String callSubscriptionApi(String method, String id, String triggerType, String userId,
+            String departmentId, String applicationWide, String hmisBaseUrl, String hmisApiKey) {
+        if (hmisBaseUrl == null || hmisBaseUrl.trim().isEmpty()) {
+            return "Error: HMIS base URL is not configured. Cannot call subscription API.";
+        }
+        if (hmisApiKey == null || hmisApiKey.trim().isEmpty()) {
+            return "Error: No active HMIS API key found for the current user.";
+        }
+        try {
+            HttpClient client = HttpClient.newBuilder()
+                    .connectTimeout(Duration.ofSeconds(10))
+                    .build();
+
+            String base = hmisBaseUrl.trim().replaceAll("/+$", "") + "/api/subscriptions";
+            String url;
+            String requestBody = null;
+            String httpMethod;
+
+            switch (method.toUpperCase()) {
+                case "LIST_TRIGGER_TYPES": {
+                    url = base + "/trigger-types";
+                    httpMethod = "GET";
+                    break;
+                }
+                case "LIST":
+                case "GET": {
+                    StringBuilder urlBuilder = new StringBuilder(base);
+                    boolean first = true;
+                    if (triggerType != null && !triggerType.isEmpty()) {
+                        urlBuilder.append(first ? "?" : "&").append("triggerType=").append(URLEncoder.encode(triggerType, StandardCharsets.UTF_8));
+                        first = false;
+                    }
+                    if (userId != null && !userId.isEmpty()) {
+                        urlBuilder.append(first ? "?" : "&").append("userId=").append(URLEncoder.encode(userId, StandardCharsets.UTF_8));
+                        first = false;
+                    }
+                    if (departmentId != null && !departmentId.isEmpty()) {
+                        urlBuilder.append(first ? "?" : "&").append("departmentId=").append(URLEncoder.encode(departmentId, StandardCharsets.UTF_8));
+                        first = false;
+                    }
+                    if ("true".equalsIgnoreCase(applicationWide)) {
+                        urlBuilder.append(first ? "?" : "&").append("applicationWide=true");
+                        first = false;
+                    }
+                    url = urlBuilder.toString();
+                    httpMethod = "GET";
+                    break;
+                }
+                case "POST": {
+                    url = base;
+                    httpMethod = "POST";
+                    javax.json.JsonObjectBuilder bodyBuilder = Json.createObjectBuilder();
+                    if (triggerType != null && !triggerType.isEmpty()) bodyBuilder.add("triggerType", triggerType);
+                    if (userId != null && !userId.isEmpty()) {
+                        try {
+                            bodyBuilder.add("userId", Long.parseLong(userId.trim()));
+                        } catch (NumberFormatException e) {
+                            return "Error: userId must be numeric.";
+                        }
+                    }
+                    if ("true".equalsIgnoreCase(applicationWide)) {
+                        bodyBuilder.add("applicationWide", true);
+                    } else if (departmentId != null && !departmentId.isEmpty()) {
+                        try {
+                            bodyBuilder.add("departmentId", Long.parseLong(departmentId.trim()));
+                        } catch (NumberFormatException e) {
+                            return "Error: departmentId must be numeric.";
+                        }
+                    }
+                    requestBody = bodyBuilder.build().toString();
+                    break;
+                }
+                case "DELETE": {
+                    if (id == null || id.trim().isEmpty()) return "Error: id is required for DELETE.";
+                    url = base + "/" + id.trim();
+                    httpMethod = "DELETE";
+                    break;
+                }
+                default:
+                    return "Error: Unknown method: " + method;
+            }
+
+            HttpRequest.Builder reqBuilder = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .timeout(Duration.ofSeconds(15))
+                    .header("Finance", hmisApiKey)
+                    .header("Content-Type", "application/json");
+
+            if (requestBody != null) {
+                reqBuilder.method(httpMethod, HttpRequest.BodyPublishers.ofString(requestBody));
+            } else if ("DELETE".equals(httpMethod)) {
+                reqBuilder.DELETE();
+            } else {
+                reqBuilder.GET();
+            }
+
+            HttpResponse<String> response = client.send(reqBuilder.build(), HttpResponse.BodyHandlers.ofString());
+            return "HTTP " + response.statusCode() + "\n" + response.body();
+
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return "Subscription API call interrupted.";
+        } catch (Exception e) {
+            return "Subscription API error: " + e.getMessage();
         }
     }
 
@@ -2678,7 +2834,7 @@ public class AnthropicApiService implements Serializable {
         }
 
         sb.append("## Tools Available to You\n");
-        sb.append("You have ten tools to ground your answers in the actual codebase, live configuration, clinical master data, collecting-centre fees, inward discount matrix entries, investigation master records, investigation report formats, and dynamic clinical form templates:\n\n");
+        sb.append("You have eleven tools to ground your answers in the actual codebase, live configuration, clinical master data, collecting-centre fees, inward discount matrix entries, investigation master records, investigation report formats, dynamic clinical form templates, and notification subscriptions:\n\n");
         sb.append("### search_github_code\n");
         sb.append("Searches the hmislk/hmis repository source code for files matching keywords. ");
         sb.append("Use this first when a user asks about system behaviour, page logic, or wants to understand how something works.\n\n");
@@ -2767,6 +2923,16 @@ public class AnthropicApiService implements Serializable {
           .append("  </div>\n")
           .append("When generating viewHtml, use {{LABEL}} and {{VALUE}} (the formatted stored value).\n")
           .append("Always confirm with the user before POST, PUT, or DELETE.\n\n");
+        sb.append("### manage_subscriptions\n");
+        sb.append("Manage notification trigger subscriptions — who receives which notification, in which department. ")
+          .append("method: LIST | LIST_TRIGGER_TYPES | POST | DELETE. ")
+          .append("Use LIST_TRIGGER_TYPES first to discover valid TriggerType names. ")
+          .append("Use LIST to see existing subscriptions (filter by triggerType, userId, departmentId, or applicationWide). ")
+          .append("Use POST to subscribe a user (userId + triggerType + EITHER departmentId OR applicationWide=true); ")
+          .append("an application-wide subscription has a null department and matches every department, which suits hospital-wide roles such as a Guest Relations Officer. ")
+          .append("POST returns 'already_exists' with the existing id when an identical non-retired subscription exists. ")
+          .append("Use DELETE to soft-retire a subscription by id. ")
+          .append("Always confirm with the user before POST or DELETE — these changes affect who receives live notifications.\n\n");
 
         sb.append("## How to Use the Tools\n");
         sb.append("- When a user describes a problem or asks why something behaves a certain way, search the source code first.\n");
@@ -2956,6 +3122,17 @@ public class AnthropicApiService implements Serializable {
                     {"DELETE", "/user-roles/{id}",                "Retire a role"},
                     {"GET",    "/user-roles/{id}/privileges",     "List privileges assigned to a role"},
                     {"POST",   "/user-roles/{id}/privileges",     "Assign a privilege to a role"}
+                });
+
+        appendModule(sb, "Subscriptions", "/subscriptions",
+                "Manage notification trigger subscriptions (who receives which notification, in which department). "
+                + "An application-wide subscription (null department) matches every department across the whole application.",
+                null,
+                new String[][]{
+                    {"GET",    "/subscriptions",                "List subscriptions (filters: triggerType, userId, departmentId, applicationWide)"},
+                    {"GET",    "/subscriptions/trigger-types",  "List all available TriggerType values (name, label, medium, parent)"},
+                    {"POST",   "/subscriptions",                "Create a subscription (userId, triggerType, and departmentId OR applicationWide). Returns already_exists on duplicate"},
+                    {"DELETE", "/subscriptions/{id}",           "Soft-retire a subscription by ID"}
                 });
 
         // ── Finance ───────────────────────────────────────────────────────────
