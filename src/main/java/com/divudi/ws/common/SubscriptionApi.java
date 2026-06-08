@@ -135,21 +135,28 @@ public class SubscriptionApi {
                 params.put("u", u);
             }
 
-            boolean applicationWide = "true".equalsIgnoreCase(param("applicationWide"));
+            String applicationWideParam = param("applicationWide");
+            boolean applicationWideTrue = "true".equalsIgnoreCase(applicationWideParam);
+            boolean applicationWideFalse = "false".equalsIgnoreCase(applicationWideParam);
             String departmentIdStr = param("departmentId");
-            if (applicationWide) {
+            if (applicationWideTrue) {
                 jpql.append(" and i.department is null");
-            } else if (departmentIdStr != null && !departmentIdStr.trim().isEmpty()) {
-                Long deptId = parseLong(departmentIdStr);
-                if (deptId == null) {
-                    return errorResponse("Invalid departmentId", 400);
+            } else {
+                if (applicationWideFalse) {
+                    jpql.append(" and i.department is not null");
                 }
-                Department dept = departmentFacade.find(deptId);
-                if (dept == null) {
-                    return errorResponse("Department not found with id: " + deptId, 404);
+                if (departmentIdStr != null && !departmentIdStr.trim().isEmpty()) {
+                    Long deptId = parseLong(departmentIdStr);
+                    if (deptId == null) {
+                        return errorResponse("Invalid departmentId", 400);
+                    }
+                    Department dept = departmentFacade.find(deptId);
+                    if (dept == null) {
+                        return errorResponse("Department not found with id: " + deptId, 404);
+                    }
+                    jpql.append(" and i.department=:dep");
+                    params.put("dep", dept);
                 }
-                jpql.append(" and i.department=:dep");
-                params.put("dep", dept);
             }
 
             jpql.append(" order by i.orderNumber");
