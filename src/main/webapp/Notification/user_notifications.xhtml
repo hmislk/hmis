@@ -55,7 +55,7 @@
 
                         <!-- Notification list -->
                         <h:panelGroup id="reNot">
-                            <p:repeat value="#{userNotificationController.items}" var="un">
+                            <ui:repeat value="#{userNotificationController.items}" var="un">
                                 <div class="row mt-2 shadow-lg"
                                      style="#{un.notification.bill != null and un.notification.bill.cancelled ? 'background-color: #e35656;' : ''}">
 
@@ -144,7 +144,7 @@
                                     </div>
 
                                 </div>
-                            </p:repeat>
+                            </ui:repeat>
                         </h:panelGroup>
 
                     </h:panelGroup>
