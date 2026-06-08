@@ -47,18 +47,24 @@ public class TriggerSubscriptionController implements Serializable {
     private Department department;
     private List<Department> departments;
     private WebUser user;
+    private boolean institutionWide;
 
     public List<WebUser> fillSubscribedUsersByDepartment(TriggerType tt,Department dept) {
         List<WebUser> us = new ArrayList<>();
         if (tt == null) {
             return us;
         }
+        // Returns subscribers matching the given department PLUS institution-wide
+        // subscribers (department IS NULL), so hospital-wide roles (e.g. Guest
+        // Relations Officer) can subscribe once instead of per department.
+        // DISTINCT avoids duplicate UserNotifications when a user holds both a
+        // department-specific and an institution-wide subscription for the trigger.
         Map m = new HashMap();
-        String jpql = "SELECT i.webUser "
+        String jpql = "SELECT DISTINCT i.webUser "
                 + " FROM TriggerSubscription i "
                 + " where i.triggerType=:tt "
                 + " and i.retired=:ret "
-                + " and i.department=:dep";
+                + " and (i.department=:dep or i.department is null)";
 
         m.put("tt", tt);
         m.put("ret", false);
@@ -72,14 +78,17 @@ public class TriggerSubscriptionController implements Serializable {
             JsfUtil.addErrorMessage("Select Subscription");
             return;
         }
-        if (department == null) {
-            JsfUtil.addErrorMessage("Select Department");
+        if (department == null && !institutionWide) {
+            JsfUtil.addErrorMessage("Select a Department or mark the subscription Institution-wide");
             return;
         }
         if (user == null) {
             JsfUtil.addErrorMessage("Program Error. Cannot have this page without a user. Create an issue in GitHub");
             return;
         }
+        // Institution-wide subscriptions are stored with a null department so they
+        // match every department in fillSubscribedUsersByDepartment.
+        Department subscriptionDepartment = institutionWide ? null : department;
         double newOrder = getTriggerSubscriptions().size() + 1;
         TriggerSubscription existingTS = findUserSubscriptionByOrder(newOrder);
 
@@ -90,7 +99,7 @@ public class TriggerSubscriptionController implements Serializable {
             ts.setWebUser(user);
             ts.setTriggerType(triggerType);
             ts.setOrderNumber(newOrder);
-            ts.setDepartment(department);
+            ts.setDepartment(subscriptionDepartment);
             ts.setCreatedAt(d);
             ts.setCreater(sessionController.getLoggedUser());
             save(ts);
@@ -314,6 +323,14 @@ public class TriggerSubscriptionController implements Serializable {
 
     public void setDepartment(Department department) {
         this.department = department;
+    }
+
+    public boolean isInstitutionWide() {
+        return institutionWide;
+    }
+
+    public void setInstitutionWide(boolean institutionWide) {
+        this.institutionWide = institutionWide;
     }
 
     public List<Department> getDepartments() {

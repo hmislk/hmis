@@ -155,6 +155,8 @@ public class InpatientClinicalDataController implements Serializable {
     com.divudi.bean.pharmacy.PharmacyRequestForBhtController pharmacyRequestForBhtController;
     @Inject
     com.divudi.bean.pharmacy.PharmacySaleBhtController pharmacySaleBhtController;
+    @Inject
+    com.divudi.bean.common.NotificationController notificationController;
 
     /**
      * Properties
@@ -2575,6 +2577,7 @@ public class InpatientClinicalDataController implements Serializable {
         parentAdmission.setClinicalDischargeDateTime(new Date());
         parentAdmission.setClinicalDischargedBy(sessionController.getLoggedUser());
         getFacade().edit(parentAdmission);
+        notificationController.createNotification(parentAdmission, "ClinicalDischarge");
         JsfUtil.addSuccessMessage("Clinical discharge confirmed.");
     }
 
