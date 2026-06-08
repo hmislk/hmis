@@ -11900,11 +11900,21 @@ public class PharmacyReportController implements Serializable {
                     .append("FROM BillItem bi ")
                     .append("WHERE bi.retired = :ret ")
                     .append("AND bi.bill.billTypeAtomic IN :btas ")
-                    // Use stock-movement date (completedAt) when present, else createdAt.
-                    // Stock moves on approval (completedAt = StockHistory date); filtering by
-                    // createdAt mis-dates approval-gated movements (e.g. GRN returns created one
-                    // day, approved another) and produces a spurious COGS variance. See issue #21266.
-                    .append("AND COALESCE(bi.bill.completedAt, bi.bill.createdAt) BETWEEN :fd AND :td ");
+                    // Filter by the actual STOCK-MOVEMENT date, not bill creation, so the
+                    // movement rows align with the stock side (StockHistory is written when
+                    // stock physically moves). Stock moves on approval, but which timestamp
+                    // marks approval differs by workflow:
+                    //   - GRN / GRN-return / direct purchase: stock moves at completedAt.
+                    //   - Draft transfer issue: completedAt is set at draft *finalization*
+                    //     (finalizeDraftIssue), while stock is deducted later at *approval*
+                    //     (approveDraftIssue), which sets checkeAt.
+                    // GREATEST(createdAt, completedAt, checkeAt) picks the latest of the three,
+                    // which is the moment stock actually moved in every workflow, and falls
+                    // back to createdAt when the approval timestamps are null (non-approval
+                    // flows). Using createdAt alone mis-dated approval-gated movements (e.g. a
+                    // GRN return created one day, approved another) and produced a spurious COGS
+                    // variance. See issue #21266 (and Codex review on PR #21348 re: draft transfers).
+                    .append("AND FUNCTION('GREATEST', bi.bill.createdAt, COALESCE(bi.bill.completedAt, bi.bill.createdAt), COALESCE(bi.bill.checkeAt, bi.bill.createdAt)) BETWEEN :fd AND :td ");
 
             params.put("ret", false);
             params.put("btas", billTypeAtomics);
@@ -11965,8 +11975,8 @@ public class PharmacyReportController implements Serializable {
             StringBuilder jpql = new StringBuilder("SELECT bi.bill.paymentMethod, SUM(bi.billItemFinanceDetails.valueAtPurchaseRate), SUM(bi.billItemFinanceDetails.valueAtCostRate), SUM(bi.billItemFinanceDetails.valueAtRetailRate) FROM BillItem bi ")
                     .append("WHERE bi.retired = false ")
                     .append("AND bi.bill.billTypeAtomic IN :bType ")
-                    // Stock-movement date (completedAt) when present, else createdAt — see issue #21266.
-                    .append("AND COALESCE(bi.bill.completedAt, bi.bill.createdAt) BETWEEN :fd AND :td ")
+                    // Stock-movement date — see issue #21266 and the GREATEST note above.
+                    .append("AND FUNCTION('GREATEST', bi.bill.createdAt, COALESCE(bi.bill.completedAt, bi.bill.createdAt), COALESCE(bi.bill.checkeAt, bi.bill.createdAt)) BETWEEN :fd AND :td ")
                     .append("AND bi.bill.paymentMethod IN (:cash, :credit) ");
 
             Map<String, Object> params = new HashMap<>();
@@ -12057,7 +12067,7 @@ public class PharmacyReportController implements Serializable {
                     // Stock moves on approval (completedAt = StockHistory date); filtering by
                     // createdAt mis-dates approval-gated movements (e.g. GRN returns created one
                     // day, approved another) and produces a spurious COGS variance. See issue #21266.
-                    .append("AND COALESCE(bi.bill.completedAt, bi.bill.createdAt) BETWEEN :fd AND :td ");
+                    .append("AND FUNCTION('GREATEST', bi.bill.createdAt, COALESCE(bi.bill.completedAt, bi.bill.createdAt), COALESCE(bi.bill.checkeAt, bi.bill.createdAt)) BETWEEN :fd AND :td ");
 
             commonParams.put("ret", false);
             commonParams.put("btas", btas);
@@ -12119,7 +12129,7 @@ public class PharmacyReportController implements Serializable {
                     // Stock moves on approval (completedAt = StockHistory date); filtering by
                     // createdAt mis-dates approval-gated movements (e.g. GRN returns created one
                     // day, approved another) and produces a spurious COGS variance. See issue #21266.
-                    .append("AND COALESCE(bi.bill.completedAt, bi.bill.createdAt) BETWEEN :fd AND :td ");
+                    .append("AND FUNCTION('GREATEST', bi.bill.createdAt, COALESCE(bi.bill.completedAt, bi.bill.createdAt), COALESCE(bi.bill.checkeAt, bi.bill.createdAt)) BETWEEN :fd AND :td ");
 
             commonParams.put("ret", false);
             commonParams.put("billTypes", billTypeValue);
@@ -12177,7 +12187,7 @@ public class PharmacyReportController implements Serializable {
                     // Stock moves on approval (completedAt = StockHistory date); filtering by
                     // createdAt mis-dates approval-gated movements (e.g. GRN returns created one
                     // day, approved another) and produces a spurious COGS variance. See issue #21266.
-                    .append("AND COALESCE(bi.bill.completedAt, bi.bill.createdAt) BETWEEN :fd AND :td ");
+                    .append("AND FUNCTION('GREATEST', bi.bill.createdAt, COALESCE(bi.bill.completedAt, bi.bill.createdAt), COALESCE(bi.bill.checkeAt, bi.bill.createdAt)) BETWEEN :fd AND :td ");
 
             baseQuery.append("AND (bi.bill.paymentMethod IN :pm ");
             baseQuery.append("OR (bi.bill.paymentMethod = :multiPm AND EXISTS ("
@@ -12242,7 +12252,7 @@ public class PharmacyReportController implements Serializable {
                     // Stock moves on approval (completedAt = StockHistory date); filtering by
                     // createdAt mis-dates approval-gated movements (e.g. GRN returns created one
                     // day, approved another) and produces a spurious COGS variance. See issue #21266.
-                    .append("AND COALESCE(bi.bill.completedAt, bi.bill.createdAt) BETWEEN :fd AND :td ");
+                    .append("AND FUNCTION('GREATEST', bi.bill.createdAt, COALESCE(bi.bill.completedAt, bi.bill.createdAt), COALESCE(bi.bill.checkeAt, bi.bill.createdAt)) BETWEEN :fd AND :td ");
 
             baseQuery.append("AND (bi.bill.paymentMethod IN :pm ");
             baseQuery.append("OR (bi.bill.paymentMethod = :multiPm AND EXISTS ("
@@ -12306,7 +12316,7 @@ public class PharmacyReportController implements Serializable {
                     // Stock moves on approval (completedAt = StockHistory date); filtering by
                     // createdAt mis-dates approval-gated movements (e.g. GRN returns created one
                     // day, approved another) and produces a spurious COGS variance. See issue #21266.
-                    .append("AND COALESCE(bi.bill.completedAt, bi.bill.createdAt) BETWEEN :fd AND :td ");
+                    .append("AND FUNCTION('GREATEST', bi.bill.createdAt, COALESCE(bi.bill.completedAt, bi.bill.createdAt), COALESCE(bi.bill.checkeAt, bi.bill.createdAt)) BETWEEN :fd AND :td ");
 
             preAddParams.put("ret", false);
             preAddParams.put("preAddToStockType", BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_ADD_TO_STOCK);
@@ -12371,7 +12381,7 @@ public class PharmacyReportController implements Serializable {
                     // Stock moves on approval (completedAt = StockHistory date); filtering by
                     // createdAt mis-dates approval-gated movements (e.g. GRN returns created one
                     // day, approved another) and produces a spurious COGS variance. See issue #21266.
-                    .append("AND COALESCE(bi.bill.completedAt, bi.bill.createdAt) BETWEEN :fd AND :td ");
+                    .append("AND FUNCTION('GREATEST', bi.bill.createdAt, COALESCE(bi.bill.completedAt, bi.bill.createdAt), COALESCE(bi.bill.checkeAt, bi.bill.createdAt)) BETWEEN :fd AND :td ");
 
             commonParams.put("ret", false);
             commonParams.put("billTypes", billTypeValue);
@@ -12498,7 +12508,7 @@ public class PharmacyReportController implements Serializable {
                     // Stock moves on approval (completedAt = StockHistory date); filtering by
                     // createdAt mis-dates approval-gated movements (e.g. GRN returns created one
                     // day, approved another) and produces a spurious COGS variance. See issue #21266.
-                    .append("AND COALESCE(bi.bill.completedAt, bi.bill.createdAt) BETWEEN :fd AND :td ");
+                    .append("AND FUNCTION('GREATEST', bi.bill.createdAt, COALESCE(bi.bill.completedAt, bi.bill.createdAt), COALESCE(bi.bill.checkeAt, bi.bill.createdAt)) BETWEEN :fd AND :td ");
 
             commonParams.put("ret", false);
             commonParams.put("billTypes", billTypeValue);
@@ -13491,7 +13501,7 @@ public class PharmacyReportController implements Serializable {
                     // Stock moves on approval (completedAt = StockHistory date); filtering by
                     // createdAt mis-dates approval-gated movements (e.g. GRN returns created one
                     // day, approved another) and produces a spurious COGS variance. See issue #21266.
-                    .append("AND COALESCE(bi.bill.completedAt, bi.bill.createdAt) BETWEEN :fd AND :td ");
+                    .append("AND FUNCTION('GREATEST', bi.bill.createdAt, COALESCE(bi.bill.completedAt, bi.bill.createdAt), COALESCE(bi.bill.checkeAt, bi.bill.createdAt)) BETWEEN :fd AND :td ");
 
             commonParams.put("ret", false);
             commonParams.put("billTypes", billTypeValue);
@@ -13583,8 +13593,8 @@ public class PharmacyReportController implements Serializable {
                     .append("FROM BillItem bi ")
                     .append("WHERE bi.retired = :ret ")
                     .append("AND bi.bill.billType IN :btas ")
-                    // Stock-movement date (completedAt) when present, else createdAt — see issue #21266.
-                    .append("AND COALESCE(bi.bill.completedAt, bi.bill.createdAt) BETWEEN :fd AND :td ")
+                    // Stock-movement date — see issue #21266 and the GREATEST note above.
+                    .append("AND FUNCTION('GREATEST', bi.bill.createdAt, COALESCE(bi.bill.completedAt, bi.bill.createdAt), COALESCE(bi.bill.checkeAt, bi.bill.createdAt)) BETWEEN :fd AND :td ")
                     .append("AND bi.pharmaceuticalBillItem.qty < 0.0 ");
 
             paramsIssue.put("ret", false);
@@ -13610,8 +13620,8 @@ public class PharmacyReportController implements Serializable {
                     .append("FROM BillItem bi ")
                     .append("WHERE bi.retired = :ret ")
                     .append("AND bi.bill.billType IN :btas ")
-                    // Stock-movement date (completedAt) when present, else createdAt — see issue #21266.
-                    .append("AND COALESCE(bi.bill.completedAt, bi.bill.createdAt) BETWEEN :fd AND :td ")
+                    // Stock-movement date — see issue #21266 and the GREATEST note above.
+                    .append("AND FUNCTION('GREATEST', bi.bill.createdAt, COALESCE(bi.bill.completedAt, bi.bill.createdAt), COALESCE(bi.bill.checkeAt, bi.bill.createdAt)) BETWEEN :fd AND :td ")
                     .append("AND bi.pharmaceuticalBillItem.qty > 0.0 ");
 
             paramsReceive.put("ret", false);
