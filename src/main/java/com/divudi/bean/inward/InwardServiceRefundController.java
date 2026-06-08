@@ -113,9 +113,22 @@ public class InwardServiceRefundController implements Serializable {
     }
 
     public String refundInwardServiceBill() {
-        Bill bill = getBill();
-        if (bill == null || bill.getId() == null) {
+        Bill sessionBill = getBill();
+        if (sessionBill == null || sessionBill.getId() == null) {
             JsfUtil.addErrorMessage("No bill to refund");
+            return null;
+        }
+        // Reload and revalidate from the DB right before mutating - the bill is
+        // session-held and may be stale. Push the fresh entity back into
+        // InwardSearch so downstream getBill() calls use it too.
+        Bill bill = billFacade.find(sessionBill.getId());
+        if (bill == null || bill.isRetired()) {
+            JsfUtil.addErrorMessage("Bill not available");
+            return null;
+        }
+        inwardSearch.setBill(bill);
+        if (!isSupportedForReturn(bill)) {
+            JsfUtil.addErrorMessage("Unsupported bill type for inward service return");
             return null;
         }
         if (refundingItems == null || refundingItems.isEmpty()) {
@@ -308,6 +321,14 @@ public class InwardServiceRefundController implements Serializable {
         Map<String, Object> params = new HashMap<>();
         params.put("id", original.getId());
         return billFeeFacade.findByJpql(jpql, params);
+    }
+
+    // Only the original billed inward service / outside-charge bills can be
+    // returned through this flow (not cancellations or already-refund bills).
+    private boolean isSupportedForReturn(Bill bill) {
+        BillTypeAtomic bta = bill.getBillTypeAtomic();
+        return bta == BillTypeAtomic.INWARD_SERVICE_BILL
+                || bta == BillTypeAtomic.INWARD_OUTSIDE_CHARGES_BILL;
     }
 
     private boolean itemAlreadyReturned(BillItem original) {

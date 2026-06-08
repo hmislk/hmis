@@ -310,7 +310,7 @@ When COUNT returns results but DTO query returns 0 (silent case):
 ### 🚨 CRITICAL: Numeric Type Mismatch Causes `argument type mismatch` (loud failure)
 
 **Symptom (server.log):**
-```
+```text
 SEVERE  javax.persistence.PersistenceException: java.lang.IllegalArgumentException: argument type mismatch
   ...
   Caused by: java.lang.IllegalArgumentException: argument type mismatch

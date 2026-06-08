@@ -41,7 +41,12 @@
                                             icon="fa fa-search"
                                             class="ui-button-secondary m-1"
                                             action="#{inwardServiceRefundController.navigateToInwardServiceSearch()}" />
-                                        <p:inputText placeholder="Enter Comments to Refund Bill" value="#{inwardServiceRefundController.comment}" class="p-2 m-1" style="width: 20em;"/>
+                                        <p:inputText id="txtRefundComment"
+                                                     placeholder="Enter Comments to Refund Bill"
+                                                     value="#{inwardServiceRefundController.comment}"
+                                                     class="p-2 m-1"
+                                                     style="width: 20em;"
+                                                     onkeydown="if (event.key === 'Enter') { event.preventDefault(); return false; }"/>
 
                                         <p:commandButton
                                             id="btnRefundBill"
