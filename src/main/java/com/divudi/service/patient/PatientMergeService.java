@@ -9,14 +9,12 @@ import com.divudi.core.entity.PatientMergeRecord;
 import com.divudi.core.entity.Person;
 import com.divudi.core.entity.WebUser;
 import com.divudi.core.entity.lab.PatientInvestigation;
-import com.divudi.core.entity.lab.PatientReport;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.PatientEncounterFacade;
 import com.divudi.core.facade.PatientFacade;
 import com.divudi.core.facade.PatientInvestigationFacade;
 import com.divudi.core.facade.PatientMergeAffectedRecordFacade;
 import com.divudi.core.facade.PatientMergeRecordFacade;
-import com.divudi.core.facade.PatientReportFacade;
 import com.divudi.core.facade.PersonFacade;
 import java.util.ArrayList;
 import java.util.Date;
@@ -39,8 +37,6 @@ public class PatientMergeService {
     private PatientEncounterFacade patientEncounterFacade;
     @EJB
     private PatientInvestigationFacade patientInvestigationFacade;
-    @EJB
-    private PatientReportFacade patientReportFacade;
     @EJB
     private PatientMergeRecordFacade patientMergeRecordFacade;
     @EJB
@@ -83,7 +79,6 @@ public class PatientMergeService {
         affected.addAll(collectAndRepoint("Bill", primary, secondary));
         affected.addAll(collectAndRepointEncounters(primary, secondary));
         affected.addAll(collectAndRepointInvestigations(primary, secondary));
-        affected.addAll(collectAndRepointReports(primary, secondary));
 
         // 4. Retire secondary
         secondary.setRetired(true);
@@ -191,23 +186,6 @@ public class PatientMergeService {
         return buildAffectedRows("PatientInvestigation", ids, secondary.getId(), primary.getId());
     }
 
-    private List<PatientMergeAffectedRecord> collectAndRepointReports(
-            Patient primary, Patient secondary) {
-
-        String jpql = "select pr.id from PatientReport pr where pr.patient = :sec and pr.retired = false";
-        Map<String, Object> p = new HashMap<>();
-        p.put("sec", secondary);
-        List<Long> ids = patientReportFacade.findLongValuesByJpql(jpql, p);
-        if (!ids.isEmpty()) {
-            Map<String, Object> params = new HashMap<>();
-            params.put("pri", primary);
-            params.put("sec", secondary);
-            patientReportFacade.updateByJpql(
-                    "update PatientReport pr set pr.patient = :pri where pr.patient = :sec and pr.retired = false", params);
-        }
-        return buildAffectedRows("PatientReport", ids, secondary.getId(), primary.getId());
-    }
-
     private List<Long> collectIds(String entityName, Patient secondary) {
         String jpql = "select e.id from " + entityName + " e where e.patient = :sec and e.retired = false";
         Map<String, Object> p = new HashMap<>();
@@ -248,13 +226,16 @@ public class PatientMergeService {
 
     private void restorePatientReference(PatientMergeAffectedRecord ar) {
         Patient old = patientFacade.find(ar.getOldPatientId());
-        if (old == null) {
+        Patient current = patientFacade.find(ar.getNewPatientId());
+        if (old == null || current == null) {
             return;
         }
         Map<String, Object> params = new HashMap<>();
         params.put("old", old);
+        params.put("current", current);
         params.put("id", ar.getEntityId());
-        String jpql = "update " + ar.getEntityClass() + " e set e.patient = :old where e.id = :id";
+        // Guard by current patient to avoid overwriting a later reassignment
+        String jpql = "update " + ar.getEntityClass() + " e set e.patient = :old where e.id = :id and e.patient = :current";
         switch (ar.getEntityClass()) {
             case "Bill":
                 billFacade.updateByJpql(jpql, params);
@@ -264,9 +245,6 @@ public class PatientMergeService {
                 break;
             case "PatientInvestigation":
                 patientInvestigationFacade.updateByJpql(jpql, params);
-                break;
-            case "PatientReport":
-                patientReportFacade.updateByJpql(jpql, params);
                 break;
         }
     }

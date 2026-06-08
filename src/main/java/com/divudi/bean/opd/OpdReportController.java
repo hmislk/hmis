@@ -345,6 +345,9 @@ public class OpdReportController implements Serializable {
         btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE);
         btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION);
         btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN);
+        btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE);
+        btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION);
+        btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN);
 
         btas.add(BillTypeAtomic.PHARMACY_GRN);
         btas.add(BillTypeAtomic.PHARMACY_GRN_CANCELLED);
@@ -592,7 +595,8 @@ public class OpdReportController implements Serializable {
 
             opdIncomeReportDtos = billService.fetchOpdIncomeReportDTOs(
                     fromDate, toDate, institution, site, department, webUser,
-                    billTypeAtomics, admissionType, paymentScheme);
+                    billTypeAtomics, admissionType, paymentScheme,
+                    toInstitution, toSite, toDepartment);
 
             System.out.println("Results returned: " + (opdIncomeReportDtos != null ? opdIncomeReportDtos.size() : 0));
 

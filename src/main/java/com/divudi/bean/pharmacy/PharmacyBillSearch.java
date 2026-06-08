@@ -155,6 +155,8 @@ public class PharmacyBillSearch implements Serializable {
     SaleReturnController saleReturnController;
     @Inject
     PharmacyReturnwithouttresing pharmacyReturnwithouttresing;
+    @Inject
+    PharmacyDirectPurchaseController pharmacyDirectPurchaseController;
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
     private UploadedFile file;
@@ -1308,6 +1310,18 @@ public class PharmacyBillSearch implements Serializable {
         }
         grnController.setCurrentGrnBillPre(bill);
         return grnController.navigateToEditGrn();
+    }
+
+    public String navigateToEditSavedDirectPurchase() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("No Bill Selected");
+            return null;
+        }
+        if (bill.getBillTypeAtomic() != BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_PRE) {
+            JsfUtil.addErrorMessage("Selected bill is not a saved Direct Purchase (PRE).");
+            return null;
+        }
+        return pharmacyDirectPurchaseController.loadDraftForEditing(bill);
     }
 
     public String navigateToEditSavedGrnCosting() {
@@ -2870,10 +2884,14 @@ public class PharmacyBillSearch implements Serializable {
         if (checkDepartment(getBill())) {
             return;
         }
-        String deptId = billNumberBean.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION);
+        // Discharge medicine issues cancel to the discharge cancellation atomic; all other inward direct issues to the regular one.
+        BillTypeAtomic cancellationAtomic = getBill().getBillTypeAtomic() == BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE
+                ? BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION
+                : BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION;
+        String deptId = billNumberBean.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), cancellationAtomic);
         Bill newlyCreatedCancellationBill = getPharmacyBean().reAddToStock(getBill(), getSessionController().getLoggedUser(), getSessionController().getDepartment(), BillNumberSuffix.PHISSCAN);
         newlyCreatedCancellationBill.setForwardReferenceBill(getBill().getForwardReferenceBill());
-        newlyCreatedCancellationBill.setBillTypeAtomic(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION);
+        newlyCreatedCancellationBill.setBillTypeAtomic(cancellationAtomic);
         newlyCreatedCancellationBill.setDeptId(deptId);
         newlyCreatedCancellationBill.setReferenceBill(getBill());
         getBillFacade().edit(newlyCreatedCancellationBill);
@@ -3101,7 +3119,7 @@ public class PharmacyBillSearch implements Serializable {
 
             Bill cb = getPharmacyBean().reAddToStock(getBill(), getSessionController().getLoggedUser(), getSessionController().getDepartment(), billNumberSuffix);
             cb.setForwardReferenceBill(getBill().getForwardReferenceBill());
-            cb.setBillTypeAtomic(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION);
+            cb.setBillTypeAtomic(resolveDirectIssueCancellationAtomic(getBill().getBillTypeAtomic()));
             getBillFacade().edit(cb);
 
             //   cancelPreBillFees(cb.getBillItems());
@@ -3119,6 +3137,28 @@ public class PharmacyBillSearch implements Serializable {
 
         } else {
             JsfUtil.addErrorMessage("No Bill to cancel");
+        }
+    }
+
+    /**
+     * Resolves the cancellation atomic for a direct-issue-to-BHT cancellation
+     * based on the source bill's atomic. cancelDirectIssueToBht() is shared by
+     * pharmacy direct issues, discharge medicine issues and store direct issues,
+     * so each must cancel to its own matching atomic rather than always to the
+     * pharmacy medicine cancellation. Unknown sources fall back to the pharmacy
+     * medicine cancellation to preserve prior behaviour.
+     */
+    private BillTypeAtomic resolveDirectIssueCancellationAtomic(BillTypeAtomic sourceAtomic) {
+        if (sourceAtomic == null) {
+            return BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION;
+        }
+        switch (sourceAtomic) {
+            case DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE:
+                return BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION;
+            case DIRECT_ISSUE_STORE_INWARD:
+                return BillTypeAtomic.DIRECT_ISSUE_STORE_INWARD_CANCELLATION;
+            default:
+                return BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION;
         }
     }
 

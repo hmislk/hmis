@@ -19,6 +19,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -47,6 +48,11 @@ public class PersonRelationshipController implements Serializable {
     private Patient relatedPatient;
 
     public PersonRelationshipController() {
+    }
+
+    @PostConstruct
+    public void init() {
+        current = new PersonRelationship();
     }
 
     public void loadRelationshipsForPatient(Patient p) {

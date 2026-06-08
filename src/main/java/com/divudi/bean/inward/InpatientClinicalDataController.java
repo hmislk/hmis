@@ -151,6 +151,10 @@ public class InpatientClinicalDataController implements Serializable {
     SearchController searchController;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    com.divudi.bean.pharmacy.PharmacyRequestForBhtController pharmacyRequestForBhtController;
+    @Inject
+    com.divudi.bean.pharmacy.PharmacySaleBhtController pharmacySaleBhtController;
 
     /**
      * Properties
@@ -224,6 +228,8 @@ public class InpatientClinicalDataController implements Serializable {
     private List<ClinicalFindingValue> pastWardMedicines;
     private ClinicalFindingValue selectedWardMedicineToOmit;
     private String omissionReason;
+    private ClinicalFindingValue[] selectedWardMedicinesToRequest;
+    private ClinicalFindingValue[] selectedDischargeMedicinesToIssue;
     private ClinicalFindingValue selectedWardMedicineToChange;
     private Double newDose;
     private MeasurementUnit newDoseUnit;
@@ -2087,6 +2093,7 @@ public class InpatientClinicalDataController implements Serializable {
         this.admissionWardMedicine = null;
         this.selectedWardMedicineToOmit = null;
         this.omissionReason = null;
+        this.selectedWardMedicinesToRequest = null;
         this.selectedWardMedicineToChange = null;
         this.newDose = null;
         this.newDoseUnit = null;
@@ -2191,6 +2198,161 @@ public class InpatientClinicalDataController implements Serializable {
         omissionReason = null;
         fillAdmissionWardMedicines(parentAdmission);
         JsfUtil.addSuccessMessage("Medicine Omitted");
+    }
+
+    /**
+     * Pre-fills a BHT pharmacy request from the active ward medications the user
+     * ticked, then navigates to the BHT request page. The user still picks (or
+     * confirms the defaulted) requesting pharmacy there before settling.
+     */
+    public String requestSelectedWardMedicinesFromPharmacy() {
+        if (parentAdmission == null || parentAdmission.getId() == null) {
+            JsfUtil.addErrorMessage("No admission selected.");
+            return "";
+        }
+        if (selectedWardMedicinesToRequest == null || selectedWardMedicinesToRequest.length == 0) {
+            JsfUtil.addErrorMessage("Select at least one medicine to request.");
+            return "";
+        }
+        if (parentAdmission.isDischarged()) {
+            JsfUtil.addErrorMessage("Sorry, patient is discharged.");
+            return "";
+        }
+
+        pharmacyRequestForBhtController.resetAll();
+        pharmacyRequestForBhtController.setPatientEncounter(parentAdmission);
+
+        Long admissionId = parentAdmission.getId();
+        int added = 0;
+        int skippedOtherAdmission = 0;
+        for (ClinicalFindingValue cfv : selectedWardMedicinesToRequest) {
+            if (cfv == null || cfv.getPrescription() == null || cfv.getEncounter() == null) {
+                continue;
+            }
+            // Guard against a stale (session-scoped) selection carried over from
+            // a previously-viewed admission: only request medicines that belong
+            // to the current admission. Mirrors the fillAdmissionWardMedicines
+            // query (encounter == admission OR encounter.parentEncounter == admission).
+            Long encounterId = cfv.getEncounter().getId();
+            Long parentEncounterId = cfv.getEncounter().getParentEncounter() != null
+                    ? cfv.getEncounter().getParentEncounter().getId()
+                    : null;
+            if (!admissionId.equals(encounterId) && !admissionId.equals(parentEncounterId)) {
+                skippedOtherAdmission++;
+                continue;
+            }
+            if (pharmacyRequestForBhtController.addBillItemFromPrescription(cfv.getPrescription())) {
+                added++;
+            }
+        }
+
+        if (added == 0) {
+            selectedWardMedicinesToRequest = null;
+            if (skippedOtherAdmission > 0) {
+                JsfUtil.addErrorMessage("The selected medicines do not belong to this admission. Please re-select.");
+            } else {
+                JsfUtil.addErrorMessage("Could not add any of the selected medicines to the request.");
+            }
+            return "";
+        }
+
+        // Intentionally do NOT pre-set the requesting pharmacy here. Setting
+        // it would hide the department-pick panel on the request page (which
+        // renders only while department is null) and lock the pharmacy
+        // autocomplete, so the user could not change it without starting a
+        // new bill and losing these prefilled medicines. Instead the request
+        // page surfaces the ward's default + recent pharmacies as one-click
+        // chips (default first), leaving the choice explicit and changeable.
+        selectedWardMedicinesToRequest = null;
+        return "/ward/ward_pharmacy_bht_issue_request_bill?faces-redirect=true";
+    }
+
+    public ClinicalFindingValue[] getSelectedWardMedicinesToRequest() {
+        return selectedWardMedicinesToRequest;
+    }
+
+    public void setSelectedWardMedicinesToRequest(ClinicalFindingValue[] selectedWardMedicinesToRequest) {
+        this.selectedWardMedicinesToRequest = selectedWardMedicinesToRequest;
+    }
+
+    /**
+     * Converts the discharge-medicine prescriptions the user ticked into a
+     * discharge issue bill (no inward service charge) dispensed from the
+     * logged-in pharmacy, then navigates to the discharge issue page where the
+     * pharmacist reviews batch/quantity and settles. Mirrors
+     * {@link #requestSelectedWardMedicinesFromPharmacy()} for the discharge flow.
+     * Issue #21334.
+     */
+    public String createDischargeIssueBillFromSelected() {
+        // The discharge issue bill must be attributed to the admission. When the
+        // page is reached from the assessment list, current is the assessment
+        // encounter and parentAdmission holds the admission; from the dashboard
+        // both are the admission. Prefer parentAdmission, fall back to current.
+        PatientEncounter admission = parentAdmission != null ? parentAdmission : current;
+        if (admission == null || admission.getId() == null) {
+            JsfUtil.addErrorMessage("No admission selected.");
+            return "";
+        }
+        if (selectedDischargeMedicinesToIssue == null || selectedDischargeMedicinesToIssue.length == 0) {
+            JsfUtil.addErrorMessage("Select at least one discharge medicine to issue.");
+            return "";
+        }
+
+        Long admissionId = admission.getId();
+        List<ClinicalFindingValue> currentDischargeMedicines = getDischargeMedicines();
+        List<com.divudi.core.entity.clinical.Prescription> prescriptions = new ArrayList<>();
+        int skippedOtherAdmission = 0;
+        int skippedStale = 0;
+        for (ClinicalFindingValue cfv : selectedDischargeMedicinesToIssue) {
+            if (cfv == null || cfv.getPrescription() == null || cfv.getEncounter() == null) {
+                continue;
+            }
+            // Selection is session-scoped: reject any row that was deleted/retired
+            // (removed from the current discharge list) since it was selected, so a
+            // stale tick can never be converted into an issue line.
+            if (cfv.isRetired() || !currentDischargeMedicines.contains(cfv)) {
+                skippedStale++;
+                continue;
+            }
+            // Guard against a stale (session-scoped) selection carried over from a
+            // previously-viewed admission: only issue medicines that belong to the
+            // current admission.
+            Long encounterId = cfv.getEncounter().getId();
+            Long parentEncounterId = cfv.getEncounter().getParentEncounter() != null
+                    ? cfv.getEncounter().getParentEncounter().getId()
+                    : null;
+            if (!admissionId.equals(encounterId) && !admissionId.equals(parentEncounterId)) {
+                skippedOtherAdmission++;
+                continue;
+            }
+            prescriptions.add(cfv.getPrescription());
+        }
+        if (skippedStale > 0) {
+            JsfUtil.addWarningMessage(skippedStale
+                    + " selected medicine(s) were removed from the list and were skipped.");
+        }
+
+        if (prescriptions.isEmpty()) {
+            selectedDischargeMedicinesToIssue = null;
+            if (skippedOtherAdmission > 0) {
+                JsfUtil.addErrorMessage("The selected medicines do not belong to this admission. Please re-select.");
+            } else {
+                JsfUtil.addErrorMessage("Could not add any of the selected discharge medicines.");
+            }
+            return "";
+        }
+
+        String outcome = pharmacySaleBhtController.prepareDischargeIssueFromPrescriptions(admission, prescriptions);
+        selectedDischargeMedicinesToIssue = null;
+        return outcome;
+    }
+
+    public ClinicalFindingValue[] getSelectedDischargeMedicinesToIssue() {
+        return selectedDischargeMedicinesToIssue;
+    }
+
+    public void setSelectedDischargeMedicinesToIssue(ClinicalFindingValue[] selectedDischargeMedicinesToIssue) {
+        this.selectedDischargeMedicinesToIssue = selectedDischargeMedicinesToIssue;
     }
 
     public String navigateToWardMedicinesTimeline(PatientEncounter admission) {
@@ -2472,18 +2634,6 @@ public class InpatientClinicalDataController implements Serializable {
         return "/inward/clinical_data_diagnosis_card?faces-redirect=true";
     }
 
-    public String navigateToDrugChart() {
-        if (current == null) {
-            JsfUtil.addErrorMessage("Nothing Selected");
-            return "";
-        }
-        setStartedEncounter(current);
-        fillCurrentPatientLists(current.getPatient());
-        fillCurrentEncounterLists(current);
-        generateDocumentsFromDocumentTemplates(current);
-        return "/inward/clinical_data_drug_chart?faces-redirect=true";
-    }
-
     public String navigateToImages() {
         if (current == null) {
             JsfUtil.addErrorMessage("Nothing Selected");
@@ -2509,7 +2659,6 @@ public class InpatientClinicalDataController implements Serializable {
     }
     //clinical_data_investigations
     //clinical_data_images
-    //clinical_data_drug_chart
     //clinical_data_diagnosis_card
 
     public void fillCurrentPatientLists(Patient patient) {
@@ -2747,9 +2896,17 @@ public class InpatientClinicalDataController implements Serializable {
         dischargeMedicines = fillDischargeMedicines(current);
 
         setDischargeMedicine(null);
-        saveSelected();
 
-        JsfUtil.addSuccessMessage("Added");
+        // Persist the assessment quietly. saveSelected() emits its own generic
+        // messages ("Updated Successfully." + "Saved"), which together with the
+        // line below produced three confusing messages for a single add.
+        current.setDepartment(sessionController.getDepartment());
+        if (current.getEncounterDate() == null) {
+            current.setEncounterDate(new Date());
+        }
+        getFacade().edit(current);
+
+        JsfUtil.addSuccessMessage("Discharge medicine added");
     }
 
     public List<Bill> fillPatientBills(Patient patient) {

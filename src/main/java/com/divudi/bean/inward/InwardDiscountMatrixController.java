@@ -12,6 +12,7 @@ import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.inward.InwardChargeType;
 import com.divudi.core.entity.Category;
 import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.PaymentScheme;
 import com.divudi.core.entity.PriceMatrix;
 import com.divudi.core.entity.inward.AdmissionType;
@@ -61,6 +62,7 @@ public class InwardDiscountMatrixController implements Serializable {
     private PaymentScheme paymentScheme;
     private double discountPercent;
     private InwardChargeType inwardChargeType;
+    private Institution creditCompany;
 
     // -------------------------------------------------------------------------
     // Navigation
@@ -93,6 +95,7 @@ public class InwardDiscountMatrixController implements Serializable {
         paymentScheme = null;
         discountPercent = 0.0;
         inwardChargeType = null;
+        creditCompany = null;
         items = null;
         filterItems = null;
     }
@@ -150,6 +153,7 @@ public class InwardDiscountMatrixController implements Serializable {
         entry.setPaymentMethod(paymentMethod);
         entry.setPaymentScheme(paymentScheme);
         entry.setDiscountPercent(discountPercent);
+        entry.setCreditCompany(creditCompany);
         if (department != null) {
             entry.setInstitution(department.getInstitution());
         }
@@ -166,6 +170,7 @@ public class InwardDiscountMatrixController implements Serializable {
         paymentScheme = null;
         discountPercent = 0.0;
         inwardChargeType = null;
+        creditCompany = null;
     }
 
     // -------------------------------------------------------------------------
@@ -316,5 +321,13 @@ public class InwardDiscountMatrixController implements Serializable {
 
     public void setInwardChargeType(InwardChargeType inwardChargeType) {
         this.inwardChargeType = inwardChargeType;
+    }
+
+    public Institution getCreditCompany() {
+        return creditCompany;
+    }
+
+    public void setCreditCompany(Institution creditCompany) {
+        this.creditCompany = creditCompany;
     }
 }

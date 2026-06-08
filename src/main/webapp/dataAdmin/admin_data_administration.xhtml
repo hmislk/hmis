@@ -118,7 +118,8 @@
                                                 icon="pi pi-list"></p:commandButton>
                                         </div>
                                     </p:tab>
-                                    <p:tab title="Manage Data Entry Forms" disabled="false" >
+                                    <p:tab title="Manage Data Entry Forms" disabled="false"
+                                           rendered="#{webUserController.hasPrivilege('InwardFormTemplateAdmin')}" >
                                         <div class="d-grid gap-2">
                                             <p:commandButton 
                                                 ajax="false" 
