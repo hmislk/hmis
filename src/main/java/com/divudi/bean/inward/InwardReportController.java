@@ -484,19 +484,29 @@ public class InwardReportController implements Serializable {
         List<PaymentMethod> nonCreditPaymentMethods = enumController.getPaymentTypeOfPaymentMethods(PaymentType.NON_CREDIT);
 
         StringBuilder jpql = new StringBuilder();
-        jpql.append("select new com.divudi.core.data.dto.IpIncomeCategoryWiseRowDTO("
-                + " b.id, b.billClassType, b.billType, b.discount, b.deptId,"
-                + " bi.grossValue, bi.hospitalFee, bi.discount, bi.staffFee, bi.netValue,"
-                + " i.id, i.name, c.id, c.name,"
-                + " pe.paymentMethod, b.paymentMethod"
-                + ")"
-                + " from BillItem bi"
-                + " join bi.bill b"
-                + " left join bi.item i"
-                + " left join i.category c"
-                + " left join b.patientEncounter pe"
-                + " where b.retired = :br"
-                + " and b.createdAt between :fd and :td ");
+            jpql = new StringBuilder();
+            jpql.append("select new com.divudi.core.data.dto.IpIncomeCategoryWiseRowDTO("
+                    + " b.id, b.billClassType, b.billType, b.discount, b.deptId,"
+                    + " bi.grossValue, bi.hospitalFee, bi.discount, bi.staffFee, bi.netValue,"
+                    + " COALESCE(i.id, refI.id, refRefI.id),"
+                    + " COALESCE(i.name, refI.name, refRefI.name),"
+                    + " COALESCE(c.id, refC.id, refRefC.id),"
+                    + " COALESCE(c.name, refC.name, refRefC.name),"
+                    + " pe.paymentMethod, b.paymentMethod"
+                    + ")"
+                    + " from BillItem bi"
+                    + " join bi.bill b"
+                    + " left join bi.item i"
+                    + " left join i.category c"
+                    + " left join b.patientEncounter pe"
+                    + " left join bi.referanceBillItem refBi"
+                    + " left join refBi.item refI"
+                    + " left join refI.category refC"
+                    + " left join refBi.referanceBillItem refRefBi"
+                    + " left join refRefBi.item refRefI"
+                    + " left join refRefI.category refRefC"
+                    + " where b.retired = :br"
+                    + " and b.createdAt between :fd and :td ");
 
         Map<String, Object> m = new HashMap<>();
         m.put("br", false);
@@ -521,6 +531,7 @@ public class InwardReportController implements Serializable {
                     m.put("pmIp", "Credit".equals(paymentType) ? creditPaymentMethods : nonCreditPaymentMethods);
                 }
                 break;
+                
             case "OP":
                 jpql.append(" and bi.bill.billTypeAtomic in :btas ");
                 m.put("btas", btasOP);
@@ -534,6 +545,17 @@ public class InwardReportController implements Serializable {
                 break;
 
             default:
+                List<BillTypeAtomic> allBtas = new ArrayList<>();
+                allBtas.addAll(btasIP);
+                allBtas.addAll(btasOP);
+                if (!allBtas.isEmpty()) {
+                    jpql.append(" and bi.bill.billTypeAtomic in :btas ");
+                    m.put("btas", allBtas);
+                }
+                if (paymentType != null && !paymentType.isEmpty() && !"Any".equalsIgnoreCase(paymentType)) {
+                    jpql.append(" and bi.bill.patientEncounter.paymentMethod in :pmAny ");
+                    m.put("pmAny", "Credit".equals(paymentType) ? creditPaymentMethods : nonCreditPaymentMethods);
+                }
                 break;
         }
 
@@ -550,7 +572,11 @@ public class InwardReportController implements Serializable {
             m.put("site", site);
         }
         if (category != null) {
-            jpql.append(" and bi.item.category = :cat ");
+            if (withProfessionalFee) {
+                jpql.append(" and (i.category = :cat OR refI.category = :cat) ");
+            } else {
+                jpql.append(" and bi.item.category = :cat ");
+            }
             m.put("cat", category);
         }
 
