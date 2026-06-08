@@ -987,6 +987,25 @@ public abstract class AbstractFacade<T> {
         return qry.getResultList();
     }
 
+    public List<Object[]> findObjectsArrayByJpql(String jpql, Map<String, Object> parameters, TemporalType tt, int maxResults) {
+        TypedQuery<Object[]> qry = getEntityManager().createQuery(jpql, Object[].class);
+        Set s = parameters.entrySet();
+        Iterator it = s.iterator();
+        while (it.hasNext()) {
+            Map.Entry m = (Map.Entry) it.next();
+            Object pVal = m.getValue();
+            String pPara = (String) m.getKey();
+            if (pVal instanceof Date) {
+                Date d = (Date) pVal;
+                qry.setParameter(pPara, d, tt);
+            } else {
+                qry.setParameter(pPara, pVal);
+            }
+        }
+        qry.setMaxResults(maxResults);
+        return qry.getResultList();
+    }
+
     public List<Object> findObjectByJpql(String jpql, Map<String, Object> parameters, TemporalType tt) {
         TypedQuery<Object> qry = getEntityManager().createQuery(jpql, Object.class);
         Set s = parameters.entrySet();

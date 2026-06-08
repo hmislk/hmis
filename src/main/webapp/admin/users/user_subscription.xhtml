@@ -23,16 +23,15 @@
                         <h:outputLabel class="mx-2" value="Manage User Subscriptions"/>
                     </f:facet>
                     <p:outputLabel value="Department" ></p:outputLabel>
-                    <p:selectOneMenu 
+                    <p:selectOneMenu
                         id="cmbDepartment"
                         placeholder="Department"
-                        value="#{triggerSubscriptionController.department}" 
+                        value="#{triggerSubscriptionController.department}"
                         class="w-100"
-                        required="true"
-                        requiredMessage="Select a Department"
+                        disabled="#{triggerSubscriptionController.applicationWide}"
                         filter="true">
                         <f:selectItem itemLabel="Select" ></f:selectItem>
-                        <f:selectItems 
+                        <f:selectItems
                             value="#{triggerSubscriptionController.departments}"
                             var="d"
                             itemLabel="#{d.name}"
@@ -50,6 +49,16 @@
                         action="#{triggerSubscriptionController.fillDepartmentSubscription}"
                         >
                     </p:commandButton>
+
+                    <p:outputLabel value="Application-wide" ></p:outputLabel>
+                    <p:selectBooleanCheckbox
+                        id="chkApplicationWide"
+                        value="#{triggerSubscriptionController.applicationWide}">
+                        <p:ajax update="cmbDepartment" />
+                    </p:selectBooleanCheckbox>
+                    <h:outputText
+                        styleClass="text-muted"
+                        value="Subscribe across all departments (e.g. Guest Relations Officer)" />
 
                     <p:outputLabel value="Subscription to Add" ></p:outputLabel>
                     <p:selectOneMenu 

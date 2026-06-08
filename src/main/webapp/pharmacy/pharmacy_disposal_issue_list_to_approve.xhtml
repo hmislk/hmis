@@ -1,0 +1,123 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <ui:define name="content">
+        <h:panelGroup rendered="#{!webUserController.hasPrivilege('PharmacyDisposalIssueApprove')}">You are NOT authorized</h:panelGroup>
+        <h:panelGroup id="gpDisposalIssueApprove" rendered="#{webUserController.hasPrivilege('PharmacyDisposalIssueApprove')}">
+            <h:form onkeypress="if (event.key === 'Enter' || event.keyCode === 13) { return false; }">
+                <p:panel styleClass="shadow-sm border-0">
+                    <f:facet name="header">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            <h:outputText value="Disposal Issues — List to Approve" styleClass="mb-0 text-success" style="font-size: 1.5rem; font-weight: 600;"/>
+                        </div>
+                    </f:facet>
+                    <div class="row g-3">
+                        <div class="col-lg-3 col-md-4">
+                            <p:panel header="Search Filters" styleClass="h-100 shadow-sm">
+                                <div class="mb-3">
+                                    <h:panelGroup styleClass="form-label fw-bold text-secondary d-block">
+                                        <i class="fas fa-calendar-alt me-1"></i>
+                                        <h:outputText value="From Date"/>
+                                    </h:panelGroup>
+                                    <p:calendar
+                                        id="fromDate"
+                                        class="w-100"
+                                        inputStyleClass="form-control"
+                                        value="#{searchController.fromDate}"
+                                        navigator="false"
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                </div>
+                                <div class="mb-3">
+                                    <h:panelGroup styleClass="form-label fw-bold text-secondary d-block">
+                                        <i class="fas fa-calendar-alt me-1"></i>
+                                        <h:outputText value="To Date"/>
+                                    </h:panelGroup>
+                                    <p:calendar
+                                        id="toDate"
+                                        class="w-100"
+                                        inputStyleClass="form-control"
+                                        value="#{searchController.toDate}"
+                                        navigator="false"
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                </div>
+                                <p:commandButton
+                                    id="btnSearch"
+                                    class="ui-button-success w-100"
+                                    icon="fas fa-search"
+                                    ajax="false"
+                                    value="Search Disposal Issues to Approve"
+                                    action="#{searchController.createDisposalIssueTableToApprove}"
+                                    style="min-height: 45px;"/>
+                            </p:panel>
+                        </div>
+                        <div class="col-lg-9 col-md-8">
+                            <p:panel header="Disposal Issues Pending Approval" styleClass="shadow-sm">
+                                <p:dataTable
+                                    id="tblDisposalIssueApprove"
+                                    value="#{searchController.bills}"
+                                    var="g"
+                                    paginator="true"
+                                    rows="10"
+                                    paginatorPosition="bottom"
+                                    paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                    rowsPerPageTemplate="5,10,15,25"
+                                    emptyMessage="No finalized disposal issues found matching your criteria"
+                                    sortMode="multiple"
+                                    resizableColumns="true"
+                                    reflow="true">
+                                    <p:column headerText="Created" width="8em">
+                                        <h:outputLabel value="#{g.createdAt}">
+                                            <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
+                                        </h:outputLabel>
+                                    </p:column>
+                                    <p:column headerText="From Dept" width="8em">
+                                        <h:outputLabel value="#{g.fromDepartment.name}"/>
+                                    </p:column>
+                                    <p:column headerText="To Dept" width="8em">
+                                        <h:outputLabel value="#{g.toDepartment.name}"/>
+                                    </p:column>
+                                    <p:column headerText="Req. No." width="7em">
+                                        <h:outputLabel value="#{g.invoiceNumber}"/>
+                                    </p:column>
+                                    <p:column headerText="Created By" width="8em">
+                                        <h:outputLabel value="#{g.creater.webUserPerson.name}"/>
+                                    </p:column>
+                                    <p:column headerText="Finalized By" width="8em">
+                                        <h:outputLabel value="#{g.checkedBy.webUserPerson.name}"/>
+                                    </p:column>
+                                    <p:column headerText="Actions" styleClass="text-center" exportable="false" width="130">
+                                        <p:commandButton
+                                            id="btnApprove"
+                                            class="ui-button-success"
+                                            icon="fas fa-check"
+                                            value="Approve"
+                                            title="Approve Disposal Issue #{g.id}"
+                                            ajax="false"
+                                            onclick="if(!confirm('Approve this disposal issue? Stock will be deducted.')) return false;"
+                                            action="#{pharmacyIssueController.approveDisposalIssue(g.id)}"
+                                            style="min-width: 80px;"/>
+                                        <p:commandButton
+                                            id="btnCancel"
+                                            styleClass="ui-button ui-button-danger ms-1"
+                                            icon="fas fa-times"
+                                            value="Cancel"
+                                            title="Cancel this finalized disposal issue"
+                                            ajax="false"
+                                            onclick="if(!confirm('Cancel this finalized disposal issue? This cannot be undone.')) return false;"
+                                            action="#{pharmacyIssueController.cancelFinalizedDisposalIssue(g.id)}"
+                                            style="min-width: 80px;"/>
+                                    </p:column>
+                                </p:dataTable>
+                            </p:panel>
+                        </div>
+                    </div>
+                </p:panel>
+            </h:form>
+        </h:panelGroup>
+    </ui:define>
+</ui:composition>

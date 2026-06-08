@@ -412,11 +412,6 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         }
     }
 
-    public String navigateToInpatientDrugChart() {
-        inpatientClinicalDataController.setCurrent(current);
-        return inpatientClinicalDataController.navigateToDrugChart();
-    }
-
     public String navigateToInpatientInvestigations() {
         inpatientClinicalDataController.setCurrent(current);
         return inpatientClinicalDataController.navigateToInvestigations();

@@ -494,6 +494,9 @@ public class InwardReportDashboardController implements Serializable{
             billTypeAtomics.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE);
             billTypeAtomics.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION);
             billTypeAtomics.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN);
+            billTypeAtomics.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE);
+            billTypeAtomics.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION);
+            billTypeAtomics.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN);
 
             billTypeAtomics.add(BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE);
             billTypeAtomics.add(BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_CANCELLATION);

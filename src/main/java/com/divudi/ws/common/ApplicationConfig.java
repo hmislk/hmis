@@ -45,6 +45,7 @@ public class ApplicationConfig extends Application {
         resources.add(com.divudi.ws.common.CapabilityStatementResource.class);
         resources.add(com.divudi.ws.common.ConfigResource.class);
         resources.add(com.divudi.ws.common.LoginHistoryApi.class);
+        resources.add(com.divudi.ws.common.SubscriptionApi.class);
         resources.add(com.divudi.ws.common.UserManagementApi.class);
         resources.add(com.divudi.ws.common.UserRoleApi.class);
         resources.add(com.divudi.ws.fhir.Fhir.class);
@@ -62,6 +63,7 @@ public class ApplicationConfig extends Application {
         resources.add(com.divudi.ws.investigation.InvestigationFormatApi.class);
         resources.add(com.divudi.ws.inward.ApiInward.class);
         resources.add(com.divudi.ws.inward.InwardDiscountMatrixApi.class);
+        resources.add(com.divudi.ws.inward.InwardPriceAdjustmentApi.class);
         resources.add(com.divudi.ws.inward.InwardRoomApi.class);
         resources.add(com.divudi.ws.inward.InwardRoomCategoryApi.class);
         resources.add(com.divudi.ws.inward.InwardRoomFacilityChargeApi.class);

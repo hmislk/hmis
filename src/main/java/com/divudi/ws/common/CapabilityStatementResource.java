@@ -134,9 +134,20 @@ public class CapabilityStatementResource {
                 .add(resource("Inward Discount Matrix", "/api/inward-discount-matrix",
                         "Manage inward discount matrix entries for services/investigations and pharmacy. "
                         + "Supports scope=service|pharmacy to restrict category types. "
+                        + "Optional creditCompanyId filters or sets a credit-company-specific override row. "
                         + "Lookup sub-paths for resolving names to IDs: "
                         + "/admission-types/search, /payment-schemes/search, "
-                        + "/pharmaceutical-item-categories/search, /payment-methods. "
+                        + "/pharmaceutical-item-categories/search, /payment-methods, /credit-companies/search. "
+                        + "POST returns HTTP 409 with existing id when a duplicate combination exists.",
+                        "API Key",
+                        "GET", "POST", "PUT", "DELETE"))
+                .add(resource("Inward Price Adjustment", "/api/inward-price-adjustment",
+                        "Manage inward price adjustment (margin) matrix entries for services, investigations, and pharmacy. "
+                        + "Supports scope=service|pharmacy to restrict category types. "
+                        + "Optional creditCompanyId sets a credit-company-specific margin override. "
+                        + "Price range lookup: fromPrice/toPrice define the gross value range to which the margin applies. "
+                        + "Lookup sub-paths: /categories/search?scope=service|pharmacy, /departments/search, "
+                        + "/payment-methods, /credit-companies/search. "
                         + "POST returns HTTP 409 with existing id when a duplicate combination exists.",
                         "API Key",
                         "GET", "POST", "PUT", "DELETE"))
@@ -254,6 +265,16 @@ public class CapabilityStatementResource {
                         "User role CRUD and role-level privilege assignment with optional department scope.",
                         "API Key",
                         "GET", "POST", "PUT", "DELETE"))
+                .add(resource("Subscriptions", "/api/subscriptions",
+                        "Manage notification trigger subscriptions (who receives which notification, in which department). "
+                        + "GET /subscriptions lists subscriptions (filters: triggerType, userId, departmentId, applicationWide=true). "
+                        + "GET /subscriptions/trigger-types lists all available TriggerType values (name, label, medium, parent). "
+                        + "POST /subscriptions creates a subscription (body: userId, triggerType, and EITHER departmentId OR applicationWide:true); "
+                        + "returns already_exists when an identical non-retired subscription exists. "
+                        + "DELETE /subscriptions/{id} soft-retires a subscription. "
+                        + "An application-wide subscription (null department) matches every department across the whole application.",
+                        "API Key",
+                        "GET", "POST", "DELETE"))
                                 .add(resource("Investigations", "/api/investigations",
                         "Investigation master management including search, create, update, and activate/deactivate for item import workflows",
                         "API Key",

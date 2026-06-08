@@ -15,6 +15,7 @@ import com.divudi.core.data.TriggerType;
 import com.divudi.core.data.TriggerTypeParent;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.Notification;
+import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.entity.inward.PatientRoom;
 import com.divudi.core.facade.NotificationFacade;
 import com.divudi.core.util.CommonFunctions;
@@ -132,9 +133,25 @@ public class NotificationController implements Serializable {
         }
     }
 
+    public void createNotification(PatientEncounter pe, String action) {
+        if (pe == null || action == null) {
+            return;
+        }
+        switch (action) {
+            case "ClinicalDischarge":
+                createInwardClinicalDischargeNotifications(pe);
+                break;
+            case "FinalDischarge":
+                createInwardFinalDischargeNotifications(pe);
+                break;
+            default:
+                throw new AssertionError();
+        }
+    }
+
     private void createInwardRoomDischargeNotifications(PatientRoom pr) {
         Date date = new Date();
-        for (TriggerType tt : TriggerType.getTriggersByParent(TriggerTypeParent.INWARD_PATIENT_DISCHARGED)) {
+        for (TriggerType tt : TriggerType.getTriggersByParent(TriggerTypeParent.INWARD_PATIENT_ROOM_DISCHARGED)) {
             Notification nn = new Notification();
             nn.setCreatedAt(date);
             nn.setPatientRoom(pr);
@@ -145,6 +162,47 @@ public class NotificationController implements Serializable {
             getFacade().create(nn);
             userNotificationController.createUserNotifications(nn);
         }
+    }
+
+    private void createInwardClinicalDischargeNotifications(PatientEncounter pe) {
+        Date date = new Date();
+        for (TriggerType tt : TriggerType.getTriggersByParent(TriggerTypeParent.INWARD_PATIENT_CLINICAL_DISCHARGED)) {
+            Notification nn = new Notification();
+            nn.setCreatedAt(date);
+            nn.setPatientEncounter(pe);
+            nn.setTriggerType(tt);
+            nn.setCreater(sessionController.getLoggedUser());
+            nn.setMessage(createDischargeMessage("Message Template for Inward Clinical Discharge Notification",
+                    "Patient clinically discharged", pe));
+            getFacade().create(nn);
+            userNotificationController.createUserNotifications(nn);
+        }
+    }
+
+    private void createInwardFinalDischargeNotifications(PatientEncounter pe) {
+        Date date = new Date();
+        for (TriggerType tt : TriggerType.getTriggersByParent(TriggerTypeParent.INWARD_PATIENT_DISCHARGED)) {
+            Notification nn = new Notification();
+            nn.setCreatedAt(date);
+            nn.setPatientEncounter(pe);
+            nn.setTriggerType(tt);
+            nn.setCreater(sessionController.getLoggedUser());
+            nn.setMessage(createDischargeMessage("Message Template for Inward Final Discharge Notification",
+                    "Patient discharged from the hospital", pe));
+            getFacade().create(nn);
+            userNotificationController.createUserNotifications(nn);
+        }
+    }
+
+    private String createDischargeMessage(String templateKey, String defaultMessage, PatientEncounter pe) {
+        String message = configOptionController.getLongTextValueByKey(templateKey, OptionScope.APPLICATION, null, null, null);
+        if (message == null || message.isEmpty()) {
+            message = defaultMessage;
+        }
+        if (pe != null && pe.getBhtNo() != null) {
+            message = message + " (BHT: " + pe.getBhtNo() + ")";
+        }
+        return message;
     }
 
     private void createPharmacyTransferRequestNotifications(Bill bill) {
