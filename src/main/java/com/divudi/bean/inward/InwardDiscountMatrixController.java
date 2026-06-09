@@ -118,7 +118,7 @@ public class InwardDiscountMatrixController implements Serializable {
             JsfUtil.addErrorMessage("Please select a Discount Scheme");
             return;
         }
-        
+
         if (department == null) {
             JsfUtil.addErrorMessage("Please select a Department");
             return;
@@ -130,13 +130,8 @@ public class InwardDiscountMatrixController implements Serializable {
         }
 
         InwardDiscountMatrix entry = buildEntry();
-        if (entry.getId() == null) {
-            ejbFacade.create(entry);
-            JsfUtil.addSuccessMessage("Saved Successfully");
-        } else {
-            ejbFacade.edit(entry);
-            JsfUtil.addSuccessMessage("Update Successfully");
-        }
+        ejbFacade.create(entry);
+        JsfUtil.addSuccessMessage("Saved Successfully");
 
         loadPharmacy();
         clearInputFields();
@@ -147,7 +142,7 @@ public class InwardDiscountMatrixController implements Serializable {
             JsfUtil.addErrorMessage("Please select a Discount Scheme");
             return;
         }
-        
+
         if (inwardChargeType == null) {
             JsfUtil.addErrorMessage("Please select a Room Charge Type");
             return;
