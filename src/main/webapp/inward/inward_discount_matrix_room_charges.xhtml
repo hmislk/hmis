@@ -55,13 +55,12 @@
                                             class="w-100"
                                             value="#{inwardDiscountMatrixController.inwardChargeType}">
                                             <f:selectItem itemLabel="-- Select Charge Type --" itemValue="#{null}"/>
-                                            <f:selectItem itemLabel="Room Charges"         itemValue="#{enumController.getInaChargeType('RoomCharges')}"/>
-                                            <f:selectItem itemLabel="Linen Charges"        itemValue="#{enumController.getInaChargeType('LinenCharges')}"/>
-                                            <f:selectItem itemLabel="MO Charges"           itemValue="#{enumController.getInaChargeType('MOCharges')}"/>
-                                            <f:selectItem itemLabel="Nursing Charges"      itemValue="#{enumController.getInaChargeType('NursingCharges')}"/>
-                                            <f:selectItem itemLabel="Maintain Charges"     itemValue="#{enumController.getInaChargeType('MaintainCharges')}"/>
-                                            <f:selectItem itemLabel="Administration Fee"   itemValue="#{enumController.getInaChargeType('AdministrationCharge')}"/>
-                                            <f:selectItem itemLabel="Medical Care (ICU)"   itemValue="#{enumController.getInaChargeType('MedicalCareICU')}"/>
+                                            <f:selectItems
+                                                value="#{enumController.roomChargeType}"
+                                                var="rc"
+                                                itemValue="#{rc}"
+                                                itemLabel="#{rc.label}">
+                                            </f:selectItems>
                                         </p:selectOneMenu>
                                     </div>
                                 </div>
@@ -113,7 +112,10 @@
                                             itemValue="#{cc}"
                                             placeholder="Leave blank to apply to all companies"
                                             maxResults="20"
-                                            onkeydown="if (event.key === 'Enter') { event.preventDefault(); return false; }">
+                                            onkeydown="if (event.key === 'Enter') {
+                                                        event.preventDefault();
+                                                        return false;
+                                                    }">
                                             <p:column headerText="Name">#{cc.name}</p:column>
                                         </p:autoComplete>
                                     </div>
@@ -127,6 +129,7 @@
                                         <p:inputText
                                             class="w-100"
                                             autocomplete="off"
+                                            onfocus="this.select()"
                                             value="#{inwardDiscountMatrixController.discountPercent}"/>
                                     </div>
                                 </div>
@@ -208,15 +211,17 @@
                                 </p:column>
 
                                 <p:column headerText="Discount %" style="width: 8em;">
-                                    <h:inputText
+                                    <p:inputText
                                         autocomplete="off"
                                         value="#{a.discountPercent}"
+                                        onfocus="this.select()"
+                                        class="text-end w-100"
                                         style="width: 5em;">
                                         <f:convertNumber pattern="#,##0.00"/>
-                                    </h:inputText>
+                                    </p:inputText>
                                 </p:column>
 
-                                <p:column headerText="Action" style="width: 10em;">
+                                <p:column headerText="Action" style="width: 5em;">
                                     <div class="d-flex">
                                         <p:commandButton
                                             id="btnEdit"
