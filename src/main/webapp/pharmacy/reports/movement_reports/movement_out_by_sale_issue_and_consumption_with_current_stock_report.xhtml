@@ -196,13 +196,27 @@
 
                         </h:panelGrid>
 
-                        <p:commandButton 
-                            value="Process" 
+                        <p:commandButton
+                            value="Process"
                             ajax="false"
-                            action="#{pharmacySummaryReportController.processMovementOutBySaleIssueAndConsumptionWithCurrentStockReport()}" 
-                            styleClass="ui-button-success m-1" 
+                            action="#{pharmacySummaryReportController.processMovementOutBySaleIssueAndConsumptionWithCurrentStockReport()}"
+                            styleClass="ui-button-success m-1"
                             icon="pi pi-cog">
                         </p:commandButton>
+
+                        <!-- Read-only display of the pharmacy bill types (atomics) counted as "movement out" -->
+                        <p:fieldset id="includedBillTypesPanel"
+                                    legend="Included Pharmacy Bill Types"
+                                    toggleable="true"
+                                    collapsed="true"
+                                    styleClass="my-2">
+                            <p:dataList value="#{pharmacySummaryReportController.pharmacyMovementOutBillTypes}"
+                                        var="bta"
+                                        type="ordered"
+                                        styleClass="mb-0">
+                                <h:outputText value="#{bta.label}" />
+                            </p:dataList>
+                        </p:fieldset>
 
                         <h:panelGroup rendered="#{pharmacySummaryReportController.reportViewType eq 'BY_BILL'}" >
 
@@ -400,15 +414,16 @@
 
                         <h:panelGroup rendered="#{pharmacySummaryReportController.reportViewType eq 'BY_ITEM'}">
 
-                            <p:commandButton 
-                                value="Download" 
+                            <p:commandButton
+                                value="Download"
                                 ajax="false"
                                 styleClass="ui-button-info m-1"
                                 icon="pi pi-download">
-                                <p:dataExporter 
-                                    type="xlsx" 
+                                <p:dataExporter
+                                    type="xlsx"
                                     target="tblItem"
-                                    fileName="pharmacy_movement_out_by_item_#{pharmacySummaryReportController.fromDate}_to_#{pharmacySummaryReportController.toDate}" />
+                                    fileName="pharmacy_movement_out_by_item_#{pharmacySummaryReportController.fromDate}_to_#{pharmacySummaryReportController.toDate}"
+                                    postProcessor="#{pharmacySummaryReportController.postProcessExcel}" />
                             </p:commandButton>
 
                             <p:commandButton 
@@ -488,6 +503,10 @@
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputText>
                                     </f:facet>
+                                </p:column>
+
+                                <p:column headerText="Last Supplier">
+                                    <h:outputText value="#{rowi.suppliers}" />
                                 </p:column>
 
                             </p:dataTable>
