@@ -937,57 +937,61 @@
                                         value="#{bhtSummeryController.profesionallFee}" 
                                         var="pf"
                                         rowStyleClass="#{pf.bill.billClass eq 'class com.divudi.core.entity.BilledBill' ? '':'noDisplayRow'}">
+                                        
                                         <p:column headerText="Name">
                                             #{pf.staff.person.nameWithTitle}
                                         </p:column>
+                                        
                                         <p:column headerText="Fee Value" >
                                             <h:outputLabel value="#{pf.feeValue}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
-
                                             <p:badge class="mx-2" value="Free Of Charge" rendered="#{pf.freeOfCharge}" severity="warning"></p:badge>
                                         </p:column>
+                                        
                                         <p:column headerText="Fee At">
                                             <h:outputLabel value="#{pf.feeAt}">
                                                 <f:convertDateTime pattern="dd MMMM yyyy hh mm ss a"/>
                                             </h:outputLabel>
                                         </p:column>
+                                        
                                         <p:column headerText="Added Time">
                                             <h:outputLabel value="#{pf.createdAt}">
                                                 <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                             </h:outputLabel>
                                             <br/>
-                                            <h:panelGroup rendered="#{pf.bill.cancelled}" >
-                                                <h:outputLabel style="color: red;" value="Cancelled at " />
-                                                <h:outputLabel style="color: red;" rendered="#{pf.bill.cancelled}"
-                                                               value="#{pf.bill.cancelledBill.createdAt}" >
+                                            <h:panelGroup rendered="#{pf.bill.cancelled}" class="d-flex gap-2" >
+                                                <h:outputLabel style="color: red;" value="Cancelled at" />
+                                                <h:outputLabel style="color: red;" value="#{pf.bill.cancelledBill.createdAt}" >
                                                     <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                                 </h:outputLabel>
                                             </h:panelGroup>
                                         </p:column>
+                                        
                                         <p:column headerText="Added User">
-                                            <h:outputLabel value="#{pf.bill.creater.webUserPerson.name}"/>
+                                            <h:outputLabel value="#{pf.bill.creater.webUserPerson.nameWithTitle}"/>
                                             <br/>
-                                            <h:panelGroup rendered="#{pf.bill.cancelled}" >
+                                            <h:panelGroup rendered="#{pf.bill.cancelled}" class="d-flex gap-2" >
                                                 <h:outputLabel style="color: red;" value="Cancelled By " />
-                                                <h:outputLabel style="color: red;" rendered="#{pf.bill.cancelled}"
-                                                               value="#{pf.bill.cancelledBill.creater.webUserPerson.name}" >
-                                                </h:outputLabel>
+                                                <h:outputLabel style="color: red;" value="#{pf.bill.cancelledBill.creater.webUserPerson.nameWithTitle}" ></h:outputLabel>
                                             </h:panelGroup>
                                         </p:column>
+                                        
                                         <p:column headerText="Checked User">
-                                            <h:outputLabel value="#{pf.bill.checkedBy.creater.webUserPerson.name}"/>
+                                            <h:outputLabel value="#{pf.bill.checkedBy.creater.webUserPerson.nameWithTitle}"/>
                                         </p:column>
                                         <p:column headerText="Checked At">
                                             <h:outputLabel value="#{pf.bill.checkeAt}">
                                                 <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                             </h:outputLabel>
                                         </p:column>
-                                        <p:column>
-                                            <p:commandButton ajax="false" action="inward_reprint_bill_professional?faces-redirect=true" value="View " >
+                                        
+                                        <p:column headerText="Action" width="6em;">
+                                            <p:commandButton ajax="false" action="inward_reprint_bill_professional?faces-redirect=true" value="View Bill" >
                                                 <f:setPropertyActionListener value="#{pf.bill}" target="#{inwardSearch.bill}"/>
                                             </p:commandButton>
                                         </p:column>
+                                        
                                     </p:dataTable>
                                 </p:tab>
 
@@ -998,55 +1002,61 @@
                                         value="#{bhtSummeryController.doctorAndNurseFee}"
                                         var="pf"
                                         rowStyleClass="#{pf.bill.billClass eq 'class com.divudi.core.entity.BilledBill' ? '':'noDisplayRow'}">
+                                        
                                         <p:column headerText="Name">
                                             #{pf.staff.person.nameWithTitle}
                                         </p:column>
+                                        
                                         <p:column headerText="Fee Value" >
                                             <h:outputLabel value="#{pf.feeValue}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
                                         </p:column>
+                                        
                                         <p:column headerText="Fee At">
                                             <h:outputLabel value="#{pf.feeAt}">
                                                 <f:convertDateTime pattern="dd MMMM yyyy hh mm ss a"/>
                                             </h:outputLabel>
                                         </p:column>
+                                        
                                         <p:column headerText="Added Time">
                                             <h:outputLabel value="#{pf.createdAt}">
                                                 <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                             </h:outputLabel>
                                             <br/>
-                                            <h:panelGroup rendered="#{pf.bill.cancelled}" >
+                                            <h:panelGroup rendered="#{pf.bill.cancelled}" class="d-flex gap-2" >
                                                 <h:outputLabel style="color: red;" value="Cancelled at " />
-                                                <h:outputLabel style="color: red;" rendered="#{pf.bill.cancelled}"
-                                                               value="#{pf.bill.cancelledBill.createdAt}" >
+                                                <h:outputLabel style="color: red;"  value="#{pf.bill.cancelledBill.createdAt}" >
                                                     <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                                 </h:outputLabel>
                                             </h:panelGroup>
                                         </p:column>
                                         <p:column headerText="Added User">
-                                            <h:outputLabel value="#{pf.creater.webUserPerson.name}"/>
+                                            <h:outputLabel value="#{pf.creater.webUserPerson.nameWithTitle}"/>
                                             <br/>
-                                            <h:panelGroup rendered="#{pf.bill.cancelled}" >
+                                            <h:panelGroup rendered="#{pf.bill.cancelled}" class="d-flex gap-2" >
                                                 <h:outputLabel style="color: red;" value="Cancelled By " />
-                                                <h:outputLabel style="color: red;" rendered="#{pf.bill.cancelled}"
-                                                               value="#{pf.bill.cancelledBill.creater.webUserPerson.name}" >
+                                                <h:outputLabel style="color: red;" value="#{pf.bill.cancelledBill.creater.webUserPerson.nameWithTitle}" >
                                                 </h:outputLabel>
                                             </h:panelGroup>
                                         </p:column>
+                                        
                                         <p:column headerText="Checked User">
-                                            <h:outputLabel value="#{pf.bill.checkedBy.creater.webUserPerson.name}"/>
+                                            <h:outputLabel value="#{pf.bill.checkedBy.creater.webUserPerson.nameWithTitle}"/>
                                         </p:column>
+                                        
                                         <p:column headerText="Checked At">
                                             <h:outputLabel value="#{pf.bill.checkeAt}">
                                                 <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                             </h:outputLabel>
                                         </p:column>
-                                        <p:column>
+                                        
+                                        <p:column headerText="Action" width="6em;">
                                             <p:commandButton ajax="false" action="inward_reprint_bill_professional?faces-redirect=true" value="View Bill" >
                                                 <f:setPropertyActionListener value="#{pf.bill}" target="#{inwardSearch.bill}"/>
                                             </p:commandButton>
                                         </p:column>
+                                        
                                     </p:dataTable>
                                 </p:tab>
 
@@ -1068,39 +1078,42 @@
                                                 <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                             </h:outputLabel>
                                             <br/>
-                                            <h:panelGroup rendered="#{p.cancelled}" >
+                                            <h:panelGroup rendered="#{p.cancelled}" class="d-flex gap-2">
                                                 <h:outputLabel style="color: red;" value="Cancelled at " />
-                                                <h:outputLabel style="color: red;" rendered="#{p.cancelled}"
-                                                               value="#{p.cancelledBill.createdAt}" >
+                                                <h:outputLabel style="color: red;" value="#{p.cancelledBill.createdAt}" >
                                                     <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                                 </h:outputLabel>
                                             </h:panelGroup>
                                         </p:column>
+                                        
                                         <p:column headerText="Added User">
-                                            <h:outputLabel value="#{p.creater.webUserPerson.name}"/>
+                                            <h:outputLabel value="#{p.creater.webUserPerson.nameWithTitle}"/>
                                             <br/>
-                                            <h:panelGroup rendered="#{p.cancelled}" >
+                                            <h:panelGroup rendered="#{p.cancelled}" class="d-flex gap-2">
                                                 <h:outputLabel style="color: red;" value="Cancelled By " />
                                                 <h:outputLabel 
-                                                    style="color: red;" rendered="#{p.cancelled}"
-                                                    value="#{p.cancelledBill.creater.webUserPerson.name}" >
+                                                    style="color: red;" value="#{p.cancelledBill.creater.webUserPerson.nameWithTitle}" >
                                                 </h:outputLabel>
                                             </h:panelGroup>
                                         </p:column>
+                                        
                                         <p:column headerText="Value" >
                                             <h:outputLabel  value="#{p.netTotal}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
                                         </p:column>
+                                        
                                         <p:column headerText="Checked User">
-                                            <h:outputLabel value="#{p.checkedBy.creater.webUserPerson.name}"/>
+                                            <h:outputLabel value="#{p.checkedBy.creater.webUserPerson.nameWithTitle}"/>
                                         </p:column>
+                                        
                                         <p:column headerText="Checked At">
                                             <h:outputLabel value="#{p.checkeAt}">
                                                 <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                             </h:outputLabel>
                                         </p:column>
-                                        <p:column>
+                                        
+                                        <p:column headerText="Action" width="6em;">
                                             <p:commandButton ajax="false" action="inward_reprint_bill_payment?faces-redirect=true" value="View Bill" >
                                                 <f:setPropertyActionListener value="#{p}" target="#{inwardSearch.bill}"/>
                                             </p:commandButton>
