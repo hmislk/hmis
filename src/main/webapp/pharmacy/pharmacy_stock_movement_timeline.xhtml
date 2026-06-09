@@ -1,0 +1,201 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body>
+        <ui:composition template="/pharmacy/pharmacy_analytics.xhtml">
+            <ui:define name="subcontent">
+
+                <h:form id="stockMovementForm"
+                        onkeydown="if (event.key === 'Enter' &amp;&amp; event.target.tagName !== 'TEXTAREA') { event.preventDefault(); return false; }">
+
+                    <!-- Filters -->
+                    <p:panel header="Stock Movement Timeline - Filters" styleClass="mb-3">
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <p:outputLabel value="From Date" styleClass="d-block mb-1"/>
+                                <p:datePicker id="fromDate"
+                                              value="#{pharmacyStockMovementAnalyticsController.fromDate}"
+                                              showTime="true" timeInput="true"
+                                              yearNavigator="true" monthNavigator="true"
+                                              styleClass="w-100"
+                                              inputStyleClass="w-100 form-control"
+                                              pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                            </div>
+                            <div class="col-md-3">
+                                <p:outputLabel value="To Date" styleClass="d-block mb-1"/>
+                                <p:datePicker id="toDate"
+                                              value="#{pharmacyStockMovementAnalyticsController.toDate}"
+                                              showTime="true" timeInput="true"
+                                              yearNavigator="true" monthNavigator="true"
+                                              styleClass="w-100"
+                                              inputStyleClass="w-100 form-control"
+                                              pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                            </div>
+                            <div class="col-md-4">
+                                <p:outputLabel value="Item" for="item" styleClass="d-block mb-1"/>
+                                <p:autoComplete id="item"
+                                                value="#{pharmacyStockMovementAnalyticsController.item}"
+                                                completeMethod="#{ampController.completeAmpAny}"
+                                                var="amp"
+                                                itemLabel="#{amp.name}"
+                                                itemValue="#{amp}"
+                                                queryDelay="300"
+                                                minQueryLength="3"
+                                                maxResults="20"
+                                                forceSelection="true"
+                                                styleClass="w-100"
+                                                inputStyleClass="w-100 form-control"/>
+                            </div>
+                            <div class="col-md-2">
+                                <p:outputLabel value="Y-Axis Metric" styleClass="d-block mb-1"/>
+                                <p:selectOneMenu id="metric"
+                                                 value="#{pharmacyStockMovementAnalyticsController.metric}"
+                                                 styleClass="w-100">
+                                    <f:selectItem itemLabel="Quantity" itemValue="qty"/>
+                                    <f:selectItem itemLabel="Value (Purchase Rate)" itemValue="purchaseValue"/>
+                                    <f:selectItem itemLabel="Value (Sale Rate)" itemValue="saleValue"/>
+                                </p:selectOneMenu>
+                            </div>
+                        </div>
+
+                        <p:separator/>
+
+                        <!-- Per-graph scope selectors -->
+                        <div class="row g-3">
+
+                            <!-- Graph 1 scope -->
+                            <div class="col-md-4">
+                                <p:fieldset legend="Graph 1 Scope">
+                                    <p:selectOneMenu id="scopeType1"
+                                                     value="#{pharmacyStockMovementAnalyticsController.scopeType1}"
+                                                     styleClass="w-100 mb-2">
+                                        <f:selectItem itemLabel="Department" itemValue="department"/>
+                                        <f:selectItem itemLabel="Staff" itemValue="staff"/>
+                                        <p:ajax update="scope1Group"/>
+                                    </p:selectOneMenu>
+                                    <h:panelGroup id="scope1Group" layout="block">
+                                        <p:autoComplete rendered="#{pharmacyStockMovementAnalyticsController.scopeType1 eq 'department'}"
+                                                        value="#{pharmacyStockMovementAnalyticsController.department1}"
+                                                        completeMethod="#{pharmacyStockMovementAnalyticsController.completeAllDepartments}"
+                                                        var="d" itemLabel="#{d.name} (#{d.institution.name})" itemValue="#{d}"
+                                                        queryDelay="300" minQueryLength="2" maxResults="100"
+                                                        forceSelection="true"
+                                                        styleClass="w-100" inputStyleClass="w-100 form-control"/>
+                                        <p:autoComplete rendered="#{pharmacyStockMovementAnalyticsController.scopeType1 eq 'staff'}"
+                                                        value="#{pharmacyStockMovementAnalyticsController.staff1}"
+                                                        completeMethod="#{staffController.completeStaff}"
+                                                        var="s" itemLabel="#{s.person.nameWithTitle}" itemValue="#{s}"
+                                                        queryDelay="300" minQueryLength="2" maxResults="20"
+                                                        forceSelection="true"
+                                                        styleClass="w-100" inputStyleClass="w-100 form-control"/>
+                                    </h:panelGroup>
+                                </p:fieldset>
+                            </div>
+
+                            <!-- Graph 2 scope -->
+                            <div class="col-md-4">
+                                <p:fieldset legend="Graph 2 Scope">
+                                    <p:selectOneMenu id="scopeType2"
+                                                     value="#{pharmacyStockMovementAnalyticsController.scopeType2}"
+                                                     styleClass="w-100 mb-2">
+                                        <f:selectItem itemLabel="Department" itemValue="department"/>
+                                        <f:selectItem itemLabel="Staff" itemValue="staff"/>
+                                        <p:ajax update="scope2Group"/>
+                                    </p:selectOneMenu>
+                                    <h:panelGroup id="scope2Group" layout="block">
+                                        <p:autoComplete rendered="#{pharmacyStockMovementAnalyticsController.scopeType2 eq 'department'}"
+                                                        value="#{pharmacyStockMovementAnalyticsController.department2}"
+                                                        completeMethod="#{pharmacyStockMovementAnalyticsController.completeAllDepartments}"
+                                                        var="d" itemLabel="#{d.name} (#{d.institution.name})" itemValue="#{d}"
+                                                        queryDelay="300" minQueryLength="2" maxResults="100"
+                                                        forceSelection="true"
+                                                        styleClass="w-100" inputStyleClass="w-100 form-control"/>
+                                        <p:autoComplete rendered="#{pharmacyStockMovementAnalyticsController.scopeType2 eq 'staff'}"
+                                                        value="#{pharmacyStockMovementAnalyticsController.staff2}"
+                                                        completeMethod="#{staffController.completeStaff}"
+                                                        var="s" itemLabel="#{s.person.nameWithTitle}" itemValue="#{s}"
+                                                        queryDelay="300" minQueryLength="2" maxResults="20"
+                                                        forceSelection="true"
+                                                        styleClass="w-100" inputStyleClass="w-100 form-control"/>
+                                    </h:panelGroup>
+                                </p:fieldset>
+                            </div>
+
+                            <!-- Graph 3 scope -->
+                            <div class="col-md-4">
+                                <p:fieldset legend="Graph 3 Scope">
+                                    <p:selectOneMenu id="scopeType3"
+                                                     value="#{pharmacyStockMovementAnalyticsController.scopeType3}"
+                                                     styleClass="w-100 mb-2">
+                                        <f:selectItem itemLabel="Department" itemValue="department"/>
+                                        <f:selectItem itemLabel="Staff" itemValue="staff"/>
+                                        <p:ajax update="scope3Group"/>
+                                    </p:selectOneMenu>
+                                    <h:panelGroup id="scope3Group" layout="block">
+                                        <p:autoComplete rendered="#{pharmacyStockMovementAnalyticsController.scopeType3 eq 'department'}"
+                                                        value="#{pharmacyStockMovementAnalyticsController.department3}"
+                                                        completeMethod="#{pharmacyStockMovementAnalyticsController.completeAllDepartments}"
+                                                        var="d" itemLabel="#{d.name} (#{d.institution.name})" itemValue="#{d}"
+                                                        queryDelay="300" minQueryLength="2" maxResults="100"
+                                                        forceSelection="true"
+                                                        styleClass="w-100" inputStyleClass="w-100 form-control"/>
+                                        <p:autoComplete rendered="#{pharmacyStockMovementAnalyticsController.scopeType3 eq 'staff'}"
+                                                        value="#{pharmacyStockMovementAnalyticsController.staff3}"
+                                                        completeMethod="#{staffController.completeStaff}"
+                                                        var="s" itemLabel="#{s.person.nameWithTitle}" itemValue="#{s}"
+                                                        queryDelay="300" minQueryLength="2" maxResults="20"
+                                                        forceSelection="true"
+                                                        styleClass="w-100" inputStyleClass="w-100 form-control"/>
+                                    </h:panelGroup>
+                                </p:fieldset>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-center mt-3">
+                            <p:commandButton id="btnProcess"
+                                             value="Process"
+                                             icon="fas fa-chart-line"
+                                             styleClass="ui-button-success"
+                                             action="#{pharmacyStockMovementAnalyticsController.process()}"
+                                             update="resultsPanel"/>
+                        </div>
+                    </p:panel>
+
+                    <!-- Results -->
+                    <h:panelGroup id="resultsPanel" layout="block">
+                        <h:panelGroup rendered="#{pharmacyStockMovementAnalyticsController.processed}">
+
+                            <ui:include src="/pharmacy/pharmacy_stock_movement_timeline_graph.xhtml">
+                                <ui:param name="chartModel" value="#{pharmacyStockMovementAnalyticsController.chart1}"/>
+                                <ui:param name="markers" value="#{pharmacyStockMovementAnalyticsController.markers1}"/>
+                                <ui:param name="scopeLabel" value="#{pharmacyStockMovementAnalyticsController.scopeLabel1}"/>
+                                <ui:param name="graphNo" value="1"/>
+                            </ui:include>
+
+                            <ui:include src="/pharmacy/pharmacy_stock_movement_timeline_graph.xhtml">
+                                <ui:param name="chartModel" value="#{pharmacyStockMovementAnalyticsController.chart2}"/>
+                                <ui:param name="markers" value="#{pharmacyStockMovementAnalyticsController.markers2}"/>
+                                <ui:param name="scopeLabel" value="#{pharmacyStockMovementAnalyticsController.scopeLabel2}"/>
+                                <ui:param name="graphNo" value="2"/>
+                            </ui:include>
+
+                            <ui:include src="/pharmacy/pharmacy_stock_movement_timeline_graph.xhtml">
+                                <ui:param name="chartModel" value="#{pharmacyStockMovementAnalyticsController.chart3}"/>
+                                <ui:param name="markers" value="#{pharmacyStockMovementAnalyticsController.markers3}"/>
+                                <ui:param name="scopeLabel" value="#{pharmacyStockMovementAnalyticsController.scopeLabel3}"/>
+                                <ui:param name="graphNo" value="3"/>
+                            </ui:include>
+
+                        </h:panelGroup>
+                    </h:panelGroup>
+
+                </h:form>
+
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>
