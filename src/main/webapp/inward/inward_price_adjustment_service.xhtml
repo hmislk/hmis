@@ -305,10 +305,10 @@
                                         maxResults="20"
                                         onkeydown="if (event.key === 'Enter') { event.preventDefault(); return false; }">
                                         <p:column>
-                                            <h:outputLabel value="#{ins.name}"/>
+                                            <h:outputText value="#{ins.name}"/>
                                         </p:column>
                                     </p:autoComplete>
-                                    <p:outputLabel value="#{empty a.creditCompany ? 'All Companies' : a.creditCompany.name}"/>
+                                    <h:outputText value="#{empty a.creditCompany ? 'All Companies' : a.creditCompany.name}"/>
                                 </p:column>
 
                                 <p:column headerText="Action" width="12%" >
