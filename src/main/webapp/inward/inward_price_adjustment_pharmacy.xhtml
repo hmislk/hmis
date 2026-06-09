@@ -147,16 +147,16 @@
                                         <p:autoComplete
                                             value="#{inwardPriceAdjustmntController.creditCompany}"
                                             forceSelection="true"
-                                            completeMethod="#{institutionController.completeIns}"
-                                            var="cc"
+                                            completeMethod="#{institutionController.completeCreditCompany}"
+                                            var="ins"
                                             inputStyleClass="form-control"
                                             class="w-100"
-                                            itemLabel="#{cc.name}"
-                                            itemValue="#{cc}"
+                                            itemLabel="#{ins.name}"
+                                            itemValue="#{ins}"
                                             placeholder="Leave blank to apply to all companies"
                                             maxResults="20"
                                             onkeydown="if (event.key === 'Enter') { event.preventDefault(); return false; }">
-                                            <p:column headerText="Name">#{cc.name}</p:column>
+                                            <p:column headerText="Name">#{ins.name}</p:column>
                                         </p:autoComplete>
                                     </div>
                                 </div>
@@ -287,7 +287,24 @@
                                 <p:column
                                     headerText="Credit Company"
                                     filterBy="#{empty a.creditCompany ? '' : a.creditCompany.name}"
-                                    filterMatchMode="contains">
+                                    filterMatchMode="contains"
+                                    exportValue="#{empty a.creditCompany ? 'All Companies' : a.creditCompany.name}">
+                                    <p:autoComplete
+                                        inputStyleClass="form-control"
+                                        class="w-100"
+                                        forceSelection="true"
+                                        value="#{a.creditCompany}"
+                                        completeMethod="#{institutionController.completeCreditCompany}"
+                                        var="ins"
+                                        itemLabel="#{ins.name}"
+                                        itemValue="#{ins}"
+                                        placeholder="All companies"
+                                        maxResults="20"
+                                        onkeydown="if (event.key === 'Enter') { event.preventDefault(); return false; }">
+                                        <p:column>
+                                            <h:outputText value="#{ins.name}"/>
+                                        </p:column>
+                                    </p:autoComplete>
                                     <h:outputText value="#{empty a.creditCompany ? 'All Companies' : a.creditCompany.name}"/>
                                 </p:column>
 
