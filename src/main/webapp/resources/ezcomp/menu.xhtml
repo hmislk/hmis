@@ -2024,8 +2024,9 @@
                                      onmessage="onNotificationPush"
                                      connected="#{sessionController.loggedUser != null}" />
                         <p:remoteCommand name="refreshNotifications"
-                                         update="notCount"
-                                         action="#{userNotificationController.fillLoggedUserNotifications}" />
+                                         update="notCount notificationGrowl"
+                                         action="#{userNotificationController.onPushRefreshNotifications}" />
+                        <p:growl id="notificationGrowl" life="6000" showDetail="true" />
                         <script type="text/javascript">
                             function onNotificationPush(message) {
                                 refreshNotifications();

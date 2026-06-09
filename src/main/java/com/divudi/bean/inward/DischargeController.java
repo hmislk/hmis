@@ -8,6 +8,7 @@
  */
 package com.divudi.bean.inward;
 
+import com.divudi.bean.common.NotificationController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.entity.Patient;
@@ -46,6 +47,8 @@ public class DischargeController implements Serializable {
     private static final long serialVersionUID = 1L;
     @Inject
     SessionController sessionController;
+    @Inject
+    NotificationController notificationController;
     @EJB
     private AdmissionFacade ejbFacade;
     @EJB
@@ -122,6 +125,7 @@ public class DischargeController implements Serializable {
                 getCurrent().setDateOfDischarge(new Date());
             }
             getEjbFacade().edit(getCurrent());
+            notificationController.createNotification(getCurrent(), "FinalDischarge");
             JsfUtil.addSuccessMessage("Discharged");
 
         }
