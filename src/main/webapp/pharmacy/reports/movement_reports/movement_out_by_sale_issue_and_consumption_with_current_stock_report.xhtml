@@ -197,6 +197,7 @@
                         </h:panelGrid>
 
                         <p:commandButton
+                            id="btnProcessMovementOut"
                             value="Process"
                             ajax="false"
                             action="#{pharmacySummaryReportController.processMovementOutBySaleIssueAndConsumptionWithCurrentStockReport()}"
@@ -415,6 +416,7 @@
                         <h:panelGroup rendered="#{pharmacySummaryReportController.reportViewType eq 'BY_ITEM'}">
 
                             <p:commandButton
+                                id="btnDownloadMovementOutByItem"
                                 value="Download"
                                 ajax="false"
                                 styleClass="ui-button-info m-1"
