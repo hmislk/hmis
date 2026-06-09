@@ -4164,33 +4164,6 @@ public class PharmacyController implements Serializable {
         billTableCostTotal = 0.0;
     }
 
-    private static double consumptionValueSign(BillTypeAtomic bta) {
-        if (bta == null) {
-            return 1.0;
-        }
-        switch (bta) {
-            case PHARMACY_DISPOSAL_ISSUE:
-            case PHARMACY_DISPOSAL_ISSUE_RETURN:
-            case PHARMACY_DISPOSAL_ISSUE_CANCELLED:
-                return -1.0;
-            default:
-                return 1.0;
-        }
-    }
-
-    private static double consumptionQtySign(BillTypeAtomic bta) {
-        if (bta == null) {
-            return 1.0;
-        }
-        switch (bta) {
-            case PHARMACY_DISPOSAL_ISSUE_RETURN:
-            case PHARMACY_DISPOSAL_ISSUE_CANCELLED:
-                return -1.0;
-            default:
-                return 1.0;
-        }
-    }
-
         public void generateConsumptionReportTableByBill(BillType billType) {
         try {
             bills = new ArrayList<>();
