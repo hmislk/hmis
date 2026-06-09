@@ -291,7 +291,7 @@
                                     headerText="Credit Company"
                                     filterBy="#{empty a.creditCompany ? '' : a.creditCompany.name}"
                                     filterMatchMode="contains"
-                                    exportable="false">
+                                    exportValue="#{empty a.creditCompany ? 'All Companies' : a.creditCompany.name}">
                                     <p:autoComplete
                                         inputStyleClass="form-control"
                                         class="w-100"

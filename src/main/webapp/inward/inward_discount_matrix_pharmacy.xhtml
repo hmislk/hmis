@@ -17,6 +17,7 @@
                             <f:facet name="header">
                                 <h:outputLabel value="Add New Discount Entry" class="mt-2"/>
                                 <p:commandButton
+                                    id="btnAdd"
                                     value="Add"
                                     class="ui-button-success"
                                     icon="fa fa-plus"
@@ -167,6 +168,7 @@
                                 <h:outputLabel value="Discount Matrix" class="mt-2"/>
                                 <div class="d-flex" style="float: right">
                                     <p:commandButton
+                                        id="btnFill"
                                         ajax="false"
                                         icon="fa fa-fill"
                                         class="ui-button-warning"
@@ -174,6 +176,7 @@
                                         action="#{inwardDiscountMatrixController.loadPharmacy}">
                                     </p:commandButton>
                                     <p:commandButton
+                                        id="btnExcel"
                                         class="ui-button-success mx-2"
                                         actionListener="#{inwardDiscountMatrixController.loadPharmacy}"
                                         ajax="false"
@@ -185,6 +188,7 @@
                                             fileName="inward_discount_matrix_pharmacy"/>
                                     </p:commandButton>
                                     <p:commandButton
+                                        id="btnPrint"
                                         class="ui-button-info"
                                         ajax="false"
                                         icon="fa fa-print"
