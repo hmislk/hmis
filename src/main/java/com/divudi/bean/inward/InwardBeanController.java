@@ -1291,6 +1291,7 @@ public class InwardBeanController implements Serializable {
         }
 
         sql += " and Type(b.item)!=TimedItem "
+                + " and b.bill.toDepartment is not null "
                 + " and b.bill.patientEncounter in :pe ";
 
         hm.put("btp", BillType.InwardBill);
@@ -1765,6 +1766,11 @@ public class InwardBeanController implements Serializable {
         System.out.println("Found " + deptList.size() + " departments");
 
         for (Department dep : deptList) {
+            // A bill item with a null toDepartment can make the DISTINCT query above
+            // return a null element; skip it rather than NPE on dep.getName().
+            if (dep == null) {
+                continue;
+            }
             long deptStartTime = System.currentTimeMillis();
             DepartmentBillItems table = new DepartmentBillItems();
 
@@ -1826,6 +1832,11 @@ public class InwardBeanController implements Serializable {
         }
 
         for (Department dep : deptList) {
+            // A bill item with a null toDepartment can make the DISTINCT query above
+            // return a null element; skip it rather than NPE on dep.getName().
+            if (dep == null) {
+                continue;
+            }
             long deptStartTime = System.currentTimeMillis();
             DepartmentBillItems table = new DepartmentBillItems();
 

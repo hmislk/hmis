@@ -28,7 +28,7 @@
                         placeholder="Department"
                         value="#{triggerSubscriptionController.department}"
                         class="w-100"
-                        disabled="#{triggerSubscriptionController.institutionWide}"
+                        disabled="#{triggerSubscriptionController.applicationWide}"
                         filter="true">
                         <f:selectItem itemLabel="Select" ></f:selectItem>
                         <f:selectItems
@@ -50,10 +50,10 @@
                         >
                     </p:commandButton>
 
-                    <p:outputLabel value="Institution-wide" ></p:outputLabel>
+                    <p:outputLabel value="Application-wide" ></p:outputLabel>
                     <p:selectBooleanCheckbox
-                        id="chkInstitutionWide"
-                        value="#{triggerSubscriptionController.institutionWide}">
+                        id="chkApplicationWide"
+                        value="#{triggerSubscriptionController.applicationWide}">
                         <p:ajax update="cmbDepartment" />
                     </p:selectBooleanCheckbox>
                     <h:outputText
