@@ -1238,7 +1238,8 @@ public class BhtSummeryController implements Serializable {
             return true;
         }
 
-        if (getPatientEncounter().getAdmissionType().isRoomChargesAllowed()) {
+        if (getPatientEncounter().getAdmissionType() != null
+                && getPatientEncounter().getAdmissionType().isRoomChargesAllowed()) {
             if (patientRooms == null || patientRooms.isEmpty()) {
                 JsfUtil.addErrorMessage("Room must be assigned before discharge");
                 return true;
