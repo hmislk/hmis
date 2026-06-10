@@ -82,7 +82,7 @@
                                     </p:column>  
 
                                     <p:column headerText="Expiration Date"  style="width:25px!important; margin: 0px; padding: 1px 2px; line-height: 1.1;">
-                                        <h:outputText id="doe" value="#{ph.pharmaceuticalBillItem.stock.itemBatch.dateOfExpire}" >  
+                                        <h:outputText id="doe" value="#{ph.pharmaceuticalBillItem.itemBatch.dateOfExpire}" >  
                                             <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                                         </h:outputText>
                                     </p:column>  
