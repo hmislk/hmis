@@ -13318,6 +13318,12 @@ public class PharmacyReportController implements Serializable {
             List<BillType> billTypes = new ArrayList<>();
             billTypes.add(BillType.PharmacyAdjustmentDepartmentSingleStock);
             billTypes.add(BillType.PharmacyAdjustmentDepartmentStock);
+            // Stock-take adjustment bills (PHARMACY_STOCK_ADJUSTMENT_BILL) move stock too;
+            // omitting them left their stock movements uncounted on the calculated side and
+            // produced a COGS variance equal to the adjustment value on every stock-take day.
+            // pbi.qty on these bills is the adjustment delta, so the existing qty<0/qty>0
+            // split places them in the Issue/Receive rows correctly. See issue #21266.
+            billTypes.add(BillType.PharmacyStockAdjustmentBill);
 
             // Query for Stock Adjustment Issues (negative quantities)
             Map<String, Object> paramsIssue = new HashMap<>();
