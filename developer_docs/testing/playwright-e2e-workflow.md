@@ -138,6 +138,39 @@ Accessibility work done this way benefits real assistive-technology users too.
 
 ---
 
+## 8. Publishing screenshot evidence
+
+Use screenshots as durable evidence only after checking that they do not expose
+patient details, credentials, or other sensitive data. Prefer capturing
+configuration screens, reports with non-sensitive rows, or cropped states that
+show the fixed control without private information.
+
+1. Capture verification screenshots with `browser_take_screenshot` into the
+   project `tmp/` folder.
+2. For user-facing documentation, copy final screenshots into the sibling wiki
+   repo under `../hmis.wiki/images/`.
+3. Reference wiki images in markdown as `images/example_name.png`.
+4. Commit and push the wiki immediately from `../hmis.wiki`.
+5. To embed the same image in a GitHub issue or PR comment, use the raw wiki
+   URL:
+
+```text
+https://raw.githubusercontent.com/wiki/hmislk/hmis/images/example_name.png
+```
+
+Example issue comment:
+
+```powershell
+gh issue comment 21364 --repo hmislk/hmis --body "Verified with Playwright.
+
+![Verification screenshot](https://raw.githubusercontent.com/wiki/hmislk/hmis/images/example_name.png)"
+```
+
+Remove temporary screenshots from the main repository after copying the durable
+ones into the wiki so they are not accidentally committed with application code.
+
+---
+
 ## Quick checklist
 
 - [ ] Confirmed environment + URL with the developer; credentials kept out of the repo.
@@ -148,3 +181,4 @@ Accessibility work done this way benefits real assistive-technology users too.
 - [ ] Filled required fields before non-AJAX actions.
 - [ ] Verified stock + bill-item integrity in the DB; cleaned up temp files.
 - [ ] Filed/fixed any accessibility gap that blocked the test.
+- [ ] Published only non-sensitive screenshot evidence and removed temporary files.

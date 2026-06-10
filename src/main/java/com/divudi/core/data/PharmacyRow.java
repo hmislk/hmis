@@ -23,6 +23,7 @@ import com.divudi.core.entity.lab.PatientInvestigation;
 import com.divudi.core.entity.pharmacy.ItemBatch;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.core.entity.pharmacy.StockHistory;
+import com.divudi.core.data.dto.PharmacyMovementOutByItemDTO;
 import com.divudi.core.light.common.BillLight;
 
 import java.util.ArrayList;
@@ -199,6 +200,8 @@ public class PharmacyRow implements Serializable {
     private double consumptionCostValue;
     private double consumptionRetailValue;
 
+    private String suppliers;
+
     private BigDecimal grossSaleRate = BigDecimal.ZERO;
     private BigDecimal discountRate = BigDecimal.ZERO;
     private BigDecimal marginRate = BigDecimal.ZERO;
@@ -214,6 +217,34 @@ public class PharmacyRow implements Serializable {
 
     public PharmacyRow(StockHistory stockHistory) {
         this.stockHistory = stockHistory;
+    }
+
+    /**
+     * Builds a row for the BY_ITEM movement-out report from a database-aggregated
+     * DTO. Mirrors the shape produced by {@code groupSaleDetailsByItems()} so the
+     * existing JSF table bindings (item.name, quantity, grossSaleValue,
+     * discountValue, marginValue, netSaleValue) keep working unchanged.
+     * Current stock and suppliers are filled in afterwards via batched queries.
+     */
+    public PharmacyRow(PharmacyMovementOutByItemDTO dto) {
+        this();
+        if (dto == null) {
+            return;
+        }
+        this.item = new Item();
+        this.item.setId(dto.getItemId());
+        this.item.setName(dto.getItemName());
+        this.item.setCode(dto.getItemCode());
+        Category cat = new Category();
+        cat.setName(dto.getCategoryName());
+        this.item.setCategory(cat);
+
+        this.quantity = dto.getQuantity() != null ? dto.getQuantity() : 0.0;
+        this.grossSaleValue = dto.getGrossValue() != null ? BigDecimal.valueOf(dto.getGrossValue()) : BigDecimal.ZERO;
+        this.discountValue = dto.getDiscountValue() != null ? BigDecimal.valueOf(dto.getDiscountValue()) : BigDecimal.ZERO;
+        this.marginValue = dto.getMarginValue() != null ? BigDecimal.valueOf(dto.getMarginValue()) : BigDecimal.ZERO;
+        this.netSaleValue = dto.getNetValue() != null ? BigDecimal.valueOf(dto.getNetValue()) : BigDecimal.ZERO;
+        this.rowType = "PharmacyMovementOutByItemDTO";
     }
 
     public PharmacyRow(Long id) {
@@ -1790,5 +1821,13 @@ public class PharmacyRow implements Serializable {
 
     public void setConsumptionRetailValue(double consumptionRetailValue) {
         this.consumptionRetailValue = consumptionRetailValue;
+    }
+
+    public String getSuppliers() {
+        return suppliers;
+    }
+
+    public void setSuppliers(String suppliers) {
+        this.suppliers = suppliers;
     }
 }
