@@ -89,7 +89,7 @@
                                             value="Save"
                                             title="Save return bill as draft"
                                             action="#{issueReturnController.saveDisposalIssueReturnBill()}"
-                                            rendered="#{issueReturnController.returnBill.checkedBy eq null and not issueReturnController.originalBill.fullReturned}"
+                                            rendered="#{issueReturnController.returnBill.checkedBy eq null and not issueReturnController.returnBill.billClosed and not issueReturnController.originalBill.fullReturned}"
                                             ajax="false">
                                         </p:commandButton>
                                         <p:commandButton
@@ -99,7 +99,7 @@
                                             onclick="return confirm('Are you sure you want to finalize this disposal issue? This action cannot be undone.');"
                                             title="Finalize return bill"
                                             action="#{issueReturnController.finalizeDisposalIssueReturnBill()}"
-                                            rendered="#{issueReturnController.returnBill.checkedBy eq null and not issueReturnController.originalBill.fullReturned}"
+                                            rendered="#{issueReturnController.returnBill.checkedBy eq null and not issueReturnController.returnBill.billClosed and not issueReturnController.originalBill.fullReturned}"
                                             ajax="false">
                                         </p:commandButton>
                                         <p:commandButton
@@ -109,7 +109,7 @@
                                             onclick="return confirm('Are you sure you want to approve this disposal issue? This action cannot be undone.');"
                                             title="Approve and process the return"
                                             action="#{issueReturnController.settleDisposalIssueReturnBill}"
-                                            rendered="#{issueReturnController.returnBill.checkedBy ne null and (issueReturnController.returnBill.completed eq false or issueReturnController.returnBill.completed eq null) and webUserController.hasPrivilege('ApproveDisposalReturn') and not issueReturnController.originalBill.fullReturned}"
+                                            rendered="#{issueReturnController.returnBill.checkedBy ne null and (issueReturnController.returnBill.completed eq false or issueReturnController.returnBill.completed eq null) and not issueReturnController.returnBill.billClosed and webUserController.hasPrivilege('ApproveDisposalReturn') and not issueReturnController.originalBill.fullReturned}"
                                             ajax="false">
                                         </p:commandButton>
                                     </div>
@@ -130,6 +130,50 @@
                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
                                     </h:outputText>
                                     <h:outputText value=" by #{issueReturnController.originalBill.fullReturnedBy.webUserPerson.nameWithTitle}. No further returns are allowed." styleClass="fw-bold"/>
+                                </div>
+                            </div>
+                        </p:panel>
+
+                        <!-- Status: return already approved (settled) - explains why no action buttons are shown -->
+                        <p:panel rendered="#{issueReturnController.returnBill.id ne null and issueReturnController.returnBill.completed and not issueReturnController.originalBill.fullReturned}" styleClass="mb-3">
+                            <div class="alert alert-success d-flex align-items-center">
+                                <i class="fas fa-check-circle me-2"></i>
+                                <div>
+                                    <h:outputText value="This disposal return #{issueReturnController.returnBill.deptId} has already been approved" styleClass="fw-bold"/>
+                                    <h:outputText value=" on " rendered="#{issueReturnController.returnBill.completedAt ne null}"/>
+                                    <h:outputText value="#{issueReturnController.returnBill.completedAt}" rendered="#{issueReturnController.returnBill.completedAt ne null}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
+                                    </h:outputText>
+                                    <h:outputText value=" by #{issueReturnController.returnBill.completedBy.webUserPerson.nameWithTitle}" rendered="#{issueReturnController.returnBill.completedBy ne null}"/>
+                                    <h:outputText value=". No further changes are possible." styleClass="fw-bold"/>
+                                </div>
+                            </div>
+                        </p:panel>
+
+                        <!-- Status: return closed - explains why no action buttons are shown -->
+                        <p:panel rendered="#{issueReturnController.returnBill.id ne null and issueReturnController.returnBill.billClosed and not issueReturnController.returnBill.completed and not issueReturnController.originalBill.fullReturned}" styleClass="mb-3">
+                            <div class="alert alert-warning d-flex align-items-center">
+                                <i class="fas fa-ban me-2"></i>
+                                <div>
+                                    <h:outputText value="This disposal return has been closed. It can no longer be saved, finalized or approved - create a new return for this disposal issue if needed." styleClass="fw-bold"/>
+                                </div>
+                            </div>
+                        </p:panel>
+
+                        <!-- Status: finalized, awaiting approval - explains why Save/Finalize are hidden, and why Approve is hidden when the privilege is missing -->
+                        <p:panel rendered="#{issueReturnController.returnBill.checkedBy ne null and not issueReturnController.returnBill.completed and not issueReturnController.returnBill.billClosed and not issueReturnController.originalBill.fullReturned}" styleClass="mb-3">
+                            <div class="alert alert-info d-flex align-items-center">
+                                <i class="fas fa-info-circle me-2"></i>
+                                <div>
+                                    <h:outputText value="This return was finalized by #{issueReturnController.returnBill.checkedBy.webUserPerson.nameWithTitle}" styleClass="fw-bold"/>
+                                    <h:outputText value=" on " rendered="#{issueReturnController.returnBill.checkeAt ne null}"/>
+                                    <h:outputText value="#{issueReturnController.returnBill.checkeAt}" rendered="#{issueReturnController.returnBill.checkeAt ne null}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
+                                    </h:outputText>
+                                    <h:outputText value=" and is awaiting approval. Items can no longer be edited." styleClass="fw-bold"/>
+                                    <h:outputText value=" You do not have the Approve Disposal Return privilege - please ask an authorized user to approve it."
+                                                  rendered="#{!webUserController.hasPrivilege('ApproveDisposalReturn')}"
+                                                  styleClass="fw-bold text-danger ms-1"/>
                                 </div>
                             </div>
                         </p:panel>
