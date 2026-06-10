@@ -34,6 +34,7 @@ import com.divudi.core.entity.Item;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.PharmaceuticalBillItemFacade;
+import com.divudi.core.facade.StockFacade;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.core.entity.BillFinanceDetails;
 import com.divudi.core.entity.BillItemFinanceDetails;
@@ -71,6 +72,8 @@ public class TransferIssueForRequestsController implements Serializable {
     private PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;
     @EJB
     private BillItemFacade billItemFacade;
+    @EJB
+    private StockFacade stockFacade;
     @EJB
     private PharmacyBean pharmacyBean;
     @Inject
@@ -784,23 +787,36 @@ public class TransferIssueForRequestsController implements Serializable {
             JsfUtil.addErrorMessage("No Bill Items are added to Transfer");
             return;
         }
+        // Live stock check: fetch current DB values for every item before committing anything.
+        // The in-memory Stock object was captured at page-load time and may be stale — a retail
+        // sale or concurrent issue after page load will not be reflected in it.
         for (BillItem bi : getBillItems()) {
-            if (bi.getPharmaceuticalBillItem().getItemBatch() != null) {
-                if (bi.getPharmaceuticalBillItem().getStock().getStock() < bi.getPharmaceuticalBillItem().getQty()) {
-                    JsfUtil.addErrorMessage("One or more items have insufficient stock to complete the transfer.");
+            PharmaceuticalBillItem pbi = bi.getPharmaceuticalBillItem();
+            if (pbi.getItemBatch() == null) {
+                if (pbi.getQty() > 0) {
+                    String name = bi.getItem() != null ? bi.getItem().getName() : "An item";
+                    JsfUtil.addErrorMessage(name + " is not available in the stock.");
                     return;
                 }
-            } else if (bi.getPharmaceuticalBillItem().getItemBatch() == null) {
-                if (bi.getPharmaceuticalBillItem().getQty() > 0) {
-                    JsfUtil.addErrorMessage(bi.getItem().getName() + " is not available in the stock");
-                    return;
+            } else {
+                if (pbi.getStock() != null && pbi.getStock().getId() != null) {
+                    Stock liveStock = stockFacade.find(pbi.getStock().getId());
+                    if (liveStock == null || liveStock.getStock() < pbi.getQty()) {
+                        JsfUtil.addErrorMessage("Insufficient stock for one or more items. "
+                                + "Stock levels may have changed since this page was loaded. "
+                                + "Please refresh and try again.");
+                        return;
+                    }
                 }
             }
 
             double remainingQty = getRemainingQuantityForItem(bi.getReferanceBillItem());
-            double issuingQty = bi.getBillItemFinanceDetails().getQuantity() != null ? bi.getBillItemFinanceDetails().getQuantity().doubleValue() : 0.0;
+            double issuingQty = bi.getBillItemFinanceDetails().getQuantity() != null
+                    ? bi.getBillItemFinanceDetails().getQuantity().doubleValue() : 0.0;
             if (issuingQty > remainingQty) {
-                JsfUtil.addErrorMessage("Issued quantity (" + issuingQty + ") is higher than remaining requested quantity (" + remainingQty + ") for " + bi.getItem().getName());
+                String name = bi.getItem() != null ? bi.getItem().getName() : "one of the items";
+                JsfUtil.addErrorMessage("Issued quantity (" + issuingQty + ") is higher than remaining "
+                        + "requested quantity (" + remainingQty + ") for " + name + ".");
                 return;
             }
         }
@@ -853,7 +869,7 @@ public class TransferIssueForRequestsController implements Serializable {
             getBillItemFacade().edit(billItemsInIssue);
 
             //Checking User Stock Entity
-            if (!userStockController.isStockAvailable(tmpPh.getStock(), tmpPh.getQty(), getSessionController().getLoggedUser())) {
+            if (!userStockController.isStockAvailable(tmpPh.getStock(), Math.abs(tmpPh.getQty()), getSessionController().getLoggedUser())) {
                 billItemsInIssue.setTmpQty(0);
                 getBillItemFacade().edit(billItemsInIssue);
                 getIssuedBill().getBillItems().add(billItemsInIssue);
