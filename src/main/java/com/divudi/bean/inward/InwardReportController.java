@@ -2482,6 +2482,161 @@ public class InwardReportController implements Serializable {
             dto.setCreditPaidAmount(collected);
         }
     }
+    public void processAdmissionDischargeReport() {
+        Map<String, Object> params = new HashMap<>();
+        StringBuilder jpql = new StringBuilder();
+
+        jpql.append("SELECT pe FROM PatientEncounter pe ");
+
+        if (roomCategory != null) {
+            jpql.append("LEFT JOIN pe.currentPatientRoom room ")
+                    .append("LEFT JOIN room.roomFacilityCharge rfc ");
+        }
+
+        jpql.append("WHERE pe.retired = :ret ")
+                .append("AND pe.dateOfAdmission BETWEEN :fd AND :td ");
+
+        params.put("ret", false);
+        params.put("fd", fromDate);
+        params.put("td", toDate);
+
+        if (dischargeFromDate != null && dischargeToDate != null) {
+            jpql.append("AND pe.dateOfDischarge BETWEEN :dfd AND :dtd ");
+            params.put("dfd", dischargeFromDate);
+            params.put("dtd", dischargeToDate);
+        }
+
+        if (invoiceApprovedFromDate != null && invoiceApprovedToDate != null) {
+            jpql.append("AND pe.finalBill IS NOT NULL ")
+                    .append("AND pe.finalBill.createdAt BETWEEN :iafd AND :iatd ");
+            params.put("iafd", invoiceApprovedFromDate);
+            params.put("iatd", invoiceApprovedToDate);
+        }
+
+        if (institution != null) {
+            jpql.append("AND pe.institution = :inst ");
+            params.put("inst", institution);
+        }
+        if (site != null) {
+            jpql.append("AND pe.department.site = :site ");
+            params.put("site", site);
+        }
+        if (department != null) {
+            jpql.append("AND pe.department = :dept ");
+            params.put("dept", department);
+        }
+        if (consultant != null) {
+            jpql.append("AND pe.referringConsultant = :cons ");
+            params.put("cons", consultant);
+        }
+        if (serviceCenter != null) {
+            jpql.append("AND pe.department = :sc ");
+            params.put("sc", serviceCenter);
+        }
+        if (sponsor != null) {
+            jpql.append("AND pe.creditCompany = :sponsor ");
+            params.put("sponsor", sponsor);
+        }
+        if (admissionType != null) {
+            jpql.append("AND pe.admissionType = :at ");
+            params.put("at", admissionType);
+        }
+        if (paymentMethod != null) {
+            jpql.append("AND pe.paymentMethod = :pm ");
+            params.put("pm", paymentMethod);
+        }
+        if (roomCategory != null) {
+            jpql.append("AND rfc.roomCategory = :rc ");
+            params.put("rc", roomCategory);
+        }
+        if (admissionStatus != null) {
+            switch (admissionStatus) {
+                case ADMITTED_BUT_NOT_DISCHARGED:
+                    jpql.append("AND pe.discharged = :dis AND pe.paymentFinalized = FALSE ");
+                    params.put("dis", false);
+                    break;
+                case DISCHARGED_BUT_FINAL_BILL_NOT_COMPLETED:
+                    jpql.append("AND pe.discharged = :dis AND pe.paymentFinalized = FALSE ");
+                    params.put("dis", true);
+                    break;
+                case DISCHARGED_AND_FINAL_BILL_COMPLETED:
+                    jpql.append("AND pe.discharged = :dis AND pe.paymentFinalized = TRUE ");
+                    params.put("dis", true);
+                    break;
+                case ANY_STATUS:
+                default:
+                    jpql.append("AND pe.paymentFinalized = FALSE ");
+                    break;
+            }
+        } else {
+            jpql.append("AND pe.paymentFinalized = FALSE ");
+        }
+
+        jpql.append("ORDER BY pe.dateOfAdmission ");
+
+        try {
+            patientEncounters =  peFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error loading unsettled invoices: " + e.getMessage());
+            unsettledInvoicesList = new ArrayList<>();
+            return;
+        }
+
+        if (unsettledInvoicesList == null || unsettledInvoicesList.isEmpty()) {
+            unsettledInvoicesList = new ArrayList<>();
+            return;
+        }
+
+        List<Long> encounterIds = unsettledInvoicesList.stream()
+                .filter(dto -> dto != null && dto.getAdmissionId() != null)
+                .map(IpUnsettledInvoiceDTO::getAdmissionId)
+                .collect(Collectors.toList());
+
+        if (encounterIds.isEmpty()) {
+            return;
+        }
+
+        List<PatientEncounter> encounters = peFacade.findByJpql(
+                "SELECT pe FROM PatientEncounter pe WHERE pe.id IN :ids",
+                Collections.singletonMap("ids", encounterIds));
+
+        Map<Long, PatientEncounter> encounterById = (encounters == null)
+                ? Collections.emptyMap()
+                : encounters.stream().collect(
+                        Collectors.toMap(PatientEncounter::getId, pe -> pe));
+
+        List<PatientEncounter> allChildren = peFacade.findByJpql(
+                "SELECT pe FROM PatientEncounter pe WHERE pe.parentEncounter.id IN :ids AND pe.retired = false",
+                Collections.singletonMap("ids", encounterIds));
+        Map<Long, List<PatientEncounter>> childrenByParentId = (allChildren == null)
+                ? Collections.emptyMap()
+                : allChildren.stream()
+                        .filter(pe -> pe.getParentEncounter() != null)
+                        .collect(Collectors.groupingBy(pe -> pe.getParentEncounter().getId()));
+
+        Map<Long, Double> paidByEncounterId = batchFetchPaidAmounts(encounterIds);
+
+        for (IpUnsettledInvoiceDTO dto : unsettledInvoicesList) {
+            if (dto == null) {
+                continue;
+            }
+
+            PatientEncounter pe = encounterById.get(dto.getAdmissionId());
+            if (pe == null) {
+                dto.setNetTotal(0.0);
+                dto.setCreditPaidAmount(0.0);
+                continue;
+            }
+
+            List<PatientEncounter> children = childrenByParentId.getOrDefault(dto.getAdmissionId(), Collections.emptyList());
+            double total = inwardBeanController.calculateInwardTotal(pe, children);
+            double collected = paidByEncounterId.getOrDefault(dto.getAdmissionId(), 0.0);
+            collected = Math.min(collected, total);
+
+            dto.setNetTotal(total);
+            dto.setCreditPaidAmount(collected);
+        }
+    }
 
     private Map<Long, Double> batchFetchPaidAmounts(List<Long> encounterIds) {
         if (encounterIds == null || encounterIds.isEmpty()) {

@@ -23,7 +23,8 @@
                                 showTime="true"                                                         
                                 monthNavigator="true"           
                                 yearNavigator="true"                              
-                                timeInput="true"                
+                                timeInput="true"    
+                                value="#{inwardReportController.fromDate}"
                                 />
                             
                           
@@ -40,7 +41,8 @@
                                 showTime="true"                                                         
                                 monthNavigator="true"           
                                 yearNavigator="true"                              
-                                timeInput="true"                
+                                timeInput="true"
+                                value="#{inwardReportController.toDate}"
                                 />
                                           
                             
@@ -57,7 +59,8 @@
                                 showTime="true"                                                         
                                 monthNavigator="true"           
                                 yearNavigator="true"                              
-                                timeInput="true"                
+                                timeInput="true" 
+                                value="#{inwardReportController.dischargeFromDate}"
                                 />
                              
                             <h:panelGroup>
@@ -72,7 +75,8 @@
                                 showTime="true"                                                         
                                 monthNavigator="true"           
                                 yearNavigator="true"                              
-                                timeInput="true"                
+                                timeInput="true"   
+                                value="#{inwardReportController.dischargeToDate}"
                                 />
                             
                             <h:panelGroup>
@@ -87,7 +91,8 @@
                                 showTime="true"                                                         
                                 monthNavigator="true"           
                                 yearNavigator="true"                              
-                                timeInput="true"                
+                                timeInput="true"
+                                value="#{inwardReportController.invoiceApprovedFromDate}"
                                 />
                              
                             <h:panelGroup>
@@ -102,10 +107,11 @@
                                 showTime="true"                                                         
                                 monthNavigator="true"           
                                 yearNavigator="true"                              
-                                timeInput="true"                
+                                timeInput="true"
+                                value="#{inwardReportController.invoiceApprovedToDate}"
                                 />
                              
-                            <h:panelGroup>
+<!--                            <h:panelGroup>
                                  <h:outputText styleClass="fa fa-building m-2"/>
                                  <p:outputLabel value="Institution *" class="m-3" />
                             </h:panelGroup>
@@ -249,7 +255,7 @@
                                 filter="false">
                                 <f:selectItem itemLabel="Cash" itemValue="CASH"/>
                                 <f:selectItem itemLabel="Credit" itemValue="CREDIT"/>
-                            </p:selectOneMenu>
+                            </p:selectOneMenu>-->
                         </h:panelGrid>
                         
                          <div class="d-flex align-items-center my-4">
@@ -258,7 +264,8 @@
                                 class="ui-button-warning mx-1"
                                 icon="fas fa-cogs"
                                 ajax="false"
-                                value="Process" />
+                                value="Process" 
+                                action="#{inwardReportController.processAdmissionDischargeReport()}"/>
 
                             <p:commandButton 
                                 class="ui-button-primary mx-1"
@@ -282,7 +289,7 @@
 
                         <!-- Wrapper div for horizontal scroll -->
                     
-                        <p:dataTable id="tbl" value="" paginator="false" rows="10" class="w-100">
+                        <p:dataTable id="tbl" value="#{inwardReportController.patientEncounters}" var="pe" paginator="false" rows="10" class="w-100">
                              <f:facet name="header">
                                  <h:outputLabel value="Admission Discharge Report" styleClass="font-bold text-2xl"/>
                             </f:facet>
@@ -290,7 +297,7 @@
                                         <h:outputText value="" />
                                     </p:column>
                                     <p:column headerText="MRN" style="width: 180px;">
-                                        <h:outputText value="" />
+                                        <h:outputText value="#{pe.patient.phn}" />
                                     </p:column>
                                     <p:column headerText="Patient Name" style="width: 200px;">
                                         <h:outputText value="" />
