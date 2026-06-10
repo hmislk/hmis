@@ -2,8 +2,8 @@ package com.divudi.service;
 
 import java.io.Serializable;
 import javax.enterprise.context.ApplicationScoped;
-import javax.faces.push.Push;
-import javax.faces.push.PushContext;
+import org.omnifaces.cdi.Push;
+import org.omnifaces.cdi.PushContext;
 import javax.inject.Inject;
 import javax.inject.Named;
 
