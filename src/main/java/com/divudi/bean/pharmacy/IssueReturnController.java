@@ -210,7 +210,49 @@ public class IssueReturnController implements Serializable {
         pageMetadataRegistry.registerPage(metadata);
     }
 
+    /**
+     * Guards every write entry point (save / finalize / settle) against acting
+     * on a bill whose CURRENT database state is already completed or closed.
+     *
+     * The @SessionScoped bean (and the browser page) can hold a STALE copy of
+     * the return bill - e.g. the bill was settled, then Save/Finalize/Settle is
+     * clicked again from an old screen or list row. Merging that stale copy
+     * reverts the settled bill to a draft (completed/deptId/insId cleared)
+     * while its items and stock movements remain - the #21266 RC5 orphan-return
+     * corruption (Ruhunu bills 4336218 / 4337297, 2026-03-25). Reads bypass the
+     * L2 cache because another app server may have written the bill under
+     * dual-version operation.
+     *
+     * @return true if processing must stop (with a user-facing message).
+     */
+    private boolean disposalReturnAlreadyProcessed() {
+        if (getReturnBill() == null || getReturnBill().getId() == null) {
+            return false; // new, never-persisted draft - nothing to clobber
+        }
+        Bill fresh = getBillFacade().findWithoutCache(getReturnBill().getId());
+        if (fresh == null) {
+            return false;
+        }
+        if (fresh.isCompleted()) {
+            JsfUtil.addErrorMessage("This disposal return (" + (fresh.getDeptId() != null ? fresh.getDeptId() : fresh.getId())
+                    + ") has already been settled. Reload the page before continuing.");
+            return true;
+        }
+        if (fresh.isBillClosed()) {
+            JsfUtil.addErrorMessage("This disposal return has been closed. Create a new return instead.");
+            return true;
+        }
+        if (fresh.isCancelled() || fresh.isRetired()) {
+            JsfUtil.addErrorMessage("This disposal return is cancelled or retired and can no longer be processed.");
+            return true;
+        }
+        return false;
+    }
+
     public void saveDisposalIssueReturnBill() {
+        if (disposalReturnAlreadyProcessed()) {
+            return;
+        }
         // No validation required for saving drafts - users can save incomplete data
         saveBill();
         saveBillComponents();
@@ -218,6 +260,9 @@ public class IssueReturnController implements Serializable {
     }
 
     public void finalizeDisposalIssueReturnBill() {
+        if (disposalReturnAlreadyProcessed()) {
+            return;
+        }
         // Validate return comment is provided
         if (returnBill.getComments() == null || returnBill.getComments().trim().isEmpty()) {
             JsfUtil.addErrorMessage("Return Comment is required. Please provide a reason for the return.");
@@ -248,6 +293,12 @@ public class IssueReturnController implements Serializable {
     }
 
     public void settleDisposalIssueReturnBill() {
+        // Re-settling an already-settled bill (double-click, stale screen, stale
+        // list row) would write a second set of items and stock movements and
+        // then clobber the bill header (#21266 RC5).
+        if (disposalReturnAlreadyProcessed()) {
+            return;
+        }
         if (getReturnBill().getCheckedBy() == null) {
             JsfUtil.addErrorMessage("Pleace Finalise Bill First. Can not Return");
             return;
