@@ -144,8 +144,9 @@
             </p:column>
             <p:column headerText="Batch">
                 <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1">
-                    <h:outputText value="#{m.batchNo}"/>
-                    <p:commandButton icon="fa fa-filter"
+                    <h:outputText value="#{m.batchLabel}"/>
+                    <p:commandButton id="applyBatchFilterBtn"
+                                     icon="fa fa-filter"
                                      title="Filter all charts by this batch"
                                      styleClass="ui-button-secondary ui-button-flat"
                                      rendered="#{not empty m.itemBatchId}"

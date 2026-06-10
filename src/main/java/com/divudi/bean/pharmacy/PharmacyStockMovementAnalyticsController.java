@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 import javax.ejb.EJB;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
@@ -119,6 +120,7 @@ public class PharmacyStockMovementAnalyticsController implements Serializable {
     private static final String TOTAL_LINE_COLOR = "rgb(0, 0, 0)";
     private static final String TOOLTIP_DATE_TIME_FORMAT = "yyyy-MM-dd HH:mm:ss";
     private static final String TOOLTIP_DATE_FORMAT = "yyyy-MM-dd";
+    private static final TimeZone COLOMBO_TIME_ZONE = TimeZone.getTimeZone("Asia/Colombo");
 
     public PharmacyStockMovementAnalyticsController() {
     }
@@ -307,6 +309,7 @@ public class PharmacyStockMovementAnalyticsController implements Serializable {
         // Seconds are included in the label so distinct same-minute movements
         // remain visually distinguishable.
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        sdf.setTimeZone(COLOMBO_TIME_ZONE);
         List<StockMovementTimelineDTO> plottedRows = new ArrayList<>();
         List<String> labels = new ArrayList<>();
         for (StockMovementTimelineDTO r : rows) {
@@ -394,7 +397,8 @@ public class PharmacyStockMovementAnalyticsController implements Serializable {
             bm.setStockHistoryId(r.getStockHistoryId());
             bm.setMovementAt(r.getMovementAt());
             bm.setItemBatchId(r.getItemBatchId());
-            bm.setBatchNo(batchLabel(r));
+            bm.setBatchNo(r.getBatchNo());
+            bm.setBatchLabel(batchLabel(r));
             bm.setStockQty(r.getStockQty());
             bm.setItemStock(r.getItemStock());
             bm.setPbiQty(r.getPbiQty());
@@ -479,6 +483,8 @@ public class PharmacyStockMovementAnalyticsController implements Serializable {
         }
         SimpleDateFormat dateTimeFormat = new SimpleDateFormat(TOOLTIP_DATE_TIME_FORMAT);
         SimpleDateFormat dateFormat = new SimpleDateFormat(TOOLTIP_DATE_FORMAT);
+        dateTimeFormat.setTimeZone(COLOMBO_TIME_ZONE);
+        dateFormat.setTimeZone(COLOMBO_TIME_ZONE);
         StringBuilder sb = new StringBuilder("[");
         for (int i = 0; i < markers.size(); i++) {
             BillMarker m = markers.get(i);
@@ -493,7 +499,7 @@ public class PharmacyStockMovementAnalyticsController implements Serializable {
             appendJsonField(sb, "fromDepartment", m.getFromDepartmentName(), false);
             appendJsonField(sb, "toDepartment", m.getToDepartmentName(), false);
             appendJsonField(sb, "porter", m.getPorterName(), false);
-            appendJsonField(sb, "batch", m.getBatchNo(), false);
+            appendJsonField(sb, "batch", m.getBatchLabel(), false);
             appendJsonField(sb, "batchStock", String.valueOf(m.getStockQty()), false);
             appendJsonField(sb, "itemStock", m.getItemStock() == null ? null : String.valueOf(m.getItemStock()), false);
             sb.append('}');
@@ -587,6 +593,7 @@ public class PharmacyStockMovementAnalyticsController implements Serializable {
         private String porterName;
         private Date movementAt;
         private String batchNo;
+        private String batchLabel;
         private double stockQty;
         private Double itemStock;
         private double pbiQty;
@@ -687,6 +694,14 @@ public class PharmacyStockMovementAnalyticsController implements Serializable {
 
         public void setBatchNo(String batchNo) {
             this.batchNo = batchNo;
+        }
+
+        public String getBatchLabel() {
+            return batchLabel;
+        }
+
+        public void setBatchLabel(String batchLabel) {
+            this.batchLabel = batchLabel;
         }
 
         public double getStockQty() {
