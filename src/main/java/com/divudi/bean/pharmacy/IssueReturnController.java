@@ -280,6 +280,7 @@ public class IssueReturnController implements Serializable {
         getReturnBill().setChecked(true);
         getReturnBill().setCheckeAt(new Date());
         getReturnBill().setCheckedBy(sessionController.getLoggedUser());
+        getReturnBill().setBillItems(null);
         getBillFacade().edit(getReturnBill());
 
         // Refresh the bill and reload bill items for print preview
@@ -324,12 +325,14 @@ public class IssueReturnController implements Serializable {
         getReturnBill().setCompleted(true);
         getReturnBill().setCompletedAt(new Date());
         getReturnBill().setCompletedBy(getSessionController().getLoggedUser());
+        getReturnBill().setBillItems(null);
         getBillFacade().edit(getReturnBill());
 
         getOriginalBill().setRefundedBill(getReturnBill());
         getOriginalBill().setRefunded(true);
         getOriginalBill().getRefundBills().add(getReturnBill());
 
+        getOriginalBill().setBillItems(null);
         getBillFacade().edit(getOriginalBill());
 
         printPreview = true;
@@ -498,6 +501,10 @@ public class IssueReturnController implements Serializable {
             getReturnBill().setCreater(sessionController.getLoggedUser());
             getBillFacade().create(getReturnBill());
         } else {
+            // Null out the billItems collection before merge so EclipseLink does not treat
+            // the in-memory empty ArrayList as an authoritative orphan-removal signal.
+            // Bill items are managed independently by saveBillComponents() / billItemFacade.
+            getReturnBill().setBillItems(null);
             getBillFacade().edit(getReturnBill());
         }
     }
@@ -560,6 +567,7 @@ public class IssueReturnController implements Serializable {
         }
         getReturnBill().setDeptId(deptId);
         getReturnBill().setInsId(insId);
+        getReturnBill().setBillItems(null);
         billFacade.edit(returnBill);
     }
 
@@ -797,8 +805,10 @@ public class IssueReturnController implements Serializable {
             getOriginalBill().setFullReturned(true);
             getOriginalBill().setFullReturnedAt(new Date());
             getOriginalBill().setFullReturnedBy(sessionController.getLoggedUser());
+            getOriginalBill().setBillItems(null);
             getBillFacade().edit(getOriginalBill());
         }
+        getReturnBill().setBillItems(null);
         getBillFacade().edit(getReturnBill());
 
     }
@@ -846,6 +856,7 @@ public class IssueReturnController implements Serializable {
 
         bill.setTotal(total);
         bill.setNetTotal(netTotal);
+        bill.setBillItems(null);
         getBillFacade().edit(bill);
 
     }
