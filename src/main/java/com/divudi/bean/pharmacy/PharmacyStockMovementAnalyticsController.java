@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 import javax.ejb.EJB;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
@@ -477,12 +478,15 @@ public class PharmacyStockMovementAnalyticsController implements Serializable {
         if (markers == null || markers.isEmpty()) {
             return "[]";
         }
+        TimeZone colomboTz = TimeZone.getTimeZone("Asia/Colombo");
         SimpleDateFormat dateTimeFormat = new SimpleDateFormat(TOOLTIP_DATE_TIME_FORMAT);
+        dateTimeFormat.setTimeZone(colomboTz);
         SimpleDateFormat dateFormat = new SimpleDateFormat(TOOLTIP_DATE_FORMAT);
+        dateFormat.setTimeZone(colomboTz);
         StringBuilder sb = new StringBuilder("[");
         for (int i = 0; i < markers.size(); i++) {
             BillMarker m = markers.get(i);
-            if (i > 0) {
+
                 sb.append(',');
             }
             sb.append('{');
