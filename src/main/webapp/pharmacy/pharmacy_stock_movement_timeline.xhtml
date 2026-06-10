@@ -12,10 +12,12 @@
                 <h:form id="stockMovementForm"
                         onkeydown="if (event.key === 'Enter' &amp;&amp; event.target.tagName !== 'TEXTAREA') { event.preventDefault(); return false; }">
 
+                    <p:growl id="msg" showDetail="true" life="5000"/>
+
                     <!-- Filters -->
                     <p:panel header="Stock Movement Timeline - Filters" styleClass="mb-3">
                         <div class="row g-3">
-                            <div class="col-md-3">
+                            <div class="col-md-2">
                                 <p:outputLabel value="From Date" styleClass="d-block mb-1"/>
                                 <p:datePicker id="fromDate"
                                               value="#{pharmacyStockMovementAnalyticsController.fromDate}"
@@ -25,7 +27,7 @@
                                               inputStyleClass="w-100 form-control"
                                               pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                             </div>
-                            <div class="col-md-3">
+                            <div class="col-md-2">
                                 <p:outputLabel value="To Date" styleClass="d-block mb-1"/>
                                 <p:datePicker id="toDate"
                                               value="#{pharmacyStockMovementAnalyticsController.toDate}"
@@ -49,6 +51,22 @@
                                                 forceSelection="true"
                                                 styleClass="w-100"
                                                 inputStyleClass="w-100 form-control"/>
+                            </div>
+                            <div class="col-md-2">
+                                <p:outputLabel value="Batch No" for="batchNumberFilter" styleClass="d-block mb-1"/>
+                                <h:panelGroup id="batchFilter" layout="block" styleClass="d-flex gap-1">
+                                    <p:inputText id="batchNumberFilter"
+                                                 value="#{pharmacyStockMovementAnalyticsController.batchNumberFilter}"
+                                                 styleClass="w-100"
+                                                 placeholder="All batches"/>
+                                    <p:commandButton id="clearBatchFilterBtn"
+                                                     icon="fa fa-times"
+                                                     title="Clear batch filter"
+                                                     styleClass="ui-button-secondary"
+                                                     action="#{pharmacyStockMovementAnalyticsController.clearBatchFilter()}"
+                                                     process="@this"
+                                                     update="batchFilter msg resultsPanel"/>
+                                </h:panelGroup>
                             </div>
                             <div class="col-md-2">
                                 <p:outputLabel value="Y-Axis Metric" styleClass="d-block mb-1"/>
@@ -161,7 +179,7 @@
                                              icon="fas fa-chart-line"
                                              styleClass="ui-button-success"
                                              action="#{pharmacyStockMovementAnalyticsController.process()}"
-                                             update="resultsPanel"/>
+                                             update="msg resultsPanel"/>
                         </div>
                     </p:panel>
 
@@ -169,26 +187,35 @@
                     <h:panelGroup id="resultsPanel" layout="block">
                         <h:panelGroup rendered="#{pharmacyStockMovementAnalyticsController.processed}">
 
-                            <ui:include src="/pharmacy/pharmacy_stock_movement_timeline_graph.xhtml">
-                                <ui:param name="chartModel" value="#{pharmacyStockMovementAnalyticsController.chart1}"/>
-                                <ui:param name="markers" value="#{pharmacyStockMovementAnalyticsController.markers1}"/>
-                                <ui:param name="scopeLabel" value="#{pharmacyStockMovementAnalyticsController.scopeLabel1}"/>
-                                <ui:param name="graphNo" value="1"/>
-                            </ui:include>
+                            <h:panelGroup rendered="#{pharmacyStockMovementAnalyticsController.scope1Selected}">
+                                <ui:include src="/pharmacy/pharmacy_stock_movement_timeline_graph.xhtml">
+                                    <ui:param name="chartModel" value="#{pharmacyStockMovementAnalyticsController.chart1}"/>
+                                    <ui:param name="markers" value="#{pharmacyStockMovementAnalyticsController.markers1}"/>
+                                    <ui:param name="tooltipData" value="#{pharmacyStockMovementAnalyticsController.tooltipData1}"/>
+                                    <ui:param name="scopeLabel" value="#{pharmacyStockMovementAnalyticsController.scopeLabel1}"/>
+                                    <ui:param name="graphNo" value="1"/>
+                                </ui:include>
+                            </h:panelGroup>
 
-                            <ui:include src="/pharmacy/pharmacy_stock_movement_timeline_graph.xhtml">
-                                <ui:param name="chartModel" value="#{pharmacyStockMovementAnalyticsController.chart2}"/>
-                                <ui:param name="markers" value="#{pharmacyStockMovementAnalyticsController.markers2}"/>
-                                <ui:param name="scopeLabel" value="#{pharmacyStockMovementAnalyticsController.scopeLabel2}"/>
-                                <ui:param name="graphNo" value="2"/>
-                            </ui:include>
+                            <h:panelGroup rendered="#{pharmacyStockMovementAnalyticsController.scope2Selected}">
+                                <ui:include src="/pharmacy/pharmacy_stock_movement_timeline_graph.xhtml">
+                                    <ui:param name="chartModel" value="#{pharmacyStockMovementAnalyticsController.chart2}"/>
+                                    <ui:param name="markers" value="#{pharmacyStockMovementAnalyticsController.markers2}"/>
+                                    <ui:param name="tooltipData" value="#{pharmacyStockMovementAnalyticsController.tooltipData2}"/>
+                                    <ui:param name="scopeLabel" value="#{pharmacyStockMovementAnalyticsController.scopeLabel2}"/>
+                                    <ui:param name="graphNo" value="2"/>
+                                </ui:include>
+                            </h:panelGroup>
 
-                            <ui:include src="/pharmacy/pharmacy_stock_movement_timeline_graph.xhtml">
-                                <ui:param name="chartModel" value="#{pharmacyStockMovementAnalyticsController.chart3}"/>
-                                <ui:param name="markers" value="#{pharmacyStockMovementAnalyticsController.markers3}"/>
-                                <ui:param name="scopeLabel" value="#{pharmacyStockMovementAnalyticsController.scopeLabel3}"/>
-                                <ui:param name="graphNo" value="3"/>
-                            </ui:include>
+                            <h:panelGroup rendered="#{pharmacyStockMovementAnalyticsController.scope3Selected}">
+                                <ui:include src="/pharmacy/pharmacy_stock_movement_timeline_graph.xhtml">
+                                    <ui:param name="chartModel" value="#{pharmacyStockMovementAnalyticsController.chart3}"/>
+                                    <ui:param name="markers" value="#{pharmacyStockMovementAnalyticsController.markers3}"/>
+                                    <ui:param name="tooltipData" value="#{pharmacyStockMovementAnalyticsController.tooltipData3}"/>
+                                    <ui:param name="scopeLabel" value="#{pharmacyStockMovementAnalyticsController.scopeLabel3}"/>
+                                    <ui:param name="graphNo" value="3"/>
+                                </ui:include>
+                            </h:panelGroup>
 
                         </h:panelGroup>
                     </h:panelGroup>

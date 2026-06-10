@@ -2,8 +2,8 @@ package com.divudi.service;
 
 import java.io.Serializable;
 import javax.enterprise.context.ApplicationScoped;
-import javax.faces.push.Push;
-import javax.faces.push.PushContext;
+import org.omnifaces.cdi.Push;
+import org.omnifaces.cdi.PushContext;
 import javax.annotation.Resource;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -35,27 +35,22 @@ public class NotificationPushService implements Serializable {
         if (userId == null) {
             return;
         }
-        try {
-            int status = transactionSynchronizationRegistry.getTransactionStatus();
-            if (status == Status.STATUS_ACTIVE) {
-                transactionSynchronizationRegistry.registerInterposedSynchronization(new Synchronization() {
-                    @Override
-                    public void beforeCompletion() {
-                    }
-
-                    @Override
-                    public void afterCompletion(int status) {
-                        if (status == Status.STATUS_COMMITTED) {
-                            sendNow(userId);
-                        }
-                    }
-                });
-                return;
-            }
-        } catch (Exception ignored) {
-            // Fall through to immediate push when no transaction context is available.
+        if (transactionSynchronizationRegistry.getTransactionKey() == null) {
+            sendNow(userId);
+            return;
         }
-        sendNow(userId);
+        transactionSynchronizationRegistry.registerInterposedSynchronization(new Synchronization() {
+            @Override
+            public void beforeCompletion() {
+            }
+
+            @Override
+            public void afterCompletion(int status) {
+                if (status == Status.STATUS_COMMITTED) {
+                    sendNow(userId);
+                }
+            }
+        });
     }
 
     private void sendNow(Long userId) {

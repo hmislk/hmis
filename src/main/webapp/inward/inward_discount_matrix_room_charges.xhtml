@@ -17,6 +17,7 @@
                             <f:facet name="header">
                                 <h:outputLabel value="Add New Discount Entry" class="mt-2"/>
                                 <p:commandButton
+                                    id="btnAdd"
                                     value="Add"
                                     class="ui-button-success"
                                     icon="fa fa-plus"
@@ -104,19 +105,19 @@
                                         <p:autoComplete
                                             value="#{inwardDiscountMatrixController.creditCompany}"
                                             forceSelection="true"
-                                            completeMethod="#{institutionController.completeIns}"
-                                            var="cc"
+                                            completeMethod="#{institutionController.completeCreditCompany}"
+                                            var="ins"
                                             inputStyleClass="form-control"
                                             class="w-100"
-                                            itemLabel="#{cc.name}"
-                                            itemValue="#{cc}"
+                                            itemLabel="#{ins.name}"
+                                            itemValue="#{ins}"
                                             placeholder="Leave blank to apply to all companies"
                                             maxResults="20"
                                             onkeydown="if (event.key === 'Enter') {
                                                         event.preventDefault();
                                                         return false;
                                                     }">
-                                            <p:column headerText="Name">#{cc.name}</p:column>
+                                            <p:column headerText="Name">#{ins.name}</p:column>
                                         </p:autoComplete>
                                     </div>
                                 </div>
@@ -143,6 +144,7 @@
                                 <h:outputLabel value="Room Charge Discount Matrix" class="mt-2"/>
                                 <div class="d-flex" style="float: right">
                                     <p:commandButton
+                                        id="btnFill"
                                         ajax="false"
                                         icon="fa fa-fill"
                                         class="ui-button-warning"
@@ -150,6 +152,7 @@
                                         action="#{inwardDiscountMatrixController.loadRoomCharges}">
                                     </p:commandButton>
                                     <p:commandButton
+                                        id="btnExcel"
                                         class="ui-button-success mx-2"
                                         actionListener="#{inwardDiscountMatrixController.loadRoomCharges}"
                                         ajax="false"
@@ -161,6 +164,7 @@
                                             fileName="inward_discount_matrix_room_charges"/>
                                     </p:commandButton>
                                     <p:commandButton
+                                        id="btnPrint"
                                         class="ui-button-info"
                                         ajax="false"
                                         icon="fa fa-print"
