@@ -46,6 +46,10 @@ public class StockMovementTimelineDTO implements Serializable {
     private Long billId;
     private String deptBillNo;
     private BillTypeAtomic billTypeAtomic;
+    private Date billDate;
+    private String fromDepartmentName;
+    private String toDepartmentName;
+    private String porterName;
 
     // Transaction quantities
     private double pbiQty;
@@ -89,6 +93,40 @@ public class StockMovementTimelineDTO implements Serializable {
         this.pbiQty = pbiQty;
         this.pbiFreeQty = pbiFreeQty;
         this.bifdQty = bifdQty;
+    }
+
+    /**
+     * Extended constructor for graph tooltips. Keep the original constructor
+     * unchanged for compatibility with any older projections.
+     */
+    public StockMovementTimelineDTO(
+            Long stockHistoryId,
+            Date movementAt,
+            Long itemBatchId,
+            String batchNo,
+            double stockQty,
+            double stockPurchaseValue,
+            double stockSaleValue,
+            Double itemStock,
+            Double itemStockValueAtPurchaseRate,
+            Double itemStockValueAtSaleRate,
+            Long billId,
+            String deptBillNo,
+            Date billDate,
+            BillTypeAtomic billTypeAtomic,
+            String fromDepartmentName,
+            String toDepartmentName,
+            String porterName,
+            double pbiQty,
+            double pbiFreeQty,
+            BigDecimal bifdQty) {
+        this(stockHistoryId, movementAt, itemBatchId, batchNo, stockQty, stockPurchaseValue,
+                stockSaleValue, itemStock, itemStockValueAtPurchaseRate, itemStockValueAtSaleRate,
+                billId, deptBillNo, billTypeAtomic, pbiQty, pbiFreeQty, bifdQty);
+        this.billDate = billDate;
+        this.fromDepartmentName = fromDepartmentName;
+        this.toDepartmentName = toDepartmentName;
+        this.porterName = porterName;
     }
 
     public StockMovementTimelineDTO() {
@@ -198,9 +236,45 @@ public class StockMovementTimelineDTO implements Serializable {
         this.billTypeAtomic = billTypeAtomic;
     }
 
+    public Date getBillDate() {
+        return billDate;
+    }
+
+    public void setBillDate(Date billDate) {
+        this.billDate = billDate;
+    }
+
+    public String getFromDepartmentName() {
+        return fromDepartmentName;
+    }
+
+    public void setFromDepartmentName(String fromDepartmentName) {
+        this.fromDepartmentName = fromDepartmentName;
+    }
+
+    public String getToDepartmentName() {
+        return toDepartmentName;
+    }
+
+    public void setToDepartmentName(String toDepartmentName) {
+        this.toDepartmentName = toDepartmentName;
+    }
+
+    public String getPorterName() {
+        return porterName;
+    }
+
+    public void setPorterName(String porterName) {
+        this.porterName = porterName;
+    }
+
     /** Human-readable bill type label for the marker table. */
     public String getBillType() {
         return billTypeAtomic == null ? null : billTypeAtomic.getLabel();
+    }
+
+    public String getBillTypeAtomicName() {
+        return billTypeAtomic == null ? null : billTypeAtomic.name();
     }
 
     public double getPbiQty() {
