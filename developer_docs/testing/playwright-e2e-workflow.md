@@ -41,6 +41,13 @@ The HMIS login + landing flow has a fixed shape:
    *last* department, so a fresh login often pre-fills it — still click through
    the **Select Department** screen to reach an inner page.
 
+**Do not navigate directly to an inner page URL before selecting a department.**
+`sessionController.department` is null until department selection completes.
+The template wraps `<ez:menu />` in `rendered="#{sessionController.department ne null}"`,
+so the entire menu — including the notification bell, websocket, and remoteCommand —
+is absent from the page. Any Playwright check for these components will fail silently.
+Always go through the department-selection screen first.
+
 **A redeploy invalidates the session.** Every time the WAR is redeployed you are
 logged out and must log in again. Plan test runs so you are not mid-flow when a
 deploy lands.

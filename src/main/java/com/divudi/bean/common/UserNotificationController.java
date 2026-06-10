@@ -90,7 +90,29 @@ public class UserNotificationController implements Serializable {
     private boolean canceldRequests;
 
     public String navigateToRecivedNotification() {
-        return "/Notification/user_notifications";
+        fillLoggedUserNotifications();
+        return "/Notification/user_notifications?faces-redirect=true";
+    }
+
+    public int getUnseenCount() {
+        if (sessionController == null || sessionController.getLoggedUser() == null) {
+            return 0;
+        }
+        try {
+            String jpql = "select count(un) "
+                    + " from UserNotification un "
+                    + " where un.webUser=:wu "
+                    + " and un.retired=:ret "
+                    + " and un.seen=:seen";
+            Map m = new HashMap();
+            m.put("ret", false);
+            m.put("seen", false);
+            m.put("wu", sessionController.getLoggedUser());
+            long count = getFacade().findLongByJpql(jpql, m);
+            return count > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) count;
+        } catch (Exception e) {
+            return 0;
+        }
     }
 
     public String navigateToSentNotification() {
@@ -347,7 +369,8 @@ public class UserNotificationController implements Serializable {
             String jpql = "select un "
                     + " from UserNotification un "
                     + " where un.webUser=:wu "
-                    + " and un.retired=:ret";
+                    + " and un.retired=:ret "
+                    + " order by un.id desc";
             Map m = new HashMap();
             m.put("ret", false);
             m.put("wu", sessionController.getLoggedUser());
