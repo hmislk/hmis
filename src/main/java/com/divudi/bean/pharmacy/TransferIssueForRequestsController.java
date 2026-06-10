@@ -787,7 +787,7 @@ public class TransferIssueForRequestsController implements Serializable {
         for (BillItem bi : getBillItems()) {
             if (bi.getPharmaceuticalBillItem().getItemBatch() != null) {
                 if (bi.getPharmaceuticalBillItem().getStock().getStock() < bi.getPharmaceuticalBillItem().getQty()) {
-                    JsfUtil.addErrorMessage("Available quantity is less than issued quantity in " + bi.getItem().getName());
+                    JsfUtil.addErrorMessage("One or more items have insufficient stock to complete the transfer.");
                     return;
                 }
             } else if (bi.getPharmaceuticalBillItem().getItemBatch() == null) {
