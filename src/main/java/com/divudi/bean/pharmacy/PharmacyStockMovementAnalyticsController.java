@@ -67,6 +67,8 @@ public class PharmacyStockMovementAnalyticsController implements Serializable {
     private Date fromDate;
     private Date toDate;
     private Item item;
+    private String batchNumberFilter;
+    private Long itemBatchIdFilter;
 
     // Each of the three graphs is scoped by either a Department or a Staff.
     // Scope type: "department" or "staff".
@@ -115,6 +117,8 @@ public class PharmacyStockMovementAnalyticsController implements Serializable {
         "rgb(173, 216, 230)"
     };
     private static final String TOTAL_LINE_COLOR = "rgb(0, 0, 0)";
+    private static final String TOOLTIP_DATE_TIME_FORMAT = "yyyy-MM-dd HH:mm:ss";
+    private static final String TOOLTIP_DATE_FORMAT = "yyyy-MM-dd";
 
     public PharmacyStockMovementAnalyticsController() {
     }
@@ -146,6 +150,8 @@ public class PharmacyStockMovementAnalyticsController implements Serializable {
         markers1 = null;
         markers2 = null;
         markers3 = null;
+        batchNumberFilter = null;
+        itemBatchIdFilter = null;
         processed = false;
         return "/pharmacy/pharmacy_stock_movement_timeline?faces-redirect=true";
     }
@@ -163,6 +169,14 @@ public class PharmacyStockMovementAnalyticsController implements Serializable {
         if (fromDate.after(toDate)) {
             JsfUtil.addErrorMessage("From date must be before to date");
             return;
+        }
+        if (!isAnyScopeSelected()) {
+            JsfUtil.addErrorMessage("Please select at least one department or staff scope");
+            return;
+        }
+        if (batchNumberFilter != null && batchNumberFilter.trim().isEmpty()) {
+            batchNumberFilter = null;
+            itemBatchIdFilter = null;
         }
 
         ScopeResult r1 = buildScope(scopeType1, department1, staff1);
@@ -182,6 +196,20 @@ public class PharmacyStockMovementAnalyticsController implements Serializable {
         scopeLabel3 = r3.label;
 
         processed = true;
+    }
+
+    public void applyBatchFilter(Long itemBatchId, String batchNo) {
+        itemBatchIdFilter = itemBatchId;
+        batchNumberFilter = batchNo;
+        process();
+    }
+
+    public void clearBatchFilter() {
+        batchNumberFilter = null;
+        itemBatchIdFilter = null;
+        if (processed) {
+            process();
+        }
     }
 
     private ScopeResult buildScope(String scopeType, Department dep, Staff stf) {
@@ -217,13 +245,18 @@ public class PharmacyStockMovementAnalyticsController implements Serializable {
                 .append("ib.id, ib.batchNo, ")
                 .append("s.stockQty, s.stockPurchaseValue, s.stockSaleValue, ")
                 .append("s.itemStock, s.itemStockValueAtPurchaseRate, s.itemStockValueAtSaleRate, ")
-                .append("bill.id, bill.deptId, bill.billTypeAtomic, ")
+                .append("bill.id, bill.deptId, bill.billDate, bill.billTypeAtomic, ")
+                .append("fromDept.name, toDept.name, porterPerson.name, ")
                 .append("pbi.qty, pbi.freeQty, bifd.quantityByUnits) ")
                 .append("from StockHistory s ")
                 .append("left join s.itemBatch ib ")
                 .append("left join s.pbItem pbi ")
                 .append("left join pbi.billItem bi ")
                 .append("left join bi.bill bill ")
+                .append("left join bill.fromDepartment fromDept ")
+                .append("left join bill.toDepartment toDept ")
+                .append("left join bill.toStaff porter ")
+                .append("left join porter.person porterPerson ")
                 .append("left join bi.billItemFinanceDetails bifd ")
                 .append("where s.retired=false ")
                 .append("and s.item=:i ")
@@ -233,6 +266,14 @@ public class PharmacyStockMovementAnalyticsController implements Serializable {
                 // nulls from the left join.
                 .append("and s.pbItem is not null ")
                 .append("and s.createdAt between :fd and :td ");
+
+        if (itemBatchIdFilter != null) {
+            jpql.append("and ib.id=:itemBatchId ");
+            m.put("itemBatchId", itemBatchIdFilter);
+        } else if (batchNumberFilter != null && !batchNumberFilter.trim().isEmpty()) {
+            jpql.append("and lower(ib.batchNo)=:batchNo ");
+            m.put("batchNo", batchNumberFilter.trim().toLowerCase());
+        }
 
         if (staffScope) {
             if (stf == null) {
@@ -346,9 +387,13 @@ public class PharmacyStockMovementAnalyticsController implements Serializable {
     private List<BillMarker> buildMarkers(List<StockMovementTimelineDTO> rows) {
         List<BillMarker> list = new ArrayList<>();
         for (StockMovementTimelineDTO r : rows) {
+            if (r.getMovementAt() == null) {
+                continue;
+            }
             BillMarker bm = new BillMarker();
             bm.setStockHistoryId(r.getStockHistoryId());
             bm.setMovementAt(r.getMovementAt());
+            bm.setItemBatchId(r.getItemBatchId());
             bm.setBatchNo(batchLabel(r));
             bm.setStockQty(r.getStockQty());
             bm.setItemStock(r.getItemStock());
@@ -358,6 +403,11 @@ public class PharmacyStockMovementAnalyticsController implements Serializable {
             bm.setBillId(r.getBillId());
             bm.setDeptBillNo(r.getDeptBillNo());
             bm.setBillType(r.getBillType());
+            bm.setBillTypeAtomic(r.getBillTypeAtomicName());
+            bm.setBillDate(r.getBillDate());
+            bm.setFromDepartmentName(r.getFromDepartmentName());
+            bm.setToDepartmentName(r.getToDepartmentName());
+            bm.setPorterName(r.getPorterName());
             list.add(bm);
         }
         return list;
@@ -419,6 +469,102 @@ public class PharmacyStockMovementAnalyticsController implements Serializable {
         return list;
     }
 
+    private boolean scopeHasSelection(String scopeType, Department dep, Staff stf) {
+        return "staff".equals(scopeType) ? stf != null : dep != null;
+    }
+
+    private String buildTooltipDataJson(List<BillMarker> markers) {
+        if (markers == null || markers.isEmpty()) {
+            return "[]";
+        }
+        SimpleDateFormat dateTimeFormat = new SimpleDateFormat(TOOLTIP_DATE_TIME_FORMAT);
+        SimpleDateFormat dateFormat = new SimpleDateFormat(TOOLTIP_DATE_FORMAT);
+        StringBuilder sb = new StringBuilder("[");
+        for (int i = 0; i < markers.size(); i++) {
+            BillMarker m = markers.get(i);
+            if (i > 0) {
+                sb.append(',');
+            }
+            sb.append('{');
+            appendJsonField(sb, "movementAt", m.getMovementAt() == null ? null : dateTimeFormat.format(m.getMovementAt()), true);
+            appendJsonField(sb, "billNo", m.getDeptBillNo(), false);
+            appendJsonField(sb, "billDate", m.getBillDate() == null ? null : dateFormat.format(m.getBillDate()), false);
+            appendJsonField(sb, "billTypeAtomic", m.getBillTypeAtomic(), false);
+            appendJsonField(sb, "fromDepartment", m.getFromDepartmentName(), false);
+            appendJsonField(sb, "toDepartment", m.getToDepartmentName(), false);
+            appendJsonField(sb, "porter", m.getPorterName(), false);
+            appendJsonField(sb, "batch", m.getBatchNo(), false);
+            appendJsonField(sb, "batchStock", String.valueOf(m.getStockQty()), false);
+            appendJsonField(sb, "itemStock", m.getItemStock() == null ? null : String.valueOf(m.getItemStock()), false);
+            sb.append('}');
+        }
+        sb.append(']');
+        return sb.toString();
+    }
+
+    private void appendJsonField(StringBuilder sb, String name, String value, boolean first) {
+        if (!first) {
+            sb.append(',');
+        }
+        appendJsonString(sb, name);
+        sb.append(':');
+        appendJsonString(sb, value);
+    }
+
+    private void appendJsonString(StringBuilder sb, String value) {
+        if (value == null || value.trim().isEmpty()) {
+            sb.append("\"\"");
+            return;
+        }
+        sb.append('"');
+        for (int i = 0; i < value.length(); i++) {
+            char c = value.charAt(i);
+            switch (c) {
+                case '"':
+                    sb.append("\\\"");
+                    break;
+                case '\\':
+                    sb.append("\\\\");
+                    break;
+                case '\b':
+                    sb.append("\\b");
+                    break;
+                case '\f':
+                    sb.append("\\f");
+                    break;
+                case '\n':
+                    sb.append("\\n");
+                    break;
+                case '\r':
+                    sb.append("\\r");
+                    break;
+                case '\t':
+                    sb.append("\\t");
+                    break;
+                case '<':
+                    sb.append("\\u003c");
+                    break;
+                case '>':
+                    sb.append("\\u003e");
+                    break;
+                case '&':
+                    sb.append("\\u0026");
+                    break;
+                case '\'':
+                    sb.append("\\u0027");
+                    break;
+                default:
+                    if (c < 0x20) {
+                        sb.append(String.format("\\u%04x", (int) c));
+                    } else {
+                        sb.append(c);
+                    }
+                    break;
+            }
+        }
+        sb.append('"');
+    }
+
     // <editor-fold defaultstate="collapsed" desc="Inner classes">
     private static class ScopeResult {
         LineChartModel model;
@@ -431,8 +577,14 @@ public class PharmacyStockMovementAnalyticsController implements Serializable {
         private static final long serialVersionUID = 1L;
         private Long stockHistoryId;
         private Long billId;
+        private Long itemBatchId;
         private String deptBillNo;
         private String billType;
+        private String billTypeAtomic;
+        private Date billDate;
+        private String fromDepartmentName;
+        private String toDepartmentName;
+        private String porterName;
         private Date movementAt;
         private String batchNo;
         private double stockQty;
@@ -457,6 +609,14 @@ public class PharmacyStockMovementAnalyticsController implements Serializable {
             this.billId = billId;
         }
 
+        public Long getItemBatchId() {
+            return itemBatchId;
+        }
+
+        public void setItemBatchId(Long itemBatchId) {
+            this.itemBatchId = itemBatchId;
+        }
+
         public String getDeptBillNo() {
             return deptBillNo;
         }
@@ -471,6 +631,46 @@ public class PharmacyStockMovementAnalyticsController implements Serializable {
 
         public void setBillType(String billType) {
             this.billType = billType;
+        }
+
+        public String getBillTypeAtomic() {
+            return billTypeAtomic;
+        }
+
+        public void setBillTypeAtomic(String billTypeAtomic) {
+            this.billTypeAtomic = billTypeAtomic;
+        }
+
+        public Date getBillDate() {
+            return billDate;
+        }
+
+        public void setBillDate(Date billDate) {
+            this.billDate = billDate;
+        }
+
+        public String getFromDepartmentName() {
+            return fromDepartmentName;
+        }
+
+        public void setFromDepartmentName(String fromDepartmentName) {
+            this.fromDepartmentName = fromDepartmentName;
+        }
+
+        public String getToDepartmentName() {
+            return toDepartmentName;
+        }
+
+        public void setToDepartmentName(String toDepartmentName) {
+            this.toDepartmentName = toDepartmentName;
+        }
+
+        public String getPorterName() {
+            return porterName;
+        }
+
+        public void setPorterName(String porterName) {
+            this.porterName = porterName;
         }
 
         public Date getMovementAt() {
@@ -560,6 +760,15 @@ public class PharmacyStockMovementAnalyticsController implements Serializable {
 
     public void setItem(Item item) {
         this.item = item;
+    }
+
+    public String getBatchNumberFilter() {
+        return batchNumberFilter;
+    }
+
+    public void setBatchNumberFilter(String batchNumberFilter) {
+        this.batchNumberFilter = batchNumberFilter;
+        this.itemBatchIdFilter = null;
     }
 
     public String getScopeType1() {
@@ -654,6 +863,18 @@ public class PharmacyStockMovementAnalyticsController implements Serializable {
         return chart3;
     }
 
+    public String getTooltipData1() {
+        return buildTooltipDataJson(markers1);
+    }
+
+    public String getTooltipData2() {
+        return buildTooltipDataJson(markers2);
+    }
+
+    public String getTooltipData3() {
+        return buildTooltipDataJson(markers3);
+    }
+
     public List<BillMarker> getMarkers1() {
         return markers1;
     }
@@ -680,6 +901,22 @@ public class PharmacyStockMovementAnalyticsController implements Serializable {
 
     public boolean isProcessed() {
         return processed;
+    }
+
+    public boolean isScope1Selected() {
+        return scopeHasSelection(scopeType1, department1, staff1);
+    }
+
+    public boolean isScope2Selected() {
+        return scopeHasSelection(scopeType2, department2, staff2);
+    }
+
+    public boolean isScope3Selected() {
+        return scopeHasSelection(scopeType3, department3, staff3);
+    }
+
+    public boolean isAnyScopeSelected() {
+        return isScope1Selected() || isScope2Selected() || isScope3Selected();
     }
 
     public SessionController getSessionController() {
