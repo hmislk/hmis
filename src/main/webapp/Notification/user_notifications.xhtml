@@ -9,6 +9,19 @@
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
                 <h:form>
+                    <!-- Real-time push: refreshes the notification list when new notifications arrive -->
+                    <f:websocket channel="notifications"
+                                 user="#{sessionController.loggedUser.id}"
+                                 onmessage="onNotificationListPush"
+                                 connected="#{sessionController.loggedUser != null}" />
+                    <p:remoteCommand name="refreshNotificationList"
+                                     update="reNot"
+                                     action="#{userNotificationController.fillLoggedUserNotifications}" />
+                    <script type="text/javascript">
+                        function onNotificationListPush(message) {
+                            refreshNotificationList();
+                        }
+                    </script>
 
                     <!-- Single remove-confirmation dialog shared across all rows -->
                     <p:dialog header="Remove Notification" widgetVar="dlgRemove" modal="true" width="350">
@@ -106,6 +119,27 @@
                                                 </div>
                                             </div>
                                         </h:panelGroup>
+                                    </h:panelGroup>
+
+                                    <!-- Type badge for discharge (PatientRoom-based) notifications -->
+                                    <h:panelGroup rendered="#{un.notification.patientRoom != null}">
+                                        <div class="col-4 p-2" style="background: linear-gradient(90deg, rgba(25,118,210,1) 0%, rgba(25,60,120,1) 100%);">
+                                            <div class="d-flex align-items-center justify-content-between">
+                                                <h:outputText styleClass="fa-solid fa-bed mx-4 text-white" />
+                                                <h5 class="text-white">Room Discharge</h5>
+                                                <h6 style="border:1px solid white;padding:10px;color:white;font-weight:bold;margin-right:10px">#{un.notification.patientRoom.roomFacilityCharge.name}</h6>
+                                            </div>
+                                        </div>
+                                    </h:panelGroup>
+                                    <!-- Type badge for PatientEncounter-based notifications -->
+                                    <h:panelGroup rendered="#{un.notification.patientRoom == null and un.notification.patientEncounter != null}">
+                                        <div class="col-4 p-2" style="background: linear-gradient(90deg, rgba(46,125,50,1) 0%, rgba(27,94,32,1) 100%);">
+                                            <div class="d-flex align-items-center justify-content-between">
+                                                <h:outputText styleClass="fa-solid fa-hospital-user mx-4 text-white" />
+                                                <h5 class="text-white">Patient Discharge</h5>
+                                                <h6 style="border:1px solid white;padding:10px;color:white;font-weight:bold;margin-right:10px">#{un.notification.patientEncounter.bhtNo}</h6>
+                                            </div>
+                                        </div>
                                     </h:panelGroup>
 
                                     <!-- Detail columns -->
